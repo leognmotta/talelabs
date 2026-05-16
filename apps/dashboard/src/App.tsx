@@ -17,7 +17,7 @@ import { ProtectedRoute } from './routes/protected-route'
 import { PublicRoute } from './routes/public-route'
 import { AuthScreen } from './screens/auth/auth-screen'
 import { DashboardScreen } from './screens/dashboard/dashboard-screen'
-import { WorkspaceScreen } from './screens/dashboard/workspace-screen'
+import { WorkspaceScreen } from './screens/workspace/workspace-screen'
 
 function App() {
   const session = useSession()
