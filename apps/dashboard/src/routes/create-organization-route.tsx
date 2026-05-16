@@ -3,8 +3,8 @@ import type { OrganizationStatus } from '../types/auth'
 import { Navigate } from 'react-router'
 
 import { SplashScreen } from '../components/splash-screen'
+import { WorkspaceState } from '../components/workspace-state'
 import { CreateOrganizationScreen } from '../screens/create-organization/create-organization-screen'
-import { WorkspaceStateScreen } from '../screens/workspace-state/workspace-state-screen'
 
 export function CreateOrganizationRoute({
   hasCheckedOrganization,
@@ -30,7 +30,7 @@ export function CreateOrganizationRoute({
 
   if (organizationStatus !== 'missing') {
     return (
-      <WorkspaceStateScreen
+      <WorkspaceState
         message="Checking organization access..."
         status={organizationStatus}
         onSignOut={onSignOut}

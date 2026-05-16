@@ -6,7 +6,7 @@ import {
   CardTitle,
 } from '@connecto/ui/components/card'
 
-export function DashboardOverview({
+export function DashboardScreen({
   meQueryStatus,
   organizationMessage,
 }: {

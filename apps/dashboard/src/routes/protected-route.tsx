@@ -3,7 +3,7 @@ import type { OrganizationStatus } from '../types/auth'
 
 import { Navigate } from 'react-router'
 import { SplashScreen } from '../components/splash-screen'
-import { WorkspaceStateScreen } from '../screens/workspace-state/workspace-state-screen'
+import { WorkspaceState } from '../components/workspace-state'
 
 export function ProtectedRoute({
   children,
@@ -31,7 +31,7 @@ export function ProtectedRoute({
 
   if (organizationStatus !== 'ready') {
     return (
-      <WorkspaceStateScreen
+      <WorkspaceState
         message={organizationMessage}
         status={organizationStatus}
         onSignOut={onSignOut}

@@ -1,10 +1,10 @@
-import type { OrganizationStatus } from '../../types/auth'
+import type { OrganizationStatus } from '../types/auth'
 
 import { Button } from '@connecto/ui/components/button'
 
-import { SplashScreen } from '../../components/splash-screen'
+import { SplashScreen } from './splash-screen'
 
-export function WorkspaceStateScreen({
+export function WorkspaceState({
   message,
   status,
   onSignOut,

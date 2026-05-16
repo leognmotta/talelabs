@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Navigate, Route, Routes } from 'react-router'
 import { toast } from 'sonner'
+import { DashboardLayout } from './components/dashboard-layout'
 import { SplashScreen } from './components/splash-screen'
 import { useOrganizationSession } from './hooks/use-organization-session'
 import { authClient, signOut, useSession } from './lib/auth-client'
@@ -15,7 +16,8 @@ import { CreateOrganizationRoute } from './routes/create-organization-route'
 import { ProtectedRoute } from './routes/protected-route'
 import { PublicRoute } from './routes/public-route'
 import { AuthScreen } from './screens/auth/auth-screen'
-import { DashboardLayout } from './screens/dashboard/dashboard-layout'
+import { DashboardScreen } from './screens/dashboard/dashboard-screen'
+import { WorkspaceScreen } from './screens/dashboard/workspace-screen'
 
 function App() {
   const session = useSession()
@@ -127,7 +129,7 @@ function App() {
           )}
         />
         <Route
-          path="/*"
+          path="/"
           element={(
             <ProtectedRoute
               hasCheckedOrganization={organization.hasCheckedOrganization}
@@ -139,9 +141,7 @@ function App() {
               <DashboardLayout
                 activeOrganizationId={organization.activeWorkspaceId}
                 email={session.data?.user.email}
-                meQueryStatus={organization.meQueryStatus}
                 name={session.data?.user.name}
-                organizationMessage={organization.organizationMessage}
                 onCreateOrganization={handleCreateOrganization}
                 onSignOut={handleSignOut}
                 onSwitchOrganization={handleSwitchOrganization}
@@ -150,7 +150,26 @@ function App() {
               />
             </ProtectedRoute>
           )}
-        />
+        >
+          <Route
+            index
+            element={(
+              <DashboardScreen
+                meQueryStatus={organization.meQueryStatus}
+                organizationMessage={organization.organizationMessage}
+              />
+            )}
+          />
+          <Route
+            path="workspace"
+            element={(
+              <WorkspaceScreen
+                activeOrganizationId={organization.activeWorkspaceId}
+              />
+            )}
+          />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <Toaster theme={theme} />

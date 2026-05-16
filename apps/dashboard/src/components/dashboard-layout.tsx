@@ -1,4 +1,4 @@
-import type { ThemePreference } from '../../lib/theme'
+import type { ThemePreference } from '../lib/theme'
 import { Separator } from '@connecto/ui/components/separator'
 import {
   SidebarInset,
@@ -7,17 +7,13 @@ import {
 } from '@connecto/ui/components/sidebar'
 import { TooltipProvider } from '@connecto/ui/components/tooltip'
 
-import { Navigate, Route, Routes } from 'react-router'
-import { AppSidebar } from '../../components/app-sidebar'
-import { DashboardOverview } from './dashboard-overview'
-import { WorkspaceScreen } from './workspace-screen'
+import { Outlet } from 'react-router'
+import { AppSidebar } from './app-sidebar'
 
 export function DashboardLayout({
   activeOrganizationId,
   email,
-  meQueryStatus,
   name,
-  organizationMessage,
   onSignOut,
   onCreateOrganization,
   onSwitchOrganization,
@@ -26,9 +22,7 @@ export function DashboardLayout({
 }: {
   activeOrganizationId: string | null
   email: string | undefined
-  meQueryStatus: string
   name: string | undefined
-  organizationMessage: string
   onCreateOrganization: (name: string, slug: string) => Promise<string | null>
   onSignOut: () => Promise<void>
   onSwitchOrganization: (organizationId: string) => Promise<string | null>
@@ -63,24 +57,7 @@ export function DashboardLayout({
             </header>
             <Separator />
             <section className="flex flex-1 flex-col gap-6 p-6">
-              <Routes>
-                <Route
-                  index
-                  element={(
-                    <DashboardOverview
-                      meQueryStatus={meQueryStatus}
-                      organizationMessage={organizationMessage}
-                    />
-                  )}
-                />
-                <Route
-                  path="workspace"
-                  element={(
-                    <WorkspaceScreen activeOrganizationId={activeOrganizationId} />
-                  )}
-                />
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
+              <Outlet />
             </section>
           </main>
         </SidebarInset>
