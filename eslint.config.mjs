@@ -1,0 +1,52 @@
+import antfu from '@antfu/eslint-config'
+import betterTailwindcss from 'eslint-plugin-better-tailwindcss'
+
+export default antfu({
+  react: true,
+  typescript: true,
+  ignores: [
+    '**/dist',
+    '**/dist-ssr',
+    '**/.next',
+    '**/.turbo',
+    '**/node_modules',
+    '**/*.tsbuildinfo',
+  ],
+}, {
+  files: ['**/*.{ts,tsx}'],
+  rules: {
+    'ts/consistent-type-definitions': ['error', 'interface'],
+  },
+}, {
+  files: [
+    'apps/dashboard/**/*.{ts,tsx}',
+    'packages/ui/src/**/*.{ts,tsx}',
+  ],
+  plugins: {
+    'better-tailwindcss': betterTailwindcss,
+  },
+  settings: {
+    'better-tailwindcss': {
+      cwd: '.',
+      entryPoint: 'packages/ui/src/styles/globals.css',
+    },
+  },
+  rules: {
+    ...betterTailwindcss.configs.recommended.rules,
+  },
+}, {
+  files: [
+    'apps/api/**/*.ts',
+    'packages/auth/**/*.ts',
+    'packages/db/**/*.ts',
+  ],
+  rules: {
+    'no-console': ['error', { allow: ['log', 'warn', 'error'] }],
+    'node/prefer-global/process': 'off',
+  },
+}, {
+  files: ['packages/ui/src/components/**/*.tsx'],
+  rules: {
+    'react-refresh/only-export-components': 'off',
+  },
+})
