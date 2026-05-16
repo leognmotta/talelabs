@@ -1,12 +1,20 @@
 import { Button } from '@connecto/ui/components/button'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { signIn, signOut, signUp, useSession } from './lib/auth-client'
+import { authClient, signIn, signOut, signUp, useSession } from './lib/auth-client'
 
 type AuthMode = 'sign-in' | 'sign-up'
 type OrganizationStatus = 'idle' | 'loading' | 'ready' | 'missing' | 'error'
 
 const apiBaseUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
+
+function slugify(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}
 
 function App() {
   const session = useSession()
@@ -18,6 +26,10 @@ function App() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [organizationStatus, setOrganizationStatus] = useState<OrganizationStatus>('idle')
   const [activeOrganizationId, setActiveOrganizationId] = useState<string | null>(null)
+  const [organizationName, setOrganizationName] = useState('')
+  const [organizationSlug, setOrganizationSlug] = useState('')
+  const [organizationError, setOrganizationError] = useState<string | null>(null)
+  const [isCreatingOrganization, setIsCreatingOrganization] = useState(false)
 
   const isSignedIn = Boolean(session.data?.user)
   const title = mode === 'sign-in' ? 'Sign in' : 'Create account'
@@ -28,13 +40,44 @@ function App() {
       return `Active organization: ${activeOrganizationId}`
 
     if (organizationStatus === 'missing')
-      return 'No active organization. Ask an owner to add you before using the workspace.'
+      return 'Create your organization to start using the workspace.'
 
     if (organizationStatus === 'error')
       return 'Could not verify organization access.'
 
     return 'Checking organization access...'
   }, [activeOrganizationId, organizationStatus])
+
+  const refreshOrganizationSession = useCallback(async () => {
+    setOrganizationStatus('loading')
+
+    try {
+      const response = await fetch(`${apiBaseUrl}/session`, {
+        credentials: 'include',
+      })
+
+      if (response.status === 403) {
+        setOrganizationStatus('missing')
+        setActiveOrganizationId(null)
+        return
+      }
+
+      if (!response.ok) {
+        setOrganizationStatus('error')
+        setActiveOrganizationId(null)
+        return
+      }
+
+      const body = await response.json() as { activeOrganizationId?: string | null }
+
+      setActiveOrganizationId(body.activeOrganizationId ?? null)
+      setOrganizationStatus(body.activeOrganizationId ? 'ready' : 'missing')
+    }
+    catch {
+      setOrganizationStatus('error')
+      setActiveOrganizationId(null)
+    }
+  }, [])
 
   useEffect(() => {
     if (!isSignedIn)
@@ -43,37 +86,8 @@ function App() {
     let isCurrent = true
 
     async function loadOrganizationSession() {
-      setOrganizationStatus('loading')
-
-      try {
-        const response = await fetch(`${apiBaseUrl}/session`, {
-          credentials: 'include',
-        })
-
-        if (!isCurrent)
-          return
-
-        if (response.status === 403) {
-          setOrganizationStatus('missing')
-          setActiveOrganizationId(null)
-          return
-        }
-
-        if (!response.ok) {
-          setOrganizationStatus('error')
-          setActiveOrganizationId(null)
-          return
-        }
-
-        const body = await response.json() as { activeOrganizationId?: string | null }
-
-        setActiveOrganizationId(body.activeOrganizationId ?? null)
-        setOrganizationStatus(body.activeOrganizationId ? 'ready' : 'missing')
-      }
-      catch {
-        if (isCurrent)
-          setOrganizationStatus('error')
-      }
+      if (isCurrent)
+        await refreshOrganizationSession()
     }
 
     void loadOrganizationSession()
@@ -81,7 +95,7 @@ function App() {
     return () => {
       isCurrent = false
     }
-  }, [isSignedIn])
+  }, [isSignedIn, refreshOrganizationSession])
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -106,7 +120,52 @@ function App() {
     await signOut()
     setActiveOrganizationId(null)
     setOrganizationStatus('idle')
+    setOrganizationError(null)
+    setOrganizationName('')
+    setOrganizationSlug('')
     await session.refetch()
+  }
+
+  async function handleCreateOrganization(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setOrganizationError(null)
+
+    const trimmedName = organizationName.trim()
+    const slug = slugify(organizationSlug || organizationName)
+
+    if (!trimmedName || !slug) {
+      setOrganizationError('Enter an organization name.')
+      return
+    }
+
+    setIsCreatingOrganization(true)
+
+    const result = await authClient.organization.create({
+      name: trimmedName,
+      slug,
+    })
+
+    if (result.error) {
+      setIsCreatingOrganization(false)
+      setOrganizationError(result.error.message ?? 'Could not create organization.')
+      return
+    }
+
+    if (result.data?.id) {
+      const activeResult = await authClient.organization.setActive({
+        organizationId: result.data.id,
+      })
+
+      if (activeResult.error) {
+        setIsCreatingOrganization(false)
+        setOrganizationError(activeResult.error.message ?? 'Could not activate organization.')
+        return
+      }
+    }
+
+    await session.refetch()
+    await refreshOrganizationSession()
+    setIsCreatingOrganization(false)
   }
 
   if (session.isPending) {
@@ -117,6 +176,120 @@ function App() {
       "
       >
         <p className="text-sm text-muted-foreground">Loading session...</p>
+      </main>
+    )
+  }
+
+  if (isSignedIn && organizationStatus === 'missing') {
+    return (
+      <main className="
+        flex min-h-screen items-center justify-center bg-background px-6 py-8
+        text-foreground
+      "
+      >
+        <section className="
+          w-full max-w-md rounded-lg border border-border bg-card p-6
+          text-card-foreground shadow-lg
+        "
+        >
+          <form className="flex flex-col gap-5" onSubmit={handleCreateOrganization}>
+            <div className="flex flex-col gap-2">
+              <p className="text-sm font-medium text-muted-foreground">
+                Connecto
+              </p>
+              <h1 className="text-3xl font-semibold tracking-tight">
+                Create your organization
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                Your account is ready. Create a workspace to keep projects,
+                members, and data scoped to an organization.
+              </p>
+            </div>
+
+            <label className="flex flex-col gap-2 text-sm font-medium">
+              Organization name
+              <input
+                className="
+                  h-10 rounded-lg border border-input bg-background px-3 text-sm
+                  transition-shadow outline-none
+                  focus-visible:ring-3 focus-visible:ring-ring/50
+                "
+                value={organizationName}
+                onChange={(event) => {
+                  const nextName = event.target.value
+                  setOrganizationName(nextName)
+                  setOrganizationSlug(slugify(nextName))
+                }}
+                placeholder="Acme Inc."
+                required
+              />
+            </label>
+
+            <label className="flex flex-col gap-2 text-sm font-medium">
+              Workspace slug
+              <input
+                className="
+                  h-10 rounded-lg border border-input bg-background px-3 text-sm
+                  transition-shadow outline-none
+                  focus-visible:ring-3 focus-visible:ring-ring/50
+                "
+                value={organizationSlug}
+                onChange={event => setOrganizationSlug(slugify(event.target.value))}
+                placeholder="acme-inc"
+                required
+              />
+            </label>
+
+            {organizationError && (
+              <p className="
+                rounded-lg border border-destructive/30 bg-destructive/10 px-3
+                py-2 text-sm text-destructive
+              "
+              >
+                {organizationError}
+              </p>
+            )}
+
+            <Button type="submit" size="lg" disabled={isCreatingOrganization}>
+              {isCreatingOrganization ? 'Creating...' : 'Create organization'}
+            </Button>
+
+            <Button type="button" variant="ghost" onClick={handleSignOut}>
+              Sign out
+            </Button>
+          </form>
+        </section>
+      </main>
+    )
+  }
+
+  if (isSignedIn && organizationStatus !== 'ready') {
+    return (
+      <main className="
+        flex min-h-screen items-center justify-center bg-background px-6 py-8
+        text-foreground
+      "
+      >
+        <section className="
+          flex w-full max-w-md flex-col gap-4 rounded-lg border border-border
+          bg-card p-6 text-card-foreground shadow-lg
+        "
+        >
+          <div className="flex flex-col gap-2">
+            <p className="text-sm font-medium text-muted-foreground">
+              Connecto
+            </p>
+            <h1 className="text-2xl font-semibold tracking-tight">
+              {organizationStatus === 'error'
+                ? 'Organization access unavailable'
+                : 'Preparing your workspace'}
+            </h1>
+            <p className="text-sm text-muted-foreground">{organizationMessage}</p>
+          </div>
+          <Button variant="outline" onClick={handleSignOut}>
+            Sign out
+          </Button>
+        </section>
       </main>
     )
   }
