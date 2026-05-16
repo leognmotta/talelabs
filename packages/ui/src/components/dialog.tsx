@@ -71,10 +71,10 @@ function DialogContent({
             data-closed:animate-out data-closed:fade-out-0
             data-closed:zoom-out-95
             fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)]
-            -translate-1/2 gap-4 rounded-xl bg-popover p-4 text-sm
+            -translate-1/2 gap-4 rounded-xl bg-popover p-6 text-sm
             text-popover-foreground ring-1 ring-foreground/10 duration-100
             outline-none
-            sm:max-w-sm
+            sm:max-w-lg
           `,
           className,
         )}
@@ -85,7 +85,7 @@ function DialogContent({
           <DialogPrimitive.Close data-slot="dialog-close" asChild>
             <Button
               variant="ghost"
-              className="absolute top-2 right-2"
+              className="absolute top-4 right-4"
               size="icon-sm"
             >
               <XIcon />
@@ -121,8 +121,8 @@ function DialogFooter({
       data-slot="dialog-footer"
       className={cn(
         `
-          -mx-4 -mb-4 flex flex-col-reverse gap-2 rounded-b-xl border-t
-          bg-muted/50 p-4
+          -mx-6 -mb-6 flex flex-col-reverse gap-2 rounded-b-xl border-t
+          bg-muted/50 p-6
           sm:flex-row sm:justify-end
         `,
         className,
