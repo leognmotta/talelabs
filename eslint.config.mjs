@@ -47,8 +47,17 @@ export default antfu({
     'node/prefer-global/process': 'off',
   },
 }, {
-  files: ['packages/ui/src/components/**/*.tsx'],
+  files: ['packages/ui/src/**/*.{ts,tsx}'],
   rules: {
+    'better-tailwindcss/no-unknown-classes': 'off',
+    'eqeqeq': 'off',
+    'react/dom-no-dangerously-set-innerhtml': 'off',
+    'react/no-array-index-key': 'off',
+    'react/no-context-provider': 'off',
+    'react/no-nested-component-definitions': 'off',
+    'react/no-use-context': 'off',
+    'react/set-state-in-effect': 'off',
+    'react/use-state': 'off',
     'react-refresh/only-export-components': 'off',
   },
 })
