@@ -1,75 +1,303 @@
 import { Button } from '@connecto/ui/components/button'
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+
+import { signIn, signOut, signUp, useSession } from './lib/auth-client'
+
+type AuthMode = 'sign-in' | 'sign-up'
+type OrganizationStatus = 'idle' | 'loading' | 'ready' | 'missing' | 'error'
+
+const apiBaseUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
 
 function App() {
-  const [deployments, setDeployments] = useState(12)
+  const session = useSession()
+  const [mode, setMode] = useState<AuthMode>('sign-in')
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [organizationStatus, setOrganizationStatus] = useState<OrganizationStatus>('idle')
+  const [activeOrganizationId, setActiveOrganizationId] = useState<string | null>(null)
 
-  return (
-    <main className="min-h-screen bg-background px-6 py-8 text-foreground">
-      <section className="mx-auto flex w-full max-w-5xl flex-col gap-8">
-        <header className="flex flex-col gap-3 border-b border-border pb-6">
-          <p className="text-sm font-medium text-muted-foreground">
-            Connecto dashboard
-          </p>
-          <div className="
-            flex flex-col gap-4
+  const isSignedIn = Boolean(session.data?.user)
+  const title = mode === 'sign-in' ? 'Sign in' : 'Create account'
+  const submitLabel = mode === 'sign-in' ? 'Sign in' : 'Create account'
+
+  const organizationMessage = useMemo(() => {
+    if (organizationStatus === 'ready')
+      return `Active organization: ${activeOrganizationId}`
+
+    if (organizationStatus === 'missing')
+      return 'No active organization. Ask an owner to add you before using the workspace.'
+
+    if (organizationStatus === 'error')
+      return 'Could not verify organization access.'
+
+    return 'Checking organization access...'
+  }, [activeOrganizationId, organizationStatus])
+
+  useEffect(() => {
+    if (!isSignedIn)
+      return
+
+    let isCurrent = true
+
+    async function loadOrganizationSession() {
+      setOrganizationStatus('loading')
+
+      try {
+        const response = await fetch(`${apiBaseUrl}/session`, {
+          credentials: 'include',
+        })
+
+        if (!isCurrent)
+          return
+
+        if (response.status === 403) {
+          setOrganizationStatus('missing')
+          setActiveOrganizationId(null)
+          return
+        }
+
+        if (!response.ok) {
+          setOrganizationStatus('error')
+          setActiveOrganizationId(null)
+          return
+        }
+
+        const body = await response.json() as { activeOrganizationId?: string | null }
+
+        setActiveOrganizationId(body.activeOrganizationId ?? null)
+        setOrganizationStatus(body.activeOrganizationId ? 'ready' : 'missing')
+      }
+      catch {
+        if (isCurrent)
+          setOrganizationStatus('error')
+      }
+    }
+
+    void loadOrganizationSession()
+
+    return () => {
+      isCurrent = false
+    }
+  }, [isSignedIn])
+
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setError(null)
+    setIsSubmitting(true)
+
+    const result = mode === 'sign-in'
+      ? await signIn.email({ email, password })
+      : await signUp.email({ email, name, password })
+
+    setIsSubmitting(false)
+
+    if (result.error) {
+      setError(result.error.message ?? 'Authentication failed')
+      return
+    }
+
+    await session.refetch()
+  }
+
+  async function handleSignOut() {
+    await signOut()
+    setActiveOrganizationId(null)
+    setOrganizationStatus('idle')
+    await session.refetch()
+  }
+
+  if (session.isPending) {
+    return (
+      <main className="
+        flex min-h-screen items-center justify-center bg-background px-6
+        text-foreground
+      "
+      >
+        <p className="text-sm text-muted-foreground">Loading session...</p>
+      </main>
+    )
+  }
+
+  if (isSignedIn) {
+    return (
+      <main className="min-h-screen bg-background px-6 py-8 text-foreground">
+        <section className="mx-auto flex w-full max-w-5xl flex-col gap-8">
+          <header className="
+            flex flex-col gap-4 border-b border-border pb-6
             sm:flex-row sm:items-end sm:justify-between
           "
           >
             <div className="flex flex-col gap-2">
+              <p className="text-sm font-medium text-muted-foreground">
+                Connecto dashboard
+              </p>
               <h1 className="text-3xl font-semibold tracking-tight">
-                Shared UI package mounted
+                {session.data?.user.name}
               </h1>
-              <p className="max-w-2xl text-sm text-muted-foreground">
-                This screen imports Button from @connecto/ui and renders it in
-                the dashboard app.
+              <p className="text-sm text-muted-foreground">
+                {session.data?.user.email}
               </p>
             </div>
-            <Button onClick={() => setDeployments(value => value + 1)}>
-              Add deployment
+            <Button variant="outline" onClick={handleSignOut}>
+              Sign out
             </Button>
-          </div>
-        </header>
+          </header>
 
-        <section className="
-          grid gap-4
-          md:grid-cols-3
+          <section className="
+            rounded-lg border border-border bg-card p-5 text-card-foreground
+            shadow-sm
+          "
+          >
+            <div className="flex flex-col gap-2">
+              <p className="text-sm text-muted-foreground">Organization access</p>
+              <p className="text-lg font-semibold">{organizationMessage}</p>
+            </div>
+          </section>
+        </section>
+      </main>
+    )
+  }
+
+  return (
+    <main className="
+      flex min-h-screen items-center justify-center bg-background px-6 py-8
+      text-foreground
+    "
+    >
+      <section className="
+        grid w-full max-w-5xl overflow-hidden rounded-lg border border-border
+        bg-card shadow-lg
+        md:grid-cols-[1fr_420px]
+      "
+      >
+        <div className="
+          flex min-h-[520px] flex-col justify-between bg-muted p-8
         "
         >
-          <div className="
-            rounded-lg border border-border bg-card p-5 text-card-foreground
-          "
-          >
-            <p className="text-sm text-muted-foreground">Deployments</p>
-            <p className="mt-2 text-4xl font-semibold">{deployments}</p>
+          <div className="flex flex-col gap-3">
+            <p className="text-sm font-medium text-muted-foreground">
+              Connecto
+            </p>
+            <h1 className="max-w-xl text-4xl font-semibold tracking-tight">
+              Organization-first workspace access
+            </h1>
           </div>
-          <div className="
-            rounded-lg border border-border bg-card p-5 text-card-foreground
-          "
-          >
-            <p className="text-sm text-muted-foreground">Status</p>
-            <p className="mt-2 text-2xl font-semibold">Ready</p>
-          </div>
-          <div className="
-            rounded-lg border border-border bg-card p-5 text-card-foreground
-          "
-          >
-            <p className="text-sm text-muted-foreground">Package</p>
-            <p className="mt-2 text-2xl font-semibold">@connecto/ui</p>
-          </div>
-        </section>
+          <p className="max-w-lg text-sm text-muted-foreground">
+            Personal workspaces are disabled. Accounts must be connected to an
+            organization before they can use the dashboard.
+          </p>
+        </div>
 
-        <section className="
-          flex flex-wrap items-center gap-3 rounded-lg border border-border
-          bg-card p-5 text-card-foreground
-        "
-        >
-          <Button>Default</Button>
-          <Button variant="secondary">Secondary</Button>
-          <Button variant="outline">Outline</Button>
-          <Button variant="ghost">Ghost</Button>
-          <Button variant="destructive">Destructive</Button>
-        </section>
+        <form className="flex flex-col gap-5 p-8" onSubmit={handleSubmit}>
+          <div className="flex flex-col gap-1">
+            <h2 className="text-2xl font-semibold tracking-tight">{title}</h2>
+            <p className="text-sm text-muted-foreground">
+              Use your work email to continue.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 rounded-lg bg-muted p-1">
+            <button
+              type="button"
+              className={`
+                h-9 cursor-pointer rounded-md text-sm font-medium
+                transition-colors
+                ${mode === 'sign-in'
+      ? 'bg-background text-foreground shadow-sm'
+      : `
+        text-muted-foreground
+        hover:text-foreground
+      `}
+              `}
+              onClick={() => setMode('sign-in')}
+            >
+              Sign in
+            </button>
+            <button
+              type="button"
+              className={`
+                h-9 cursor-pointer rounded-md text-sm font-medium
+                transition-colors
+                ${mode === 'sign-up'
+      ? 'bg-background text-foreground shadow-sm'
+      : `
+        text-muted-foreground
+        hover:text-foreground
+      `}
+              `}
+              onClick={() => setMode('sign-up')}
+            >
+              Sign up
+            </button>
+          </div>
+
+          {mode === 'sign-up' && (
+            <label className="flex flex-col gap-2 text-sm font-medium">
+              Name
+              <input
+                className="
+                  h-10 rounded-lg border border-input bg-background px-3 text-sm
+                  transition-shadow outline-none
+                  focus-visible:ring-3 focus-visible:ring-ring/50
+                "
+                value={name}
+                onChange={event => setName(event.target.value)}
+                autoComplete="name"
+                required
+              />
+            </label>
+          )}
+
+          <label className="flex flex-col gap-2 text-sm font-medium">
+            Email
+            <input
+              className="
+                h-10 rounded-lg border border-input bg-background px-3 text-sm
+                transition-shadow outline-none
+                focus-visible:ring-3 focus-visible:ring-ring/50
+              "
+              type="email"
+              value={email}
+              onChange={event => setEmail(event.target.value)}
+              autoComplete="email"
+              required
+            />
+          </label>
+
+          <label className="flex flex-col gap-2 text-sm font-medium">
+            Password
+            <input
+              className="
+                h-10 rounded-lg border border-input bg-background px-3 text-sm
+                transition-shadow outline-none
+                focus-visible:ring-3 focus-visible:ring-ring/50
+              "
+              type="password"
+              value={password}
+              onChange={event => setPassword(event.target.value)}
+              autoComplete={mode === 'sign-in' ? 'current-password' : 'new-password'}
+              minLength={8}
+              required
+            />
+          </label>
+
+          {error && (
+            <p className="
+              rounded-lg border border-destructive/30 bg-destructive/10 px-3
+              py-2 text-sm text-destructive
+            "
+            >
+              {error}
+            </p>
+          )}
+
+          <Button type="submit" size="lg" disabled={isSubmitting}>
+            {isSubmitting ? 'Working...' : submitLabel}
+          </Button>
+        </form>
       </section>
     </main>
   )
