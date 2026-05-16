@@ -22,17 +22,8 @@ export const auth = betterAuth({
   trustedOrigins,
   plugins: [
     organization({
-      allowUserToCreateOrganization: async (user) => {
-        const membership = await db
-          .selectFrom('member')
-          .select('id')
-          .where('userId', '=', user.id)
-          .limit(1)
-          .executeTakeFirst()
-
-        return !membership
-      },
-      organizationLimit: 1,
+      allowUserToCreateOrganization: true,
+      organizationLimit: 10,
     }),
   ],
 })
