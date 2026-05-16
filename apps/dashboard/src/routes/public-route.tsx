@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import type { OrganizationStatus } from '../organization/types'
+import type { OrganizationStatus } from '../types/auth'
 
 import { Navigate } from 'react-router'
 import { SplashScreen } from '../components/splash-screen'

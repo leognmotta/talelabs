@@ -1,12 +1,12 @@
 import type { FormEvent } from 'react'
-import type { AuthMode } from './types'
+import type { AuthMode } from '../../types/auth'
 import { Button } from '@connecto/ui/components/button'
 import { useState } from 'react'
 
 import { NavLink } from 'react-router'
-import { signIn, signUp } from '../lib/auth-client'
+import { signIn, signUp } from '../../lib/auth-client'
 
-export function AuthPage({
+export function AuthScreen({
   initialMode,
   onAuthenticated,
 }: {

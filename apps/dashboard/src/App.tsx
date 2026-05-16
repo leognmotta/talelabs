@@ -1,21 +1,21 @@
-import type { ThemePreference } from './theme'
+import type { ThemePreference } from './lib/theme'
 import { Toaster } from '@connecto/ui/components/sonner'
 import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Navigate, Route, Routes } from 'react-router'
 import { toast } from 'sonner'
-import { AuthPage } from './auth/auth-page'
 import { SplashScreen } from './components/splash-screen'
-import { DashboardLayout } from './dashboard/dashboard-layout'
+import { useOrganizationSession } from './hooks/use-organization-session'
 import { authClient, signOut, useSession } from './lib/auth-client'
-import { CreateOrganizationPage } from './organization/create-organization-page'
-import { useOrganizationSession } from './organization/use-organization-session'
-import { ProtectedRoute } from './routes/protected-route'
-import { PublicRoute } from './routes/public-route'
 import {
   getInitialThemePreference,
   storeThemePreference,
-} from './theme'
+} from './lib/theme'
+import { CreateOrganizationRoute } from './routes/create-organization-route'
+import { ProtectedRoute } from './routes/protected-route'
+import { PublicRoute } from './routes/public-route'
+import { AuthScreen } from './screens/auth/auth-screen'
+import { DashboardLayout } from './screens/dashboard/dashboard-layout'
 
 function App() {
   const session = useSession()
@@ -98,7 +98,7 @@ function App() {
               isSignedIn={isSignedIn}
               organizationStatus={organization.organizationStatus}
             >
-              <AuthPage initialMode="sign-in" onAuthenticated={handleAuthenticated} />
+              <AuthScreen initialMode="sign-in" onAuthenticated={handleAuthenticated} />
             </PublicRoute>
           )}
         />
@@ -110,14 +110,14 @@ function App() {
               isSignedIn={isSignedIn}
               organizationStatus={organization.organizationStatus}
             >
-              <AuthPage initialMode="sign-up" onAuthenticated={handleAuthenticated} />
+              <AuthScreen initialMode="sign-up" onAuthenticated={handleAuthenticated} />
             </PublicRoute>
           )}
         />
         <Route
           path="/create-organization"
           element={(
-            <CreateOrganizationPage
+            <CreateOrganizationRoute
               hasCheckedOrganization={organization.hasCheckedOrganization}
               isSignedIn={isSignedIn}
               organizationStatus={organization.organizationStatus}

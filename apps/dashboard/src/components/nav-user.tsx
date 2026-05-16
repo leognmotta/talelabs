@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react'
-import type { ThemePreference } from '../theme'
+import type { ThemePreference } from '../lib/theme'
 
 import {
   Avatar,

@@ -1,23 +1,22 @@
-import type { ReactNode } from 'react'
 import type { OrganizationStatus } from '../types/auth'
 
 import { Navigate } from 'react-router'
+
 import { SplashScreen } from '../components/splash-screen'
+import { CreateOrganizationScreen } from '../screens/create-organization/create-organization-screen'
 import { WorkspaceStateScreen } from '../screens/workspace-state/workspace-state-screen'
 
-export function ProtectedRoute({
-  children,
+export function CreateOrganizationRoute({
   hasCheckedOrganization,
   isSignedIn,
-  organizationMessage,
   organizationStatus,
+  onCreateOrganization,
   onSignOut,
 }: {
-  children: ReactNode
   hasCheckedOrganization: boolean
   isSignedIn: boolean
-  organizationMessage: string
   organizationStatus: OrganizationStatus
+  onCreateOrganization: (name: string, slug: string) => Promise<string | null>
   onSignOut: () => Promise<void>
 }) {
   if (!isSignedIn)
@@ -26,18 +25,23 @@ export function ProtectedRoute({
   if (!hasCheckedOrganization)
     return <SplashScreen message="Opening your workspace" />
 
-  if (organizationStatus === 'missing')
-    return <Navigate to="/create-organization" replace />
+  if (organizationStatus === 'ready')
+    return <Navigate to="/" replace />
 
-  if (organizationStatus !== 'ready') {
+  if (organizationStatus !== 'missing') {
     return (
       <WorkspaceStateScreen
-        message={organizationMessage}
+        message="Checking organization access..."
         status={organizationStatus}
         onSignOut={onSignOut}
       />
     )
   }
 
-  return children
+  return (
+    <CreateOrganizationScreen
+      onCreateOrganization={onCreateOrganization}
+      onSignOut={onSignOut}
+    />
+  )
 }

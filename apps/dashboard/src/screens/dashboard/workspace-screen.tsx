@@ -6,7 +6,7 @@ import {
   CardTitle,
 } from '@connecto/ui/components/card'
 
-export function WorkspacePage({
+export function WorkspaceScreen({
   activeOrganizationId,
 }: {
   activeOrganizationId: string | null

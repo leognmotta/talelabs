@@ -1,4 +1,4 @@
-import type { ThemePreference } from '../theme'
+import type { ThemePreference } from '../../lib/theme'
 import { Separator } from '@connecto/ui/components/separator'
 import {
   SidebarInset,
@@ -8,9 +8,9 @@ import {
 import { TooltipProvider } from '@connecto/ui/components/tooltip'
 
 import { Navigate, Route, Routes } from 'react-router'
-import { AppSidebar } from '../components/app-sidebar'
+import { AppSidebar } from '../../components/app-sidebar'
 import { DashboardOverview } from './dashboard-overview'
-import { WorkspacePage } from './workspace-page'
+import { WorkspaceScreen } from './workspace-screen'
 
 export function DashboardLayout({
   activeOrganizationId,
@@ -76,7 +76,7 @@ export function DashboardLayout({
                 <Route
                   path="workspace"
                   element={(
-                    <WorkspacePage activeOrganizationId={activeOrganizationId} />
+                    <WorkspaceScreen activeOrganizationId={activeOrganizationId} />
                   )}
                 />
                 <Route path="*" element={<Navigate to="/" replace />} />

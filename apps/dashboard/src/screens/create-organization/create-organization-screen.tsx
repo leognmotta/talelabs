@@ -1,23 +1,14 @@
 import type { FormEvent } from 'react'
-import type { OrganizationStatus } from './types'
+
 import { Button } from '@connecto/ui/components/button'
 import { useState } from 'react'
 
-import { Navigate } from 'react-router'
-import { SplashScreen } from '../components/splash-screen'
-import { slugify } from '../lib/slugify'
-import { WorkspaceStateScreen } from './workspace-state-screen'
+import { slugify } from '../../lib/slugify'
 
-export function CreateOrganizationPage({
-  hasCheckedOrganization,
-  isSignedIn,
-  organizationStatus,
+export function CreateOrganizationScreen({
   onCreateOrganization,
   onSignOut,
 }: {
-  hasCheckedOrganization: boolean
-  isSignedIn: boolean
-  organizationStatus: OrganizationStatus
   onCreateOrganization: (name: string, slug: string) => Promise<string | null>
   onSignOut: () => Promise<void>
 }) {
@@ -25,25 +16,6 @@ export function CreateOrganizationPage({
   const [organizationSlug, setOrganizationSlug] = useState('')
   const [organizationError, setOrganizationError] = useState<string | null>(null)
   const [isCreatingOrganization, setIsCreatingOrganization] = useState(false)
-
-  if (!isSignedIn)
-    return <Navigate to="/sign-in" replace />
-
-  if (!hasCheckedOrganization)
-    return <SplashScreen message="Opening your workspace" />
-
-  if (organizationStatus === 'ready')
-    return <Navigate to="/" replace />
-
-  if (organizationStatus !== 'missing') {
-    return (
-      <WorkspaceStateScreen
-        message="Checking organization access..."
-        status={organizationStatus}
-        onSignOut={onSignOut}
-      />
-    )
-  }
 
   async function handleCreateOrganization(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
