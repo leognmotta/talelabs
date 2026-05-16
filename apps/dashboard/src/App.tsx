@@ -1,3 +1,4 @@
+import { ApiError, getMe, useGetMe } from '@connecto/sdk'
 import { Button } from '@connecto/ui/components/button'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
@@ -5,8 +6,6 @@ import { authClient, signIn, signOut, signUp, useSession } from './lib/auth-clie
 
 type AuthMode = 'sign-in' | 'sign-up'
 type OrganizationStatus = 'idle' | 'loading' | 'ready' | 'missing' | 'error'
-
-const apiBaseUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
 
 function slugify(value: string) {
   return value
@@ -34,10 +33,16 @@ function App() {
   const isSignedIn = Boolean(session.data?.user)
   const title = mode === 'sign-in' ? 'Sign in' : 'Create account'
   const submitLabel = mode === 'sign-in' ? 'Sign in' : 'Create account'
+  const meQuery = useGetMe({
+    query: {
+      enabled: isSignedIn && organizationStatus === 'ready',
+    },
+  })
+  const activeWorkspaceId = meQuery.data?.activeOrganizationId ?? activeOrganizationId
 
   const organizationMessage = useMemo(() => {
     if (organizationStatus === 'ready')
-      return `Active organization: ${activeOrganizationId}`
+      return `Active organization: ${activeWorkspaceId}`
 
     if (organizationStatus === 'missing')
       return 'Create your organization to start using the workspace.'
@@ -46,34 +51,24 @@ function App() {
       return 'Could not verify organization access.'
 
     return 'Checking organization access...'
-  }, [activeOrganizationId, organizationStatus])
+  }, [activeWorkspaceId, organizationStatus])
 
   const refreshOrganizationSession = useCallback(async () => {
     setOrganizationStatus('loading')
 
     try {
-      const response = await fetch(`${apiBaseUrl}/session`, {
-        credentials: 'include',
-      })
+      const body = await getMe()
 
-      if (response.status === 403) {
+      setActiveOrganizationId(body.activeOrganizationId)
+      setOrganizationStatus('ready')
+    }
+    catch (error) {
+      if (error instanceof ApiError && error.status === 403) {
         setOrganizationStatus('missing')
         setActiveOrganizationId(null)
         return
       }
 
-      if (!response.ok) {
-        setOrganizationStatus('error')
-        setActiveOrganizationId(null)
-        return
-      }
-
-      const body = await response.json() as { activeOrganizationId?: string | null }
-
-      setActiveOrganizationId(body.activeOrganizationId ?? null)
-      setOrganizationStatus(body.activeOrganizationId ? 'ready' : 'missing')
-    }
-    catch {
       setOrganizationStatus('error')
       setActiveOrganizationId(null)
     }
@@ -327,6 +322,11 @@ function App() {
             <div className="flex flex-col gap-2">
               <p className="text-sm text-muted-foreground">Organization access</p>
               <p className="text-lg font-semibold">{organizationMessage}</p>
+              <p className="text-sm text-muted-foreground">
+                SDK /me status:
+                {' '}
+                {meQuery.isFetching ? 'Refreshing' : meQuery.isSuccess ? 'Loaded' : 'Idle'}
+              </p>
             </div>
           </section>
         </section>
