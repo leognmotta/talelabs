@@ -10,7 +10,10 @@
     "@connecto/auth": "*",
     "@connecto/db": "*",
     "@hono/node-server": "^1.19.14",
-    "hono": "^4.12.18"
+    "@hono/swagger-ui": "^0.6.1",
+    "@hono/zod-openapi": "^1.4.0",
+    "hono": "^4.12.18",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/node": "^20.11.17",

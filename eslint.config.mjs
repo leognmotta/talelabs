@@ -11,6 +11,8 @@ export default antfu({
     '**/.turbo',
     '**/node_modules',
     '**/*.tsbuildinfo',
+    'packages/sdk/openapi.json',
+    'packages/sdk/src/gen',
   ],
 }, {
   files: ['**/*.{ts,tsx}'],

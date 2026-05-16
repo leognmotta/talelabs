@@ -1,0 +1,163 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Connecto API",
+    "version": "0.1.0",
+    "description": "Organization-first Connecto API"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Local API"
+    }
+  ],
+  "components": {
+    "schemas": {
+      "HealthResponse": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "example": true
+          }
+        },
+        "required": [
+          "ok"
+        ]
+      },
+      "MeResponse": {
+        "type": "object",
+        "properties": {
+          "activeOrganizationId": {
+            "type": "string",
+            "example": "org_123"
+          },
+          "session": {
+            "type": "object",
+            "properties": {
+              "createdAt": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "expiresAt": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "id": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "createdAt",
+              "expiresAt",
+              "id"
+            ]
+          },
+          "user": {
+            "type": "object",
+            "properties": {
+              "email": {
+                "type": "string",
+                "format": "email",
+                "example": "mail@leomotta.me"
+              },
+              "id": {
+                "type": "string",
+                "example": "user_123"
+              },
+              "name": {
+                "type": "string",
+                "example": "Leonardo Motta"
+              }
+            },
+            "required": [
+              "email",
+              "id",
+              "name"
+            ]
+          }
+        },
+        "required": [
+          "activeOrganizationId",
+          "session",
+          "user"
+        ]
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "Authentication required"
+          }
+        },
+        "required": [
+          "error"
+        ]
+      }
+    },
+    "parameters": {}
+  },
+  "paths": {
+    "/db/health": {
+      "get": {
+        "operationId": "getDbHealth",
+        "tags": [
+          "System"
+        ],
+        "responses": {
+          "200": {
+            "description": "Database connection health",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/me": {
+      "get": {
+        "operationId": "getMe",
+        "tags": [
+          "Account"
+        ],
+        "responses": {
+          "200": {
+            "description": "Authenticated user and active organization session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Active organization required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

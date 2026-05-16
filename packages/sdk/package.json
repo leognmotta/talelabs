@@ -1,0 +1,31 @@
+{
+  "name": "@connecto/sdk",
+  "type": "module",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts",
+    "./client": "./src/client.ts",
+    "./react-query": "./src/gen/hooks/index.ts",
+    "./zod": "./src/gen/zod/index.ts"
+  },
+  "scripts": {
+    "build": "npm run generate && tsc --noEmit",
+    "check-types": "npm run generate && tsc --noEmit",
+    "dev": "tsx scripts/watch.ts",
+    "generate": "npm run generate:openapi && kubb generate --config kubb.config.ts",
+    "generate:openapi": "tsx scripts/write-openapi.ts"
+  },
+  "peerDependencies": {
+    "@tanstack/react-query": "^5.0.0",
+    "react": "^19.0.0"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.90.12",
+    "zod": "^4.1.13"
+  },
+  "devDependencies": {
+    "tsx": "^4.21.0",
+    "typescript": "5.9.2"
+  }
+}
