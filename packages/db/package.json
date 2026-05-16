@@ -15,7 +15,8 @@
   },
   "scripts": {
     "build": "tsc",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "migrate": "tsx src/migrate.ts"
   },
   "dependencies": {
     "dotenv": "^17.2.3",
@@ -25,6 +26,7 @@
   "devDependencies": {
     "@types/node": "^22.15.3",
     "@types/pg": "^8.15.6",
+    "tsx": "^4.20.6",
     "typescript": "5.9.2"
   }
 }
