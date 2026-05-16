@@ -1,4 +1,5 @@
 import type { ThemePreference } from './lib/theme'
+import { getMeQueryKey } from '@connecto/sdk'
 import { Toaster } from '@connecto/ui/components/sonner'
 import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
@@ -65,7 +66,7 @@ function App() {
 
     await session.refetch()
     await organization.refreshOrganizationSession()
-    await queryClient.invalidateQueries()
+    await queryClient.invalidateQueries({ queryKey: getMeQueryKey() })
     toast.success('Organization created')
     return null
   }
@@ -81,7 +82,7 @@ function App() {
 
     await session.refetch()
     await organization.refreshOrganizationSession()
-    await queryClient.invalidateQueries()
+    await queryClient.invalidateQueries({ queryKey: getMeQueryKey() })
     toast.success('Organization switched')
     return null
   }

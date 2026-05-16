@@ -31,12 +31,13 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@connecto/ui/components/sidebar'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   ChevronsUpDownIcon,
   GalleryVerticalEndIcon,
   PlusIcon,
 } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import { authClient } from '../lib/auth-client'
 import { slugify } from '../lib/slugify'
@@ -46,6 +47,8 @@ interface OrganizationSummary {
   name: string
   slug: string
 }
+
+const organizationListQueryKey = ['better-auth', 'organizations'] as const
 
 export function TeamSwitcher({
   activeOrganizationId,
@@ -57,41 +60,35 @@ export function TeamSwitcher({
   onSwitchOrganization: (organizationId: string) => Promise<string | null>
 }) {
   const { isMobile } = useSidebar()
-  const [organizations, setOrganizations] = useState<OrganizationSummary[]>([])
+  const queryClient = useQueryClient()
   const [name, setName] = useState('')
   const [slug, setSlug] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isCreating, setIsCreating] = useState(false)
   const [isSwitchingId, setIsSwitchingId] = useState<string | null>(null)
+  const organizationsQuery = useQuery({
+    queryKey: organizationListQueryKey,
+    queryFn: async () => {
+      const result = await authClient.organization.list()
+
+      if (result.error)
+        throw new Error(result.error.message ?? 'Could not load organizations.')
+
+      return result.data ?? []
+    },
+    gcTime: Infinity,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    staleTime: Infinity,
+  })
+  const organizations = useMemo<OrganizationSummary[]>(() => {
+    return organizationsQuery.data ?? []
+  }, [organizationsQuery.data])
 
   const activeOrganization = useMemo(() => {
     return organizations.find(organization => organization.id === activeOrganizationId)
   }, [activeOrganizationId, organizations])
-
-  useEffect(() => {
-    let isCurrent = true
-
-    async function loadOrganizations() {
-      const result = await authClient.organization.list()
-
-      if (!isCurrent)
-        return
-
-      if (result.error) {
-        setError(result.error.message ?? 'Could not load organizations.')
-        return
-      }
-
-      setOrganizations(result.data ?? [])
-    }
-
-    void loadOrganizations()
-
-    return () => {
-      isCurrent = false
-    }
-  }, [activeOrganizationId])
 
   async function handleSwitchOrganization(organizationId: string) {
     if (organizationId === activeOrganizationId)
@@ -134,6 +131,7 @@ export function TeamSwitcher({
     setName('')
     setSlug('')
     setIsCreateDialogOpen(false)
+    await queryClient.invalidateQueries({ queryKey: organizationListQueryKey })
   }
 
   return (
@@ -178,6 +176,11 @@ export function TeamSwitcher({
               <DropdownMenuLabel className="text-xs text-muted-foreground">
                 Organizations
               </DropdownMenuLabel>
+              {organizationsQuery.error && (
+                <DropdownMenuItem disabled className="gap-2 p-2">
+                  Could not load organizations.
+                </DropdownMenuItem>
+              )}
               {organizations.map((organization, index) => (
                 <DropdownMenuItem
                   key={organization.id}
