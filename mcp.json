@@ -2,6 +2,13 @@
   "better-auth": {
     "url": "https://mcp.better-auth.com/mcp"
   },
+  "kubb": {
+    "command": "npx",
+    "args": [
+      "kubb",
+      "mcp"
+    ]
+  },
   "vercel": {
     "url": "https://mcp.vercel.com"
   }

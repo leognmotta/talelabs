@@ -1,0 +1,6 @@
+interface:
+  display_name: "Kubb"
+  short_description: "Generate API clients and types from OpenAPI specs with Kubb"
+  default_prompt: "Use $kubb to inspect Kubb config, validate OpenAPI specs, and generate API clients."
+policy:
+  allow_implicit_invocation: true
