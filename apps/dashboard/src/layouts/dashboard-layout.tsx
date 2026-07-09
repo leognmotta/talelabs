@@ -1,5 +1,7 @@
 import type { SettingsTab } from '../features/settings/settings-state'
 import type { ThemePreference } from '../shared/lib/theme'
+import { IconCoins } from '@tabler/icons-react'
+import { Badge } from '@talelabs/ui/components/badge'
 import { Separator } from '@talelabs/ui/components/separator'
 import {
   SidebarInset,
@@ -14,6 +16,7 @@ import { Outlet } from 'react-router'
 import { SettingsDialog } from '../features/settings/settings-dialog'
 import { settingsTabs } from '../features/settings/settings-state'
 import { AppSidebar } from './app-sidebar'
+import { GlobalSearch } from './global-search'
 
 export function DashboardLayout({
   activeOrganizationId,
@@ -89,6 +92,26 @@ export function DashboardLayout({
           >
             <header className="flex h-16 shrink-0 items-center gap-3 px-6">
               <SidebarTrigger />
+              <div className="flex min-w-0 flex-1 justify-center">
+                <GlobalSearch
+                  onOpenInviteMemberSettings={handleOpenInviteMemberSettings}
+                  onOpenSettings={handleOpenSettings}
+                />
+              </div>
+              <Badge
+                variant="outline"
+                className="h-9 rounded-4xl px-3 text-sm"
+              >
+                <IconCoins data-icon="inline-start" />
+                <span className="
+                  hidden
+                  sm:inline
+                "
+                >
+                  500 credits
+                </span>
+                <span className="sm:hidden">500</span>
+              </Badge>
             </header>
             <Separator />
             <section className="flex flex-1 flex-col gap-6 p-6">
