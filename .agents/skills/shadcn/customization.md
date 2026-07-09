@@ -52,11 +52,11 @@ Colors use OKLCH: `--primary: oklch(0.205 0 0)` where values are lightness (0–
 Class-based toggle via `.dark` on the root element. In Next.js, use `next-themes`:
 
 ```tsx
-import { ThemeProvider } from "next-themes"
+import { ThemeProvider } from "next-themes";
 
 <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
   {children}
-</ThemeProvider>
+</ThemeProvider>;
 ```
 
 ---
@@ -86,7 +86,7 @@ Or edit CSS variables directly in `globals.css`.
 
 ## Adding Custom Colors
 
-Add variables to the file at `tailwindCssFile` from `npx shadcn@latest info` (typically `globals.css`). Never create a new CSS file for this.
+Add variables to the file at `tailwindCss` from `npx shadcn@latest info --json` (typically `globals.css`). Never create a new CSS file for this.
 
 ```css
 /* 1. Define in the global CSS file. */
@@ -122,7 +122,7 @@ module.exports = {
       },
     },
   },
-}
+};
 ```
 
 ```tsx
@@ -187,7 +187,7 @@ export function ConfirmDialog({ title, description, onConfirm, children }) {
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
-  )
+  );
 }
 ```
 

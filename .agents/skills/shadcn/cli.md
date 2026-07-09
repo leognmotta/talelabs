@@ -25,20 +25,27 @@ npx shadcn@latest init [components...] [options]
 
 Initializes shadcn/ui in an existing project or creates a new project (when `--name` is provided). Optionally installs components in the same step.
 
-| Flag                    | Short | Description                                               | Default |
-| ----------------------- | ----- | --------------------------------------------------------- | ------- |
-| `--template <template>` | `-t`  | Template (next, start, vite, next-monorepo, react-router) | —       |
-| `--preset [name]`       | `-p`  | Preset configuration (named, code, or URL)                | —       |
-| `--yes`                 | `-y`  | Skip confirmation prompt                                  | `true`  |
-| `--defaults`            | `-d`  | Use defaults (`--template=next --preset=base-nova`)       | `false` |
-| `--force`               | `-f`  | Force overwrite existing configuration                    | `false` |
-| `--cwd <cwd>`           | `-c`  | Working directory                                         | current |
-| `--name <name>`         | `-n`  | Name for new project                                      | —       |
-| `--silent`              | `-s`  | Mute output                                               | `false` |
-| `--rtl`                 |       | Enable RTL support                                        | —       |
-| `--reinstall`           |       | Re-install existing UI components                         | `false` |
-| `--monorepo`            |       | Scaffold a monorepo project                               | —       |
-| `--no-monorepo`         |       | Skip the monorepo prompt                                  | —       |
+| Flag                    | Short | Description                                                | Default |
+| ----------------------- | ----- | ---------------------------------------------------------- | ------- |
+| `--template <template>` | `-t`  | Template (next, start, vite, react-router, laravel, astro) | —       |
+| `--base <base>`         | `-b`  | Component library (base, radix)                            | —       |
+| `--preset [name]`       | `-p`  | Preset configuration (named, code, or URL)                 | —       |
+| `--yes`                 | `-y`  | Skip confirmation prompt                                   | `true`  |
+| `--defaults`            | `-d`  | Use defaults (`--template=next --preset=base-nova`)        | `false` |
+| `--force`               | `-f`  | Force overwrite existing configuration                     | `false` |
+| `--cwd <cwd>`           | `-c`  | Working directory                                          | current |
+| `--name <name>`         | `-n`  | Name for new project                                       | —       |
+| `--silent`              | `-s`  | Mute output                                                | `false` |
+| `--css-variables`       |       | Use CSS variables for theming                              | `true`  |
+| `--no-css-variables`    |       | Do not use CSS variables for theming                       | —       |
+| `--rtl`                 |       | Enable RTL support                                         | —       |
+| `--no-rtl`              |       | Disable RTL support                                        | —       |
+| `--pointer`             |       | Enable pointer cursor for buttons                          | —       |
+| `--no-pointer`          |       | Disable pointer cursor for buttons                         | —       |
+| `--reinstall`           |       | Re-install existing UI components                          | `false` |
+| `--no-reinstall`        |       | Do not re-install existing UI components                   | —       |
+| `--monorepo`            |       | Scaffold a monorepo project                                | —       |
+| `--no-monorepo`         |       | Skip the monorepo prompt                                   | —       |
 
 `npx shadcn@latest create` is an alias for `npx shadcn@latest init`.
 
@@ -53,12 +60,14 @@ Applies a preset to an existing project, overwriting preset-driven config, fonts
 | Flag                | Short | Description                                | Default |
 | ------------------- | ----- | ------------------------------------------ | ------- |
 | `--preset <preset>` | —     | Preset configuration (named, code, or URL) | —       |
+| `--only [parts]`    | —     | Apply only preset parts: `theme`, `font`   | —       |
 | `--yes`             | `-y`  | Skip confirmation prompt                   | `false` |
 | `--cwd <cwd>`       | `-c`  | Working directory                          | current |
 | `--silent`          | `-s`  | Mute output                                | `false` |
 
 `[preset]` is a shorthand for `--preset <preset>`. If both are provided, they must match.
 If no preset is provided, the CLI offers to open the custom preset builder on `ui.shadcn.com/create`.
+`--only` supports `theme`, `font`, or `theme,font`; it does not apply icon-library changes.
 
 ### `add` — Add components
 
@@ -89,6 +98,10 @@ Use `--dry-run` to preview what `add` would do without writing any files. `--dif
 ```bash
 # Preview all changes.
 npx shadcn@latest add button --dry-run
+
+# Preview the full built-in registry set. This verifies newer items such as
+# message, message-scroller, marker, bubble, and attachment.
+npx shadcn@latest add --all --dry-run
 
 # Show diffs for all files (top 5).
 npx shadcn@latest add button --diff
@@ -188,18 +201,18 @@ Displays project info and `components.json` configuration. Run this first to dis
 
 **Project Info fields:**
 
-| Field                | Type      | Meaning                                                            |
-| -------------------- | --------- | ------------------------------------------------------------------ |
-| `framework`          | `string`  | Detected framework (`next`, `vite`, `react-router`, `start`, etc.) |
-| `frameworkVersion`   | `string`  | Framework version (e.g. `15.2.4`)                                  |
-| `isSrcDir`           | `boolean` | Whether the project uses a `src/` directory                        |
-| `isRSC`              | `boolean` | Whether React Server Components are enabled                        |
-| `isTsx`              | `boolean` | Whether the project uses TypeScript                                |
-| `tailwindVersion`    | `string`  | `"v3"` or `"v4"`                                                   |
-| `tailwindConfigFile` | `string`  | Path to the Tailwind config file                                   |
-| `tailwindCssFile`    | `string`  | Path to the global CSS file                                        |
-| `aliasPrefix`        | `string`  | Import alias prefix (e.g. `@`, `~`, `@/`)                          |
-| `packageManager`     | `string`  | Detected package manager (`npm`, `pnpm`, `yarn`, `bun`)            |
+| Field              | Type      | Meaning                                                        |
+| ------------------ | --------- | -------------------------------------------------------------- |
+| `framework`        | `string`  | Display framework label (`Manual`, `Next.js`, `Vite`, etc.)    |
+| `frameworkName`    | `string`  | Machine-readable framework id (`manual`, `next`, `vite`, etc.) |
+| `frameworkVersion` | `string`  | Framework version, when detected                               |
+| `srcDirectory`     | `boolean` | Whether the project uses a `src/` directory                    |
+| `rsc`              | `boolean` | Whether React Server Components are enabled                    |
+| `typescript`       | `boolean` | Whether the project uses TypeScript                            |
+| `tailwindVersion`  | `string`  | `"v3"` or `"v4"`                                               |
+| `tailwindConfig`   | `string`  | Path to the Tailwind config file, or `null`                    |
+| `tailwindCss`      | `string`  | Path to the global CSS file                                    |
+| `importAlias`      | `string`  | Import alias prefix, or `null`                                 |
 
 **Components.json fields:**
 
@@ -219,6 +232,9 @@ Displays project info and `components.json` configuration. Run this first to dis
 | `aliases.hooks`      | `string`  | Hooks alias (e.g. `@/hooks`)                                                               |
 | `resolvedPaths`      | `object`  | Absolute file-system paths for each alias                                                  |
 | `registries`         | `object`  | Configured custom registries                                                               |
+| `rtl`                | `boolean` | Whether RTL support is enabled                                                             |
+| `menuColor`          | `string`  | Menu color preset value, when present                                                      |
+| `menuAccent`         | `string`  | Menu accent preset value, when present                                                     |
 
 **Links fields:**
 
@@ -250,7 +266,7 @@ Builds `registry.json` into individual JSON files for distribution. Default inpu
 | `astro`        | Astro          | Yes              |
 | `laravel`      | Laravel        | No               |
 
-All templates support monorepo scaffolding via the `--monorepo` flag. When passed, the CLI uses a monorepo-specific template directory (e.g. `next-monorepo`, `vite-monorepo`). When neither `--monorepo` nor `--no-monorepo` is passed, the CLI prompts interactively. Laravel does not support monorepo scaffolding.
+All templates except Laravel support monorepo scaffolding via the `--monorepo` flag. When passed, the CLI uses a monorepo-specific template directory. When neither `--monorepo` nor `--no-monorepo` is passed, the CLI prompts interactively.
 
 ---
 
@@ -267,10 +283,13 @@ Three ways to specify a preset via `--preset`:
 
 ## Switching Presets
 
-Ask the user first: **overwrite**, **merge**, or **skip** existing components?
+Ask the user first: **overwrite**, **partial**, **merge**, or **skip** existing components?
 
 - **Overwrite / Re-install** → `npx shadcn@latest apply --preset <code>`. Overwrites all detected component files with the new preset styles. Use when the user hasn't customized components.
+- **Partial** → `npx shadcn@latest apply <code> --only theme,font`. Updates supported preset parts without reinstalling UI components. Supported values are `theme`, `font`, and `theme,font`; icon-library changes require component reinstall or manual transforms.
 - **Merge** → `npx shadcn@latest init --preset <code> --force --no-reinstall`, then run `npx shadcn@latest info` to get the list of installed components and use the [smart merge workflow](./SKILL.md#updating-components) to update them one by one, preserving local changes. Use when the user has customized components.
 - **Skip** → `npx shadcn@latest init --preset <code> --force --no-reinstall`. Only updates config and CSS variables, leaves existing components as-is.
 
 Always run preset commands inside the user's project directory. `apply` only works in an existing project with a `components.json` file. The CLI automatically preserves the current base (`base` vs `radix`) from `components.json`. If you must use a scratch/temp directory (e.g. for `--dry-run` comparisons), pass `--base <current-base>` explicitly — preset codes do not encode the base.
+
+For shared UI packages where `npx shadcn@latest info --json` reports `"frameworkName": "manual"`, `apply` and `init --reinstall` can fail framework verification. In that case, update `components.json` to the resolved preset values, use `add --all --dry-run` to inspect registry coverage, and generate a scratch app with the same `--preset`, `--base`, `--template`, and `--pointer` values when you need exact preset CSS tokens. Preserve package export aliases such as `@workspace/ui/*`.

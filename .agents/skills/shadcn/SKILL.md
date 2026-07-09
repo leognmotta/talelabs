@@ -130,6 +130,7 @@ These are the most common patterns that differentiate correct shadcn/ui code. Fo
 | Navigation                 | `Sidebar`, `NavigationMenu`, `Breadcrumb`, `Tabs`, `Pagination`                                     |
 | Overlays                   | `Dialog` (modal), `Sheet` (side panel), `Drawer` (bottom sheet), `AlertDialog` (confirmation)       |
 | Feedback                   | `sonner` (toast), `Alert`, `Progress`, `Skeleton`, `Spinner`                                        |
+| AI/chat UI                 | `Message`, `MessageGroup`, `MessageScroller`, `Marker`, `Bubble`, `Attachment`                      |
 | Command palette            | `Command` inside `Dialog`                                                                           |
 | Charts                     | `Chart` (wraps Recharts)                                                                            |
 | Layout                     | `Card`, `Separator`, `Resizable`, `ScrollArea`, `Accordion`, `Collapsible`                          |
@@ -142,15 +143,15 @@ These are the most common patterns that differentiate correct shadcn/ui code. Fo
 The injected project context contains these key fields:
 
 - **`aliases`** → use the actual alias prefix for imports (e.g. `@/`, `~/`), never hardcode.
-- **`isRSC`** → when `true`, components using `useState`, `useEffect`, event handlers, or browser APIs need `"use client"` at the top of the file. Always reference this field when advising on the directive.
+- **`rsc`** → when `true`, components using `useState`, `useEffect`, event handlers, or browser APIs need `"use client"` at the top of the file. Always reference this field when advising on the directive.
 - **`tailwindVersion`** → `"v4"` uses `@theme inline` blocks; `"v3"` uses `tailwind.config.js`.
-- **`tailwindCssFile`** → the global CSS file where custom CSS variables are defined. Always edit this file, never create a new one.
+- **`tailwindCss`** → the global CSS file where custom CSS variables are defined. Always edit this file, never create a new one.
 - **`style`** → component visual treatment (e.g. `nova`, `vega`).
 - **`base`** → primitive library (`radix` or `base`). Affects component APIs and available props.
 - **`iconLibrary`** → determines icon imports. Use `lucide-react` for `lucide`, `@tabler/icons-react` for `tabler`, etc. Never assume `lucide-react`.
 - **`resolvedPaths`** → exact file-system destinations for components, utils, hooks, etc.
 - **`framework`** → routing and file conventions (e.g. Next.js App Router vs Vite SPA).
-- **`packageManager`** → use this for any non-shadcn dependency installs (e.g. `pnpm add date-fns` vs `npm install date-fns`).
+- **Package manager** → check `packageManager` in `package.json` or the lockfile for any non-shadcn dependency installs (e.g. `pnpm add date-fns` vs `npm install date-fns`).
 - **`preset`** → resolved preset code and values for the current project. Use `npx shadcn@latest preset resolve --json` when you only need preset information.
 
 See [cli.md — `info` command](./cli.md) for the full field reference.
@@ -183,6 +184,7 @@ npx shadcn@latest docs button dialog select
    - **Merge**: `npx shadcn@latest init --preset <code> --force --no-reinstall`, then run `npx shadcn@latest info` to list installed components, then for each installed component use `--dry-run` and `--diff` to [smart merge](#updating-components) it individually.
    - **Skip**: `npx shadcn@latest init --preset <code> --force --no-reinstall`. Only updates config and CSS, leaves components as-is.
    - **Important**: Always run preset commands inside the user's project directory. `apply` only works in an existing project with a `components.json` file. The CLI automatically preserves the current base (`base` vs `radix`) from `components.json`. If you must use a scratch/temp directory (e.g. for `--dry-run` comparisons), pass `--base <current-base>` explicitly — preset codes do not encode the base.
+   - **Framework-neutral packages**: In shared packages where `npx shadcn@latest info --json` reports `"frameworkName": "manual"`, `apply` and `init --reinstall` can fail framework verification. Update `components.json` to the resolved style/base/icon values, run `add --all --dry-run` to inspect the registry set, and use a scratch project with the same `--preset`, `--base`, `--template`, and `--pointer` values to extract preset CSS tokens. Preserve package aliases such as `@workspace/ui/*` instead of replacing them with app-local `@/*` aliases.
 
 ## Updating Components
 
@@ -202,6 +204,7 @@ When the user asks to update a component from upstream while keeping their local
 # Create a new project.
 npx shadcn@latest init --name my-app --preset base-nova
 npx shadcn@latest init --name my-app --preset a2r6bw --template vite
+npx shadcn@latest init --preset a2r6bw --template vite --base base --pointer
 
 # Create a monorepo project.
 npx shadcn@latest init --name my-app --preset base-nova --monorepo
@@ -226,6 +229,7 @@ npx shadcn@latest preset resolve --json
 
 # Add components.
 npx shadcn@latest add button card dialog
+npx shadcn@latest add --all --dry-run
 npx shadcn@latest add @magicui/shimmer-button
 npx shadcn@latest add --all
 
