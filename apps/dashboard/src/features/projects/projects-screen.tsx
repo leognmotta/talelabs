@@ -79,35 +79,25 @@ export function ProjectsScreen(_props: {
       </section>
 
       <section className="flex flex-col gap-5">
-        <div className="
-          flex flex-col gap-4
-          md:flex-row md:items-center md:justify-between
-        "
-        >
-          <Tabs defaultValue="mine">
-            <TabsList variant="line">
-              <TabsTrigger value="all">All</TabsTrigger>
-              <TabsTrigger value="mine">Mine</TabsTrigger>
-            </TabsList>
-          </Tabs>
-
-          <div className="
-            relative w-full
-            md:max-w-64
+        <div className="relative w-full max-w-64">
+          <IconSearch className="
+            pointer-events-none absolute top-1/2 left-3 -translate-y-1/2
+            text-muted-foreground
           "
-          >
-            <IconSearch className="
-              pointer-events-none absolute top-1/2 left-3 -translate-y-1/2
-              text-muted-foreground
-            "
-            />
-            <Input
-              className="bg-muted/50 pl-9"
-              placeholder="Search boards..."
-              aria-label="Search boards"
-            />
-          </div>
+          />
+          <Input
+            className="bg-muted/50 pl-9"
+            placeholder="Search boards..."
+            aria-label="Search boards"
+          />
         </div>
+
+        <Tabs defaultValue="mine">
+          <TabsList variant="line">
+            <TabsTrigger value="all">All</TabsTrigger>
+            <TabsTrigger value="mine">Mine</TabsTrigger>
+          </TabsList>
+        </Tabs>
 
         <div className="
           grid gap-4
