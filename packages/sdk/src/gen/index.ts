@@ -97,6 +97,19 @@ export type {
   SetPasswordResponse,
   SetPasswordResponseStatusEnumKey,
 } from "./types/SetPasswordResponse.ts";
+export type {
+  UpdateOrganization200,
+  UpdateOrganization401,
+  UpdateOrganization403,
+  UpdateOrganization404,
+  UpdateOrganization409,
+  UpdateOrganizationMutation,
+  UpdateOrganizationMutationRequest,
+  UpdateOrganizationMutationResponse,
+  UpdateOrganizationPathParams,
+} from "./types/UpdateOrganization.ts";
+export type { UpdateOrganizationRequest } from "./types/UpdateOrganizationRequest.ts";
+export type { UpdateOrganizationResponse } from "./types/UpdateOrganizationResponse.ts";
 export { activateOrganization } from "./clients/activateOrganization.ts";
 export { createOrganizationInvitation } from "./clients/createOrganizationInvitation.ts";
 export { getDbHealth } from "./clients/getDbHealth.ts";
@@ -106,6 +119,7 @@ export { listOrganizationMembers } from "./clients/listOrganizationMembers.ts";
 export { listOrganizations } from "./clients/listOrganizations.ts";
 export { revokeOrganizationInvitation } from "./clients/revokeOrganizationInvitation.ts";
 export { setAccountPassword } from "./clients/setAccountPassword.ts";
+export { updateOrganization } from "./clients/updateOrganization.ts";
 export { getDbHealthQueryKey } from "./hooks/useGetDbHealth.ts";
 export { getDbHealthQueryOptions } from "./hooks/useGetDbHealth.ts";
 export { useGetDbHealth } from "./hooks/useGetDbHealth.ts";
@@ -201,3 +215,15 @@ export {
 } from "./zod/setAccountPasswordSchema.ts";
 export { setPasswordRequestSchema } from "./zod/setPasswordRequestSchema.ts";
 export { setPasswordResponseSchema } from "./zod/setPasswordResponseSchema.ts";
+export { updateOrganizationRequestSchema } from "./zod/updateOrganizationRequestSchema.ts";
+export { updateOrganizationResponseSchema } from "./zod/updateOrganizationResponseSchema.ts";
+export {
+  updateOrganization200Schema,
+  updateOrganization401Schema,
+  updateOrganization403Schema,
+  updateOrganization404Schema,
+  updateOrganization409Schema,
+  updateOrganizationMutationRequestSchema,
+  updateOrganizationMutationResponseSchema,
+  updateOrganizationPathParamsSchema,
+} from "./zod/updateOrganizationSchema.ts";

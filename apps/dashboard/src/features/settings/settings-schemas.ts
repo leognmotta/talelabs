@@ -6,6 +6,14 @@ export const profileSchema = z.object({
 
 export type ProfileFormValues = z.infer<typeof profileSchema>
 
+export const organizationSettingsSchema = z.object({
+  name: z.string().trim().min(1, 'Organization name is required.'),
+  slug: z.string().trim().min(1, 'Organization slug is required.'),
+  logo: z.string().trim().url('Enter a valid logo URL.').or(z.literal('')),
+})
+
+export type OrganizationSettingsFormValues = z.infer<typeof organizationSettingsSchema>
+
 export const updatePasswordSchema = z.object({
   currentPassword: z.string().min(1, 'Current password is required.'),
   newPassword: z.string().min(8, 'Password must be at least 8 characters.'),

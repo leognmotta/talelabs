@@ -74,3 +74,15 @@ export {
 } from "./setAccountPasswordSchema.ts";
 export { setPasswordRequestSchema } from "./setPasswordRequestSchema.ts";
 export { setPasswordResponseSchema } from "./setPasswordResponseSchema.ts";
+export { updateOrganizationRequestSchema } from "./updateOrganizationRequestSchema.ts";
+export { updateOrganizationResponseSchema } from "./updateOrganizationResponseSchema.ts";
+export {
+  updateOrganization200Schema,
+  updateOrganization401Schema,
+  updateOrganization403Schema,
+  updateOrganization404Schema,
+  updateOrganization409Schema,
+  updateOrganizationMutationRequestSchema,
+  updateOrganizationMutationResponseSchema,
+  updateOrganizationPathParamsSchema,
+} from "./updateOrganizationSchema.ts";

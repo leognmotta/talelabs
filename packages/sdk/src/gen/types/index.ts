@@ -92,6 +92,19 @@ export type {
   SetPasswordResponse,
   SetPasswordResponseStatusEnumKey,
 } from "./SetPasswordResponse.ts";
+export type {
+  UpdateOrganization200,
+  UpdateOrganization401,
+  UpdateOrganization403,
+  UpdateOrganization404,
+  UpdateOrganization409,
+  UpdateOrganizationMutation,
+  UpdateOrganizationMutationRequest,
+  UpdateOrganizationMutationResponse,
+  UpdateOrganizationPathParams,
+} from "./UpdateOrganization.ts";
+export type { UpdateOrganizationRequest } from "./UpdateOrganizationRequest.ts";
+export type { UpdateOrganizationResponse } from "./UpdateOrganizationResponse.ts";
 export { createInvitationRequestRoleEnum } from "./CreateInvitationRequest.ts";
 export { invitationRoleEnum } from "./Invitation.ts";
 export { organizationMemberRoleEnum } from "./OrganizationMember.ts";

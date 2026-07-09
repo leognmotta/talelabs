@@ -15,6 +15,7 @@ import { cn } from '@talelabs/ui/lib/utils'
 import { useMemo, useState } from 'react'
 import { BillingSettings } from './billing-settings'
 import { GeneralSettings } from './general-settings'
+import { OrganizationSettings } from './organization-settings'
 import { ProfileSettings } from './profile-settings'
 import { SecuritySettings } from './security-settings'
 import { settingsNavigation } from './settings-options'
@@ -135,6 +136,9 @@ export function SettingsDialog({
                 onThemeChange={onThemeChange}
                 theme={theme}
               />
+            )}
+            {tab === 'organization' && (
+              <OrganizationSettings activeOrganizationId={activeOrganizationId} />
             )}
             {tab === 'profile' && (
               <ProfileSettings

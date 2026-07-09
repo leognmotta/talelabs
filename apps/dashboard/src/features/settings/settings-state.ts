@@ -1,5 +1,6 @@
 export const settingsTabs = [
   'general',
+  'organization',
   'profile',
   'security',
   'team',

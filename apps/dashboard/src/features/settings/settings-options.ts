@@ -2,6 +2,7 @@ import type { ThemePreference } from '../../shared/lib/theme'
 import type { SettingsTab } from './settings-state'
 
 import {
+  IconBuilding,
   IconCreditCard,
   IconDeviceDesktop,
   IconMoon,
@@ -18,6 +19,7 @@ export const settingsNavigation: {
   value: SettingsTab
 }[] = [
   { icon: IconSettings, label: 'General', value: 'general' },
+  { icon: IconBuilding, label: 'Organization', value: 'organization' },
   { icon: IconUserCircle, label: 'Profile', value: 'profile' },
   { icon: IconShieldLock, label: 'Security', value: 'security' },
   { icon: IconUsersGroup, label: 'Team', value: 'team' },

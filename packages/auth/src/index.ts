@@ -457,6 +457,74 @@ export async function listOrganizationMembers(headers: Headers, organizationId: 
   } as const
 }
 
+export async function updateOrganizationMetadata(
+  headers: Headers,
+  input: {
+    logo?: null | string
+    name: string
+    organizationId: string
+    slug: string
+  },
+) {
+  const accessResult = await requireInvitationAccess(headers, input.organizationId)
+
+  if (!accessResult.ok)
+    return accessResult
+
+  const name = input.name.trim()
+  const slug = input.slug.trim().toLowerCase()
+  const logo = input.logo?.trim() || null
+
+  const slugOwner = await db
+    .selectFrom('organization')
+    .select('id')
+    .where('slug', '=', slug)
+    .where('id', '!=', input.organizationId)
+    .executeTakeFirst()
+
+  if (slugOwner) {
+    return {
+      ok: false,
+      status: 409,
+      error: 'Organization slug is already in use',
+    } as const
+  }
+
+  const organization = await db
+    .updateTable('organization')
+    .set({
+      name,
+      slug,
+      logo,
+    })
+    .where('id', '=', input.organizationId)
+    .returning(['id', 'name', 'slug', 'logo'])
+    .executeTakeFirst()
+
+  if (!organization) {
+    return {
+      ok: false,
+      status: 404,
+      error: 'Organization not found',
+    } as const
+  }
+
+  const isSystemAdmin = accessResult.isSystemAdmin
+  const role = await getOrganizationMemberRole(
+    accessResult.session.user.id,
+    input.organizationId,
+  )
+
+  return {
+    ok: true,
+    organization: {
+      ...organization,
+      role,
+      isSystemAdminAccess: isSystemAdmin && !role,
+    } satisfies OrganizationSummary,
+  } as const
+}
+
 export async function revokeOrganizationInvitation(
   headers: Headers,
   input: {

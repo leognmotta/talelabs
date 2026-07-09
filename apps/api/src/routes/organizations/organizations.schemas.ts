@@ -40,6 +40,16 @@ export const ActivateOrganizationResponseSchema = z.object({
   organization: OrganizationSchema,
 }).openapi('ActivateOrganizationResponse')
 
+export const UpdateOrganizationRequestSchema = z.object({
+  name: z.string().trim().min(1).openapi({ example: 'Acme Inc' }),
+  slug: z.string().trim().min(1).openapi({ example: 'acme-inc' }),
+  logo: z.url().nullable().optional().openapi({ example: null }),
+}).openapi('UpdateOrganizationRequest')
+
+export const UpdateOrganizationResponseSchema = z.object({
+  organization: OrganizationSchema,
+}).openapi('UpdateOrganizationResponse')
+
 export const ListInvitationsResponseSchema = z.object({
   invitations: z.array(InvitationSchema),
 }).openapi('ListInvitationsResponse')

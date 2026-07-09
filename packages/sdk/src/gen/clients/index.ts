@@ -7,3 +7,4 @@ export { listOrganizationMembers } from "./listOrganizationMembers.ts";
 export { listOrganizations } from "./listOrganizations.ts";
 export { revokeOrganizationInvitation } from "./revokeOrganizationInvitation.ts";
 export { setAccountPassword } from "./setAccountPassword.ts";
+export { updateOrganization } from "./updateOrganization.ts";

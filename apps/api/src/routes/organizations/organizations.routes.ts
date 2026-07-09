@@ -9,6 +9,7 @@ import {
   listOrganizationInvitations,
   listOrganizationMembers,
   revokeOrganizationInvitation,
+  updateOrganizationMetadata,
 } from '@talelabs/auth'
 import { requireAuth } from '../../middleware/auth.js'
 import { ErrorResponseSchema } from '../../schemas/common.js'
@@ -20,6 +21,8 @@ import {
   ListOrganizationMembersResponseSchema,
   ListOrganizationsResponseSchema,
   RevokeInvitationResponseSchema,
+  UpdateOrganizationRequestSchema,
+  UpdateOrganizationResponseSchema,
 } from './organizations.schemas.js'
 
 function toInvitationRole(role: string): 'admin' | 'member' {
@@ -89,6 +92,68 @@ const activateOrganizationRoute = createRoute({
         },
       },
       description: 'Organization access required',
+    },
+  },
+})
+
+const updateOrganizationRoute = createRoute({
+  method: 'patch',
+  path: '/organizations/{organizationId}',
+  operationId: 'updateOrganization',
+  tags: ['Organizations'],
+  request: {
+    params: z.object({
+      organizationId: z.string().openapi({ example: 'org_123' }),
+    }),
+    body: {
+      content: {
+        'application/json': {
+          schema: UpdateOrganizationRequestSchema,
+        },
+      },
+      required: true,
+    },
+  },
+  responses: {
+    200: {
+      content: {
+        'application/json': {
+          schema: UpdateOrganizationResponseSchema,
+        },
+      },
+      description: 'Updated organization metadata',
+    },
+    401: {
+      content: {
+        'application/json': {
+          schema: ErrorResponseSchema,
+        },
+      },
+      description: 'Authentication required',
+    },
+    403: {
+      content: {
+        'application/json': {
+          schema: ErrorResponseSchema,
+        },
+      },
+      description: 'Organization admin required',
+    },
+    404: {
+      content: {
+        'application/json': {
+          schema: ErrorResponseSchema,
+        },
+      },
+      description: 'Organization not found',
+    },
+    409: {
+      content: {
+        'application/json': {
+          schema: ErrorResponseSchema,
+        },
+      },
+      description: 'Organization slug already exists',
     },
   },
 })
@@ -298,6 +363,33 @@ export function registerOrganizationRoutes(app: OpenAPIHono<ApiEnv>) {
 
     if (!result.ok && result.status === 401)
       return c.json({ error: result.error }, 401)
+
+    if (!result.ok)
+      return c.json({ error: result.error }, 403)
+
+    return c.json({ organization: result.organization }, 200)
+  })
+
+  app.openapi(updateOrganizationRoute, async (c) => {
+    requireAuth(c)
+
+    const { organizationId } = c.req.valid('param')
+    const body = c.req.valid('json')
+    const result = await updateOrganizationMetadata(c.req.raw.headers, {
+      organizationId,
+      name: body.name,
+      slug: body.slug,
+      logo: body.logo,
+    })
+
+    if (!result.ok && result.status === 401)
+      return c.json({ error: result.error }, 401)
+
+    if (!result.ok && result.status === 404)
+      return c.json({ error: result.error }, 404)
+
+    if (!result.ok && result.status === 409)
+      return c.json({ error: result.error }, 409)
 
     if (!result.ok)
       return c.json({ error: result.error }, 403)
