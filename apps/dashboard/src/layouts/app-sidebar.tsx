@@ -66,8 +66,8 @@ export function AppSidebar({
               hidden: true,
             },
             {
-              title: 'Create',
-              url: '/create',
+              title: 'Generate',
+              url: '/generate',
               icon: <IconPlus />,
             },
             {

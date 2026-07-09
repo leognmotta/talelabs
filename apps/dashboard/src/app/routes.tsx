@@ -245,7 +245,7 @@ export function DashboardRoutes() {
             </ProtectedRoute>
           )}
         >
-          <Route index element={<Navigate to="/create" replace />} />
+          <Route index element={<Navigate to="/generate" replace />} />
           <Route
             path="boards"
             element={(
@@ -256,7 +256,8 @@ export function DashboardRoutes() {
               />
             )}
           />
-          <Route path="create" element={<BlankPage title="Create" />} />
+          <Route path="create" element={<Navigate to="/generate" replace />} />
+          <Route path="generate" element={<BlankPage title="Generate" />} />
           <Route path="apps" element={<BlankPage title="Apps" />} />
           <Route path="studio" element={<BlankPage title="Studio" />} />
           <Route path="agent" element={<Navigate to="/assistant" replace />} />
@@ -266,9 +267,9 @@ export function DashboardRoutes() {
           <Route path="products" element={<BlankPage title="Products" />} />
           <Route path="projects" element={<BlankPage title="Projects" />} />
           <Route path="assets" element={<BlankPage title="Assets" />} />
-          <Route path="*" element={<Navigate to="/create" replace />} />
+          <Route path="*" element={<Navigate to="/generate" replace />} />
         </Route>
-        <Route path="*" element={<Navigate to="/create" replace />} />
+        <Route path="*" element={<Navigate to="/generate" replace />} />
       </Routes>
       <Toaster theme={theme} />
       <CookiePreferencesDialog

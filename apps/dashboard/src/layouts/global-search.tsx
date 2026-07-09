@@ -41,7 +41,7 @@ const pageActions: {
   url: string
 }[] = [
   { icon: IconLayoutBoard, title: 'Boards', url: '/boards', hidden: true },
-  { icon: IconPlus, title: 'Create', url: '/create' },
+  { icon: IconPlus, title: 'Generate', url: '/generate' },
   { icon: IconArchive, title: 'Assets', url: '/assets' },
   { icon: IconBriefcase, title: 'Projects', url: '/projects' },
   { icon: IconBuildingStore, title: 'Brands', url: '/brands' },
