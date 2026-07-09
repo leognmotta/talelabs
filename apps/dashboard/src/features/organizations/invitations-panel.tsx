@@ -1,5 +1,4 @@
-import type { FormEvent } from 'react'
-
+import { zodResolver } from '@hookform/resolvers/zod'
 import {
   createOrganizationInvitation,
   listOrganizationInvitationsQueryKey,
@@ -26,8 +25,16 @@ import {
 } from '@talelabs/ui/components/native-select'
 import { Separator } from '@talelabs/ui/components/separator'
 import { useQueryClient } from '@tanstack/react-query'
-import { useState } from 'react'
+import { Controller, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
+import { z } from 'zod'
+
+const invitationSchema = z.object({
+  email: z.string().trim().email('Enter a valid email.'),
+  role: z.enum(['admin', 'member']),
+})
+
+type InvitationFormValues = z.infer<typeof invitationSchema>
 
 export function InvitationsPanel({
   organizationId,
@@ -35,10 +42,17 @@ export function InvitationsPanel({
   organizationId: string | null
 }) {
   const queryClient = useQueryClient()
-  const [email, setEmail] = useState('')
-  const [role, setRole] = useState<'admin' | 'member'>('member')
-  const [error, setError] = useState<string | null>(null)
-  const [isCreating, setIsCreating] = useState(false)
+  const form = useForm<InvitationFormValues>({
+    resolver: zodResolver(invitationSchema),
+    defaultValues: {
+      email: '',
+      role: 'member',
+    },
+  })
+  const {
+    control,
+    formState: { errors, isSubmitting },
+  } = form
   const invitationsQuery = useListOrganizationInvitations(
     { organizationId: organizationId ?? undefined },
     {
@@ -49,25 +63,25 @@ export function InvitationsPanel({
   )
   const invitations = invitationsQuery.data?.invitations ?? []
 
-  async function handleCreateInvitation(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-
+  async function handleCreateInvitation(values: InvitationFormValues) {
     if (!organizationId)
       return
 
-    setError(null)
-    setIsCreating(true)
+    form.clearErrors('root.serverError')
 
     try {
       const result = await createOrganizationInvitation({
         organizationId,
         data: {
-          email,
-          role,
+          email: values.email,
+          role: values.role,
         },
       })
 
-      setEmail('')
+      form.reset({
+        email: '',
+        role: values.role,
+      })
       await queryClient.invalidateQueries({
         queryKey: listOrganizationInvitationsQueryKey({ organizationId }),
       })
@@ -78,10 +92,10 @@ export function InvitationsPanel({
       const message = caughtError instanceof Error
         ? caughtError.message
         : 'Could not create invitation.'
-      setError(message)
-    }
-    finally {
-      setIsCreating(false)
+      form.setError('root.serverError', {
+        message,
+        type: 'server',
+      })
     }
   }
 
@@ -95,37 +109,64 @@ export function InvitationsPanel({
         <CardTitle>Invite users</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-5">
-        <form className="flex flex-col gap-4" onSubmit={handleCreateInvitation}>
+        <form
+          className="flex flex-col gap-4"
+          onSubmit={form.handleSubmit(handleCreateInvitation)}
+        >
           <FieldGroup>
-            <Field data-invalid={!!error}>
-              <FieldLabel htmlFor="invite-email">Email</FieldLabel>
-              <Input
-                id="invite-email"
-                type="email"
-                value={email}
-                onChange={event => setEmail(event.target.value)}
-                placeholder="new-user@example.com"
-                aria-invalid={!!error}
-                required
-              />
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="invite-role">Role</FieldLabel>
-              <NativeSelect
-                id="invite-role"
-                value={role}
-                onChange={(event) => {
-                  setRole(event.target.value === 'admin' ? 'admin' : 'member')
-                }}
-              >
-                <NativeSelectOption value="member">Member</NativeSelectOption>
-                <NativeSelectOption value="admin">Admin</NativeSelectOption>
-              </NativeSelect>
-              <FieldError>{error}</FieldError>
-            </Field>
+            <Controller
+              name="email"
+              control={control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="invite-email">Email</FieldLabel>
+                  <Input
+                    {...field}
+                    id="invite-email"
+                    type="email"
+                    placeholder="new-user@example.com"
+                    aria-invalid={fieldState.invalid}
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+            <Controller
+              name="role"
+              control={control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="invite-role">Role</FieldLabel>
+                  <NativeSelect
+                    id="invite-role"
+                    value={field.value}
+                    onChange={(event) => {
+                      const nextRole = event.target.value === 'admin'
+                        ? 'admin'
+                        : 'member'
+                      field.onChange(nextRole)
+                    }}
+                    aria-invalid={fieldState.invalid}
+                  >
+                    <NativeSelectOption value="member">Member</NativeSelectOption>
+                    <NativeSelectOption value="admin">Admin</NativeSelectOption>
+                  </NativeSelect>
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
           </FieldGroup>
-          <Button type="submit" disabled={isCreating}>
-            {isCreating ? 'Generating...' : 'Generate invite URL'}
+          {errors.root?.serverError && (
+            <FieldError>
+              {errors.root.serverError.message}
+            </FieldError>
+          )}
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? 'Generating...' : 'Generate invite URL'}
           </Button>
         </form>
 

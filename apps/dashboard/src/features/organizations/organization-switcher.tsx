@@ -1,5 +1,4 @@
-import type { FormEvent } from 'react'
-
+import { zodResolver } from '@hookform/resolvers/zod'
 import {
   IconBuilding,
   IconPlus,
@@ -40,6 +39,9 @@ import {
 } from '@talelabs/ui/components/sidebar'
 import { useQueryClient } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
+import { Controller, useForm } from 'react-hook-form'
+import { toast } from 'sonner'
+import { z } from 'zod'
 
 import { slugify } from '../../shared/lib/slugify'
 
@@ -49,6 +51,13 @@ interface OrganizationSummary {
   name: string
   slug: string
 }
+
+const createOrganizationSchema = z.object({
+  name: z.string().trim().min(1, 'Enter an organization name.'),
+  slug: z.string().trim().min(1, 'Enter a workspace slug.'),
+})
+
+type CreateOrganizationFormValues = z.infer<typeof createOrganizationSchema>
 
 export function OrganizationSwitcher({
   activeOrganizationId,
@@ -61,12 +70,22 @@ export function OrganizationSwitcher({
 }) {
   const { isMobile } = useSidebar()
   const queryClient = useQueryClient()
-  const [name, setName] = useState('')
-  const [slug, setSlug] = useState('')
-  const [error, setError] = useState<string | null>(null)
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
-  const [isCreating, setIsCreating] = useState(false)
   const [isSwitchingId, setIsSwitchingId] = useState<string | null>(null)
+  const createOrganizationForm = useForm<CreateOrganizationFormValues>({
+    resolver: zodResolver(createOrganizationSchema),
+    defaultValues: {
+      name: '',
+      slug: '',
+    },
+  })
+  const {
+    control,
+    formState: {
+      errors: createOrganizationErrors,
+      isSubmitting: isCreating,
+    },
+  } = createOrganizationForm
   const organizationsQuery = useListOrganizations()
   const organizations = useMemo<OrganizationSummary[]>(() => {
     return organizationsQuery.data?.organizations ?? []
@@ -80,7 +99,6 @@ export function OrganizationSwitcher({
     if (organizationId === activeOrganizationId)
       return
 
-    setError(null)
     setIsSwitchingId(organizationId)
 
     const switchError = await onSwitchOrganization(organizationId)
@@ -88,36 +106,38 @@ export function OrganizationSwitcher({
     setIsSwitchingId(null)
 
     if (switchError)
-      setError(switchError)
+      toast.error(switchError)
   }
 
-  async function handleCreateOrganization(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    setError(null)
+  async function handleCreateOrganization(values: CreateOrganizationFormValues) {
+    createOrganizationForm.clearErrors('root.serverError')
 
-    const trimmedName = name.trim()
-    const nextSlug = slugify(slug || name)
+    try {
+      const createError = await onCreateOrganization(
+        values.name.trim(),
+        slugify(values.slug || values.name),
+      )
 
-    if (!trimmedName || !nextSlug) {
-      setError('Enter an organization name.')
-      return
+      if (createError) {
+        createOrganizationForm.setError('root.serverError', {
+          message: createError,
+          type: 'server',
+        })
+        return
+      }
+
+      createOrganizationForm.reset()
+      setIsCreateDialogOpen(false)
+      await queryClient.invalidateQueries({
+        queryKey: listOrganizationsQueryKey(),
+      })
     }
-
-    setIsCreating(true)
-
-    const createError = await onCreateOrganization(trimmedName, nextSlug)
-
-    setIsCreating(false)
-
-    if (createError) {
-      setError(createError)
-      return
+    catch {
+      createOrganizationForm.setError('root.serverError', {
+        message: 'Could not create organization.',
+        type: 'server',
+      })
     }
-
-    setName('')
-    setSlug('')
-    setIsCreateDialogOpen(false)
-    await queryClient.invalidateQueries({ queryKey: listOrganizationsQueryKey() })
   }
 
   return (
@@ -227,12 +247,17 @@ export function OrganizationSwitcher({
         open={isCreateDialogOpen}
         onOpenChange={(open) => {
           setIsCreateDialogOpen(open)
-          if (!open)
-            setError(null)
+          if (!open) {
+            createOrganizationForm.clearErrors()
+            createOrganizationForm.reset()
+          }
         }}
       >
         <DialogContent>
-          <form className="flex flex-col gap-4" onSubmit={handleCreateOrganization}>
+          <form
+            className="flex flex-col gap-4"
+            onSubmit={createOrganizationForm.handleSubmit(handleCreateOrganization)}
+          >
             <DialogHeader>
               <DialogTitle>Create organization</DialogTitle>
               <DialogDescription>
@@ -240,36 +265,62 @@ export function OrganizationSwitcher({
               </DialogDescription>
             </DialogHeader>
             <FieldGroup>
-              <Field data-invalid={!!error}>
-                <FieldLabel htmlFor="organization-name">
-                  Organization name
-                </FieldLabel>
-                <Input
-                  id="organization-name"
-                  value={name}
-                  onChange={(event) => {
-                    const nextName = event.target.value
-                    setName(nextName)
-                    setSlug(slugify(nextName))
-                  }}
-                  placeholder="Acme Inc"
-                  aria-invalid={!!error}
-                />
-              </Field>
-              <Field data-invalid={!!error}>
-                <FieldLabel htmlFor="organization-slug">
-                  Workspace slug
-                </FieldLabel>
-                <Input
-                  id="organization-slug"
-                  value={slug}
-                  onChange={event => setSlug(slugify(event.target.value))}
-                  placeholder="acme"
-                  aria-invalid={!!error}
-                />
-                <FieldError>{error}</FieldError>
-              </Field>
+              <Controller
+                name="name"
+                control={control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="organization-name">
+                      Organization name
+                    </FieldLabel>
+                    <Input
+                      {...field}
+                      id="organization-name"
+                      placeholder="Acme Inc"
+                      aria-invalid={fieldState.invalid}
+                      onChange={(event) => {
+                        const nextName = event.target.value
+                        field.onChange(nextName)
+                        createOrganizationForm.setValue('slug', slugify(nextName), {
+                          shouldDirty: true,
+                        })
+                      }}
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+              <Controller
+                name="slug"
+                control={control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="organization-slug">
+                      Workspace slug
+                    </FieldLabel>
+                    <Input
+                      {...field}
+                      id="organization-slug"
+                      placeholder="acme"
+                      aria-invalid={fieldState.invalid}
+                      onChange={(event) => {
+                        field.onChange(slugify(event.target.value))
+                      }}
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
             </FieldGroup>
+            {createOrganizationErrors.root?.serverError && (
+              <FieldError>
+                {createOrganizationErrors.root.serverError.message}
+              </FieldError>
+            )}
             <DialogFooter>
               <Button type="submit" disabled={isCreating}>
                 {isCreating ? 'Creating...' : 'Create organization'}

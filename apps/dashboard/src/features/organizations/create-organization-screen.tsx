@@ -1,9 +1,23 @@
-import type { FormEvent } from 'react'
-
+import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@talelabs/ui/components/button'
-import { useState } from 'react'
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from '@talelabs/ui/components/field'
+import { Input } from '@talelabs/ui/components/input'
+import { Controller, useForm } from 'react-hook-form'
+import { z } from 'zod'
 
 import { slugify } from '../../shared/lib/slugify'
+
+const createOrganizationSchema = z.object({
+  name: z.string().trim().min(1, 'Enter an organization name.'),
+  slug: z.string().trim().min(1, 'Enter a workspace slug.'),
+})
+
+type CreateOrganizationFormValues = z.infer<typeof createOrganizationSchema>
 
 export function CreateOrganizationScreen({
   onCreateOrganization,
@@ -12,31 +26,40 @@ export function CreateOrganizationScreen({
   onCreateOrganization: (name: string, slug: string) => Promise<string | null>
   onSignOut: () => Promise<void>
 }) {
-  const [organizationName, setOrganizationName] = useState('')
-  const [organizationSlug, setOrganizationSlug] = useState('')
-  const [organizationError, setOrganizationError] = useState<string | null>(null)
-  const [isCreatingOrganization, setIsCreatingOrganization] = useState(false)
+  const form = useForm<CreateOrganizationFormValues>({
+    resolver: zodResolver(createOrganizationSchema),
+    defaultValues: {
+      name: '',
+      slug: '',
+    },
+  })
+  const {
+    control,
+    formState: { errors, isSubmitting },
+  } = form
 
-  async function handleCreateOrganization(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    setOrganizationError(null)
+  async function handleCreateOrganization(values: CreateOrganizationFormValues) {
+    form.clearErrors('root.serverError')
 
-    const trimmedName = organizationName.trim()
-    const slug = slugify(organizationSlug || organizationName)
+    try {
+      const error = await onCreateOrganization(
+        values.name.trim(),
+        slugify(values.slug || values.name),
+      )
 
-    if (!trimmedName || !slug) {
-      setOrganizationError('Enter an organization name.')
-      return
+      if (error) {
+        form.setError('root.serverError', {
+          message: error,
+          type: 'server',
+        })
+      }
     }
-
-    setIsCreatingOrganization(true)
-
-    const error = await onCreateOrganization(trimmedName, slug)
-
-    setIsCreatingOrganization(false)
-
-    if (error)
-      setOrganizationError(error)
+    catch {
+      form.setError('root.serverError', {
+        message: 'Could not create organization.',
+        type: 'server',
+      })
+    }
   }
 
   return (
@@ -50,7 +73,10 @@ export function CreateOrganizationScreen({
         text-card-foreground shadow-lg
       "
       >
-        <form className="flex flex-col gap-5" onSubmit={handleCreateOrganization}>
+        <form
+          className="flex flex-col gap-5"
+          onSubmit={form.handleSubmit(handleCreateOrganization)}
+        >
           <div className="flex flex-col gap-2">
             <p className="text-sm font-medium text-muted-foreground">TaleLabs</p>
             <h1 className="text-3xl font-semibold tracking-tight">
@@ -62,52 +88,68 @@ export function CreateOrganizationScreen({
             </p>
           </div>
 
-          <label className="flex flex-col gap-2 text-sm font-medium">
-            Organization name
-            <input
-              className="
-                h-10 rounded-lg border border-input bg-background px-3 text-sm
-                transition-shadow outline-none
-                focus-visible:ring-3 focus-visible:ring-ring/50
-              "
-              value={organizationName}
-              onChange={(event) => {
-                const nextName = event.target.value
-                setOrganizationName(nextName)
-                setOrganizationSlug(slugify(nextName))
-              }}
-              placeholder="Acme Inc."
-              required
+          <FieldGroup>
+            <Controller
+              name="name"
+              control={control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="create-organization-name">
+                    Organization name
+                  </FieldLabel>
+                  <Input
+                    {...field}
+                    id="create-organization-name"
+                    placeholder="Acme Inc."
+                    aria-invalid={fieldState.invalid}
+                    onChange={(event) => {
+                      const nextName = event.target.value
+                      field.onChange(nextName)
+                      form.setValue('slug', slugify(nextName), {
+                        shouldDirty: true,
+                      })
+                    }}
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
             />
-          </label>
 
-          <label className="flex flex-col gap-2 text-sm font-medium">
-            Workspace slug
-            <input
-              className="
-                h-10 rounded-lg border border-input bg-background px-3 text-sm
-                transition-shadow outline-none
-                focus-visible:ring-3 focus-visible:ring-ring/50
-              "
-              value={organizationSlug}
-              onChange={event => setOrganizationSlug(slugify(event.target.value))}
-              placeholder="acme-inc"
-              required
+            <Controller
+              name="slug"
+              control={control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="create-organization-slug">
+                    Workspace slug
+                  </FieldLabel>
+                  <Input
+                    {...field}
+                    id="create-organization-slug"
+                    placeholder="acme-inc"
+                    aria-invalid={fieldState.invalid}
+                    onChange={(event) => {
+                      field.onChange(slugify(event.target.value))
+                    }}
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
             />
-          </label>
+          </FieldGroup>
 
-          {organizationError && (
-            <p className="
-              rounded-lg border border-destructive/30 bg-destructive/10 px-3
-              py-2 text-sm text-destructive
-            "
-            >
-              {organizationError}
-            </p>
+          {errors.root?.serverError && (
+            <FieldError>
+              {errors.root.serverError.message}
+            </FieldError>
           )}
 
-          <Button type="submit" size="lg" disabled={isCreatingOrganization}>
-            {isCreatingOrganization ? 'Creating...' : 'Create organization'}
+          <Button type="submit" size="lg" disabled={isSubmitting}>
+            {isSubmitting ? 'Creating...' : 'Create organization'}
           </Button>
 
           <Button type="button" variant="ghost" onClick={onSignOut}>

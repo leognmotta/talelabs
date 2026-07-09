@@ -1,11 +1,33 @@
-import type { ComponentProps, FormEvent } from 'react'
+import type { ComponentProps } from 'react'
 import type { AuthMode } from '../../shared/types/auth'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@talelabs/ui/components/button'
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from '@talelabs/ui/components/field'
+import { Input } from '@talelabs/ui/components/input'
 import { Separator } from '@talelabs/ui/components/separator'
 import { useState } from 'react'
 
+import { Controller, useForm } from 'react-hook-form'
 import { NavLink } from 'react-router'
+import { z } from 'zod'
 import { authClient, signIn, signUp } from './auth-client'
+
+const authBaseSchema = z.object({
+  email: z.string().trim().email('Enter a valid email.'),
+  name: z.string(),
+  password: z.string().min(8, 'Password must be at least 8 characters.'),
+})
+
+const signUpSchema = authBaseSchema.extend({
+  name: z.string().trim().min(1, 'Name is required.'),
+})
+
+type AuthFormValues = z.infer<typeof authBaseSchema>
 
 export function AuthScreen({
   initialMode,
@@ -14,38 +36,59 @@ export function AuthScreen({
   initialMode: AuthMode
   onAuthenticated: () => Promise<void>
 }) {
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
   const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const mode = initialMode
   const title = mode === 'sign-in' ? 'Sign in' : 'Create account'
   const submitLabel = mode === 'sign-in' ? 'Sign in' : 'Create account'
+  const form = useForm<AuthFormValues>({
+    resolver: zodResolver(mode === 'sign-in' ? authBaseSchema : signUpSchema),
+    defaultValues: {
+      email: '',
+      name: '',
+      password: '',
+    },
+  })
+  const {
+    control,
+    formState: { errors, isSubmitting },
+  } = form
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    setError(null)
-    setIsSubmitting(true)
+  async function handleSubmit(values: AuthFormValues) {
+    form.clearErrors('root.serverError')
 
-    const result = mode === 'sign-in'
-      ? await signIn.email({ email, password })
-      : await signUp.email({ email, name, password })
+    try {
+      const result = mode === 'sign-in'
+        ? await signIn.email({
+            email: values.email,
+            password: values.password,
+          })
+        : await signUp.email({
+            email: values.email,
+            name: values.name,
+            password: values.password,
+          })
 
-    setIsSubmitting(false)
+      if (result.error) {
+        form.setError('root.serverError', {
+          message: result.error.message ?? 'Authentication failed',
+          type: 'server',
+        })
+        return
+      }
 
-    if (result.error) {
-      setError(result.error.message ?? 'Authentication failed')
-      return
+      await onAuthenticated()
     }
-
-    await onAuthenticated()
+    catch {
+      form.setError('root.serverError', {
+        message: 'Authentication failed',
+        type: 'server',
+      })
+    }
   }
 
   async function handleGoogleSignIn() {
-    setError(null)
+    form.clearErrors('root.serverError')
     setIsGoogleSubmitting(true)
 
     const result = await authClient.signIn.social({
@@ -57,7 +100,10 @@ export function AuthScreen({
 
     if (result.error) {
       setIsGoogleSubmitting(false)
-      setError(result.error.message ?? 'Could not continue with Google')
+      form.setError('root.serverError', {
+        message: result.error.message ?? 'Could not continue with Google',
+        type: 'server',
+      })
     }
   }
 
@@ -89,7 +135,10 @@ export function AuthScreen({
           </p>
         </div>
 
-        <form className="flex flex-col gap-5 p-8" onSubmit={handleSubmit}>
+        <form
+          className="flex flex-col gap-5 p-8"
+          onSubmit={form.handleSubmit(handleSubmit)}
+        >
           <div className="flex flex-col gap-1">
             <h2 className="text-2xl font-semibold tracking-tight">{title}</h2>
             <p className="text-sm text-muted-foreground">
@@ -124,63 +173,72 @@ export function AuthScreen({
           </div>
 
           {mode === 'sign-up' && (
-            <label className="flex flex-col gap-2 text-sm font-medium">
-              Name
-              <input
-                className="
-                  h-10 rounded-lg border border-input bg-background px-3 text-sm
-                  transition-shadow outline-none
-                  focus-visible:ring-3 focus-visible:ring-ring/50
-                "
-                value={name}
-                onChange={event => setName(event.target.value)}
-                autoComplete="name"
-                required
-              />
-            </label>
+            <Controller
+              name="name"
+              control={control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="auth-name">Name</FieldLabel>
+                  <Input
+                    {...field}
+                    id="auth-name"
+                    autoComplete="name"
+                    aria-invalid={fieldState.invalid}
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
           )}
 
-          <label className="flex flex-col gap-2 text-sm font-medium">
-            Email
-            <input
-              className="
-                h-10 rounded-lg border border-input bg-background px-3 text-sm
-                transition-shadow outline-none
-                focus-visible:ring-3 focus-visible:ring-ring/50
-              "
-              type="email"
-              value={email}
-              onChange={event => setEmail(event.target.value)}
-              autoComplete="email"
-              required
+          <FieldGroup>
+            <Controller
+              name="email"
+              control={control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="auth-email">Email</FieldLabel>
+                  <Input
+                    {...field}
+                    id="auth-email"
+                    type="email"
+                    autoComplete="email"
+                    aria-invalid={fieldState.invalid}
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
             />
-          </label>
 
-          <label className="flex flex-col gap-2 text-sm font-medium">
-            Password
-            <input
-              className="
-                h-10 rounded-lg border border-input bg-background px-3 text-sm
-                transition-shadow outline-none
-                focus-visible:ring-3 focus-visible:ring-ring/50
-              "
-              type="password"
-              value={password}
-              onChange={event => setPassword(event.target.value)}
-              autoComplete={mode === 'sign-in' ? 'current-password' : 'new-password'}
-              minLength={8}
-              required
+            <Controller
+              name="password"
+              control={control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="auth-password">Password</FieldLabel>
+                  <Input
+                    {...field}
+                    id="auth-password"
+                    type="password"
+                    autoComplete={mode === 'sign-in' ? 'current-password' : 'new-password'}
+                    aria-invalid={fieldState.invalid}
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
             />
-          </label>
+          </FieldGroup>
 
-          {error && (
-            <p className="
-              rounded-lg border border-destructive/30 bg-destructive/10 px-3
-              py-2 text-sm text-destructive
-            "
-            >
-              {error}
-            </p>
+          {errors.root?.serverError && (
+            <FieldError>
+              {errors.root.serverError.message}
+            </FieldError>
           )}
 
           <Button type="submit" size="lg" disabled={isSubmitting || isGoogleSubmitting}>

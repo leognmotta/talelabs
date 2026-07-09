@@ -1,7 +1,7 @@
-import type { FormEvent } from 'react'
 import type { ThemePreference } from '../../shared/lib/theme'
 import type { SettingsTab } from './settings-state'
 
+import { zodResolver } from '@hookform/resolvers/zod'
 import {
   IconCreditCard,
   IconDeviceDesktop,
@@ -42,7 +42,9 @@ import { Separator } from '@talelabs/ui/components/separator'
 import { Skeleton } from '@talelabs/ui/components/skeleton'
 import { cn } from '@talelabs/ui/lib/utils'
 import { useEffect, useMemo, useState } from 'react'
+import { Controller, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
+import { z } from 'zod'
 import { authClient } from '../auth/auth-client'
 import { InvitationsPanel } from '../organizations/invitations-panel'
 
@@ -75,6 +77,12 @@ const themeOptions: {
 type LanguagePreference = 'auto' | 'en' | 'pt-BR'
 
 const languageStorageKey = 'talelabs_language'
+
+const profileSchema = z.object({
+  name: z.string().trim().min(1, 'Name is required.'),
+})
+
+type ProfileFormValues = z.infer<typeof profileSchema>
 
 function getInitialLanguagePreference(): LanguagePreference {
   if (typeof window === 'undefined')
@@ -386,33 +394,42 @@ function ProfileSettings({
   name: string
   onProfileUpdated: () => Promise<void>
 }) {
-  const [profileName, setProfileName] = useState(name)
-  const [error, setError] = useState<string | null>(null)
-  const [isSaving, setIsSaving] = useState(false)
+  const form = useForm<ProfileFormValues>({
+    resolver: zodResolver(profileSchema),
+    defaultValues: {
+      name,
+    },
+  })
+  const {
+    control,
+    formState: { errors, isSubmitting },
+  } = form
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
+  async function handleSubmit(values: ProfileFormValues) {
+    form.clearErrors('root.serverError')
 
-    const nextName = profileName.trim()
-    if (!nextName) {
-      setError('Name is required.')
-      return
+    try {
+      const nextName = values.name.trim()
+      const result = await authClient.updateUser({ name: nextName })
+
+      if (result.error) {
+        form.setError('root.serverError', {
+          message: result.error.message ?? 'Could not update profile.',
+          type: 'server',
+        })
+        return
+      }
+
+      form.reset({ name: nextName })
+      await onProfileUpdated()
+      toast.success('Profile updated')
     }
-
-    setIsSaving(true)
-    setError(null)
-
-    const result = await authClient.updateUser({ name: nextName })
-
-    if (result.error) {
-      setError(result.error.message ?? 'Could not update profile.')
-      setIsSaving(false)
-      return
+    catch {
+      form.setError('root.serverError', {
+        message: 'Could not update profile.',
+        type: 'server',
+      })
     }
-
-    await onProfileUpdated()
-    setIsSaving(false)
-    toast.success('Profile updated')
   }
 
   return (
@@ -421,7 +438,10 @@ function ProfileSettings({
         <h2 className="text-lg font-semibold">Profile</h2>
       </header>
       <Separator />
-      <form className="flex flex-col gap-5 py-5" onSubmit={handleSubmit}>
+      <form
+        className="flex flex-col gap-5 py-5"
+        onSubmit={form.handleSubmit(handleSubmit)}
+      >
         <div className="flex items-center gap-4">
           <Avatar className="size-14 rounded-2xl">
             <AvatarFallback className="rounded-2xl">{initials}</AvatarFallback>
@@ -432,24 +452,36 @@ function ProfileSettings({
           </div>
         </div>
         <FieldGroup>
-          <Field data-invalid={!!error}>
-            <FieldLabel htmlFor="settings-profile-name">Name</FieldLabel>
-            <Input
-              id="settings-profile-name"
-              value={profileName}
-              onChange={event => setProfileName(event.target.value)}
-              aria-invalid={!!error}
-            />
-            <FieldError>{error}</FieldError>
-          </Field>
+          <Controller
+            name="name"
+            control={control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="settings-profile-name">Name</FieldLabel>
+                <Input
+                  {...field}
+                  id="settings-profile-name"
+                  aria-invalid={fieldState.invalid}
+                />
+                {fieldState.invalid && (
+                  <FieldError errors={[fieldState.error]} />
+                )}
+              </Field>
+            )}
+          />
           <Field>
             <FieldLabel htmlFor="settings-profile-email">Email</FieldLabel>
             <Input id="settings-profile-email" value={email} disabled />
           </Field>
         </FieldGroup>
+        {errors.root?.serverError && (
+          <FieldError>
+            {errors.root.serverError.message}
+          </FieldError>
+        )}
         <div className="flex justify-end">
-          <Button type="submit" disabled={isSaving}>
-            {isSaving ? 'Saving...' : 'Save profile'}
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? 'Saving...' : 'Save profile'}
           </Button>
         </div>
       </form>
