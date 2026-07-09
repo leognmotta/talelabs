@@ -3,9 +3,13 @@ import type { SettingsTab } from '../features/settings/settings-state'
 
 import {
   IconApps,
+  IconArchive,
+  IconBriefcase,
+  IconBuildingStore,
   IconLayoutBoard,
   IconLogout,
   IconMovie,
+  IconPackage,
   IconPlus,
   IconSparkles,
   IconUserSquareRounded,
@@ -84,20 +88,26 @@ export function AppSidebar({
               title: 'Characters',
               url: '/characters',
               icon: <IconUserSquareRounded />,
-              items: [
-                {
-                  title: 'Brands',
-                  url: '/characters/brands',
-                },
-                {
-                  title: 'Products',
-                  url: '/characters/products',
-                },
-                {
-                  title: 'Projects',
-                  url: '/characters/projects',
-                },
-              ],
+            },
+            {
+              title: 'Brands',
+              url: '/brands',
+              icon: <IconBuildingStore />,
+            },
+            {
+              title: 'Products',
+              url: '/products',
+              icon: <IconPackage />,
+            },
+            {
+              title: 'Projects',
+              url: '/projects',
+              icon: <IconBriefcase />,
+            },
+            {
+              title: 'Assets',
+              url: '/assets',
+              icon: <IconArchive />,
             },
           ]}
         />

@@ -5,24 +5,14 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
 } from '@talelabs/ui/components/sidebar'
 import { NavLink, useLocation } from 'react-router'
-
-interface NavMainSubItem {
-  title: string
-  url: string
-  end?: boolean
-}
 
 interface NavMainItem {
   title: string
   url: string
   icon: ReactNode
   end?: boolean
-  items?: NavMainSubItem[]
 }
 
 export function NavMain({
@@ -50,26 +40,6 @@ export function NavMain({
                 {item.icon}
                 <span>{item.title}</span>
               </SidebarMenuButton>
-              {item.items?.length && (
-                <SidebarMenuSub>
-                  {item.items.map((subItem) => {
-                    const isSubItemActive = subItem.end
-                      ? location.pathname === subItem.url
-                      : location.pathname.startsWith(subItem.url)
-
-                    return (
-                      <SidebarMenuSubItem key={subItem.title}>
-                        <SidebarMenuSubButton
-                          isActive={isSubItemActive}
-                          render={<NavLink to={subItem.url} end={subItem.end} />}
-                        >
-                          <span>{subItem.title}</span>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                    )
-                  })}
-                </SidebarMenuSub>
-              )}
             </SidebarMenuItem>
           )
         })}
