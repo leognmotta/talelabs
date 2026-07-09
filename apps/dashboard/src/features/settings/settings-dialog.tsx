@@ -33,6 +33,7 @@ export function SettingsDialog({
   isTeamInviteFormOpen,
   name,
   onOpenChange,
+  onOpenCookiePreferences,
   onOpenCreditsPurchase,
   onOpenSubscriptionUpgrade,
   onProfileUpdated,
@@ -50,6 +51,7 @@ export function SettingsDialog({
   isTeamInviteFormOpen: boolean
   name: string
   onOpenChange: (open: boolean) => void
+  onOpenCookiePreferences: () => void
   onOpenCreditsPurchase: () => void
   onOpenSubscriptionUpgrade: () => void
   onProfileUpdated: () => Promise<void>
@@ -136,6 +138,7 @@ export function SettingsDialog({
             {tab === 'general' && (
               <GeneralSettings
                 language={language}
+                onOpenCookiePreferences={onOpenCookiePreferences}
                 onLanguageChange={handleLanguageChange}
                 onThemeChange={onThemeChange}
                 theme={theme}

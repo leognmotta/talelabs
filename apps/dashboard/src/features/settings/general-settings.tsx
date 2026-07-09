@@ -13,11 +13,13 @@ import { SettingsRow } from './settings-row'
 export function GeneralSettings({
   language,
   onLanguageChange,
+  onOpenCookiePreferences,
   onThemeChange,
   theme,
 }: {
   language: LanguagePreference
   onLanguageChange: (language: LanguagePreference) => void
+  onOpenCookiePreferences: () => void
   onThemeChange: (theme: ThemePreference) => void
   theme: ThemePreference
 }) {
@@ -74,6 +76,19 @@ export function GeneralSettings({
           <NativeSelectOption value="en">English</NativeSelectOption>
           <NativeSelectOption value="pt-BR">Portuguese</NativeSelectOption>
         </NativeSelect>
+      </SettingsRow>
+      <Separator />
+      <SettingsRow
+        label="Cookie preferences"
+        description="Manage analytics and marketing cookie choices."
+      >
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onOpenCookiePreferences}
+        >
+          Manage cookies
+        </Button>
       </SettingsRow>
     </div>
   )

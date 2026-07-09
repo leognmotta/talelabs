@@ -6,12 +6,20 @@ import {
 } from '@talelabs/sdk'
 import { Toaster } from '@talelabs/ui/components/sonner'
 import { useQueryClient } from '@tanstack/react-query'
-import { useState } from 'react'
+import { parseAsBoolean, useQueryState } from 'nuqs'
+import { useEffect, useState } from 'react'
 import { Navigate, Route, Routes } from 'react-router'
 import { toast } from 'sonner'
 import { authClient, signOut, useSession } from '../features/auth/auth-client'
 import { AuthScreen } from '../features/auth/auth-screen'
 import { BoardsScreen } from '../features/boards/boards-screen'
+import {
+  defaultCookiePreferences,
+  getInitialCookiePreferences,
+  hasStoredCookiePreferences,
+  storeCookiePreferences,
+} from '../features/cookies/cookie-preferences'
+import { CookiePreferencesDialog } from '../features/cookies/cookie-preferences-dialog'
 import { AcceptInvitationScreen } from '../features/organizations/accept-invitation-screen'
 import { CreateOrganizationScreen } from '../features/organizations/create-organization-screen'
 import { useOrganizationSession } from '../features/organizations/use-organization-session'
@@ -34,8 +42,23 @@ export function DashboardRoutes() {
   const session = useSession()
   const queryClient = useQueryClient()
   const [theme, setTheme] = useState<ThemePreference>(getInitialThemePreference)
+  const [cookiePreferences, setCookiePreferences] = useState(
+    getInitialCookiePreferences,
+  )
+  const [cookiePreferencesOpen, setCookiePreferencesOpen] = useQueryState(
+    'cookies',
+    parseAsBoolean,
+  )
+  const isCookiePreferencesOpen = cookiePreferencesOpen === true
   const isSignedIn = Boolean(session.data?.user)
   const organization = useOrganizationSession({ isSignedIn })
+
+  useEffect(() => {
+    if (hasStoredCookiePreferences() || cookiePreferencesOpen === true)
+      return
+
+    void setCookiePreferencesOpen(true, { history: 'replace' })
+  }, [cookiePreferencesOpen, setCookiePreferencesOpen])
 
   async function handleAuthenticated() {
     await session.refetch()
@@ -51,6 +74,35 @@ export function DashboardRoutes() {
   function handleThemeChange(nextTheme: ThemePreference) {
     setTheme(nextTheme)
     storeThemePreference(nextTheme)
+  }
+
+  function handleOpenCookiePreferences() {
+    setCookiePreferences(getInitialCookiePreferences())
+    void setCookiePreferencesOpen(true, { history: 'push' })
+  }
+
+  function handleCookiePreferencesOpenChange(nextOpen: boolean) {
+    if (nextOpen) {
+      handleOpenCookiePreferences()
+      return
+    }
+
+    if (!hasStoredCookiePreferences()) {
+      storeCookiePreferences(defaultCookiePreferences)
+      setCookiePreferences(defaultCookiePreferences)
+    }
+
+    void setCookiePreferencesOpen(null)
+  }
+
+  function handleCookiePreferencesSave() {
+    const storedPreferences = storeCookiePreferences(cookiePreferences)
+    setCookiePreferences({
+      analytics: storedPreferences.analytics,
+      essential: true,
+      marketing: storedPreferences.marketing,
+    })
+    void setCookiePreferencesOpen(null)
   }
 
   async function handleCreateOrganization(name: string, slug: string) {
@@ -183,6 +235,7 @@ export function DashboardRoutes() {
                 email={session.data?.user.email}
                 name={session.data?.user.name}
                 onCreateOrganization={handleCreateOrganization}
+                onOpenCookiePreferences={handleOpenCookiePreferences}
                 onProfileUpdated={handleAuthenticated}
                 onSignOut={handleSignOut}
                 onSwitchOrganization={handleSwitchOrganization}
@@ -218,6 +271,13 @@ export function DashboardRoutes() {
         <Route path="*" element={<Navigate to="/create" replace />} />
       </Routes>
       <Toaster theme={theme} />
+      <CookiePreferencesDialog
+        onOpenChange={handleCookiePreferencesOpenChange}
+        onPreferencesChange={setCookiePreferences}
+        onSave={handleCookiePreferencesSave}
+        open={isCookiePreferencesOpen}
+        preferences={cookiePreferences}
+      />
     </>
   )
 }

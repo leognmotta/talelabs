@@ -1,7 +1,14 @@
 import type { SettingsTab } from '../features/settings/settings-state'
 import type { ThemePreference } from '../shared/lib/theme'
-import { IconCoins, IconRocket } from '@tabler/icons-react'
+import { IconCoins, IconCookie, IconDots, IconRocket } from '@tabler/icons-react'
 import { Button } from '@talelabs/ui/components/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@talelabs/ui/components/dropdown-menu'
 import { Separator } from '@talelabs/ui/components/separator'
 import {
   SidebarInset,
@@ -28,6 +35,7 @@ export function DashboardLayout({
   name,
   onSignOut,
   onCreateOrganization,
+  onOpenCookiePreferences,
   onProfileUpdated,
   onSwitchOrganization,
   onThemeChange,
@@ -38,6 +46,7 @@ export function DashboardLayout({
   email: string | undefined
   name: string | undefined
   onCreateOrganization: (name: string, slug: string) => Promise<string | null>
+  onOpenCookiePreferences: () => void
   onProfileUpdated: () => Promise<void>
   onSignOut: () => Promise<void>
   onSwitchOrganization: (organizationId: string) => Promise<string | null>
@@ -161,6 +170,28 @@ export function DashboardLayout({
                   Upgrade
                 </span>
               </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  render={(
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      aria-label="More options"
+                    />
+                  )}
+                >
+                  <IconDots />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuGroup>
+                    <DropdownMenuItem onClick={onOpenCookiePreferences}>
+                      <IconCookie />
+                      <span>Manage cookies</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </header>
             <Separator />
             <section className="flex flex-1 flex-col gap-6 p-6">
@@ -175,6 +206,7 @@ export function DashboardLayout({
           isTeamInviteFormOpen={isTeamInviteFormOpen}
           name={name || 'TaleLabs user'}
           onOpenChange={handleSettingsOpenChange}
+          onOpenCookiePreferences={onOpenCookiePreferences}
           onProfileUpdated={onProfileUpdated}
           onOpenCreditsPurchase={handleOpenCreditsPurchase}
           onOpenSubscriptionUpgrade={handleOpenSubscriptionUpgrade}
