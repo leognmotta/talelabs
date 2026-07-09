@@ -18,6 +18,7 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -160,59 +161,63 @@ export function OrganizationSwitcher({
               side={isMobile ? 'bottom' : 'right'}
               sideOffset={4}
             >
-              <DropdownMenuLabel className="text-xs text-muted-foreground">
-                Organizations
-              </DropdownMenuLabel>
-              {organizationsQuery.error && (
-                <DropdownMenuItem disabled className="gap-2 p-2">
-                  Could not load organizations.
-                </DropdownMenuItem>
-              )}
-              {organizations.map((organization, index) => (
+              <DropdownMenuGroup>
+                <DropdownMenuLabel className="text-xs text-muted-foreground">
+                  Organizations
+                </DropdownMenuLabel>
+                {organizationsQuery.error && (
+                  <DropdownMenuItem disabled className="gap-2 p-2">
+                    Could not load organizations.
+                  </DropdownMenuItem>
+                )}
+                {organizations.map((organization, index) => (
+                  <DropdownMenuItem
+                    key={organization.id}
+                    className="gap-2 p-2"
+                    disabled={isSwitchingId === organization.id}
+                    onClick={() => void handleSwitchOrganization(organization.id)}
+                  >
+                    <div className="
+                      flex size-6 items-center justify-center rounded-md border
+                    "
+                    >
+                      <IconBuilding />
+                    </div>
+                    <span className="truncate">{organization.name}</span>
+                    {organization.id === activeOrganizationId && (
+                      <DropdownMenuShortcut>Active</DropdownMenuShortcut>
+                    )}
+                    {organization.id !== activeOrganizationId
+                      && organization.isSystemAdminAccess && (
+                      <DropdownMenuShortcut>System</DropdownMenuShortcut>
+                    )}
+                    {organization.id !== activeOrganizationId
+                      && !organization.isSystemAdminAccess && (
+                      <DropdownMenuShortcut>
+                        {index + 1}
+                      </DropdownMenuShortcut>
+                    )}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuGroup>
+              <DropdownMenuSeparator />
+              <DropdownMenuGroup>
                 <DropdownMenuItem
-                  key={organization.id}
                   className="gap-2 p-2"
-                  disabled={isSwitchingId === organization.id}
-                  onClick={() => void handleSwitchOrganization(organization.id)}
+                  onClick={() => setIsCreateDialogOpen(true)}
                 >
                   <div className="
                     flex size-6 items-center justify-center rounded-md border
+                    bg-transparent
                   "
                   >
-                    <IconBuilding />
+                    <IconPlus />
                   </div>
-                  <span className="truncate">{organization.name}</span>
-                  {organization.id === activeOrganizationId && (
-                    <DropdownMenuShortcut>Active</DropdownMenuShortcut>
-                  )}
-                  {organization.id !== activeOrganizationId
-                    && organization.isSystemAdminAccess && (
-                    <DropdownMenuShortcut>System</DropdownMenuShortcut>
-                  )}
-                  {organization.id !== activeOrganizationId
-                    && !organization.isSystemAdminAccess && (
-                    <DropdownMenuShortcut>
-                      {index + 1}
-                    </DropdownMenuShortcut>
-                  )}
+                  <div className="font-medium text-muted-foreground">
+                    Create organization
+                  </div>
                 </DropdownMenuItem>
-              ))}
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                className="gap-2 p-2"
-                onClick={() => setIsCreateDialogOpen(true)}
-              >
-                <div className="
-                  flex size-6 items-center justify-center rounded-md border
-                  bg-transparent
-                "
-                >
-                  <IconPlus />
-                </div>
-                <div className="font-medium text-muted-foreground">
-                  Create organization
-                </div>
-              </DropdownMenuItem>
+              </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>
         </SidebarMenuItem>
