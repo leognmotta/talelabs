@@ -58,7 +58,7 @@ export function ProjectsScreen(_props: {
           <CardContent className="flex flex-col gap-3 p-4">
             <Textarea
               className="
-                min-h-20 border-0 bg-transparent p-0 text-base shadow-none
+                min-h-20 border-0 bg-transparent text-base shadow-none
                 focus-visible:ring-0
               "
               placeholder="Describe what you want to create..."
