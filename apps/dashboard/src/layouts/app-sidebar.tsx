@@ -1,13 +1,9 @@
 import type { ComponentProps } from 'react'
-import type { ThemePreference } from '../shared/lib/theme'
 
 import {
-  IconDeviceDesktop,
   IconLayoutDashboard,
   IconLogout,
-  IconMoon,
   IconSettings,
-  IconSun,
 } from '@tabler/icons-react'
 import {
   Sidebar,
@@ -26,20 +22,18 @@ export function AppSidebar({
   email,
   name,
   onCreateOrganization,
+  onOpenSettings,
   onSignOut,
   onSwitchOrganization,
-  onThemeChange,
-  theme,
   ...props
 }: ComponentProps<typeof Sidebar> & {
   activeOrganizationId: string | null
   email: string | undefined
   name: string | undefined
   onCreateOrganization: (name: string, slug: string) => Promise<string | null>
+  onOpenSettings: () => void
   onSignOut: () => Promise<void>
   onSwitchOrganization: (organizationId: string) => Promise<string | null>
-  onThemeChange: (theme: ThemePreference) => void
-  theme: ThemePreference
 }) {
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -73,15 +67,9 @@ export function AppSidebar({
             name: name || 'TaleLabs user',
             email: email || 'Workspace member',
           }}
+          onOpenSettings={onOpenSettings}
           onSignOut={onSignOut}
-          onThemeChange={onThemeChange}
           signOutIcon={IconLogout}
-          theme={theme}
-          themeItems={[
-            { icon: IconSun, label: 'Light', value: 'light' },
-            { icon: IconMoon, label: 'Dark', value: 'dark' },
-            { icon: IconDeviceDesktop, label: 'System', value: 'system' },
-          ]}
         />
       </SidebarFooter>
       <SidebarRail />

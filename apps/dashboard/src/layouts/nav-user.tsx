@@ -1,7 +1,6 @@
 import type { TablerIcon } from '@tabler/icons-react'
-import type { ThemePreference } from '../shared/lib/theme'
 
-import { IconSelector } from '@tabler/icons-react'
+import { IconSelector, IconSettings } from '@tabler/icons-react'
 import {
   Avatar,
   AvatarFallback,
@@ -23,22 +22,14 @@ import {
 } from '@talelabs/ui/components/sidebar'
 
 export function NavUser({
+  onOpenSettings,
   onSignOut,
-  onThemeChange,
   signOutIcon: SignOutIcon,
-  theme,
-  themeItems,
   user,
 }: {
+  onOpenSettings: () => void
   onSignOut: () => Promise<void>
-  onThemeChange: (theme: ThemePreference) => void
   signOutIcon: TablerIcon
-  theme: ThemePreference
-  themeItems: {
-    icon: TablerIcon
-    label: string
-    value: ThemePreference
-  }[]
   user: {
     name: string
     email: string
@@ -100,26 +91,10 @@ export function NavUser({
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuLabel className="text-xs text-muted-foreground">
-                Theme
-              </DropdownMenuLabel>
-              {themeItems.map(item => (
-                <DropdownMenuItem
-                  key={item.value}
-                  onClick={() => onThemeChange(item.value)}
-                >
-                  <item.icon />
-                  <span>{item.label}</span>
-                  {theme === item.value && (
-                    <span className="ml-auto text-xs text-muted-foreground">
-                      Active
-                    </span>
-                  )}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
+              <DropdownMenuItem onClick={onOpenSettings}>
+                <IconSettings />
+                <span>Settings</span>
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => void onSignOut()}>
                 <SignOutIcon />
                 <span>Sign out</span>

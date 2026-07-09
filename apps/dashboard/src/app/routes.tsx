@@ -179,9 +179,11 @@ export function DashboardRoutes() {
             >
               <DashboardLayout
                 activeOrganizationId={organization.activeWorkspaceId}
+                currentSessionId={session.data?.session.id}
                 email={session.data?.user.email}
                 name={session.data?.user.name}
                 onCreateOrganization={handleCreateOrganization}
+                onProfileUpdated={handleAuthenticated}
                 onSignOut={handleSignOut}
                 onSwitchOrganization={handleSwitchOrganization}
                 onThemeChange={handleThemeChange}
