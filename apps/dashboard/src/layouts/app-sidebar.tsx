@@ -2,7 +2,6 @@ import type { ComponentProps } from 'react'
 import type { SettingsTab } from '../features/settings/settings-state'
 
 import {
-  IconAi,
   IconApps,
   IconFolder,
   IconLayoutBoard,
@@ -10,6 +9,7 @@ import {
   IconLogout,
   IconMovie,
   IconPlus,
+  IconSparkles,
   IconUserSquareRounded,
 } from '@tabler/icons-react'
 import {
@@ -85,7 +85,7 @@ export function AppSidebar({
             {
               title: 'Agent',
               url: '/agent',
-              icon: <IconAi />,
+              icon: <IconSparkles />,
             },
             {
               title: 'Projects',
