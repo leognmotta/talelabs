@@ -620,7 +620,7 @@ function SecuritySettings({
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col">
-      <header className="flex items-center justify-between gap-3 pb-4">
+      <header className="flex items-center justify-between gap-3 pr-12 pb-4">
         <h2 className="text-lg font-semibold">Security</h2>
         <Button
           type="button"
@@ -1056,7 +1056,7 @@ function TeamSettings({
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col">
-      <header className="flex items-center justify-between gap-3 pb-4">
+      <header className="flex items-center justify-between gap-3 pr-12 pb-4">
         <h2 className="text-lg font-semibold">Team</h2>
         {activeOrganizationId && (
           <Button
