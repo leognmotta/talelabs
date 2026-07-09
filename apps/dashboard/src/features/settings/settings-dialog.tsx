@@ -3,10 +3,13 @@ import type { SettingsTab } from './settings-state'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
+  IconCopy,
   IconCreditCard,
   IconDeviceDesktop,
   IconLogout,
+  IconMailForward,
   IconMoon,
+  IconPlus,
   IconRefresh,
   IconSettings,
   IconShieldLock,
@@ -14,7 +17,14 @@ import {
   IconUserCircle,
   IconUsersGroup,
 } from '@tabler/icons-react'
-import { ApiError, setAccountPassword } from '@talelabs/sdk'
+import {
+  ApiError,
+  createOrganizationInvitation,
+  listOrganizationInvitationsQueryKey,
+  setAccountPassword,
+  useListOrganizationInvitations,
+  useListOrganizationMembers,
+} from '@talelabs/sdk'
 import {
   Avatar,
   AvatarFallback,
@@ -41,13 +51,27 @@ import {
 } from '@talelabs/ui/components/native-select'
 import { Separator } from '@talelabs/ui/components/separator'
 import { Skeleton } from '@talelabs/ui/components/skeleton'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@talelabs/ui/components/table'
 import { cn } from '@talelabs/ui/lib/utils'
+import { useQueryClient } from '@tanstack/react-query'
+import {
+  createColumnHelper,
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+} from '@tanstack/react-table'
 import { useEffect, useMemo, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
 import { authClient } from '../auth/auth-client'
-import { InvitationsPanel } from '../organizations/invitations-panel'
 
 type AuthSession = NonNullable<
   Awaited<ReturnType<typeof authClient.listSessions>>['data']
@@ -100,6 +124,24 @@ const createPasswordSchema = z.object({
 })
 
 type CreatePasswordFormValues = z.infer<typeof createPasswordSchema>
+
+const teamInvitationSchema = z.object({
+  email: z.string().trim().email('Enter a valid email.'),
+  role: z.enum(['admin', 'member']),
+})
+
+type TeamInvitationFormValues = z.infer<typeof teamInvitationSchema>
+
+interface TeamMemberRow {
+  createdAt: string
+  email: string
+  id: string
+  inviteUrl?: string
+  name: string
+  role: 'admin' | 'member'
+  sourceId: string
+  status: 'active' | 'pending'
+}
 
 function getInitialLanguagePreference(): LanguagePreference {
   if (typeof window === 'undefined')
@@ -519,6 +561,7 @@ function SecuritySettings({
   const [accounts, setAccounts] = useState<AuthAccount[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isPasswordFormOpen, setIsPasswordFormOpen] = useState(false)
   const [revokingToken, setRevokingToken] = useState<string | null>(null)
   const hasPassword = accounts.some(account => account.providerId === 'credential')
 
@@ -591,16 +634,46 @@ function SecuritySettings({
         </Button>
       </header>
       <Separator />
-      <SettingsRow label="Password">
-        {isLoading
-          ? <Skeleton className="h-9 w-full max-w-sm" />
-          : (
-              <PasswordSettingsForm
-                hasPassword={hasPassword}
-                onPasswordChanged={loadSessions}
-              />
-            )}
-      </SettingsRow>
+      <div className="py-5">
+        <div className="
+          flex flex-col gap-3
+          sm:flex-row sm:items-start sm:justify-between
+        "
+        >
+          <div>
+            <p className="text-sm font-medium">Password</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {hasPassword
+                ? 'Update the password used for email sign-in.'
+                : 'Create a password for email sign-in.'}
+            </p>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={isLoading}
+            onClick={() => setIsPasswordFormOpen(open => !open)}
+          >
+            {hasPassword ? 'Update password' : 'Create password'}
+          </Button>
+        </div>
+        {isPasswordFormOpen && (
+          <div className="mt-5 max-w-sm">
+            {isLoading
+              ? <Skeleton className="h-28 w-full" />
+              : (
+                  <PasswordSettingsForm
+                    hasPassword={hasPassword}
+                    onPasswordChanged={async () => {
+                      await loadSessions()
+                      setIsPasswordFormOpen(false)
+                    }}
+                  />
+                )}
+          </div>
+        )}
+      </div>
       <Separator />
       <div className="py-5">
         <div className="
@@ -890,19 +963,403 @@ function TeamSettings({
 }: {
   activeOrganizationId: string | null
 }) {
+  const [isInviteFormOpen, setIsInviteFormOpen] = useState(false)
+  const queryClient = useQueryClient()
+  const organizationId = activeOrganizationId ?? undefined
+  const membersQuery = useListOrganizationMembers(
+    { organizationId },
+    {
+      query: {
+        retry: false,
+      },
+    },
+  )
+  const invitationsQuery = useListOrganizationInvitations(
+    { organizationId },
+    {
+      query: {
+        retry: false,
+      },
+    },
+  )
+  const members = useMemo(
+    () => membersQuery.data?.members ?? [],
+    [membersQuery.data],
+  )
+  const invitations = useMemo(
+    () => invitationsQuery.data?.invitations ?? [],
+    [invitationsQuery.data],
+  )
+  const rows = useMemo(() => {
+    const memberRows = members.map((member): TeamMemberRow => ({
+      createdAt: member.createdAt,
+      email: member.email,
+      id: `member:${member.id}`,
+      name: member.name,
+      role: member.role,
+      sourceId: member.id,
+      status: 'active',
+    }))
+    const pendingInvitationRows = invitations
+      .filter(invitation => invitation.status !== 'accepted')
+      .map((invitation): TeamMemberRow => ({
+        createdAt: invitation.createdAt,
+        email: invitation.email,
+        id: `invitation:${invitation.id}`,
+        inviteUrl: invitation.inviteUrl,
+        name: 'Invited user',
+        role: invitation.role,
+        sourceId: invitation.id,
+        status: 'pending',
+      }))
+
+    return [...memberRows, ...pendingInvitationRows]
+  }, [invitations, members])
+  const isLoading = membersQuery.isLoading || invitationsQuery.isLoading
+  const isError = membersQuery.isError || invitationsQuery.isError
+
+  async function handleCopyInviteLink(row: TeamMemberRow) {
+    if (!row.inviteUrl)
+      return
+
+    await navigator.clipboard?.writeText(row.inviteUrl)
+    toast.success('Invitation URL copied')
+  }
+
+  async function handleResendInvite(row: TeamMemberRow) {
+    if (!activeOrganizationId)
+      return
+
+    try {
+      await createOrganizationInvitation({
+        organizationId: activeOrganizationId,
+        data: {
+          email: row.email,
+          role: row.role,
+          resend: true,
+        },
+      })
+      await queryClient.invalidateQueries({
+        queryKey: listOrganizationInvitationsQueryKey({
+          organizationId: activeOrganizationId,
+        }),
+      })
+      toast.success('Invitation email resent')
+    }
+    catch (caughtError) {
+      const message = caughtError instanceof Error
+        ? caughtError.message
+        : 'Could not resend invitation.'
+      toast.error(message)
+    }
+  }
+
   return (
     <div className="mx-auto flex max-w-2xl flex-col">
-      <header className="pb-4">
+      <header className="flex items-center justify-between gap-3 pb-4">
         <h2 className="text-lg font-semibold">Team</h2>
+        {activeOrganizationId && (
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => setIsInviteFormOpen(open => !open)}
+          >
+            <IconPlus />
+            Invite user
+          </Button>
+        )}
       </header>
       <Separator className="mb-5" />
-      {activeOrganizationId
-        ? <InvitationsPanel organizationId={activeOrganizationId} />
-        : (
+      {!activeOrganizationId && (
+        <p className="text-sm text-muted-foreground">
+          No active organization.
+        </p>
+      )}
+      {activeOrganizationId && (
+        <div className="flex flex-col gap-5">
+          {isInviteFormOpen && (
+            <TeamInvitationForm
+              organizationId={activeOrganizationId}
+              onInvitationCreated={() => setIsInviteFormOpen(false)}
+            />
+          )}
+          {isError && (
             <p className="text-sm text-muted-foreground">
-              No active organization.
+              Organization admins can view members and invitations.
             </p>
           )}
+          {!isError && (
+            <TeamMembersTable
+              isLoading={isLoading}
+              rows={rows}
+              onCopyInviteLink={(row) => {
+                void handleCopyInviteLink(row)
+              }}
+              onResendInvite={(row) => {
+                void handleResendInvite(row)
+              }}
+            />
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function TeamInvitationForm({
+  onInvitationCreated,
+  organizationId,
+}: {
+  onInvitationCreated: () => void
+  organizationId: string
+}) {
+  const queryClient = useQueryClient()
+  const form = useForm<TeamInvitationFormValues>({
+    resolver: zodResolver(teamInvitationSchema),
+    defaultValues: {
+      email: '',
+      role: 'member',
+    },
+  })
+  const {
+    control,
+    formState: { errors, isSubmitting },
+  } = form
+
+  async function handleSubmit(values: TeamInvitationFormValues) {
+    form.clearErrors('root.serverError')
+
+    try {
+      const result = await createOrganizationInvitation({
+        organizationId,
+        data: {
+          email: values.email,
+          role: values.role,
+        },
+      })
+
+      form.reset({
+        email: '',
+        role: values.role,
+      })
+      await queryClient.invalidateQueries({
+        queryKey: listOrganizationInvitationsQueryKey({ organizationId }),
+      })
+      await navigator.clipboard?.writeText(result.invitation.inviteUrl)
+      toast.success('Invitation URL copied')
+      onInvitationCreated()
+    }
+    catch (caughtError) {
+      const message = caughtError instanceof Error
+        ? caughtError.message
+        : 'Could not create invitation.'
+      form.setError('root.serverError', {
+        message,
+        type: 'server',
+      })
+    }
+  }
+
+  return (
+    <form
+      className="rounded-2xl border border-border p-4"
+      onSubmit={form.handleSubmit(handleSubmit)}
+    >
+      <FieldGroup>
+        <Controller
+          name="email"
+          control={control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="team-invite-email">Email</FieldLabel>
+              <Input
+                {...field}
+                id="team-invite-email"
+                type="email"
+                placeholder="new-user@example.com"
+                aria-invalid={fieldState.invalid}
+              />
+              {fieldState.invalid && (
+                <FieldError errors={[fieldState.error]} />
+              )}
+            </Field>
+          )}
+        />
+        <Controller
+          name="role"
+          control={control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="team-invite-role">Role</FieldLabel>
+              <NativeSelect
+                id="team-invite-role"
+                value={field.value}
+                onChange={(event) => {
+                  const nextRole = event.target.value === 'admin'
+                    ? 'admin'
+                    : 'member'
+                  field.onChange(nextRole)
+                }}
+                aria-invalid={fieldState.invalid}
+              >
+                <NativeSelectOption value="member">Member</NativeSelectOption>
+                <NativeSelectOption value="admin">Admin</NativeSelectOption>
+              </NativeSelect>
+              {fieldState.invalid && (
+                <FieldError errors={[fieldState.error]} />
+              )}
+            </Field>
+          )}
+        />
+      </FieldGroup>
+      {errors.root?.serverError && (
+        <FieldError className="mt-4">
+          {errors.root.serverError.message}
+        </FieldError>
+      )}
+      <div className="mt-4 flex justify-end">
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? 'Sending...' : 'Send invite'}
+        </Button>
+      </div>
+    </form>
+  )
+}
+
+const teamColumnHelper = createColumnHelper<TeamMemberRow>()
+
+function TeamMembersTable({
+  isLoading,
+  onCopyInviteLink,
+  onResendInvite,
+  rows,
+}: {
+  isLoading: boolean
+  onCopyInviteLink: (row: TeamMemberRow) => void
+  onResendInvite: (row: TeamMemberRow) => void
+  rows: TeamMemberRow[]
+}) {
+  const columns = useMemo(() => [
+    teamColumnHelper.accessor('name', {
+      header: 'Member',
+      cell: ({ row }) => (
+        <div className="min-w-0">
+          <p className="truncate font-medium">{row.original.name}</p>
+          <p className="truncate text-xs text-muted-foreground">
+            {row.original.email}
+          </p>
+        </div>
+      ),
+    }),
+    teamColumnHelper.accessor('role', {
+      header: 'Role',
+      cell: info => (
+        <span className="capitalize">{info.getValue()}</span>
+      ),
+    }),
+    teamColumnHelper.accessor('status', {
+      header: 'Status',
+      cell: info => (
+        <Badge variant={info.getValue() === 'active' ? 'secondary' : 'outline'}>
+          {info.getValue() === 'active' ? 'Active' : 'Pending'}
+        </Badge>
+      ),
+    }),
+    teamColumnHelper.display({
+      id: 'actions',
+      header: '',
+      cell: ({ row }) => {
+        if (row.original.status !== 'pending') {
+          return null
+        }
+
+        return (
+          <div className="flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              aria-label="Copy invite link"
+              onClick={() => onCopyInviteLink(row.original)}
+            >
+              <IconCopy />
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              aria-label="Resend invite email"
+              onClick={() => onResendInvite(row.original)}
+            >
+              <IconMailForward />
+            </Button>
+          </div>
+        )
+      },
+    }),
+  ], [onCopyInviteLink, onResendInvite])
+  const table = useReactTable({
+    data: rows,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+  })
+
+  if (isLoading && rows.length === 0) {
+    return (
+      <div className="flex flex-col gap-2">
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-10 w-full" />
+      </div>
+    )
+  }
+
+  return (
+    <div className="rounded-2xl border border-border">
+      <Table>
+        <TableHeader>
+          {table.getHeaderGroups().map(headerGroup => (
+            <TableRow key={headerGroup.id}>
+              {headerGroup.headers.map(header => (
+                <TableHead key={header.id}>
+                  {header.isPlaceholder
+                    ? null
+                    : flexRender(
+                        header.column.columnDef.header,
+                        header.getContext(),
+                      )}
+                </TableHead>
+              ))}
+            </TableRow>
+          ))}
+        </TableHeader>
+        <TableBody>
+          {table.getRowModel().rows.length > 0
+            ? table.getRowModel().rows.map(row => (
+                <TableRow key={row.id}>
+                  {row.getVisibleCells().map(cell => (
+                    <TableCell key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            : (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-24 text-center"
+                  >
+                    No team members found.
+                  </TableCell>
+                </TableRow>
+              )}
+        </TableBody>
+      </Table>
     </div>
   )
 }
