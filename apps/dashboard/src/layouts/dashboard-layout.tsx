@@ -1,6 +1,6 @@
 import type { SettingsTab } from '../features/settings/settings-state'
 import type { ThemePreference } from '../shared/lib/theme'
-import { IconCoins } from '@tabler/icons-react'
+import { IconCoins, IconRocket } from '@tabler/icons-react'
 import { Button } from '@talelabs/ui/components/button'
 import { Separator } from '@talelabs/ui/components/separator'
 import {
@@ -17,6 +17,7 @@ import { mockedCreditsBalance } from '../features/credits/credits-data'
 import { CreditsPurchaseDialog } from '../features/credits/credits-purchase-dialog'
 import { SettingsDialog } from '../features/settings/settings-dialog'
 import { settingsTabs } from '../features/settings/settings-state'
+import { SubscriptionUpgradeDialog } from '../features/subscription/subscription-upgrade-dialog'
 import { AppSidebar } from './app-sidebar'
 import { GlobalSearch } from './global-search'
 
@@ -51,9 +52,14 @@ export function DashboardLayout({
     'credits',
     parseAsBoolean,
   )
+  const [upgradeDialogOpen, setUpgradeDialogOpen] = useQueryState(
+    'upgrade',
+    parseAsBoolean,
+  )
   const activeSettingsTab = settingsTab ?? 'general'
   const isSettingsOpen = settingsTab !== null
   const isCreditsDialogOpen = creditsDialogOpen === true
+  const isUpgradeDialogOpen = upgradeDialogOpen === true
   const [isTeamInviteFormOpen, setIsTeamInviteFormOpen] = useState(false)
 
   function handleOpenSettings(nextTab: SettingsTab = 'general') {
@@ -71,6 +77,14 @@ export function DashboardLayout({
 
   function handleCreditsDialogOpenChange(nextOpen: boolean) {
     void setCreditsDialogOpen(nextOpen ? true : null)
+  }
+
+  function handleOpenSubscriptionUpgrade() {
+    void setUpgradeDialogOpen(true, { history: 'push' })
+  }
+
+  function handleUpgradeDialogOpenChange(nextOpen: boolean) {
+    void setUpgradeDialogOpen(nextOpen ? true : null)
   }
 
   function handleSettingsOpenChange(nextOpen: boolean) {
@@ -133,6 +147,20 @@ export function DashboardLayout({
                   {mockedCreditsBalance.toLocaleString()}
                 </span>
               </Button>
+              <Button
+                type="button"
+                className="h-9 rounded-4xl px-3 text-sm"
+                onClick={handleOpenSubscriptionUpgrade}
+              >
+                <IconRocket data-icon="inline-start" />
+                <span className="
+                  hidden
+                  sm:inline
+                "
+                >
+                  Upgrade
+                </span>
+              </Button>
             </header>
             <Separator />
             <section className="flex flex-1 flex-col gap-6 p-6">
@@ -149,6 +177,7 @@ export function DashboardLayout({
           onOpenChange={handleSettingsOpenChange}
           onProfileUpdated={onProfileUpdated}
           onOpenCreditsPurchase={handleOpenCreditsPurchase}
+          onOpenSubscriptionUpgrade={handleOpenSubscriptionUpgrade}
           onSignOut={onSignOut}
           onTabChange={handleSettingsTabChange}
           onTeamInviteFormOpenChange={setIsTeamInviteFormOpen}
@@ -161,6 +190,10 @@ export function DashboardLayout({
           creditsBalance={mockedCreditsBalance}
           onOpenChange={handleCreditsDialogOpenChange}
           open={isCreditsDialogOpen}
+        />
+        <SubscriptionUpgradeDialog
+          onOpenChange={handleUpgradeDialogOpenChange}
+          open={isUpgradeDialogOpen}
         />
       </SidebarProvider>
     </TooltipProvider>

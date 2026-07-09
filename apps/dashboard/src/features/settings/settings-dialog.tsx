@@ -34,6 +34,7 @@ export function SettingsDialog({
   name,
   onOpenChange,
   onOpenCreditsPurchase,
+  onOpenSubscriptionUpgrade,
   onProfileUpdated,
   onSignOut,
   onTabChange,
@@ -50,6 +51,7 @@ export function SettingsDialog({
   name: string
   onOpenChange: (open: boolean) => void
   onOpenCreditsPurchase: () => void
+  onOpenSubscriptionUpgrade: () => void
   onProfileUpdated: () => Promise<void>
   onSignOut: () => Promise<void>
   onTabChange: (tab: SettingsTab) => void
@@ -166,7 +168,10 @@ export function SettingsDialog({
               />
             )}
             {tab === 'billing' && (
-              <BillingSettings onOpenCreditsPurchase={onOpenCreditsPurchase} />
+              <BillingSettings
+                onOpenCreditsPurchase={onOpenCreditsPurchase}
+                onOpenSubscriptionUpgrade={onOpenSubscriptionUpgrade}
+              />
             )}
           </section>
         </div>

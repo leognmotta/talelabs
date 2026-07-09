@@ -2,12 +2,15 @@ import { Badge } from '@talelabs/ui/components/badge'
 import { Button } from '@talelabs/ui/components/button'
 import { Separator } from '@talelabs/ui/components/separator'
 import { mockedCreditsBalance } from '../credits/credits-data'
+import { mockedCurrentPlan } from '../subscription/subscription-data'
 import { SettingsRow } from './settings-row'
 
 export function BillingSettings({
   onOpenCreditsPurchase,
+  onOpenSubscriptionUpgrade,
 }: {
   onOpenCreditsPurchase: () => void
+  onOpenSubscriptionUpgrade: () => void
 }) {
   return (
     <div className="mx-auto flex max-w-2xl flex-col">
@@ -16,7 +19,16 @@ export function BillingSettings({
       </header>
       <Separator />
       <SettingsRow label="Plan">
-        <Badge variant="secondary">Free</Badge>
+        <div className="flex items-center gap-2">
+          <Badge variant="secondary">{mockedCurrentPlan}</Badge>
+          <Button
+            type="button"
+            size="sm"
+            onClick={onOpenSubscriptionUpgrade}
+          >
+            Upgrade
+          </Button>
+        </div>
       </SettingsRow>
       <Separator />
       <SettingsRow label="Credits" description="Available generation balance.">
