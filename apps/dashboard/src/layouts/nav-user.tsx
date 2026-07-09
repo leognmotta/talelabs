@@ -31,12 +31,14 @@ import {
 export function NavUser({
   onOpenInviteMemberSettings,
   onOpenSettings,
+  onDropdownOpenChange,
   onSignOut,
   signOutIcon: SignOutIcon,
   user,
 }: {
   onOpenInviteMemberSettings: () => void
   onOpenSettings: (tab?: SettingsTab) => void
+  onDropdownOpenChange: (open: boolean) => void
   onSignOut: () => Promise<void>
   signOutIcon: TablerIcon
   user: {
@@ -55,7 +57,7 @@ export function NavUser({
   return (
     <SidebarMenu>
       <SidebarMenuItem>
-        <DropdownMenu>
+        <DropdownMenu onOpenChange={onDropdownOpenChange}>
           <DropdownMenuTrigger
             render={(
               <SidebarMenuButton

@@ -11,6 +11,7 @@ export function useOrganizationSession({
 }) {
   const [organizationStatus, setOrganizationStatus] = useState<OrganizationStatus>('idle')
   const [activeOrganizationId, setActiveOrganizationId] = useState<string | null>(null)
+  const [sessionIsSystemAdmin, setSessionIsSystemAdmin] = useState(false)
 
   const meQuery = useGetMe({
     query: {
@@ -18,6 +19,7 @@ export function useOrganizationSession({
     },
   })
   const activeWorkspaceId = meQuery.data?.activeOrganizationId ?? activeOrganizationId
+  const isSystemAdmin = meQuery.data?.isSystemAdmin ?? sessionIsSystemAdmin
   const hasCheckedOrganization = !isSignedIn
     || organizationStatus === 'ready'
     || organizationStatus === 'missing'
@@ -46,6 +48,7 @@ export function useOrganizationSession({
       const body = await getMe()
 
       setActiveOrganizationId(body.activeOrganizationId)
+      setSessionIsSystemAdmin(body.isSystemAdmin)
       storeLastOrganizationId(body.activeOrganizationId)
       setOrganizationStatus('ready')
     }
@@ -53,11 +56,13 @@ export function useOrganizationSession({
       if (error instanceof ApiError && error.status === 403) {
         setOrganizationStatus('missing')
         setActiveOrganizationId(null)
+        setSessionIsSystemAdmin(false)
         return
       }
 
       setOrganizationStatus('error')
       setActiveOrganizationId(null)
+      setSessionIsSystemAdmin(false)
     }
   }, [])
 
@@ -81,12 +86,14 @@ export function useOrganizationSession({
 
   function resetOrganizationSession() {
     setActiveOrganizationId(null)
+    setSessionIsSystemAdmin(false)
     setOrganizationStatus('idle')
   }
 
   return {
     activeWorkspaceId,
     hasCheckedOrganization,
+    isSystemAdmin,
     meQueryStatus,
     organizationMessage,
     organizationStatus,

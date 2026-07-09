@@ -233,6 +233,7 @@ export function DashboardRoutes() {
                 activeOrganizationId={organization.activeWorkspaceId}
                 currentSessionId={session.data?.session.id}
                 email={session.data?.user.email}
+                isSystemAdmin={organization.isSystemAdmin}
                 name={session.data?.user.name}
                 onCreateOrganization={handleCreateOrganization}
                 onOpenCookiePreferences={handleOpenCookiePreferences}
@@ -267,6 +268,12 @@ export function DashboardRoutes() {
           <Route path="products" element={<BlankPage title="Products" />} />
           <Route path="projects" element={<BlankPage title="Projects" />} />
           <Route path="assets" element={<BlankPage title="Assets" />} />
+          <Route
+            path="admin"
+            element={organization.isSystemAdmin
+              ? <BlankPage title="Admin" />
+              : <Navigate to="/generate" replace />}
+          />
           <Route path="*" element={<Navigate to="/generate" replace />} />
         </Route>
         <Route path="*" element={<Navigate to="/generate" replace />} />

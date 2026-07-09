@@ -12,6 +12,7 @@ import {
   IconPlus,
   IconSearch,
   IconSettings,
+  IconShieldCog,
   IconSparkles,
   IconUserCircle,
   IconUsersGroup,
@@ -38,6 +39,7 @@ import { boardPreviews } from '../features/boards/board-data'
 const pageActions: {
   hidden?: boolean
   icon: typeof IconPlus
+  requiresSystemAdmin?: boolean
   title: string
   url: string
 }[] = [
@@ -48,6 +50,12 @@ const pageActions: {
   { icon: IconBuildingStore, title: 'Brands', url: '/brands' },
   { icon: IconPackage, title: 'Products', url: '/products' },
   { icon: IconUserSquareRounded, title: 'Characters', url: '/characters' },
+  {
+    icon: IconShieldCog,
+    title: 'Admin',
+    url: '/admin',
+    requiresSystemAdmin: true,
+  },
   { icon: IconApps, title: 'Apps', url: '/apps', hidden: true },
   { icon: IconMovie, title: 'Studio', url: '/studio', hidden: true },
   { icon: IconSparkles, title: 'Assistant', url: '/assistant', hidden: true },
@@ -65,15 +73,19 @@ const settingsActions = [
 }[]
 
 export function GlobalSearch({
+  isSystemAdmin,
   onOpenInviteMemberSettings,
   onOpenSettings,
 }: {
+  isSystemAdmin: boolean
   onOpenInviteMemberSettings: () => void
   onOpenSettings: (tab?: SettingsTab) => void
 }) {
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
-  const visiblePageActions = pageActions.filter(action => !action.hidden)
+  const visiblePageActions = pageActions.filter((action) => {
+    return !action.hidden && (!action.requiresSystemAdmin || isSystemAdmin)
+  })
   const shortcutLabel = /Mac|iPhone|iPad|iPod/.test(window.navigator.platform)
     ? '⌘K'
     : 'Ctrl K'

@@ -10,6 +10,7 @@ import {
   IconLogout,
   IconMovie,
   IconPackage,
+  IconShieldCog,
   IconSparkles,
   IconUserSquareRounded,
   IconWand,
@@ -19,7 +20,6 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
-  SidebarRail,
 } from '@talelabs/ui/components/sidebar'
 
 import { OrganizationSwitcher } from '../features/organizations/organization-switcher'
@@ -29,20 +29,24 @@ import { NavUser } from './nav-user'
 export function AppSidebar({
   activeOrganizationId,
   email,
+  isSystemAdmin,
   name,
   onCreateOrganization,
   onOpenInviteMemberSettings,
   onOpenSettings,
+  onSidebarOverlayOpenChange,
   onSignOut,
   onSwitchOrganization,
   ...props
 }: ComponentProps<typeof Sidebar> & {
   activeOrganizationId: string | null
   email: string | undefined
+  isSystemAdmin: boolean
   name: string | undefined
   onCreateOrganization: (name: string, slug: string) => Promise<string | null>
   onOpenInviteMemberSettings: () => void
   onOpenSettings: (tab?: SettingsTab) => void
+  onSidebarOverlayOpenChange: (open: boolean) => void
   onSignOut: () => Promise<void>
   onSwitchOrganization: (organizationId: string) => Promise<string | null>
 }) {
@@ -52,6 +56,7 @@ export function AppSidebar({
         <OrganizationSwitcher
           activeOrganizationId={activeOrganizationId}
           onCreateOrganization={onCreateOrganization}
+          onDropdownOpenChange={onSidebarOverlayOpenChange}
           onSwitchOrganization={onSwitchOrganization}
         />
       </SidebarHeader>
@@ -96,6 +101,12 @@ export function AppSidebar({
               icon: <IconUserSquareRounded />,
             },
             {
+              title: 'Admin',
+              url: '/admin',
+              icon: <IconShieldCog />,
+              hidden: !isSystemAdmin,
+            },
+            {
               title: 'Apps',
               url: '/apps',
               icon: <IconApps />,
@@ -124,11 +135,11 @@ export function AppSidebar({
           }}
           onOpenInviteMemberSettings={onOpenInviteMemberSettings}
           onOpenSettings={onOpenSettings}
+          onDropdownOpenChange={onSidebarOverlayOpenChange}
           onSignOut={onSignOut}
           signOutIcon={IconLogout}
         />
       </SidebarFooter>
-      <SidebarRail />
     </Sidebar>
   )
 }
