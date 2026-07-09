@@ -23,6 +23,7 @@ app.on(['GET', 'POST'], '/api/auth/*', (c) => {
 })
 
 app.use('/me', authMiddleware, requireAuthMiddleware)
+app.use('/me/*', authMiddleware, requireAuthMiddleware)
 app.use('/organizations', authMiddleware, requireAuthMiddleware)
 app.use('/organizations/*', authMiddleware, requireAuthMiddleware)
 

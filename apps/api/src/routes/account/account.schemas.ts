@@ -16,3 +16,13 @@ export const MeResponseSchema = z.object({
     name: z.string().openapi({ example: 'Leonardo Motta' }),
   }),
 }).openapi('MeResponse')
+
+export const SetPasswordRequestSchema = z.object({
+  newPassword: z.string().min(8).openapi({
+    example: 'correct horse battery staple',
+  }),
+}).openapi('SetPasswordRequest')
+
+export const SetPasswordResponseSchema = z.object({
+  status: z.literal(true),
+}).openapi('SetPasswordResponse')

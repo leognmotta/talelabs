@@ -60,12 +60,26 @@ export type {
 export type { ListOrganizationsResponse } from "./types/ListOrganizationsResponse.ts";
 export type { MeResponse } from "./types/MeResponse.ts";
 export type { Organization } from "./types/Organization.ts";
+export type {
+  SetAccountPassword200,
+  SetAccountPassword400,
+  SetAccountPassword401,
+  SetAccountPasswordMutation,
+  SetAccountPasswordMutationRequest,
+  SetAccountPasswordMutationResponse,
+} from "./types/SetAccountPassword.ts";
+export type { SetPasswordRequest } from "./types/SetPasswordRequest.ts";
+export type {
+  SetPasswordResponse,
+  SetPasswordResponseStatusEnumKey,
+} from "./types/SetPasswordResponse.ts";
 export { activateOrganization } from "./clients/activateOrganization.ts";
 export { createOrganizationInvitation } from "./clients/createOrganizationInvitation.ts";
 export { getDbHealth } from "./clients/getDbHealth.ts";
 export { getMe } from "./clients/getMe.ts";
 export { listOrganizationInvitations } from "./clients/listOrganizationInvitations.ts";
 export { listOrganizations } from "./clients/listOrganizations.ts";
+export { setAccountPassword } from "./clients/setAccountPassword.ts";
 export { getDbHealthQueryKey } from "./hooks/useGetDbHealth.ts";
 export { getDbHealthQueryOptions } from "./hooks/useGetDbHealth.ts";
 export { useGetDbHealth } from "./hooks/useGetDbHealth.ts";
@@ -80,6 +94,7 @@ export { listOrganizationsQueryOptions } from "./hooks/useListOrganizations.ts";
 export { useListOrganizations } from "./hooks/useListOrganizations.ts";
 export { createInvitationRequestRoleEnum } from "./types/CreateInvitationRequest.ts";
 export { invitationRoleEnum } from "./types/Invitation.ts";
+export { setPasswordResponseStatusEnum } from "./types/SetPasswordResponse.ts";
 export { activateOrganizationResponseSchema } from "./zod/activateOrganizationResponseSchema.ts";
 export {
   activateOrganization200Schema,
@@ -129,3 +144,12 @@ export {
 } from "./zod/listOrganizationsSchema.ts";
 export { meResponseSchema } from "./zod/meResponseSchema.ts";
 export { organizationSchema } from "./zod/organizationSchema.ts";
+export {
+  setAccountPassword200Schema,
+  setAccountPassword400Schema,
+  setAccountPassword401Schema,
+  setAccountPasswordMutationRequestSchema,
+  setAccountPasswordMutationResponseSchema,
+} from "./zod/setAccountPasswordSchema.ts";
+export { setPasswordRequestSchema } from "./zod/setPasswordRequestSchema.ts";
+export { setPasswordResponseSchema } from "./zod/setPasswordResponseSchema.ts";

@@ -56,5 +56,19 @@ export type {
 export type { ListOrganizationsResponse } from "./ListOrganizationsResponse.ts";
 export type { MeResponse } from "./MeResponse.ts";
 export type { Organization } from "./Organization.ts";
+export type {
+  SetAccountPassword200,
+  SetAccountPassword400,
+  SetAccountPassword401,
+  SetAccountPasswordMutation,
+  SetAccountPasswordMutationRequest,
+  SetAccountPasswordMutationResponse,
+} from "./SetAccountPassword.ts";
+export type { SetPasswordRequest } from "./SetPasswordRequest.ts";
+export type {
+  SetPasswordResponse,
+  SetPasswordResponseStatusEnumKey,
+} from "./SetPasswordResponse.ts";
 export { createInvitationRequestRoleEnum } from "./CreateInvitationRequest.ts";
 export { invitationRoleEnum } from "./Invitation.ts";
+export { setPasswordResponseStatusEnum } from "./SetPasswordResponse.ts";

@@ -100,6 +100,33 @@
           "error"
         ]
       },
+      "SetPasswordResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "SetPasswordRequest": {
+        "type": "object",
+        "properties": {
+          "newPassword": {
+            "type": "string",
+            "minLength": 8,
+            "example": "correct horse battery staple"
+          }
+        },
+        "required": [
+          "newPassword"
+        ]
+      },
       "ListOrganizationsResponse": {
         "type": "object",
         "properties": {
@@ -321,6 +348,56 @@
           },
           "403": {
             "description": "Active organization required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/me/password": {
+      "post": {
+        "operationId": "setAccountPassword",
+        "tags": [
+          "Account"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetPasswordRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Password was created for the authenticated account",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SetPasswordResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Password could not be created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
             "content": {
               "application/json": {
                 "schema": {

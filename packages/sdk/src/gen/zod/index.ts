@@ -47,3 +47,12 @@ export {
 } from "./listOrganizationsSchema.ts";
 export { meResponseSchema } from "./meResponseSchema.ts";
 export { organizationSchema } from "./organizationSchema.ts";
+export {
+  setAccountPassword200Schema,
+  setAccountPassword400Schema,
+  setAccountPassword401Schema,
+  setAccountPasswordMutationRequestSchema,
+  setAccountPasswordMutationResponseSchema,
+} from "./setAccountPasswordSchema.ts";
+export { setPasswordRequestSchema } from "./setPasswordRequestSchema.ts";
+export { setPasswordResponseSchema } from "./setPasswordResponseSchema.ts";

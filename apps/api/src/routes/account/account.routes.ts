@@ -3,12 +3,17 @@ import type { ApiEnv } from '../../types.js'
 
 import { createRoute } from '@hono/zod-openapi'
 import {
+  auth,
   isSystemAdminRole,
   requireOrganizationSession,
 } from '@talelabs/auth'
 import { requireAuth } from '../../middleware/auth.js'
 import { ErrorResponseSchema } from '../../schemas/common.js'
-import { MeResponseSchema } from './account.schemas.js'
+import {
+  MeResponseSchema,
+  SetPasswordRequestSchema,
+  SetPasswordResponseSchema,
+} from './account.schemas.js'
 
 const meRoute = createRoute({
   method: 'get',
@@ -43,6 +48,75 @@ const meRoute = createRoute({
   },
 })
 
+const setPasswordRoute = createRoute({
+  method: 'post',
+  path: '/me/password',
+  operationId: 'setAccountPassword',
+  request: {
+    body: {
+      content: {
+        'application/json': {
+          schema: SetPasswordRequestSchema,
+        },
+      },
+      required: true,
+    },
+  },
+  tags: ['Account'],
+  responses: {
+    200: {
+      content: {
+        'application/json': {
+          schema: SetPasswordResponseSchema,
+        },
+      },
+      description: 'Password was created for the authenticated account',
+    },
+    400: {
+      content: {
+        'application/json': {
+          schema: ErrorResponseSchema,
+        },
+      },
+      description: 'Password could not be created',
+    },
+    401: {
+      content: {
+        'application/json': {
+          schema: ErrorResponseSchema,
+        },
+      },
+      description: 'Authentication required',
+    },
+  },
+})
+
+function getAuthErrorStatus(error: unknown) {
+  if (
+    error
+    && typeof error === 'object'
+    && 'statusCode' in error
+    && typeof error.statusCode === 'number'
+  ) {
+    return error.statusCode
+  }
+
+  return null
+}
+
+function getAuthErrorMessage(error: unknown) {
+  if (
+    error
+    && typeof error === 'object'
+    && 'message' in error
+    && typeof error.message === 'string'
+  ) {
+    return error.message
+  }
+
+  return 'Could not create password.'
+}
+
 export function registerAccountRoutes(app: OpenAPIHono<ApiEnv>) {
   app.openapi(meRoute, async (c) => {
     requireAuth(c)
@@ -69,5 +143,28 @@ export function registerAccountRoutes(app: OpenAPIHono<ApiEnv>) {
         name: result.session.user.name,
       },
     }, 200)
+  })
+
+  app.openapi(setPasswordRoute, async (c) => {
+    requireAuth(c)
+
+    const body = c.req.valid('json')
+
+    try {
+      await auth.api.setPassword({
+        body,
+        headers: c.req.raw.headers,
+      })
+
+      return c.json({ status: true } as const, 200)
+    }
+    catch (error) {
+      const status = getAuthErrorStatus(error)
+
+      if (status === 400 || status === 401)
+        return c.json({ error: getAuthErrorMessage(error) }, status)
+
+      throw error
+    }
   })
 }
