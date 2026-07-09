@@ -96,6 +96,16 @@ interface InvitationSummary {
   inviteUrl: string
 }
 
+interface OrganizationMemberSummary {
+  id: string
+  organizationId: string
+  userId: string
+  name: string
+  email: string
+  role: string
+  createdAt: Date
+}
+
 function parseCookie(cookieHeader: string | null, name: string) {
   if (!cookieHeader)
     return null
@@ -407,6 +417,42 @@ export async function listOrganizationInvitations(headers: Headers, organization
       expiresAt: invitation.expiresAt,
       createdAt: invitation.createdAt,
       inviteUrl: buildInviteUrl(invitation.id),
+    })),
+  } as const
+}
+
+export async function listOrganizationMembers(headers: Headers, organizationId: string) {
+  const accessResult = await requireInvitationAccess(headers, organizationId)
+
+  if (!accessResult.ok)
+    return accessResult
+
+  const members = await db
+    .selectFrom('member')
+    .innerJoin('user', 'user.id', 'member.userId')
+    .select([
+      'member.id as id',
+      'member.organizationId as organizationId',
+      'member.userId as userId',
+      'member.role as role',
+      'member.createdAt as createdAt',
+      'user.name as name',
+      'user.email as email',
+    ])
+    .where('member.organizationId', '=', organizationId)
+    .orderBy('member.createdAt', 'asc')
+    .execute()
+
+  return {
+    ok: true,
+    members: members.map((member): OrganizationMemberSummary => ({
+      id: member.id,
+      organizationId: member.organizationId,
+      userId: member.userId,
+      name: member.name,
+      email: member.email,
+      role: member.role,
+      createdAt: member.createdAt,
     })),
   } as const
 }

@@ -7,6 +7,7 @@ import {
   createOrganizationInvitation,
   listAccessibleOrganizations,
   listOrganizationInvitations,
+  listOrganizationMembers,
 } from '@talelabs/auth'
 import { requireAuth } from '../../middleware/auth.js'
 import { ErrorResponseSchema } from '../../schemas/common.js'
@@ -15,10 +16,15 @@ import {
   CreateInvitationRequestSchema,
   CreateInvitationResponseSchema,
   ListInvitationsResponseSchema,
+  ListOrganizationMembersResponseSchema,
   ListOrganizationsResponseSchema,
 } from './organizations.schemas.js'
 
 function toInvitationRole(role: string): 'admin' | 'member' {
+  return role === 'admin' ? 'admin' : 'member'
+}
+
+function toOrganizationRole(role: string): 'admin' | 'member' {
   return role === 'admin' ? 'admin' : 'member'
 }
 
@@ -103,6 +109,44 @@ const listInvitationsRoute = createRoute({
         },
       },
       description: 'Organization invitations',
+    },
+    401: {
+      content: {
+        'application/json': {
+          schema: ErrorResponseSchema,
+        },
+      },
+      description: 'Authentication required',
+    },
+    403: {
+      content: {
+        'application/json': {
+          schema: ErrorResponseSchema,
+        },
+      },
+      description: 'Organization admin required',
+    },
+  },
+})
+
+const listOrganizationMembersRoute = createRoute({
+  method: 'get',
+  path: '/organizations/{organizationId}/members',
+  operationId: 'listOrganizationMembers',
+  tags: ['Organizations'],
+  request: {
+    params: z.object({
+      organizationId: z.string().openapi({ example: 'org_123' }),
+    }),
+  },
+  responses: {
+    200: {
+      content: {
+        'application/json': {
+          schema: ListOrganizationMembersResponseSchema,
+        },
+      },
+      description: 'Organization members',
     },
     401: {
       content: {
@@ -230,6 +274,27 @@ export function registerOrganizationRoutes(app: OpenAPIHono<ApiEnv>) {
         createdAt: invitation.createdAt.toISOString(),
         expiresAt: invitation.expiresAt.toISOString(),
         role: toInvitationRole(invitation.role),
+      })),
+    }, 200)
+  })
+
+  app.openapi(listOrganizationMembersRoute, async (c) => {
+    requireAuth(c)
+
+    const { organizationId } = c.req.valid('param')
+    const result = await listOrganizationMembers(c.req.raw.headers, organizationId)
+
+    if (!result.ok && result.status === 401)
+      return c.json({ error: result.error }, 401)
+
+    if (!result.ok)
+      return c.json({ error: result.error }, 403)
+
+    return c.json({
+      members: result.members.map(member => ({
+        ...member,
+        createdAt: member.createdAt.toISOString(),
+        role: toOrganizationRole(member.role),
       })),
     }, 200)
   })

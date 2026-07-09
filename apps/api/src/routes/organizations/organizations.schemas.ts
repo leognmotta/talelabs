@@ -22,6 +22,16 @@ export const InvitationSchema = z.object({
   }),
 }).openapi('Invitation')
 
+export const OrganizationMemberSchema = z.object({
+  id: z.string().openapi({ example: 'member_123' }),
+  organizationId: z.string().openapi({ example: 'org_123' }),
+  userId: z.string().openapi({ example: 'user_123' }),
+  name: z.string().openapi({ example: 'Ada Lovelace' }),
+  email: z.email().openapi({ example: 'ada@example.com' }),
+  role: z.enum(['admin', 'member']).openapi({ example: 'member' }),
+  createdAt: z.iso.datetime(),
+}).openapi('OrganizationMember')
+
 export const ListOrganizationsResponseSchema = z.object({
   organizations: z.array(OrganizationSchema),
 }).openapi('ListOrganizationsResponse')
@@ -33,6 +43,10 @@ export const ActivateOrganizationResponseSchema = z.object({
 export const ListInvitationsResponseSchema = z.object({
   invitations: z.array(InvitationSchema),
 }).openapi('ListInvitationsResponse')
+
+export const ListOrganizationMembersResponseSchema = z.object({
+  members: z.array(OrganizationMemberSchema),
+}).openapi('ListOrganizationMembersResponse')
 
 export const CreateInvitationRequestSchema = z.object({
   email: z.email().openapi({ example: 'new-user@example.com' }),

@@ -258,6 +258,67 @@
           "inviteUrl"
         ]
       },
+      "ListOrganizationMembersResponse": {
+        "type": "object",
+        "properties": {
+          "members": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrganizationMember"
+            }
+          }
+        },
+        "required": [
+          "members"
+        ]
+      },
+      "OrganizationMember": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "member_123"
+          },
+          "organizationId": {
+            "type": "string",
+            "example": "org_123"
+          },
+          "userId": {
+            "type": "string",
+            "example": "user_123"
+          },
+          "name": {
+            "type": "string",
+            "example": "Ada Lovelace"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "ada@example.com"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "admin",
+              "member"
+            ],
+            "example": "member"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "organizationId",
+          "userId",
+          "name",
+          "email",
+          "role",
+          "createdAt"
+        ]
+      },
       "CreateInvitationResponse": {
         "type": "object",
         "properties": {
@@ -609,6 +670,57 @@
           },
           "502": {
             "description": "Invitation email could not be sent",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/organizations/{organizationId}/members": {
+      "get": {
+        "operationId": "listOrganizationMembers",
+        "tags": [
+          "Organizations"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "example": "org_123"
+            },
+            "required": true,
+            "name": "organizationId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Organization members",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListOrganizationMembersResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Organization admin required",
             "content": {
               "application/json": {
                 "schema": {
