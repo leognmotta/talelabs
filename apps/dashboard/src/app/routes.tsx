@@ -206,7 +206,8 @@ export function DashboardRoutes() {
           <Route path="create" element={<BlankPage title="Create" />} />
           <Route path="apps" element={<BlankPage title="Apps" />} />
           <Route path="studio" element={<BlankPage title="Studio" />} />
-          <Route path="agent" element={<BlankPage title="Agent" />} />
+          <Route path="agent" element={<Navigate to="/assistant" replace />} />
+          <Route path="assistant" element={<BlankPage title="Assistant" />} />
           <Route path="characters" element={<BlankPage title="Characters" />} />
           <Route path="brands" element={<BlankPage title="Brands" />} />
           <Route path="products" element={<BlankPage title="Products" />} />

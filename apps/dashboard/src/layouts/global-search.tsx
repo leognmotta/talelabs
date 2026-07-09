@@ -39,7 +39,7 @@ const pageActions = [
   { icon: IconPlus, title: 'Create', url: '/create' },
   { icon: IconApps, title: 'Apps', url: '/apps' },
   { icon: IconMovie, title: 'Studio', url: '/studio' },
-  { icon: IconSparkles, title: 'Agent', url: '/agent' },
+  { icon: IconSparkles, title: 'Assistant', url: '/assistant' },
   { icon: IconUserSquareRounded, title: 'Characters', url: '/characters' },
   { icon: IconBuildingStore, title: 'Brands', url: '/brands' },
   { icon: IconPackage, title: 'Products', url: '/products' },

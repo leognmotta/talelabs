@@ -80,8 +80,8 @@ export function AppSidebar({
               icon: <IconMovie />,
             },
             {
-              title: 'Agent',
-              url: '/agent',
+              title: 'Assistant',
+              url: '/assistant',
               icon: <IconSparkles />,
             },
             {
