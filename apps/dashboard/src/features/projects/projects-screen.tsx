@@ -5,27 +5,33 @@ import {
   CardHeader,
   CardTitle,
 } from '@talelabs/ui/components/card'
+import { InvitationsPanel } from '../organizations/invitations-panel'
 
 export function ProjectsScreen({
+  activeOrganizationId,
   meQueryStatus,
   organizationMessage,
 }: {
+  activeOrganizationId: string | null
   meQueryStatus: string
   organizationMessage: string
 }) {
   return (
-    <Card>
-      <CardHeader>
-        <CardDescription>Organization access</CardDescription>
-        <CardTitle>{organizationMessage}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <p className="text-sm text-muted-foreground">
-          SDK /me status:
-          {' '}
-          {meQueryStatus}
-        </p>
-      </CardContent>
-    </Card>
+    <>
+      <Card>
+        <CardHeader>
+          <CardDescription>Organization access</CardDescription>
+          <CardTitle>{organizationMessage}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground">
+            SDK /me status:
+            {' '}
+            {meQueryStatus}
+          </p>
+        </CardContent>
+      </Card>
+      <InvitationsPanel organizationId={activeOrganizationId} />
+    </>
   )
 }

@@ -5,6 +5,7 @@ import {
   IconPlus,
   IconSelector,
 } from '@tabler/icons-react'
+import { listOrganizationsQueryKey, useListOrganizations } from '@talelabs/sdk'
 import { Button } from '@talelabs/ui/components/button'
 import {
   Dialog,
@@ -36,19 +37,17 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@talelabs/ui/components/sidebar'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
 
 import { slugify } from '../../shared/lib/slugify'
-import { authClient } from '../auth/auth-client'
 
 interface OrganizationSummary {
   id: string
+  isSystemAdminAccess: boolean
   name: string
   slug: string
 }
-
-const organizationListQueryKey = ['better-auth', 'organizations'] as const
 
 export function OrganizationSwitcher({
   activeOrganizationId,
@@ -67,23 +66,9 @@ export function OrganizationSwitcher({
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isCreating, setIsCreating] = useState(false)
   const [isSwitchingId, setIsSwitchingId] = useState<string | null>(null)
-  const organizationsQuery = useQuery({
-    queryKey: organizationListQueryKey,
-    queryFn: async () => {
-      const result = await authClient.organization.list()
-
-      if (result.error)
-        throw new Error(result.error.message ?? 'Could not load organizations.')
-
-      return result.data ?? []
-    },
-    gcTime: Infinity,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-    staleTime: Infinity,
-  })
+  const organizationsQuery = useListOrganizations()
   const organizations = useMemo<OrganizationSummary[]>(() => {
-    return organizationsQuery.data ?? []
+    return organizationsQuery.data?.organizations ?? []
   }, [organizationsQuery.data])
 
   const activeOrganization = useMemo(() => {
@@ -131,7 +116,7 @@ export function OrganizationSwitcher({
     setName('')
     setSlug('')
     setIsCreateDialogOpen(false)
-    await queryClient.invalidateQueries({ queryKey: organizationListQueryKey })
+    await queryClient.invalidateQueries({ queryKey: listOrganizationsQueryKey() })
   }
 
   return (
@@ -162,7 +147,9 @@ export function OrganizationSwitcher({
                   {activeOrganization?.name ?? 'TaleLabs'}
                 </span>
                 <span className="truncate text-xs">
-                  {activeOrganization?.slug ?? 'Select organization'}
+                  {activeOrganization?.isSystemAdminAccess
+                    ? 'System admin access'
+                    : activeOrganization?.slug ?? 'Select organization'}
                 </span>
               </div>
               <IconSelector className="ml-auto" />
@@ -195,15 +182,19 @@ export function OrganizationSwitcher({
                     <IconBuilding />
                   </div>
                   <span className="truncate">{organization.name}</span>
-                  {organization.id === activeOrganizationId
-                    ? (
-                        <DropdownMenuShortcut>Active</DropdownMenuShortcut>
-                      )
-                    : (
-                        <DropdownMenuShortcut>
-                          {index + 1}
-                        </DropdownMenuShortcut>
-                      )}
+                  {organization.id === activeOrganizationId && (
+                    <DropdownMenuShortcut>Active</DropdownMenuShortcut>
+                  )}
+                  {organization.id !== activeOrganizationId
+                    && organization.isSystemAdminAccess && (
+                    <DropdownMenuShortcut>System</DropdownMenuShortcut>
+                  )}
+                  {organization.id !== activeOrganizationId
+                    && !organization.isSystemAdminAccess && (
+                    <DropdownMenuShortcut>
+                      {index + 1}
+                    </DropdownMenuShortcut>
+                  )}
                 </DropdownMenuItem>
               ))}
               <DropdownMenuSeparator />

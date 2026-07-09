@@ -2,6 +2,7 @@ import type { OrganizationStatus } from '../../shared/types/auth'
 
 import { ApiError, getMe, useGetMe } from '@talelabs/sdk'
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { storeLastOrganizationId } from '../../shared/lib/last-organization'
 
 export function useOrganizationSession({
   isSignedIn,
@@ -45,6 +46,7 @@ export function useOrganizationSession({
       const body = await getMe()
 
       setActiveOrganizationId(body.activeOrganizationId)
+      storeLastOrganizationId(body.activeOrganizationId)
       setOrganizationStatus('ready')
     }
     catch (error) {
