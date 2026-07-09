@@ -19,6 +19,8 @@ export const R2_ACCESS_KEY_ID_ENV = 'R2_ACCESS_KEY_ID'
 export const R2_SECRET_ACCESS_KEY_ENV = 'R2_SECRET_ACCESS_KEY'
 
 export const R2_DEFAULT_REGION = 'auto'
+export const TALELABS_PRIVATE_BUCKET = 'talelabs-private'
+export const TALELABS_PUBLIC_BUCKET = 'talelabs-public'
 export const DEFAULT_SIGNED_URL_EXPIRES_IN = 60 * 5
 
 export type ObjectStorageEnv = Partial<
