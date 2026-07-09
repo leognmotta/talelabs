@@ -13,6 +13,7 @@ interface NavMainItem {
   url: string
   icon: ReactNode
   end?: boolean
+  hidden?: boolean
 }
 
 export function NavMain({
@@ -21,11 +22,12 @@ export function NavMain({
   items: NavMainItem[]
 }) {
   const location = useLocation()
+  const visibleItems = items.filter(item => !item.hidden)
 
   return (
     <SidebarGroup>
       <SidebarMenu>
-        {items.map((item) => {
+        {visibleItems.map((item) => {
           const isActive = item.end
             ? location.pathname === item.url
             : location.pathname.startsWith(item.url)
@@ -35,6 +37,7 @@ export function NavMain({
               <SidebarMenuButton
                 isActive={isActive}
                 tooltip={item.title}
+                className="data-active:[&_svg]:text-primary"
                 render={<NavLink to={item.url} end={item.end} />}
               >
                 {item.icon}

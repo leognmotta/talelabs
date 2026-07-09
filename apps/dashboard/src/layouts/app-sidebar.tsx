@@ -63,6 +63,7 @@ export function AppSidebar({
               url: '/boards',
               icon: <IconLayoutBoard />,
               end: true,
+              hidden: true,
             },
             {
               title: 'Create',
@@ -70,24 +71,14 @@ export function AppSidebar({
               icon: <IconPlus />,
             },
             {
-              title: 'Apps',
-              url: '/apps',
-              icon: <IconApps />,
+              title: 'Assets',
+              url: '/assets',
+              icon: <IconArchive />,
             },
             {
-              title: 'Studio',
-              url: '/studio',
-              icon: <IconMovie />,
-            },
-            {
-              title: 'Assistant',
-              url: '/assistant',
-              icon: <IconSparkles />,
-            },
-            {
-              title: 'Characters',
-              url: '/characters',
-              icon: <IconUserSquareRounded />,
+              title: 'Projects',
+              url: '/projects',
+              icon: <IconBriefcase />,
             },
             {
               title: 'Brands',
@@ -100,14 +91,27 @@ export function AppSidebar({
               icon: <IconPackage />,
             },
             {
-              title: 'Projects',
-              url: '/projects',
-              icon: <IconBriefcase />,
+              title: 'Characters',
+              url: '/characters',
+              icon: <IconUserSquareRounded />,
             },
             {
-              title: 'Assets',
-              url: '/assets',
-              icon: <IconArchive />,
+              title: 'Apps',
+              url: '/apps',
+              icon: <IconApps />,
+              hidden: true,
+            },
+            {
+              title: 'Studio',
+              url: '/studio',
+              icon: <IconMovie />,
+              hidden: true,
+            },
+            {
+              title: 'Assistant',
+              url: '/assistant',
+              icon: <IconSparkles />,
+              hidden: true,
             },
           ]}
         />

@@ -34,18 +34,23 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { boardPreviews } from '../features/boards/board-data'
 
-const pageActions = [
-  { icon: IconLayoutBoard, title: 'Boards', url: '/boards' },
+const pageActions: {
+  hidden?: boolean
+  icon: typeof IconPlus
+  title: string
+  url: string
+}[] = [
+  { icon: IconLayoutBoard, title: 'Boards', url: '/boards', hidden: true },
   { icon: IconPlus, title: 'Create', url: '/create' },
-  { icon: IconApps, title: 'Apps', url: '/apps' },
-  { icon: IconMovie, title: 'Studio', url: '/studio' },
-  { icon: IconSparkles, title: 'Assistant', url: '/assistant' },
-  { icon: IconUserSquareRounded, title: 'Characters', url: '/characters' },
+  { icon: IconArchive, title: 'Assets', url: '/assets' },
+  { icon: IconBriefcase, title: 'Projects', url: '/projects' },
   { icon: IconBuildingStore, title: 'Brands', url: '/brands' },
   { icon: IconPackage, title: 'Products', url: '/products' },
-  { icon: IconBriefcase, title: 'Projects', url: '/projects' },
-  { icon: IconArchive, title: 'Assets', url: '/assets' },
-] as const
+  { icon: IconUserSquareRounded, title: 'Characters', url: '/characters' },
+  { icon: IconApps, title: 'Apps', url: '/apps', hidden: true },
+  { icon: IconMovie, title: 'Studio', url: '/studio', hidden: true },
+  { icon: IconSparkles, title: 'Assistant', url: '/assistant', hidden: true },
+]
 
 const settingsActions = [
   { icon: IconSettings, title: 'General settings', tab: 'general' },
@@ -67,6 +72,7 @@ export function GlobalSearch({
 }) {
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
+  const visiblePageActions = pageActions.filter(action => !action.hidden)
   const shortcutLabel = /Mac|iPhone|iPad|iPod/.test(window.navigator.platform)
     ? '⌘K'
     : 'Ctrl K'
@@ -160,7 +166,7 @@ export function GlobalSearch({
             </CommandGroup>
             <CommandSeparator />
             <CommandGroup heading="Pages">
-              {pageActions.map((action) => {
+              {visiblePageActions.map((action) => {
                 const Icon = action.icon
 
                 return (
