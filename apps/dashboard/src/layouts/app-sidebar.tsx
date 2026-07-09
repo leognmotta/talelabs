@@ -10,9 +10,9 @@ import {
   IconLogout,
   IconMovie,
   IconPackage,
-  IconPlus,
   IconSparkles,
   IconUserSquareRounded,
+  IconWand,
 } from '@tabler/icons-react'
 import {
   Sidebar,
@@ -68,7 +68,7 @@ export function AppSidebar({
             {
               title: 'Generate',
               url: '/generate',
-              icon: <IconPlus />,
+              icon: <IconWand />,
             },
             {
               title: 'Assets',

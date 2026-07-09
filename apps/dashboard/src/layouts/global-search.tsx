@@ -16,6 +16,7 @@ import {
   IconUserCircle,
   IconUsersGroup,
   IconUserSquareRounded,
+  IconWand,
 } from '@tabler/icons-react'
 import { Button } from '@talelabs/ui/components/button'
 import {
@@ -41,7 +42,7 @@ const pageActions: {
   url: string
 }[] = [
   { icon: IconLayoutBoard, title: 'Boards', url: '/boards', hidden: true },
-  { icon: IconPlus, title: 'Generate', url: '/generate' },
+  { icon: IconWand, title: 'Generate', url: '/generate' },
   { icon: IconArchive, title: 'Assets', url: '/assets' },
   { icon: IconBriefcase, title: 'Projects', url: '/projects' },
   { icon: IconBuildingStore, title: 'Brands', url: '/brands' },
