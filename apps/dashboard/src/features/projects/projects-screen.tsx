@@ -14,8 +14,13 @@ import {
   CardTitle,
 } from '@talelabs/ui/components/card'
 import { Input } from '@talelabs/ui/components/input'
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupTextarea,
+} from '@talelabs/ui/components/input-group'
 import { Tabs, TabsList, TabsTrigger } from '@talelabs/ui/components/tabs'
-import { Textarea } from '@talelabs/ui/components/textarea'
 
 const boardPreviews = [
   {
@@ -54,28 +59,23 @@ export function ProjectsScreen(_props: {
           What do you want to create today?
         </h1>
 
-        <Card className="w-full rounded-4xl bg-muted/40 py-0 shadow-none">
-          <CardContent className="flex flex-col gap-3 p-4">
-            <Textarea
-              className="
-                min-h-20 border-0 bg-transparent p-0 text-base shadow-none
-                focus-visible:ring-0
-              "
-              placeholder="Describe what you want to create..."
-            />
-            <div className="flex items-center justify-end gap-1">
-              <Button type="button" variant="ghost" size="icon-sm" aria-label="Attach file">
-                <IconPaperclip data-icon="inline-start" />
-              </Button>
-              <Button type="button" variant="ghost" size="icon-sm" aria-label="Record prompt">
-                <IconMicrophone data-icon="inline-start" />
-              </Button>
-              <Button type="button" size="icon-sm" aria-label="Create">
-                <IconArrowUp data-icon="inline-start" />
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        <InputGroup className="min-h-28 rounded-4xl bg-muted/40">
+          <InputGroupTextarea
+            className="min-h-20 text-base"
+            placeholder="Describe what you want to create..."
+          />
+          <InputGroupAddon align="block-end" className="justify-end pt-0">
+            <InputGroupButton size="icon-sm" aria-label="Attach file">
+              <IconPaperclip data-icon="inline-start" />
+            </InputGroupButton>
+            <InputGroupButton size="icon-sm" aria-label="Record prompt">
+              <IconMicrophone data-icon="inline-start" />
+            </InputGroupButton>
+            <InputGroupButton size="icon-sm" variant="default" aria-label="Create">
+              <IconArrowUp data-icon="inline-start" />
+            </InputGroupButton>
+          </InputGroupAddon>
+        </InputGroup>
       </section>
 
       <section className="flex flex-col gap-5">
