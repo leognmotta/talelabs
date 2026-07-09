@@ -88,25 +88,91 @@ async job status
 saved output asset
 ```
 
-Generation types can start narrow:
+Generate should be organized around three core media sections:
 
 ```txt
-image generation
-image-to-video
-video generation
-product shot
-character scene
+Image
+Video
+Audio
 ```
 
-Model choice should not be the main UX. The app can expose advanced settings later, but the default experience should guide users toward outcomes instead of forcing them to understand every provider/model.
+These are the primary tabs/surfaces. More specific features should be accessed from those sections through presets, modes, or Apps.
+
+Examples:
+
+```txt
+Image
+- text to image
+- image edit
+- product shot
+- background replace
+- character scene still
+
+Video
+- text to video
+- image to video
+- first-frame/last-frame video
+- product video
+- character scene video
+- video extend/upscale later
+
+Audio
+- text to speech
+- voiceover
+- music/sound later
+- character voice later
+```
+
+This means `product shot` and `character scene` are not top-level Generate sections. They are presets or guided modes within Image/Video, and can later also appear as Apps.
+
+Model choice should be available in Generate. Power users should be able to choose a model/provider when using the custom Generate surface.
+
+However, model choice should not dominate the default UX. The interface should guide users toward outcomes first, then let them adjust model, quality, resolution, duration, seed, and other advanced settings when needed.
+
+Apps can auto-select the model, hide model choice, or expose only a simplified quality setting. An app is allowed to lock or recommend a model because it is designed around a specific outcome.
 
 ## Apps
 
-Apps are not part of the first minimal navigation, but the concept matters.
+Apps are not part of the first minimal navigation yet, for now it is hidden, but the concept matters.
 
-Apps are generation presets.
+Apps are generation presets that change the Generate form.
 
-An app is a guided, opinionated preset around a common creative outcome. It should feel like a productized template, not like a separate product or marketplace.
+An app is a guided, opinionated preset around a common creative outcome. Selecting an app should adapt the generation form to the exact workflow that app is designed for.
+
+An app can define:
+
+```txt
+media section: Image | Video | Audio
+steps
+form fields
+required references
+default model
+default aspect ratio
+default duration/resolution
+prompt structure
+credit estimate rules
+output type
+post-generation actions
+```
+
+Example:
+
+```txt
+Apps / Scene Builder
+
+Step 1: Frame your scene
+- describe what you imagine
+- add references
+- suggest cinematic effects
+- generate frame
+
+Step 2: Animate your scene
+- use generated frame
+- choose motion/duration/aspect ratio
+- generate video
+```
+
+The app changes the form. It is not just a button that runs the same generic prompt box.
 
 Examples:
 
@@ -124,13 +190,13 @@ In the product model:
 
 ```txt
 Generate = custom/free generation
-Apps = guided generation presets
+Apps = guided generation presets that adapt the Generate form
 Workflows = repeatable connected creative processes, later
 Boards = visual creative context, later
 Studio = simple cut/editor surface, later
 ```
 
-Apps can eventually open a prefilled Generate session, a starter board, or a workflow. For MVP planning, treat Apps as a future layer over Generate.
+Apps can open a prefilled Generate session with a custom form, a starter board, or a future workflow. For MVP planning, treat Apps as a guided layer over Generate.
 
 ## Assets
 
@@ -167,12 +233,15 @@ Stride Runner Campaign
 Client X Social Ads
 ```
 
-An asset can belong to a project and also live in a folder. Projects should also work as filters inside Assets, so a user can browse:
+An asset can be related to a project, brand, product, and/or character while also living in a folder. These relationships should work as filters inside Assets, so a user can browse:
 
 ```txt
 All assets
 Assets in a folder
 Assets for a project
+Assets for a brand
+Assets for a product
+Assets for a character
 Assets by type
 Assets by tag
 Assets by source
@@ -229,6 +298,9 @@ character context
 credit cost
 job status
 project
+brand
+product
+character
 tags
 source: upload | generation | export
 favorite
@@ -257,6 +329,9 @@ For MVP, Assets can start simple, but the data model should already allow:
 ```txt
 asset folders
 asset to project relation
+asset to brand relation
+asset to product relation
+asset to character relation
 asset tags
 asset source
 asset type
@@ -274,6 +349,7 @@ Projects are not only for organizing assets. A project should be able to collect
 assets
 boards
 brands
+workflows
 products
 characters
 future cuts
@@ -326,15 +402,104 @@ Create a board -> attach it to Project A
 Create a brand -> use it globally or attach it to Project A
 Create a product -> attach it to Project A
 Create a character -> use it globally or attach it to Project A
+Upload product images -> save to Assets -> relate them to Product A
+Upload brand logos -> save to Assets -> relate them to Brand A
 ```
 
 Brands, Products, and Characters should remain reusable global memory objects, but they can also be associated with projects. A product can belong to a brand, a character can be used with a product, and all of them can be connected inside a project.
 
 Do not model projects as a rigid parent that owns everything exclusively. Model projects as a workspace relationship layer that can group reusable objects without preventing reuse elsewhere.
 
+### Project View
+
+A project detail view should be a contextual workspace.
+
+Inside a project, users should be able to create any type of generation/output with the current project already selected as context.
+
+Project view should support tabs such as:
+
+```txt
+Creation Spaces
+Assets
+```
+
+Later, Creation Spaces can include:
+
+```txt
+Sessions
+Boards
+Workflows
+Cuts
+```
+
+The `Assets` tab inside a project is not a separate asset system. It is the global Assets library filtered to that project.
+
+That means:
+
+```txt
+/assets = all workspace assets
+/projects/:projectId/assets = assets related to this project
+```
+
+From a project asset tab, users should be able to:
+
+```txt
+upload project assets
+generate image for this project
+generate video for this project
+create audio/voiceover for this project
+attach existing assets
+filter project assets by type/tag/folder
+open asset details
+```
+
+Any asset uploaded or generated inside a project should still be saved in the global Assets library, but it should automatically be related to that project.
+
+Project empty states should be action-oriented. If a project has no creation spaces or assets yet, offer actions such as:
+
+```txt
+Generate image
+Generate video
+Upload asset
+Create board/session
+Create workflow later
+```
+
 ## Brands
 
 Brands are reusable AI context.
+
+A brand is persistent identity/context, not a project replacement.
+
+The boundary:
+
+```txt
+Brand = reusable identity, style, memory, and approved context
+Project = temporary workspace/campaign/client job/production effort
+```
+
+For agencies, a common model can be:
+
+```txt
+Brand = client
+Project = campaign or job for that client
+```
+
+A brand can collect related reusable objects:
+
+```txt
+products
+characters
+voices
+assets
+logo variants
+reference images
+approved videos
+approved audio
+projects
+```
+
+Products usually belong to a brand. Characters can belong to brands and projects, but can also be global/reused elsewhere. Assets can be related to a brand, product, character, project, folder, or all of them.
 
 A brand profile should eventually include:
 
@@ -352,6 +517,23 @@ competitors
 CTA examples
 ```
 
+Brand Kit should support multiple logo assets. Real brands often have more than one logo format:
+
+```txt
+primary logo
+horizontal logo
+icon mark
+wordmark
+light version
+dark version
+monochrome version
+transparent PNG
+SVG source
+social avatar
+```
+
+Do not model a brand as having only one logo. Store brand logos as assets with labels/types.
+
 For MVP, keep it simple:
 
 ```txt
@@ -359,7 +541,8 @@ name
 description
 tone
 visual style
-logo/reference images
+logo assets
+reference assets
 do/don't rules
 ```
 
@@ -368,6 +551,8 @@ Brands exist so users do not have to repeat the same brand instructions in every
 ## Products
 
 Products are reusable product context.
+
+Products can have their own assets. Product images, reference videos, packaging shots, lifestyle shots, and generated outputs should still live in the global Assets library, but can be related to a product.
 
 A product profile should eventually include:
 
@@ -380,6 +565,7 @@ benefits
 audience
 positioning
 source images
+product assets
 approved references
 ```
 
@@ -394,6 +580,7 @@ images
 benefits
 features
 brand
+assets
 ```
 
 ## Characters
@@ -422,10 +609,38 @@ description
 personality/tone
 visual notes
 reference images
+sample videos
+sample audio/voice references
 approved assets
 ```
 
 Characters should be usable inside Generate so users can create product scenes, ads, expression sheets, and recurring visual identities.
+
+Characters can be related to:
+
+```txt
+brands
+projects
+products
+assets
+voices later
+```
+
+Characters can have their own related assets, such as:
+
+```txt
+reference images
+expression sheets
+pose sheets
+sample videos
+sample audio
+voice references
+approved generated outputs
+```
+
+These files should still live in the global Assets library, but be related to the character for reuse in generation.
+
+Do not model a character as owned exclusively by only one project. A character can be global, brand-specific, project-specific, or used across multiple projects.
 
 Do not build full talking-avatar infrastructure in the MVP unless explicitly requested. Start with reusable context and references.
 
@@ -483,3 +698,141 @@ Trigger-based automation, webhooks, schedules, API-triggered workflows, and MCP 
 8. Avoid building a full editor too early.
 9. Use providers like OpenRouter for speed, but keep adapters flexible for direct integrations later.
 10. Treat storage, jobs, and credits as core infrastructure from day one.
+
+## Configuration Strategy
+
+Do not put every product/model/app configuration in the database early.
+
+TaleLabs should start with a simple split:
+
+```txt
+Static product config -> YAML or TypeScript config
+Provider/model catalog -> provider APIs plus local overrides
+User-created data -> database
+```
+
+### Static Config
+
+Use YAML or code-level config for data that is controlled by the product team and does not need an admin UI yet:
+
+```txt
+apps
+app steps
+app form fields
+default models
+recommended models
+model display names
+model grouping
+quality presets
+aspect ratio presets
+duration presets
+pricing multipliers
+credit formula inputs
+feature flags
+UI presets
+```
+
+Example app config:
+
+```yaml
+id: scene-builder
+name: Scene Builder
+section: video
+steps:
+  - id: frame
+    title: Frame your scene
+    fields:
+      - type: textarea
+        name: prompt
+      - type: references
+        max: 4
+    defaultModel: google/gemini-3.1-flash-image
+  - id: animate
+    title: Animate your scene
+    fields:
+      - type: generated_frame
+      - type: duration
+      - type: aspect_ratio
+    defaultModel: bytedance/seedance-2.0
+```
+
+Validate config with Zod or an equivalent schema at startup/build time. Bad config should fail loudly before users hit it.
+
+### Provider Catalogs
+
+Provider APIs should be used to fetch live model capabilities and pricing when available.
+
+For OpenRouter, image/video model catalog data can include useful UI/runtime capabilities such as:
+
+```txt
+supported resolutions
+supported aspect ratios
+supported sizes
+supported durations
+supported frame images
+whether audio generation is supported
+whether seed is supported
+allowed passthrough parameters
+pricing SKUs
+input reference min/max
+quality/background/output compression options
+```
+
+This kind of provider metadata should affect what the UI allows. For example:
+
+```txt
+how many reference images can be uploaded
+which durations are selectable
+which aspect ratios are selectable
+whether first-frame/last-frame controls are available
+whether audio generation can be toggled
+which advanced controls can be shown
+```
+
+However, provider metadata is not enough on its own. TaleLabs still needs local overrides for product decisions:
+
+```txt
+enabled/disabled models
+recommended models
+hidden models
+fallback models
+internal labels
+UI grouping
+which models power each app
+margin tier
+credit pricing behavior
+quality presets
+```
+
+The intended model:
+
+```txt
+provider catalog
++ local model overrides
++ app preset config
+= final UI/runtime generation config
+```
+
+### Database Data
+
+Use the database for user-created or user-mutated data:
+
+```txt
+users
+workspaces
+brands
+products
+characters
+projects
+assets
+folders
+tags
+jobs
+credit ledger
+credit reservations
+app runs
+generation history
+saved user settings
+```
+
+Do not build an admin screen for model/app configuration until YAML/code config becomes painful. When config becomes too large, frequently edited, or needs non-developer editing, then move selected parts into a managed admin interface.
