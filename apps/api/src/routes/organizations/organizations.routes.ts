@@ -8,6 +8,7 @@ import {
   listAccessibleOrganizations,
   listOrganizationInvitations,
   listOrganizationMembers,
+  revokeOrganizationInvitation,
 } from '@talelabs/auth'
 import { requireAuth } from '../../middleware/auth.js'
 import { ErrorResponseSchema } from '../../schemas/common.js'
@@ -18,6 +19,7 @@ import {
   ListInvitationsResponseSchema,
   ListOrganizationMembersResponseSchema,
   ListOrganizationsResponseSchema,
+  RevokeInvitationResponseSchema,
 } from './organizations.schemas.js'
 
 function toInvitationRole(role: string): 'admin' | 'member' {
@@ -229,6 +231,53 @@ const createInvitationRoute = createRoute({
   },
 })
 
+const revokeInvitationRoute = createRoute({
+  method: 'delete',
+  path: '/organizations/{organizationId}/invitations/{invitationId}',
+  operationId: 'revokeOrganizationInvitation',
+  tags: ['Invitations'],
+  request: {
+    params: z.object({
+      organizationId: z.string().openapi({ example: 'org_123' }),
+      invitationId: z.string().openapi({ example: 'invite_123' }),
+    }),
+  },
+  responses: {
+    200: {
+      content: {
+        'application/json': {
+          schema: RevokeInvitationResponseSchema,
+        },
+      },
+      description: 'Revoked organization invitation',
+    },
+    401: {
+      content: {
+        'application/json': {
+          schema: ErrorResponseSchema,
+        },
+      },
+      description: 'Authentication required',
+    },
+    403: {
+      content: {
+        'application/json': {
+          schema: ErrorResponseSchema,
+        },
+      },
+      description: 'Organization admin required',
+    },
+    404: {
+      content: {
+        'application/json': {
+          schema: ErrorResponseSchema,
+        },
+      },
+      description: 'Pending invitation not found',
+    },
+  },
+})
+
 export function registerOrganizationRoutes(app: OpenAPIHono<ApiEnv>) {
   app.openapi(listOrganizationsRoute, async (c) => {
     requireAuth(c)
@@ -331,5 +380,33 @@ export function registerOrganizationRoutes(app: OpenAPIHono<ApiEnv>) {
         role: toInvitationRole(result.invitation.role),
       },
     }, 201)
+  })
+
+  app.openapi(revokeInvitationRoute, async (c) => {
+    requireAuth(c)
+
+    const { invitationId, organizationId } = c.req.valid('param')
+    const result = await revokeOrganizationInvitation(c.req.raw.headers, {
+      invitationId,
+      organizationId,
+    })
+
+    if (!result.ok && result.status === 401)
+      return c.json({ error: result.error }, 401)
+
+    if (!result.ok && result.status === 404)
+      return c.json({ error: result.error }, 404)
+
+    if (!result.ok)
+      return c.json({ error: result.error }, 403)
+
+    return c.json({
+      invitation: {
+        ...result.invitation,
+        createdAt: result.invitation.createdAt.toISOString(),
+        expiresAt: result.invitation.expiresAt.toISOString(),
+        role: toInvitationRole(result.invitation.role),
+      },
+    }, 200)
   })
 }

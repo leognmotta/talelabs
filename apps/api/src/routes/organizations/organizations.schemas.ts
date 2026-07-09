@@ -57,3 +57,7 @@ export const CreateInvitationRequestSchema = z.object({
 export const CreateInvitationResponseSchema = z.object({
   invitation: InvitationSchema,
 }).openapi('CreateInvitationResponse')
+
+export const RevokeInvitationResponseSchema = z.object({
+  invitation: InvitationSchema,
+}).openapi('RevokeInvitationResponse')

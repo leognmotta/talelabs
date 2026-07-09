@@ -74,6 +74,16 @@ export type {
   OrganizationMember,
   OrganizationMemberRoleEnumKey,
 } from "./types/OrganizationMember.ts";
+export type { RevokeInvitationResponse } from "./types/RevokeInvitationResponse.ts";
+export type {
+  RevokeOrganizationInvitation200,
+  RevokeOrganizationInvitation401,
+  RevokeOrganizationInvitation403,
+  RevokeOrganizationInvitation404,
+  RevokeOrganizationInvitationMutation,
+  RevokeOrganizationInvitationMutationResponse,
+  RevokeOrganizationInvitationPathParams,
+} from "./types/RevokeOrganizationInvitation.ts";
 export type {
   SetAccountPassword200,
   SetAccountPassword400,
@@ -94,6 +104,7 @@ export { getMe } from "./clients/getMe.ts";
 export { listOrganizationInvitations } from "./clients/listOrganizationInvitations.ts";
 export { listOrganizationMembers } from "./clients/listOrganizationMembers.ts";
 export { listOrganizations } from "./clients/listOrganizations.ts";
+export { revokeOrganizationInvitation } from "./clients/revokeOrganizationInvitation.ts";
 export { setAccountPassword } from "./clients/setAccountPassword.ts";
 export { getDbHealthQueryKey } from "./hooks/useGetDbHealth.ts";
 export { getDbHealthQueryOptions } from "./hooks/useGetDbHealth.ts";
@@ -172,6 +183,15 @@ export {
 export { meResponseSchema } from "./zod/meResponseSchema.ts";
 export { organizationMemberSchema } from "./zod/organizationMemberSchema.ts";
 export { organizationSchema } from "./zod/organizationSchema.ts";
+export { revokeInvitationResponseSchema } from "./zod/revokeInvitationResponseSchema.ts";
+export {
+  revokeOrganizationInvitation200Schema,
+  revokeOrganizationInvitation401Schema,
+  revokeOrganizationInvitation403Schema,
+  revokeOrganizationInvitation404Schema,
+  revokeOrganizationInvitationMutationResponseSchema,
+  revokeOrganizationInvitationPathParamsSchema,
+} from "./zod/revokeOrganizationInvitationSchema.ts";
 export {
   setAccountPassword200Schema,
   setAccountPassword400Schema,

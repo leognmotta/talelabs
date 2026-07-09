@@ -457,6 +457,58 @@ export async function listOrganizationMembers(headers: Headers, organizationId: 
   } as const
 }
 
+export async function revokeOrganizationInvitation(
+  headers: Headers,
+  input: {
+    invitationId: string
+    organizationId: string
+  },
+) {
+  const accessResult = await requireInvitationAccess(headers, input.organizationId)
+
+  if (!accessResult.ok)
+    return accessResult
+
+  const invitation = await db
+    .updateTable('invitation')
+    .set({ status: 'canceled' })
+    .where('id', '=', input.invitationId)
+    .where('organizationId', '=', input.organizationId)
+    .where('status', '=', 'pending')
+    .returning([
+      'id',
+      'organizationId',
+      'email',
+      'role',
+      'status',
+      'expiresAt',
+      'createdAt',
+    ])
+    .executeTakeFirst()
+
+  if (!invitation) {
+    return {
+      ok: false,
+      status: 404,
+      error: 'Pending invitation not found',
+    } as const
+  }
+
+  return {
+    ok: true,
+    invitation: {
+      id: invitation.id,
+      organizationId: invitation.organizationId,
+      email: invitation.email,
+      role: invitation.role ?? ORGANIZATION_MEMBER_ROLE,
+      status: invitation.status,
+      expiresAt: invitation.expiresAt,
+      createdAt: invitation.createdAt,
+      inviteUrl: buildInviteUrl(invitation.id),
+    } satisfies InvitationSummary,
+  } as const
+}
+
 async function requireInvitationAccess(headers: Headers, organizationId: string) {
   const sessionResult = await requireSession(headers)
 

@@ -1,16 +1,22 @@
 import type { TeamMemberRow } from './team-member-row'
 
-import { IconPlus } from '@tabler/icons-react'
+import { IconPlus, IconSearch } from '@tabler/icons-react'
 import {
   createOrganizationInvitation,
   listOrganizationInvitationsQueryKey,
+  revokeOrganizationInvitation,
   useListOrganizationInvitations,
   useListOrganizationMembers,
 } from '@talelabs/sdk'
 import { Button } from '@talelabs/ui/components/button'
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from '@talelabs/ui/components/input-group'
 import { Separator } from '@talelabs/ui/components/separator'
 import { useQueryClient } from '@tanstack/react-query'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { TeamInvitationForm } from './team-invitation-form'
 import { TeamMembersTable } from './team-members-table'
@@ -25,6 +31,7 @@ export function TeamSettings({
   onInviteFormOpenChange: (open: boolean) => void
 }) {
   const queryClient = useQueryClient()
+  const [memberSearch, setMemberSearch] = useState('')
   const organizationId = activeOrganizationId ?? undefined
   const membersQuery = useListOrganizationMembers(
     { organizationId },
@@ -61,7 +68,7 @@ export function TeamSettings({
       status: 'active',
     }))
     const pendingInvitationRows = invitations
-      .filter(invitation => invitation.status !== 'accepted')
+      .filter(invitation => invitation.status === 'pending')
       .map((invitation): TeamMemberRow => ({
         createdAt: invitation.createdAt,
         email: invitation.email,
@@ -114,6 +121,30 @@ export function TeamSettings({
     }
   }
 
+  async function handleRevokeInvite(row: TeamMemberRow) {
+    if (!activeOrganizationId)
+      return
+
+    try {
+      await revokeOrganizationInvitation({
+        organizationId: activeOrganizationId,
+        invitationId: row.sourceId,
+      })
+      await queryClient.invalidateQueries({
+        queryKey: listOrganizationInvitationsQueryKey({
+          organizationId: activeOrganizationId,
+        }),
+      })
+      toast.success('Invitation revoked')
+    }
+    catch (caughtError) {
+      const message = caughtError instanceof Error
+        ? caughtError.message
+        : 'Could not revoke invitation.'
+      toast.error(message)
+    }
+  }
+
   return (
     <div className="mx-auto flex max-w-2xl flex-col">
       <header className="flex items-center justify-between gap-3 pr-12 pb-4">
@@ -150,16 +181,36 @@ export function TeamSettings({
             </p>
           )}
           {!isError && (
-            <TeamMembersTable
-              isLoading={isLoading}
-              rows={rows}
-              onCopyInviteLink={(row) => {
-                void handleCopyInviteLink(row)
-              }}
-              onResendInvite={(row) => {
-                void handleResendInvite(row)
-              }}
-            />
+            <>
+              <InputGroup className="max-w-sm">
+                <InputGroupAddon>
+                  <IconSearch />
+                </InputGroupAddon>
+                <InputGroupInput
+                  value={memberSearch}
+                  onChange={event => setMemberSearch(event.target.value)}
+                  placeholder="Search members..."
+                  aria-label="Search members"
+                />
+              </InputGroup>
+              <TeamMembersTable
+                emptyMessage={memberSearch.trim()
+                  ? 'No members match your search.'
+                  : 'No team members found.'}
+                isLoading={isLoading}
+                rows={rows}
+                searchValue={memberSearch}
+                onCopyInviteLink={(row) => {
+                  void handleCopyInviteLink(row)
+                }}
+                onResendInvite={(row) => {
+                  void handleResendInvite(row)
+                }}
+                onRevokeInvite={(row) => {
+                  void handleRevokeInvite(row)
+                }}
+              />
+            </>
           )}
         </div>
       )}

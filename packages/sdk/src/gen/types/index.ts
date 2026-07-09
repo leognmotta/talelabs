@@ -69,6 +69,16 @@ export type {
   OrganizationMember,
   OrganizationMemberRoleEnumKey,
 } from "./OrganizationMember.ts";
+export type { RevokeInvitationResponse } from "./RevokeInvitationResponse.ts";
+export type {
+  RevokeOrganizationInvitation200,
+  RevokeOrganizationInvitation401,
+  RevokeOrganizationInvitation403,
+  RevokeOrganizationInvitation404,
+  RevokeOrganizationInvitationMutation,
+  RevokeOrganizationInvitationMutationResponse,
+  RevokeOrganizationInvitationPathParams,
+} from "./RevokeOrganizationInvitation.ts";
 export type {
   SetAccountPassword200,
   SetAccountPassword400,

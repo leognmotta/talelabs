@@ -1,6 +1,6 @@
 import type { TeamMemberRow } from './team-member-row'
 
-import { IconCopy, IconMailForward } from '@tabler/icons-react'
+import { IconCopy, IconMailForward, IconTrash } from '@tabler/icons-react'
 import { Badge } from '@talelabs/ui/components/badge'
 import { Button } from '@talelabs/ui/components/button'
 import { Skeleton } from '@talelabs/ui/components/skeleton'
@@ -13,9 +13,15 @@ import {
   TableRow,
 } from '@talelabs/ui/components/table'
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@talelabs/ui/components/tooltip'
+import {
   createColumnHelper,
   flexRender,
   getCoreRowModel,
+  getFilteredRowModel,
   useReactTable,
 } from '@tanstack/react-table'
 import { useMemo } from 'react'
@@ -23,15 +29,21 @@ import { useMemo } from 'react'
 const teamColumnHelper = createColumnHelper<TeamMemberRow>()
 
 export function TeamMembersTable({
+  emptyMessage = 'No team members found.',
   isLoading,
   onCopyInviteLink,
+  onRevokeInvite,
   onResendInvite,
   rows,
+  searchValue,
 }: {
+  emptyMessage?: string
   isLoading: boolean
   onCopyInviteLink: (row: TeamMemberRow) => void
+  onRevokeInvite: (row: TeamMemberRow) => void
   onResendInvite: (row: TeamMemberRow) => void
   rows: TeamMemberRow[]
+  searchValue: string
 }) {
   const columns = useMemo(() => [
     teamColumnHelper.accessor('name', {
@@ -69,33 +81,80 @@ export function TeamMembersTable({
 
         return (
           <div className="flex justify-end gap-2">
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              aria-label="Copy invite link"
-              onClick={() => onCopyInviteLink(row.original)}
-            >
-              <IconCopy />
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              aria-label="Resend invite email"
-              onClick={() => onResendInvite(row.original)}
-            >
-              <IconMailForward />
-            </Button>
+            <Tooltip>
+              <TooltipTrigger
+                render={(
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label="Copy invite link"
+                    onClick={() => onCopyInviteLink(row.original)}
+                  >
+                    <IconCopy data-icon="inline-start" />
+                  </Button>
+                )}
+              />
+              <TooltipContent>Copy invite link</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger
+                render={(
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label="Resend invite email"
+                    onClick={() => onResendInvite(row.original)}
+                  >
+                    <IconMailForward data-icon="inline-start" />
+                  </Button>
+                )}
+              />
+              <TooltipContent>Resend invite email</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger
+                render={(
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="icon-sm"
+                    aria-label="Revoke invitation"
+                    onClick={() => onRevokeInvite(row.original)}
+                  >
+                    <IconTrash data-icon="inline-start" />
+                  </Button>
+                )}
+              />
+              <TooltipContent>Revoke invitation</TooltipContent>
+            </Tooltip>
           </div>
         )
       },
     }),
-  ], [onCopyInviteLink, onResendInvite])
+  ], [onCopyInviteLink, onResendInvite, onRevokeInvite])
   const table = useReactTable({
     data: rows,
     columns,
+    state: {
+      globalFilter: searchValue,
+    },
     getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    globalFilterFn: (row, _columnId, filterValue) => {
+      const query = String(filterValue).trim().toLowerCase()
+
+      if (!query)
+        return true
+
+      return [
+        row.original.name,
+        row.original.email,
+        row.original.role,
+        row.original.status,
+      ].some(value => value.toLowerCase().includes(query))
+    },
   })
 
   if (isLoading && rows.length === 0) {
@@ -147,7 +206,7 @@ export function TeamMembersTable({
                     colSpan={columns.length}
                     className="h-24 text-center"
                   >
-                    No team members found.
+                    {emptyMessage}
                   </TableCell>
                 </TableRow>
               )}
