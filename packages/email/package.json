@@ -1,5 +1,5 @@
 {
-  "name": "@talelabs/auth",
+  "name": "@talelabs/email",
   "type": "module",
   "version": "0.0.0",
   "private": true,
@@ -7,6 +7,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./templates/user-invitation": {
+      "types": "./dist/templates/user-invitation.d.ts",
+      "default": "./dist/templates/user-invitation.js"
     }
   },
   "scripts": {
@@ -14,12 +18,13 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
-    "@talelabs/db": "*",
-    "@talelabs/email": "*",
-    "better-auth": "^1.6.11"
+    "react": "^19.2.6",
+    "react-email": "^6.6.9",
+    "resend": "^6.17.2"
   },
   "devDependencies": {
     "@types/node": "^22.15.3",
+    "@types/react": "^19.2.14",
     "typescript": "5.9.2"
   }
 }
