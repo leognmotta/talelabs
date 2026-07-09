@@ -49,11 +49,6 @@ export function DashboardLayout({
           >
             <header className="flex h-16 shrink-0 items-center gap-3 px-6">
               <SidebarTrigger />
-              <Separator orientation="vertical" />
-              <div className="flex flex-col">
-                <h1 className="text-lg font-semibold tracking-tight">{name}</h1>
-                <p className="text-sm text-muted-foreground">{email}</p>
-              </div>
             </header>
             <Separator />
             <section className="flex flex-1 flex-col gap-6 p-6">
