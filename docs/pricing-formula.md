@@ -34,9 +34,9 @@ All generation pricing must be calculated against the **lowest effective credit 
 ## 2. Key Internal Values
 
 ```ts
-const NOMINAL_CREDIT_VALUE_USD = 0.01;
-const CREDIT_FLOOR_USD = 0.00625;
-const OPENROUTER_FEE_MULTIPLIER = 1.055;
+const NOMINAL_CREDIT_VALUE_USD = 0.01
+const CREDIT_FLOOR_USD = 0.00625
+const OPENROUTER_FEE_MULTIPLIER = 1.055
 ```
 
 `CREDIT_FLOOR_USD` is the cheapest possible effective value of one credit after the largest annual or bulk discount.
@@ -106,7 +106,7 @@ const tierCogsRatio = {
   standard: 0.40,
   pro: 0.50,
   premium: 0.65,
-} as const;
+} as const
 
 function calculateCredits({
   providerCostUsd,
@@ -115,21 +115,21 @@ function calculateCredits({
   infraPerJobUsd = 0.05,
   riskBufferUsd = 0,
 }: {
-  providerCostUsd: number;
-  tier: "standard" | "pro" | "premium";
-  providerFeeMultiplier?: number;
-  infraPerJobUsd?: number;
-  riskBufferUsd?: number;
+  providerCostUsd: number
+  tier: 'standard' | 'pro' | 'premium'
+  providerFeeMultiplier?: number
+  infraPerJobUsd?: number
+  riskBufferUsd?: number
 }) {
-  const adjustedCogs =
-    providerCostUsd * providerFeeMultiplier +
-    infraPerJobUsd +
-    riskBufferUsd;
+  const adjustedCogs
+    = providerCostUsd * providerFeeMultiplier
+      + infraPerJobUsd
+      + riskBufferUsd
 
-  const rawCredits =
-    adjustedCogs / tierCogsRatio[tier] / CREDIT_FLOOR_USD;
+  const rawCredits
+    = adjustedCogs / tierCogsRatio[tier] / CREDIT_FLOOR_USD
 
-  return roundCredits(rawCredits);
+  return roundCredits(rawCredits)
 }
 ```
 
@@ -140,14 +140,14 @@ Use clean rounded prices.
 ```ts
 function roundCredits(rawCredits: number) {
   if (rawCredits < 100) {
-    return Math.ceil(rawCredits / 5) * 5;
+    return Math.ceil(rawCredits / 5) * 5
   }
 
   if (rawCredits < 500) {
-    return Math.ceil(rawCredits / 10) * 10;
+    return Math.ceil(rawCredits / 10) * 10
   }
 
-  return Math.ceil(rawCredits / 50) * 50;
+  return Math.ceil(rawCredits / 50) * 50
 }
 ```
 
