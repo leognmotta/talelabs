@@ -37,7 +37,6 @@ export function NavMain({
               <SidebarMenuButton
                 isActive={isActive}
                 tooltip={item.title}
-                className="data-active:[&_svg]:text-primary"
                 render={<NavLink to={item.url} end={item.end} />}
               >
                 {item.icon}
