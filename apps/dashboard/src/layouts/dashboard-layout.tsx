@@ -1,7 +1,7 @@
 import type { SettingsTab } from '../features/settings/settings-state'
 import type { ThemePreference } from '../shared/lib/theme'
 import { IconCoins } from '@tabler/icons-react'
-import { Badge } from '@talelabs/ui/components/badge'
+import { Button } from '@talelabs/ui/components/button'
 import { Separator } from '@talelabs/ui/components/separator'
 import {
   SidebarInset,
@@ -9,10 +9,12 @@ import {
   SidebarTrigger,
 } from '@talelabs/ui/components/sidebar'
 import { TooltipProvider } from '@talelabs/ui/components/tooltip'
-import { parseAsStringEnum, useQueryState } from 'nuqs'
+import { parseAsBoolean, parseAsStringEnum, useQueryState } from 'nuqs'
 
 import { useState } from 'react'
 import { Outlet } from 'react-router'
+import { mockedCreditsBalance } from '../features/credits/credits-data'
+import { CreditsPurchaseDialog } from '../features/credits/credits-purchase-dialog'
 import { SettingsDialog } from '../features/settings/settings-dialog'
 import { settingsTabs } from '../features/settings/settings-state'
 import { AppSidebar } from './app-sidebar'
@@ -45,8 +47,13 @@ export function DashboardLayout({
     'settings',
     parseAsStringEnum<SettingsTab>([...settingsTabs]),
   )
+  const [creditsDialogOpen, setCreditsDialogOpen] = useQueryState(
+    'credits',
+    parseAsBoolean,
+  )
   const activeSettingsTab = settingsTab ?? 'general'
   const isSettingsOpen = settingsTab !== null
+  const isCreditsDialogOpen = creditsDialogOpen === true
   const [isTeamInviteFormOpen, setIsTeamInviteFormOpen] = useState(false)
 
   function handleOpenSettings(nextTab: SettingsTab = 'general') {
@@ -56,6 +63,14 @@ export function DashboardLayout({
   function handleOpenInviteMemberSettings() {
     setIsTeamInviteFormOpen(true)
     void setSettingsTab('team')
+  }
+
+  function handleOpenCreditsPurchase() {
+    void setCreditsDialogOpen(true, { history: 'push' })
+  }
+
+  function handleCreditsDialogOpenChange(nextOpen: boolean) {
+    void setCreditsDialogOpen(nextOpen ? true : null)
   }
 
   function handleSettingsOpenChange(nextOpen: boolean) {
@@ -98,9 +113,11 @@ export function DashboardLayout({
                   onOpenSettings={handleOpenSettings}
                 />
               </div>
-              <Badge
+              <Button
+                type="button"
                 variant="outline"
                 className="h-9 rounded-4xl px-3 text-sm"
+                onClick={handleOpenCreditsPurchase}
               >
                 <IconCoins data-icon="inline-start" />
                 <span className="
@@ -108,10 +125,14 @@ export function DashboardLayout({
                   sm:inline
                 "
                 >
-                  500 credits
+                  {mockedCreditsBalance.toLocaleString()}
+                  {' '}
+                  credits
                 </span>
-                <span className="sm:hidden">500</span>
-              </Badge>
+                <span className="sm:hidden">
+                  {mockedCreditsBalance.toLocaleString()}
+                </span>
+              </Button>
             </header>
             <Separator />
             <section className="flex flex-1 flex-col gap-6 p-6">
@@ -127,6 +148,7 @@ export function DashboardLayout({
           name={name || 'TaleLabs user'}
           onOpenChange={handleSettingsOpenChange}
           onProfileUpdated={onProfileUpdated}
+          onOpenCreditsPurchase={handleOpenCreditsPurchase}
           onSignOut={onSignOut}
           onTabChange={handleSettingsTabChange}
           onTeamInviteFormOpenChange={setIsTeamInviteFormOpen}
@@ -134,6 +156,11 @@ export function DashboardLayout({
           open={isSettingsOpen}
           tab={activeSettingsTab}
           theme={theme}
+        />
+        <CreditsPurchaseDialog
+          creditsBalance={mockedCreditsBalance}
+          onOpenChange={handleCreditsDialogOpenChange}
+          open={isCreditsDialogOpen}
         />
       </SidebarProvider>
     </TooltipProvider>

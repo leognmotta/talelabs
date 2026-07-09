@@ -33,6 +33,7 @@ export function SettingsDialog({
   isTeamInviteFormOpen,
   name,
   onOpenChange,
+  onOpenCreditsPurchase,
   onProfileUpdated,
   onSignOut,
   onTabChange,
@@ -48,6 +49,7 @@ export function SettingsDialog({
   isTeamInviteFormOpen: boolean
   name: string
   onOpenChange: (open: boolean) => void
+  onOpenCreditsPurchase: () => void
   onProfileUpdated: () => Promise<void>
   onSignOut: () => Promise<void>
   onTabChange: (tab: SettingsTab) => void
@@ -163,7 +165,9 @@ export function SettingsDialog({
                 onInviteFormOpenChange={onTeamInviteFormOpenChange}
               />
             )}
-            {tab === 'billing' && <BillingSettings />}
+            {tab === 'billing' && (
+              <BillingSettings onOpenCreditsPurchase={onOpenCreditsPurchase} />
+            )}
           </section>
         </div>
       </DialogContent>
