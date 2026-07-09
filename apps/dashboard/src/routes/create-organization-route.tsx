@@ -1,10 +1,10 @@
-import type { OrganizationStatus } from '../types/auth'
+import type { ComponentType } from 'react'
+import type { OrganizationStatus } from '../shared/types/auth'
 
 import { Navigate } from 'react-router'
 
-import { SplashScreen } from '../components/splash-screen'
-import { WorkspaceState } from '../components/workspace-state'
-import { CreateOrganizationScreen } from '../screens/create-organization/create-organization-screen'
+import { WorkspaceState } from '../features/organizations/workspace-state'
+import { SplashScreen } from '../shared/components/splash-screen'
 
 export function CreateOrganizationRoute({
   hasCheckedOrganization,
@@ -12,12 +12,17 @@ export function CreateOrganizationRoute({
   organizationStatus,
   onCreateOrganization,
   onSignOut,
+  screen: Screen,
 }: {
   hasCheckedOrganization: boolean
   isSignedIn: boolean
   organizationStatus: OrganizationStatus
   onCreateOrganization: (name: string, slug: string) => Promise<string | null>
   onSignOut: () => Promise<void>
+  screen: ComponentType<{
+    onCreateOrganization: (name: string, slug: string) => Promise<string | null>
+    onSignOut: () => Promise<void>
+  }>
 }) {
   if (!isSignedIn)
     return <Navigate to="/sign-in" replace />
@@ -39,7 +44,7 @@ export function CreateOrganizationRoute({
   }
 
   return (
-    <CreateOrganizationScreen
+    <Screen
       onCreateOrganization={onCreateOrganization}
       onSignOut={onSignOut}
     />

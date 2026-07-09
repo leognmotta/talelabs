@@ -1,5 +1,5 @@
 import type { TablerIcon } from '@tabler/icons-react'
-import type { ThemePreference } from '../lib/theme'
+import type { ThemePreference } from '../shared/lib/theme'
 
 import { IconSelector } from '@tabler/icons-react'
 import {

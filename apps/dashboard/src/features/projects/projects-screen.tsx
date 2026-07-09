@@ -6,7 +6,7 @@ import {
   CardTitle,
 } from '@talelabs/ui/components/card'
 
-export function DashboardScreen({
+export function ProjectsScreen({
   meQueryStatus,
   organizationMessage,
 }: {

@@ -3,7 +3,7 @@ import type { FormEvent } from 'react'
 import { Button } from '@talelabs/ui/components/button'
 import { useState } from 'react'
 
-import { slugify } from '../../lib/slugify'
+import { slugify } from '../../shared/lib/slugify'
 
 export function CreateOrganizationScreen({
   onCreateOrganization,

@@ -1,9 +1,9 @@
 import type { ReactNode } from 'react'
-import type { OrganizationStatus } from '../types/auth'
+import type { OrganizationStatus } from '../shared/types/auth'
 
 import { Navigate } from 'react-router'
-import { SplashScreen } from '../components/splash-screen'
-import { WorkspaceState } from '../components/workspace-state'
+import { WorkspaceState } from '../features/organizations/workspace-state'
+import { SplashScreen } from '../shared/components/splash-screen'
 
 export function ProtectedRoute({
   children,

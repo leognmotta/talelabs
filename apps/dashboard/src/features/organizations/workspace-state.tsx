@@ -1,8 +1,8 @@
-import type { OrganizationStatus } from '../types/auth'
+import type { OrganizationStatus } from '../../shared/types/auth'
 
 import { Button } from '@talelabs/ui/components/button'
 
-import { SplashScreen } from './splash-screen'
+import { SplashScreen } from '../../shared/components/splash-screen'
 
 export function WorkspaceState({
   message,

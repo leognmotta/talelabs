@@ -1,5 +1,5 @@
 import type { ComponentProps } from 'react'
-import type { ThemePreference } from '../lib/theme'
+import type { ThemePreference } from '../shared/lib/theme'
 
 import {
   IconDeviceDesktop,
@@ -17,9 +17,9 @@ import {
   SidebarRail,
 } from '@talelabs/ui/components/sidebar'
 
+import { OrganizationSwitcher } from '../features/organizations/organization-switcher'
 import { NavMain } from './nav-main'
 import { NavUser } from './nav-user'
-import { TeamSwitcher } from './team-switcher'
 
 export function AppSidebar({
   activeOrganizationId,
@@ -44,7 +44,7 @@ export function AppSidebar({
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher
+        <OrganizationSwitcher
           activeOrganizationId={activeOrganizationId}
           onCreateOrganization={onCreateOrganization}
           onSwitchOrganization={onSwitchOrganization}

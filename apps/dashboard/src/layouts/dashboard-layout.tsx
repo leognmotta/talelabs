@@ -1,4 +1,4 @@
-import type { ThemePreference } from '../lib/theme'
+import type { ThemePreference } from '../shared/lib/theme'
 import { Separator } from '@talelabs/ui/components/separator'
 import {
   SidebarInset,

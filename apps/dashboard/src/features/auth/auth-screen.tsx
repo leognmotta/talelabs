@@ -1,10 +1,10 @@
 import type { FormEvent } from 'react'
-import type { AuthMode } from '../../types/auth'
+import type { AuthMode } from '../../shared/types/auth'
 import { Button } from '@talelabs/ui/components/button'
 import { useState } from 'react'
 
 import { NavLink } from 'react-router'
-import { signIn, signUp } from '../../lib/auth-client'
+import { signIn, signUp } from './auth-client'
 
 export function AuthScreen({
   initialMode,

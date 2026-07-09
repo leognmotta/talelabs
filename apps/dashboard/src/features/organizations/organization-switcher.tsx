@@ -39,8 +39,8 @@ import {
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
 
-import { authClient } from '../lib/auth-client'
-import { slugify } from '../lib/slugify'
+import { slugify } from '../../shared/lib/slugify'
+import { authClient } from '../auth/auth-client'
 
 interface OrganizationSummary {
   id: string
@@ -50,7 +50,7 @@ interface OrganizationSummary {
 
 const organizationListQueryKey = ['better-auth', 'organizations'] as const
 
-export function TeamSwitcher({
+export function OrganizationSwitcher({
   activeOrganizationId,
   onCreateOrganization,
   onSwitchOrganization,

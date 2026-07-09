@@ -6,7 +6,7 @@ import {
   CardTitle,
 } from '@talelabs/ui/components/card'
 
-export function WorkspaceScreen({
+export function GenerationScreen({
   activeOrganizationId,
 }: {
   activeOrganizationId: string | null

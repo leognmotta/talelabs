@@ -1,4 +1,4 @@
-import type { OrganizationStatus } from '../types/auth'
+import type { OrganizationStatus } from '../../shared/types/auth'
 
 import { ApiError, getMe, useGetMe } from '@talelabs/sdk'
 import { useCallback, useEffect, useMemo, useState } from 'react'

@@ -1,26 +1,27 @@
-import type { ThemePreference } from './lib/theme'
+import type { ThemePreference } from '../shared/lib/theme'
 import { getMeQueryKey } from '@talelabs/sdk'
 import { Toaster } from '@talelabs/ui/components/sonner'
 import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Navigate, Route, Routes } from 'react-router'
 import { toast } from 'sonner'
-import { DashboardLayout } from './components/dashboard-layout'
-import { SplashScreen } from './components/splash-screen'
-import { useOrganizationSession } from './hooks/use-organization-session'
-import { authClient, signOut, useSession } from './lib/auth-client'
+import { authClient, signOut, useSession } from '../features/auth/auth-client'
+import { AuthScreen } from '../features/auth/auth-screen'
+import { GenerationScreen } from '../features/generation/generation-screen'
+import { CreateOrganizationScreen } from '../features/organizations/create-organization-screen'
+import { useOrganizationSession } from '../features/organizations/use-organization-session'
+import { ProjectsScreen } from '../features/projects/projects-screen'
+import { DashboardLayout } from '../layouts/dashboard-layout'
+import { CreateOrganizationRoute } from '../routes/create-organization-route'
+import { ProtectedRoute } from '../routes/protected-route'
+import { PublicRoute } from '../routes/public-route'
+import { SplashScreen } from '../shared/components/splash-screen'
 import {
   getInitialThemePreference,
   storeThemePreference,
-} from './lib/theme'
-import { CreateOrganizationRoute } from './routes/create-organization-route'
-import { ProtectedRoute } from './routes/protected-route'
-import { PublicRoute } from './routes/public-route'
-import { AuthScreen } from './screens/auth/auth-screen'
-import { DashboardScreen } from './screens/dashboard/dashboard-screen'
-import { WorkspaceScreen } from './screens/workspace/workspace-screen'
+} from '../shared/lib/theme'
 
-function App() {
+export function DashboardRoutes() {
   const session = useSession()
   const queryClient = useQueryClient()
   const [theme, setTheme] = useState<ThemePreference>(getInitialThemePreference)
@@ -126,6 +127,7 @@ function App() {
               organizationStatus={organization.organizationStatus}
               onCreateOrganization={handleCreateOrganization}
               onSignOut={handleSignOut}
+              screen={CreateOrganizationScreen}
             />
           )}
         />
@@ -155,7 +157,7 @@ function App() {
           <Route
             index
             element={(
-              <DashboardScreen
+              <ProjectsScreen
                 meQueryStatus={organization.meQueryStatus}
                 organizationMessage={organization.organizationMessage}
               />
@@ -164,7 +166,7 @@ function App() {
           <Route
             path="workspace"
             element={(
-              <WorkspaceScreen
+              <GenerationScreen
                 activeOrganizationId={organization.activeWorkspaceId}
               />
             )}
@@ -177,5 +179,3 @@ function App() {
     </>
   )
 }
-
-export default App
