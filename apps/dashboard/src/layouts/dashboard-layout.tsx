@@ -9,6 +9,7 @@ import {
 import { TooltipProvider } from '@talelabs/ui/components/tooltip'
 import { parseAsStringEnum, useQueryState } from 'nuqs'
 
+import { useState } from 'react'
 import { Outlet } from 'react-router'
 import { SettingsDialog } from '../features/settings/settings-dialog'
 import { settingsTabs } from '../features/settings/settings-state'
@@ -43,16 +44,28 @@ export function DashboardLayout({
   )
   const activeSettingsTab = settingsTab ?? 'general'
   const isSettingsOpen = settingsTab !== null
+  const [isTeamInviteFormOpen, setIsTeamInviteFormOpen] = useState(false)
 
-  function handleOpenSettings() {
-    void setSettingsTab('general')
+  function handleOpenSettings(nextTab: SettingsTab = 'general') {
+    void setSettingsTab(nextTab)
+  }
+
+  function handleOpenInviteMemberSettings() {
+    setIsTeamInviteFormOpen(true)
+    void setSettingsTab('team')
   }
 
   function handleSettingsOpenChange(nextOpen: boolean) {
+    if (!nextOpen)
+      setIsTeamInviteFormOpen(false)
+
     void setSettingsTab(nextOpen ? activeSettingsTab : null)
   }
 
   function handleSettingsTabChange(nextTab: SettingsTab) {
+    if (nextTab !== 'team')
+      setIsTeamInviteFormOpen(false)
+
     void setSettingsTab(nextTab)
   }
 
@@ -64,6 +77,7 @@ export function DashboardLayout({
           email={email}
           name={name}
           onCreateOrganization={onCreateOrganization}
+          onOpenInviteMemberSettings={handleOpenInviteMemberSettings}
           onOpenSettings={handleOpenSettings}
           onSignOut={onSignOut}
           onSwitchOrganization={onSwitchOrganization}
@@ -86,11 +100,13 @@ export function DashboardLayout({
           activeOrganizationId={activeOrganizationId}
           currentSessionId={currentSessionId}
           email={email || 'Workspace member'}
+          isTeamInviteFormOpen={isTeamInviteFormOpen}
           name={name || 'TaleLabs user'}
           onOpenChange={handleSettingsOpenChange}
           onProfileUpdated={onProfileUpdated}
           onSignOut={onSignOut}
           onTabChange={handleSettingsTabChange}
+          onTeamInviteFormOpenChange={setIsTeamInviteFormOpen}
           onThemeChange={onThemeChange}
           open={isSettingsOpen}
           tab={activeSettingsTab}

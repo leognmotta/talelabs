@@ -1,6 +1,13 @@
 import type { TablerIcon } from '@tabler/icons-react'
+import type { SettingsTab } from '../features/settings/settings-state'
 
-import { IconSelector, IconSettings } from '@tabler/icons-react'
+import {
+  IconCreditCard,
+  IconSelector,
+  IconSettings,
+  IconUserCircle,
+  IconUserPlus,
+} from '@tabler/icons-react'
 import {
   Avatar,
   AvatarFallback,
@@ -22,12 +29,14 @@ import {
 } from '@talelabs/ui/components/sidebar'
 
 export function NavUser({
+  onOpenInviteMemberSettings,
   onOpenSettings,
   onSignOut,
   signOutIcon: SignOutIcon,
   user,
 }: {
-  onOpenSettings: () => void
+  onOpenInviteMemberSettings: () => void
+  onOpenSettings: (tab?: SettingsTab) => void
   onSignOut: () => Promise<void>
   signOutIcon: TablerIcon
   user: {
@@ -91,10 +100,25 @@ export function NavUser({
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem onClick={onOpenSettings}>
+              <DropdownMenuItem onClick={() => onOpenSettings('profile')}>
+                <IconUserCircle />
+                <span>Profile</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={onOpenInviteMemberSettings}>
+                <IconUserPlus />
+                <span>Invite member</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onOpenSettings('billing')}>
+                <IconCreditCard />
+                <span>Billing</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onOpenSettings('general')}>
                 <IconSettings />
                 <span>Settings</span>
               </DropdownMenuItem>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
               <DropdownMenuItem onClick={() => void onSignOut()}>
                 <SignOutIcon />
                 <span>Sign out</span>

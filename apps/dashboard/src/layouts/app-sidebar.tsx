@@ -1,4 +1,5 @@
 import type { ComponentProps } from 'react'
+import type { SettingsTab } from '../features/settings/settings-state'
 
 import {
   IconLayoutDashboard,
@@ -21,6 +22,7 @@ export function AppSidebar({
   email,
   name,
   onCreateOrganization,
+  onOpenInviteMemberSettings,
   onOpenSettings,
   onSignOut,
   onSwitchOrganization,
@@ -30,7 +32,8 @@ export function AppSidebar({
   email: string | undefined
   name: string | undefined
   onCreateOrganization: (name: string, slug: string) => Promise<string | null>
-  onOpenSettings: () => void
+  onOpenInviteMemberSettings: () => void
+  onOpenSettings: (tab?: SettingsTab) => void
   onSignOut: () => Promise<void>
   onSwitchOrganization: (organizationId: string) => Promise<string | null>
 }) {
@@ -61,6 +64,7 @@ export function AppSidebar({
             name: name || 'TaleLabs user',
             email: email || 'Workspace member',
           }}
+          onOpenInviteMemberSettings={onOpenInviteMemberSettings}
           onOpenSettings={onOpenSettings}
           onSignOut={onSignOut}
           signOutIcon={IconLogout}

@@ -243,11 +243,13 @@ export function SettingsDialog({
   activeOrganizationId,
   currentSessionId,
   email,
+  isTeamInviteFormOpen,
   name,
   onOpenChange,
   onProfileUpdated,
   onSignOut,
   onTabChange,
+  onTeamInviteFormOpenChange,
   onThemeChange,
   open,
   tab,
@@ -256,11 +258,13 @@ export function SettingsDialog({
   activeOrganizationId: string | null
   currentSessionId: string | undefined
   email: string
+  isTeamInviteFormOpen: boolean
   name: string
   onOpenChange: (open: boolean) => void
   onProfileUpdated: () => Promise<void>
   onSignOut: () => Promise<void>
   onTabChange: (tab: SettingsTab) => void
+  onTeamInviteFormOpenChange: (open: boolean) => void
   onThemeChange: (theme: ThemePreference) => void
   open: boolean
   tab: SettingsTab
@@ -363,7 +367,11 @@ export function SettingsDialog({
               />
             )}
             {tab === 'team' && (
-              <TeamSettings activeOrganizationId={activeOrganizationId} />
+              <TeamSettings
+                activeOrganizationId={activeOrganizationId}
+                isInviteFormOpen={isTeamInviteFormOpen}
+                onInviteFormOpenChange={onTeamInviteFormOpenChange}
+              />
             )}
             {tab === 'billing' && <BillingSettings />}
           </section>
@@ -960,10 +968,13 @@ function CreatePasswordForm({
 
 function TeamSettings({
   activeOrganizationId,
+  isInviteFormOpen,
+  onInviteFormOpenChange,
 }: {
   activeOrganizationId: string | null
+  isInviteFormOpen: boolean
+  onInviteFormOpenChange: (open: boolean) => void
 }) {
-  const [isInviteFormOpen, setIsInviteFormOpen] = useState(false)
   const queryClient = useQueryClient()
   const organizationId = activeOrganizationId ?? undefined
   const membersQuery = useListOrganizationMembers(
@@ -1063,7 +1074,7 @@ function TeamSettings({
             type="button"
             size="sm"
             variant="outline"
-            onClick={() => setIsInviteFormOpen(open => !open)}
+            onClick={() => onInviteFormOpenChange(!isInviteFormOpen)}
           >
             <IconPlus />
             Invite user
@@ -1081,7 +1092,7 @@ function TeamSettings({
           {isInviteFormOpen && (
             <TeamInvitationForm
               organizationId={activeOrganizationId}
-              onInvitationCreated={() => setIsInviteFormOpen(false)}
+              onInvitationCreated={() => onInviteFormOpenChange(false)}
             />
           )}
           {isError && (
