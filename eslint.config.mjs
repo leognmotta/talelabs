@@ -1,5 +1,8 @@
+import { fileURLToPath } from 'node:url'
 import antfu from '@antfu/eslint-config'
 import betterTailwindcss from 'eslint-plugin-better-tailwindcss'
+
+const projectRoot = fileURLToPath(new URL('.', import.meta.url))
 
 export default antfu({
   react: true,
@@ -29,7 +32,7 @@ export default antfu({
   },
   settings: {
     'better-tailwindcss': {
-      cwd: '.',
+      cwd: projectRoot,
       entryPoint: 'packages/ui/src/styles/globals.css',
     },
   },

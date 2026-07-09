@@ -1,9 +1,10 @@
 import type { VariantProps } from 'class-variance-authority'
+import { mergeProps } from '@base-ui/react/merge-props'
+import { useRender } from '@base-ui/react/use-render'
 import { Separator } from '@talelabs/ui/components/separator'
+
 import { cn } from '@talelabs/ui/lib/utils'
 import { cva } from 'class-variance-authority'
-
-import { Slot } from 'radix-ui'
 import * as React from 'react'
 
 function ItemGroup({ className, ...props }: React.ComponentProps<'div'>) {
@@ -40,7 +41,7 @@ function ItemSeparator({
 
 const itemVariants = cva(
   `
-    group/item flex w-full flex-wrap items-center rounded-lg border text-sm
+    group/item flex w-full flex-wrap items-center rounded-2xl border text-sm
     transition-colors duration-100 outline-none
     focus-visible:border-ring focus-visible:ring-[3px]
     focus-visible:ring-ring/50
@@ -55,10 +56,10 @@ const itemVariants = cva(
         muted: 'border-transparent bg-muted/50',
       },
       size: {
-        default: 'gap-2.5 px-3 py-2.5',
-        sm: 'gap-2.5 px-3 py-2.5',
+        default: 'gap-3.5 px-4 py-3.5',
+        sm: 'gap-3.5 px-3.5 py-3',
         xs: `
-          gap-2 px-2.5 py-2
+          gap-2.5 px-3 py-2.5
           in-data-[slot=dropdown-menu-content]:p-0
         `,
       },
@@ -74,20 +75,24 @@ function Item({
   className,
   variant = 'default',
   size = 'default',
-  asChild = false,
+  render,
   ...props
-}: React.ComponentProps<'div'>
-  & VariantProps<typeof itemVariants> & { asChild?: boolean }) {
-  const Comp = asChild ? Slot.Root : 'div'
-  return (
-    <Comp
-      data-slot="item"
-      data-variant={variant}
-      data-size={size}
-      className={cn(itemVariants({ variant, size, className }))}
-      {...props}
-    />
-  )
+}: useRender.ComponentProps<'div'> & VariantProps<typeof itemVariants>) {
+  return useRender({
+    defaultTagName: 'div',
+    props: mergeProps<'div'>(
+      {
+        className: cn(itemVariants({ variant, size, className })),
+      },
+      props,
+    ),
+    render,
+    state: {
+      slot: 'item',
+      variant,
+      size,
+    },
+  })
 }
 
 const itemMediaVariants = cva(
@@ -104,9 +109,10 @@ const itemMediaVariants = cva(
         icon: '[&_svg:not([class*=\'size-\'])]:size-4',
         image:
           `
-            size-10 overflow-hidden rounded-sm
+            size-10 overflow-hidden rounded-xl
             group-data-[size=sm]/item:size-8
             group-data-[size=xs]/item:size-6
+            group-data-[size=xs]/item:rounded-lg
             [&_img]:size-full [&_img]:object-cover
           `,
       },
@@ -139,7 +145,7 @@ function ItemContent({ className, ...props }: React.ComponentProps<'div'>) {
       className={cn(
         `
           flex flex-1 flex-col gap-1
-          group-data-[size=xs]/item:gap-0
+          group-data-[size=xs]/item:gap-0.5
           [&+[data-slot=item-content]]:flex-none
         `,
         className,
@@ -171,9 +177,7 @@ function ItemDescription({ className, ...props }: React.ComponentProps<'p'>) {
       data-slot="item-description"
       className={cn(
         `
-          line-clamp-2 text-left text-sm/normal font-normal
-          text-muted-foreground
-          group-data-[size=xs]/item:text-xs
+          line-clamp-2 text-left text-sm font-normal text-muted-foreground
           [&>a]:underline [&>a]:underline-offset-4
           [&>a:hover]:text-primary
         `,

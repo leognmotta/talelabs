@@ -30,11 +30,13 @@ export function NavMain({
 
           return (
             <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
-                <NavLink to={item.url} end={item.end}>
-                  {item.icon}
-                  <span>{item.title}</span>
-                </NavLink>
+              <SidebarMenuButton
+                isActive={isActive}
+                tooltip={item.title}
+                render={<NavLink to={item.url} end={item.end} />}
+              >
+                {item.icon}
+                <span>{item.title}</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           )

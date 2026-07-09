@@ -1,10 +1,11 @@
 'use client'
 
 import type { VariantProps } from 'class-variance-authority'
+import { Toggle as TogglePrimitive } from '@base-ui/react/toggle'
+import { ToggleGroup as ToggleGroupPrimitive } from '@base-ui/react/toggle-group'
 import { toggleVariants } from '@talelabs/ui/components/toggle'
-import { cn } from '@talelabs/ui/lib/utils'
 
-import { ToggleGroup as ToggleGroupPrimitive } from 'radix-ui'
+import { cn } from '@talelabs/ui/lib/utils'
 import * as React from 'react'
 
 const ToggleGroupContext = React.createContext<
@@ -15,7 +16,7 @@ const ToggleGroupContext = React.createContext<
 >({
   size: 'default',
   variant: 'default',
-  spacing: 0,
+  spacing: 2,
   orientation: 'horizontal',
 })
 
@@ -23,17 +24,17 @@ function ToggleGroup({
   className,
   variant,
   size,
-  spacing = 0,
+  spacing = 2,
   orientation = 'horizontal',
   children,
   ...props
-}: React.ComponentProps<typeof ToggleGroupPrimitive.Root>
+}: ToggleGroupPrimitive.Props
   & VariantProps<typeof toggleVariants> & {
     spacing?: number
     orientation?: 'horizontal' | 'vertical'
   }) {
   return (
-    <ToggleGroupPrimitive.Root
+    <ToggleGroupPrimitive
       data-slot="toggle-group"
       data-variant={variant}
       data-size={size}
@@ -43,9 +44,9 @@ function ToggleGroup({
       className={cn(
         `
           group/toggle-group flex w-fit flex-row items-center
-          gap-[--spacing(var(--gap))] rounded-lg
+          gap-[--spacing(var(--gap))]
+          data-[spacing=0]:data-[variant=outline]:rounded-3xl
           data-vertical:flex-col data-vertical:items-stretch
-          data-[size=sm]:rounded-[min(var(--radius-md),10px)]
         `,
         className,
       )}
@@ -56,7 +57,7 @@ function ToggleGroup({
       >
         {children}
       </ToggleGroupContext.Provider>
-    </ToggleGroupPrimitive.Root>
+    </ToggleGroupPrimitive>
   )
 }
 
@@ -66,12 +67,11 @@ function ToggleGroupItem({
   variant = 'default',
   size = 'default',
   ...props
-}: React.ComponentProps<typeof ToggleGroupPrimitive.Item>
-  & VariantProps<typeof toggleVariants>) {
+}: TogglePrimitive.Props & VariantProps<typeof toggleVariants>) {
   const context = React.useContext(ToggleGroupContext)
 
   return (
-    <ToggleGroupPrimitive.Item
+    <TogglePrimitive
       data-slot="toggle-group-item"
       data-variant={context.variant || variant}
       data-size={context.size || size}
@@ -80,15 +80,17 @@ function ToggleGroupItem({
         `
           shrink-0
           group-data-[spacing=0]/toggle-group:rounded-none
-          group-data-[spacing=0]/toggle-group:px-2
+          group-data-[spacing=0]/toggle-group:px-3
+          group-data-[spacing=0]/toggle-group:shadow-none
           focus:z-10
           focus-visible:z-10
-          group-data-[spacing=0]/toggle-group:has-data-[icon=inline-end]:pr-1.5
-          group-data-[spacing=0]/toggle-group:has-data-[icon=inline-start]:pl-1.5
-          group-data-horizontal/toggle-group:data-[spacing=0]:first:rounded-l-lg
-          group-data-vertical/toggle-group:data-[spacing=0]:first:rounded-t-lg
-          group-data-horizontal/toggle-group:data-[spacing=0]:last:rounded-r-lg
-          group-data-vertical/toggle-group:data-[spacing=0]:last:rounded-b-lg
+          group-data-[spacing=0]/toggle-group:has-data-[icon=inline-end]:pr-2.5
+          group-data-[spacing=0]/toggle-group:has-data-[icon=inline-start]:pl-2.5
+          group-data-horizontal/toggle-group:data-[spacing=0]:first:rounded-l-3xl
+          group-data-vertical/toggle-group:data-[spacing=0]:first:rounded-t-3xl
+          group-data-horizontal/toggle-group:data-[spacing=0]:last:rounded-r-3xl
+          group-data-vertical/toggle-group:data-[spacing=0]:last:rounded-b-3xl
+          data-[state=on]:bg-muted
           group-data-horizontal/toggle-group:data-[spacing=0]:data-[variant=outline]:border-l-0
           group-data-vertical/toggle-group:data-[spacing=0]:data-[variant=outline]:border-t-0
           group-data-horizontal/toggle-group:data-[spacing=0]:data-[variant=outline]:first:border-l
@@ -103,7 +105,7 @@ function ToggleGroupItem({
       {...props}
     >
       {children}
-    </ToggleGroupPrimitive.Item>
+    </TogglePrimitive>
   )
 }
 

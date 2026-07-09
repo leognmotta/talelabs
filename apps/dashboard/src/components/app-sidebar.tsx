@@ -2,20 +2,20 @@ import type { ComponentProps } from 'react'
 import type { ThemePreference } from '../lib/theme'
 
 import {
+  IconDeviceDesktop,
+  IconLayoutDashboard,
+  IconLogout,
+  IconMoon,
+  IconSettings,
+  IconSun,
+} from '@tabler/icons-react'
+import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
 } from '@talelabs/ui/components/sidebar'
-import {
-  LayoutDashboardIcon,
-  LogOutIcon,
-  MonitorIcon,
-  MoonIcon,
-  SettingsIcon,
-  SunIcon,
-} from 'lucide-react'
 
 import { NavMain } from './nav-main'
 import { NavUser } from './nav-user'
@@ -56,13 +56,13 @@ export function AppSidebar({
             {
               title: 'Overview',
               url: '/',
-              icon: <LayoutDashboardIcon />,
+              icon: <IconLayoutDashboard />,
               end: true,
             },
             {
               title: 'Workspace',
               url: '/workspace',
-              icon: <SettingsIcon />,
+              icon: <IconSettings />,
             },
           ]}
         />
@@ -75,12 +75,12 @@ export function AppSidebar({
           }}
           onSignOut={onSignOut}
           onThemeChange={onThemeChange}
-          signOutIcon={LogOutIcon}
+          signOutIcon={IconLogout}
           theme={theme}
           themeItems={[
-            { icon: SunIcon, label: 'Light', value: 'light' },
-            { icon: MoonIcon, label: 'Dark', value: 'dark' },
-            { icon: MonitorIcon, label: 'System', value: 'system' },
+            { icon: IconSun, label: 'Light', value: 'light' },
+            { icon: IconMoon, label: 'Dark', value: 'dark' },
+            { icon: IconDeviceDesktop, label: 'System', value: 'system' },
           ]}
         />
       </SidebarFooter>

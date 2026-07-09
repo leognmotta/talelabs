@@ -1,6 +1,7 @@
-import type { LucideIcon } from 'lucide-react'
+import type { TablerIcon } from '@tabler/icons-react'
 import type { ThemePreference } from '../lib/theme'
 
+import { IconSelector } from '@tabler/icons-react'
 import {
   Avatar,
   AvatarFallback,
@@ -20,7 +21,6 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@talelabs/ui/components/sidebar'
-import { ChevronsUpDownIcon } from 'lucide-react'
 
 export function NavUser({
   onSignOut,
@@ -32,10 +32,10 @@ export function NavUser({
 }: {
   onSignOut: () => Promise<void>
   onThemeChange: (theme: ThemePreference) => void
-  signOutIcon: LucideIcon
+  signOutIcon: TablerIcon
   theme: ThemePreference
   themeItems: {
-    icon: LucideIcon
+    icon: TablerIcon
     label: string
     value: ThemePreference
   }[]
@@ -56,28 +56,28 @@ export function NavUser({
     <SidebarMenu>
       <SidebarMenuItem>
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <SidebarMenuButton
-              size="lg"
-              className="
-                data-[state=open]:bg-sidebar-accent
-                data-[state=open]:text-sidebar-accent-foreground
-              "
-            >
-              <Avatar className="size-8 rounded-lg">
-                <AvatarFallback className="rounded-lg">{initials}</AvatarFallback>
-              </Avatar>
-              <div className="grid flex-1 text-left text-sm/tight">
-                <span className="truncate font-medium">{user.name}</span>
-                <span className="truncate text-xs">{user.email}</span>
-              </div>
-              <ChevronsUpDownIcon className="ml-auto" />
-            </SidebarMenuButton>
+          <DropdownMenuTrigger
+            render={(
+              <SidebarMenuButton
+                size="lg"
+                className="
+                  data-[state=open]:bg-sidebar-accent
+                  data-[state=open]:text-sidebar-accent-foreground
+                "
+              />
+            )}
+          >
+            <Avatar className="size-8 rounded-lg">
+              <AvatarFallback className="rounded-lg">{initials}</AvatarFallback>
+            </Avatar>
+            <div className="grid flex-1 text-left text-sm/tight">
+              <span className="truncate font-medium">{user.name}</span>
+              <span className="truncate text-xs">{user.email}</span>
+            </div>
+            <IconSelector className="ml-auto" />
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            className="
-              w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg
-            "
+            className="w-(--anchor-width) min-w-56 rounded-lg"
             side={isMobile ? 'bottom' : 'right'}
             align="end"
             sideOffset={4}

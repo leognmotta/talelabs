@@ -1,10 +1,8 @@
-'use client'
-
 import type { DayButton, Locale } from 'react-day-picker'
-import { Button, buttonVariants } from '@talelabs/ui/components/button'
+import { IconChevronDown, IconChevronLeft, IconChevronRight } from '@tabler/icons-react'
 
+import { Button, buttonVariants } from '@talelabs/ui/components/button'
 import { cn } from '@talelabs/ui/lib/utils'
-import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
 import * as React from 'react'
 import {
 
@@ -33,8 +31,8 @@ function Calendar({
       showOutsideDays={showOutsideDays}
       className={cn(
         `
-          group/calendar bg-background p-2 [--cell-radius:var(--radius-md)]
-          [--cell-size:--spacing(7)]
+          group/calendar bg-background p-3 [--cell-radius:var(--radius-4xl)]
+          [--cell-size:--spacing(8)]
           in-data-[slot=card-content]:bg-transparent
           in-data-[slot=popover-content]:bg-transparent
         `,
@@ -114,7 +112,7 @@ function Calendar({
             `,
           defaultClassNames.caption_label,
         ),
-        table: 'w-full border-collapse',
+        month_grid: cn('w-full border-collapse', defaultClassNames.month_grid),
         weekdays: cn('flex', defaultClassNames.weekdays),
         weekday: cn(
           `
@@ -198,18 +196,18 @@ function Calendar({
         Chevron: ({ className, orientation, ...props }) => {
           if (orientation === 'left') {
             return (
-              <ChevronLeftIcon className={cn('size-4', className)} {...props} />
+              <IconChevronLeft className={cn('size-4', className)} {...props} />
             )
           }
 
           if (orientation === 'right') {
             return (
-              <ChevronRightIcon className={cn('size-4', className)} {...props} />
+              <IconChevronRight className={cn('size-4', className)} {...props} />
             )
           }
 
           return (
-            <ChevronDownIcon className={cn('size-4', className)} {...props} />
+            <IconChevronDown className={cn('size-4', className)} {...props} />
           )
         },
         DayButton: ({ ...props }) => (
@@ -251,7 +249,6 @@ function CalendarDayButton({
 
   return (
     <Button
-      ref={ref}
       variant="ghost"
       size="icon"
       data-day={day.date.toLocaleDateString(locale?.code)}

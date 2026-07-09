@@ -1,5 +1,10 @@
 import type { FormEvent } from 'react'
 
+import {
+  IconBuilding,
+  IconPlus,
+  IconSelector,
+} from '@tabler/icons-react'
 import { Button } from '@talelabs/ui/components/button'
 import {
   Dialog,
@@ -32,11 +37,6 @@ import {
   useSidebar,
 } from '@talelabs/ui/components/sidebar'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import {
-  ChevronsUpDownIcon,
-  GalleryVerticalEndIcon,
-  PlusIcon,
-} from 'lucide-react'
 import { useMemo, useState } from 'react'
 
 import { authClient } from '../lib/auth-client'
@@ -139,36 +139,36 @@ export function TeamSwitcher({
       <SidebarMenu>
         <SidebarMenuItem>
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <SidebarMenuButton
-                size="lg"
-                className="
-                  data-[state=open]:bg-sidebar-accent
-                  data-[state=open]:text-sidebar-accent-foreground
-                "
+            <DropdownMenuTrigger
+              render={(
+                <SidebarMenuButton
+                  size="lg"
+                  className="
+                    data-[state=open]:bg-sidebar-accent
+                    data-[state=open]:text-sidebar-accent-foreground
+                  "
+                />
+              )}
+            >
+              <div className="
+                flex aspect-square size-8 items-center justify-center rounded-lg
+                bg-sidebar-primary text-sidebar-primary-foreground
+              "
               >
-                <div className="
-                  flex aspect-square size-8 items-center justify-center
-                  rounded-lg bg-sidebar-primary text-sidebar-primary-foreground
-                "
-                >
-                  <GalleryVerticalEndIcon />
-                </div>
-                <div className="grid flex-1 text-left text-sm/tight">
-                  <span className="truncate font-medium">
-                    {activeOrganization?.name ?? 'TaleLabs'}
-                  </span>
-                  <span className="truncate text-xs">
-                    {activeOrganization?.slug ?? 'Select organization'}
-                  </span>
-                </div>
-                <ChevronsUpDownIcon className="ml-auto" />
-              </SidebarMenuButton>
+                <IconBuilding />
+              </div>
+              <div className="grid flex-1 text-left text-sm/tight">
+                <span className="truncate font-medium">
+                  {activeOrganization?.name ?? 'TaleLabs'}
+                </span>
+                <span className="truncate text-xs">
+                  {activeOrganization?.slug ?? 'Select organization'}
+                </span>
+              </div>
+              <IconSelector className="ml-auto" />
             </DropdownMenuTrigger>
             <DropdownMenuContent
-              className="
-                w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg
-              "
+              className="w-(--anchor-width) min-w-56 rounded-lg"
               align="start"
               side={isMobile ? 'bottom' : 'right'}
               sideOffset={4}
@@ -192,7 +192,7 @@ export function TeamSwitcher({
                     flex size-6 items-center justify-center rounded-md border
                   "
                   >
-                    <GalleryVerticalEndIcon />
+                    <IconBuilding />
                   </div>
                   <span className="truncate">{organization.name}</span>
                   {organization.id === activeOrganizationId
@@ -216,7 +216,7 @@ export function TeamSwitcher({
                   bg-transparent
                 "
                 >
-                  <PlusIcon />
+                  <IconPlus />
                 </div>
                 <div className="font-medium text-muted-foreground">
                   Create organization

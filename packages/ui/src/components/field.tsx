@@ -14,7 +14,7 @@ function FieldSet({ className, ...props }: React.ComponentProps<'fieldset'>) {
       data-slot="field-set"
       className={cn(
         `
-          flex flex-col gap-4
+          flex flex-col gap-6
           has-[>[data-slot=checkbox-group]]:gap-3
           has-[>[data-slot=radio-group]]:gap-3
         `,
@@ -36,7 +36,7 @@ function FieldLegend({
       data-variant={variant}
       className={cn(
         `
-          mb-1.5 font-medium
+          mb-3 font-medium
           data-[variant=label]:text-sm
           data-[variant=legend]:text-base
         `,
@@ -53,7 +53,7 @@ function FieldGroup({ className, ...props }: React.ComponentProps<'div'>) {
       data-slot="field-group"
       className={cn(
         `
-          group/field-group @container/field-group flex w-full flex-col gap-5
+          group/field-group @container/field-group flex w-full flex-col gap-7
           data-[slot=checkbox-group]:gap-3
           *:data-[slot=field-group]:gap-4
         `,
@@ -66,7 +66,7 @@ function FieldGroup({ className, ...props }: React.ComponentProps<'div'>) {
 
 const fieldVariants = cva(
   `
-    group/field flex w-full gap-2
+    group/field flex w-full gap-3
     data-[invalid=true]:text-destructive
   `,
   {
@@ -124,7 +124,7 @@ function FieldContent({ className, ...props }: React.ComponentProps<'div'>) {
     <div
       data-slot="field-content"
       className={cn(
-        'group/field-content flex flex-1 flex-col gap-0.5 leading-snug',
+        'group/field-content flex flex-1 flex-col gap-1 leading-snug',
         className,
       )}
       {...props}
@@ -143,11 +143,9 @@ function FieldLabel({
         `
           group/field-label peer/field-label flex w-fit gap-2 leading-snug
           group-data-[disabled=true]/field:opacity-50
-          has-data-checked:border-primary/30 has-data-checked:bg-primary/5
-          has-[>[data-slot=field]]:rounded-lg has-[>[data-slot=field]]:border
-          *:data-[slot=field]:p-2.5
-          dark:has-data-checked:border-primary/20
-          dark:has-data-checked:bg-primary/10
+          has-data-checked:bg-input/30
+          has-[>[data-slot=field]]:rounded-2xl has-[>[data-slot=field]]:border
+          *:data-[slot=field]:p-4
         `,
         'has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col',
         className,

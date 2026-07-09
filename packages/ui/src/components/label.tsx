@@ -1,14 +1,12 @@
+'use client'
+
 import { cn } from '@talelabs/ui/lib/utils'
-import { Label as LabelPrimitive } from 'radix-ui'
 
 import * as React from 'react'
 
-function Label({
-  className,
-  ...props
-}: React.ComponentProps<typeof LabelPrimitive.Root>) {
+function Label({ className, ...props }: React.ComponentProps<'label'>) {
   return (
-    <LabelPrimitive.Root
+    <label
       data-slot="label"
       className={cn(
         `

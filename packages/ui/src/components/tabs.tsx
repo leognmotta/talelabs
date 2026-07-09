@@ -1,17 +1,14 @@
-'use client'
-
 import type { VariantProps } from 'class-variance-authority'
+import { Tabs as TabsPrimitive } from '@base-ui/react/tabs'
+
 import { cn } from '@talelabs/ui/lib/utils'
 import { cva } from 'class-variance-authority'
-import { Tabs as TabsPrimitive } from 'radix-ui'
-
-import * as React from 'react'
 
 function Tabs({
   className,
   orientation = 'horizontal',
   ...props
-}: React.ComponentProps<typeof TabsPrimitive.Root>) {
+}: TabsPrimitive.Root.Props) {
   return (
     <TabsPrimitive.Root
       data-slot="tabs"
@@ -30,10 +27,11 @@ function Tabs({
 
 const tabsListVariants = cva(
   `
-    group/tabs-list inline-flex w-fit items-center justify-center rounded-lg
-    p-[3px] text-muted-foreground
-    group-data-horizontal/tabs:h-8
+    group/tabs-list inline-flex w-fit items-center justify-center rounded-full
+    p-1 text-muted-foreground
+    group-data-horizontal/tabs:h-9
     group-data-vertical/tabs:h-fit group-data-vertical/tabs:flex-col
+    group-data-vertical/tabs:rounded-2xl
     data-[variant=line]:rounded-none
   `,
   {
@@ -53,8 +51,7 @@ function TabsList({
   className,
   variant = 'default',
   ...props
-}: React.ComponentProps<typeof TabsPrimitive.List>
-  & VariantProps<typeof tabsListVariants>) {
+}: TabsPrimitive.List.Props & VariantProps<typeof tabsListVariants>) {
   return (
     <TabsPrimitive.List
       data-slot="tabs-list"
@@ -65,29 +62,27 @@ function TabsList({
   )
 }
 
-function TabsTrigger({
-  className,
-  ...props
-}: React.ComponentProps<typeof TabsPrimitive.Trigger>) {
+function TabsTrigger({ className, ...props }: TabsPrimitive.Tab.Props) {
   return (
-    <TabsPrimitive.Trigger
+    <TabsPrimitive.Tab
       data-slot="tabs-trigger"
       className={cn(
         `
           relative inline-flex h-[calc(100%-1px)] flex-1 items-center
-          justify-center gap-1.5 rounded-md border border-transparent px-1.5
-          py-0.5 text-sm font-medium whitespace-nowrap text-foreground/60
+          justify-center gap-2 rounded-full border border-transparent! px-3 py-1
+          text-sm font-medium whitespace-nowrap text-foreground/60
           transition-all
           group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start
+          group-data-vertical/tabs:rounded-2xl group-data-vertical/tabs:px-3
+          group-data-vertical/tabs:py-1.5
           hover:text-foreground
           focus-visible:border-ring focus-visible:ring-[3px]
           focus-visible:ring-ring/50 focus-visible:outline-1
           focus-visible:outline-ring
           disabled:pointer-events-none disabled:opacity-50
-          has-data-[icon=inline-end]:pr-1
-          has-data-[icon=inline-start]:pl-1
-          group-data-[variant=default]/tabs-list:data-active:shadow-sm
-          group-data-[variant=line]/tabs-list:data-active:shadow-none
+          has-data-[icon=inline-end]:pr-2
+          has-data-[icon=inline-start]:pl-2
+          aria-disabled:pointer-events-none aria-disabled:opacity-50
           dark:text-muted-foreground
           dark:hover:text-foreground
           [&_svg]:pointer-events-none [&_svg]:shrink-0
@@ -122,12 +117,9 @@ function TabsTrigger({
   )
 }
 
-function TabsContent({
-  className,
-  ...props
-}: React.ComponentProps<typeof TabsPrimitive.Content>) {
+function TabsContent({ className, ...props }: TabsPrimitive.Panel.Props) {
   return (
-    <TabsPrimitive.Content
+    <TabsPrimitive.Panel
       data-slot="tabs-content"
       className={cn('flex-1 text-sm outline-none', className)}
       {...props}

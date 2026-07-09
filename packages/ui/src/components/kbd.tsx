@@ -6,9 +6,10 @@ function Kbd({ className, ...props }: React.ComponentProps<'kbd'>) {
       data-slot="kbd"
       className={cn(
         `
-          pointer-events-none inline-flex h-5 w-fit min-w-5 items-center
-          justify-center gap-1 rounded-sm bg-muted px-1 font-sans text-xs
+          pointer-events-none inline-flex h-5.5 w-fit min-w-5.5 items-center
+          justify-center gap-1 rounded-lg bg-muted px-1.5 font-sans text-xs
           font-medium text-muted-foreground select-none
+          in-data-[slot=input-group]:bg-input
           in-data-[slot=tooltip-content]:bg-background/20
           in-data-[slot=tooltip-content]:text-background
           dark:in-data-[slot=tooltip-content]:bg-background/10

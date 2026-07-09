@@ -1,18 +1,15 @@
-import { cn } from '@talelabs/ui/lib/utils'
-import { Separator as SeparatorPrimitive } from 'radix-ui'
+import { Separator as SeparatorPrimitive } from '@base-ui/react/separator'
 
-import * as React from 'react'
+import { cn } from '@talelabs/ui/lib/utils'
 
 function Separator({
   className,
   orientation = 'horizontal',
-  decorative = true,
   ...props
-}: React.ComponentProps<typeof SeparatorPrimitive.Root>) {
+}: SeparatorPrimitive.Props) {
   return (
-    <SeparatorPrimitive.Root
+    <SeparatorPrimitive
       data-slot="separator"
-      decorative={decorative}
       orientation={orientation}
       className={cn(
         `
