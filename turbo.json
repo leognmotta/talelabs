@@ -1,7 +1,15 @@
 {
   "$schema": "https://turborepo.dev/schema.json",
   "ui": "tui",
-  "globalPassThroughEnv": ["BETTER_AUTH_URL", "DASHBOARD_URL", "POSTGRES_URL"],
+  "globalPassThroughEnv": [
+    "BETTER_AUTH_URL",
+    "DASHBOARD_URL",
+    "OPENROUTER_API_KEY",
+    "OPENROUTER_APP_CATEGORIES",
+    "OPENROUTER_APP_TITLE",
+    "OPENROUTER_HTTP_REFERER",
+    "POSTGRES_URL"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
