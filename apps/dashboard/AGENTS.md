@@ -110,6 +110,7 @@ Do not move files only to satisfy this shape. Move code when a feature gains eno
 
 - Import reusable components from `@talelabs/ui/components/*`.
 - Use Tabler icons from `@tabler/icons-react`.
+- Keep one React component per `.tsx` file. Move child components into sibling files and import them; keep only non-component constants, schemas, types, and pure helpers in `.ts` modules.
 - Keep shadcn/Base UI APIs intact; do not re-wrap primitives unless it removes repeated product-specific composition.
 - Use existing components before custom markup: `Tabs`, `Field`, `InputGroup`, `Button`, `Card`, `Sidebar`, `ScrollArea`, `Empty`, `Skeleton`, `Badge`, `Dialog`, `Sheet`, `Tooltip`, `Message`, `MessageScroller`, `Marker`, `Bubble`, and `Attachment`.
 - Shared UI package code must stay framework-neutral enough to import from both Vite and Next.js apps.
