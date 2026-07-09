@@ -192,7 +192,7 @@ export function DashboardRoutes() {
             </ProtectedRoute>
           )}
         >
-          <Route index element={<Navigate to="/boards" replace />} />
+          <Route index element={<Navigate to="/create" replace />} />
           <Route
             path="boards"
             element={(
@@ -213,9 +213,9 @@ export function DashboardRoutes() {
           <Route path="products" element={<BlankPage title="Products" />} />
           <Route path="projects" element={<BlankPage title="Projects" />} />
           <Route path="assets" element={<BlankPage title="Assets" />} />
-          <Route path="*" element={<Navigate to="/boards" replace />} />
+          <Route path="*" element={<Navigate to="/create" replace />} />
         </Route>
-        <Route path="*" element={<Navigate to="/boards" replace />} />
+        <Route path="*" element={<Navigate to="/create" replace />} />
       </Routes>
       <Toaster theme={theme} />
     </>
