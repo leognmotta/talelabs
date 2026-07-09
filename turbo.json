@@ -5,7 +5,10 @@
     "BETTER_AUTH_URL",
     "DASHBOARD_URL",
     "OPENROUTER_API_KEY",
-    "POSTGRES_URL"
+    "POSTGRES_URL",
+    "R2_ACCESS_KEY_ID",
+    "R2_ACCOUNT_ID",
+    "R2_SECRET_ACCESS_KEY"
   ],
   "tasks": {
     "build": {
