@@ -10,7 +10,9 @@
     "R2_ACCOUNT_ID",
     "R2_SECRET_ACCESS_KEY",
     "STRIPE_PUBLISHABLE_KEY",
-    "STRIPE_SECRET_KEY"
+    "STRIPE_SECRET_KEY",
+    "TRIGGER_PROJECT_REF",
+    "TRIGGER_SECRET_KEY"
   ],
   "tasks": {
     "build": {
