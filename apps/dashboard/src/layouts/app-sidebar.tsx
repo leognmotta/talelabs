@@ -84,6 +84,20 @@ export function AppSidebar({
               title: 'Characters',
               url: '/characters',
               icon: <IconUserSquareRounded />,
+              items: [
+                {
+                  title: 'Brands',
+                  url: '/characters/brands',
+                },
+                {
+                  title: 'Products',
+                  url: '/characters/products',
+                },
+                {
+                  title: 'Projects',
+                  url: '/characters/projects',
+                },
+              ],
             },
           ]}
         />
