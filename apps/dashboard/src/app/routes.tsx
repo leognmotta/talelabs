@@ -11,7 +11,6 @@ import { Navigate, Route, Routes } from 'react-router'
 import { toast } from 'sonner'
 import { authClient, signOut, useSession } from '../features/auth/auth-client'
 import { AuthScreen } from '../features/auth/auth-screen'
-import { GenerationScreen } from '../features/generation/generation-screen'
 import { AcceptInvitationScreen } from '../features/organizations/accept-invitation-screen'
 import { CreateOrganizationScreen } from '../features/organizations/create-organization-screen'
 import { useOrganizationSession } from '../features/organizations/use-organization-session'
@@ -199,14 +198,6 @@ export function DashboardRoutes() {
                 activeOrganizationId={organization.activeWorkspaceId}
                 meQueryStatus={organization.meQueryStatus}
                 organizationMessage={organization.organizationMessage}
-              />
-            )}
-          />
-          <Route
-            path="workspace"
-            element={(
-              <GenerationScreen
-                activeOrganizationId={organization.activeWorkspaceId}
               />
             )}
           />

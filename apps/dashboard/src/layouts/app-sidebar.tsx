@@ -3,7 +3,6 @@ import type { ComponentProps } from 'react'
 import {
   IconLayoutDashboard,
   IconLogout,
-  IconSettings,
 } from '@tabler/icons-react'
 import {
   Sidebar,
@@ -52,11 +51,6 @@ export function AppSidebar({
               url: '/',
               icon: <IconLayoutDashboard />,
               end: true,
-            },
-            {
-              title: 'Workspace',
-              url: '/workspace',
-              icon: <IconSettings />,
             },
           ]}
         />
