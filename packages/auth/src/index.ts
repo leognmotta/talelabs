@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto'
 import { db } from '@talelabs/db'
+import { sendUserInvitationEmail } from '@talelabs/email'
 import { betterAuth } from 'better-auth'
 import { admin, organization } from 'better-auth/plugins'
 import {
@@ -453,6 +454,19 @@ export async function createOrganizationInvitation(
     : ORGANIZATION_MEMBER_ROLE
   const now = new Date()
   const expiresAt = new Date(now.getTime() + 1000 * 60 * 60 * 24 * 7)
+  const organization = await db
+    .selectFrom('organization')
+    .select(['id', 'name'])
+    .where('id', '=', input.organizationId)
+    .executeTakeFirst()
+
+  if (!organization) {
+    return {
+      ok: false,
+      status: 404,
+      error: 'Organization not found',
+    } as const
+  }
 
   if (!input.resend) {
     const pendingInvitation = await db
@@ -502,6 +516,35 @@ export async function createOrganizationInvitation(
       'createdAt',
     ])
     .executeTakeFirstOrThrow()
+  const inviteUrl = buildInviteUrl(invitation.id)
+
+  try {
+    await sendUserInvitationEmail({
+      invitationId: invitation.id,
+      invitationUrl: inviteUrl,
+      invitedEmail: invitation.email,
+      inviterName: accessResult.session.user.name,
+      organizationName: organization.name,
+      role: invitation.role === ORGANIZATION_ADMIN_ROLE
+        ? ORGANIZATION_ADMIN_ROLE
+        : ORGANIZATION_MEMBER_ROLE,
+      expiresAt: invitation.expiresAt,
+    })
+  }
+  catch (error) {
+    await db
+      .deleteFrom('invitation')
+      .where('id', '=', invitation.id)
+      .execute()
+
+    return {
+      ok: false,
+      status: 502,
+      error: error instanceof Error
+        ? error.message
+        : 'Could not send invitation email',
+    } as const
+  }
 
   return {
     ok: true,
@@ -513,7 +556,7 @@ export async function createOrganizationInvitation(
       status: invitation.status,
       expiresAt: invitation.expiresAt,
       createdAt: invitation.createdAt,
-      inviteUrl: buildInviteUrl(invitation.id),
+      inviteUrl,
     } satisfies InvitationSummary,
   } as const
 }

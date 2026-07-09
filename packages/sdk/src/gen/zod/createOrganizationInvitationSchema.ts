@@ -9,6 +9,7 @@ import type {
   CreateOrganizationInvitation401,
   CreateOrganizationInvitation403,
   CreateOrganizationInvitation409,
+  CreateOrganizationInvitation502,
   CreateOrganizationInvitationMutationRequest,
   CreateOrganizationInvitationMutationResponse,
   CreateOrganizationInvitationPathParams,
@@ -48,6 +49,13 @@ export const createOrganizationInvitation403Schema = z.lazy(
 export const createOrganizationInvitation409Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<CreateOrganizationInvitation409>;
+
+/**
+ * @description Invitation email could not be sent
+ */
+export const createOrganizationInvitation502Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<CreateOrganizationInvitation502>;
 
 export const createOrganizationInvitationMutationRequestSchema = z.lazy(
   () => createInvitationRequestSchema,

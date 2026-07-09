@@ -17,6 +17,7 @@ export type {
   CreateOrganizationInvitation401,
   CreateOrganizationInvitation403,
   CreateOrganizationInvitation409,
+  CreateOrganizationInvitation502,
   CreateOrganizationInvitationMutation,
   CreateOrganizationInvitationMutationRequest,
   CreateOrganizationInvitationMutationResponse,

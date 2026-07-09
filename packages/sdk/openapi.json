@@ -529,6 +529,16 @@
                 }
               }
             }
+          },
+          "502": {
+            "description": "Invitation email could not be sent",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
           }
         }
       }

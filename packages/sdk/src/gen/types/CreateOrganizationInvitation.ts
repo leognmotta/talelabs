@@ -34,6 +34,11 @@ export type CreateOrganizationInvitation403 = ErrorResponse;
  */
 export type CreateOrganizationInvitation409 = ErrorResponse;
 
+/**
+ * @description Invitation email could not be sent
+ */
+export type CreateOrganizationInvitation502 = ErrorResponse;
+
 export type CreateOrganizationInvitationMutationRequest =
   CreateInvitationRequest;
 
@@ -47,5 +52,6 @@ export type CreateOrganizationInvitationMutation = {
   Errors:
     | CreateOrganizationInvitation401
     | CreateOrganizationInvitation403
-    | CreateOrganizationInvitation409;
+    | CreateOrganizationInvitation409
+    | CreateOrganizationInvitation502;
 };

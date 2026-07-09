@@ -13,6 +13,7 @@ export {
   createOrganizationInvitation401Schema,
   createOrganizationInvitation403Schema,
   createOrganizationInvitation409Schema,
+  createOrganizationInvitation502Schema,
   createOrganizationInvitationMutationRequestSchema,
   createOrganizationInvitationMutationResponseSchema,
   createOrganizationInvitationPathParamsSchema,

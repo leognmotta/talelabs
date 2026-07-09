@@ -12,6 +12,7 @@ import type {
   CreateOrganizationInvitation401,
   CreateOrganizationInvitation403,
   CreateOrganizationInvitation409,
+  CreateOrganizationInvitation502,
 } from "../types/CreateOrganizationInvitation.ts";
 import {
   createOrganizationInvitationMutationResponseSchema,
@@ -56,6 +57,7 @@ export async function createOrganizationInvitation(
       | CreateOrganizationInvitation401
       | CreateOrganizationInvitation403
       | CreateOrganizationInvitation409
+      | CreateOrganizationInvitation502
     >,
     CreateOrganizationInvitationMutationRequest
   >({

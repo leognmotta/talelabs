@@ -309,6 +309,14 @@ const createInvitationRoute = createRoute({
       },
       description: 'Pending invitation already exists',
     },
+    502: {
+      content: {
+        'application/json': {
+          schema: ErrorResponseSchema,
+        },
+      },
+      description: 'Invitation email could not be sent',
+    },
   },
 })
 
@@ -405,6 +413,9 @@ app.openapi(createInvitationRoute, async (c) => {
 
   if (!result.ok && result.status === 409)
     return c.json({ error: result.error }, 409)
+
+  if (!result.ok && result.status === 502)
+    return c.json({ error: result.error }, 502)
 
   if (!result.ok)
     return c.json({ error: result.error }, 403)
