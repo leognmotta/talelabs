@@ -1,6 +1,6 @@
-import type { PreviewTone } from './project-board-data'
+import type { PreviewTone } from './board-data'
 
-import { getPreviewGradient, getPreviewSurface } from './project-board-data'
+import { getPreviewGradient, getPreviewSurface } from './board-data'
 
 export function PreviewTile({
   tone,

@@ -11,10 +11,10 @@ import { Navigate, Route, Routes } from 'react-router'
 import { toast } from 'sonner'
 import { authClient, signOut, useSession } from '../features/auth/auth-client'
 import { AuthScreen } from '../features/auth/auth-screen'
+import { BoardsScreen } from '../features/boards/boards-screen'
 import { AcceptInvitationScreen } from '../features/organizations/accept-invitation-screen'
 import { CreateOrganizationScreen } from '../features/organizations/create-organization-screen'
 import { useOrganizationSession } from '../features/organizations/use-organization-session'
-import { ProjectsScreen } from '../features/projects/projects-screen'
 import { DashboardLayout } from '../layouts/dashboard-layout'
 import { CreateOrganizationRoute } from '../routes/create-organization-route'
 import { ProtectedRoute } from '../routes/protected-route'
@@ -192,26 +192,25 @@ export function DashboardRoutes() {
             </ProtectedRoute>
           )}
         >
+          <Route index element={<Navigate to="/boards" replace />} />
           <Route
-            index
+            path="boards"
             element={(
-              <ProjectsScreen
+              <BoardsScreen
                 activeOrganizationId={organization.activeWorkspaceId}
                 meQueryStatus={organization.meQueryStatus}
                 organizationMessage={organization.organizationMessage}
               />
             )}
           />
-          <Route path="apps" element={<BlankPage title="Apps" />} />
           <Route path="create" element={<BlankPage title="Create" />} />
-          <Route path="boards" element={<BlankPage title="Boards" />} />
+          <Route path="apps" element={<BlankPage title="Apps" />} />
           <Route path="studio" element={<BlankPage title="Studio" />} />
           <Route path="agent" element={<BlankPage title="Agent" />} />
-          <Route path="projects" element={<BlankPage title="Projects" />} />
           <Route path="characters" element={<BlankPage title="Characters" />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<Navigate to="/boards" replace />} />
         </Route>
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<Navigate to="/boards" replace />} />
       </Routes>
       <Toaster theme={theme} />
     </>

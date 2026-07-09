@@ -3,9 +3,7 @@ import type { SettingsTab } from '../features/settings/settings-state'
 
 import {
   IconApps,
-  IconFolder,
   IconLayoutBoard,
-  IconLayoutDashboard,
   IconLogout,
   IconMovie,
   IconPlus,
@@ -57,15 +55,10 @@ export function AppSidebar({
         <NavMain
           items={[
             {
-              title: 'Overview',
-              url: '/',
-              icon: <IconLayoutDashboard />,
+              title: 'Boards',
+              url: '/boards',
+              icon: <IconLayoutBoard />,
               end: true,
-            },
-            {
-              title: 'Apps',
-              url: '/apps',
-              icon: <IconApps />,
             },
             {
               title: 'Create',
@@ -73,9 +66,9 @@ export function AppSidebar({
               icon: <IconPlus />,
             },
             {
-              title: 'Boards',
-              url: '/boards',
-              icon: <IconLayoutBoard />,
+              title: 'Apps',
+              url: '/apps',
+              icon: <IconApps />,
             },
             {
               title: 'Studio',
@@ -86,11 +79,6 @@ export function AppSidebar({
               title: 'Agent',
               url: '/agent',
               icon: <IconSparkles />,
-            },
-            {
-              title: 'Projects',
-              url: '/projects',
-              icon: <IconFolder />,
             },
             {
               title: 'Characters',

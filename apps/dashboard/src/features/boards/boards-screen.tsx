@@ -10,10 +10,10 @@ import { Input } from '@talelabs/ui/components/input'
 import { Tabs, TabsList, TabsTrigger } from '@talelabs/ui/components/tabs'
 import { Textarea } from '@talelabs/ui/components/textarea'
 import { BoardCard } from './board-card'
+import { boardPreviews } from './board-data'
 import { CreateBoardCard } from './create-board-card'
-import { boardPreviews } from './project-board-data'
 
-export function ProjectsScreen(_props: {
+export function BoardsScreen(_props: {
   activeOrganizationId: string | null
   meQueryStatus: string
   organizationMessage: string

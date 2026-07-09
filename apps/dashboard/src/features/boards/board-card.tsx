@@ -1,4 +1,4 @@
-import type { BoardPreview } from './project-board-data'
+import type { BoardPreview } from './board-data'
 
 import {
   Card,
