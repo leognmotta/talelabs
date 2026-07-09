@@ -25,17 +25,13 @@ export type {
 }
 
 export const OPENROUTER_API_KEY_ENV = 'OPENROUTER_API_KEY'
-export const OPENROUTER_HTTP_REFERER_ENV = 'OPENROUTER_HTTP_REFERER'
-export const OPENROUTER_APP_TITLE_ENV = 'OPENROUTER_APP_TITLE'
-export const OPENROUTER_APP_CATEGORIES_ENV = 'OPENROUTER_APP_CATEGORIES'
+export const OPENROUTER_DEFAULT_APP_CATEGORIES = 'media-generation'
+export const OPENROUTER_DEFAULT_APP_TITLE = 'TaleLabs'
+export const OPENROUTER_DEFAULT_HTTP_REFERER = 'https://app.talelabs.ai'
 
 export type OpenRouterEnv = Partial<
   Record<
-    | typeof OPENROUTER_API_KEY_ENV
-    | typeof OPENROUTER_HTTP_REFERER_ENV
-    | typeof OPENROUTER_APP_TITLE_ENV
-    | typeof OPENROUTER_APP_CATEGORIES_ENV
-    | 'DASHBOARD_URL',
+    typeof OPENROUTER_API_KEY_ENV,
     string
   >
 >
@@ -97,11 +93,11 @@ export function getOpenRouterApiKey(env: OpenRouterEnv = process.env) {
   return apiKey
 }
 
-export function getOpenRouterAttribution(env: OpenRouterEnv = process.env) {
+export function getOpenRouterAttribution() {
   return {
-    appCategories: env[OPENROUTER_APP_CATEGORIES_ENV],
-    appTitle: env[OPENROUTER_APP_TITLE_ENV] ?? 'TaleLabs',
-    httpReferer: env[OPENROUTER_HTTP_REFERER_ENV] ?? env.DASHBOARD_URL,
+    appCategories: OPENROUTER_DEFAULT_APP_CATEGORIES,
+    appTitle: OPENROUTER_DEFAULT_APP_TITLE,
+    httpReferer: OPENROUTER_DEFAULT_HTTP_REFERER,
   }
 }
 
@@ -114,7 +110,7 @@ export function createOpenRouterClient(options: OpenRouterClientOptions = {}) {
     httpReferer,
     ...sdkOptions
   } = options
-  const attribution = getOpenRouterAttribution(env)
+  const attribution = getOpenRouterAttribution()
 
   return new OpenRouter({
     ...sdkOptions,
