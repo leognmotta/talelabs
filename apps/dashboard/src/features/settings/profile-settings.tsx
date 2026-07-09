@@ -1,0 +1,123 @@
+import type { ProfileFormValues } from './settings-schemas'
+
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Avatar, AvatarFallback } from '@talelabs/ui/components/avatar'
+import { Button } from '@talelabs/ui/components/button'
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from '@talelabs/ui/components/field'
+import { Input } from '@talelabs/ui/components/input'
+import { Separator } from '@talelabs/ui/components/separator'
+import { Controller, useForm } from 'react-hook-form'
+import { toast } from 'sonner'
+import { authClient } from '../auth/auth-client'
+import { profileSchema } from './settings-schemas'
+
+export function ProfileSettings({
+  email,
+  initials,
+  name,
+  onProfileUpdated,
+}: {
+  email: string
+  initials: string
+  name: string
+  onProfileUpdated: () => Promise<void>
+}) {
+  const form = useForm<ProfileFormValues>({
+    resolver: zodResolver(profileSchema),
+    defaultValues: {
+      name,
+    },
+  })
+  const {
+    control,
+    formState: { errors, isSubmitting },
+  } = form
+
+  async function handleSubmit(values: ProfileFormValues) {
+    form.clearErrors('root.serverError')
+
+    try {
+      const nextName = values.name.trim()
+      const result = await authClient.updateUser({ name: nextName })
+
+      if (result.error) {
+        form.setError('root.serverError', {
+          message: result.error.message ?? 'Could not update profile.',
+          type: 'server',
+        })
+        return
+      }
+
+      form.reset({ name: nextName })
+      await onProfileUpdated()
+      toast.success('Profile updated')
+    }
+    catch {
+      form.setError('root.serverError', {
+        message: 'Could not update profile.',
+        type: 'server',
+      })
+    }
+  }
+
+  return (
+    <div className="mx-auto flex max-w-2xl flex-col">
+      <header className="pb-4">
+        <h2 className="text-lg font-semibold">Profile</h2>
+      </header>
+      <Separator />
+      <form
+        className="flex flex-col gap-5 py-5"
+        onSubmit={form.handleSubmit(handleSubmit)}
+      >
+        <div className="flex items-center gap-4">
+          <Avatar className="size-14 rounded-2xl">
+            <AvatarFallback className="rounded-2xl">{initials}</AvatarFallback>
+          </Avatar>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-medium">{name}</p>
+            <p className="truncate text-sm text-muted-foreground">{email}</p>
+          </div>
+        </div>
+        <FieldGroup>
+          <Controller
+            name="name"
+            control={control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="settings-profile-name">Name</FieldLabel>
+                <Input
+                  {...field}
+                  id="settings-profile-name"
+                  aria-invalid={fieldState.invalid}
+                />
+                {fieldState.invalid && (
+                  <FieldError errors={[fieldState.error]} />
+                )}
+              </Field>
+            )}
+          />
+          <Field>
+            <FieldLabel htmlFor="settings-profile-email">Email</FieldLabel>
+            <Input id="settings-profile-email" value={email} disabled />
+          </Field>
+        </FieldGroup>
+        {errors.root?.serverError && (
+          <FieldError>
+            {errors.root.serverError.message}
+          </FieldError>
+        )}
+        <div className="flex justify-end">
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? 'Saving...' : 'Save profile'}
+          </Button>
+        </div>
+      </form>
+    </div>
+  )
+}
