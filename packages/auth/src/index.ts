@@ -23,6 +23,9 @@ const trustedOrigins = [
   'http://localhost:4173',
 ].filter((origin): origin is string => Boolean(origin))
 
+const googleClientId = process.env.GOOGLE_CLIENT_ID
+const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET
+
 export const auth = betterAuth({
   appName: 'TaleLabs',
   database: {
@@ -32,6 +35,14 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
+  socialProviders: googleClientId && googleClientSecret
+    ? {
+        google: {
+          clientId: googleClientId,
+          clientSecret: googleClientSecret,
+        },
+      }
+    : undefined,
   trustedOrigins,
   plugins: [
     admin({
