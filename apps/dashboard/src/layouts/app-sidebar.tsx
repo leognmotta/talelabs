@@ -2,8 +2,15 @@ import type { ComponentProps } from 'react'
 import type { SettingsTab } from '../features/settings/settings-state'
 
 import {
+  IconApps,
+  IconFolder,
+  IconLayoutBoard,
   IconLayoutDashboard,
   IconLogout,
+  IconMovie,
+  IconPlus,
+  IconRobot,
+  IconUserSquareRounded,
 } from '@tabler/icons-react'
 import {
   Sidebar,
@@ -54,6 +61,41 @@ export function AppSidebar({
               url: '/',
               icon: <IconLayoutDashboard />,
               end: true,
+            },
+            {
+              title: 'Apps',
+              url: '/apps',
+              icon: <IconApps />,
+            },
+            {
+              title: 'Create',
+              url: '/create',
+              icon: <IconPlus />,
+            },
+            {
+              title: 'Boards',
+              url: '/boards',
+              icon: <IconLayoutBoard />,
+            },
+            {
+              title: 'Studio',
+              url: '/studio',
+              icon: <IconMovie />,
+            },
+            {
+              title: 'Agent',
+              url: '/agent',
+              icon: <IconRobot />,
+            },
+            {
+              title: 'Projects',
+              url: '/projects',
+              icon: <IconFolder />,
+            },
+            {
+              title: 'Characters',
+              url: '/characters',
+              icon: <IconUserSquareRounded />,
             },
           ]}
         />

@@ -19,6 +19,7 @@ import { DashboardLayout } from '../layouts/dashboard-layout'
 import { CreateOrganizationRoute } from '../routes/create-organization-route'
 import { ProtectedRoute } from '../routes/protected-route'
 import { PublicRoute } from '../routes/public-route'
+import { BlankPage } from '../shared/components/blank-page'
 import { SplashScreen } from '../shared/components/splash-screen'
 import {
   clearLastOrganizationId,
@@ -201,6 +202,13 @@ export function DashboardRoutes() {
               />
             )}
           />
+          <Route path="apps" element={<BlankPage title="Apps" />} />
+          <Route path="create" element={<BlankPage title="Create" />} />
+          <Route path="boards" element={<BlankPage title="Boards" />} />
+          <Route path="studio" element={<BlankPage title="Studio" />} />
+          <Route path="agent" element={<BlankPage title="Agent" />} />
+          <Route path="projects" element={<BlankPage title="Projects" />} />
+          <Route path="characters" element={<BlankPage title="Characters" />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
