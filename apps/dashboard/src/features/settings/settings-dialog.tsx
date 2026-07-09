@@ -14,6 +14,7 @@ import {
   IconUserCircle,
   IconUsersGroup,
 } from '@tabler/icons-react'
+import { ApiError, setAccountPassword } from '@talelabs/sdk'
 import {
   Avatar,
   AvatarFallback,
@@ -51,6 +52,9 @@ import { InvitationsPanel } from '../organizations/invitations-panel'
 type AuthSession = NonNullable<
   Awaited<ReturnType<typeof authClient.listSessions>>['data']
 >[number]
+type AuthAccount = NonNullable<
+  Awaited<ReturnType<typeof authClient.listAccounts>>['data']
+>[number]
 
 const settingsNavigation: {
   icon: typeof IconSettings
@@ -83,6 +87,19 @@ const profileSchema = z.object({
 })
 
 type ProfileFormValues = z.infer<typeof profileSchema>
+
+const updatePasswordSchema = z.object({
+  currentPassword: z.string().min(1, 'Current password is required.'),
+  newPassword: z.string().min(8, 'Password must be at least 8 characters.'),
+})
+
+type UpdatePasswordFormValues = z.infer<typeof updatePasswordSchema>
+
+const createPasswordSchema = z.object({
+  newPassword: z.string().min(8, 'Password must be at least 8 characters.'),
+})
+
+type CreatePasswordFormValues = z.infer<typeof createPasswordSchema>
 
 function getInitialLanguagePreference(): LanguagePreference {
   if (typeof window === 'undefined')
@@ -499,23 +516,35 @@ function SecuritySettings({
   open: boolean
 }) {
   const [sessions, setSessions] = useState<AuthSession[]>([])
+  const [accounts, setAccounts] = useState<AuthAccount[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [revokingToken, setRevokingToken] = useState<string | null>(null)
+  const hasPassword = accounts.some(account => account.providerId === 'credential')
 
   async function loadSessions() {
     setIsLoading(true)
     setError(null)
 
-    const result = await authClient.listSessions()
+    const [sessionsResult, accountsResult] = await Promise.all([
+      authClient.listSessions(),
+      authClient.listAccounts(),
+    ])
 
-    if (result.error) {
-      setError(result.error.message ?? 'Could not load active sessions.')
+    if (sessionsResult.error) {
+      setError(sessionsResult.error.message ?? 'Could not load active sessions.')
       setIsLoading(false)
       return
     }
 
-    setSessions(result.data ?? [])
+    if (accountsResult.error) {
+      setError(accountsResult.error.message ?? 'Could not load account security.')
+      setIsLoading(false)
+      return
+    }
+
+    setSessions(sessionsResult.data ?? [])
+    setAccounts(accountsResult.data ?? [])
     setIsLoading(false)
   }
 
@@ -563,7 +592,14 @@ function SecuritySettings({
       </header>
       <Separator />
       <SettingsRow label="Password">
-        <span className="text-sm text-muted-foreground">Managed by your sign-in provider</span>
+        {isLoading
+          ? <Skeleton className="h-9 w-full max-w-sm" />
+          : (
+              <PasswordSettingsForm
+                hasPassword={hasPassword}
+                onPasswordChanged={loadSessions}
+              />
+            )}
       </SettingsRow>
       <Separator />
       <div className="py-5">
@@ -642,6 +678,210 @@ function SecuritySettings({
         </div>
       </div>
     </div>
+  )
+}
+
+function PasswordSettingsForm({
+  hasPassword,
+  onPasswordChanged,
+}: {
+  hasPassword: boolean
+  onPasswordChanged: () => Promise<void>
+}) {
+  return hasPassword
+    ? <UpdatePasswordForm onPasswordChanged={onPasswordChanged} />
+    : <CreatePasswordForm onPasswordChanged={onPasswordChanged} />
+}
+
+function UpdatePasswordForm({
+  onPasswordChanged,
+}: {
+  onPasswordChanged: () => Promise<void>
+}) {
+  const form = useForm<UpdatePasswordFormValues>({
+    resolver: zodResolver(updatePasswordSchema),
+    defaultValues: {
+      currentPassword: '',
+      newPassword: '',
+    },
+  })
+  const {
+    control,
+    formState: { errors, isSubmitting },
+  } = form
+
+  async function handleSubmit(values: UpdatePasswordFormValues) {
+    form.clearErrors('root.serverError')
+
+    try {
+      const result = await authClient.changePassword({
+        currentPassword: values.currentPassword,
+        newPassword: values.newPassword,
+        revokeOtherSessions: false,
+      })
+
+      if (result.error) {
+        form.setError('root.serverError', {
+          message: result.error.message ?? 'Could not update password.',
+          type: 'server',
+        })
+        return
+      }
+
+      form.reset()
+      await onPasswordChanged()
+      toast.success('Password updated')
+    }
+    catch {
+      form.setError('root.serverError', {
+        message: 'Could not update password.',
+        type: 'server',
+      })
+    }
+  }
+
+  return (
+    <form
+      className="flex w-full max-w-sm flex-col gap-3"
+      onSubmit={form.handleSubmit(handleSubmit)}
+    >
+      <FieldGroup className="gap-4">
+        <Controller
+          name="currentPassword"
+          control={control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="settings-current-password">
+                Current password
+              </FieldLabel>
+              <Input
+                {...field}
+                id="settings-current-password"
+                type="password"
+                autoComplete="current-password"
+                aria-invalid={fieldState.invalid}
+              />
+              {fieldState.invalid && (
+                <FieldError errors={[fieldState.error]} />
+              )}
+            </Field>
+          )}
+        />
+        <Controller
+          name="newPassword"
+          control={control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="settings-new-password">
+                New password
+              </FieldLabel>
+              <Input
+                {...field}
+                id="settings-new-password"
+                type="password"
+                autoComplete="new-password"
+                aria-invalid={fieldState.invalid}
+              />
+              {fieldState.invalid && (
+                <FieldError errors={[fieldState.error]} />
+              )}
+            </Field>
+          )}
+        />
+      </FieldGroup>
+      {errors.root?.serverError && (
+        <FieldError>
+          {errors.root.serverError.message}
+        </FieldError>
+      )}
+      <Button type="submit" disabled={isSubmitting}>
+        {isSubmitting ? 'Updating...' : 'Update password'}
+      </Button>
+    </form>
+  )
+}
+
+function CreatePasswordForm({
+  onPasswordChanged,
+}: {
+  onPasswordChanged: () => Promise<void>
+}) {
+  const form = useForm<CreatePasswordFormValues>({
+    resolver: zodResolver(createPasswordSchema),
+    defaultValues: {
+      newPassword: '',
+    },
+  })
+  const {
+    control,
+    formState: { errors, isSubmitting },
+  } = form
+
+  async function handleSubmit(values: CreatePasswordFormValues) {
+    form.clearErrors('root.serverError')
+
+    try {
+      await setAccountPassword({
+        data: {
+          newPassword: values.newPassword,
+        },
+      })
+
+      form.reset()
+      await onPasswordChanged()
+      toast.success('Password created')
+    }
+    catch (caughtError) {
+      const message = caughtError instanceof ApiError
+        && caughtError.data
+        && typeof caughtError.data === 'object'
+        && 'error' in caughtError.data
+        && typeof caughtError.data.error === 'string'
+        ? caughtError.data.error
+        : 'Could not create password.'
+
+      form.setError('root.serverError', {
+        message,
+        type: 'server',
+      })
+    }
+  }
+
+  return (
+    <form
+      className="flex w-full max-w-sm flex-col gap-3"
+      onSubmit={form.handleSubmit(handleSubmit)}
+    >
+      <Controller
+        name="newPassword"
+        control={control}
+        render={({ field, fieldState }) => (
+          <Field data-invalid={fieldState.invalid}>
+            <FieldLabel htmlFor="settings-create-password">
+              Password
+            </FieldLabel>
+            <Input
+              {...field}
+              id="settings-create-password"
+              type="password"
+              autoComplete="new-password"
+              aria-invalid={fieldState.invalid}
+            />
+            {fieldState.invalid && (
+              <FieldError errors={[fieldState.error]} />
+            )}
+          </Field>
+        )}
+      />
+      {errors.root?.serverError && (
+        <FieldError>
+          {errors.root.serverError.message}
+        </FieldError>
+      )}
+      <Button type="submit" disabled={isSubmitting}>
+        {isSubmitting ? 'Creating...' : 'Create password'}
+      </Button>
+    </form>
   )
 }
 
