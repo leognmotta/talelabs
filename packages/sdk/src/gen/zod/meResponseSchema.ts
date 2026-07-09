@@ -8,6 +8,7 @@ import type { MeResponse } from "../types/MeResponse.ts";
 
 export const meResponseSchema = z.object({
   activeOrganizationId: z.string(),
+  isSystemAdmin: z.boolean(),
   session: z.object({
     createdAt: z.iso.datetime(),
     expiresAt: z.iso.datetime(),

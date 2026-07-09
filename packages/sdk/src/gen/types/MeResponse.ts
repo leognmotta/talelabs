@@ -9,6 +9,10 @@ export type MeResponse = {
    */
   activeOrganizationId: string;
   /**
+   * @type boolean
+   */
+  isSystemAdmin: boolean;
+  /**
    * @type object
    */
   session: {
