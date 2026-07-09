@@ -3,12 +3,15 @@ import { dirname, resolve } from 'node:path'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 
-import app from '../../../apps/api/src/app.ts'
-
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const outputPath = resolve(packageRoot, 'openapi.json')
 
 export async function writeOpenApiSpec() {
+  process.env.POSTGRES_URL ??= 'postgres://talelabs:talelabs@localhost:5432/talelabs'
+  process.env.BETTER_AUTH_URL ??= 'http://localhost:5174'
+  process.env.DASHBOARD_URL ??= 'http://localhost:5173'
+
+  const { default: app } = await import('../../../apps/api/src/app.ts')
   const response = await app.request('/openapi.json')
 
   if (!response.ok)

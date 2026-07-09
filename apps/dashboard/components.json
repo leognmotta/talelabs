@@ -14,7 +14,7 @@
     "components": "@/components",
     "hooks": "@/hooks",
     "lib": "@/lib",
-    "utils": "@connecto/ui/lib/utils",
-    "ui": "@connecto/ui/components"
+    "utils": "@talelabs/ui/lib/utils",
+    "ui": "@talelabs/ui/components"
   }
 }

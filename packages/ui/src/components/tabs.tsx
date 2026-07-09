@@ -1,7 +1,7 @@
 'use client'
 
 import type { VariantProps } from 'class-variance-authority'
-import { cn } from '@connecto/ui/lib/utils'
+import { cn } from '@talelabs/ui/lib/utils'
 import { cva } from 'class-variance-authority'
 import { Tabs as TabsPrimitive } from 'radix-ui'
 

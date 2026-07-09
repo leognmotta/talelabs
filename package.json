@@ -1,5 +1,5 @@
 {
-  "name": "connecto",
+  "name": "talelabs",
   "private": true,
   "packageManager": "npm@10.9.0",
   "engines": {
@@ -7,7 +7,7 @@
   },
   "scripts": {
     "build": "turbo run build",
-    "db:migrate": "npm run migrate -w @connecto/db",
+    "db:migrate": "npm run migrate -w @talelabs/db",
     "dev": "turbo run dev",
     "kubb:mcp": "kubb mcp",
     "lint": "eslint .",
@@ -16,7 +16,7 @@
     "prebuild": "npm run sdk:generate",
     "precheck-types": "npm run sdk:generate",
     "predev": "npm run sdk:generate",
-    "sdk:generate": "npm run generate -w @connecto/sdk",
+    "sdk:generate": "npm run generate -w @talelabs/sdk",
     "check-types": "turbo run check-types"
   },
   "devDependencies": {

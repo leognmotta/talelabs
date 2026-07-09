@@ -1,6 +1,6 @@
 import type { OrganizationStatus } from '../types/auth'
 
-import { ApiError, getMe, useGetMe } from '@connecto/sdk'
+import { ApiError, getMe, useGetMe } from '@talelabs/sdk'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 export function useOrganizationSession({

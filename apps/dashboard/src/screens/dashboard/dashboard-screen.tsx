@@ -4,7 +4,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@connecto/ui/components/card'
+} from '@talelabs/ui/components/card'
 
 export function DashboardScreen({
   meQueryStatus,

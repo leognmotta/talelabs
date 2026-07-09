@@ -1,4 +1,4 @@
-import { cn } from '@connecto/ui/lib/utils'
+import { cn } from '@talelabs/ui/lib/utils'
 import { Popover as PopoverPrimitive } from 'radix-ui'
 
 import * as React from 'react'

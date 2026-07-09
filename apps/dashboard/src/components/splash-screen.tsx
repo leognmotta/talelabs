@@ -21,7 +21,7 @@ export function SplashScreen({
           C
         </div>
         <div className="flex flex-col gap-2">
-          <h1 className="text-2xl font-semibold tracking-tight">Connecto</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">TaleLabs</h1>
           <p className="text-sm text-muted-foreground">{message}</p>
         </div>
         <div className="flex w-36 flex-col gap-2">

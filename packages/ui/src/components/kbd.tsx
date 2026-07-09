@@ -1,4 +1,4 @@
-import { cn } from '@connecto/ui/lib/utils'
+import { cn } from '@talelabs/ui/lib/utils'
 
 function Kbd({ className, ...props }: React.ComponentProps<'kbd'>) {
   return (

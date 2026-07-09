@@ -1,6 +1,6 @@
 'use client'
 
-import { cn } from '@connecto/ui/lib/utils'
+import { cn } from '@talelabs/ui/lib/utils'
 import { CheckIcon, ChevronRightIcon } from 'lucide-react'
 
 import { DropdownMenu as DropdownMenuPrimitive } from 'radix-ui'

@@ -1,9 +1,9 @@
 import type { VariantProps } from 'class-variance-authority'
-import { Button } from '@connecto/ui/components/button'
+import { Button } from '@talelabs/ui/components/button'
 
-import { Input } from '@connecto/ui/components/input'
-import { Textarea } from '@connecto/ui/components/textarea'
-import { cn } from '@connecto/ui/lib/utils'
+import { Input } from '@talelabs/ui/components/input'
+import { Textarea } from '@talelabs/ui/components/textarea'
+import { cn } from '@talelabs/ui/lib/utils'
 import { cva } from 'class-variance-authority'
 import * as React from 'react'
 

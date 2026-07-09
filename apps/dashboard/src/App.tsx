@@ -1,6 +1,6 @@
 import type { ThemePreference } from './lib/theme'
-import { getMeQueryKey } from '@connecto/sdk'
-import { Toaster } from '@connecto/ui/components/sonner'
+import { getMeQueryKey } from '@talelabs/sdk'
+import { Toaster } from '@talelabs/ui/components/sonner'
 import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Navigate, Route, Routes } from 'react-router'

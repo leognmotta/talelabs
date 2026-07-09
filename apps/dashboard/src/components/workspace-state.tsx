@@ -1,6 +1,6 @@
 import type { OrganizationStatus } from '../types/auth'
 
-import { Button } from '@connecto/ui/components/button'
+import { Button } from '@talelabs/ui/components/button'
 
 import { SplashScreen } from './splash-screen'
 
@@ -28,7 +28,7 @@ export function WorkspaceState({
       "
       >
         <div className="flex flex-col gap-2">
-          <p className="text-sm font-medium text-muted-foreground">Connecto</p>
+          <p className="text-sm font-medium text-muted-foreground">TaleLabs</p>
           <h1 className="text-2xl font-semibold tracking-tight">
             Organization access unavailable
           </h1>

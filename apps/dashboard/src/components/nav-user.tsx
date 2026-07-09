@@ -4,7 +4,7 @@ import type { ThemePreference } from '../lib/theme'
 import {
   Avatar,
   AvatarFallback,
-} from '@connecto/ui/components/avatar'
+} from '@talelabs/ui/components/avatar'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,13 +13,13 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@connecto/ui/components/dropdown-menu'
+} from '@talelabs/ui/components/dropdown-menu'
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from '@connecto/ui/components/sidebar'
+} from '@talelabs/ui/components/sidebar'
 import { ChevronsUpDownIcon } from 'lucide-react'
 
 export function NavUser({

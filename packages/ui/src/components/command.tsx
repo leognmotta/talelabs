@@ -4,13 +4,13 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@connecto/ui/components/dialog'
+} from '@talelabs/ui/components/dialog'
 import {
   InputGroup,
   InputGroupAddon,
-} from '@connecto/ui/components/input-group'
+} from '@talelabs/ui/components/input-group'
 
-import { cn } from '@connecto/ui/lib/utils'
+import { cn } from '@talelabs/ui/lib/utils'
 import { Command as CommandPrimitive } from 'cmdk'
 import { CheckIcon, SearchIcon } from 'lucide-react'
 import * as React from 'react'

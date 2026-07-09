@@ -9,7 +9,7 @@ const connectionString = process.env.POSTGRES_URL
 
 if (!connectionString) {
   throw new Error(
-    'POSTGRES_URL is required to initialize @connecto/db. Add it to the root .env file.',
+    'POSTGRES_URL is required to initialize @talelabs/db. Add it to the root .env file.',
   )
 }
 

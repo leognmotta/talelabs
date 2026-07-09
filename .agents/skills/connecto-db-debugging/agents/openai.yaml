@@ -1,6 +1,0 @@
-interface:
-  display_name: "Connecto DB Debugging"
-  short_description: "Inspect Connecto PostgreSQL data safely"
-  default_prompt: "Use $connecto-db-debugging to inspect the database state for this API issue."
-policy:
-  allow_implicit_invocation: true

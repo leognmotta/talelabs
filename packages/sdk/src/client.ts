@@ -41,7 +41,7 @@ function getApiBaseUrl() {
     }
   }
 
-  return meta.env?.VITE_API_URL ?? 'http://localhost:3000'
+  return meta.env?.VITE_API_URL ?? 'http://localhost:5174'
 }
 
 function appendParams(url: URL, params?: Record<string, unknown>) {

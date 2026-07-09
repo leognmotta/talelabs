@@ -1,6 +1,6 @@
 import type { FormEvent } from 'react'
 import type { AuthMode } from '../../types/auth'
-import { Button } from '@connecto/ui/components/button'
+import { Button } from '@talelabs/ui/components/button'
 import { useState } from 'react'
 
 import { NavLink } from 'react-router'
@@ -59,7 +59,7 @@ export function AuthScreen({
         "
         >
           <div className="flex flex-col gap-3">
-            <p className="text-sm font-medium text-muted-foreground">Connecto</p>
+            <p className="text-sm font-medium text-muted-foreground">TaleLabs</p>
             <h1 className="max-w-xl text-4xl font-semibold tracking-tight">
               Organization-first workspace access
             </h1>

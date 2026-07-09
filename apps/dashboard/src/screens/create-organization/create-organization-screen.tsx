@@ -1,6 +1,6 @@
 import type { FormEvent } from 'react'
 
-import { Button } from '@connecto/ui/components/button'
+import { Button } from '@talelabs/ui/components/button'
 import { useState } from 'react'
 
 import { slugify } from '../../lib/slugify'
@@ -52,7 +52,7 @@ export function CreateOrganizationScreen({
       >
         <form className="flex flex-col gap-5" onSubmit={handleCreateOrganization}>
           <div className="flex flex-col gap-2">
-            <p className="text-sm font-medium text-muted-foreground">Connecto</p>
+            <p className="text-sm font-medium text-muted-foreground">TaleLabs</p>
             <h1 className="text-3xl font-semibold tracking-tight">
               Create your organization
             </h1>

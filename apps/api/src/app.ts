@@ -1,7 +1,7 @@
-import { auth, requireOrganizationSession } from '@connecto/auth'
-import { db, sql } from '@connecto/db'
 import { swaggerUI } from '@hono/swagger-ui'
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi'
+import { auth, requireOrganizationSession } from '@talelabs/auth'
+import { db, sql } from '@talelabs/db'
 import { cors } from 'hono/cors'
 
 const app = new OpenAPIHono()
@@ -139,13 +139,13 @@ app.openapi(meRoute, async (c) => {
 app.doc('/openapi.json', {
   openapi: '3.0.0',
   info: {
-    title: 'Connecto API',
+    title: 'TaleLabs API',
     version: '0.1.0',
-    description: 'Organization-first Connecto API',
+    description: 'Organization-first TaleLabs API',
   },
   servers: [
     {
-      url: 'http://localhost:3000',
+      url: 'http://localhost:5174',
       description: 'Local API',
     },
   ],

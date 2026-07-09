@@ -1,11 +1,11 @@
 import type { ThemePreference } from '../lib/theme'
-import { Separator } from '@connecto/ui/components/separator'
+import { Separator } from '@talelabs/ui/components/separator'
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
-} from '@connecto/ui/components/sidebar'
-import { TooltipProvider } from '@connecto/ui/components/tooltip'
+} from '@talelabs/ui/components/sidebar'
+import { TooltipProvider } from '@talelabs/ui/components/tooltip'
 
 import { Outlet } from 'react-router'
 import { AppSidebar } from './app-sidebar'

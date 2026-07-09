@@ -1,15 +1,15 @@
 'use client'
 
 import { Combobox as ComboboxPrimitive } from '@base-ui/react'
-import { Button } from '@connecto/ui/components/button'
+import { Button } from '@talelabs/ui/components/button'
 
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
-} from '@connecto/ui/components/input-group'
-import { cn } from '@connecto/ui/lib/utils'
+} from '@talelabs/ui/components/input-group'
+import { cn } from '@talelabs/ui/lib/utils'
 import { CheckIcon, ChevronDownIcon, XIcon } from 'lucide-react'
 import * as React from 'react'
 

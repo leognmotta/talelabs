@@ -1,4 +1,4 @@
-import { db } from '@connecto/db'
+import { db } from '@talelabs/db'
 import { betterAuth } from 'better-auth'
 import { organization } from 'better-auth/plugins'
 
@@ -6,12 +6,12 @@ const trustedOrigins = [
   process.env.BETTER_AUTH_URL,
   process.env.DASHBOARD_URL,
   'http://localhost:5173',
+  'http://localhost:5174',
   'http://localhost:4173',
-  'http://localhost:3000',
 ].filter((origin): origin is string => Boolean(origin))
 
 export const auth = betterAuth({
-  appName: 'Connecto',
+  appName: 'TaleLabs',
   database: {
     db,
     type: 'postgres',

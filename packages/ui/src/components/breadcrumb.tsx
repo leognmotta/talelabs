@@ -1,4 +1,4 @@
-import { cn } from '@connecto/ui/lib/utils'
+import { cn } from '@talelabs/ui/lib/utils'
 import { ChevronRightIcon, MoreHorizontalIcon } from 'lucide-react'
 
 import { Slot } from 'radix-ui'

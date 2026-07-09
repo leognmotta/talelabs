@@ -1,8 +1,8 @@
 'use client'
 
 import type { VariantProps } from 'class-variance-authority'
-import { toggleVariants } from '@connecto/ui/components/toggle'
-import { cn } from '@connecto/ui/lib/utils'
+import { toggleVariants } from '@talelabs/ui/components/toggle'
+import { cn } from '@talelabs/ui/lib/utils'
 
 import { ToggleGroup as ToggleGroupPrimitive } from 'radix-ui'
 import * as React from 'react'

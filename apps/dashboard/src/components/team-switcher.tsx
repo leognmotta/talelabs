@@ -1,6 +1,6 @@
 import type { FormEvent } from 'react'
 
-import { Button } from '@connecto/ui/components/button'
+import { Button } from '@talelabs/ui/components/button'
 import {
   Dialog,
   DialogContent,
@@ -8,7 +8,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@connecto/ui/components/dialog'
+} from '@talelabs/ui/components/dialog'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,20 +17,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuTrigger,
-} from '@connecto/ui/components/dropdown-menu'
+} from '@talelabs/ui/components/dropdown-menu'
 import {
   Field,
   FieldError,
   FieldGroup,
   FieldLabel,
-} from '@connecto/ui/components/field'
-import { Input } from '@connecto/ui/components/input'
+} from '@talelabs/ui/components/field'
+import { Input } from '@talelabs/ui/components/input'
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from '@connecto/ui/components/sidebar'
+} from '@talelabs/ui/components/sidebar'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   ChevronsUpDownIcon,
@@ -156,7 +156,7 @@ export function TeamSwitcher({
                 </div>
                 <div className="grid flex-1 text-left text-sm/tight">
                   <span className="truncate font-medium">
-                    {activeOrganization?.name ?? 'Connecto'}
+                    {activeOrganization?.name ?? 'TaleLabs'}
                   </span>
                   <span className="truncate text-xs">
                     {activeOrganization?.slug ?? 'Select organization'}
@@ -240,7 +240,7 @@ export function TeamSwitcher({
             <DialogHeader>
               <DialogTitle>Create organization</DialogTitle>
               <DialogDescription>
-                Create a workspace for this account before using Connecto.
+                Create a workspace for this account before using TaleLabs.
               </DialogDescription>
             </DialogHeader>
             <FieldGroup>

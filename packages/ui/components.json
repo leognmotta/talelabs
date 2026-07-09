@@ -11,10 +11,10 @@
   },
   "iconLibrary": "lucide",
   "aliases": {
-    "components": "@connecto/ui/components",
-    "hooks": "@connecto/ui/hooks",
-    "lib": "@connecto/ui/lib",
-    "utils": "@connecto/ui/lib/utils",
-    "ui": "@connecto/ui/components"
+    "components": "@talelabs/ui/components",
+    "hooks": "@talelabs/ui/hooks",
+    "lib": "@talelabs/ui/lib",
+    "utils": "@talelabs/ui/lib/utils",
+    "ui": "@talelabs/ui/components"
   }
 }

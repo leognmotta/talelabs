@@ -1,6 +1,6 @@
 'use client'
 
-import { cn } from '@connecto/ui/lib/utils'
+import { cn } from '@talelabs/ui/lib/utils'
 import { Tooltip as TooltipPrimitive } from 'radix-ui'
 
 import * as React from 'react'

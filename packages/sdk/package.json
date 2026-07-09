@@ -1,5 +1,5 @@
 {
-  "name": "@connecto/sdk",
+  "name": "@talelabs/sdk",
   "type": "module",
   "version": "0.0.0",
   "private": true,

@@ -1,6 +1,6 @@
 'use client'
 
-import { cn } from '@connecto/ui/lib/utils'
+import { cn } from '@talelabs/ui/lib/utils'
 import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from 'lucide-react'
 
 import { Select as SelectPrimitive } from 'radix-ui'

@@ -4,7 +4,7 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router'
 import App from './App.tsx'
 import { applyThemePreference, getInitialThemePreference } from './lib/theme.ts'
-import '@connecto/ui/globals.css'
+import '@talelabs/ui/globals.css'
 import './index.css'
 
 const queryClient = new QueryClient({

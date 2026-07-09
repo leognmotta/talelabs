@@ -1,5 +1,5 @@
-import { Button } from '@connecto/ui/components/button'
-import { cn } from '@connecto/ui/lib/utils'
+import { Button } from '@talelabs/ui/components/button'
+import { cn } from '@talelabs/ui/lib/utils'
 
 import { AlertDialog as AlertDialogPrimitive } from 'radix-ui'
 import * as React from 'react'

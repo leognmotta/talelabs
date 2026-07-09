@@ -1,6 +1,6 @@
 import type { VariantProps } from 'class-variance-authority'
-import { Separator } from '@connecto/ui/components/separator'
-import { cn } from '@connecto/ui/lib/utils'
+import { Separator } from '@talelabs/ui/components/separator'
+import { cn } from '@talelabs/ui/lib/utils'
 import { cva } from 'class-variance-authority'
 
 import { Slot } from 'radix-ui'

@@ -1,23 +1,23 @@
 import type { VariantProps } from 'class-variance-authority'
-import { Button } from '@connecto/ui/components/button'
-import { Input } from '@connecto/ui/components/input'
+import { Button } from '@talelabs/ui/components/button'
+import { Input } from '@talelabs/ui/components/input'
 
-import { Separator } from '@connecto/ui/components/separator'
+import { Separator } from '@talelabs/ui/components/separator'
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from '@connecto/ui/components/sheet'
-import { Skeleton } from '@connecto/ui/components/skeleton'
+} from '@talelabs/ui/components/sheet'
+import { Skeleton } from '@talelabs/ui/components/skeleton'
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from '@connecto/ui/components/tooltip'
-import { useIsMobile } from '@connecto/ui/hooks/use-mobile'
-import { cn } from '@connecto/ui/lib/utils'
+} from '@talelabs/ui/components/tooltip'
+import { useIsMobile } from '@talelabs/ui/hooks/use-mobile'
+import { cn } from '@talelabs/ui/lib/utils'
 import { cva } from 'class-variance-authority'
 import { PanelLeftIcon } from 'lucide-react'
 import { Slot } from 'radix-ui'

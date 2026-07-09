@@ -1,6 +1,6 @@
 export type ThemePreference = 'dark' | 'light' | 'system'
 
-const THEME_STORAGE_KEY = 'connecto-theme'
+const THEME_STORAGE_KEY = 'talelabs-theme'
 
 function isThemePreference(value: string | null): value is ThemePreference {
   return value === 'dark' || value === 'light' || value === 'system'

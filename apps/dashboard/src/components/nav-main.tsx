@@ -5,7 +5,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from '@connecto/ui/components/sidebar'
+} from '@talelabs/ui/components/sidebar'
 import { NavLink, useLocation } from 'react-router'
 
 export function NavMain({

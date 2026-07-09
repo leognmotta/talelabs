@@ -1,6 +1,6 @@
-# Connecto
+# TaleLabs
 
-Connecto monorepo with a Hono API, React dashboard, shared shadcn UI package, Kysely/Postgres database package, and Better Auth organization-based authentication.
+TaleLabs monorepo with a Hono API, React dashboard, shared shadcn UI package, Kysely/Postgres database package, and Better Auth organization-based authentication.
 
 ## Workspaces
 
@@ -14,8 +14,11 @@ Connecto monorepo with a Hono API, React dashboard, shared shadcn UI package, Ky
 
 ```sh
 npm install
+cp .env.example .env
 npm run dev
 ```
+
+`POSTGRES_URL` must point to a running Postgres instance before auth and database routes can be used.
 
 ## Verification
 

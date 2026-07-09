@@ -1,4 +1,4 @@
-import { cn } from '@connecto/ui/lib/utils'
+import { cn } from '@talelabs/ui/lib/utils'
 import { CheckIcon } from 'lucide-react'
 
 import { Checkbox as CheckboxPrimitive } from 'radix-ui'

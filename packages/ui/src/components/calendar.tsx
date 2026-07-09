@@ -1,9 +1,9 @@
 'use client'
 
 import type { DayButton, Locale } from 'react-day-picker'
-import { Button, buttonVariants } from '@connecto/ui/components/button'
+import { Button, buttonVariants } from '@talelabs/ui/components/button'
 
-import { cn } from '@connecto/ui/lib/utils'
+import { cn } from '@talelabs/ui/lib/utils'
 import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
 import * as React from 'react'
 import {

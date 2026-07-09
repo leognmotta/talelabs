@@ -7,7 +7,7 @@ import {
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
-} from '@connecto/ui/components/sidebar'
+} from '@talelabs/ui/components/sidebar'
 import {
   LayoutDashboardIcon,
   LogOutIcon,
@@ -70,7 +70,7 @@ export function AppSidebar({
       <SidebarFooter>
         <NavUser
           user={{
-            name: name || 'Connecto user',
+            name: name || 'TaleLabs user',
             email: email || 'Workspace member',
           }}
           onSignOut={onSignOut}

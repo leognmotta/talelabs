@@ -1,7 +1,7 @@
 'use client'
 
-import { Button } from '@connecto/ui/components/button'
-import { cn } from '@connecto/ui/lib/utils'
+import { Button } from '@talelabs/ui/components/button'
+import { cn } from '@talelabs/ui/lib/utils'
 
 import { XIcon } from 'lucide-react'
 import { Dialog as DialogPrimitive } from 'radix-ui'

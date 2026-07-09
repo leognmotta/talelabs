@@ -1,4 +1,4 @@
-import { cn } from '@connecto/ui/lib/utils'
+import { cn } from '@talelabs/ui/lib/utils'
 import { CheckIcon, ChevronRightIcon } from 'lucide-react'
 
 import { ContextMenu as ContextMenuPrimitive } from 'radix-ui'

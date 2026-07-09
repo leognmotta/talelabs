@@ -1,0 +1,6 @@
+interface:
+  display_name: "talelabs DB Debugging"
+  short_description: "Inspect talelabs PostgreSQL data safely"
+  default_prompt: "Use $talelabs-db-debugging to inspect the database state for this API issue."
+policy:
+  allow_implicit_invocation: true

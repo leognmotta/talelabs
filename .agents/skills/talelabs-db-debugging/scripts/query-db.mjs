@@ -61,7 +61,7 @@ const query = (process.argv.slice(2).join(' ') || await readStdin()).trim()
 
 if (!query) {
   throw new Error(
-    'Provide SQL as an argument or on stdin. Example: node .agents/skills/connecto-db-debugging/scripts/query-db.mjs "select now()"',
+    'Provide SQL as an argument or on stdin. Example: node .agents/skills/talelabs-db-debugging/scripts/query-db.mjs "select now()"',
   )
 }
 

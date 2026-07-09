@@ -1,6 +1,6 @@
 'use client'
 
-import { cn } from '@connecto/ui/lib/utils'
+import { cn } from '@talelabs/ui/lib/utils'
 import { OTPInput, OTPInputContext } from 'input-otp'
 
 import { MinusIcon } from 'lucide-react'
