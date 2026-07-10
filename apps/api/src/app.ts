@@ -1,3 +1,5 @@
+import type { OrganizationSessionResolver } from './middleware/organization.js'
+import type { ProductRouteRegistrar } from './routes/product.routes.js'
 import type { ApiEnv } from './types.js'
 import { OpenAPIHono } from '@hono/zod-openapi'
 import { auth } from '@talelabs/auth'
@@ -10,6 +12,7 @@ import { apiError, errorHandler } from './middleware/error.js'
 import { registerOpenApi } from './openapi.js'
 import { registerAccountRoutes } from './routes/account/account.routes.js'
 import { registerOrganizationRoutes } from './routes/organizations/organizations.routes.js'
+import { registerProductRoutes } from './routes/product.routes.js'
 import { registerSystemRoutes } from './routes/system/system.routes.js'
 
 function getValidationIssueDetails(issue: {
@@ -52,37 +55,51 @@ function getValidationIssueDetails(issue: {
   }
 }
 
-const app = new OpenAPIHono<ApiEnv>({
-  defaultHook: (result, c) => {
-    if (!result.success) {
-      return c.json(apiError(
-        'validation_error',
-        'The request could not be validated.',
-        result.error.issues.map(issue => ({
-          ...getValidationIssueDetails(issue),
-          message: issue.message,
-        })),
-      ), 400)
-    }
-  },
-})
+export interface CreateApiAppOptions {
+  organizationSessionResolver?: OrganizationSessionResolver
+  productRouteRegistrars?: readonly ProductRouteRegistrar[]
+}
 
-app.onError(errorHandler)
+export function createApiApp(options: CreateApiAppOptions = {}) {
+  const app = new OpenAPIHono<ApiEnv>({
+    defaultHook: (result, c) => {
+      if (!result.success) {
+        return c.json(apiError(
+          'validation_error',
+          'The request could not be validated.',
+          result.error.issues.map(issue => ({
+            ...getValidationIssueDetails(issue),
+            message: issue.message,
+          })),
+        ), 400)
+      }
+    },
+  })
 
-app.use('*', corsMiddleware)
+  app.onError(errorHandler)
 
-app.on(['GET', 'POST'], '/api/auth/*', (c) => {
-  return auth.handler(c.req.raw)
-})
+  app.use('*', corsMiddleware)
 
-app.use('/me', authMiddleware, requireAuthMiddleware)
-app.use('/me/*', authMiddleware, requireAuthMiddleware)
-app.use('/organizations', authMiddleware, requireAuthMiddleware)
-app.use('/organizations/*', authMiddleware, requireAuthMiddleware)
+  app.on(['GET', 'POST'], '/api/auth/*', (c) => {
+    return auth.handler(c.req.raw)
+  })
 
-registerSystemRoutes(app)
-registerAccountRoutes(app)
-registerOrganizationRoutes(app)
-registerOpenApi(app)
+  app.use('/me', authMiddleware, requireAuthMiddleware)
+  app.use('/me/*', authMiddleware, requireAuthMiddleware)
+  app.use('/organizations', authMiddleware, requireAuthMiddleware)
+  app.use('/organizations/*', authMiddleware, requireAuthMiddleware)
 
-export default app
+  registerSystemRoutes(app)
+  registerAccountRoutes(app)
+  registerOrganizationRoutes(app)
+  registerOpenApi(app)
+  registerProductRoutes(
+    app,
+    options.productRouteRegistrars,
+    options.organizationSessionResolver,
+  )
+
+  return app
+}
+
+export default createApiApp()
