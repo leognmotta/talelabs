@@ -55,6 +55,12 @@
       "skillPath": "better-auth/organization/SKILL.md",
       "computedHash": "79a5a85b43d10e9fe37582b3506b051a33a991817b938f349099baa5ddba21aa"
     },
+    "react-i18next": {
+      "source": "yildizberkay/skills",
+      "sourceType": "github",
+      "skillPath": "skills/react-i18next/SKILL.md",
+      "computedHash": "2c419201047d93216faf44c2a0cce4ce86ed7ce4d1b51bc37577813069dd410d"
+    },
     "react-router-data-mode": {
       "source": "remix-run/agent-skills",
       "sourceType": "github",
