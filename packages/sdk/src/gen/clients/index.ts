@@ -1,16 +1,11 @@
 export { activateOrganization } from "./activateOrganization.ts";
 export { createOrganizationInvitation } from "./createOrganizationInvitation.ts";
-export { createProject } from "./createProject.ts";
-export { deleteProject } from "./deleteProject.ts";
 export { getDbHealth } from "./getDbHealth.ts";
 export { getMe } from "./getMe.ts";
-export { getProject } from "./getProject.ts";
 export { listOrganizationInvitations } from "./listOrganizationInvitations.ts";
 export { listOrganizationMembers } from "./listOrganizationMembers.ts";
 export { listOrganizations } from "./listOrganizations.ts";
-export { listProjects } from "./listProjects.ts";
 export { revokeOrganizationInvitation } from "./revokeOrganizationInvitation.ts";
 export { setAccountPassword } from "./setAccountPassword.ts";
-export { updateOrganization } from "./updateOrganization.ts";
-export { updateProject } from "./updateProject.ts";
 export { updateAccountPreferences } from "./updateAccountPreferences.ts";
+export { updateOrganization } from "./updateOrganization.ts";
