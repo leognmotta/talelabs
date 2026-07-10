@@ -4,12 +4,15 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
-    "start": "node dist/index.js"
+    "check-types": "tsc --noEmit",
+    "start": "node dist/index.js",
+    "test": "tsx --test src/tests/*.test.ts"
   },
   "dependencies": {
     "@hono/node-server": "^1.19.14",
     "@hono/swagger-ui": "^0.6.1",
     "@hono/zod-openapi": "^1.4.0",
+    "@paralleldrive/cuid2": "^3.3.0",
     "@talelabs/auth": "*",
     "@talelabs/db": "*",
     "hono": "^4.12.18",

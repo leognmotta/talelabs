@@ -12,6 +12,7 @@ import {
   updateOrganizationMetadata,
 } from '@talelabs/auth'
 import { requireAuth } from '../../middleware/auth.js'
+import { apiError } from '../../middleware/error.js'
 import { ErrorResponseSchema } from '../../schemas/common.js'
 import {
   ActivateOrganizationResponseSchema,
@@ -350,7 +351,7 @@ export function registerOrganizationRoutes(app: OpenAPIHono<ApiEnv>) {
     const result = await listAccessibleOrganizations(c.req.raw.headers)
 
     if (!result.ok)
-      return c.json({ error: result.error }, 401)
+      return c.json(apiError('unauthenticated', result.error), 401)
 
     return c.json({ organizations: result.organizations }, 200)
   })
@@ -362,10 +363,10 @@ export function registerOrganizationRoutes(app: OpenAPIHono<ApiEnv>) {
     const result = await activateOrganizationSession(c.req.raw.headers, organizationId)
 
     if (!result.ok && result.status === 401)
-      return c.json({ error: result.error }, 401)
+      return c.json(apiError('unauthenticated', result.error), 401)
 
     if (!result.ok)
-      return c.json({ error: result.error }, 403)
+      return c.json(apiError('organization_access_required', result.error), 403)
 
     return c.json({ organization: result.organization }, 200)
   })
@@ -383,16 +384,16 @@ export function registerOrganizationRoutes(app: OpenAPIHono<ApiEnv>) {
     })
 
     if (!result.ok && result.status === 401)
-      return c.json({ error: result.error }, 401)
+      return c.json(apiError('unauthenticated', result.error), 401)
 
     if (!result.ok && result.status === 404)
-      return c.json({ error: result.error }, 404)
+      return c.json(apiError('not_found', result.error), 404)
 
     if (!result.ok && result.status === 409)
-      return c.json({ error: result.error }, 409)
+      return c.json(apiError('conflict', result.error), 409)
 
     if (!result.ok)
-      return c.json({ error: result.error }, 403)
+      return c.json(apiError('organization_admin_required', result.error), 403)
 
     return c.json({ organization: result.organization }, 200)
   })
@@ -404,10 +405,10 @@ export function registerOrganizationRoutes(app: OpenAPIHono<ApiEnv>) {
     const result = await listOrganizationInvitations(c.req.raw.headers, organizationId)
 
     if (!result.ok && result.status === 401)
-      return c.json({ error: result.error }, 401)
+      return c.json(apiError('unauthenticated', result.error), 401)
 
     if (!result.ok)
-      return c.json({ error: result.error }, 403)
+      return c.json(apiError('organization_admin_required', result.error), 403)
 
     return c.json({
       invitations: result.invitations.map(invitation => ({
@@ -426,10 +427,10 @@ export function registerOrganizationRoutes(app: OpenAPIHono<ApiEnv>) {
     const result = await listOrganizationMembers(c.req.raw.headers, organizationId)
 
     if (!result.ok && result.status === 401)
-      return c.json({ error: result.error }, 401)
+      return c.json(apiError('unauthenticated', result.error), 401)
 
     if (!result.ok)
-      return c.json({ error: result.error }, 403)
+      return c.json(apiError('organization_admin_required', result.error), 403)
 
     return c.json({
       members: result.members.map(member => ({
@@ -453,16 +454,16 @@ export function registerOrganizationRoutes(app: OpenAPIHono<ApiEnv>) {
     })
 
     if (!result.ok && result.status === 401)
-      return c.json({ error: result.error }, 401)
+      return c.json(apiError('unauthenticated', result.error), 401)
 
     if (!result.ok && result.status === 409)
-      return c.json({ error: result.error }, 409)
+      return c.json(apiError('conflict', result.error), 409)
 
     if (!result.ok && result.status === 502)
-      return c.json({ error: result.error }, 502)
+      return c.json(apiError('email_delivery_failed', result.error), 502)
 
     if (!result.ok)
-      return c.json({ error: result.error }, 403)
+      return c.json(apiError('organization_admin_required', result.error), 403)
 
     return c.json({
       invitation: {
@@ -484,13 +485,13 @@ export function registerOrganizationRoutes(app: OpenAPIHono<ApiEnv>) {
     })
 
     if (!result.ok && result.status === 401)
-      return c.json({ error: result.error }, 401)
+      return c.json(apiError('unauthenticated', result.error), 401)
 
     if (!result.ok && result.status === 404)
-      return c.json({ error: result.error }, 404)
+      return c.json(apiError('not_found', result.error), 404)
 
     if (!result.ok)
-      return c.json({ error: result.error }, 403)
+      return c.json(apiError('organization_admin_required', result.error), 403)
 
     return c.json({
       invitation: {

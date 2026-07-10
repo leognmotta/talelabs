@@ -8,6 +8,7 @@ import {
   requireOrganizationSession,
 } from '@talelabs/auth'
 import { requireAuth } from '../../middleware/auth.js'
+import { apiError } from '../../middleware/error.js'
 import { ErrorResponseSchema } from '../../schemas/common.js'
 import {
   MeResponseSchema,
@@ -124,10 +125,10 @@ export function registerAccountRoutes(app: OpenAPIHono<ApiEnv>) {
     const result = await requireOrganizationSession(c.req.raw.headers)
 
     if (!result.ok && result.status === 401)
-      return c.json({ error: result.error }, 401)
+      return c.json(apiError('unauthenticated', result.error), 401)
 
     if (!result.ok)
-      return c.json({ error: result.error }, 403)
+      return c.json(apiError('active_organization_required', result.error), 403)
 
     return c.json({
       activeOrganizationId: result.activeOrganizationId,
@@ -161,8 +162,12 @@ export function registerAccountRoutes(app: OpenAPIHono<ApiEnv>) {
     catch (error) {
       const status = getAuthErrorStatus(error)
 
-      if (status === 400 || status === 401)
-        return c.json({ error: getAuthErrorMessage(error) }, status)
+      if (status === 400 || status === 401) {
+        return c.json(apiError(
+          status === 401 ? 'unauthenticated' : 'validation_error',
+          getAuthErrorMessage(error),
+        ), status)
+      }
 
       throw error
     }
