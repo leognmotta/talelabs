@@ -55,6 +55,20 @@ Do not create every folder ahead of need. Add the structure as soon as a second 
 - `app.ts`: app assembly only; no business logic.
 - `index.ts`: server startup only; no routes.
 
+## Single Responsibility
+
+Keep each API file responsible for one architectural concern. Do not solve routing, validation, business logic, database access, provider integration, and response shaping in a single file just because the first implementation is small.
+
+When a route starts doing more than request/response mapping, split the reusable parts into the right layer:
+
+- Shared request/response contracts go in `*.schemas.ts` or `schemas/common.ts`.
+- Business decisions, orchestration, and provider-independent behavior go in `services/*`.
+- Database reads and writes go in `data/*`.
+- Provider-specific adapters and clients should live behind reusable modules instead of inside route handlers.
+- Cross-cutting HTTP behavior belongs in `middleware/*`.
+
+Prefer small, composable modules with plain inputs and outputs. A feature should be easy to reuse from another endpoint, test independently, and move without dragging Hono `Context` or database details across layers. Respect the existing architecture boundaries even when adding a quick MVP endpoint.
+
 ## Hono Rules
 
 - Keep `createRoute(...)` and `app.openapi(route, handler)` close together in `*.routes.ts`.
