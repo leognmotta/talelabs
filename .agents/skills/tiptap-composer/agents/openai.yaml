@@ -1,0 +1,4 @@
+interface:
+  display_name: "Tiptap Composer"
+  short_description: "Build structured Tiptap prompt composers."
+  default_prompt: "Use Tiptap as a structured prompt composer with inline reference chips and slash commands."
