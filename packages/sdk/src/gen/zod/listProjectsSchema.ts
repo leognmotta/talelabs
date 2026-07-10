@@ -29,7 +29,7 @@ export const listProjects200Schema = z.lazy(
 ) as unknown as z.ZodType<ListProjects200>;
 
 /**
- * @description Validation error
+ * @description Invalid pagination cursor
  */
 export const listProjects400Schema = z.lazy(
   () => errorResponseSchema,

@@ -32,7 +32,7 @@ export type ListProjectsQueryParams = {
 export type ListProjects200 = ListProjectsResponse;
 
 /**
- * @description Validation error
+ * @description Invalid pagination cursor
  */
 export type ListProjects400 = ErrorResponse;
 

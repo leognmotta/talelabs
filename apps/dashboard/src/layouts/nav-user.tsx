@@ -2,7 +2,6 @@ import type { TablerIcon } from '@tabler/icons-react'
 import type { SettingsTab } from '../features/settings/settings-state'
 
 import {
-  IconCreditCard,
   IconSelector,
   IconSettings,
   IconUserCircle,
@@ -109,10 +108,6 @@ export function NavUser({
               <DropdownMenuItem onClick={onOpenInviteMemberSettings}>
                 <IconUserPlus />
                 <span>Invite member</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onOpenSettings('billing')}>
-                <IconCreditCard />
-                <span>Billing</span>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => onOpenSettings('general')}>
                 <IconSettings />

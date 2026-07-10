@@ -1,3 +1,5 @@
+> **DEPRECATED — do not implement from this document.** It describes the retired Generate/Projects/Brands/Products/Characters architecture. Current sources of truth: `talelabs-product-vision.md`, `db-design-planning-v2.md`, `credits-planning.md`.
+
 # TaleLabs MVP Execution Plan
 
 This document turns the approved TaleLabs product, database, and API designs into small implementation sessions. It is an execution checklist, not a replacement for the source-of-truth design documents.
@@ -68,21 +70,44 @@ For every task:
 4. Add validation proportional to the change.
 5. Run the listed checks.
 6. Review the diff for accidental scope expansion.
-7. Manually validate the user-visible behavior when applicable.
+7. Run objective implementation verification when applicable: automated tests, type checks, builds, API checks, and a minimal functional smoke check.
 8. Record any design decision that changes the API or database documents.
 9. Stop when the acceptance criteria are met.
+
+### Ownership Of QA And Design Review
+
+The AI owns implementation and objective engineering verification. The user owns product QA, browser acceptance, and all UI/design critique.
+
+The AI must:
+
+- Run relevant automated tests, type checks, builds, API contract checks, and a minimal smoke check.
+- Report exactly what was and was not verified.
+- Start the application when needed and provide the URL and a focused handoff checklist.
+- Stop after implementation verification instead of self-approving the product experience.
+
+The AI must not:
+
+- Declare user QA complete.
+- Make subjective UI/design critique unless the user explicitly asks for it in that session.
+- Perform a visual-polish pass and treat its own judgment as acceptance.
+- Mark an `Owner: User` gate complete.
+
+The user will test the feature, critique the UI, and decide whether it is accepted. User feedback becomes one or more new, narrowly scoped implementation tasks.
+
+When an AI turns this document into an internal checklist or execution path, it must preserve these ownership boundaries. It must not replace a user-owned QA gate with "browser QA by AI" or silently bundle future API/UI tasks into the active session.
 
 Do not combine an API task, a large UI task, and visual polish into one session. Major screens deliberately use this rhythm:
 
 ```txt
-backend contract
--> functional UI
--> separate QA and design critique
+AI: backend contract
+-> AI: functional UI and engineering verification
+-> User: QA, browser acceptance, and UI/design critique
+-> AI: narrowly scoped corrections requested by the user
 ```
 
 ## Definition Of Done
 
-A task is complete only when:
+An AI implementation task is complete and ready for user QA only when:
 
 - Its acceptance criteria are satisfied.
 - Relevant builds and type checks pass.
@@ -92,27 +117,30 @@ A task is complete only when:
 - Loading, empty, error, and success states are handled where relevant.
 - No unrelated files or user changes were reverted.
 - Deferred features were not pulled into the task.
+- The handoff states what the user should validate and any remaining risk.
 
-For UI QA tasks, also verify:
+User-owned QA gates may cover:
 
 - Desktop and mobile layouts.
 - Keyboard navigation and visible focus.
 - Empty, loading, error, populated, and destructive-action states.
 - Long names, missing thumbnails, failed media, and slow network behavior.
 - No text overflow or incoherent overlap.
-- Browser console and network requests are clean.
+- Browser console and network behavior.
+
+Only the user can accept these gates. The AI may help investigate or fix findings after the user reports them.
 
 ## Milestones
 
-| Milestone | Outcome |
-|---|---|
-| M0: Data foundation | The full MVP schema migrates successfully and is type-safe in Kysely. |
-| M1: Reusable context | Projects, Brands, Products, and Characters work end to end. |
-| M2: Asset foundation | Private uploads become reusable assets in the global library. |
-| M3: Context relationships | Assets and context objects can be linked and filtered correctly. |
-| M4: Image generation loop | An image generation becomes an asset and can attach to a project. |
-| M5: Video and audio | The same loop works for supported video and audio models. |
-| M6: Internal MVP candidate | The complete loop passes tenancy, reliability, and UI QA. |
+| Milestone                  | Outcome                                                                            |
+| -------------------------- | ---------------------------------------------------------------------------------- |
+| M0: Data foundation        | The full MVP schema migrates successfully and is type-safe in Kysely.              |
+| M1: Reusable context       | Projects, Brands, Products, and Characters work end to end.                        |
+| M2: Asset foundation       | Private uploads become reusable assets in the global library.                      |
+| M3: Context relationships  | Assets and context objects can be linked and filtered correctly.                   |
+| M4: Image generation loop  | An image generation becomes an asset and can attach to a project.                  |
+| M5: Video and audio        | The same loop works for supported video and audio models.                          |
+| M6: Internal MVP candidate | The complete loop passes engineering verification and user-owned QA/UI acceptance. |
 
 ---
 
@@ -265,11 +293,13 @@ Implement project list, create, detail, update, and delete endpoints with cursor
 
 Implement project list, create, detail, rename/edit, and delete flows using generated SDK hooks. Include loading, empty, error, and populated states. Keep the project detail surface intentionally thin.
 
-### E-012 - Projects UI QA And Design Critique
+### E-012 - Projects User QA And UI Critique Gate
 
 **Status:** Blocked by E-011
 
-Test the complete Projects flow in the browser, capture desktop/mobile screenshots, critique hierarchy and interaction cost, then make only evidence-backed polish changes. Verify refresh, direct URLs, long names, destructive confirmation, and empty states.
+**Owner:** User
+
+The user tests the complete Projects flow and critiques hierarchy and interaction cost. Review refresh, direct URLs, long names, destructive confirmation, empty states, and desktop/mobile behavior. Findings become separate implementation tasks; the AI does not mark this gate complete.
 
 ### E-013 - Brands CRUD API
 
@@ -283,11 +313,13 @@ Implement brand profile CRUD, including color validation and safe nullable PATCH
 
 Implement brand list, create, detail, and edit surfaces for name, description, tone, visual style, colors, and do/don't rules. Show a disabled or intentional empty Brand Kit area rather than faking asset support.
 
-### E-015 - Brands UI QA And Design Critique
+### E-015 - Brands User QA And UI Critique Gate
 
 **Status:** Blocked by E-014
 
-Validate form ergonomics, palette controls, long guidance text, unsaved changes, mobile layout, and empty/error behavior. Keep the screen operational rather than marketing-like.
+**Owner:** User
+
+The user validates form ergonomics, palette controls, long guidance text, unsaved changes, mobile layout, and empty/error behavior. The user decides whether the screen feels operational rather than marketing-like.
 
 ### E-016 - Products CRUD API
 
@@ -301,11 +333,13 @@ Implement product CRUD and optional `brandId`, including same-organization valid
 
 Implement product list/create/detail/edit with brand selection, description, features, and benefits. Use field arrays with clear add/remove behavior.
 
-### E-018 - Products UI QA And Design Critique
+### E-018 - Products User QA And UI Critique Gate
 
 **Status:** Blocked by E-017
 
-Validate standalone products, branded products, long feature lists, brand deletion effects, mobile forms, and destructive actions.
+**Owner:** User
+
+The user validates standalone products, branded products, long feature lists, brand deletion effects, mobile forms, destructive actions, and overall UI quality.
 
 ### E-019 - Characters CRUD API
 
@@ -319,11 +353,13 @@ Implement character CRUD, brand filtering, and atomic `brandIds` behavior on cre
 
 Implement character list/create/detail/edit with role, description, personality, visual notes, and brand relationships. Do not build talking-avatar or voice infrastructure.
 
-### E-021 - Characters UI QA And Design Critique
+### E-021 - Characters User QA And UI Critique Gate
 
 **Status:** Blocked by E-020
 
-Validate global and brand-linked characters, multi-brand display, long character descriptions, removal from a brand, responsive behavior, and empty states.
+**Owner:** User
+
+The user validates global and brand-linked characters, multi-brand display, long character descriptions, removal from a brand, responsive behavior, empty states, and overall UI quality.
 
 **M1 gate**
 
@@ -426,11 +462,13 @@ Implement tag list/create/delete, declarative asset tag replacement, case/whites
 
 Implement tag editing and URL-backed source, favorite, archive, tag, type, and sort controls. Verify browser back/forward and refresh preserve the selected library view.
 
-### E-038 - Assets UI QA And Design Critique
+### E-038 - Assets User QA And UI Critique Gate
 
 **Status:** Blocked by E-033A through E-037B
 
-Run a dedicated media-library QA pass with many assets, mixed media, nested folders, missing previews, failed thumbnails, long names, archived assets, slow uploads, mobile layout, and keyboard operation. Critique whether the screen feels like a lightweight media drive rather than a social gallery.
+**Owner:** User
+
+The user runs a dedicated media-library QA pass with many assets, mixed media, nested folders, missing previews, failed thumbnails, long names, archived assets, slow uploads, mobile layout, and keyboard operation. The user critiques whether the screen feels like a lightweight media drive rather than a social gallery.
 
 **M2 gate**
 
@@ -488,9 +526,11 @@ Implement idempotent project links for assets, brands, products, and characters.
 
 Implement the project detail context sections and Assets tab using the global Assets components with a fixed project filter. Add upload-inside-project and attach-existing-asset flows.
 
-### E-046 - Relationship Integrity QA
+### E-046 - Automated Relationship Integrity Verification
 
 **Status:** Blocked by E-040 through E-045, including the split A/B tasks
+
+**Owner:** AI
 
 Test cross-organization rejection for every relationship table, duplicate links, unlink behavior, hard deletion of context objects, archived assets, and shared assets linked to multiple projects or kits.
 
@@ -548,11 +588,21 @@ Implement the Image tab with model picker, prompt, aspect ratio/quality controls
 
 Add brand, product, character, and project selection to Image generation. Show which context and reference assets will be used. Verify the server resolves the prompt at creation and later context edits do not change queued jobs.
 
-### E-057 - Image Generation Failure And UX QA
+### E-057A - Image Generation Reliability Verification
 
 **Status:** Blocked by E-056
 
-Exercise pending, running, slow, succeeded, failed, canceled, duplicate-submit, unsupported-model, missing-reference, provider-timeout, and output-ingestion-failure paths. Critique the Generate UX separately from implementation and polish only proven problems.
+**Owner:** AI
+
+Exercise pending, running, slow, succeeded, failed, canceled, duplicate-submit, unsupported-model, missing-reference, provider-timeout, and output-ingestion-failure paths through automated and objective functional checks. Report remaining untested cases to the user.
+
+### E-057B - Generate Image User QA And UI Critique Gate
+
+**Status:** Blocked by E-057A
+
+**Owner:** User
+
+The user performs browser QA and critiques the Image generation experience, async feedback, controls, result presentation, and failure recovery. Findings become separate implementation tasks.
 
 **M4 gate**
 
@@ -574,11 +624,21 @@ Enable a small supported video-model set and implement text-to-video plus image-
 
 Implement the Video tab using the existing generation composer patterns. Support model-dependent inputs without rendering controls the selected model cannot accept.
 
-### E-062 - Video Reliability And UI QA
+### E-062A - Video Reliability Verification
 
 **Status:** Blocked by E-061
 
-Test long-running polling, browser refresh, cancel requests, provider failures, large downloads, R2 ingestion, poster generation, playback, mobile layout, and project attachment.
+**Owner:** AI
+
+Verify long-running polling, refresh recovery, cancel requests, provider failures, large downloads, R2 ingestion, poster generation, playback plumbing, and project attachment using automated and objective functional checks.
+
+### E-062B - Generate Video User QA And UI Critique Gate
+
+**Status:** Blocked by E-062A
+
+**Owner:** User
+
+The user performs browser QA and critiques video controls, progress communication, playback, responsive layout, result presentation, and recovery from failures.
 
 ### E-063 - Audio Model Configuration And Provider Adapter
 
@@ -592,11 +652,21 @@ Enable one narrow audio outcome supported by the chosen providers, such as text-
 
 Implement the Audio tab, appropriate text/settings controls, async state, playback, download, asset persistence, and project attachment.
 
-### E-065 - Audio Reliability And UI QA
+### E-065A - Audio Reliability Verification
 
 **Status:** Blocked by E-064
 
-Test playback, duration metadata, failed jobs, cancellation, slow generation, project relationships, mobile behavior, and accessibility of audio controls.
+**Owner:** AI
+
+Verify playback plumbing, duration metadata, failed jobs, cancellation, slow generation, and project relationships using automated and objective functional checks.
+
+### E-065B - Generate Audio User QA And UI Critique Gate
+
+**Status:** Blocked by E-065A
+
+**Owner:** User
+
+The user performs browser QA and critiques audio controls, playback experience, responsive behavior, accessibility, result presentation, and failure recovery.
 
 **M5 gate**
 
@@ -624,11 +694,21 @@ Automate the highest-value paths: create context, upload references, generate, p
 
 Audit every tenant-owned read/write, relationship insertion, signed URL, upload grant, generation payload, Trigger task, and provider callback. Attempt cross-organization IDs systematically and confirm tenant-safe `404` behavior.
 
-### E-073 - Holistic UI And Accessibility Critique
+### E-073A - Automated Accessibility And UI Integrity Verification
 
 **Status:** Blocked by E-071
 
-Review the complete product as one system rather than isolated screens. Check navigation, terminology, density, consistency, responsive behavior, keyboard access, contrast, focus, media states, destructive actions, and whether the creative loop is obvious without explanatory UI copy.
+**Owner:** AI
+
+Run objective accessibility and UI-integrity checks for keyboard access, semantic labels, focus handling, obvious overflow, broken responsive layouts, console errors, and failed media states. Report findings without declaring the design accepted.
+
+### E-073B - Holistic User QA And UI Critique Gate
+
+**Status:** Blocked by E-073A
+
+**Owner:** User
+
+The user reviews the complete product as one system rather than isolated screens and decides whether navigation, terminology, density, consistency, responsive behavior, media states, destructive actions, and the overall creative loop meet the intended product quality.
 
 ### E-074 - Operational Reliability
 
@@ -636,11 +716,21 @@ Review the complete product as one system rather than isolated screens. Check na
 
 Add structured logging, request/job correlation IDs, safe provider diagnostics, Trigger retry/concurrency policy, abandoned-upload cleanup, failed-output cleanup, R2 lifecycle expectations, and a short operations runbook.
 
-### E-075 - Staging Deployment And Acceptance Pass
+### E-075A - Staging Deployment And Engineering Verification
 
 **Status:** Blocked by E-072 through E-074
 
-Deploy API, dashboard, database migrations, R2, Trigger.dev, and provider credentials to staging. Run the complete acceptance checklist with real models and realistic media sizes. Record defects as new small tasks rather than expanding this session.
+**Owner:** AI
+
+Deploy API, dashboard, database migrations, R2, Trigger.dev, and provider credentials to staging. Run objective deployment, health, integration, and real-model smoke checks with realistic media sizes. Provide the staging URL, test data expectations, known risks, and a focused handoff checklist.
+
+### E-075B - Staging User Acceptance Gate
+
+**Status:** Blocked by E-075A
+
+**Owner:** User
+
+The user runs the complete staging acceptance pass, product QA, and final UI critique. Defects become new small implementation tasks rather than expanding the acceptance session. Only the user can mark the internal MVP accepted.
 
 **M6 gate**
 

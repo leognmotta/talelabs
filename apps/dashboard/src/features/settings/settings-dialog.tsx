@@ -13,7 +13,6 @@ import {
 } from '@talelabs/ui/components/dialog'
 import { cn } from '@talelabs/ui/lib/utils'
 import { useMemo, useState } from 'react'
-import { BillingSettings } from './billing-settings'
 import { GeneralSettings } from './general-settings'
 import { OrganizationSettings } from './organization-settings'
 import { ProfileSettings } from './profile-settings'
@@ -34,8 +33,6 @@ export function SettingsDialog({
   name,
   onOpenChange,
   onOpenCookiePreferences,
-  onOpenCreditsPurchase,
-  onOpenSubscriptionUpgrade,
   onProfileUpdated,
   onSignOut,
   onTabChange,
@@ -52,8 +49,6 @@ export function SettingsDialog({
   name: string
   onOpenChange: (open: boolean) => void
   onOpenCookiePreferences: () => void
-  onOpenCreditsPurchase: () => void
-  onOpenSubscriptionUpgrade: () => void
   onProfileUpdated: () => Promise<void>
   onSignOut: () => Promise<void>
   onTabChange: (tab: SettingsTab) => void
@@ -168,12 +163,6 @@ export function SettingsDialog({
                 activeOrganizationId={activeOrganizationId}
                 isInviteFormOpen={isTeamInviteFormOpen}
                 onInviteFormOpenChange={onTeamInviteFormOpenChange}
-              />
-            )}
-            {tab === 'billing' && (
-              <BillingSettings
-                onOpenCreditsPurchase={onOpenCreditsPurchase}
-                onOpenSubscriptionUpgrade={onOpenSubscriptionUpgrade}
               />
             )}
           </section>

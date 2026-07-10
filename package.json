@@ -18,7 +18,8 @@
     "predev": "npm run sdk:generate",
     "sdk:generate": "npm run generate -w @talelabs/sdk",
     "check-types": "turbo run check-types",
-    "test": "turbo run test"
+    "test": "turbo run test",
+    "test:integration": "npm run test:integration -w api"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^9.0.0",

@@ -4,7 +4,6 @@ import { AppProviders } from './app/providers'
 import { DashboardRoutes } from './app/routes'
 import { applyThemePreference, getInitialThemePreference } from './shared/lib/theme'
 import '@talelabs/ui/globals.css'
-import './index.css'
 
 applyThemePreference(getInitialThemePreference())
 

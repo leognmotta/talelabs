@@ -12,16 +12,6 @@ import { Navigate, Route, Routes } from 'react-router'
 import { toast } from 'sonner'
 import { authClient, signOut, useSession } from '../features/auth/auth-client'
 import { AuthScreen } from '../features/auth/auth-screen'
-import { BoardsScreen } from '../features/boards/boards-screen'
-import { BrandDetail } from '../features/brands/brand-detail'
-import { BrandEditor } from '../features/brands/brand-editor'
-import { BrandIndex } from '../features/brands/brand-index'
-import { BrandsLayout } from '../features/brands/brands-layout'
-import { CharacterDetail } from '../features/characters/character-detail'
-import { CharacterEditor } from '../features/characters/character-editor'
-import { CharacterIndex } from '../features/characters/character-index'
-import { CharactersLayout } from '../features/characters/characters-layout'
-import { clearContextQueries } from '../features/context/context-query-cache'
 import {
   defaultCookiePreferences,
   getInitialCookiePreferences,
@@ -32,15 +22,6 @@ import { CookiePreferencesDialog } from '../features/cookies/cookie-preferences-
 import { AcceptInvitationScreen } from '../features/organizations/accept-invitation-screen'
 import { CreateOrganizationScreen } from '../features/organizations/create-organization-screen'
 import { useOrganizationSession } from '../features/organizations/use-organization-session'
-import { ProductDetail } from '../features/products/product-detail'
-import { ProductEditor } from '../features/products/product-editor'
-import { ProductIndex } from '../features/products/product-index'
-import { ProductsLayout } from '../features/products/products-layout'
-import { ProjectCreate } from '../features/projects/project-create'
-import { ProjectDetail } from '../features/projects/project-detail'
-import { ProjectEdit } from '../features/projects/project-edit'
-import { ProjectsIndex } from '../features/projects/projects-index'
-import { ProjectsLayout } from '../features/projects/projects-layout'
 import { DashboardLayout } from '../layouts/dashboard-layout'
 import { CreateOrganizationRoute } from '../routes/create-organization-route'
 import { ProtectedRoute } from '../routes/protected-route'
@@ -86,7 +67,7 @@ export function DashboardRoutes() {
 
   async function handleSignOut() {
     await signOut()
-    await clearContextQueries(queryClient)
+    queryClient.clear()
     clearLastOrganizationId()
     organization.resetOrganizationSession()
     await session.refetch()
@@ -151,7 +132,6 @@ export function DashboardRoutes() {
     if (result.data?.id)
       storeLastOrganizationId(result.data.id)
 
-    await clearContextQueries(queryClient)
     await session.refetch()
     await organization.refreshOrganizationSession()
     await queryClient.invalidateQueries({ queryKey: getMeQueryKey() })
@@ -176,7 +156,6 @@ export function DashboardRoutes() {
     }
 
     storeLastOrganizationId(organizationId)
-    await clearContextQueries(queryClient)
     await session.refetch()
     await organization.refreshOrganizationSession()
     await queryClient.invalidateQueries({ queryKey: getMeQueryKey() })
@@ -189,7 +168,7 @@ export function DashboardRoutes() {
 
   async function handleInvitationAccepted(organizationId: string) {
     storeLastOrganizationId(organizationId)
-    await clearContextQueries(queryClient)
+    queryClient.clear()
     await session.refetch()
     await organization.refreshOrganizationSession()
     await queryClient.invalidateQueries({ queryKey: getMeQueryKey() })
@@ -270,7 +249,6 @@ export function DashboardRoutes() {
                 activeOrganizationId={organization.activeWorkspaceId}
                 currentSessionId={session.data?.session.id}
                 email={session.data?.user.email}
-                isSystemAdmin={organization.isSystemAdmin}
                 name={session.data?.user.name}
                 onCreateOrganization={handleCreateOrganization}
                 onOpenCookiePreferences={handleOpenCookiePreferences}
@@ -283,63 +261,13 @@ export function DashboardRoutes() {
             </ProtectedRoute>
           )}
         >
-          <Route index element={<Navigate to="/generate" replace />} />
-          <Route
-            path="boards"
-            element={(
-              <BoardsScreen
-                activeOrganizationId={organization.activeWorkspaceId}
-                meQueryStatus={organization.meQueryStatus}
-                organizationMessage={organization.organizationMessage}
-              />
-            )}
-          />
-          <Route path="create" element={<Navigate to="/generate" replace />} />
-          <Route path="generate" element={<BlankPage title="Generate" />} />
-          <Route path="apps" element={<BlankPage title="Apps" />} />
-          <Route path="studio" element={<BlankPage title="Studio" />} />
-          <Route path="agent" element={<Navigate to="/assistant" replace />} />
-          <Route path="assistant" element={<BlankPage title="Assistant" />} />
-          <Route path="characters" element={<CharactersLayout />}>
-            <Route index element={<CharacterIndex />} />
-            <Route path="new" element={<CharacterEditor />} />
-            <Route path=":characterId" element={<CharacterDetail />} />
-            <Route path=":characterId/edit" element={<CharacterEditor />} />
-          </Route>
-          <Route path="brands" element={<BrandsLayout />}>
-            <Route index element={<BrandIndex />} />
-            <Route path="new" element={<BrandEditor />} />
-            <Route path=":brandId" element={<BrandDetail />} />
-            <Route path=":brandId/edit" element={<BrandEditor />} />
-          </Route>
-          <Route path="products" element={<ProductsLayout />}>
-            <Route index element={<ProductIndex />} />
-            <Route path="new" element={<ProductEditor />} />
-            <Route path=":productId" element={<ProductDetail />} />
-            <Route path=":productId/edit" element={<ProductEditor />} />
-          </Route>
-          <Route path="projects" element={<ProjectsLayout />}>
-            <Route index element={<ProjectsIndex />} />
-            <Route path="new" element={<ProjectCreate />} />
-            <Route path=":projectId" element={<ProjectDetail />} />
-            <Route path=":projectId/edit" element={<ProjectEdit />} />
-          </Route>
+          <Route index element={<Navigate to="/assets" replace />} />
           <Route path="assets" element={<BlankPage title="Assets" />} />
-          <Route
-            path="admin"
-            element={
-              organization.isSystemAdmin
-                ? (
-                    <BlankPage title="Admin" />
-                  )
-                : (
-                    <Navigate to="/generate" replace />
-                  )
-            }
-          />
-          <Route path="*" element={<Navigate to="/generate" replace />} />
+          <Route path="flows" element={<BlankPage title="Flows" />} />
+          <Route path="elements" element={<BlankPage title="Elements" />} />
+          <Route path="*" element={<Navigate to="/assets" replace />} />
         </Route>
-        <Route path="*" element={<Navigate to="/generate" replace />} />
+        <Route path="*" element={<Navigate to="/assets" replace />} />
       </Routes>
       <Toaster theme={theme} />
       <CookiePreferencesDialog

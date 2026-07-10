@@ -3,7 +3,6 @@ import type { SettingsTab } from './settings-state'
 
 import {
   IconBuilding,
-  IconCreditCard,
   IconDeviceDesktop,
   IconMoon,
   IconSettings,
@@ -23,7 +22,6 @@ export const settingsNavigation: {
   { icon: IconUserCircle, label: 'Profile', value: 'profile' },
   { icon: IconShieldLock, label: 'Security', value: 'security' },
   { icon: IconUsersGroup, label: 'Team', value: 'team' },
-  { icon: IconCreditCard, label: 'Billing', value: 'billing' },
 ]
 
 export const themeOptions: {

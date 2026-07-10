@@ -2,18 +2,10 @@ import type { ComponentProps } from 'react'
 import type { SettingsTab } from '../features/settings/settings-state'
 
 import {
-  IconApps,
   IconArchive,
-  IconBriefcase,
-  IconBuildingStore,
-  IconLayoutBoard,
+  IconComponents,
+  IconGitBranch,
   IconLogout,
-  IconMovie,
-  IconPackage,
-  IconShieldCog,
-  IconSparkles,
-  IconUserSquareRounded,
-  IconWand,
 } from '@tabler/icons-react'
 import {
   Sidebar,
@@ -29,7 +21,6 @@ import { NavUser } from './nav-user'
 export function AppSidebar({
   activeOrganizationId,
   email,
-  isSystemAdmin,
   name,
   onCreateOrganization,
   onOpenInviteMemberSettings,
@@ -41,7 +32,6 @@ export function AppSidebar({
 }: ComponentProps<typeof Sidebar> & {
   activeOrganizationId: string | null
   email: string | undefined
-  isSystemAdmin: boolean
   name: string | undefined
   onCreateOrganization: (name: string, slug: string) => Promise<string | null>
   onOpenInviteMemberSettings: () => void
@@ -64,65 +54,19 @@ export function AppSidebar({
         <NavMain
           items={[
             {
-              title: 'Boards',
-              url: '/boards',
-              icon: <IconLayoutBoard />,
-              end: true,
-              hidden: true,
-            },
-            {
-              title: 'Generate',
-              url: '/generate',
-              icon: <IconWand />,
-            },
-            {
               title: 'Assets',
               url: '/assets',
               icon: <IconArchive />,
             },
             {
-              title: 'Projects',
-              url: '/projects',
-              icon: <IconBriefcase />,
+              title: 'Flows',
+              url: '/flows',
+              icon: <IconGitBranch />,
             },
             {
-              title: 'Brands',
-              url: '/brands',
-              icon: <IconBuildingStore />,
-            },
-            {
-              title: 'Products',
-              url: '/products',
-              icon: <IconPackage />,
-            },
-            {
-              title: 'Characters',
-              url: '/characters',
-              icon: <IconUserSquareRounded />,
-            },
-            {
-              title: 'Admin',
-              url: '/admin',
-              icon: <IconShieldCog />,
-              hidden: !isSystemAdmin,
-            },
-            {
-              title: 'Apps',
-              url: '/apps',
-              icon: <IconApps />,
-              hidden: true,
-            },
-            {
-              title: 'Studio',
-              url: '/studio',
-              icon: <IconMovie />,
-              hidden: true,
-            },
-            {
-              title: 'Assistant',
-              url: '/assistant',
-              icon: <IconSparkles />,
-              hidden: true,
+              title: 'Elements',
+              url: '/elements',
+              icon: <IconComponents />,
             },
           ]}
         />

@@ -83,8 +83,8 @@ export function CreateOrganizationScreen({
               Create your organization
             </h1>
             <p className="text-sm text-muted-foreground">
-              Your account is ready. Create a workspace to keep projects,
-              members, and data scoped to an organization.
+              Your account is ready. Create a workspace to keep members and
+              data scoped to an organization.
             </p>
           </div>
 

@@ -4,7 +4,6 @@ export const settingsTabs = [
   'profile',
   'security',
   'team',
-  'billing',
 ] as const
 
 export type SettingsTab = typeof settingsTabs[number]

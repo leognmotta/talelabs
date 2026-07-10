@@ -14,9 +14,3 @@ export const ErrorResponseSchema = z.object({
 }).openapi('ErrorResponse')
 
 export const ResourceIdSchema = z.string().trim().min(1)
-
-export const ListQuerySchema = z.object({
-  cursor: z.string().trim().min(1).optional(),
-  limit: z.coerce.number().int().min(1).max(200).default(50),
-  search: z.string().trim().max(200).optional(),
-})

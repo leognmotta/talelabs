@@ -1,23 +1,14 @@
 import type { SettingsTab } from '../features/settings/settings-state'
 
 import {
-  IconApps,
   IconArchive,
-  IconBriefcase,
-  IconBuildingStore,
-  IconCreditCard,
-  IconLayoutBoard,
-  IconMovie,
-  IconPackage,
-  IconPlus,
+  IconBuilding,
+  IconComponents,
+  IconGitBranch,
   IconSearch,
   IconSettings,
-  IconShieldCog,
-  IconSparkles,
   IconUserCircle,
   IconUsersGroup,
-  IconUserSquareRounded,
-  IconWand,
 } from '@tabler/icons-react'
 import { Button } from '@talelabs/ui/components/button'
 import {
@@ -29,43 +20,27 @@ import {
   CommandItem,
   CommandList,
   CommandSeparator,
-  CommandShortcut,
 } from '@talelabs/ui/components/command'
 import { Kbd } from '@talelabs/ui/components/kbd'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
-import { boardPreviews } from '../features/boards/board-data'
 
 const pageActions: {
   hidden?: boolean
-  icon: typeof IconPlus
-  requiresSystemAdmin?: boolean
+  icon: typeof IconArchive
   title: string
   url: string
 }[] = [
-  { icon: IconLayoutBoard, title: 'Boards', url: '/boards', hidden: true },
-  { icon: IconWand, title: 'Generate', url: '/generate' },
   { icon: IconArchive, title: 'Assets', url: '/assets' },
-  { icon: IconBriefcase, title: 'Projects', url: '/projects' },
-  { icon: IconBuildingStore, title: 'Brands', url: '/brands' },
-  { icon: IconPackage, title: 'Products', url: '/products' },
-  { icon: IconUserSquareRounded, title: 'Characters', url: '/characters' },
-  {
-    icon: IconShieldCog,
-    title: 'Admin',
-    url: '/admin',
-    requiresSystemAdmin: true,
-  },
-  { icon: IconApps, title: 'Apps', url: '/apps', hidden: true },
-  { icon: IconMovie, title: 'Studio', url: '/studio', hidden: true },
-  { icon: IconSparkles, title: 'Assistant', url: '/assistant', hidden: true },
+  { icon: IconGitBranch, title: 'Flows', url: '/flows' },
+  { icon: IconComponents, title: 'Elements', url: '/elements' },
 ]
 
 const settingsActions = [
   { icon: IconSettings, title: 'General settings', tab: 'general' },
+  { icon: IconBuilding, title: 'Organization settings', tab: 'organization' },
   { icon: IconUserCircle, title: 'Profile', tab: 'profile' },
   { icon: IconUsersGroup, title: 'Invite member', tab: 'team' },
-  { icon: IconCreditCard, title: 'Billing', tab: 'billing' },
 ] satisfies {
   icon: typeof IconSettings
   title: string
@@ -73,19 +48,15 @@ const settingsActions = [
 }[]
 
 export function GlobalSearch({
-  isSystemAdmin,
   onOpenInviteMemberSettings,
   onOpenSettings,
 }: {
-  isSystemAdmin: boolean
   onOpenInviteMemberSettings: () => void
   onOpenSettings: (tab?: SettingsTab) => void
 }) {
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
-  const visiblePageActions = pageActions.filter((action) => {
-    return !action.hidden && (!action.requiresSystemAdmin || isSystemAdmin)
-  })
+  const visiblePageActions = pageActions.filter(action => !action.hidden)
   const shortcutLabel = /Mac|iPhone|iPad|iPod/.test(window.navigator.platform)
     ? '⌘K'
     : 'Ctrl K'
@@ -134,7 +105,7 @@ export function GlobalSearch({
           sm:inline
         "
         >
-          Search boards and actions...
+          Search pages and settings...
         </span>
         <Kbd className="
           ml-auto hidden
@@ -149,35 +120,13 @@ export function GlobalSearch({
         open={open}
         onOpenChange={setOpen}
         title="Search"
-        description="Search boards and actions."
+        description="Search pages and settings."
         className="sm:max-w-[580px]"
       >
         <Command>
-          <CommandInput placeholder="Search boards and actions..." />
+          <CommandInput placeholder="Search pages and settings..." />
           <CommandList className="max-h-[420px]">
             <CommandEmpty>No results found.</CommandEmpty>
-            <CommandGroup heading="Recent">
-              {boardPreviews.map(board => (
-                <CommandItem
-                  key={board.title}
-                  value={`${board.eyebrow} ${board.title}`}
-                  onSelect={() => handleNavigate('/boards')}
-                >
-                  <IconLayoutBoard />
-                  <div className="min-w-0 flex-1">
-                    <span className="block truncate">{board.title}</span>
-                    <span className="
-                      block truncate text-xs text-muted-foreground
-                    "
-                    >
-                      {board.eyebrow.toLowerCase()}
-                    </span>
-                  </div>
-                  <CommandShortcut>↵</CommandShortcut>
-                </CommandItem>
-              ))}
-            </CommandGroup>
-            <CommandSeparator />
             <CommandGroup heading="Pages">
               {visiblePageActions.map((action) => {
                 const Icon = action.icon
@@ -195,7 +144,7 @@ export function GlobalSearch({
               })}
             </CommandGroup>
             <CommandSeparator />
-            <CommandGroup heading="Quick actions">
+            <CommandGroup heading="Settings">
               {settingsActions.map((action) => {
                 const Icon = action.icon
 
@@ -210,13 +159,6 @@ export function GlobalSearch({
                   </CommandItem>
                 )
               })}
-              <CommandItem
-                value="New board"
-                onSelect={() => handleNavigate('/boards')}
-              >
-                <IconPlus />
-                <span>New board</span>
-              </CommandItem>
             </CommandGroup>
           </CommandList>
         </Command>

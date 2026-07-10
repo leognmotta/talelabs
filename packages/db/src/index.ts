@@ -1,4 +1,4 @@
-import type { BrandColor, Database } from './schema.js'
+import type { Database } from './schema.js'
 
 import { Kysely, PostgresDialect, sql } from 'kysely'
 import { Pool } from 'pg'
@@ -28,4 +28,4 @@ export async function destroyDb() {
 }
 
 export { sql }
-export type { BrandColor, Database }
+export type { Database }
