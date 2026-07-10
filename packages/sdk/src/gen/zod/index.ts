@@ -133,3 +133,12 @@ export {
   updateProjectMutationResponseSchema,
   updateProjectPathParamsSchema,
 } from "./updateProjectSchema.ts";
+export { updateAccountPreferencesRequestSchema } from "./updateAccountPreferencesRequestSchema.ts";
+export { updateAccountPreferencesResponseSchema } from "./updateAccountPreferencesResponseSchema.ts";
+export {
+  updateAccountPreferences200Schema,
+  updateAccountPreferences400Schema,
+  updateAccountPreferences401Schema,
+  updateAccountPreferencesMutationRequestSchema,
+  updateAccountPreferencesMutationResponseSchema,
+} from "./updateAccountPreferencesSchema.ts";

@@ -3,6 +3,22 @@
  * Do not edit manually.
  */
 
+export const userLocaleEnum = {
+  en: "en",
+  "pt-BR": "pt-BR",
+  "pt-PT": "pt-PT",
+  es: "es",
+  fr: "fr",
+  de: "de",
+  it: "it",
+  nl: "nl",
+  pl: "pl",
+  ro: "ro",
+} as const;
+
+export type UserLocaleEnumKey =
+  (typeof userLocaleEnum)[keyof typeof userLocaleEnum];
+
 export type MeResponse = {
   /**
    * @type string
@@ -41,6 +57,10 @@ export type MeResponse = {
      * @type string
      */
     id: string;
+    /**
+     * @type string
+     */
+    locale: UserLocaleEnumKey | null;
     /**
      * @type string
      */

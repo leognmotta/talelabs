@@ -109,7 +109,6 @@ export type {
   ListProjectsQueryResponse,
 } from "./types/ListProjects.ts";
 export type { ListProjectsResponse } from "./types/ListProjectsResponse.ts";
-export type { MeResponse } from "./types/MeResponse.ts";
 export type { Organization } from "./types/Organization.ts";
 export type {
   OrganizationMember,
@@ -339,3 +338,33 @@ export {
   updateProjectMutationResponseSchema,
   updateProjectPathParamsSchema,
 } from "./zod/updateProjectSchema.ts";
+export type { MeResponse, UserLocaleEnumKey } from "./types/MeResponse.ts";
+export type {
+  UpdateAccountPreferences200,
+  UpdateAccountPreferences400,
+  UpdateAccountPreferences401,
+  UpdateAccountPreferencesMutation,
+  UpdateAccountPreferencesMutationRequest,
+  UpdateAccountPreferencesMutationResponse,
+} from "./types/UpdateAccountPreferences.ts";
+export type {
+  UpdateAccountPreferencesRequest,
+  UpdateAccountPreferencesRequestLocaleEnumKey,
+} from "./types/UpdateAccountPreferencesRequest.ts";
+export type {
+  UpdateAccountPreferencesResponse,
+  UpdateAccountPreferencesResponseLocaleEnumKey,
+} from "./types/UpdateAccountPreferencesResponse.ts";
+export { updateAccountPreferences } from "./clients/updateAccountPreferences.ts";
+export { userLocaleEnum } from "./types/MeResponse.ts";
+export { updateAccountPreferencesRequestLocaleEnum } from "./types/UpdateAccountPreferencesRequest.ts";
+export { updateAccountPreferencesResponseLocaleEnum } from "./types/UpdateAccountPreferencesResponse.ts";
+export { updateAccountPreferencesRequestSchema } from "./zod/updateAccountPreferencesRequestSchema.ts";
+export { updateAccountPreferencesResponseSchema } from "./zod/updateAccountPreferencesResponseSchema.ts";
+export {
+  updateAccountPreferences200Schema,
+  updateAccountPreferences400Schema,
+  updateAccountPreferences401Schema,
+  updateAccountPreferencesMutationRequestSchema,
+  updateAccountPreferencesMutationResponseSchema,
+} from "./zod/updateAccountPreferencesSchema.ts";

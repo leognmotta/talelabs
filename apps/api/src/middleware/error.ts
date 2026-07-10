@@ -1,8 +1,10 @@
 import type { Context } from 'hono'
 
 export interface ErrorDetail {
+  code: string
   field: string
   message: string
+  params?: Record<string, boolean | number | string>
 }
 
 type ErrorStatusCode = 400 | 401 | 402 | 403 | 404 | 409 | 422 | 500 | 502

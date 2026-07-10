@@ -69,6 +69,24 @@
                 "type": "string",
                 "example": "user_123"
               },
+              "locale": {
+                "type": "string",
+                "nullable": true,
+                "enum": [
+                  "en",
+                  "pt-BR",
+                  "pt-PT",
+                  "es",
+                  "fr",
+                  "de",
+                  "it",
+                  "nl",
+                  "pl",
+                  "ro",
+                  null
+                ],
+                "example": "pt-BR"
+              },
               "name": {
                 "type": "string",
                 "example": "Leonardo Motta"
@@ -77,6 +95,7 @@
             "required": [
               "email",
               "id",
+              "locale",
               "name"
             ]
           }
@@ -122,14 +141,34 @@
       "ErrorDetail": {
         "type": "object",
         "properties": {
+          "code": {
+            "type": "string"
+          },
           "field": {
             "type": "string"
           },
           "message": {
             "type": "string"
+          },
+          "params": {
+            "type": "object",
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "boolean"
+                }
+              ]
+            }
           }
         },
         "required": [
+          "code",
           "field",
           "message"
         ]
@@ -523,6 +562,58 @@
             "maxLength": 4000
           }
         }
+      },
+      "UpdateAccountPreferencesResponse": {
+        "type": "object",
+        "properties": {
+          "locale": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "en",
+              "pt-BR",
+              "pt-PT",
+              "es",
+              "fr",
+              "de",
+              "it",
+              "nl",
+              "pl",
+              "ro",
+              null
+            ],
+            "example": "pt-BR"
+          }
+        },
+        "required": [
+          "locale"
+        ]
+      },
+      "UpdateAccountPreferencesRequest": {
+        "type": "object",
+        "properties": {
+          "locale": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "en",
+              "pt-BR",
+              "pt-PT",
+              "es",
+              "fr",
+              "de",
+              "it",
+              "nl",
+              "pl",
+              "ro",
+              null
+            ],
+            "example": "pt-BR"
+          }
+        },
+        "required": [
+          "locale"
+        ]
       }
     },
     "parameters": {}
@@ -1371,6 +1462,56 @@
           },
           "404": {
             "description": "Project not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/me/preferences": {
+      "patch": {
+        "operationId": "updateAccountPreferences",
+        "tags": [
+          "Account"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAccountPreferencesRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Account preferences were updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateAccountPreferencesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Account preferences could not be updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
             "content": {
               "application/json": {
                 "schema": {

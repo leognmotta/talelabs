@@ -17,6 +17,20 @@ export const meResponseSchema = z.object({
   user: z.object({
     email: z.email(),
     id: z.string(),
+    locale: z.nullable(
+      z.enum([
+        "en",
+        "pt-BR",
+        "pt-PT",
+        "es",
+        "fr",
+        "de",
+        "it",
+        "nl",
+        "pl",
+        "ro",
+      ]),
+    ),
     name: z.string(),
   }),
 }) as unknown as z.ZodType<MeResponse>;

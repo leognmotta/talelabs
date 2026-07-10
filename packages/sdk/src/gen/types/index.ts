@@ -102,7 +102,6 @@ export type {
   ListProjectsQueryResponse,
 } from "./ListProjects.ts";
 export type { ListProjectsResponse } from "./ListProjectsResponse.ts";
-export type { MeResponse } from "./MeResponse.ts";
 export type { Organization } from "./Organization.ts";
 export type {
   OrganizationMember,
@@ -161,3 +160,23 @@ export { createInvitationRequestRoleEnum } from "./CreateInvitationRequest.ts";
 export { invitationRoleEnum } from "./Invitation.ts";
 export { organizationMemberRoleEnum } from "./OrganizationMember.ts";
 export { setPasswordResponseStatusEnum } from "./SetPasswordResponse.ts";
+export type { MeResponse, UserLocaleEnumKey } from "./MeResponse.ts";
+export type {
+  UpdateAccountPreferences200,
+  UpdateAccountPreferences400,
+  UpdateAccountPreferences401,
+  UpdateAccountPreferencesMutation,
+  UpdateAccountPreferencesMutationRequest,
+  UpdateAccountPreferencesMutationResponse,
+} from "./UpdateAccountPreferences.ts";
+export type {
+  UpdateAccountPreferencesRequest,
+  UpdateAccountPreferencesRequestLocaleEnumKey,
+} from "./UpdateAccountPreferencesRequest.ts";
+export type {
+  UpdateAccountPreferencesResponse,
+  UpdateAccountPreferencesResponseLocaleEnumKey,
+} from "./UpdateAccountPreferencesResponse.ts";
+export { userLocaleEnum } from "./MeResponse.ts";
+export { updateAccountPreferencesRequestLocaleEnum } from "./UpdateAccountPreferencesRequest.ts";
+export { updateAccountPreferencesResponseLocaleEnum } from "./UpdateAccountPreferencesResponse.ts";

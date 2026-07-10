@@ -12,6 +12,46 @@ import { registerAccountRoutes } from './routes/account/account.routes.js'
 import { registerOrganizationRoutes } from './routes/organizations/organizations.routes.js'
 import { registerSystemRoutes } from './routes/system/system.routes.js'
 
+function getValidationIssueDetails(issue: {
+  code: string
+  path: PropertyKey[]
+}) {
+  const metadata = issue as unknown as Record<string, unknown>
+  const params: Record<string, boolean | number | string> = {}
+  let code = issue.code
+
+  if (issue.code === 'too_small') {
+    const minimum = metadata.minimum
+    const origin = metadata.origin
+
+    if (typeof minimum === 'number')
+      params.minimum = minimum
+
+    code = origin === 'string' ? 'min_length' : 'min_value'
+  }
+  else if (issue.code === 'too_big') {
+    const maximum = metadata.maximum
+    const origin = metadata.origin
+
+    if (typeof maximum === 'number')
+      params.maximum = maximum
+
+    code = origin === 'string' ? 'max_length' : 'max_value'
+  }
+  else if (issue.code === 'invalid_format' && typeof metadata.format === 'string') {
+    code = `invalid_${metadata.format}`
+  }
+  else if (issue.code === 'invalid_type' && metadata.input === undefined) {
+    code = 'required'
+  }
+
+  return {
+    code,
+    field: issue.path.map(String).join('.'),
+    params: Object.keys(params).length ? params : undefined,
+  }
+}
+
 const app = new OpenAPIHono<ApiEnv>({
   defaultHook: (result, c) => {
     if (!result.success) {
@@ -19,7 +59,7 @@ const app = new OpenAPIHono<ApiEnv>({
         'validation_error',
         'The request could not be validated.',
         result.error.issues.map(issue => ({
-          field: issue.path.join('.'),
+          ...getValidationIssueDetails(issue),
           message: issue.message,
         })),
       ), 400)

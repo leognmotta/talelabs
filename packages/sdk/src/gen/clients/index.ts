@@ -13,3 +13,4 @@ export { revokeOrganizationInvitation } from "./revokeOrganizationInvitation.ts"
 export { setAccountPassword } from "./setAccountPassword.ts";
 export { updateOrganization } from "./updateOrganization.ts";
 export { updateProject } from "./updateProject.ts";
+export { updateAccountPreferences } from "./updateAccountPreferences.ts";

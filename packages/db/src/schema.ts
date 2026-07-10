@@ -16,6 +16,7 @@ export interface UserTable {
   banned: boolean
   banReason: string | null
   banExpires: Timestamp | null
+  locale: string | null
   createdAt: GeneratedTimestamp
   updatedAt: GeneratedTimestamp
 }

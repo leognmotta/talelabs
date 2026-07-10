@@ -20,6 +20,12 @@ export type Client = <TData, _TError = unknown, TVariables = unknown>(
   config: RequestConfig<TVariables>,
 ) => Promise<ResponseConfig<TData>>
 
+let requestLocale: string | null = null
+
+export function setApiRequestLocale(locale: string | null) {
+  requestLocale = locale
+}
+
 export class ApiError<TError = unknown> extends Error {
   readonly data: TError
   readonly status: number
@@ -77,6 +83,7 @@ const client: Client = async <TData, TError = unknown, TVariables = unknown>(
         : JSON.stringify(config.data),
     credentials: 'include',
     headers: {
+      ...(requestLocale ? { 'Accept-Language': requestLocale } : {}),
       ...(config.data instanceof FormData ? {} : { 'Content-Type': 'application/json' }),
       ...config.headers,
     },

@@ -7,9 +7,19 @@ export type ErrorDetail = {
   /**
    * @type string
    */
+  code: string;
+  /**
+   * @type string
+   */
   field: string;
   /**
    * @type string
    */
   message: string;
+  /**
+   * @type object | undefined
+   */
+  params?: {
+    [key: string]: string | number | boolean;
+  };
 };

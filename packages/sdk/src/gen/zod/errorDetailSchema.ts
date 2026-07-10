@@ -7,6 +7,10 @@ import * as z from "zod";
 import type { ErrorDetail } from "../types/ErrorDetail.ts";
 
 export const errorDetailSchema = z.object({
+  code: z.string(),
   field: z.string(),
   message: z.string(),
+  params: z.optional(
+    z.object({}).catchall(z.union([z.boolean(), z.string(), z.number()])),
+  ),
 }) as unknown as z.ZodType<ErrorDetail>;

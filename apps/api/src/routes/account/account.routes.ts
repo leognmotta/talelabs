@@ -7,6 +7,7 @@ import {
   isSystemAdminRole,
   requireOrganizationSession,
 } from '@talelabs/auth'
+import { normalizeLocale } from '@talelabs/i18n'
 import { requireAuth } from '../../middleware/auth.js'
 import { apiError } from '../../middleware/error.js'
 import { ErrorResponseSchema } from '../../schemas/common.js'
@@ -14,6 +15,8 @@ import {
   MeResponseSchema,
   SetPasswordRequestSchema,
   SetPasswordResponseSchema,
+  UpdateAccountPreferencesRequestSchema,
+  UpdateAccountPreferencesResponseSchema,
 } from './account.schemas.js'
 
 const meRoute = createRoute({
@@ -92,6 +95,49 @@ const setPasswordRoute = createRoute({
   },
 })
 
+const updateAccountPreferencesRoute = createRoute({
+  method: 'patch',
+  path: '/me/preferences',
+  operationId: 'updateAccountPreferences',
+  request: {
+    body: {
+      content: {
+        'application/json': {
+          schema: UpdateAccountPreferencesRequestSchema,
+        },
+      },
+      required: true,
+    },
+  },
+  tags: ['Account'],
+  responses: {
+    200: {
+      content: {
+        'application/json': {
+          schema: UpdateAccountPreferencesResponseSchema,
+        },
+      },
+      description: 'Account preferences were updated',
+    },
+    400: {
+      content: {
+        'application/json': {
+          schema: ErrorResponseSchema,
+        },
+      },
+      description: 'Account preferences could not be updated',
+    },
+    401: {
+      content: {
+        'application/json': {
+          schema: ErrorResponseSchema,
+        },
+      },
+      description: 'Authentication required',
+    },
+  },
+})
+
 function getAuthErrorStatus(error: unknown) {
   if (
     error
@@ -141,9 +187,37 @@ export function registerAccountRoutes(app: OpenAPIHono<ApiEnv>) {
       user: {
         id: result.session.user.id,
         email: result.session.user.email,
+        locale: normalizeLocale(result.session.user.locale ?? ''),
         name: result.session.user.name,
       },
     }, 200)
+  })
+
+  app.openapi(updateAccountPreferencesRoute, async (c) => {
+    requireAuth(c)
+
+    const body = c.req.valid('json')
+
+    try {
+      await auth.api.updateUser({
+        body,
+        headers: c.req.raw.headers,
+      })
+
+      return c.json({ locale: body.locale }, 200)
+    }
+    catch (error) {
+      const status = getAuthErrorStatus(error)
+
+      if (status === 400 || status === 401) {
+        return c.json(apiError(
+          status === 401 ? 'unauthenticated' : 'validation_error',
+          getAuthErrorMessage(error),
+        ), status)
+      }
+
+      throw error
+    }
   })
 
   app.openapi(setPasswordRoute, async (c) => {
