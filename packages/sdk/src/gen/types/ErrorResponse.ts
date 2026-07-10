@@ -3,9 +3,24 @@
  * Do not edit manually.
  */
 
+import type { ErrorDetail } from "./ErrorDetail.ts";
+
 export type ErrorResponse = {
   /**
-   * @type string
+   * @type object
    */
-  error: string;
+  error: {
+    /**
+     * @type string
+     */
+    code: string;
+    /**
+     * @type string
+     */
+    message: string;
+    /**
+     * @type array | undefined
+     */
+    details?: ErrorDetail[];
+  };
 };

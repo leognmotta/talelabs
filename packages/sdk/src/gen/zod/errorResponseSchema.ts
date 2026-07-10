@@ -5,7 +5,14 @@
 
 import * as z from "zod";
 import type { ErrorResponse } from "../types/ErrorResponse.ts";
+import { errorDetailSchema } from "./errorDetailSchema.ts";
 
 export const errorResponseSchema = z.object({
-  error: z.string(),
+  error: z.object({
+    code: z.string(),
+    message: z.string(),
+    get details() {
+      return z.array(errorDetailSchema).optional();
+    },
+  }),
 }) as unknown as z.ZodType<ErrorResponse>;
