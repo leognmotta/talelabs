@@ -23,27 +23,28 @@ import {
 } from '@talelabs/ui/components/command'
 import { Kbd } from '@talelabs/ui/components/kbd'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 
 const pageActions: {
   hidden?: boolean
   icon: typeof IconArchive
-  title: string
+  titleKey: 'navigation.assets' | 'navigation.elements' | 'navigation.flows'
   url: string
 }[] = [
-  { icon: IconArchive, title: 'Assets', url: '/assets' },
-  { icon: IconGitBranch, title: 'Flows', url: '/flows' },
-  { icon: IconComponents, title: 'Elements', url: '/elements' },
+  { icon: IconArchive, titleKey: 'navigation.assets', url: '/assets' },
+  { icon: IconGitBranch, titleKey: 'navigation.flows', url: '/flows' },
+  { icon: IconComponents, titleKey: 'navigation.elements', url: '/elements' },
 ]
 
 const settingsActions = [
-  { icon: IconSettings, title: 'General settings', tab: 'general' },
-  { icon: IconBuilding, title: 'Organization settings', tab: 'organization' },
-  { icon: IconUserCircle, title: 'Profile', tab: 'profile' },
-  { icon: IconUsersGroup, title: 'Invite member', tab: 'team' },
+  { icon: IconSettings, titleKey: 'navigation.generalSettings', tab: 'general' },
+  { icon: IconBuilding, titleKey: 'navigation.organizationSettings', tab: 'organization' },
+  { icon: IconUserCircle, titleKey: 'navigation.profile', tab: 'profile' },
+  { icon: IconUsersGroup, titleKey: 'navigation.inviteMember', tab: 'team' },
 ] satisfies {
   icon: typeof IconSettings
-  title: string
+  titleKey: 'navigation.generalSettings' | 'navigation.inviteMember' | 'navigation.organizationSettings' | 'navigation.profile'
   tab: SettingsTab
 }[]
 
@@ -54,6 +55,7 @@ export function GlobalSearch({
   onOpenInviteMemberSettings: () => void
   onOpenSettings: (tab?: SettingsTab) => void
 }) {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
   const visiblePageActions = pageActions.filter(action => !action.hidden)
@@ -105,7 +107,7 @@ export function GlobalSearch({
           sm:inline
         "
         >
-          Search pages and settings...
+          {t('search.placeholder')}
         </span>
         <Kbd className="
           ml-auto hidden
@@ -119,43 +121,43 @@ export function GlobalSearch({
       <CommandDialog
         open={open}
         onOpenChange={setOpen}
-        title="Search"
-        description="Search pages and settings."
+        title={t('search.title')}
+        description={t('search.description')}
         className="sm:max-w-[580px]"
       >
         <Command>
-          <CommandInput placeholder="Search pages and settings..." />
+          <CommandInput placeholder={t('search.placeholder')} />
           <CommandList className="max-h-[420px]">
-            <CommandEmpty>No results found.</CommandEmpty>
-            <CommandGroup heading="Pages">
+            <CommandEmpty>{t('search.empty')}</CommandEmpty>
+            <CommandGroup heading={t('search.pages')}>
               {visiblePageActions.map((action) => {
                 const Icon = action.icon
 
                 return (
                   <CommandItem
-                    key={action.title}
-                    value={action.title}
+                    key={action.titleKey}
+                    value={t(action.titleKey)}
                     onSelect={() => handleNavigate(action.url)}
                   >
                     <Icon />
-                    <span>{action.title}</span>
+                    <span>{t(action.titleKey)}</span>
                   </CommandItem>
                 )
               })}
             </CommandGroup>
             <CommandSeparator />
-            <CommandGroup heading="Settings">
+            <CommandGroup heading={t('search.settings')}>
               {settingsActions.map((action) => {
                 const Icon = action.icon
 
                 return (
                   <CommandItem
-                    key={action.title}
-                    value={action.title}
+                    key={action.titleKey}
+                    value={t(action.titleKey)}
                     onSelect={() => handleOpenSettings(action.tab)}
                   >
                     <Icon />
-                    <span>{action.title}</span>
+                    <span>{t(action.titleKey)}</span>
                   </CommandItem>
                 )
               })}

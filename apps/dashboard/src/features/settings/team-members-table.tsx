@@ -25,11 +25,12 @@ import {
   useReactTable,
 } from '@tanstack/react-table'
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 
 const teamColumnHelper = createColumnHelper<TeamMemberRow>()
 
 export function TeamMembersTable({
-  emptyMessage = 'No team members found.',
+  emptyMessage,
   isLoading,
   onCopyInviteLink,
   onRevokeInvite,
@@ -45,9 +46,11 @@ export function TeamMembersTable({
   rows: TeamMemberRow[]
   searchValue: string
 }) {
+  const { t } = useTranslation()
+  const resolvedEmptyMessage = emptyMessage ?? t('team.noMembers')
   const columns = useMemo(() => [
     teamColumnHelper.accessor('name', {
-      header: 'Member',
+      header: t('team.member'),
       cell: ({ row }) => (
         <div className="min-w-0">
           <p className="truncate font-medium">{row.original.name}</p>
@@ -58,16 +61,16 @@ export function TeamMembersTable({
       ),
     }),
     teamColumnHelper.accessor('role', {
-      header: 'Role',
+      header: t('team.role'),
       cell: info => (
         <span className="capitalize">{info.getValue()}</span>
       ),
     }),
     teamColumnHelper.accessor('status', {
-      header: 'Status',
+      header: t('team.status'),
       cell: info => (
         <Badge variant={info.getValue() === 'active' ? 'secondary' : 'outline'}>
-          {info.getValue() === 'active' ? 'Active' : 'Pending'}
+          {info.getValue() === 'active' ? t('team.active') : t('team.pending')}
         </Badge>
       ),
     }),
@@ -88,14 +91,14 @@ export function TeamMembersTable({
                     type="button"
                     variant="ghost"
                     size="icon-sm"
-                    aria-label="Copy invite link"
+                    aria-label={t('team.copyInviteLink')}
                     onClick={() => onCopyInviteLink(row.original)}
                   >
                     <IconCopy data-icon="inline-start" />
                   </Button>
                 )}
               />
-              <TooltipContent>Copy invite link</TooltipContent>
+              <TooltipContent>{t('team.copyInviteLink')}</TooltipContent>
             </Tooltip>
             <Tooltip>
               <TooltipTrigger
@@ -104,14 +107,14 @@ export function TeamMembersTable({
                     type="button"
                     variant="ghost"
                     size="icon-sm"
-                    aria-label="Resend invite email"
+                    aria-label={t('team.resendInvite')}
                     onClick={() => onResendInvite(row.original)}
                   >
                     <IconMailForward data-icon="inline-start" />
                   </Button>
                 )}
               />
-              <TooltipContent>Resend invite email</TooltipContent>
+              <TooltipContent>{t('team.resendInvite')}</TooltipContent>
             </Tooltip>
             <Tooltip>
               <TooltipTrigger
@@ -120,20 +123,20 @@ export function TeamMembersTable({
                     type="button"
                     variant="destructive"
                     size="icon-sm"
-                    aria-label="Revoke invitation"
+                    aria-label={t('team.revokeInvitation')}
                     onClick={() => onRevokeInvite(row.original)}
                   >
                     <IconTrash data-icon="inline-start" />
                   </Button>
                 )}
               />
-              <TooltipContent>Revoke invitation</TooltipContent>
+              <TooltipContent>{t('team.revokeInvitation')}</TooltipContent>
             </Tooltip>
           </div>
         )
       },
     }),
-  ], [onCopyInviteLink, onResendInvite, onRevokeInvite])
+  ], [onCopyInviteLink, onResendInvite, onRevokeInvite, t])
   const table = useReactTable({
     data: rows,
     columns,
@@ -206,7 +209,7 @@ export function TeamMembersTable({
                     colSpan={columns.length}
                     className="h-24 text-center"
                   >
-                    {emptyMessage}
+                    {resolvedEmptyMessage}
                   </TableCell>
                 </TableRow>
               )}

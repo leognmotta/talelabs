@@ -4,7 +4,10 @@ import { Button } from '@talelabs/ui/components/button'
 import { Separator } from '@talelabs/ui/components/separator'
 import { Skeleton } from '@talelabs/ui/components/skeleton'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
+import { useLanguage } from '../../i18n/language-context'
+import { getAuthErrorMessage } from '../../shared/lib/auth-error'
 import { authClient } from '../auth/auth-client'
 import { PasswordSettingsForm } from './password-settings-form'
 import {
@@ -29,6 +32,8 @@ export function SecuritySettings({
   onSignOut: () => Promise<void>
   open: boolean
 }) {
+  const { t } = useTranslation()
+  const { locale } = useLanguage()
   const [sessions, setSessions] = useState<AuthSession[]>([])
   const [accounts, setAccounts] = useState<AuthAccount[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -47,13 +52,13 @@ export function SecuritySettings({
     ])
 
     if (sessionsResult.error) {
-      setError(sessionsResult.error.message ?? 'Could not load active sessions.')
+      setError(getAuthErrorMessage(sessionsResult.error, 'security.couldNotLoadSessions'))
       setIsLoading(false)
       return
     }
 
     if (accountsResult.error) {
-      setError(accountsResult.error.message ?? 'Could not load account security.')
+      setError(getAuthErrorMessage(accountsResult.error, 'security.couldNotLoad'))
       setIsLoading(false)
       return
     }
@@ -75,7 +80,7 @@ export function SecuritySettings({
     const result = await authClient.revokeSession({ token: session.token })
 
     if (result.error) {
-      toast.error(result.error.message ?? 'Could not revoke session.')
+      toast.error(getAuthErrorMessage(result.error, 'security.couldNotRevoke'))
       setRevokingToken(null)
       return
     }
@@ -87,13 +92,13 @@ export function SecuritySettings({
 
     await loadSessions()
     setRevokingToken(null)
-    toast.success('Session revoked')
+    toast.success(t('security.sessionRevoked'))
   }
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col">
       <header className="flex items-center justify-between gap-3 pr-12 pb-4">
-        <h2 className="text-lg font-semibold">Security</h2>
+        <h2 className="text-lg font-semibold">{t('settings.security')}</h2>
         <Button
           type="button"
           variant="outline"
@@ -102,7 +107,7 @@ export function SecuritySettings({
           disabled={isLoading}
         >
           <IconRefresh />
-          Refresh
+          {t('security.refresh')}
         </Button>
       </header>
       <Separator />
@@ -113,11 +118,11 @@ export function SecuritySettings({
         "
         >
           <div>
-            <p className="text-sm font-medium">Password</p>
+            <p className="text-sm font-medium">{t('common.password')}</p>
             <p className="mt-1 text-sm text-muted-foreground">
               {hasPassword
-                ? 'Update the password used for email sign-in.'
-                : 'Create a password for email sign-in.'}
+                ? t('security.passwordUpdateDescription')
+                : t('security.passwordCreateDescription')}
             </p>
           </div>
           <Button
@@ -127,7 +132,7 @@ export function SecuritySettings({
             disabled={isLoading}
             onClick={() => setIsPasswordFormOpen(open => !open)}
           >
-            {hasPassword ? 'Update password' : 'Create password'}
+            {hasPassword ? t('security.updatePassword') : t('security.createPassword')}
           </Button>
         </div>
         {isPasswordFormOpen && (
@@ -153,7 +158,7 @@ export function SecuritySettings({
           sm:grid-cols-[minmax(9rem,13rem)_1fr]
         "
         >
-          <p className="text-sm font-medium">Active sessions</p>
+          <p className="text-sm font-medium">{t('security.activeSessions')}</p>
           <div className="flex min-w-0 flex-col gap-3">
             {isLoading && sessions.length === 0 && (
               <>
@@ -165,12 +170,12 @@ export function SecuritySettings({
               <p className="text-sm text-destructive">{error}</p>
             )}
             {!isLoading && !error && sessions.length === 0 && (
-              <p className="text-sm text-muted-foreground">No active sessions found.</p>
+              <p className="text-sm text-muted-foreground">{t('security.noSessions')}</p>
             )}
             {sessions.map((session) => {
               const isCurrentSession = session.id === currentSessionId
-              const browserName = getBrowserName(session.userAgent)
-              const deviceName = getDeviceName(session.userAgent)
+              const browserName = getBrowserName(session.userAgent) ?? t('security.browser')
+              const deviceName = getDeviceName(session.userAgent) ?? t('security.device')
 
               return (
                 <div
@@ -192,7 +197,7 @@ export function SecuritySettings({
                       <div className="flex flex-wrap items-center gap-2">
                         <p className="font-medium">{deviceName}</p>
                         {isCurrentSession && (
-                          <Badge variant="secondary">This device</Badge>
+                          <Badge variant="secondary">{t('security.currentSession')}</Badge>
                         )}
                       </div>
                       <p className="text-sm text-muted-foreground">
@@ -200,9 +205,9 @@ export function SecuritySettings({
                         {session.ipAddress ? ` - ${session.ipAddress}` : ''}
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        Last active
-                        {' '}
-                        {formatSessionDate(session.updatedAt)}
+                        {t('security.lastActive', {
+                          date: formatSessionDate(session.updatedAt, locale),
+                        })}
                       </p>
                     </div>
                   </div>
@@ -214,7 +219,7 @@ export function SecuritySettings({
                     onClick={() => void handleRevokeSession(session)}
                   >
                     <IconLogout />
-                    {isCurrentSession ? 'Sign out' : 'Revoke'}
+                    {isCurrentSession ? t('common.signOut') : t('security.revoke')}
                   </Button>
                 </div>
               )

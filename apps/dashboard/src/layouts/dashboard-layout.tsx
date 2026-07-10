@@ -1,3 +1,4 @@
+import type { LanguagePreference } from '@talelabs/i18n'
 import type { SettingsTab } from '../features/settings/settings-state'
 import type { ThemePreference } from '../shared/lib/theme'
 import { IconCookie, IconDots } from '@tabler/icons-react'
@@ -19,6 +20,7 @@ import { TooltipProvider } from '@talelabs/ui/components/tooltip'
 import { parseAsStringEnum, useQueryState } from 'nuqs'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Outlet } from 'react-router'
 import { SettingsDialog } from '../features/settings/settings-dialog'
 import { settingsTabs } from '../features/settings/settings-state'
@@ -32,9 +34,11 @@ export function DashboardLayout({
   activeOrganizationId,
   currentSessionId,
   email,
+  language,
   name,
   onSignOut,
   onCreateOrganization,
+  onLanguageChange,
   onOpenCookiePreferences,
   onProfileUpdated,
   onSwitchOrganization,
@@ -44,8 +48,10 @@ export function DashboardLayout({
   activeOrganizationId: string | null
   currentSessionId: string | undefined
   email: string | undefined
+  language: LanguagePreference
   name: string | undefined
   onCreateOrganization: (name: string, slug: string) => Promise<string | null>
+  onLanguageChange: (language: LanguagePreference) => Promise<void>
   onOpenCookiePreferences: () => void
   onProfileUpdated: () => Promise<void>
   onSignOut: () => Promise<void>
@@ -53,6 +59,7 @@ export function DashboardLayout({
   onThemeChange: (theme: ThemePreference) => void
   theme: ThemePreference
 }) {
+  const { t } = useTranslation()
   const [settingsTab, setSettingsTab] = useQueryState(
     'settings',
     parseAsStringEnum<SettingsTab>([...settingsTabs]),
@@ -294,7 +301,7 @@ export function DashboardLayout({
                       type="button"
                       variant="outline"
                       size="icon"
-                      aria-label="More options"
+                      aria-label={t('common.moreOptions')}
                     />
                   )}
                 >
@@ -304,7 +311,7 @@ export function DashboardLayout({
                   <DropdownMenuGroup>
                     <DropdownMenuItem onClick={onOpenCookiePreferences}>
                       <IconCookie />
-                      <span>Manage cookies</span>
+                      <span>{t('cookies.manage')}</span>
                     </DropdownMenuItem>
                   </DropdownMenuGroup>
                 </DropdownMenuContent>
@@ -319,9 +326,11 @@ export function DashboardLayout({
         <SettingsDialog
           activeOrganizationId={activeOrganizationId}
           currentSessionId={currentSessionId}
-          email={email || 'Workspace member'}
+          email={email || t('common.workspaceMember')}
           isTeamInviteFormOpen={isTeamInviteFormOpen}
-          name={name || 'TaleLabs user'}
+          language={language}
+          name={name || t('common.talelabsUser')}
+          onLanguageChange={onLanguageChange}
           onOpenChange={handleSettingsOpenChange}
           onOpenCookiePreferences={onOpenCookiePreferences}
           onProfileUpdated={onProfileUpdated}

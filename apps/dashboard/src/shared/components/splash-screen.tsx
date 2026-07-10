@@ -1,8 +1,12 @@
+import { useTranslation } from 'react-i18next'
+
 export function SplashScreen({
-  message = 'Loading workspace',
+  message,
 }: {
   message?: string
 }) {
+  const { t } = useTranslation()
+
   return (
     <main className="
       flex min-h-screen items-center justify-center bg-background px-6 py-8
@@ -22,7 +26,9 @@ export function SplashScreen({
         </div>
         <div className="flex flex-col gap-2">
           <h1 className="text-2xl font-semibold tracking-tight">TaleLabs</h1>
-          <p className="text-sm text-muted-foreground">{message}</p>
+          <p className="text-sm text-muted-foreground">
+            {message ?? t('workspace.loading')}
+          </p>
         </div>
         <div className="flex w-36 flex-col gap-2">
           <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">

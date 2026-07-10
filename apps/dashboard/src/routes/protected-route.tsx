@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import type { OrganizationStatus } from '../shared/types/auth'
 
+import { useTranslation } from 'react-i18next'
 import { Navigate } from 'react-router'
 import { WorkspaceState } from '../features/organizations/workspace-state'
 import { SplashScreen } from '../shared/components/splash-screen'
@@ -20,11 +21,13 @@ export function ProtectedRoute({
   organizationStatus: OrganizationStatus
   onSignOut: () => Promise<void>
 }) {
+  const { t } = useTranslation()
+
   if (!isSignedIn)
     return <Navigate to="/sign-in" replace />
 
   if (!hasCheckedOrganization)
-    return <SplashScreen message="Opening your workspace" />
+    return <SplashScreen message={t('workspace.opening')} />
 
   if (organizationStatus === 'missing')
     return <Navigate to="/create-organization" replace />

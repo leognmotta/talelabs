@@ -26,6 +26,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@talelabs/ui/components/sidebar'
+import { useTranslation } from 'react-i18next'
 
 export function NavUser({
   onOpenInviteMemberSettings,
@@ -45,6 +46,7 @@ export function NavUser({
     email: string
   }
 }) {
+  const { t } = useTranslation()
   const { isMobile } = useSidebar()
   const initials = user.name
     .split(' ')
@@ -103,22 +105,22 @@ export function NavUser({
             <DropdownMenuGroup>
               <DropdownMenuItem onClick={() => onOpenSettings('profile')}>
                 <IconUserCircle />
-                <span>Profile</span>
+                <span>{t('navigation.profile')}</span>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={onOpenInviteMemberSettings}>
                 <IconUserPlus />
-                <span>Invite member</span>
+                <span>{t('navigation.inviteMember')}</span>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => onOpenSettings('general')}>
                 <IconSettings />
-                <span>Settings</span>
+                <span>{t('navigation.settings')}</span>
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem onClick={() => void onSignOut()}>
                 <SignOutIcon />
-                <span>Sign out</span>
+                <span>{t('common.signOut')}</span>
               </DropdownMenuItem>
             </DropdownMenuGroup>
           </DropdownMenuContent>

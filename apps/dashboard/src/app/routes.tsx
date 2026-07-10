@@ -1,13 +1,16 @@
+import type { LanguagePreference } from '@talelabs/i18n'
 import type { ThemePreference } from '../shared/lib/theme'
 import {
   activateOrganization,
   getMeQueryKey,
   listOrganizationsQueryKey,
+  updateAccountPreferences,
 } from '@talelabs/sdk'
 import { Toaster } from '@talelabs/ui/components/sonner'
 import { useQueryClient } from '@tanstack/react-query'
 import { parseAsBoolean, useQueryState } from 'nuqs'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Navigate, Route, Routes } from 'react-router'
 import { toast } from 'sonner'
 import { authClient, signOut, useSession } from '../features/auth/auth-client'
@@ -22,12 +25,14 @@ import { CookiePreferencesDialog } from '../features/cookies/cookie-preferences-
 import { AcceptInvitationScreen } from '../features/organizations/accept-invitation-screen'
 import { CreateOrganizationScreen } from '../features/organizations/create-organization-screen'
 import { useOrganizationSession } from '../features/organizations/use-organization-session'
+import { useLanguage } from '../i18n/language-context'
 import { DashboardLayout } from '../layouts/dashboard-layout'
 import { CreateOrganizationRoute } from '../routes/create-organization-route'
 import { ProtectedRoute } from '../routes/protected-route'
 import { PublicRoute } from '../routes/public-route'
 import { BlankPage } from '../shared/components/blank-page'
 import { SplashScreen } from '../shared/components/splash-screen'
+import { getApiErrorMessage } from '../shared/lib/api-error'
 import {
   clearLastOrganizationId,
   storeLastOrganizationId,
@@ -38,6 +43,8 @@ import {
 } from '../shared/lib/theme'
 
 export function DashboardRoutes() {
+  const { t } = useTranslation()
+  const language = useLanguage()
   const session = useSession()
   const queryClient = useQueryClient()
   const [theme, setTheme] = useState<ThemePreference>(
@@ -53,6 +60,13 @@ export function DashboardRoutes() {
   const isCookiePreferencesOpen = cookiePreferencesOpen === true
   const isSignedIn = Boolean(session.data?.user)
   const organization = useOrganizationSession({ isSignedIn })
+
+  useEffect(() => {
+    if (organization.accountLocale === undefined)
+      return
+
+    void language.syncAccountLocale(organization.accountLocale)
+  }, [language, organization.accountLocale])
 
   useEffect(() => {
     if (hasStoredCookiePreferences() || cookiePreferencesOpen === true)
@@ -76,6 +90,24 @@ export function DashboardRoutes() {
   function handleThemeChange(nextTheme: ThemePreference) {
     setTheme(nextTheme)
     storeThemePreference(nextTheme)
+  }
+
+  async function handleLanguageChange(nextLanguage: LanguagePreference) {
+    const previousLanguage = language.preference
+    await language.setPreference(nextLanguage)
+
+    try {
+      await updateAccountPreferences({
+        data: {
+          locale: nextLanguage === 'auto' ? null : nextLanguage,
+        },
+      })
+      await queryClient.invalidateQueries({ queryKey: getMeQueryKey() })
+    }
+    catch {
+      await language.setPreference(previousLanguage)
+      toast.error(t('settings.couldNotUpdateLanguage'))
+    }
   }
 
   function handleOpenCookiePreferences() {
@@ -111,7 +143,7 @@ export function DashboardRoutes() {
     const result = await authClient.organization.create({ name, slug })
 
     if (result.error) {
-      const message = result.error.message ?? 'Could not create organization.'
+      const message = t('organizations.couldNotCreate')
       toast.error(message)
       return message
     }
@@ -123,7 +155,7 @@ export function DashboardRoutes() {
 
       if (activeResult.error) {
         const message
-          = activeResult.error.message ?? 'Could not activate organization.'
+          = t('organizations.couldNotActivate')
         toast.error(message)
         return message
       }
@@ -138,7 +170,7 @@ export function DashboardRoutes() {
     await queryClient.invalidateQueries({
       queryKey: listOrganizationsQueryKey(),
     })
-    toast.success('Organization created')
+    toast.success(t('organizations.created'))
     return null
   }
 
@@ -147,10 +179,10 @@ export function DashboardRoutes() {
       await activateOrganization({ organizationId })
     }
     catch (error) {
-      const message
-        = error instanceof Error
-          ? error.message
-          : 'Could not switch organization.'
+      const message = getApiErrorMessage(
+        error,
+        'organizations.couldNotSwitch',
+      )
       toast.error(message)
       return message
     }
@@ -162,7 +194,7 @@ export function DashboardRoutes() {
     await queryClient.invalidateQueries({
       queryKey: listOrganizationsQueryKey(),
     })
-    toast.success('Organization switched')
+    toast.success(t('organizations.switched'))
     return null
   }
 
@@ -249,9 +281,11 @@ export function DashboardRoutes() {
                 activeOrganizationId={organization.activeWorkspaceId}
                 currentSessionId={session.data?.session.id}
                 email={session.data?.user.email}
+                language={language.preference}
                 name={session.data?.user.name}
                 onCreateOrganization={handleCreateOrganization}
                 onOpenCookiePreferences={handleOpenCookiePreferences}
+                onLanguageChange={handleLanguageChange}
                 onProfileUpdated={handleAuthenticated}
                 onSignOut={handleSignOut}
                 onSwitchOrganization={handleSwitchOrganization}
@@ -262,9 +296,9 @@ export function DashboardRoutes() {
           )}
         >
           <Route index element={<Navigate to="/assets" replace />} />
-          <Route path="assets" element={<BlankPage title="Assets" />} />
-          <Route path="flows" element={<BlankPage title="Flows" />} />
-          <Route path="elements" element={<BlankPage title="Elements" />} />
+          <Route path="assets" element={<BlankPage title={t('navigation.assets')} />} />
+          <Route path="flows" element={<BlankPage title={t('navigation.flows')} />} />
+          <Route path="elements" element={<BlankPage title={t('navigation.elements')} />} />
           <Route path="*" element={<Navigate to="/assets" replace />} />
         </Route>
         <Route path="*" element={<Navigate to="/assets" replace />} />

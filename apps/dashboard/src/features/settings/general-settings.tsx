@@ -1,12 +1,14 @@
+import type { LanguagePreference } from '@talelabs/i18n'
 import type { ThemePreference } from '../../shared/lib/theme'
-import type { LanguagePreference } from './settings-utils'
 
+import { isSupportedLocale, localeDefinitions } from '@talelabs/i18n'
 import { Button } from '@talelabs/ui/components/button'
 import {
   NativeSelect,
   NativeSelectOption,
 } from '@talelabs/ui/components/native-select'
 import { Separator } from '@talelabs/ui/components/separator'
+import { useTranslation } from 'react-i18next'
 import { themeOptions } from './settings-options'
 import { SettingsRow } from './settings-row'
 
@@ -18,18 +20,20 @@ export function GeneralSettings({
   theme,
 }: {
   language: LanguagePreference
-  onLanguageChange: (language: LanguagePreference) => void
+  onLanguageChange: (language: LanguagePreference) => Promise<void>
   onOpenCookiePreferences: () => void
   onThemeChange: (theme: ThemePreference) => void
   theme: ThemePreference
 }) {
+  const { t } = useTranslation()
+
   return (
     <div className="mx-auto flex max-w-2xl flex-col">
       <header className="pb-4">
-        <h2 className="text-lg font-semibold">General</h2>
+        <h2 className="text-lg font-semibold">{t('settings.general')}</h2>
       </header>
       <Separator />
-      <SettingsRow label="Theme">
+      <SettingsRow label={t('settings.theme')}>
         <div className="
           grid w-full grid-cols-3 gap-2
           sm:w-auto
@@ -46,16 +50,16 @@ export function GeneralSettings({
                 onClick={() => onThemeChange(item.value)}
               >
                 <Icon />
-                <span>{item.label}</span>
+                <span>{t(item.labelKey)}</span>
               </Button>
             )
           })}
         </div>
       </SettingsRow>
       <Separator />
-      <SettingsRow label="Language">
+      <SettingsRow label={t('settings.language')}>
         <NativeSelect
-          aria-label="Language"
+          aria-label={t('settings.language')}
           value={language}
           className="
             w-full
@@ -65,29 +69,33 @@ export function GeneralSettings({
             const nextLanguage = event.target.value
             if (
               nextLanguage === 'auto'
-              || nextLanguage === 'en'
-              || nextLanguage === 'pt-BR'
+              || isSupportedLocale(nextLanguage)
             ) {
-              onLanguageChange(nextLanguage)
+              void onLanguageChange(nextLanguage)
             }
           }}
         >
-          <NativeSelectOption value="auto">Auto-detect</NativeSelectOption>
-          <NativeSelectOption value="en">English</NativeSelectOption>
-          <NativeSelectOption value="pt-BR">Portuguese</NativeSelectOption>
+          <NativeSelectOption value="auto">
+            {t('settings.autoDetect')}
+          </NativeSelectOption>
+          {localeDefinitions.map(({ locale, nativeName }) => (
+            <NativeSelectOption key={locale} value={locale}>
+              {nativeName}
+            </NativeSelectOption>
+          ))}
         </NativeSelect>
       </SettingsRow>
       <Separator />
       <SettingsRow
-        label="Cookie preferences"
-        description="Manage analytics and marketing cookie choices."
+        label={t('cookies.preferences')}
+        description={t('cookies.preferencesDescription')}
       >
         <Button
           type="button"
           variant="outline"
           onClick={onOpenCookiePreferences}
         >
-          Manage cookies
+          {t('cookies.manage')}
         </Button>
       </SettingsRow>
     </div>

@@ -17,7 +17,9 @@ import {
 import { Separator } from '@talelabs/ui/components/separator'
 import { useQueryClient } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
+import { getApiErrorMessage } from '../../shared/lib/api-error'
 import { TeamInvitationForm } from './team-invitation-form'
 import { TeamMembersTable } from './team-members-table'
 
@@ -30,6 +32,7 @@ export function TeamSettings({
   isInviteFormOpen: boolean
   onInviteFormOpenChange: (open: boolean) => void
 }) {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [memberSearch, setMemberSearch] = useState('')
   const organizationId = activeOrganizationId ?? undefined
@@ -74,14 +77,14 @@ export function TeamSettings({
         email: invitation.email,
         id: `invitation:${invitation.id}`,
         inviteUrl: invitation.inviteUrl,
-        name: 'Invited user',
+        name: t('team.invitedUser'),
         role: invitation.role,
         sourceId: invitation.id,
         status: 'pending',
       }))
 
     return [...memberRows, ...pendingInvitationRows]
-  }, [invitations, members])
+  }, [invitations, members, t])
   const isLoading = membersQuery.isLoading || invitationsQuery.isLoading
   const isError = membersQuery.isError || invitationsQuery.isError
 
@@ -90,7 +93,7 @@ export function TeamSettings({
       return
 
     await navigator.clipboard?.writeText(row.inviteUrl)
-    toast.success('Invitation URL copied')
+    toast.success(t('team.invitationCopied'))
   }
 
   async function handleResendInvite(row: TeamMemberRow) {
@@ -111,12 +114,13 @@ export function TeamSettings({
           organizationId: activeOrganizationId,
         }),
       })
-      toast.success('Invitation email resent')
+      toast.success(t('team.invitationResent'))
     }
     catch (caughtError) {
-      const message = caughtError instanceof Error
-        ? caughtError.message
-        : 'Could not resend invitation.'
+      const message = getApiErrorMessage(
+        caughtError,
+        'team.couldNotResendInvitation',
+      )
       toast.error(message)
     }
   }
@@ -135,12 +139,13 @@ export function TeamSettings({
           organizationId: activeOrganizationId,
         }),
       })
-      toast.success('Invitation revoked')
+      toast.success(t('team.invitationRevoked'))
     }
     catch (caughtError) {
-      const message = caughtError instanceof Error
-        ? caughtError.message
-        : 'Could not revoke invitation.'
+      const message = getApiErrorMessage(
+        caughtError,
+        'team.couldNotRevokeInvitation',
+      )
       toast.error(message)
     }
   }
@@ -148,7 +153,7 @@ export function TeamSettings({
   return (
     <div className="mx-auto flex max-w-2xl flex-col">
       <header className="flex items-center justify-between gap-3 pr-12 pb-4">
-        <h2 className="text-lg font-semibold">Team</h2>
+        <h2 className="text-lg font-semibold">{t('team.title')}</h2>
         {activeOrganizationId && (
           <Button
             type="button"
@@ -157,14 +162,14 @@ export function TeamSettings({
             onClick={() => onInviteFormOpenChange(!isInviteFormOpen)}
           >
             <IconPlus />
-            Invite user
+            {t('team.inviteUser')}
           </Button>
         )}
       </header>
       <Separator className="mb-5" />
       {!activeOrganizationId && (
         <p className="text-sm text-muted-foreground">
-          No active organization.
+          {t('organizations.noActive')}
         </p>
       )}
       {activeOrganizationId && (
@@ -177,7 +182,7 @@ export function TeamSettings({
           )}
           {isError && (
             <p className="text-sm text-muted-foreground">
-              Organization admins can view members and invitations.
+              {t('team.adminOnlyMembers')}
             </p>
           )}
           {!isError && (
@@ -189,14 +194,14 @@ export function TeamSettings({
                 <InputGroupInput
                   value={memberSearch}
                   onChange={event => setMemberSearch(event.target.value)}
-                  placeholder="Search members..."
-                  aria-label="Search members"
+                  placeholder={t('team.searchPlaceholder')}
+                  aria-label={t('team.search')}
                 />
               </InputGroup>
               <TeamMembersTable
                 emptyMessage={memberSearch.trim()
-                  ? 'No members match your search.'
-                  : 'No team members found.'}
+                  ? t('team.noSearchResults')
+                  : t('team.noMembers')}
                 isLoading={isLoading}
                 rows={rows}
                 searchValue={memberSearch}

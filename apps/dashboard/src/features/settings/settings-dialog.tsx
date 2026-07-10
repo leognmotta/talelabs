@@ -1,6 +1,6 @@
+import type { LanguagePreference } from '@talelabs/i18n'
 import type { ThemePreference } from '../../shared/lib/theme'
 import type { SettingsTab } from './settings-state'
-import type { LanguagePreference } from './settings-utils'
 
 import { Avatar, AvatarFallback } from '@talelabs/ui/components/avatar'
 import { Button } from '@talelabs/ui/components/button'
@@ -12,17 +12,14 @@ import {
   DialogTitle,
 } from '@talelabs/ui/components/dialog'
 import { cn } from '@talelabs/ui/lib/utils'
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { GeneralSettings } from './general-settings'
 import { OrganizationSettings } from './organization-settings'
 import { ProfileSettings } from './profile-settings'
 import { SecuritySettings } from './security-settings'
 import { settingsNavigation } from './settings-options'
-import {
-  getInitialLanguagePreference,
-  getInitials,
-  languageStorageKey,
-} from './settings-utils'
+import { getInitials } from './settings-utils'
 import { TeamSettings } from './team-settings'
 
 export function SettingsDialog({
@@ -30,7 +27,9 @@ export function SettingsDialog({
   currentSessionId,
   email,
   isTeamInviteFormOpen,
+  language,
   name,
+  onLanguageChange,
   onOpenChange,
   onOpenCookiePreferences,
   onProfileUpdated,
@@ -46,7 +45,9 @@ export function SettingsDialog({
   currentSessionId: string | undefined
   email: string
   isTeamInviteFormOpen: boolean
+  language: LanguagePreference
   name: string
+  onLanguageChange: (language: LanguagePreference) => Promise<void>
   onOpenChange: (open: boolean) => void
   onOpenCookiePreferences: () => void
   onProfileUpdated: () => Promise<void>
@@ -58,15 +59,8 @@ export function SettingsDialog({
   tab: SettingsTab
   theme: ThemePreference
 }) {
+  const { t } = useTranslation()
   const initials = useMemo(() => getInitials(name, email), [email, name])
-  const [language, setLanguage] = useState<LanguagePreference>(
-    getInitialLanguagePreference,
-  )
-
-  function handleLanguageChange(nextLanguage: LanguagePreference) {
-    setLanguage(nextLanguage)
-    window.localStorage.setItem(languageStorageKey, nextLanguage)
-  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -77,8 +71,8 @@ export function SettingsDialog({
         "
       >
         <DialogHeader className="sr-only">
-          <DialogTitle>Settings</DialogTitle>
-          <DialogDescription>Manage account and workspace settings.</DialogDescription>
+          <DialogTitle>{t('navigation.settings')}</DialogTitle>
+          <DialogDescription>{t('settings.manageAccount')}</DialogDescription>
         </DialogHeader>
         <div className="
           grid h-full min-h-0 grid-cols-1
@@ -123,7 +117,7 @@ export function SettingsDialog({
                     onClick={() => onTabChange(item.value)}
                   >
                     <Icon />
-                    <span>{item.label}</span>
+                    <span>{t(item.labelKey)}</span>
                   </Button>
                 )
               })}
@@ -134,7 +128,7 @@ export function SettingsDialog({
               <GeneralSettings
                 language={language}
                 onOpenCookiePreferences={onOpenCookiePreferences}
-                onLanguageChange={handleLanguageChange}
+                onLanguageChange={onLanguageChange}
                 onThemeChange={onThemeChange}
                 theme={theme}
               />

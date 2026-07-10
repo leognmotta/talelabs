@@ -10,7 +10,10 @@ import {
 } from '@talelabs/ui/components/field'
 import { Input } from '@talelabs/ui/components/input'
 import { Controller, useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
+import { LocalizedFieldError } from '../../shared/components/localized-field-error'
+import { getAuthErrorMessage } from '../../shared/lib/auth-error'
 import { authClient } from '../auth/auth-client'
 import { updatePasswordSchema } from './settings-schemas'
 
@@ -19,6 +22,7 @@ export function UpdatePasswordForm({
 }: {
   onPasswordChanged: () => Promise<void>
 }) {
+  const { t } = useTranslation()
   const form = useForm<UpdatePasswordFormValues>({
     resolver: zodResolver(updatePasswordSchema),
     defaultValues: {
@@ -43,7 +47,10 @@ export function UpdatePasswordForm({
 
       if (result.error) {
         form.setError('root.serverError', {
-          message: result.error.message ?? 'Could not update password.',
+          message: getAuthErrorMessage(
+            result.error,
+            'security.couldNotUpdatePassword',
+          ),
           type: 'server',
         })
         return
@@ -51,11 +58,11 @@ export function UpdatePasswordForm({
 
       form.reset()
       await onPasswordChanged()
-      toast.success('Password updated')
+      toast.success(t('security.passwordUpdated'))
     }
     catch {
       form.setError('root.serverError', {
-        message: 'Could not update password.',
+        message: t('security.couldNotUpdatePassword'),
         type: 'server',
       })
     }
@@ -73,7 +80,7 @@ export function UpdatePasswordForm({
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
               <FieldLabel htmlFor="settings-current-password">
-                Current password
+                {t('settings.currentPassword')}
               </FieldLabel>
               <Input
                 {...field}
@@ -83,7 +90,7 @@ export function UpdatePasswordForm({
                 aria-invalid={fieldState.invalid}
               />
               {fieldState.invalid && (
-                <FieldError errors={[fieldState.error]} />
+                <LocalizedFieldError error={fieldState.error} />
               )}
             </Field>
           )}
@@ -94,7 +101,7 @@ export function UpdatePasswordForm({
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
               <FieldLabel htmlFor="settings-new-password">
-                New password
+                {t('settings.newPassword')}
               </FieldLabel>
               <Input
                 {...field}
@@ -104,7 +111,7 @@ export function UpdatePasswordForm({
                 aria-invalid={fieldState.invalid}
               />
               {fieldState.invalid && (
-                <FieldError errors={[fieldState.error]} />
+                <LocalizedFieldError error={fieldState.error} />
               )}
             </Field>
           )}
@@ -116,7 +123,7 @@ export function UpdatePasswordForm({
         </FieldError>
       )}
       <Button type="submit" disabled={isSubmitting}>
-        {isSubmitting ? 'Updating...' : 'Update password'}
+        {isSubmitting ? t('security.updatingPassword') : t('security.updatePassword')}
       </Button>
     </form>
   )

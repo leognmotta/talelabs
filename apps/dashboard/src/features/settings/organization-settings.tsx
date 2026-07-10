@@ -21,7 +21,10 @@ import { Skeleton } from '@talelabs/ui/components/skeleton'
 import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useMemo } from 'react'
 import { Controller, useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
+import { LocalizedFieldError } from '../../shared/components/localized-field-error'
+import { getApiErrorMessage } from '../../shared/lib/api-error'
 import { slugify } from '../../shared/lib/slugify'
 import { organizationSettingsSchema } from './settings-schemas'
 import { getInitials } from './settings-utils'
@@ -31,6 +34,7 @@ export function OrganizationSettings({
 }: {
   activeOrganizationId: string | null
 }) {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const organizationsQuery = useListOrganizations()
   const activeOrganization = useMemo(
@@ -53,7 +57,7 @@ export function OrganizationSettings({
     reset,
   } = form
   const initials = getInitials(
-    activeOrganization?.name ?? 'Organization',
+    activeOrganization?.name ?? t('settings.organization'),
     activeOrganization?.slug ?? '',
   )
 
@@ -82,7 +86,7 @@ export function OrganizationSettings({
 
     if (!slug) {
       form.setError('slug', {
-        message: 'Organization slug is required.',
+        message: 'validation.organizationSlugRequired',
         type: 'manual',
       })
       return
@@ -106,12 +110,13 @@ export function OrganizationSettings({
         name: result.organization.name,
         slug: result.organization.slug,
       })
-      toast.success('Organization updated')
+      toast.success(t('organizations.updated'))
     }
     catch (caughtError) {
-      const message = caughtError instanceof Error
-        ? caughtError.message
-        : 'Could not update organization.'
+      const message = getApiErrorMessage(
+        caughtError,
+        'organizations.couldNotUpdate',
+      )
       form.setError('root.serverError', {
         message,
         type: 'server',
@@ -122,7 +127,7 @@ export function OrganizationSettings({
   return (
     <div className="mx-auto flex max-w-2xl flex-col">
       <header className="pb-4">
-        <h2 className="text-lg font-semibold">Organization</h2>
+        <h2 className="text-lg font-semibold">{t('settings.organization')}</h2>
       </header>
       <Separator />
       {organizationsQuery.isLoading && !activeOrganization && (
@@ -133,7 +138,7 @@ export function OrganizationSettings({
       )}
       {!organizationsQuery.isLoading && !activeOrganization && (
         <p className="py-5 text-sm text-muted-foreground">
-          No active organization.
+          {t('organizations.noActive')}
         </p>
       )}
       {activeOrganization && (
@@ -159,7 +164,7 @@ export function OrganizationSettings({
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor="settings-organization-name">
-                    Name
+                    {t('common.name')}
                   </FieldLabel>
                   <Input
                     {...field}
@@ -167,7 +172,7 @@ export function OrganizationSettings({
                     aria-invalid={fieldState.invalid}
                   />
                   {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
+                    <LocalizedFieldError error={fieldState.error} />
                   )}
                 </Field>
               )}
@@ -178,7 +183,7 @@ export function OrganizationSettings({
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor="settings-organization-slug">
-                    Slug
+                    {t('organizations.slug')}
                   </FieldLabel>
                   <Input
                     {...field}
@@ -189,10 +194,10 @@ export function OrganizationSettings({
                     }}
                   />
                   <FieldDescription>
-                    Used in organization URLs and invite links.
+                    {t('organizations.slugDescription')}
                   </FieldDescription>
                   {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
+                    <LocalizedFieldError error={fieldState.error} />
                   )}
                 </Field>
               )}
@@ -203,7 +208,7 @@ export function OrganizationSettings({
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor="settings-organization-logo">
-                    Logo URL
+                    {t('organizations.logoUrl')}
                   </FieldLabel>
                   <Input
                     {...field}
@@ -212,7 +217,7 @@ export function OrganizationSettings({
                     placeholder="https://example.com/logo.png"
                   />
                   {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
+                    <LocalizedFieldError error={fieldState.error} />
                   )}
                 </Field>
               )}
@@ -225,7 +230,7 @@ export function OrganizationSettings({
           )}
           <div className="flex justify-end">
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Saving...' : 'Save organization'}
+              {isSubmitting ? t('common.saving') : t('organizations.save')}
             </Button>
           </div>
         </form>

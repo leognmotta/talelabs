@@ -18,6 +18,7 @@ import {
 } from '@talelabs/ui/components/field'
 import { Separator } from '@talelabs/ui/components/separator'
 import { Switch } from '@talelabs/ui/components/switch'
+import { useTranslation } from 'react-i18next'
 
 export function CookiePreferencesDialog({
   onOpenChange,
@@ -32,28 +33,28 @@ export function CookiePreferencesDialog({
   open: boolean
   preferences: CookiePreferences
 }) {
+  const { t } = useTranslation()
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Cookie Preferences</DialogTitle>
+          <DialogTitle>{t('cookies.title')}</DialogTitle>
           <DialogDescription>
-            Manage how TaleLabs uses cookies and similar technologies. Essential
-            cookies are always active.
+            {t('cookies.description')}
           </DialogDescription>
         </DialogHeader>
 
         <FieldGroup className="gap-4">
           <Field orientation="horizontal">
             <FieldContent>
-              <FieldTitle>Essential</FieldTitle>
+              <FieldTitle>{t('cookies.essential')}</FieldTitle>
               <FieldDescription>
-                Required for TaleLabs to function. Handles authentication,
-                security, and core product features.
+                {t('cookies.essentialDescription')}
               </FieldDescription>
             </FieldContent>
             <Switch
-              aria-label="Essential cookies"
+              aria-label={t('cookies.essentialAria')}
               checked
               disabled
             />
@@ -63,14 +64,13 @@ export function CookiePreferencesDialog({
 
           <Field orientation="horizontal">
             <FieldContent>
-              <FieldTitle>Analytics</FieldTitle>
+              <FieldTitle>{t('cookies.analytics')}</FieldTitle>
               <FieldDescription>
-                Helps us understand how you use TaleLabs so we can improve the
-                product. This data is aggregated and not used for advertising.
+                {t('cookies.analyticsDescription')}
               </FieldDescription>
             </FieldContent>
             <Switch
-              aria-label="Analytics cookies"
+              aria-label={t('cookies.analyticsAria')}
               checked={preferences.analytics}
               onCheckedChange={analytics => onPreferencesChange({
                 ...preferences,
@@ -83,14 +83,13 @@ export function CookiePreferencesDialog({
 
           <Field orientation="horizontal">
             <FieldContent>
-              <FieldTitle>Marketing</FieldTitle>
+              <FieldTitle>{t('cookies.marketing')}</FieldTitle>
               <FieldDescription>
-                Allows us to measure campaign effectiveness and show relevant
-                content across other platforms.
+                {t('cookies.marketingDescription')}
               </FieldDescription>
             </FieldContent>
             <Switch
-              aria-label="Marketing cookies"
+              aria-label={t('cookies.marketingAria')}
               checked={preferences.marketing}
               onCheckedChange={marketing => onPreferencesChange({
                 ...preferences,
@@ -102,7 +101,7 @@ export function CookiePreferencesDialog({
 
         <DialogFooter>
           <Button type="button" onClick={onSave}>
-            Save Preferences
+            {t('cookies.save')}
           </Button>
         </DialogFooter>
       </DialogContent>

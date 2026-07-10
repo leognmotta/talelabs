@@ -26,11 +26,14 @@ import {
 import { Separator } from '@talelabs/ui/components/separator'
 import { useQueryClient } from '@tanstack/react-query'
 import { Controller, useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { z } from 'zod'
+import { LocalizedFieldError } from '../../shared/components/localized-field-error'
+import { getApiErrorMessage } from '../../shared/lib/api-error'
 
 const invitationSchema = z.object({
-  email: z.string().trim().email('Enter a valid email.'),
+  email: z.string().trim().email({ error: 'validation.email' }),
   role: z.enum(['admin', 'member']),
 })
 
@@ -41,6 +44,7 @@ export function InvitationsPanel({
 }: {
   organizationId: string | null
 }) {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const form = useForm<InvitationFormValues>({
     resolver: zodResolver(invitationSchema),
@@ -86,12 +90,13 @@ export function InvitationsPanel({
         queryKey: listOrganizationInvitationsQueryKey({ organizationId }),
       })
       await navigator.clipboard?.writeText(result.invitation.inviteUrl)
-      toast.success('Invitation URL copied')
+      toast.success(t('team.invitationCopied'))
     }
     catch (caughtError) {
-      const message = caughtError instanceof Error
-        ? caughtError.message
-        : 'Could not create invitation.'
+      const message = getApiErrorMessage(
+        caughtError,
+        'team.couldNotCreateInvitation',
+      )
       form.setError('root.serverError', {
         message,
         type: 'server',
@@ -105,8 +110,8 @@ export function InvitationsPanel({
   return (
     <Card>
       <CardHeader>
-        <CardDescription>Invitations</CardDescription>
-        <CardTitle>Invite users</CardTitle>
+        <CardDescription>{t('team.invitations')}</CardDescription>
+        <CardTitle>{t('team.invite')}</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-5">
         <form
@@ -119,7 +124,7 @@ export function InvitationsPanel({
               control={control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="invite-email">Email</FieldLabel>
+                  <FieldLabel htmlFor="invite-email">{t('common.email')}</FieldLabel>
                   <Input
                     {...field}
                     id="invite-email"
@@ -128,7 +133,7 @@ export function InvitationsPanel({
                     aria-invalid={fieldState.invalid}
                   />
                   {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
+                    <LocalizedFieldError error={fieldState.error} />
                   )}
                 </Field>
               )}
@@ -138,7 +143,7 @@ export function InvitationsPanel({
               control={control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="invite-role">Role</FieldLabel>
+                  <FieldLabel htmlFor="invite-role">{t('common.role')}</FieldLabel>
                   <NativeSelect
                     id="invite-role"
                     value={field.value}
@@ -150,11 +155,11 @@ export function InvitationsPanel({
                     }}
                     aria-invalid={fieldState.invalid}
                   >
-                    <NativeSelectOption value="member">Member</NativeSelectOption>
-                    <NativeSelectOption value="admin">Admin</NativeSelectOption>
+                    <NativeSelectOption value="member">{t('common.member')}</NativeSelectOption>
+                    <NativeSelectOption value="admin">{t('common.admin')}</NativeSelectOption>
                   </NativeSelect>
                   {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
+                    <LocalizedFieldError error={fieldState.error} />
                   )}
                 </Field>
               )}
@@ -166,7 +171,7 @@ export function InvitationsPanel({
             </FieldError>
           )}
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Generating...' : 'Generate invite URL'}
+            {isSubmitting ? t('team.generating') : t('team.generateUrl')}
           </Button>
         </form>
 
@@ -175,12 +180,12 @@ export function InvitationsPanel({
         <div className="flex flex-col gap-3">
           {invitationsQuery.isError && (
             <p className="text-sm text-muted-foreground">
-              Organization admins can generate and view invitations.
+              {t('team.adminOnlyInvitations')}
             </p>
           )}
           {!invitationsQuery.isError && invitations.length === 0 && (
             <p className="text-sm text-muted-foreground">
-              No invitations have been generated.
+              {t('team.noGeneratedInvitations')}
             </p>
           )}
           {invitations.map(invitation => (
@@ -194,11 +199,11 @@ export function InvitationsPanel({
                 <div className="min-w-0">
                   <p className="truncate text-sm font-medium">{invitation.email}</p>
                   <p className="text-xs text-muted-foreground">
-                    {invitation.role}
+                    {t(`team.${invitation.role}` as 'team.admin')}
                     {' '}
                     ·
                     {' '}
-                    {invitation.status}
+                    {t(`team.${invitation.status}` as 'team.pending')}
                   </p>
                 </div>
                 <Button
@@ -207,10 +212,10 @@ export function InvitationsPanel({
                   size="sm"
                   onClick={() => {
                     void navigator.clipboard?.writeText(invitation.inviteUrl)
-                    toast.success('Invitation URL copied')
+                    toast.success(t('team.invitationCopied'))
                   }}
                 >
-                  Copy URL
+                  {t('team.copyUrl')}
                 </Button>
               </div>
               <p className="truncate text-xs text-muted-foreground">

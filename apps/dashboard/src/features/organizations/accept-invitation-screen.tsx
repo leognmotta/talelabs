@@ -8,6 +8,7 @@ import {
   CardTitle,
 } from '@talelabs/ui/components/card'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Navigate, useNavigate, useSearchParams } from 'react-router'
 import { authClient } from '../auth/auth-client'
 
@@ -18,11 +19,12 @@ export function AcceptInvitationScreen({
   isSignedIn: boolean
   onAccepted: (organizationId: string) => Promise<void>
 }) {
+  const { t } = useTranslation()
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const token = searchParams.get('token')
   const [status, setStatus] = useState<'idle' | 'accepting' | 'accepted' | 'error'>('idle')
-  const [message, setMessage] = useState('Accepting invitation...')
+  const [messageKey, setMessageKey] = useState('invitations.accepting')
 
   useEffect(() => {
     if (!isSignedIn || !token || status !== 'idle')
@@ -37,7 +39,7 @@ export function AcceptInvitationScreen({
 
       if (result.error) {
         setStatus('error')
-        setMessage(result.error.message ?? 'Could not accept invitation.')
+        setMessageKey('invitations.couldNotAccept')
         return
       }
 
@@ -45,13 +47,13 @@ export function AcceptInvitationScreen({
 
       if (!organizationId) {
         setStatus('error')
-        setMessage('Invitation was accepted, but no organization was returned.')
+        setMessageKey('invitations.organizationMissing')
         return
       }
 
       await onAccepted(organizationId)
       setStatus('accepted')
-      setMessage('Invitation accepted.')
+      setMessageKey('invitations.success')
     }
 
     void acceptInvitation()
@@ -69,11 +71,11 @@ export function AcceptInvitationScreen({
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardDescription>TaleLabs</CardDescription>
-          <CardTitle>Organization invitation</CardTitle>
+          <CardTitle>{t('invitations.title')}</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">
-            {token ? message : 'Invitation token is missing.'}
+            {token ? t(messageKey as 'invitations.accepting') : t('invitations.invalid')}
           </p>
         </CardContent>
         <CardFooter>
@@ -82,7 +84,9 @@ export function AcceptInvitationScreen({
             disabled={status === 'accepting'}
             onClick={() => navigate('/')}
           >
-            {status === 'accepted' ? 'Continue' : 'Go to dashboard'}
+            {status === 'accepted'
+              ? t('invitations.continue')
+              : t('invitations.goToDashboard')}
           </Button>
         </CardFooter>
       </Card>

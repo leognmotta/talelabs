@@ -12,7 +12,9 @@ import {
 import { Input } from '@talelabs/ui/components/input'
 import { Separator } from '@talelabs/ui/components/separator'
 import { Controller, useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
+import { LocalizedFieldError } from '../../shared/components/localized-field-error'
 import { authClient } from '../auth/auth-client'
 import { profileSchema } from './settings-schemas'
 
@@ -27,6 +29,7 @@ export function ProfileSettings({
   name: string
   onProfileUpdated: () => Promise<void>
 }) {
+  const { t } = useTranslation()
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
@@ -47,7 +50,7 @@ export function ProfileSettings({
 
       if (result.error) {
         form.setError('root.serverError', {
-          message: result.error.message ?? 'Could not update profile.',
+          message: t('profile.couldNotUpdate'),
           type: 'server',
         })
         return
@@ -55,11 +58,11 @@ export function ProfileSettings({
 
       form.reset({ name: nextName })
       await onProfileUpdated()
-      toast.success('Profile updated')
+      toast.success(t('profile.updated'))
     }
     catch {
       form.setError('root.serverError', {
-        message: 'Could not update profile.',
+        message: t('profile.couldNotUpdate'),
         type: 'server',
       })
     }
@@ -68,7 +71,7 @@ export function ProfileSettings({
   return (
     <div className="mx-auto flex max-w-2xl flex-col">
       <header className="pb-4">
-        <h2 className="text-lg font-semibold">Profile</h2>
+        <h2 className="text-lg font-semibold">{t('settings.profile')}</h2>
       </header>
       <Separator />
       <form
@@ -90,20 +93,20 @@ export function ProfileSettings({
             control={control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="settings-profile-name">Name</FieldLabel>
+                <FieldLabel htmlFor="settings-profile-name">{t('common.name')}</FieldLabel>
                 <Input
                   {...field}
                   id="settings-profile-name"
                   aria-invalid={fieldState.invalid}
                 />
                 {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
+                  <LocalizedFieldError error={fieldState.error} />
                 )}
               </Field>
             )}
           />
           <Field>
-            <FieldLabel htmlFor="settings-profile-email">Email</FieldLabel>
+            <FieldLabel htmlFor="settings-profile-email">{t('common.email')}</FieldLabel>
             <Input id="settings-profile-email" value={email} disabled />
           </Field>
         </FieldGroup>
@@ -114,7 +117,7 @@ export function ProfileSettings({
         )}
         <div className="flex justify-end">
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Saving...' : 'Save profile'}
+            {isSubmitting ? t('common.saving') : t('profile.save')}
           </Button>
         </div>
       </form>

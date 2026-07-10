@@ -19,7 +19,10 @@ import {
 } from '@talelabs/ui/components/native-select'
 import { useQueryClient } from '@tanstack/react-query'
 import { Controller, useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
+import { LocalizedFieldError } from '../../shared/components/localized-field-error'
+import { getApiErrorMessage } from '../../shared/lib/api-error'
 import { teamInvitationSchema } from './settings-schemas'
 
 export function TeamInvitationForm({
@@ -29,6 +32,7 @@ export function TeamInvitationForm({
   onInvitationCreated: () => void
   organizationId: string
 }) {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const form = useForm<TeamInvitationFormValues>({
     resolver: zodResolver(teamInvitationSchema),
@@ -62,13 +66,14 @@ export function TeamInvitationForm({
         queryKey: listOrganizationInvitationsQueryKey({ organizationId }),
       })
       await navigator.clipboard?.writeText(result.invitation.inviteUrl)
-      toast.success('Invitation URL copied')
+      toast.success(t('team.invitationCopied'))
       onInvitationCreated()
     }
     catch (caughtError) {
-      const message = caughtError instanceof Error
-        ? caughtError.message
-        : 'Could not create invitation.'
+      const message = getApiErrorMessage(
+        caughtError,
+        'team.couldNotCreateInvitation',
+      )
       form.setError('root.serverError', {
         message,
         type: 'server',
@@ -87,7 +92,7 @@ export function TeamInvitationForm({
           control={control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="team-invite-email">Email</FieldLabel>
+              <FieldLabel htmlFor="team-invite-email">{t('common.email')}</FieldLabel>
               <Input
                 {...field}
                 id="team-invite-email"
@@ -96,7 +101,7 @@ export function TeamInvitationForm({
                 aria-invalid={fieldState.invalid}
               />
               {fieldState.invalid && (
-                <FieldError errors={[fieldState.error]} />
+                <LocalizedFieldError error={fieldState.error} />
               )}
             </Field>
           )}
@@ -106,7 +111,7 @@ export function TeamInvitationForm({
           control={control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="team-invite-role">Role</FieldLabel>
+              <FieldLabel htmlFor="team-invite-role">{t('common.role')}</FieldLabel>
               <NativeSelect
                 id="team-invite-role"
                 value={field.value}
@@ -118,11 +123,11 @@ export function TeamInvitationForm({
                 }}
                 aria-invalid={fieldState.invalid}
               >
-                <NativeSelectOption value="member">Member</NativeSelectOption>
-                <NativeSelectOption value="admin">Admin</NativeSelectOption>
+                <NativeSelectOption value="member">{t('common.member')}</NativeSelectOption>
+                <NativeSelectOption value="admin">{t('common.admin')}</NativeSelectOption>
               </NativeSelect>
               {fieldState.invalid && (
-                <FieldError errors={[fieldState.error]} />
+                <LocalizedFieldError error={fieldState.error} />
               )}
             </Field>
           )}
@@ -135,7 +140,7 @@ export function TeamInvitationForm({
       )}
       <div className="mt-4 flex justify-end">
         <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? 'Sending...' : 'Send invite'}
+          {isSubmitting ? t('team.sending') : t('team.send')}
         </Button>
       </div>
     </form>

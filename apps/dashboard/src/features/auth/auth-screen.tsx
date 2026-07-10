@@ -10,21 +10,24 @@ import {
 import { Input } from '@talelabs/ui/components/input'
 import { Separator } from '@talelabs/ui/components/separator'
 import { useState } from 'react'
-
 import { Controller, useForm } from 'react-hook-form'
+
+import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
+import { LocalizedFieldError } from '../../shared/components/localized-field-error'
+import { getAuthErrorMessage } from '../../shared/lib/auth-error'
 import { authClient, signIn, signUp } from './auth-client'
 import { AuthModeLink } from './auth-mode-link'
 import { GoogleLogo } from './google-logo'
 
 const authBaseSchema = z.object({
-  email: z.string().trim().email('Enter a valid email.'),
+  email: z.string().trim().email({ error: 'validation.email' }),
   name: z.string(),
-  password: z.string().min(8, 'Password must be at least 8 characters.'),
+  password: z.string().min(8, { error: 'validation.passwordMinLength' }),
 })
 
 const signUpSchema = authBaseSchema.extend({
-  name: z.string().trim().min(1, 'Name is required.'),
+  name: z.string().trim().min(1, { error: 'validation.nameRequired' }),
 })
 
 type AuthFormValues = z.infer<typeof authBaseSchema>
@@ -36,11 +39,12 @@ export function AuthScreen({
   initialMode: AuthMode
   onAuthenticated: () => Promise<void>
 }) {
+  const { t } = useTranslation()
   const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false)
 
   const mode = initialMode
-  const title = mode === 'sign-in' ? 'Sign in' : 'Create account'
-  const submitLabel = mode === 'sign-in' ? 'Sign in' : 'Create account'
+  const title = mode === 'sign-in' ? t('auth.signIn') : t('auth.createAccount')
+  const submitLabel = mode === 'sign-in' ? t('auth.signIn') : t('auth.createAccount')
   const form = useForm<AuthFormValues>({
     resolver: zodResolver(mode === 'sign-in' ? authBaseSchema : signUpSchema),
     defaultValues: {
@@ -71,7 +75,7 @@ export function AuthScreen({
 
       if (result.error) {
         form.setError('root.serverError', {
-          message: result.error.message ?? 'Authentication failed',
+          message: getAuthErrorMessage(result.error, 'auth.authenticationFailed'),
           type: 'server',
         })
         return
@@ -81,7 +85,7 @@ export function AuthScreen({
     }
     catch {
       form.setError('root.serverError', {
-        message: 'Authentication failed',
+        message: t('auth.authenticationFailed'),
         type: 'server',
       })
     }
@@ -101,7 +105,7 @@ export function AuthScreen({
     if (result.error) {
       setIsGoogleSubmitting(false)
       form.setError('root.serverError', {
-        message: result.error.message ?? 'Could not continue with Google',
+        message: getAuthErrorMessage(result.error, 'auth.couldNotContinueWithGoogle'),
         type: 'server',
       })
     }
@@ -126,12 +130,11 @@ export function AuthScreen({
           <div className="flex flex-col gap-3">
             <p className="text-sm font-medium text-muted-foreground">TaleLabs</p>
             <h1 className="max-w-xl text-4xl font-semibold tracking-tight">
-              Organization-first workspace access
+              {t('auth.organizationFirstTitle')}
             </h1>
           </div>
           <p className="max-w-lg text-sm text-muted-foreground">
-            Personal workspaces are disabled. Accounts must be connected to an
-            organization before they can use the dashboard.
+            {t('auth.organizationFirstDescription')}
           </p>
         </div>
 
@@ -142,16 +145,16 @@ export function AuthScreen({
           <div className="flex flex-col gap-1">
             <h2 className="text-2xl font-semibold tracking-tight">{title}</h2>
             <p className="text-sm text-muted-foreground">
-              Use your work email to continue.
+              {t('auth.useWorkEmail')}
             </p>
           </div>
 
           <nav className="grid grid-cols-2 gap-2 rounded-lg bg-muted p-1">
             <AuthModeLink isActive={mode === 'sign-in'} to="/sign-in">
-              Sign in
+              {t('auth.signIn')}
             </AuthModeLink>
             <AuthModeLink isActive={mode === 'sign-up'} to="/sign-up">
-              Sign up
+              {t('auth.signUp')}
             </AuthModeLink>
           </nav>
 
@@ -163,12 +166,12 @@ export function AuthScreen({
             onClick={() => void handleGoogleSignIn()}
           >
             <GoogleLogo data-icon="inline-start" />
-            {isGoogleSubmitting ? 'Opening Google...' : 'Continue with Google'}
+            {isGoogleSubmitting ? t('auth.openingGoogle') : t('auth.continueWithGoogle')}
           </Button>
 
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
             <Separator className="flex-1" />
-            <span>Email</span>
+            <span>{t('common.email')}</span>
             <Separator className="flex-1" />
           </div>
 
@@ -178,7 +181,7 @@ export function AuthScreen({
               control={control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="auth-name">Name</FieldLabel>
+                  <FieldLabel htmlFor="auth-name">{t('common.name')}</FieldLabel>
                   <Input
                     {...field}
                     id="auth-name"
@@ -186,7 +189,7 @@ export function AuthScreen({
                     aria-invalid={fieldState.invalid}
                   />
                   {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
+                    <LocalizedFieldError error={fieldState.error} />
                   )}
                 </Field>
               )}
@@ -199,7 +202,7 @@ export function AuthScreen({
               control={control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="auth-email">Email</FieldLabel>
+                  <FieldLabel htmlFor="auth-email">{t('common.email')}</FieldLabel>
                   <Input
                     {...field}
                     id="auth-email"
@@ -208,7 +211,7 @@ export function AuthScreen({
                     aria-invalid={fieldState.invalid}
                   />
                   {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
+                    <LocalizedFieldError error={fieldState.error} />
                   )}
                 </Field>
               )}
@@ -219,7 +222,7 @@ export function AuthScreen({
               control={control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="auth-password">Password</FieldLabel>
+                  <FieldLabel htmlFor="auth-password">{t('common.password')}</FieldLabel>
                   <Input
                     {...field}
                     id="auth-password"
@@ -228,7 +231,7 @@ export function AuthScreen({
                     aria-invalid={fieldState.invalid}
                   />
                   {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
+                    <LocalizedFieldError error={fieldState.error} />
                   )}
                 </Field>
               )}
@@ -242,7 +245,7 @@ export function AuthScreen({
           )}
 
           <Button type="submit" size="lg" disabled={isSubmitting || isGoogleSubmitting}>
-            {isSubmitting ? 'Working...' : submitLabel}
+            {isSubmitting ? t('auth.working') : submitLabel}
           </Button>
         </form>
       </section>

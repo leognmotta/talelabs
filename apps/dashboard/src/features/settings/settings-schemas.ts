@@ -1,34 +1,34 @@
 import { z } from 'zod'
 
 export const profileSchema = z.object({
-  name: z.string().trim().min(1, 'Name is required.'),
+  name: z.string().trim().min(1, { error: 'validation.nameRequired' }),
 })
 
 export type ProfileFormValues = z.infer<typeof profileSchema>
 
 export const organizationSettingsSchema = z.object({
-  name: z.string().trim().min(1, 'Organization name is required.'),
-  slug: z.string().trim().min(1, 'Organization slug is required.'),
-  logo: z.string().trim().url('Enter a valid logo URL.').or(z.literal('')),
+  name: z.string().trim().min(1, { error: 'validation.organizationNameRequired' }),
+  slug: z.string().trim().min(1, { error: 'validation.organizationSlugRequired' }),
+  logo: z.string().trim().url({ error: 'validation.logoUrl' }).or(z.literal('')),
 })
 
 export type OrganizationSettingsFormValues = z.infer<typeof organizationSettingsSchema>
 
 export const updatePasswordSchema = z.object({
-  currentPassword: z.string().min(1, 'Current password is required.'),
-  newPassword: z.string().min(8, 'Password must be at least 8 characters.'),
+  currentPassword: z.string().min(1, { error: 'validation.passwordCurrentRequired' }),
+  newPassword: z.string().min(8, { error: 'validation.passwordMinLength' }),
 })
 
 export type UpdatePasswordFormValues = z.infer<typeof updatePasswordSchema>
 
 export const createPasswordSchema = z.object({
-  newPassword: z.string().min(8, 'Password must be at least 8 characters.'),
+  newPassword: z.string().min(8, { error: 'validation.passwordMinLength' }),
 })
 
 export type CreatePasswordFormValues = z.infer<typeof createPasswordSchema>
 
 export const teamInvitationSchema = z.object({
-  email: z.string().trim().email('Enter a valid email.'),
+  email: z.string().trim().email({ error: 'validation.email' }),
   role: z.enum(['admin', 'member']),
 })
 

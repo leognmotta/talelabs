@@ -14,22 +14,22 @@ import {
 
 export const settingsNavigation: {
   icon: typeof IconSettings
-  label: string
+  labelKey: `settings.${SettingsTab}`
   value: SettingsTab
 }[] = [
-  { icon: IconSettings, label: 'General', value: 'general' },
-  { icon: IconBuilding, label: 'Organization', value: 'organization' },
-  { icon: IconUserCircle, label: 'Profile', value: 'profile' },
-  { icon: IconShieldLock, label: 'Security', value: 'security' },
-  { icon: IconUsersGroup, label: 'Team', value: 'team' },
+  { icon: IconSettings, labelKey: 'settings.general', value: 'general' },
+  { icon: IconBuilding, labelKey: 'settings.organization', value: 'organization' },
+  { icon: IconUserCircle, labelKey: 'settings.profile', value: 'profile' },
+  { icon: IconShieldLock, labelKey: 'settings.security', value: 'security' },
+  { icon: IconUsersGroup, labelKey: 'settings.team', value: 'team' },
 ]
 
 export const themeOptions: {
   icon: typeof IconSun
-  label: string
+  labelKey: 'settings.dark' | 'settings.light' | 'settings.system'
   value: ThemePreference
 }[] = [
-  { icon: IconSun, label: 'Light', value: 'light' },
-  { icon: IconMoon, label: 'Dark', value: 'dark' },
-  { icon: IconDeviceDesktop, label: 'System', value: 'system' },
+  { icon: IconSun, labelKey: 'settings.light', value: 'light' },
+  { icon: IconMoon, labelKey: 'settings.dark', value: 'dark' },
+  { icon: IconDeviceDesktop, labelKey: 'settings.system', value: 'system' },
 ]

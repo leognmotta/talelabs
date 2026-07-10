@@ -14,6 +14,7 @@ import {
   SidebarHeader,
 } from '@talelabs/ui/components/sidebar'
 
+import { useTranslation } from 'react-i18next'
 import { OrganizationSwitcher } from '../features/organizations/organization-switcher'
 import { NavMain } from './nav-main'
 import { NavUser } from './nav-user'
@@ -40,6 +41,8 @@ export function AppSidebar({
   onSignOut: () => Promise<void>
   onSwitchOrganization: (organizationId: string) => Promise<string | null>
 }) {
+  const { t } = useTranslation()
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
@@ -54,17 +57,17 @@ export function AppSidebar({
         <NavMain
           items={[
             {
-              title: 'Assets',
+              title: t('navigation.assets'),
               url: '/assets',
               icon: <IconArchive />,
             },
             {
-              title: 'Flows',
+              title: t('navigation.flows'),
               url: '/flows',
               icon: <IconGitBranch />,
             },
             {
-              title: 'Elements',
+              title: t('navigation.elements'),
               url: '/elements',
               icon: <IconComponents />,
             },
@@ -74,8 +77,8 @@ export function AppSidebar({
       <SidebarFooter>
         <NavUser
           user={{
-            name: name || 'TaleLabs user',
-            email: email || 'Workspace member',
+            name: name || t('common.talelabsUser'),
+            email: email || t('common.workspaceMember'),
           }}
           onOpenInviteMemberSettings={onOpenInviteMemberSettings}
           onOpenSettings={onOpenSettings}

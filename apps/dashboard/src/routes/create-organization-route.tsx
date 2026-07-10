@@ -1,6 +1,7 @@
 import type { ComponentType } from 'react'
 import type { OrganizationStatus } from '../shared/types/auth'
 
+import { useTranslation } from 'react-i18next'
 import { Navigate } from 'react-router'
 
 import { WorkspaceState } from '../features/organizations/workspace-state'
@@ -24,11 +25,13 @@ export function CreateOrganizationRoute({
     onSignOut: () => Promise<void>
   }>
 }) {
+  const { t } = useTranslation()
+
   if (!isSignedIn)
     return <Navigate to="/sign-in" replace />
 
   if (!hasCheckedOrganization)
-    return <SplashScreen message="Opening your workspace" />
+    return <SplashScreen message={t('workspace.opening')} />
 
   if (organizationStatus === 'ready')
     return <Navigate to="/" replace />
@@ -36,7 +39,7 @@ export function CreateOrganizationRoute({
   if (organizationStatus !== 'missing') {
     return (
       <WorkspaceState
-        message="Checking organization access..."
+        message={t('workspace.checkingAccess')}
         status={organizationStatus}
         onSignOut={onSignOut}
       />

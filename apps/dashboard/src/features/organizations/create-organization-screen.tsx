@@ -8,13 +8,15 @@ import {
 } from '@talelabs/ui/components/field'
 import { Input } from '@talelabs/ui/components/input'
 import { Controller, useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
+import { LocalizedFieldError } from '../../shared/components/localized-field-error'
 
 import { slugify } from '../../shared/lib/slugify'
 
 const createOrganizationSchema = z.object({
-  name: z.string().trim().min(1, 'Enter an organization name.'),
-  slug: z.string().trim().min(1, 'Enter a workspace slug.'),
+  name: z.string().trim().min(1, { error: 'validation.organizationNameRequired' }),
+  slug: z.string().trim().min(1, { error: 'validation.workspaceSlugRequired' }),
 })
 
 type CreateOrganizationFormValues = z.infer<typeof createOrganizationSchema>
@@ -26,6 +28,7 @@ export function CreateOrganizationScreen({
   onCreateOrganization: (name: string, slug: string) => Promise<string | null>
   onSignOut: () => Promise<void>
 }) {
+  const { t } = useTranslation()
   const form = useForm<CreateOrganizationFormValues>({
     resolver: zodResolver(createOrganizationSchema),
     defaultValues: {
@@ -56,7 +59,7 @@ export function CreateOrganizationScreen({
     }
     catch {
       form.setError('root.serverError', {
-        message: 'Could not create organization.',
+        message: t('organizations.couldNotCreate'),
         type: 'server',
       })
     }
@@ -80,11 +83,10 @@ export function CreateOrganizationScreen({
           <div className="flex flex-col gap-2">
             <p className="text-sm font-medium text-muted-foreground">TaleLabs</p>
             <h1 className="text-3xl font-semibold tracking-tight">
-              Create your organization
+              {t('organizations.title')}
             </h1>
             <p className="text-sm text-muted-foreground">
-              Your account is ready. Create a workspace to keep members and
-              data scoped to an organization.
+              {t('organizations.description')}
             </p>
           </div>
 
@@ -95,7 +97,7 @@ export function CreateOrganizationScreen({
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor="create-organization-name">
-                    Organization name
+                    {t('organizations.name')}
                   </FieldLabel>
                   <Input
                     {...field}
@@ -111,7 +113,7 @@ export function CreateOrganizationScreen({
                     }}
                   />
                   {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
+                    <LocalizedFieldError error={fieldState.error} />
                   )}
                 </Field>
               )}
@@ -123,7 +125,7 @@ export function CreateOrganizationScreen({
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor="create-organization-slug">
-                    Workspace slug
+                    {t('organizations.workspaceSlug')}
                   </FieldLabel>
                   <Input
                     {...field}
@@ -135,7 +137,7 @@ export function CreateOrganizationScreen({
                     }}
                   />
                   {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
+                    <LocalizedFieldError error={fieldState.error} />
                   )}
                 </Field>
               )}
@@ -149,11 +151,11 @@ export function CreateOrganizationScreen({
           )}
 
           <Button type="submit" size="lg" disabled={isSubmitting}>
-            {isSubmitting ? 'Creating...' : 'Create organization'}
+            {isSubmitting ? t('organizations.creating') : t('organizations.create')}
           </Button>
 
           <Button type="button" variant="ghost" onClick={onSignOut}>
-            Sign out
+            {t('common.signOut')}
           </Button>
         </form>
       </section>

@@ -40,8 +40,10 @@ import {
 import { useQueryClient } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { z } from 'zod'
+import { LocalizedFieldError } from '../../shared/components/localized-field-error'
 
 import { slugify } from '../../shared/lib/slugify'
 
@@ -53,8 +55,8 @@ interface OrganizationSummary {
 }
 
 const createOrganizationSchema = z.object({
-  name: z.string().trim().min(1, 'Enter an organization name.'),
-  slug: z.string().trim().min(1, 'Enter a workspace slug.'),
+  name: z.string().trim().min(1, { error: 'validation.organizationNameRequired' }),
+  slug: z.string().trim().min(1, { error: 'validation.workspaceSlugRequired' }),
 })
 
 type CreateOrganizationFormValues = z.infer<typeof createOrganizationSchema>
@@ -70,6 +72,7 @@ export function OrganizationSwitcher({
   onDropdownOpenChange: (open: boolean) => void
   onSwitchOrganization: (organizationId: string) => Promise<string | null>
 }) {
+  const { t } = useTranslation()
   const { isMobile } = useSidebar()
   const queryClient = useQueryClient()
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
@@ -136,7 +139,7 @@ export function OrganizationSwitcher({
     }
     catch {
       createOrganizationForm.setError('root.serverError', {
-        message: 'Could not create organization.',
+        message: t('organizations.couldNotCreate'),
         type: 'server',
       })
     }
@@ -171,8 +174,8 @@ export function OrganizationSwitcher({
                 </span>
                 <span className="truncate text-xs">
                   {activeOrganization?.isSystemAdminAccess
-                    ? 'System admin access'
-                    : activeOrganization?.slug ?? 'Select organization'}
+                    ? t('organizations.systemAdminAccess')
+                    : activeOrganization?.slug ?? t('organizations.select')}
                 </span>
               </div>
               <IconSelector className="ml-auto" />
@@ -185,11 +188,11 @@ export function OrganizationSwitcher({
             >
               <DropdownMenuGroup>
                 <DropdownMenuLabel className="text-xs text-muted-foreground">
-                  Organizations
+                  {t('organizations.yourOrganizations')}
                 </DropdownMenuLabel>
                 {organizationsQuery.error && (
                   <DropdownMenuItem disabled className="gap-2 p-2">
-                    Could not load organizations.
+                    {t('organizations.couldNotLoad')}
                   </DropdownMenuItem>
                 )}
                 {organizations.map((organization, index) => (
@@ -207,11 +210,11 @@ export function OrganizationSwitcher({
                     </div>
                     <span className="truncate">{organization.name}</span>
                     {organization.id === activeOrganizationId && (
-                      <DropdownMenuShortcut>Active</DropdownMenuShortcut>
+                      <DropdownMenuShortcut>{t('organizations.active')}</DropdownMenuShortcut>
                     )}
                     {organization.id !== activeOrganizationId
                       && organization.isSystemAdminAccess && (
-                      <DropdownMenuShortcut>System</DropdownMenuShortcut>
+                      <DropdownMenuShortcut>{t('organizations.system')}</DropdownMenuShortcut>
                     )}
                     {organization.id !== activeOrganizationId
                       && !organization.isSystemAdminAccess && (
@@ -236,7 +239,7 @@ export function OrganizationSwitcher({
                     <IconPlus />
                   </div>
                   <div className="font-medium text-muted-foreground">
-                    Create organization
+                    {t('organizations.create')}
                   </div>
                 </DropdownMenuItem>
               </DropdownMenuGroup>
@@ -261,9 +264,9 @@ export function OrganizationSwitcher({
             onSubmit={createOrganizationForm.handleSubmit(handleCreateOrganization)}
           >
             <DialogHeader>
-              <DialogTitle>Create organization</DialogTitle>
+              <DialogTitle>{t('organizations.create')}</DialogTitle>
               <DialogDescription>
-                Create a workspace for this account before using TaleLabs.
+                {t('organizations.createDescription')}
               </DialogDescription>
             </DialogHeader>
             <FieldGroup>
@@ -273,7 +276,7 @@ export function OrganizationSwitcher({
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
                     <FieldLabel htmlFor="organization-name">
-                      Organization name
+                      {t('organizations.name')}
                     </FieldLabel>
                     <Input
                       {...field}
@@ -289,7 +292,7 @@ export function OrganizationSwitcher({
                       }}
                     />
                     {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
+                      <LocalizedFieldError error={fieldState.error} />
                     )}
                   </Field>
                 )}
@@ -300,7 +303,7 @@ export function OrganizationSwitcher({
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
                     <FieldLabel htmlFor="organization-slug">
-                      Workspace slug
+                      {t('organizations.workspaceSlug')}
                     </FieldLabel>
                     <Input
                       {...field}
@@ -312,7 +315,7 @@ export function OrganizationSwitcher({
                       }}
                     />
                     {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
+                      <LocalizedFieldError error={fieldState.error} />
                     )}
                   </Field>
                 )}
@@ -325,7 +328,7 @@ export function OrganizationSwitcher({
             )}
             <DialogFooter>
               <Button type="submit" disabled={isCreating}>
-                {isCreating ? 'Creating...' : 'Create organization'}
+                {isCreating ? t('organizations.creating') : t('organizations.create')}
               </Button>
             </DialogFooter>
           </form>

@@ -10,7 +10,9 @@ import {
 } from '@talelabs/ui/components/field'
 import { Input } from '@talelabs/ui/components/input'
 import { Controller, useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
+import { LocalizedFieldError } from '../../shared/components/localized-field-error'
 import { getApiErrorMessage } from '../../shared/lib/api-error'
 import { createPasswordSchema } from './settings-schemas'
 
@@ -19,6 +21,7 @@ export function CreatePasswordForm({
 }: {
   onPasswordChanged: () => Promise<void>
 }) {
+  const { t } = useTranslation()
   const form = useForm<CreatePasswordFormValues>({
     resolver: zodResolver(createPasswordSchema),
     defaultValues: {
@@ -42,12 +45,12 @@ export function CreatePasswordForm({
 
       form.reset()
       await onPasswordChanged()
-      toast.success('Password created')
+      toast.success(t('security.passwordCreated'))
     }
     catch (caughtError) {
       const message = getApiErrorMessage(
         caughtError,
-        'Could not create password.',
+        'security.couldNotCreatePassword',
       )
 
       form.setError('root.serverError', {
@@ -68,7 +71,7 @@ export function CreatePasswordForm({
         render={({ field, fieldState }) => (
           <Field data-invalid={fieldState.invalid}>
             <FieldLabel htmlFor="settings-create-password">
-              Password
+              {t('common.password')}
             </FieldLabel>
             <Input
               {...field}
@@ -78,7 +81,7 @@ export function CreatePasswordForm({
               aria-invalid={fieldState.invalid}
             />
             {fieldState.invalid && (
-              <FieldError errors={[fieldState.error]} />
+              <LocalizedFieldError error={fieldState.error} />
             )}
           </Field>
         )}
@@ -89,7 +92,7 @@ export function CreatePasswordForm({
         </FieldError>
       )}
       <Button type="submit" disabled={isSubmitting}>
-        {isSubmitting ? 'Creating...' : 'Create password'}
+        {isSubmitting ? t('security.creatingPassword') : t('security.createPassword')}
       </Button>
     </form>
   )

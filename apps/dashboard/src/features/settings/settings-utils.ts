@@ -1,17 +1,4 @@
-export type LanguagePreference = 'auto' | 'en' | 'pt-BR'
-
-export const languageStorageKey = 'talelabs_language'
-
-export function getInitialLanguagePreference(): LanguagePreference {
-  if (typeof window === 'undefined')
-    return 'auto'
-
-  const stored = window.localStorage.getItem(languageStorageKey)
-  if (stored === 'en' || stored === 'pt-BR' || stored === 'auto')
-    return stored
-
-  return 'auto'
-}
+import type { SupportedLocale } from '@talelabs/i18n'
 
 export function getInitials(name: string, email: string) {
   const source = name.trim() || email.trim()
@@ -25,7 +12,7 @@ export function getInitials(name: string, email: string) {
 
 export function getDeviceName(userAgent: string | null | undefined) {
   if (!userAgent)
-    return 'Unknown device'
+    return null
 
   if (/iphone/i.test(userAgent))
     return 'iPhone'
@@ -40,12 +27,12 @@ export function getDeviceName(userAgent: string | null | undefined) {
   if (/linux/i.test(userAgent))
     return 'Linux'
 
-  return 'Device'
+  return null
 }
 
 export function getBrowserName(userAgent: string | null | undefined) {
   if (!userAgent)
-    return 'Browser'
+    return null
 
   if (/edg\//i.test(userAgent))
     return 'Microsoft Edge'
@@ -56,11 +43,14 @@ export function getBrowserName(userAgent: string | null | undefined) {
   if (/safari/i.test(userAgent))
     return 'Safari'
 
-  return 'Browser'
+  return null
 }
 
-export function formatSessionDate(value: Date | string) {
-  return new Intl.DateTimeFormat(undefined, {
+export function formatSessionDate(
+  value: Date | string,
+  locale: SupportedLocale,
+) {
+  return new Intl.DateTimeFormat(locale, {
     dateStyle: 'medium',
     timeStyle: 'short',
   }).format(new Date(value))
