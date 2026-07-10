@@ -48,6 +48,15 @@ Execution rules that hold across all work:
 5. Costs (`creditCost`, `providerCostUsd`) are recorded on every generation job from day one; no balances or enforcement until the credit system ships.
 6. Credits and billing belong in account/header/billing UI, never the main creative navigation.
 
+## Acceptance review rules
+
+Automated tests are not an MVP acceptance requirement. Do not block a task or
+milestone review because tests are absent, incomplete, skipped, or failing unless
+the user explicitly restores testing as a requirement for that specific task.
+Acceptance reviews should focus on implementation correctness, executable
+behavior, builds, type safety, linting, generated contracts, focused smoke checks,
+and user-owned product QA.
+
 ## Internationalization rules
 
 TaleLabs is internationalized through `@talelabs/i18n` and `react-i18next`.
@@ -78,4 +87,4 @@ Rules that hold across all product work:
 7. API errors must keep stable machine-readable `code`, `field`, and `params` values. Clients translate known codes and may use the server message only as a fallback. Continue sending the resolved locale through `Accept-Language`.
 8. Default language selection follows the browser’s preferred locales, falls back from a region to a supported base language, and always falls back to `en` when unsupported. A saved explicit user preference overrides browser detection; “Auto-detect” restores browser-based selection.
 9. Use the resolved locale with `Intl` for dates, times, numbers, currencies, and plural-sensitive copy. Do not manually assemble locale-sensitive output.
-10. Before completing a feature, run the catalog check, relevant tests, type-checking, lint, and a production build to catch missing translations and lazy-loading failures.
+10. Before completing a feature, run the catalog check, type-checking, lint, and a production build to catch missing translations and lazy-loading failures.

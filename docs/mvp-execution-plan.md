@@ -86,8 +86,8 @@ For every implementation task:
 1. Read the source-of-truth documents and the relevant package `AGENTS.md` files.
 2. Inspect the current implementation and dirty worktree before editing.
 3. Implement only the task's stated scope.
-4. Add automated validation proportional to the change.
-5. Run the listed checks and any focused tests introduced by the task.
+4. Add implementation validation proportional to the change.
+5. Run the listed non-test checks and focused smoke checks required by the task.
 6. Review the diff for accidental scope expansion or generated-file mistakes.
 7. Update the database/API design documents only when implementation proves that an approved contract is impossible or incorrect.
 8. Report exactly what was verified and what remains for user QA.
@@ -101,10 +101,10 @@ The AI owns implementation and objective engineering verification. The user owns
 
 The AI must:
 
-- Run relevant tests, type checks, builds, API contract checks, and focused smoke checks.
+- Run relevant type checks, builds, API contract checks, and focused smoke checks.
 - Start the application when browser testing by the user is required.
 - Provide the local URL and a concise handoff checklist.
-- Report untested failure modes and external-provider limitations.
+- Report unverified failure modes and external-provider limitations.
 - Stop after engineering verification instead of self-approving the product experience.
 
 The AI must not:
@@ -129,7 +129,7 @@ AI: backend contract
 An AI-owned task is ready for user QA only when:
 
 - Its acceptance criteria are satisfied.
-- Relevant builds, type checks, and tests pass.
+- Relevant builds, type checks, contract generation, and smoke checks pass.
 - Tenant-owned operations are scoped by `organizationId`.
 - Cross-tenant identifiers return tenant-safe `404` responses.
 - API changes are represented in OpenAPI.
@@ -155,11 +155,13 @@ browser console and network failures
 text overflow and incoherent overlap
 ```
 
+Automated tests are not an MVP acceptance requirement. Their absence or failure must not block a milestone acceptance review unless the user explicitly restores that requirement for a specific task. Reviews should focus on implementation correctness, executable behavior, builds, type safety, generated contracts, smoke checks, and user-owned QA.
+
 ## Milestones
 
 | Milestone               | Outcome                                                                                                                  |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| M0: Database foundation | The complete v2 schema migrates and its structural tenant/data guarantees are verified.                                  |
+| M0: Database foundation | The complete v2 schema migrates and its structural tenant/data guarantees are inspectable.                                 |
 | M1: API foundation      | Product routes have one tenant-safe Hono/OpenAPI/SDK foundation.                                                         |
 | M2: Assets              | Private uploads become durable, processed, searchable, organized, and reusable Assets.                                   |
 | M3: Elements            | Generic reusable context with typed data and role-based Asset kits works end to end.                                     |
@@ -225,30 +227,11 @@ npm run db:migrate
 npm run check-types -w @talelabs/db
 ```
 
-Also inspect PostgreSQL metadata for tables, indexes, FKs, and checks. Never test `down` against shared or production data.
-
-### E-002 - Add Database Contract And Tenant-Isolation Tests
-
-**Status:** Blocked by E-001
-
-**Scope**
-
-- Add a database integration-test harness using a disposable test database.
-- Create fixtures for two organizations and users.
-- Verify the source invariants, processing lifecycle, deletion lifecycle, graph same-flow constraints, tenant composite FKs, job/run relationships, and idempotency indexes.
-- Verify representative cross-organization inserts fail at the database boundary.
-- Keep tests focused on schema contracts; do not implement resource repositories yet.
-
-**Acceptance criteria**
-
-- Tests prove that tenant-owned relationships cannot cross organizations.
-- Invalid lifecycle/status/source combinations fail.
-- Same-flow and same-run composite FKs reject mismatches.
-- Tests clean up their data and cannot run accidentally against production.
+Also inspect PostgreSQL metadata for tables, indexes, FKs, and checks. Exercise `down` only against a disposable database, never against shared or production data.
 
 **M0 gate**
 
-The complete v2 schema exists, its structural guarantees are tested, and the database foundation is accepted before product API work begins.
+The complete v2 schema exists, migrates cleanly, and exposes the approved structural guarantees before product API work begins.
 
 ---
 
@@ -264,7 +247,6 @@ The complete v2 schema exists, its structural guarantees are tested, and the dat
 - Add shared cuid2, pagination, cursor, lifecycle, and error schemas required by the v2 API.
 - Implement the opaque cursor codec and sort/order mismatch validation.
 - Preserve the existing Hono route/schema/service/data boundaries.
-- Extend the composed-app test harness for authenticated organization-scoped routes.
 - Do not add a product CRUD endpoint yet.
 
 **Acceptance criteria**
@@ -277,7 +259,6 @@ The complete v2 schema exists, its structural guarantees are tested, and the dat
 **Checks**
 
 ```bash
-npm run test -w api
 npm run build -w api
 npm run sdk:generate
 npm run build -w @talelabs/sdk
@@ -394,7 +375,7 @@ npm run build -w @talelabs/storage
 - Implement stable cursor pagination, documented filters/sorts, tenant-safe signed URLs, and tombstone rendering.
 - Keep list responses lean and detail responses render-complete.
 - Expose processing and lifecycle states without exposing storage keys.
-- Regenerate the SDK and add integration tests.
+- Regenerate the SDK.
 
 ### E-015 - Implement Asset Lifecycle And Purge API
 
@@ -424,7 +405,7 @@ npm run build -w @talelabs/storage
 - Implement folder list/create/rename/move/delete.
 - Enforce cycle prevention, 32-level maximum depth, and 10,000-folder organization cap.
 - Preserve Assets when folders are deleted by moving them to root through FK behavior.
-- Add focused tenant and tree tests.
+- Verify tenant isolation and tree constraints through focused smoke checks.
 
 ### E-017A - Build Upload UI And Processing Feedback
 
@@ -473,13 +454,13 @@ Elements are generic reusable AI context. Do not restore separate Brand, Product
 - Keep React form components in the dashboard and server-only `buildContext` implementations out of the browser bundle.
 - Start with `character` and `product` types only.
 - Encode the approved role examples, including character appearance/expression/motion/voice and product packshot/detail/lifestyle/demonstration.
-- Add startup validation and registry unit tests.
+- Add startup validation for registry configuration.
 
 ### E-021 - Implement Elements CRUD API
 
 **Status:** Blocked by E-020 and E-003
 
-Implement list/create/detail/update/delete with registry-based data validation, immutable type, schema-version stamping/upcasting, preview metadata, usage counts, tenant isolation, OpenAPI, SDK generation, and integration tests.
+Implement list/create/detail/update/delete with registry-based data validation, immutable type, schema-version stamping/upcasting, preview metadata, usage counts, tenant isolation, OpenAPI, and SDK generation.
 
 ### E-022 - Implement Element Asset-Kit API
 
@@ -500,7 +481,7 @@ Implement list/create/detail/update/delete with registry-based data validation, 
 - Implement server-only `buildContext` for the initial Element types.
 - Return deterministic ordered candidate Assets and resolved text suitable for future job snapshots.
 - Implement the bounded `GET /elements/:id/usage` response.
-- Test multiple Elements, multiple Assets per role, exclusions, primary selection, and deleted/failed references.
+- Verify multiple Elements, multiple Assets per role, exclusions, primary selection, and deleted/failed references.
 
 ### E-024A - Build Element List And Data UI
 
@@ -539,13 +520,13 @@ Flows are the primary product surface. The first version is a manual visual crea
 - Define framework-neutral node schemas, schema versions, typed handles, cardinality, connection compatibility, and payload requirements.
 - Start with exactly `text`, `asset`, `element`, and `imageGeneration` nodes.
 - Keep React node components in the dashboard and server validation in shared/server-safe code.
-- Add registry tests for incompatible handles, missing payload references, and schema upcasting.
+- Add startup validation for incompatible handles, missing payload references, and schema upcasting.
 
 ### E-031 - Implement Flows CRUD API
 
 **Status:** Blocked by E-030 and E-003
 
-Implement Flow list/create/detail/update/delete, including viewport persistence, lean list responses, tenant isolation, OpenAPI/SDK generation, and integration tests. Do not implement graph history, sharing, Recipes, or collaboration.
+Implement Flow list/create/detail/update/delete, including viewport persistence, lean list responses, tenant isolation, and OpenAPI/SDK generation. Do not implement graph history, sharing, Recipes, or collaboration.
 
 ### E-032 - Implement Graph Read And Autosave Sync API
 
@@ -655,7 +636,7 @@ The first execution experience runs one selected node manually. It does not run 
 - Add one approved image-generation model behind a provider-independent adapter.
 - Normalize settings, context inputs, provider submission, polling/result handling, and safe errors.
 - Keep raw provider payloads in logs, never user-facing errors.
-- Add opt-in integration tests that require explicit credentials and spend approval.
+- Keep any real-provider smoke check opt-in and require explicit credentials and spend approval.
 - Do not add fallback providers or direct-provider contracts yet.
 
 ### E-044 - Persist Outputs And Expose Node Results
