@@ -13,6 +13,140 @@
   ],
   "components": {
     "schemas": {
+      "AssetLifecycle": {
+        "type": "string",
+        "enum": [
+          "live",
+          "archived",
+          "purging",
+          "purged"
+        ]
+      },
+      "AssetProcessingState": {
+        "type": "string",
+        "enum": [
+          "processing",
+          "ready",
+          "failed"
+        ]
+      },
+      "AssetSource": {
+        "type": "string",
+        "enum": [
+          "upload",
+          "generation"
+        ]
+      },
+      "AssetType": {
+        "type": "string",
+        "enum": [
+          "image",
+          "video",
+          "audio",
+          "document"
+        ]
+      },
+      "Cuid2": {
+        "type": "string",
+        "minLength": 2,
+        "maxLength": 32,
+        "pattern": "^[a-z][0-9a-z]+$",
+        "example": "tz4a98xxat96iws9zmbrgj3a"
+      },
+      "Cursor": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 2048,
+        "description": "Opaque cursor returned by a previous list response"
+      },
+      "JobStatus": {
+        "type": "string",
+        "enum": [
+          "pending",
+          "running",
+          "succeeded",
+          "failed",
+          "canceled"
+        ]
+      },
+      "MediaType": {
+        "type": "string",
+        "enum": [
+          "image",
+          "video",
+          "audio"
+        ]
+      },
+      "PaginationLimit": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 200,
+        "default": 50,
+        "example": 50
+      },
+      "PaginationQuery": {
+        "type": "object",
+        "properties": {
+          "cursor": {
+            "$ref": "#/components/schemas/Cursor"
+          },
+          "limit": {
+            "$ref": "#/components/schemas/PaginationLimit"
+          },
+          "order": {
+            "$ref": "#/components/schemas/SortOrder"
+          }
+        }
+      },
+      "SortOrder": {
+        "type": "string",
+        "enum": [
+          "asc",
+          "desc"
+        ],
+        "example": "desc"
+      },
+      "ProductErrorCode": {
+        "type": "string",
+        "enum": [
+          "validation_error",
+          "unauthenticated",
+          "active_organization_required",
+          "not_found",
+          "conflict",
+          "revision_conflict",
+          "invalid_state",
+          "unsupported_by_model",
+          "rate_limited",
+          "insufficient_credits",
+          "internal_error"
+        ]
+      },
+      "RunMode": {
+        "type": "string",
+        "enum": [
+          "node",
+          "downstream",
+          "all",
+          "tool"
+        ]
+      },
+      "RunStatus": {
+        "type": "string",
+        "enum": [
+          "pending",
+          "running",
+          "succeeded",
+          "partial",
+          "failed",
+          "canceled"
+        ]
+      },
+      "Timestamp": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2026-07-10T12:00:00.000Z"
+      },
       "HealthResponse": {
         "type": "object",
         "properties": {
