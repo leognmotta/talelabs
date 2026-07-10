@@ -27,6 +27,8 @@ Source-of-truth design documents:
 ```txt
 docs/talelabs-product-vision.md   = product direction and scope
 docs/db-design-planning-v2.md     = database schema (PostgreSQL, Kysely, camelCase)
+docs/api-design-planning-v2.md    = API contract for the base features
+docs/mvp-execution-plan.md        = phased MVP implementation order and acceptance gates
 docs/credits-planning.md          = credit system planning (Phase 2 — do not implement)
 ```
 
@@ -35,12 +37,11 @@ Deprecated documents — do not implement from these; they describe the retired 
 ```txt
 docs/db-design-planning.md
 docs/api-design-planning.md
-docs/mvp-execution-plan.md
 ```
 
 Execution rules that hold across all work:
 
-1. Run one selected generation node manually; whole-graph runs are designed ahead (`flowRuns`) but ship later.
+1. Every execution is a `flowRuns` row — the `flowRuns`/`flowRunNodes` tables are part of the **initial migration**, with every job belonging to a run from day one. Only the multi-node orchestration modes (`downstream`/`all`) and their parent orchestrator task ship later; the first product experience runs one selected generation node (mode `node`).
 2. Every successful generation output is persisted as a canonical Asset.
 3. Generation provenance is immutable — later edits to Flows, Elements, or Asset relationships never rewrite historical job inputs.
 4. Element and node type vocabularies live in code registries, not the database.

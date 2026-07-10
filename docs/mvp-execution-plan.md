@@ -1,152 +1,177 @@
-> **DEPRECATED — do not implement from this document.** It describes the retired Generate/Projects/Brands/Products/Characters architecture. Current sources of truth: `talelabs-product-vision.md`, `db-design-planning-v2.md`, `credits-planning.md`.
-
 # TaleLabs MVP Execution Plan
 
-This document turns the approved TaleLabs product, database, and API designs into small implementation sessions. It is an execution checklist, not a replacement for the source-of-truth design documents.
+This document turns the approved TaleLabs product, database, and API designs into small implementation sessions. It defines implementation order and acceptance gates; it does not replace the source-of-truth designs.
 
 Read these before starting any task:
 
 ```txt
 AGENTS.md
 docs/talelabs-product-vision.md
-docs/db-design-planning.md
-docs/api-design-planning.md
+docs/db-design-planning-v2.md
+docs/api-design-planning-v2.md
 docs/mvp-execution-plan.md
 ```
 
-## Goal
+`docs/credits-planning.md` is relevant only when the plan reaches billing and credits. Do not implement from the deprecated v1 database or API documents.
 
-Build and validate the first creative loop:
+## Objective
+
+Build and validate the first TaleLabs creative loop:
 
 ```txt
-Brands + Products + Characters
--> Generate
--> Assets
--> Projects
+Upload or find an Asset
+-> optionally create an Element
+-> create or open a Flow
+-> connect Text, Asset, Element, and Image Generation nodes
+-> run one selected generation node
+-> persist the output as an Asset
+-> reuse that output in the same or another Flow
 ```
 
-The implementation should progress through small, reviewable vertical slices. Each task should fit in one focused AI session, produce a testable result, and stop before pulling in the next task.
+The MVP proves this loop with image generation first. Video and audio generation reuse the same foundation after the image loop is reliable.
 
-## Current Scope
+## Product Scope
 
-The Phase 1 product navigation remains:
+The primary MVP navigation is:
 
 ```txt
-Generate
 Assets
-Projects
-Brands
-Products
-Characters
+Elements
+Flows
 ```
 
-Explicitly deferred:
+The implementation order is mandatory unless the user explicitly changes the product direction:
 
 ```txt
-credit wallets and balance enforcement
-subscriptions and Stripe billing
-public gallery UI
-boards
-workflows
-studio/editor
-agent
-voices as a standalone resource
-public API and MCP
-realtime generation subscriptions
-bulk asset operations
+1. Database foundation
+2. API foundation
+3. Assets and folders
+4. Elements
+5. Flows and graph editing
+6. Run one image-generation node
+7. Complete iteration and reliability
+8. Billing and credits in a separate productization phase
 ```
 
-Database seams for later features may exist, but deferred systems must not be implemented during the core-loop tasks.
+Explicitly deferred from the MVP:
+
+```txt
+video and audio generation nodes
+run downstream and run all
+automatic DAG execution
+Tools
+Recipes
+Storyboard
+simple Generate page
+collaboration and comments
+Flow version history
+triggers, schedules, and webhooks
+batch and iterator nodes
+editor or cuts
+public API and MCP
+public galleries and links
+tags and favorites
+projects
+credits, subscriptions, and Stripe billing
+```
+
+The initial database includes `flowRuns` and `flowRunNodes` because every execution belongs to a run from day one. That does not authorize implementing multi-node orchestration during the MVP.
 
 ## How To Execute A Task
 
-Use one task per AI session unless the task explicitly says otherwise.
+Use one task per AI session unless the task explicitly states otherwise.
 
-For every task:
+For every implementation task:
 
 1. Read the source-of-truth documents and the relevant package `AGENTS.md` files.
 2. Inspect the current implementation and dirty worktree before editing.
 3. Implement only the task's stated scope.
-4. Add validation proportional to the change.
-5. Run the listed checks.
-6. Review the diff for accidental scope expansion.
-7. Run objective implementation verification when applicable: automated tests, type checks, builds, API checks, and a minimal functional smoke check.
-8. Record any design decision that changes the API or database documents.
+4. Add automated validation proportional to the change.
+5. Run the listed checks and any focused tests introduced by the task.
+6. Review the diff for accidental scope expansion or generated-file mistakes.
+7. Update the database/API design documents only when implementation proves that an approved contract is impossible or incorrect.
+8. Report exactly what was verified and what remains for user QA.
 9. Stop when the acceptance criteria are met.
 
-### Ownership Of QA And Design Review
+Do not combine a backend contract, a large UI implementation, and a visual-polish pass into one session.
 
-The AI owns implementation and objective engineering verification. The user owns product QA, browser acceptance, and all UI/design critique.
+## QA And Design Ownership
+
+The AI owns implementation and objective engineering verification. The user owns product QA, browser acceptance, and subjective UI/design critique.
 
 The AI must:
 
-- Run relevant automated tests, type checks, builds, API contract checks, and a minimal smoke check.
-- Report exactly what was and was not verified.
-- Start the application when needed and provide the URL and a focused handoff checklist.
-- Stop after implementation verification instead of self-approving the product experience.
+- Run relevant tests, type checks, builds, API contract checks, and focused smoke checks.
+- Start the application when browser testing by the user is required.
+- Provide the local URL and a concise handoff checklist.
+- Report untested failure modes and external-provider limitations.
+- Stop after engineering verification instead of self-approving the product experience.
 
 The AI must not:
 
 - Declare user QA complete.
-- Make subjective UI/design critique unless the user explicitly asks for it in that session.
-- Perform a visual-polish pass and treat its own judgment as acceptance.
 - Mark an `Owner: User` gate complete.
+- Substitute its own visual opinion for user acceptance.
+- Add UI polish or extra features that were not requested by the active task.
+- Treat a Playwright screenshot as product approval.
 
-The user will test the feature, critique the UI, and decide whether it is accepted. User feedback becomes one or more new, narrowly scoped implementation tasks.
-
-When an AI turns this document into an internal checklist or execution path, it must preserve these ownership boundaries. It must not replace a user-owned QA gate with "browser QA by AI" or silently bundle future API/UI tasks into the active session.
-
-Do not combine an API task, a large UI task, and visual polish into one session. Major screens deliberately use this rhythm:
+The normal screen-delivery rhythm is:
 
 ```txt
 AI: backend contract
--> AI: functional UI and engineering verification
--> User: QA, browser acceptance, and UI/design critique
+-> AI: functional UI plus engineering verification
+-> User: browser QA and UI/design critique
 -> AI: narrowly scoped corrections requested by the user
 ```
 
 ## Definition Of Done
 
-An AI implementation task is complete and ready for user QA only when:
+An AI-owned task is ready for user QA only when:
 
 - Its acceptance criteria are satisfied.
-- Relevant builds and type checks pass.
-- API changes remain represented in OpenAPI.
-- SDK output is regenerated when the OpenAPI contract changes.
-- Tenant-owned queries are scoped by `organizationId`.
-- Loading, empty, error, and success states are handled where relevant.
-- No unrelated files or user changes were reverted.
+- Relevant builds, type checks, and tests pass.
+- Tenant-owned operations are scoped by `organizationId`.
+- Cross-tenant identifiers return tenant-safe `404` responses.
+- API changes are represented in OpenAPI.
+- `@talelabs/sdk` is regenerated when OpenAPI changes.
+- Generated SDK files are not edited manually.
+- Loading, empty, error, and success states exist where relevant.
+- Long-running work is durable and idempotent where required.
+- No unrelated user changes were reverted.
 - Deferred features were not pulled into the task.
-- The handoff states what the user should validate and any remaining risk.
+- The final handoff states what the user should validate.
 
-User-owned QA gates may cover:
+User QA should cover the relevant subset of:
 
-- Desktop and mobile layouts.
-- Keyboard navigation and visible focus.
-- Empty, loading, error, populated, and destructive-action states.
-- Long names, missing thumbnails, failed media, and slow network behavior.
-- No text overflow or incoherent overlap.
-- Browser console and network behavior.
-
-Only the user can accept these gates. The AI may help investigate or fix findings after the user reports them.
+```txt
+desktop and mobile layout
+keyboard navigation and focus
+empty, loading, error, populated, and destructive states
+long names and text
+missing, processing, failed, archived, and purged media
+slow uploads and slow generation
+refresh and direct URL behavior
+browser console and network failures
+text overflow and incoherent overlap
+```
 
 ## Milestones
 
-| Milestone                  | Outcome                                                                            |
-| -------------------------- | ---------------------------------------------------------------------------------- |
-| M0: Data foundation        | The full MVP schema migrates successfully and is type-safe in Kysely.              |
-| M1: Reusable context       | Projects, Brands, Products, and Characters work end to end.                        |
-| M2: Asset foundation       | Private uploads become reusable assets in the global library.                      |
-| M3: Context relationships  | Assets and context objects can be linked and filtered correctly.                   |
-| M4: Image generation loop  | An image generation becomes an asset and can attach to a project.                  |
-| M5: Video and audio        | The same loop works for supported video and audio models.                          |
-| M6: Internal MVP candidate | The complete loop passes engineering verification and user-owned QA/UI acceptance. |
+| Milestone               | Outcome                                                                                                                  |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| M0: Database foundation | The complete v2 schema migrates and its structural tenant/data guarantees are verified.                                  |
+| M1: API foundation      | Product routes have one tenant-safe Hono/OpenAPI/SDK foundation.                                                         |
+| M2: Assets              | Private uploads become durable, processed, searchable, organized, and reusable Assets.                                   |
+| M3: Elements            | Generic reusable context with typed data and role-based Asset kits works end to end.                                     |
+| M4: Flows               | Users can build and autosave a valid manual creative graph with the initial node set.                                    |
+| M5: Image generation    | One selected image-generation node executes durably and produces canonical Assets with immutable provenance.             |
+| M6: MVP candidate       | Outputs can be reused for continued iteration and the complete loop passes engineering verification and user acceptance. |
 
 ---
 
-## M0 - Data And Contract Foundation
+## M0 - Database Foundation
 
-### E-001 - Implement And Run The MVP Database Migration
+### E-001 - Implement And Run The V2 Database Migration
 
 **Status:** Next
 
@@ -154,609 +179,602 @@ This is the first implementation task.
 
 **Scope**
 
-- Create the next Kysely migration, expected to be `packages/db/src/migrations/003_talelabs_mvp.ts`.
-- Preserve the applied `003` migration and use `004_camel_case_domain_schema.ts` to align TaleLabs physical identifiers with Better Auth's quoted camelCase convention.
-- Implement every table, foreign key, check constraint, index, and delete behavior from `docs/db-design-planning.md`.
-- Add the corresponding Kysely table interfaces to `packages/db/src/schema.ts` and register them in `Database`.
+- Create the next migration after the repository's current `003_user_locale.ts`, expected to be `004_talelabs_core.ts`.
+- Implement the complete initial schema from `docs/db-design-planning-v2.md`.
+- Add matching Kysely table interfaces to `packages/db/src/schema.ts` and register them in `Database`.
+- Preserve quoted camelCase physical identifiers; do not add `CamelCasePlugin`.
 - Implement a complete `down` migration in reverse dependency order.
 - Run the migration against the development database.
+- Do not add routes, repositories, fixtures, seed data, Trigger.dev tasks, or UI.
 
 **Required creation order**
 
 ```txt
-brands
-products
-characters
-projects
 folders
+flows
+flowRuns
 generationJobs
+flowRunNodes
 assets
-generationJobCharacters
+elements
+elementAssets
+flowNodes
+flowEdges
+generationJobSources
 generationJobInputs
-tags
-assetTags
-brandCharacters
-projectAssets
-projectBrands
-projectProducts
-projectCharacters
-brandAssets
-productAssets
-characterAssets
 ```
 
-`assets` must exist before `generationJobInputs`, even though inputs are discussed in the generation section of the design document. Migration `003` creates the original identifiers in this order; migration `004` renames them to the final camelCase form without rebuilding tables.
-
-**Naming constraint**
-
-Better Auth and TaleLabs domain tables use quoted camelCase identifiers. Do not add a global Kysely camel-case plugin: Kysely properties should match the physical identifiers directly, and PostgreSQL DDL must quote camelCase table and column names.
+`flowRuns` and `flowRunNodes` are part of this migration even though only `mode = 'node'` is exposed initially.
 
 **Acceptance criteria**
 
-- A clean database migrates from `001` through `004` successfully.
-- Running the migrator again reports no pending migration and changes nothing.
-- All planned tables and indexes exist.
-- Check constraints reject invalid status, media type, visibility, source, role, and credit-source values.
-- Foreign-key delete behavior matches the DB document.
-- Existing auth and organization tables still work.
-- `Database` contains all new table types without using `any`.
-- No API routes, repositories, seed data, or UI are added in this task.
+- A clean database migrates through `004` successfully.
+- Re-running the migrator reports no pending migration and changes nothing.
+- Every table, composite tenant FK, check constraint, unique constraint, and index from the v2 database design exists.
+- The schema includes the Asset processing and deletion lifecycles.
+- `generationJobs.flowRunId` is required from day one.
+- The Kysely `Database` type contains every new table without `any`.
+- The existing Better Auth and organization schema remains functional.
+- The down migration succeeds only on a disposable database.
 
-**Validation**
+**Checks**
 
 ```bash
 npm run build -w @talelabs/db
 npm run db:migrate
+npm run check-types -w @talelabs/db
 ```
 
-Also inspect PostgreSQL metadata for the created tables, indexes, and constraints. Test `down` only against a disposable database, never against shared or production data.
+Also inspect PostgreSQL metadata for tables, indexes, FKs, and checks. Never test `down` against shared or production data.
 
-### E-002 - Add Database Test Fixtures And Tenant-Safe Query Conventions
-
-**Status:** Blocked by E-001
-
-**Scope**
-
-- Add a minimal database test strategy for domain queries.
-- Create reusable fixtures for two organizations, users, and members.
-- Establish helpers that require `organizationId` for tenant-owned reads and writes.
-- Document that domain persistence and service objects both use camelCase identifiers.
-
-**Acceptance criteria**
-
-- Tests can prove an organization cannot read or mutate another organization's row through repository/query helpers.
-- Tests clean up their data and do not depend on production credentials.
-- No resource-specific CRUD is implemented yet.
-
-### E-003 - Harden The Shared API Foundation
+### E-002 - Add Database Contract And Tenant-Isolation Tests
 
 **Status:** Blocked by E-001
 
 **Scope**
 
-- Confirm auth middleware resolves the current Better Auth session and active organization.
-- Add shared id, error, and cursor-pagination schemas.
-- Standardize `401`, tenant-safe `404`, validation errors, and request IDs.
-- Add an API test harness using the composed Hono app rather than a live network port.
+- Add a database integration-test harness using a disposable test database.
+- Create fixtures for two organizations and users.
+- Verify the source invariants, processing lifecycle, deletion lifecycle, graph same-flow constraints, tenant composite FKs, job/run relationships, and idempotency indexes.
+- Verify representative cross-organization inserts fail at the database boundary.
+- Keep tests focused on schema contracts; do not implement resource repositories yet.
 
 **Acceptance criteria**
 
-- Protected test route behavior covers unauthenticated, missing active organization, and authenticated organization cases.
-- Error responses match `docs/api-design-planning.md`.
+- Tests prove that tenant-owned relationships cannot cross organizations.
+- Invalid lifecycle/status/source combinations fail.
+- Same-flow and same-run composite FKs reject mismatches.
+- Tests clean up their data and cannot run accidentally against production.
+
+**M0 gate**
+
+The complete v2 schema exists, its structural guarantees are tested, and the database foundation is accepted before product API work begins.
+
+---
+
+## M1 - API Foundation
+
+### E-003 - Harden The Product API Foundation
+
+**Status:** Blocked by M0
+
+**Scope**
+
+- Use the existing `organizationMiddleware` for every new product route.
+- Add shared cuid2, pagination, cursor, lifecycle, and error schemas required by the v2 API.
+- Implement the opaque cursor codec and sort/order mismatch validation.
+- Preserve the existing Hono route/schema/service/data boundaries.
+- Extend the composed-app test harness for authenticated organization-scoped routes.
+- Do not add a product CRUD endpoint yet.
+
+**Acceptance criteria**
+
+- Product routes cannot run without an active organization.
+- Cross-tenant resources remain indistinguishable from missing resources.
+- Common errors match `docs/api-design-planning-v2.md`.
 - `/openapi.json` remains valid.
 
 **Checks**
 
 ```bash
+npm run test -w api
 npm run build -w api
-npm run lint
-```
-
-### E-004 - Verify OpenAPI To SDK Generation
-
-**Status:** Blocked by E-003
-
-**Scope**
-
-- Confirm the API OpenAPI document can generate `@talelabs/sdk` successfully.
-- Add one representative authenticated endpoint to prove schemas, client generation, and TanStack Query integration.
-- Do not manually edit generated SDK files.
-
-**Acceptance criteria**
-
-- SDK generation is deterministic.
-- Generated client types preserve error and pagination shapes.
-- Dashboard can import the generated query/client without handwritten fetch code.
-
-**Checks**
-
-```bash
 npm run sdk:generate
 npm run build -w @talelabs/sdk
 ```
 
----
-
-## M1 - Reusable Context Objects
-
-Projects are implemented first because they are the simplest vertical slice and establish the CRUD, tenancy, OpenAPI, SDK, query, form, and routing patterns reused by the richer context resources.
-
-### E-010 - Projects CRUD API
-
-**Status:** Blocked by M0
-
-Implement project list, create, detail, update, and delete endpoints with cursor pagination, organization scoping, OpenAPI schemas, service/data boundaries, and integration tests. Do not implement project relationships or the project Assets tab yet.
-
-### E-011 - Projects Functional UI
-
-**Status:** Blocked by E-010
-
-Implement project list, create, detail, rename/edit, and delete flows using generated SDK hooks. Include loading, empty, error, and populated states. Keep the project detail surface intentionally thin.
-
-### E-012 - Projects User QA And UI Critique Gate
-
-**Status:** Blocked by E-011
-
-**Owner:** User
-
-The user tests the complete Projects flow and critiques hierarchy and interaction cost. Review refresh, direct URLs, long names, destructive confirmation, empty states, and desktop/mobile behavior. Findings become separate implementation tasks; the AI does not mark this gate complete.
-
-### E-013 - Brands CRUD API
-
-**Status:** Blocked by M0
-
-Implement brand profile CRUD, including color validation and safe nullable PATCH behavior. Exclude Brand Kit asset relationships until Assets exist.
-
-### E-014 - Brands Functional UI
-
-**Status:** Blocked by E-013
-
-Implement brand list, create, detail, and edit surfaces for name, description, tone, visual style, colors, and do/don't rules. Show a disabled or intentional empty Brand Kit area rather than faking asset support.
-
-### E-015 - Brands User QA And UI Critique Gate
-
-**Status:** Blocked by E-014
-
-**Owner:** User
-
-The user validates form ergonomics, palette controls, long guidance text, unsaved changes, mobile layout, and empty/error behavior. The user decides whether the screen feels operational rather than marketing-like.
-
-### E-016 - Products CRUD API
-
-**Status:** Blocked by E-013
-
-Implement product CRUD and optional `brandId`, including same-organization validation and list filtering by brand. Exclude product assets until Assets exist.
-
-### E-017 - Products Functional UI
-
-**Status:** Blocked by E-016
-
-Implement product list/create/detail/edit with brand selection, description, features, and benefits. Use field arrays with clear add/remove behavior.
-
-### E-018 - Products User QA And UI Critique Gate
-
-**Status:** Blocked by E-017
-
-**Owner:** User
-
-The user validates standalone products, branded products, long feature lists, brand deletion effects, mobile forms, destructive actions, and overall UI quality.
-
-### E-019 - Characters CRUD API
-
-**Status:** Blocked by E-013
-
-Implement character CRUD, brand filtering, and atomic `brandIds` behavior on creation. Implement the explicit brand-character link endpoints. Exclude character assets until Assets exist.
-
-### E-020 - Characters Functional UI
-
-**Status:** Blocked by E-019
-
-Implement character list/create/detail/edit with role, description, personality, visual notes, and brand relationships. Do not build talking-avatar or voice infrastructure.
-
-### E-021 - Characters User QA And UI Critique Gate
-
-**Status:** Blocked by E-020
-
-**Owner:** User
-
-The user validates global and brand-linked characters, multi-brand display, long character descriptions, removal from a brand, responsive behavior, empty states, and overall UI quality.
-
 **M1 gate**
 
-A user can create and manage Projects, Brands, Products, and Characters in one organization without seeing another organization's data.
+New product routes can use one tenant-safe Hono/OpenAPI/SDK foundation without bundling any product CRUD.
 
 ---
 
-## M2 - Storage And Global Assets
+## M2 - Assets And Folders
 
-### E-030 - Harden The R2 Storage Boundary
+Assets are implemented before Elements and Flows because every upload, reusable reference, input, and generated output depends on them.
 
-**Status:** Blocked by M0
+### E-010 - Verify And Harden The R2 Storage Boundary
+
+**Status:** Blocked by M1
 
 **Scope**
 
-- Confirm private/public bucket configuration remains code-level while credentials remain in environment variables.
-- Add organization-safe object-key builders.
-- Keep bucket selection behind `visibility`.
-- Verify upload, inline download, attachment download, copy, and delete primitives.
-- Do not expose storage credentials or raw storage keys to the browser.
+- Run the documented R2 spike for presigned `PUT` with `If-None-Match: *`.
+- Verify whether R2 accepts and returns the required SHA-256 checksum; select the documented MD5 fallback if it does not.
+- Finalize the accepted checksum algorithm in code configuration without changing the API's algorithm/value shape.
+- Configure browser upload CORS for the exact signed headers and methods.
+- Add tenant-safe object-key builders for uploads, originals, generated outputs, and deterministic thumbnails.
+- Keep credentials in environment variables; keep non-sensitive bucket names and product policy in code configuration.
+- Keep all MVP media private and expose only signed URLs.
 
 **Acceptance criteria**
 
-- Private objects require signed URLs.
-- Public URL construction is deterministic but unused for Phase 1 unmetered generation.
+- A browser-compatible presigned upload can write an object exactly once.
+- A mismatched checksum or second PUT is rejected by R2.
+- `HEAD`, signed inline read, attachment download, and delete are verified.
 - Object keys cannot collide across organizations.
-- Storage package tests use isolated test prefixes and clean up objects.
+- The deterministic thumbnail suffix is `thumbnails/{assetId}` within the tenant-safe prefix.
 
-### E-031 - Presigned Upload And Asset Registration API
+**Checks**
 
-**Status:** Blocked by E-030 and E-003
+```bash
+npm run check-types -w @talelabs/storage
+npm run build -w @talelabs/storage
+```
 
-Implement `POST /uploads` and `POST /assets` for private uploads. The signed grant must bind grant ID, organization, user, key, MIME type, size, and expiry. Registration must verify the object with R2, store only the grant ID, be replay-safe, and optionally attach the asset to a project.
+### E-011 - Implement Upload Grant And Asset Registration API
 
-Do not implement thumbnails or media analysis beyond the minimum metadata needed to register the asset; those get a separate task.
+**Status:** Blocked by E-010 and E-003
 
-### E-032 - Asset Read API
+**Scope**
 
-**Status:** Blocked by E-031
+- Implement `POST /uploads` and base `POST /assets` exactly as documented.
+- Bind organization, user, key, MIME, size, checksum algorithm/value, and expiry into the signed stateless grant.
+- Verify object metadata with R2 before registration.
+- Make registration idempotent by grant ID with the documented replay semantics.
+- Insert uploads with `processingState = 'processing'`.
+- Initially support ordinary registration; add the optional Element attachment atomically in E-022 when the Element registry/API exists.
+- Regenerate the SDK.
 
-Implement global asset list and detail endpoints with signed/public opaque URLs, core filters, stable cursor pagination, and tenant-safe relationship data. Start with filters supported by existing data; do not fake tags or kit relationships before their tasks.
+**Acceptance criteria**
 
-### E-033A - Asset Upload UI
+- Invalid, expired, cross-tenant, missing-object, wrong-size, wrong-MIME, and wrong-checksum grants fail safely.
+- Replaying one grant returns the original Asset and creates no duplicate.
+- Storage keys and signed grant contents never appear in public Asset responses.
+- The returned Asset clearly reports its processing state.
 
-**Status:** Blocked by E-032 and E-004
+### E-012 - Implement Durable Asset Ingestion Orchestration
 
-Implement file selection, upload progress, registration, cancellation, validation errors, and upload-inside-project support using the generated SDK. Stop after newly uploaded assets can appear in a simple result state.
+**Status:** Blocked by E-011
 
-### E-033B - Asset Library List UI
+**Scope**
 
-**Status:** Blocked by E-033A
+- Add the Trigger.dev ingestion task with `idempotencyKey = assetId` and ID-only payloads.
+- Implement guarded `processing -> ready|failed` transitions and safe processing errors.
+- Add reconciliation for Assets stuck in processing.
+- Guard task completion with `purgeRequestedAt IS NULL`.
+- Use deterministic thumbnail keys and clean artifacts when ingestion loses the purge race.
+- Ensure purge deletes the deterministic thumbnail key unconditionally, even when `thumbnailKey` was never persisted.
+- Start with a fake media processor so orchestration, retries, and races can be tested without FFmpeg concerns.
 
-Implement the global Assets screen with grid/list foundation, media-type filter, search, pagination/load-more, selection, and honest placeholders for missing thumbnails or non-previewable assets. Do not build the detail panel in this task.
+**Acceptance criteria**
 
-### E-033C - Asset Detail UI
+- A lost dispatch is redispatched without creating duplicate tasks.
+- Duplicate task attempts do not produce duplicate metadata or thumbnails.
+- Failed media becomes `failed` with a safe error.
+- Purging during ingestion cannot resurrect the Asset or leave a thumbnail orphan.
 
-**Status:** Blocked by E-033B
+### E-013 - Add Real Media Probing And Thumbnails
 
-Implement the asset detail panel with media preview, technical metadata, provenance, relationships available at this phase, download, and clear handling for expired URLs or failed media.
+**Status:** Blocked by E-012
 
-### E-034 - Asset Metadata And Thumbnail Processing
+**Scope**
 
-**Status:** Blocked by E-031
+- Add real processors for the upload types approved by the MIME allow-list.
+- Extract image dimensions and thumbnails.
+- Extract video dimensions, duration, codec metadata, and poster frames.
+- Extract audio duration and relevant technical metadata; do not build an editor or music-analysis product.
+- Keep processor-specific code behind one ingestion interface.
+- Update Trigger.dev build configuration only as required for native tools such as FFmpeg.
 
-Add asynchronous metadata extraction and thumbnail/poster generation for supported image, video, and audio uploads. Persist width, height, duration, thumbnail key, and technical metadata without blocking registration.
+**Acceptance criteria**
 
-### E-035A - Core Asset Actions API
+- Valid image, video, and audio fixtures reach `ready` with correct metadata.
+- Corrupt or mislabeled fixtures reach `failed`.
+- Original media is never modified.
+- Processor retries are deterministic.
 
-**Status:** Blocked by E-032
+### E-014 - Implement Asset Read And Download API
 
-Implement rename, favorite, archive, restore, duplicate, and attachment-download contracts. A duplicate must get a new asset row, clear `uploadId` and `featuredAt`, and preserve only intentional provenance fields.
+**Status:** Blocked by E-011 and E-003
 
-### E-035B - Core Asset Actions UI
+**Scope**
 
-**Status:** Blocked by E-035A and E-033C
+- Implement `GET /assets`, `GET /assets/:id`, `GET /assets/:id/usage`, and `GET /assets/:id/download`.
+- Implement stable cursor pagination, documented filters/sorts, tenant-safe signed URLs, and tombstone rendering.
+- Keep list responses lean and detail responses render-complete.
+- Expose processing and lifecycle states without exposing storage keys.
+- Regenerate the SDK and add integration tests.
 
-Connect rename, favorite, archive, restore, duplicate, and download to the asset list/detail UI. Add confirmations and optimistic updates only where rollback behavior is clear.
+### E-015 - Implement Asset Lifecycle And Purge API
 
-### E-036A - Folders API
+**Status:** Blocked by E-012 and E-014
 
-**Status:** Blocked by E-032
+**Scope**
 
-Implement folder tree list/create/rename/move/delete, asset move-to-folder, root handling, cycle prevention, and tests proving that deleting a folder returns its assets to root rather than deleting them.
+- Implement rename/move, archive, restore, and permanent purge endpoints.
+- Implement the durable purge task and reconciliation sweep.
+- Enforce the row-lock ordering and active-generation guard from the API design.
+- Delete original and deterministic thumbnail objects before setting `purgedAt`.
+- Preserve tombstone rows and immutable provenance.
 
-### E-036B - Folders UI
+**Acceptance criteria**
 
-**Status:** Blocked by E-036A and E-033B
+- Archive/restore is reversible until purge starts.
+- Purge is idempotent and storage-confirmed.
+- Purge cannot destroy an input used by a pending/running generation.
+- Purged Assets disappear from lists but remain renderable as tombstones by detail/provenance queries.
 
-Implement folder navigation, breadcrumbs, create/rename/move/delete interactions, move-asset flow, root browsing, and folder-filtered asset URLs.
+### E-016 - Implement Folders API
 
-### E-037A - Tags And Advanced Asset Filter API
+**Status:** Blocked by E-014
 
-**Status:** Blocked by E-032
+**Scope**
 
-Implement tag list/create/delete, declarative asset tag replacement, case/whitespace normalization, AND tag filtering, source filtering, favorites, archive filtering, and stable sorting.
+- Implement folder list/create/rename/move/delete.
+- Enforce cycle prevention, 32-level maximum depth, and 10,000-folder organization cap.
+- Preserve Assets when folders are deleted by moving them to root through FK behavior.
+- Add focused tenant and tree tests.
 
-### E-037B - Tags And Advanced Asset Filter UI
+### E-017A - Build Upload UI And Processing Feedback
 
-**Status:** Blocked by E-037A and E-033B
+**Status:** Blocked by E-011, E-013, and generated SDK updates
 
-Implement tag editing and URL-backed source, favorite, archive, tag, type, and sort controls. Verify browser back/forward and refresh preserve the selected library view.
+Implement file selection, checksum calculation, direct-to-R2 upload progress, registration, cancellation, and processing/failed/ready feedback. Do not build the full library in this task.
 
-### E-038 - Assets User QA And UI Critique Gate
+### E-017B - Build Asset Library And Detail UI
 
-**Status:** Blocked by E-033A through E-037B
+**Status:** Blocked by E-014 and E-017A
+
+Implement grid/list foundations, search, type/source filters, stable pagination, preview/playback, technical metadata, processing states, download, and an Asset detail surface. Keep the experience media-aware and drive-like.
+
+### E-017C - Build Folder And Lifecycle UI
+
+**Status:** Blocked by E-015, E-016, and E-017B
+
+Implement folder navigation and management, move-to-folder, rename, archive, restore, and explicit permanent-deletion confirmation. Reuse the same Asset components instead of creating per-screen media variants.
+
+### E-018 - Assets User QA And UI Critique Gate
+
+**Status:** Blocked by E-017C
 
 **Owner:** User
 
-The user runs a dedicated media-library QA pass with many assets, mixed media, nested folders, missing previews, failed thumbnails, long names, archived assets, slow uploads, mobile layout, and keyboard operation. The user critiques whether the screen feels like a lightweight media drive rather than a social gallery.
+The user validates the complete Asset workflow with mixed media, long names, nested folders, processing and failed media, missing previews, slow uploads, archived/purged states, keyboard operation, and desktop/mobile layouts. Findings become separate implementation tasks.
 
 **M2 gate**
 
-A user can upload private media, find it again, inspect it, organize it, and reuse it as a stable asset.
+A user can upload private image/video/audio media, see durable processing states, find it again, inspect it, organize it, download it, archive/restore it, and permanently purge it.
 
 ---
 
-## M3 - Context And Project Relationships
+## M3 - Elements
 
-### E-040 - Brand Asset Kit API
+Elements are generic reusable AI context. Do not restore separate Brand, Product, or Character tables or navigation.
 
-**Status:** Blocked by M2 and E-013
+### E-020 - Create The Element Type Registry Foundation
 
-Implement brand asset list/link/unlink endpoints, role validation, media-type compatibility, idempotency/conflict behavior, and tenant tests.
+**Status:** Blocked by M2
 
-### E-041 - Brand Kit UI
+**Scope**
 
-**Status:** Blocked by E-040
+- Create the shared registry boundary used by API and dashboard.
+- Keep schemas, labels, field metadata, preview roles, Asset roles, accepted media types, and schema versions framework-neutral.
+- Keep React form components in the dashboard and server-only `buildContext` implementations out of the browser bundle.
+- Start with `character` and `product` types only.
+- Encode the approved role examples, including character appearance/expression/motion/voice and product packshot/detail/lifestyle/demonstration.
+- Add startup validation and registry unit tests.
 
-Add asset picking/uploading and role assignment for primary, horizontal, icon, wordmark, light, dark, monochrome, reference, and approved-output assets. Reuse the global asset picker rather than building a second media system.
+### E-021 - Implement Elements CRUD API
 
-### E-042A - Product Asset Kit API
+**Status:** Blocked by E-020 and E-003
 
-**Status:** Blocked by M2 and E-016
+Implement list/create/detail/update/delete with registry-based data validation, immutable type, schema-version stamping/upcasting, preview metadata, usage counts, tenant isolation, OpenAPI, SDK generation, and integration tests.
 
-Implement product asset list/link/unlink, role validation, media compatibility, organization checks, and tests for source images, packaging, lifestyle, references, and approved outputs.
+### E-022 - Implement Element Asset-Kit API
 
-### E-042B - Product Asset Kit UI
+**Status:** Blocked by E-021 and M2
 
-**Status:** Blocked by E-042A
+**Scope**
 
-Add product asset picking/uploading, role assignment, unlinking, and grouped kit display by reusing the global asset picker.
+- Implement the Element Asset subresource with role, order, and primary state.
+- Enforce role/media compatibility and the one-primary-per-role invariant.
+- Keep Assets canonical; linking/unlinking never copies or deletes media.
+- Complete the optional `elementId` + `role` path in `POST /assets` so upload registration and link insertion are one transaction.
+- Permit processing Assets to be attached for upload UX, but generation resolution must never submit a non-ready Asset.
 
-### E-043A - Character Asset Kit API
+### E-023 - Implement Element Context And Usage Services
 
-**Status:** Blocked by M2 and E-019
+**Status:** Blocked by E-022
 
-Implement character asset list/link/unlink, role validation, media compatibility, organization checks, and tests for reference images, expression sheets, pose sheets, sample video/audio, voice references, and approved outputs.
+- Implement server-only `buildContext` for the initial Element types.
+- Return deterministic ordered candidate Assets and resolved text suitable for future job snapshots.
+- Implement the bounded `GET /elements/:id/usage` response.
+- Test multiple Elements, multiple Assets per role, exclusions, primary selection, and deleted/failed references.
 
-### E-043B - Character Asset Kit UI
+### E-024A - Build Element List And Data UI
 
-**Status:** Blocked by E-043A
+**Status:** Blocked by E-021
 
-Add character asset picking/uploading, role assignment, unlinking, and grouped kit display. This is asset organization, not voice cloning or avatar generation.
+Implement Element list/create/detail/delete and the registry-driven Data tab. Start with Character and Product forms while keeping the screen generic enough for later Element types.
 
-### E-044 - Project Relationship APIs
+### E-024B - Build Element Assets UI
 
-**Status:** Blocked by E-010 and M2
+**Status:** Blocked by E-022 and E-024A
 
-Implement idempotent project links for assets, brands, products, and characters. Return project detail counts and small linked context lists. Keep assets unbounded and fetched through `GET /assets?projectId=...`.
+Implement the Assets tab with role sections, primary selection, ordering, upload-and-attach, existing Asset picker, unlinking, processing feedback, and shared Asset previews.
 
-### E-045 - Project Context And Assets UI
+### E-025 - Elements User QA And UI Critique Gate
 
-**Status:** Blocked by E-044
+**Status:** Blocked by E-023 and E-024B
 
-Implement the project detail context sections and Assets tab using the global Assets components with a fixed project filter. Add upload-inside-project and attach-existing-asset flows.
+**Owner:** User
 
-### E-046 - Automated Relationship Integrity Verification
-
-**Status:** Blocked by E-040 through E-045, including the split A/B tasks
-
-**Owner:** AI
-
-Test cross-organization rejection for every relationship table, duplicate links, unlink behavior, hard deletion of context objects, archived assets, and shared assets linked to multiple projects or kits.
+The user validates Character and Product Elements, typed forms, long instructions, mixed-media kits, primary Assets, processing/failed references, upload-and-attach, and responsive behavior.
 
 **M3 gate**
 
-Projects, Brands, Products, and Characters all reuse the same global assets without owning or duplicating media.
+A user can create reusable Character and Product context, attach canonical Assets by semantic role, and retrieve deterministic server-built context without introducing separate domain systems.
 
 ---
 
-## M4 - Image Generation Loop
+## M4 - Flows And Manual Graph Editing
 
-Image generation proves the complete architecture before video and audio multiply provider cost, duration, and failure modes.
+Flows are the primary product surface. The first version is a manual visual creative process, not an automation engine.
 
-### E-050 - Generation Configuration Registry
+### E-030 - Create The Flow Node Registry
 
-**Status:** Blocked by M0
+**Status:** Blocked by M3
 
-Implement validated static model overrides and app/preset config, provider-catalog normalization, and `GET /config/generation`. Start with a deliberately small enabled image-model set. Validate config at startup and expose only capabilities needed by the UI.
+- Define framework-neutral node schemas, schema versions, typed handles, cardinality, connection compatibility, and payload requirements.
+- Start with exactly `text`, `asset`, `element`, and `imageGeneration` nodes.
+- Keep React node components in the dashboard and server validation in shared/server-safe code.
+- Add registry tests for incompatible handles, missing payload references, and schema upcasting.
 
-### E-051 - Generation Job API Without Provider Execution
+### E-031 - Implement Flows CRUD API
 
-**Status:** Blocked by E-050 and M3
+**Status:** Blocked by E-030 and E-003
 
-Implement create, list, detail, and cancel contracts; idempotency; request hashing; provider/model validation; context resolution; `resolvedPrompt`; input links; and Phase 1 `creditSource = 'unmetered'`. Use a controlled fake executor so job states and outputs can be tested without provider spend.
+Implement Flow list/create/detail/update/delete, including viewport persistence, lean list responses, tenant isolation, OpenAPI/SDK generation, and integration tests. Do not implement graph history, sharing, Recipes, or collaboration.
 
-Do not implement `/generations/estimate`; it remains Phase 2.
+### E-032 - Implement Graph Read And Autosave Sync API
 
-### E-052 - Trigger.dev Generation Orchestration
+**Status:** Blocked by E-031
 
-**Status:** Blocked by E-051
+**Scope**
 
-Create the durable Trigger.dev task that receives `organizationId` and `generationJobId`, transitions job states, handles retry boundaries, observes cancellation, and records safe failures. Keep provider logic behind an adapter interface.
+- Implement `GET /flows/:id/graph` and revision-CAS `POST /flows/:id/graph`.
+- Apply batched node/edge upserts and deletes in one transaction.
+- Validate final-state references, same-flow edges, handles, media compatibility, cardinality, and type payloads.
+- Permit incomplete but non-contradictory graphs.
+- Enforce request, node-data, node-count, edge-count, and aggregate graph limits.
+- Return `409 revision_conflict` without partial writes.
 
-### E-053 - OpenRouter Image Provider Adapter
+### E-033A - Build Flow List And Creation UI
 
-**Status:** Blocked by E-052
+**Status:** Blocked by E-031
 
-Implement one production image model through the OpenRouter package. Normalize the request and result behind the provider adapter, preserve provider diagnostics only in logs, and add controlled integration tests that do not run by default without credentials.
+Implement the Flow list, create, rename, delete, empty/loading/error states, and direct navigation into a Flow. Do not build the canvas in this task.
 
-### E-054 - Generation Output Ingestion
+### E-033B - Build The React Flow Canvas Foundation
 
-**Status:** Blocked by E-053 and M2
+**Status:** Blocked by E-032 and E-033A
 
-Download/copy provider outputs into R2, create generation assets, generate thumbnails/metadata, attach outputs to the selected project, and mark the job succeeded only after durable storage and database writes complete. Phase 1 outputs are private because jobs are unmetered.
+Implement pan/zoom, viewport restoration, selection, add/move/duplicate/delete, connection creation/removal, revision-aware debounced autosave, conflict refetch/replay, and unsaved/error indicators. Keep results out of node `data`.
 
-### E-055 - Generate Image Functional UI
+### E-034 - Build Text, Asset, And Element Nodes
 
-**Status:** Blocked by E-054
+**Status:** Blocked by E-033B
 
-Implement the Image tab with model picker, prompt, aspect ratio/quality controls, references, submit state, polling, result display, and saved asset behavior. Use generated SDK hooks and keep drafts local.
+Implement functional node components and selectors for Text, canonical Assets, and Elements. Support multiple connected context sources and deterministic ordering without adding automation behavior.
 
-### E-056 - Reusable Context In Generate
+### E-035 - Add Generation Configuration And Image Node Draft UI
 
-**Status:** Blocked by E-055
+**Status:** Blocked by E-030 and E-034
 
-Add brand, product, character, and project selection to Image generation. Show which context and reference assets will be used. Verify the server resolves the prompt at creation and later context edits do not change queued jobs.
+**Scope**
 
-### E-057A - Image Generation Reliability Verification
+- Implement the product-controlled model/capability registry and `GET /config/generation`.
+- Enable a deliberately small image-model catalog.
+- Render model choice and capability-aware settings inside the Image Generation node.
+- Expose only supported input slots/settings and validate node data through the registry.
+- Do not execute the node yet.
 
-**Status:** Blocked by E-056
+### E-036 - Flows User QA And UI Critique Gate
 
-**Owner:** AI
-
-Exercise pending, running, slow, succeeded, failed, canceled, duplicate-submit, unsupported-model, missing-reference, provider-timeout, and output-ingestion-failure paths through automated and objective functional checks. Report remaining untested cases to the user.
-
-### E-057B - Generate Image User QA And UI Critique Gate
-
-**Status:** Blocked by E-057A
+**Status:** Blocked by E-035
 
 **Owner:** User
 
-The user performs browser QA and critiques the Image generation experience, async feedback, controls, result presentation, and failure recovery. Findings become separate implementation tasks.
+The user validates canvas ergonomics, simple two-node creation, multi-context graphs, node controls, connection feedback, autosave/conflicts, refresh recovery, direct URLs, keyboard behavior, and desktop/mobile constraints.
 
 **M4 gate**
 
-A user can select reusable context, generate an image asynchronously, receive a durable private asset, find it in Assets, and see it inside the selected project.
+A user can create and autosave a valid Flow containing Text, Asset, Element, and configured Image Generation nodes, including branches and multiple context sources.
 
 ---
 
-## M5 - Video And Audio Generation
+## M5 - Run One Image Generation Node
 
-### E-060 - Video Model Configuration And Provider Adapter
+The first execution experience runs one selected node manually. It does not run downstream nodes or the whole graph.
 
-**Status:** Blocked by M4
-
-Enable a small supported video-model set and implement text-to-video plus image-to-video through the existing provider abstraction. Validate duration, resolution, aspect ratio, first/last frame, audio capability, and reference limits from resolved config.
-
-### E-061 - Generate Video Functional UI
-
-**Status:** Blocked by E-060
-
-Implement the Video tab using the existing generation composer patterns. Support model-dependent inputs without rendering controls the selected model cannot accept.
-
-### E-062A - Video Reliability Verification
-
-**Status:** Blocked by E-061
-
-**Owner:** AI
-
-Verify long-running polling, refresh recovery, cancel requests, provider failures, large downloads, R2 ingestion, poster generation, playback plumbing, and project attachment using automated and objective functional checks.
-
-### E-062B - Generate Video User QA And UI Critique Gate
-
-**Status:** Blocked by E-062A
-
-**Owner:** User
-
-The user performs browser QA and critiques video controls, progress communication, playback, responsive layout, result presentation, and recovery from failures.
-
-### E-063 - Audio Model Configuration And Provider Adapter
+### E-040 - Implement Run Planning And Snapshot Creation
 
 **Status:** Blocked by M4
 
-Enable one narrow audio outcome supported by the chosen providers, such as text-to-speech or voiceover. Do not add voice cloning, music generation, or standalone Voice entities unless separately approved.
+**Scope**
 
-### E-064 - Generate Audio Functional UI
+- Implement server-authoritative upstream traversal for one target Image Generation node.
+- Resolve multiple Text, Asset, Element, and prior-node-output sources in deterministic order.
+- Apply model capability limits and preserve all sources separately from the exact provider input subset.
+- Compose `resolvedPrompt` and create immutable source/input provenance.
+- Implement `READ COMMITTED` graph-revision revalidation and ordered Asset row locks.
+- Require every submitted Asset input to be `processingState = 'ready'` and not purging/purged.
+- Use a fake executor; do not call OpenRouter yet.
 
-**Status:** Blocked by E-063
+### E-041 - Implement Run API And Admission Control
 
-Implement the Audio tab, appropriate text/settings controls, async state, playback, download, asset persistence, and project attachment.
+**Status:** Blocked by E-040
 
-### E-065A - Audio Reliability Verification
+**Scope**
 
-**Status:** Blocked by E-064
+- Implement `POST /runs`, `GET /runs`, `GET /runs/:id`, and cancel.
+- Accept only `mode = 'node'`; reject future modes as documented.
+- Implement fast idempotency lookup plus authoritative recheck under the organization advisory lock.
+- Make the advisory lock the transaction's first database statement.
+- Enforce active-run cap, per-user rate limit, private-development allowlist, and exposure-aware emergency budget.
+- Create run, run-node, job, sources, and inputs atomically.
+- Record provider-cost and credit-cost facts without adding wallets or balance enforcement.
+
+### E-042 - Implement Durable Trigger.dev Generation Execution
+
+**Status:** Blocked by E-041
+
+**Scope**
+
+- Add the ID-only generation task and dispatch reconciliation sweep.
+- Implement guarded pending/running/terminal state propagation across job, run-node, and mode-node run.
+- Implement the `providerSubmittedAt` / `providerJobId` uncertainty contract.
+- Implement cancellation and orphan-output cleanup.
+- Use a fake provider adapter first to exercise retries and failures without spend.
+
+### E-043 - Implement The First OpenRouter Image Adapter
+
+**Status:** Blocked by E-042
+
+- Add one approved image-generation model behind a provider-independent adapter.
+- Normalize settings, context inputs, provider submission, polling/result handling, and safe errors.
+- Keep raw provider payloads in logs, never user-facing errors.
+- Add opt-in integration tests that require explicit credentials and spend approval.
+- Do not add fallback providers or direct-provider contracts yet.
+
+### E-044 - Persist Outputs And Expose Node Results
+
+**Status:** Blocked by E-043 and M2
+
+**Scope**
+
+- Ingest provider outputs into tenant-safe R2 keys.
+- Probe output metadata before inserting generated Assets directly as `ready`.
+- Complete job/run state and output Asset insertion in the guarded transaction order from the database design.
+- Implement node result history from jobs/Assets; never copy result IDs into node `data`.
+- Ensure retries reuse deterministic output keys and cannot duplicate Assets.
+
+### E-045 - Build Run-Node And Result UI
+
+**Status:** Blocked by E-041 and E-044
+
+Implement Run on the selected Image Generation node, submit locking, queued/running/succeeded/failed/canceled states, polling, refresh recovery, result history, output previews, and clear cost/error display where available. Realtime is deferred; polling remains the contract.
+
+### E-046 - Verify Generation Reliability And Provenance
+
+**Status:** Blocked by E-045
 
 **Owner:** AI
 
-Verify playback plumbing, duration metadata, failed jobs, cancellation, slow generation, and project relationships using automated and objective functional checks.
+Automate and objectively verify duplicate submit, idempotent replay, revision collision, multi-context resolution, reference limits, non-ready input rejection, purge race, lost dispatch, task retry, uncertain provider submission, success, failure, cancellation, output-ingestion failure, and immutable provenance after editing source Elements/Flows.
 
-### E-065B - Generate Audio User QA And UI Critique Gate
+### E-047 - Image Generation User QA And UI Critique Gate
 
-**Status:** Blocked by E-065A
+**Status:** Blocked by E-046
 
 **Owner:** User
 
-The user performs browser QA and critiques audio controls, playback experience, responsive behavior, accessibility, result presentation, and failure recovery.
+The user tests simple and multi-context image generation, model/settings ergonomics, async feedback, refresh behavior, result presentation, failure recovery, and overall canvas experience. Findings become separate implementation tasks.
 
 **M5 gate**
 
-Image, video, and audio use the same job, storage, asset, project, and error architecture without modality-specific duplication leaking across layers.
+A user can run one selected image-generation node, receive a durable generated Asset, inspect immutable provenance, and find the output in the global Asset library.
 
 ---
 
-## M6 - Internal MVP Candidate
+## M6 - Continued Iteration And Internal MVP Candidate
 
-### E-070 - Cross-Surface Project Workflow
+### E-050 - Complete Output Reuse And Branching
 
 **Status:** Blocked by M5
 
-Finish project quick actions for Generate Image, Generate Video, Generate Audio, Upload Asset, and Attach Existing Asset. Ensure project context is preselected and every output still appears globally in Assets.
+- Allow a generated output to be materialized as an Asset node with a fresh client-generated node ID.
+- Allow outputs to connect into another generation node as context.
+- Support pinning a specific prior node output and default latest-succeeded resolution.
+- Verify later upstream runs never rewrite the concrete input of historical jobs.
 
-### E-071 - End-To-End Regression Suite
+### E-051 - Run End-To-End Regression And Tenant Audit
 
-**Status:** Blocked by E-070
+**Status:** Blocked by E-050
 
-Automate the highest-value paths: create context, upload references, generate, persist output, attach to project, filter Assets, archive/restore, and retry an idempotent request. Cover two organizations in the same suite.
+Automate the highest-value loop across two organizations: upload, process, organize, create Element, attach kit Assets, create Flow, connect multi-context nodes, run image generation, persist output, reuse output, inspect provenance, archive/restore, and purge. Systematically attempt cross-organization IDs and verify signed URL isolation.
 
-### E-072 - Tenant Isolation And Security Audit
+### E-052 - Add Operational Reliability And Cleanup
 
-**Status:** Blocked by E-071
+**Status:** Blocked by E-051
 
-Audit every tenant-owned read/write, relationship insertion, signed URL, upload grant, generation payload, Trigger task, and provider callback. Attempt cross-organization IDs systematically and confirm tenant-safe `404` behavior.
+- Add structured request/run/job correlation logs and safe provider diagnostics.
+- Verify ingestion, generation dispatch, purge, abandoned-upload, failed-output, and thumbnail orphan reconciliation.
+- Configure Trigger.dev concurrency and retry policy.
+- Document emergency admission controls and provider-spend alerts.
+- Add a concise operations runbook without building a general admin product.
 
-### E-073A - Automated Accessibility And UI Integrity Verification
+### E-053 - Stage The MVP And Run Engineering Verification
 
-**Status:** Blocked by E-071
-
-**Owner:** AI
-
-Run objective accessibility and UI-integrity checks for keyboard access, semantic labels, focus handling, obvious overflow, broken responsive layouts, console errors, and failed media states. Report findings without declaring the design accepted.
-
-### E-073B - Holistic User QA And UI Critique Gate
-
-**Status:** Blocked by E-073A
-
-**Owner:** User
-
-The user reviews the complete product as one system rather than isolated screens and decides whether navigation, terminology, density, consistency, responsive behavior, media states, destructive actions, and the overall creative loop meet the intended product quality.
-
-### E-074 - Operational Reliability
-
-**Status:** Blocked by E-071
-
-Add structured logging, request/job correlation IDs, safe provider diagnostics, Trigger retry/concurrency policy, abandoned-upload cleanup, failed-output cleanup, R2 lifecycle expectations, and a short operations runbook.
-
-### E-075A - Staging Deployment And Engineering Verification
-
-**Status:** Blocked by E-072 through E-074
+**Status:** Blocked by E-051 and E-052
 
 **Owner:** AI
 
-Deploy API, dashboard, database migrations, R2, Trigger.dev, and provider credentials to staging. Run objective deployment, health, integration, and real-model smoke checks with realistic media sizes. Provide the staging URL, test data expectations, known risks, and a focused handoff checklist.
+Deploy dashboard, API, migrations, R2, Trigger.dev, and OpenRouter configuration to staging. Run health, auth, tenant, upload, processing, canvas, and controlled real-model smoke checks. Provide the staging URL, test-data expectations, known risks, and user handoff checklist.
 
-### E-075B - Staging User Acceptance Gate
+### E-054 - Final MVP User Acceptance Gate
 
-**Status:** Blocked by E-075A
+**Status:** Blocked by E-053
 
 **Owner:** User
 
-The user runs the complete staging acceptance pass, product QA, and final UI critique. Defects become new small implementation tasks rather than expanding the acceptance session. Only the user can mark the internal MVP accepted.
+The user evaluates the complete product as one system: Assets, Elements, Flows, generation, reuse, navigation, terminology, density, media states, destructive actions, responsive behavior, and creative value. Only the user can mark the MVP accepted.
 
 **M6 gate**
 
-The core creative loop is stable enough for controlled internal or invited-user testing. It is not yet a paid product.
+The image-based creative loop is stable enough for controlled internal or invited-user testing. It is not yet a paid launch.
 
 ---
 
-## Phase 2 Productization - Not Yet Scheduled
+## After MVP - Separately Planned Layers
 
-Only plan these after M6 has been validated:
+Do not silently append these to an MVP task.
+
+### Media Expansion
+
+Add Video Generation and then Audio Generation nodes using the existing Asset, context, run, job, provider, and output-ingestion foundations. Each modality gets its own small provider task, node UI task, reliability verification, and user QA gate.
+
+### Productization And Billing
+
+Use `docs/credits-planning.md` to create a separate execution plan for:
 
 ```txt
+cost estimates
 credit wallets and ledger
-generation estimates
-atomic credit reservations
-capture and release policy
-Stripe subscriptions and top-ups
-welcome promotional credits
-promotional-output public visibility
-gallery moderation and landing-page endpoint
-rate limiting and abuse controls
-realtime job subscriptions
-public API keys
+atomic reservations
+capture and release
+credit packs
+subscriptions
+Stripe billing
+usage history
+margin reporting
+welcome credits and abuse controls
 ```
 
-When this phase begins, update the DB and API design documents first, then create a separate execution plan for productization.
+### Later Creative Layers
+
+Plan Recipes, Tools, Storyboard, collaboration, simple Generate, public API/MCP, editing, and multi-node execution only after the MVP loop has evidence behind it. Their database seams are documented; their implementation is not authorized by this plan.
 
 ## Prompt For The First Implementation Session
 
@@ -766,10 +784,10 @@ Use this as the starting request for E-001:
 Implement E-001 from docs/mvp-execution-plan.md and nothing else.
 
 Read AGENTS.md, packages/db/AGENTS.md, docs/talelabs-product-vision.md,
-docs/db-design-planning.md, docs/api-design-planning.md, and
+docs/db-design-planning-v2.md, docs/api-design-planning-v2.md, and
 docs/mvp-execution-plan.md first.
 
-Create and run the complete MVP database migration, synchronize the Kysely
+Create and run the complete v2 core database migration, synchronize the Kysely
 schema types, verify the migration and constraints, and report the results.
-Do not add API routes, repositories, fixtures, seed data, or UI.
+Do not add API routes, repositories, fixtures, seed data, Trigger.dev tasks, or UI.
 ```
