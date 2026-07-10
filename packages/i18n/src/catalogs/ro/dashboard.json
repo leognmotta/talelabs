@@ -18,9 +18,9 @@
     "talelabsUser": "Utilizator TaleLabs"
   },
   "navigation": {
-    "assets": "Resurse",
+    "assets": "Fișiere",
     "elements": "Elemente",
-    "flows": "Fluxuri",
+    "flows": "Fluxuri de lucru",
     "generalSettings": "Setări generale",
     "inviteMember": "Invită membru",
     "organizationSettings": "Setările organizației",
@@ -45,7 +45,7 @@
     "invalidCredentials": "Adresa de e-mail sau parola este incorectă.",
     "openingGoogle": "Se deschide Google...",
     "organizationFirstDescription": "Spațiile personale de lucru sunt dezactivate. Conturile trebuie să fie conectate la o organizație înainte de a putea folosi tabloul de bord.",
-    "organizationFirstTitle": "Accesul la spațiul de lucru al organizației",
+    "organizationFirstTitle": "Este necesară o organizație",
     "signIn": "Autentificare",
     "signUp": "Înregistrare",
     "sessionExpired": "Sesiunea a expirat. Autentifică-te din nou.",
@@ -54,7 +54,7 @@
     "working": "Se procesează..."
   },
   "cookies": {
-    "analytics": "Analytics",
+    "analytics": "Analiză utilizare",
     "analyticsAria": "Cookie-uri de analiză",
     "analyticsDescription": "Ne ajută să înțelegem cum utilizați TaleLabs, astfel încât să putem îmbunătăți produsul. Aceste date sunt agregate și nu sunt utilizate pentru publicitate.",
     "description": "Gestionați modul în care TaleLabs utilizează module cookie și tehnologii similare. Cookie-urile esențiale sunt întotdeauna active.",
@@ -94,16 +94,16 @@
     "name": "Numele organizației",
     "noActive": "Nicio organizație activă.",
     "select": "Selectează organizația",
-    "slug": "Melc",
-    "slugDescription": "Folosit în adresele URL ale organizațiilor și în linkurile de invitație.",
+    "slug": "Adresa spațiului de lucru",
+    "slugDescription": "Folosită în adresa spațiului de lucru și în linkurile de invitație.",
     "switched": "Organizație schimbată",
     "system": "Sistem",
     "systemAdminAccess": "Acces administrator de sistem",
     "title": "Creați-vă organizația",
     "updated": "Organizație actualizată",
     "save": "Salvați organizația",
-    "workspaceSlug": "Spațiu de lucru slug",
-    "yourOrganizations": "Organizațiile tale"
+    "workspaceSlug": "Adresa spațiului de lucru",
+    "yourOrganizations": "Organizațiile dvs."
   },
   "settings": {
     "accountSecurity": "Securitatea contului",
@@ -141,7 +141,7 @@
     "creatingPassword": "Se creează...",
     "currentSession": "Sesiunea curentă",
     "device": "Dispozitiv",
-    "lastActive": "Ultima activitate {{date}}",
+    "lastActive": "Ultima activitate: {{date}}",
     "noSessions": "Nu s-au găsit sesiuni active.",
     "passwordCreated": "Parola creată",
     "passwordCreateDescription": "Creați o parolă pentru autentificarea prin e-mail.",
@@ -205,33 +205,33 @@
     "couldNotAccept": "Nu s-a putut accepta invitația.",
     "continue": "Continua",
     "goToDashboard": "Accesați tabloul de bord",
-    "invalid": "Jetonul de invitație lipsește.",
-    "organizationMissing": "Invitația a fost acceptată, dar nicio organizație nu a fost returnată.",
+    "invalid": "Invitația nu este validă sau este incompletă.",
+    "organizationMissing": "Invitația a fost acceptată, dar organizația nu a putut fi identificată.",
     "signInRequired": "Conectați-vă pentru a accepta această invitație.",
     "success": "Invitație acceptată. Se deschide spațiul de lucru...",
-    "title": "Invitație la organizație"
+    "title": "Invitație într-o organizație"
   },
   "validation": {
     "email": "Introdu o adresă de e-mail validă.",
     "logoUrl": "Introduceți o adresă URL de siglă validă.",
     "nameRequired": "Numele este obligatoriu.",
     "organizationNameRequired": "Numele organizației este obligatoriu.",
-    "organizationSlugRequired": "Este necesar un slug de organizare.",
+    "organizationSlugRequired": "Alegeți o adresă pentru spațiul de lucru.",
     "passwordCurrentRequired": "Este necesară parola curentă.",
     "passwordMinLength": "Parola trebuie să aibă cel puțin {{minimum}} caractere.",
     "required": "Acest câmp este obligatoriu.",
-    "workspaceSlugRequired": "Introduceți un slug de spațiu de lucru."
+    "workspaceSlugRequired": "Alegeți o adresă pentru spațiul de lucru."
   },
   "errors": {
     "active_organization_required": "Selectați sau creați o organizație pentru a continua.",
     "conflict": "Această schimbare intră în conflict cu starea actuală. Actualizați și încercați din nou.",
     "email_delivery_failed": "E-mailul nu a putut fi livrat. Încercați din nou mai târziu.",
-    "internal_error": "Ceva nu a funcționat. Încearcă din nou.",
+    "internal_error": "Ceva nu a funcționat. Încercați din nou.",
     "not_found": "Elementul solicitat nu a fost găsit.",
     "organization_access_required": "Nu aveți acces la această organizație.",
     "organization_admin_required": "Este necesar accesul administratorului organizației.",
-    "revision_conflict": "Acest flux s-a schimbat în altă parte. Actualizează-l și încearcă din nou.",
+    "revision_conflict": "Acest flux a fost modificat în altă parte. Reîncărcați pagina și încercați din nou.",
     "unauthenticated": "Autentifică-te pentru a continua.",
-    "validation_error": "Verifică câmpurile evidențiate și încearcă din nou."
+    "validation_error": "Verificați câmpurile evidențiate și încercați din nou."
   }
 }

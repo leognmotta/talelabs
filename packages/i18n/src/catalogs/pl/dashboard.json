@@ -18,9 +18,9 @@
     "talelabsUser": "Użytkownik TaleLabs"
   },
   "navigation": {
-    "assets": "Zasoby",
+    "assets": "Pliki",
     "elements": "Elementy",
-    "flows": "Przepływy",
+    "flows": "Przepływy pracy",
     "generalSettings": "Ustawienia ogólne",
     "inviteMember": "Zaproś członka",
     "organizationSettings": "Ustawienia organizacji",
@@ -30,7 +30,7 @@
   "workspace": {
     "accessUnavailable": "Dostęp do organizacji jest niedostępny",
     "activeOrganization": "Aktywna organizacja: {{organizationId}}",
-    "checkingAccess": "Sprawdzam dostęp do organizacji...",
+    "checkingAccess": "Sprawdzanie dostępu do organizacji...",
     "couldNotVerifyAccess": "Nie udało się zweryfikować dostępu do organizacji.",
     "createToStart": "Utwórz organizację, aby rozpocząć korzystanie z obszaru roboczego.",
     "loading": "Ładowanie obszaru roboczego",
@@ -43,9 +43,9 @@
     "createAccount": "Utwórz konto",
     "emailNotVerified": "Przed zalogowaniem zweryfikuj swój adres e-mail.",
     "invalidCredentials": "Adres e-mail lub hasło są nieprawidłowe.",
-    "openingGoogle": "Otwieram Google'a...",
+    "openingGoogle": "Otwieranie Google...",
     "organizationFirstDescription": "Osobiste obszary robocze są wyłączone. Aby móc korzystać z panelu, konta muszą być połączone z organizacją.",
-    "organizationFirstTitle": "Dostęp do obszaru roboczego bezpośrednio w organizacji",
+    "organizationFirstTitle": "Wymagana jest organizacja",
     "signIn": "Zaloguj się",
     "signUp": "Zarejestruj się",
     "sessionExpired": "Sesja wygasła. Zaloguj się ponownie.",
@@ -54,7 +54,7 @@
     "working": "Przetwarzanie..."
   },
   "cookies": {
-    "analytics": "Analityka",
+    "analytics": "Analiza użycia",
     "analyticsAria": "Analityczne pliki cookie",
     "analyticsDescription": "Pomaga nam zrozumieć, w jaki sposób korzystasz z TaleLabs, dzięki czemu możemy ulepszyć produkt. Dane te są agregowane i nie są wykorzystywane do celów reklamowych.",
     "description": "Zarządzaj sposobem, w jaki TaleLabs wykorzystuje pliki cookie i podobne technologie. Niezbędne pliki cookie są zawsze aktywne.",
@@ -94,15 +94,15 @@
     "name": "Nazwa organizacji",
     "noActive": "Brak aktywnej organizacji.",
     "select": "Wybierz organizację",
-    "slug": "Ślimak",
-    "slugDescription": "Używany w adresach URL organizacji i linkach zaproszeń.",
+    "slug": "Adres URL obszaru roboczego",
+    "slugDescription": "Używany w adresie obszaru roboczego i linkach z zaproszeniami.",
     "switched": "Organizacja zmieniona",
     "system": "Systemu",
     "systemAdminAccess": "Dostęp administratora systemu",
     "title": "Stwórz swoją organizację",
     "updated": "Organizacja zaktualizowana",
     "save": "Zapisz organizację",
-    "workspaceSlug": "Ślimak przestrzeni roboczej",
+    "workspaceSlug": "Adres URL obszaru roboczego",
     "yourOrganizations": "Twoje organizacje"
   },
   "settings": {
@@ -141,7 +141,7 @@
     "creatingPassword": "Tworzenie...",
     "currentSession": "Bieżąca sesja",
     "device": "Urządzenie",
-    "lastActive": "Ostatni aktywny {{date}}",
+    "lastActive": "Ostatnia aktywność: {{date}}",
     "noSessions": "Nie znaleziono aktywnych sesji.",
     "passwordCreated": "Hasło utworzone",
     "passwordCreateDescription": "Utwórz hasło do logowania się za pośrednictwem poczty e-mail.",
@@ -201,26 +201,26 @@
     "title": "Zespół"
   },
   "invitations": {
-    "accepting": "Akceptuję zaproszenie...",
+    "accepting": "Akceptowanie zaproszenia...",
     "couldNotAccept": "Nie można zaakceptować zaproszenia.",
     "continue": "Kontynuuj",
-    "goToDashboard": "Przejdź do pulpitu nawigacyjnego",
+    "goToDashboard": "Przejdź do panelu",
     "invalid": "Brak tokena zaproszenia.",
-    "organizationMissing": "Zaproszenie zostało przyjęte, ale żadna organizacja nie została zwrócona.",
+    "organizationMissing": "Zaproszenie zostało przyjęte, ale nie udało się ustalić organizacji.",
     "signInRequired": "Zaloguj się, aby zaakceptować to zaproszenie.",
-    "success": "Zaproszenie przyjęte. Otwieram obszar roboczy...",
-    "title": "Zaproszenie organizacji"
+    "success": "Zaproszenie przyjęte. Otwieranie obszaru roboczego...",
+    "title": "Zaproszenie do organizacji"
   },
   "validation": {
     "email": "Wpisz prawidłowy adres e-mail.",
     "logoUrl": "Wprowadź prawidłowy adres URL logo.",
     "nameRequired": "Nazwa jest wymagana.",
     "organizationNameRequired": "Nazwa organizacji jest wymagana.",
-    "organizationSlugRequired": "Wymagany jest ślimak organizacyjny.",
+    "organizationSlugRequired": "Wybierz adres URL obszaru roboczego.",
     "passwordCurrentRequired": "Wymagane jest aktualne hasło.",
     "passwordMinLength": "Hasło musi mieć co najmniej {{minimum}} znaków.",
     "required": "To pole jest wymagane.",
-    "workspaceSlugRequired": "Wprowadź informację o obszarze roboczym."
+    "workspaceSlugRequired": "Wybierz adres URL obszaru roboczego."
   },
   "errors": {
     "active_organization_required": "Aby kontynuować, wybierz lub utwórz organizację.",

@@ -40,6 +40,17 @@ let hasError = false
 const invariantMessages = new Map([
   ['common.appName', 'TaleLabs'],
 ])
+const localizedTerms = {
+  'de': { 'navigation.assets': 'Dateien' },
+  'es': { 'navigation.assets': 'Archivos' },
+  'fr': { 'navigation.assets': 'Fichiers' },
+  'it': { 'navigation.assets': 'File' },
+  'nl': { 'navigation.assets': 'Bestanden' },
+  'pl': { 'navigation.assets': 'Pliki' },
+  'pt-BR': { 'navigation.assets': 'Arquivos' },
+  'pt-PT': { 'navigation.assets': 'Ficheiros' },
+  'ro': { 'navigation.assets': 'Fișiere' },
+}
 
 for (const locale of locales.slice(1)) {
   const catalog = flatten(readCatalog(locale))
@@ -54,6 +65,13 @@ for (const locale of locales.slice(1)) {
   for (const [key, expected] of invariantMessages) {
     if (catalog.get(key) !== expected) {
       console.error(`${locale}: ${key} must remain exactly ${expected}`)
+      hasError = true
+    }
+  }
+
+  for (const [key, expected] of Object.entries(localizedTerms[locale])) {
+    if (catalog.get(key) !== expected) {
+      console.error(`${locale}: ${key} must use the approved term ${expected}`)
       hasError = true
     }
   }

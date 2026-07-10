@@ -18,7 +18,7 @@
     "talelabsUser": "Utilisateur de TaleLabs"
   },
   "navigation": {
-    "assets": "Ressources",
+    "assets": "Fichiers",
     "elements": "Éléments",
     "flows": "Flux",
     "generalSettings": "Paramètres généraux",
@@ -34,7 +34,7 @@
     "couldNotVerifyAccess": "Impossible de vérifier l'accès à l'organisation.",
     "createToStart": "Créez votre organisation pour commencer à utiliser l'espace de travail.",
     "loading": "Chargement de l'espace de travail",
-    "opening": "Ouvrir votre espace de travail"
+    "opening": "Ouverture de votre espace de travail"
   },
   "auth": {
     "authenticationFailed": "Échec de l’authentification.",
@@ -45,7 +45,7 @@
     "invalidCredentials": "L’e-mail ou le mot de passe est incorrect.",
     "openingGoogle": "Ouverture de Google...",
     "organizationFirstDescription": "Les espaces de travail personnels sont désactivés. Les comptes doivent être connectés à une organisation avant de pouvoir utiliser le tableau de bord.",
-    "organizationFirstTitle": "Accès à l’espace de travail axé sur l’organisation",
+    "organizationFirstTitle": "Une organisation est nécessaire",
     "signIn": "Se connecter",
     "signUp": "S’inscrire",
     "sessionExpired": "Votre session a expiré. Reconnectez-vous.",
@@ -54,7 +54,7 @@
     "working": "Traitement..."
   },
   "cookies": {
-    "analytics": "Analyse",
+    "analytics": "Analyse d’utilisation",
     "analyticsAria": "Cookies d'analyse",
     "analyticsDescription": "Nous aide à comprendre comment vous utilisez TaleLabs afin que nous puissions améliorer le produit. Ces données sont agrégées et ne sont pas utilisées à des fins publicitaires.",
     "description": "Gérez la manière dont TaleLabs utilise les cookies et les technologies similaires. Les cookies essentiels sont toujours actifs.",
@@ -62,7 +62,7 @@
     "essentialAria": "Cookies essentiels",
     "essentialDescription": "Nécessaire au fonctionnement de TaleLabs. Gère l’authentification, la sécurité et les fonctionnalités principales du produit.",
     "manage": "Gérer les cookies",
-    "marketing": "Commercialisation",
+    "marketing": "Marketing",
     "marketingAria": "Cookies marketing",
     "marketingDescription": "Nous permet de mesurer l'efficacité des campagnes et d'afficher du contenu pertinent sur d'autres plateformes.",
     "preferences": "Préférences en matière de cookies",
@@ -94,15 +94,15 @@
     "name": "Nom de l’organisation",
     "noActive": "Aucune organisation active.",
     "select": "Sélectionner une organisation",
-    "slug": "Limace",
-    "slugDescription": "Utilisé dans les URL d’organisation et les liens d’invitation.",
+    "slug": "Adresse de l’espace de travail",
+    "slugDescription": "Utilisée dans l’adresse de l’espace de travail et les liens d’invitation.",
     "switched": "Organisation changée",
     "system": "Système",
     "systemAdminAccess": "Accès administrateur système",
     "title": "Créez votre organisation",
     "updated": "Organisation mise à jour",
     "save": "Enregistrer l'organisation",
-    "workspaceSlug": "Limace d'espace de travail",
+    "workspaceSlug": "Adresse de l’espace de travail",
     "yourOrganizations": "Vos organisations"
   },
   "settings": {
@@ -141,7 +141,7 @@
     "creatingPassword": "Création...",
     "currentSession": "Session en cours",
     "device": "Appareil",
-    "lastActive": "Dernière activité {{date}}",
+    "lastActive": "Dernière activité : {{date}}",
     "noSessions": "Aucune session active trouvée.",
     "passwordCreated": "Mot de passe créé",
     "passwordCreateDescription": "Créez un mot de passe pour la connexion par e-mail.",
@@ -201,26 +201,26 @@
     "title": "Équipe"
   },
   "invitations": {
-    "accepting": "Accepter l'invitation...",
+    "accepting": "Acceptation de l’invitation...",
     "couldNotAccept": "Impossible d'accepter l'invitation.",
     "continue": "Continuer",
     "goToDashboard": "Aller au tableau de bord",
     "invalid": "Le jeton d'invitation est manquant.",
-    "organizationMissing": "L'invitation a été acceptée, mais aucune organisation n'a été renvoyée.",
+    "organizationMissing": "L’invitation a été acceptée, mais l’organisation n’a pas pu être identifiée.",
     "signInRequired": "Connectez-vous pour accepter cette invitation.",
-    "success": "Invitation acceptée. Ouvrir votre espace de travail...",
-    "title": "Invitation à l'organisation"
+    "success": "Invitation acceptée. Ouverture de votre espace de travail...",
+    "title": "Invitation à rejoindre une organisation"
   },
   "validation": {
     "email": "Saisissez une adresse e-mail valide.",
     "logoUrl": "Saisissez une URL de logo valide.",
     "nameRequired": "Le nom est obligatoire.",
     "organizationNameRequired": "Le nom de l’organisation est requis.",
-    "organizationSlugRequired": "Le slug d’organisation est requis.",
+    "organizationSlugRequired": "Choisissez une adresse pour l’espace de travail.",
     "passwordCurrentRequired": "Le mot de passe actuel est requis.",
     "passwordMinLength": "Le mot de passe doit contenir au moins {{minimum}} caractères.",
     "required": "Ce champ est obligatoire.",
-    "workspaceSlugRequired": "Entrez un slug d’espace de travail."
+    "workspaceSlugRequired": "Choisissez une adresse pour l’espace de travail."
   },
   "errors": {
     "active_organization_required": "Sélectionnez ou créez une organisation pour continuer.",

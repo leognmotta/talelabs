@@ -18,7 +18,7 @@
     "talelabsUser": "Utilizador do TaleLabs"
   },
   "navigation": {
-    "assets": "Recursos",
+    "assets": "Ficheiros",
     "elements": "Elementos",
     "flows": "Fluxos",
     "generalSettings": "Definições gerais",
@@ -44,8 +44,8 @@
     "emailNotVerified": "Verifique o seu e-mail antes de iniciar sessão.",
     "invalidCredentials": "O e-mail ou a palavra-passe estão incorretos.",
     "openingGoogle": "Abrindo o Google...",
-    "organizationFirstDescription": "Os espaços de trabalho pessoais estão desativados. As contas devem estar ligadas a uma organização antes de poderem utilizar o dashboard.",
-    "organizationFirstTitle": "Acesso ao espaço de trabalho que prioriza a organização",
+    "organizationFirstDescription": "Os espaços de trabalho pessoais estão desativados. As contas têm de estar ligadas a uma organização antes de poderem utilizar o painel.",
+    "organizationFirstTitle": "É necessário ter uma organização",
     "signIn": "Iniciar sessão",
     "signUp": "Registar",
     "sessionExpired": "A sua sessão expirou. Inicie sessão novamente.",
@@ -54,7 +54,7 @@
     "working": "A processar..."
   },
   "cookies": {
-    "analytics": "Análise",
+    "analytics": "Análise de utilização",
     "analyticsAria": "Cookies analíticos",
     "analyticsDescription": "Ajuda-nos a compreender como utiliza o TaleLabs para que possamos melhorar o produto. Estes dados são agregados e não utilizados para publicidade.",
     "description": "Faça a gestão da forma como a TaleLabs utiliza cookies e tecnologias similares. Os cookies essenciais estão sempre ativos.",
@@ -62,7 +62,7 @@
     "essentialAria": "Cookies essenciais",
     "essentialDescription": "Necessário para o funcionamento do TaleLabs. Lida com a autenticação, segurança e características principais do produto.",
     "manage": "Gerir cookies",
-    "marketing": "Comercialização",
+    "marketing": "Marketing",
     "marketingAria": "Cookies de marketing",
     "marketingDescription": "Permite-nos medir a eficácia da campanha e mostrar conteúdo relevante noutras plataformas.",
     "preferences": "Preferências de cookies",
@@ -94,15 +94,15 @@
     "name": "Nome da organização",
     "noActive": "Nenhuma organização ativa.",
     "select": "Selecionar organização",
-    "slug": "Slug",
-    "slugDescription": "Utilizado em URLs de organizações e links de convite.",
+    "slug": "Endereço do espaço de trabalho",
+    "slugDescription": "Utilizado no endereço do espaço de trabalho e nas ligações de convite.",
     "switched": "Organização alterada",
     "system": "Sistema",
     "systemAdminAccess": "Acesso de administrador do sistema",
     "title": "Crie a sua organização",
     "updated": "Organização atualizada",
     "save": "Guardar organização",
-    "workspaceSlug": "Slug do espaço de trabalho",
+    "workspaceSlug": "Endereço do espaço de trabalho",
     "yourOrganizations": "As suas organizações"
   },
   "settings": {
@@ -141,7 +141,7 @@
     "creatingPassword": "Criando...",
     "currentSession": "Sessão atual",
     "device": "Dispositivo",
-    "lastActive": "Último ativo {{date}}",
+    "lastActive": "Última atividade: {{date}}",
     "noSessions": "Nenhuma sessão ativa encontrada.",
     "passwordCreated": "Senha criada",
     "passwordCreateDescription": "Crie uma palavra-passe para o login por e-mail.",
@@ -204,9 +204,9 @@
     "accepting": "Aceitando convite...",
     "couldNotAccept": "Não foi possível aceitar o convite.",
     "continue": "Continuar",
-    "goToDashboard": "Vá para o painel",
-    "invalid": "O token de convite está em falta.",
-    "organizationMissing": "O convite foi aceite, mas nenhuma organização foi devolvida.",
+    "goToDashboard": "Ir para o painel",
+    "invalid": "O convite é inválido ou está incompleto.",
+    "organizationMissing": "O convite foi aceite, mas não foi possível identificar a organização.",
     "signInRequired": "Faça login para aceitar este convite.",
     "success": "Convite aceite. Abrindo o seu espaço de trabalho...",
     "title": "Convite da organização"
@@ -216,11 +216,11 @@
     "logoUrl": "Introduza um URL de logótipo válido.",
     "nameRequired": "O nome é obrigatório.",
     "organizationNameRequired": "O nome da organização é obrigatório.",
-    "organizationSlugRequired": "O slug da organização é obrigatório.",
+    "organizationSlugRequired": "Escolha um endereço para o espaço de trabalho.",
     "passwordCurrentRequired": "A palavra-passe atual é obrigatória.",
     "passwordMinLength": "A palavra-passe deve ter pelo menos {{minimum}} caracteres.",
     "required": "Este campo é obrigatório.",
-    "workspaceSlugRequired": "Insira um slug do espaço de trabalho."
+    "workspaceSlugRequired": "Escolha um endereço para o espaço de trabalho."
   },
   "errors": {
     "active_organization_required": "Selecione ou crie uma organização para continuar.",
@@ -230,7 +230,7 @@
     "not_found": "O item pedido não foi encontrado.",
     "organization_access_required": "Não tem acesso a esta organização.",
     "organization_admin_required": "É necessário acesso de administrador da organização.",
-    "revision_conflict": "Esse fluxo mudou noutro lugar. Atualize-o e tente novamente.",
+    "revision_conflict": "Este fluxo foi alterado noutro local. Recarregue a página e tente novamente.",
     "unauthenticated": "Inicie sessão para continuar.",
     "validation_error": "Verifique os campos destacados e tente novamente."
   }
