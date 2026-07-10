@@ -46,3 +46,35 @@ Execution rules that hold across all work:
 4. Element and node type vocabularies live in code registries, not the database.
 5. Costs (`creditCost`, `providerCostUsd`) are recorded on every generation job from day one; no balances or enforcement until the credit system ships.
 6. Credits and billing belong in account/header/billing UI, never the main creative navigation.
+
+## Internationalization rules
+
+TaleLabs is internationalized through `@talelabs/i18n` and `react-i18next`.
+Every new feature and every change to user-facing copy must preserve full support
+for these locales:
+
+```txt
+en
+pt-BR
+pt-PT
+es
+fr
+de
+it
+nl
+pl
+ro
+```
+
+Rules that hold across all product work:
+
+1. Never hard-code user-facing text in UI code. This includes headings, buttons, labels, placeholders, helper text, validation messages, toasts, dialogs, empty/loading/error states, tooltips, and accessibility text such as `aria-label`.
+2. Add or update the English source key and every supported locale in the same change. Run `npm run i18n:check`; missing keys, unknown keys, interpolation mismatches, and protected terminology must fail validation.
+3. Translate meaning and product intent, not words literally. Follow `packages/i18n/TRANSLATION_GUIDE.md` for approved terminology, regional voice, brand terms, and words intentionally retained in English. When a term is ambiguous, research established usage in that language before choosing it.
+4. Keep `TaleLabs` unchanged in every locale. Keep internal domain names such as `Asset` or database fields separate from user-facing terminology; for example, the Assets navigation describes image/video/audio files using the natural local word for “Files.”
+5. Use `useTranslation` for React UI and `Trans` only when translated copy contains React elements. Reuse the shared locale registry and lazy-loaded catalogs from `@talelabs/i18n`; do not create feature-local locale lists or a second i18n instance.
+6. Zod and React Hook Form schemas must emit stable translation keys or structured validation codes, never final English sentences. Translate errors at render time with the shared localized field-error path.
+7. API errors must keep stable machine-readable `code`, `field`, and `params` values. Clients translate known codes and may use the server message only as a fallback. Continue sending the resolved locale through `Accept-Language`.
+8. Default language selection follows the browser’s preferred locales, falls back from a region to a supported base language, and always falls back to `en` when unsupported. A saved explicit user preference overrides browser detection; “Auto-detect” restores browser-based selection.
+9. Use the resolved locale with `Intl` for dates, times, numbers, currencies, and plural-sensitive copy. Do not manually assemble locale-sensitive output.
+10. Before completing a feature, run the catalog check, relevant tests, type-checking, lint, and a production build to catch missing translations and lazy-loading failures.
