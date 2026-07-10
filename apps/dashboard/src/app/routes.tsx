@@ -13,6 +13,15 @@ import { toast } from 'sonner'
 import { authClient, signOut, useSession } from '../features/auth/auth-client'
 import { AuthScreen } from '../features/auth/auth-screen'
 import { BoardsScreen } from '../features/boards/boards-screen'
+import { BrandDetail } from '../features/brands/brand-detail'
+import { BrandEditor } from '../features/brands/brand-editor'
+import { BrandIndex } from '../features/brands/brand-index'
+import { BrandsLayout } from '../features/brands/brands-layout'
+import { CharacterDetail } from '../features/characters/character-detail'
+import { CharacterEditor } from '../features/characters/character-editor'
+import { CharacterIndex } from '../features/characters/character-index'
+import { CharactersLayout } from '../features/characters/characters-layout'
+import { clearContextQueries } from '../features/context/context-query-cache'
 import {
   defaultCookiePreferences,
   getInitialCookiePreferences,
@@ -23,6 +32,15 @@ import { CookiePreferencesDialog } from '../features/cookies/cookie-preferences-
 import { AcceptInvitationScreen } from '../features/organizations/accept-invitation-screen'
 import { CreateOrganizationScreen } from '../features/organizations/create-organization-screen'
 import { useOrganizationSession } from '../features/organizations/use-organization-session'
+import { ProductDetail } from '../features/products/product-detail'
+import { ProductEditor } from '../features/products/product-editor'
+import { ProductIndex } from '../features/products/product-index'
+import { ProductsLayout } from '../features/products/products-layout'
+import { ProjectCreate } from '../features/projects/project-create'
+import { ProjectDetail } from '../features/projects/project-detail'
+import { ProjectEdit } from '../features/projects/project-edit'
+import { ProjectsIndex } from '../features/projects/projects-index'
+import { ProjectsLayout } from '../features/projects/projects-layout'
 import { DashboardLayout } from '../layouts/dashboard-layout'
 import { CreateOrganizationRoute } from '../routes/create-organization-route'
 import { ProtectedRoute } from '../routes/protected-route'
@@ -41,7 +59,9 @@ import {
 export function DashboardRoutes() {
   const session = useSession()
   const queryClient = useQueryClient()
-  const [theme, setTheme] = useState<ThemePreference>(getInitialThemePreference)
+  const [theme, setTheme] = useState<ThemePreference>(
+    getInitialThemePreference,
+  )
   const [cookiePreferences, setCookiePreferences] = useState(
     getInitialCookiePreferences,
   )
@@ -66,6 +86,7 @@ export function DashboardRoutes() {
 
   async function handleSignOut() {
     await signOut()
+    await clearContextQueries(queryClient)
     clearLastOrganizationId()
     organization.resetOrganizationSession()
     await session.refetch()
@@ -120,8 +141,8 @@ export function DashboardRoutes() {
       })
 
       if (activeResult.error) {
-        const message = activeResult.error.message
-          ?? 'Could not activate organization.'
+        const message
+          = activeResult.error.message ?? 'Could not activate organization.'
         toast.error(message)
         return message
       }
@@ -130,10 +151,13 @@ export function DashboardRoutes() {
     if (result.data?.id)
       storeLastOrganizationId(result.data.id)
 
+    await clearContextQueries(queryClient)
     await session.refetch()
     await organization.refreshOrganizationSession()
     await queryClient.invalidateQueries({ queryKey: getMeQueryKey() })
-    await queryClient.invalidateQueries({ queryKey: listOrganizationsQueryKey() })
+    await queryClient.invalidateQueries({
+      queryKey: listOrganizationsQueryKey(),
+    })
     toast.success('Organization created')
     return null
   }
@@ -143,28 +167,35 @@ export function DashboardRoutes() {
       await activateOrganization({ organizationId })
     }
     catch (error) {
-      const message = error instanceof Error
-        ? error.message
-        : 'Could not switch organization.'
+      const message
+        = error instanceof Error
+          ? error.message
+          : 'Could not switch organization.'
       toast.error(message)
       return message
     }
 
     storeLastOrganizationId(organizationId)
+    await clearContextQueries(queryClient)
     await session.refetch()
     await organization.refreshOrganizationSession()
     await queryClient.invalidateQueries({ queryKey: getMeQueryKey() })
-    await queryClient.invalidateQueries({ queryKey: listOrganizationsQueryKey() })
+    await queryClient.invalidateQueries({
+      queryKey: listOrganizationsQueryKey(),
+    })
     toast.success('Organization switched')
     return null
   }
 
   async function handleInvitationAccepted(organizationId: string) {
     storeLastOrganizationId(organizationId)
+    await clearContextQueries(queryClient)
     await session.refetch()
     await organization.refreshOrganizationSession()
     await queryClient.invalidateQueries({ queryKey: getMeQueryKey() })
-    await queryClient.invalidateQueries({ queryKey: listOrganizationsQueryKey() })
+    await queryClient.invalidateQueries({
+      queryKey: listOrganizationsQueryKey(),
+    })
   }
 
   if (session.isPending)
@@ -181,7 +212,10 @@ export function DashboardRoutes() {
               isSignedIn={isSignedIn}
               organizationStatus={organization.organizationStatus}
             >
-              <AuthScreen initialMode="sign-in" onAuthenticated={handleAuthenticated} />
+              <AuthScreen
+                initialMode="sign-in"
+                onAuthenticated={handleAuthenticated}
+              />
             </PublicRoute>
           )}
         />
@@ -193,7 +227,10 @@ export function DashboardRoutes() {
               isSignedIn={isSignedIn}
               organizationStatus={organization.organizationStatus}
             >
-              <AuthScreen initialMode="sign-up" onAuthenticated={handleAuthenticated} />
+              <AuthScreen
+                initialMode="sign-up"
+                onAuthenticated={handleAuthenticated}
+              />
             </PublicRoute>
           )}
         />
@@ -263,16 +300,42 @@ export function DashboardRoutes() {
           <Route path="studio" element={<BlankPage title="Studio" />} />
           <Route path="agent" element={<Navigate to="/assistant" replace />} />
           <Route path="assistant" element={<BlankPage title="Assistant" />} />
-          <Route path="characters" element={<BlankPage title="Characters" />} />
-          <Route path="brands" element={<BlankPage title="Brands" />} />
-          <Route path="products" element={<BlankPage title="Products" />} />
-          <Route path="projects" element={<BlankPage title="Projects" />} />
+          <Route path="characters" element={<CharactersLayout />}>
+            <Route index element={<CharacterIndex />} />
+            <Route path="new" element={<CharacterEditor />} />
+            <Route path=":characterId" element={<CharacterDetail />} />
+            <Route path=":characterId/edit" element={<CharacterEditor />} />
+          </Route>
+          <Route path="brands" element={<BrandsLayout />}>
+            <Route index element={<BrandIndex />} />
+            <Route path="new" element={<BrandEditor />} />
+            <Route path=":brandId" element={<BrandDetail />} />
+            <Route path=":brandId/edit" element={<BrandEditor />} />
+          </Route>
+          <Route path="products" element={<ProductsLayout />}>
+            <Route index element={<ProductIndex />} />
+            <Route path="new" element={<ProductEditor />} />
+            <Route path=":productId" element={<ProductDetail />} />
+            <Route path=":productId/edit" element={<ProductEditor />} />
+          </Route>
+          <Route path="projects" element={<ProjectsLayout />}>
+            <Route index element={<ProjectsIndex />} />
+            <Route path="new" element={<ProjectCreate />} />
+            <Route path=":projectId" element={<ProjectDetail />} />
+            <Route path=":projectId/edit" element={<ProjectEdit />} />
+          </Route>
           <Route path="assets" element={<BlankPage title="Assets" />} />
           <Route
             path="admin"
-            element={organization.isSystemAdmin
-              ? <BlankPage title="Admin" />
-              : <Navigate to="/generate" replace />}
+            element={
+              organization.isSystemAdmin
+                ? (
+                    <BlankPage title="Admin" />
+                  )
+                : (
+                    <Navigate to="/generate" replace />
+                  )
+            }
           />
           <Route path="*" element={<Navigate to="/generate" replace />} />
         </Route>

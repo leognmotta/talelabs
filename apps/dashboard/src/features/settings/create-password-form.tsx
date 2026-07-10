@@ -1,7 +1,7 @@
 import type { CreatePasswordFormValues } from './settings-schemas'
 
 import { zodResolver } from '@hookform/resolvers/zod'
-import { ApiError, setAccountPassword } from '@talelabs/sdk'
+import { setAccountPassword } from '@talelabs/sdk'
 import { Button } from '@talelabs/ui/components/button'
 import {
   Field,
@@ -11,6 +11,7 @@ import {
 import { Input } from '@talelabs/ui/components/input'
 import { Controller, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
+import { getApiErrorMessage } from '../../shared/lib/api-error'
 import { createPasswordSchema } from './settings-schemas'
 
 export function CreatePasswordForm({
@@ -44,13 +45,10 @@ export function CreatePasswordForm({
       toast.success('Password created')
     }
     catch (caughtError) {
-      const message = caughtError instanceof ApiError
-        && caughtError.data
-        && typeof caughtError.data === 'object'
-        && 'error' in caughtError.data
-        && typeof caughtError.data.error === 'string'
-        ? caughtError.data.error
-        : 'Could not create password.'
+      const message = getApiErrorMessage(
+        caughtError,
+        'Could not create password.',
+      )
 
       form.setError('root.serverError', {
         message,
