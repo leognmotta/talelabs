@@ -127,6 +127,7 @@ This is the first implementation task.
 **Scope**
 
 - Create the next Kysely migration, expected to be `packages/db/src/migrations/003_talelabs_mvp.ts`.
+- Preserve the applied `003` migration and use `004_camel_case_domain_schema.ts` to align TaleLabs physical identifiers with Better Auth's quoted camelCase convention.
 - Implement every table, foreign key, check constraint, index, and delete behavior from `docs/db-design-planning.md`.
 - Add the corresponding Kysely table interfaces to `packages/db/src/schema.ts` and register them in `Database`.
 - Implement a complete `down` migration in reverse dependency order.
@@ -140,31 +141,31 @@ products
 characters
 projects
 folders
-generation_jobs
+generationJobs
 assets
-generation_job_characters
-generation_job_inputs
+generationJobCharacters
+generationJobInputs
 tags
-asset_tags
-brand_characters
-project_assets
-project_brands
-project_products
-project_characters
-brand_assets
-product_assets
-character_assets
+assetTags
+brandCharacters
+projectAssets
+projectBrands
+projectProducts
+projectCharacters
+brandAssets
+productAssets
+characterAssets
 ```
 
-`assets` must exist before `generation_job_inputs`, even though inputs are discussed in the generation section of the design document.
+`assets` must exist before `generationJobInputs`, even though inputs are discussed in the generation section of the design document. Migration `003` creates the original identifiers in this order; migration `004` renames them to the final camelCase form without rebuilding tables.
 
 **Naming constraint**
 
-The existing Better Auth tables use quoted camelCase columns, while new TaleLabs domain tables use snake_case. Do not add a global Kysely camel-case plugin that could rewrite Better Auth queries. Keep the physical schema honest and choose an explicit domain mapping strategy. The simplest Phase 1 option is snake_case Kysely properties for domain tables and camelCase response mapping in the API data/service layer.
+Better Auth and TaleLabs domain tables use quoted camelCase identifiers. Do not add a global Kysely camel-case plugin: Kysely properties should match the physical identifiers directly, and PostgreSQL DDL must quote camelCase table and column names.
 
 **Acceptance criteria**
 
-- A clean database migrates from `001` through `003` successfully.
+- A clean database migrates from `001` through `004` successfully.
 - Running the migrator again reports no pending migration and changes nothing.
 - All planned tables and indexes exist.
 - Check constraints reject invalid status, media type, visibility, source, role, and credit-source values.
@@ -191,7 +192,7 @@ Also inspect PostgreSQL metadata for the created tables, indexes, and constraint
 - Add a minimal database test strategy for domain queries.
 - Create reusable fixtures for two organizations, users, and members.
 - Establish helpers that require `organizationId` for tenant-owned reads and writes.
-- Document how domain rows map from snake_case persistence to camelCase service objects.
+- Document that domain persistence and service objects both use camelCase identifiers.
 
 **Acceptance criteria**
 
