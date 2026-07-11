@@ -3,6 +3,7 @@ import type { Database } from './schema.js'
 import { Kysely, PostgresDialect, sql } from 'kysely'
 import { Pool } from 'pg'
 
+import { preserveVerifiedSslMode } from './connection-string.js'
 import './env.js'
 
 const connectionString = process.env.POSTGRES_URL
@@ -14,7 +15,7 @@ if (!connectionString) {
 }
 
 export const pool = new Pool({
-  connectionString,
+  connectionString: preserveVerifiedSslMode(connectionString),
 })
 
 export const db = new Kysely<Database>({
@@ -29,3 +30,4 @@ export async function destroyDb() {
 
 export { sql }
 export type { Database }
+export type * from './schema.js'

@@ -256,6 +256,31 @@ export interface AssetTable {
   purgedAt: NullableTimestamp
 }
 
+export interface AssetFavoriteTable {
+  organizationId: string
+  userId: string
+  assetId: string
+  createdAt: GeneratedTimestamp
+}
+
+export interface TagTable {
+  id: string
+  organizationId: string
+  createdBy: string | null
+  name: string
+  normalizedName: string
+  createdAt: GeneratedTimestamp
+  updatedAt: GeneratedTimestamp
+}
+
+export interface AssetTagTable {
+  organizationId: string
+  assetId: string
+  tagId: string
+  createdBy: string | null
+  createdAt: GeneratedTimestamp
+}
+
 export interface ElementTable {
   id: string
   organizationId: string
@@ -328,6 +353,8 @@ export interface GenerationJobInputTable {
 
 export interface Database {
   account: AccountTable
+  assetFavorites: AssetFavoriteTable
+  assetTags: AssetTagTable
   assets: AssetTable
   elementAssets: ElementAssetTable
   elements: ElementTable
@@ -344,6 +371,7 @@ export interface Database {
   member: MemberTable
   organization: OrganizationTable
   session: SessionTable
+  tags: TagTable
   user: UserTable
   verification: VerificationTable
 }
