@@ -1,7 +1,7 @@
 import type { LanguagePreference } from '@talelabs/i18n'
 import type { SettingsTab } from '../features/settings/settings-state'
 import type { ThemePreference } from '../shared/lib/theme'
-import { IconCookie, IconDots } from '@tabler/icons-react'
+import { IconArchive, IconCookie, IconDots } from '@tabler/icons-react'
 import { Button } from '@talelabs/ui/components/button'
 import {
   DropdownMenu,
@@ -19,9 +19,12 @@ import {
 import { TooltipProvider } from '@talelabs/ui/components/tooltip'
 import { parseAsStringEnum, useQueryState } from 'nuqs'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Outlet } from 'react-router'
+import { AssetViewerDialog } from '../features/assets/asset-viewer-dialog'
+import { useAssetViewerUrlState } from '../features/assets/use-asset-viewer-url-state'
+import { OrganizationScopeProvider } from '../features/organizations/organization-scope'
 import { SettingsDialog } from '../features/settings/settings-dialog'
 import { settingsTabs } from '../features/settings/settings-state'
 import { AppSidebar } from './app-sidebar'
@@ -29,6 +32,11 @@ import { GlobalSearch } from './global-search'
 
 const SIDEBAR_OPEN_DELAY_MS = 60
 const SIDEBAR_CLOSE_DELAY_MS = 240
+
+const loadAssetLibraryDialog = () => import('../features/assets/asset-library-dialog')
+const AssetLibraryDialog = lazy(async () => ({
+  default: (await loadAssetLibraryDialog()).AssetLibraryDialog,
+}))
 
 export function DashboardLayout({
   activeOrganizationId,
@@ -66,6 +74,8 @@ export function DashboardLayout({
   )
   const activeSettingsTab = settingsTab ?? 'general'
   const isSettingsOpen = settingsTab !== null
+  const assetViewer = useAssetViewerUrlState()
+  const [isAssetLibraryOpen, setIsAssetLibraryOpen] = useState(false)
   const [isTeamInviteFormOpen, setIsTeamInviteFormOpen] = useState(false)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const isSidebarOpenRef = useRef(false)
@@ -263,86 +273,123 @@ export function DashboardLayout({
   }
 
   return (
-    <TooltipProvider>
-      <SidebarProvider
-        open={isSidebarOpen}
-        onOpenChange={setSidebarOpenState}
-      >
-        <AppSidebar
-          activeOrganizationId={activeOrganizationId}
-          email={email}
-          name={name}
-          onCreateOrganization={onCreateOrganization}
-          onOpenInviteMemberSettings={handleOpenInviteMemberSettings}
-          onOpenSettings={handleOpenSettings}
-          onSignOut={onSignOut}
-          onSidebarOverlayOpenChange={handleSidebarOverlayOpenChange}
-          onSwitchOrganization={onSwitchOrganization}
-          onPointerEnter={handleSidebarPointerEnter}
-          onPointerLeave={handleSidebarPointerLeave}
-        />
-        <SidebarInset>
-          <main className="
-            flex min-h-svh flex-col bg-background text-foreground
-          "
-          >
-            <header className="flex h-16 shrink-0 items-center gap-3 px-6">
-              <SidebarTrigger className="md:hidden" />
-              <div className="flex min-w-0 flex-1 justify-center">
-                <GlobalSearch
-                  onOpenInviteMemberSettings={handleOpenInviteMemberSettings}
-                  onOpenSettings={handleOpenSettings}
-                />
-              </div>
-              <DropdownMenu>
-                <DropdownMenuTrigger
-                  render={(
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      aria-label={t('common.moreOptions')}
-                    />
-                  )}
+    <OrganizationScopeProvider organizationId={activeOrganizationId}>
+      <TooltipProvider>
+        <SidebarProvider
+          className="h-svh min-h-0 overflow-hidden"
+          open={isSidebarOpen}
+          onOpenChange={setSidebarOpenState}
+        >
+          <AppSidebar
+            activeOrganizationId={activeOrganizationId}
+            email={email}
+            name={name}
+            onCreateOrganization={onCreateOrganization}
+            onOpenInviteMemberSettings={handleOpenInviteMemberSettings}
+            onOpenSettings={handleOpenSettings}
+            onSignOut={onSignOut}
+            onSidebarOverlayOpenChange={handleSidebarOverlayOpenChange}
+            onSwitchOrganization={onSwitchOrganization}
+            onPointerEnter={handleSidebarPointerEnter}
+            onPointerLeave={handleSidebarPointerLeave}
+          />
+          <SidebarInset className="min-h-0 overflow-hidden">
+            <div className="
+              flex min-h-0 flex-1 flex-col bg-background text-foreground
+            "
+            >
+              <header className="flex h-16 shrink-0 items-center gap-3 px-6">
+                <SidebarTrigger className="md:hidden" />
+                <div className="flex min-w-0 flex-1 justify-center">
+                  <GlobalSearch
+                    onOpenInviteMemberSettings={handleOpenInviteMemberSettings}
+                    onOpenSettings={handleOpenSettings}
+                  />
+                </div>
+                <Button
+                  aria-label={t('navigation.assets')}
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsAssetLibraryOpen(true)}
+                  onFocus={() => void loadAssetLibraryDialog()}
+                  onMouseEnter={() => void loadAssetLibraryDialog()}
                 >
-                  <IconDots />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuGroup>
-                    <DropdownMenuItem onClick={onOpenCookiePreferences}>
-                      <IconCookie />
-                      <span>{t('cookies.manage')}</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuGroup>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </header>
-            <Separator />
-            <section className="flex flex-1 flex-col gap-6 p-6">
-              <Outlet />
-            </section>
-          </main>
-        </SidebarInset>
-        <SettingsDialog
-          activeOrganizationId={activeOrganizationId}
-          currentSessionId={currentSessionId}
-          email={email || t('common.workspaceMember')}
-          isTeamInviteFormOpen={isTeamInviteFormOpen}
-          language={language}
-          name={name || t('common.talelabsUser')}
-          onLanguageChange={onLanguageChange}
-          onOpenChange={handleSettingsOpenChange}
-          onOpenCookiePreferences={onOpenCookiePreferences}
-          onProfileUpdated={onProfileUpdated}
-          onSignOut={onSignOut}
-          onTabChange={handleSettingsTabChange}
-          onTeamInviteFormOpenChange={setIsTeamInviteFormOpen}
-          onThemeChange={onThemeChange}
-          open={isSettingsOpen}
-          tab={activeSettingsTab}
-          theme={theme}
-        />
-      </SidebarProvider>
-    </TooltipProvider>
+                  <IconArchive data-icon="inline-start" />
+                  <span className="
+                    hidden
+                    sm:inline
+                  "
+                  >
+                    {t('navigation.assets')}
+                  </span>
+                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger
+                    render={(
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        aria-label={t('common.moreOptions')}
+                      />
+                    )}
+                  >
+                    <IconDots />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuGroup>
+                      <DropdownMenuItem onClick={onOpenCookiePreferences}>
+                        <IconCookie />
+                        <span>{t('cookies.manage')}</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuGroup>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </header>
+              <Separator />
+              <section className="
+                flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto p-6
+              "
+              >
+                <Outlet />
+              </section>
+            </div>
+          </SidebarInset>
+          <SettingsDialog
+            activeOrganizationId={activeOrganizationId}
+            currentSessionId={currentSessionId}
+            email={email || t('common.workspaceMember')}
+            isTeamInviteFormOpen={isTeamInviteFormOpen}
+            language={language}
+            name={name || t('common.talelabsUser')}
+            onLanguageChange={onLanguageChange}
+            onOpenChange={handleSettingsOpenChange}
+            onOpenCookiePreferences={onOpenCookiePreferences}
+            onProfileUpdated={onProfileUpdated}
+            onSignOut={onSignOut}
+            onTabChange={handleSettingsTabChange}
+            onTeamInviteFormOpenChange={setIsTeamInviteFormOpen}
+            onThemeChange={onThemeChange}
+            open={isSettingsOpen}
+            tab={activeSettingsTab}
+            theme={theme}
+          />
+          {isAssetLibraryOpen && (
+            <Suspense fallback={null}>
+              <AssetLibraryDialog
+                mode="manage"
+                open={isAssetLibraryOpen}
+                onOpenAsset={(asset) => {
+                  setIsAssetLibraryOpen(false)
+                  assetViewer.openAsset(asset.id)
+                }}
+                onOpenChange={setIsAssetLibraryOpen}
+              />
+            </Suspense>
+          )}
+          <AssetViewerDialog />
+        </SidebarProvider>
+      </TooltipProvider>
+    </OrganizationScopeProvider>
   )
 }

@@ -24,7 +24,9 @@ export function useOrganizationSession({
       enabled: isSignedIn && organizationStatus === 'ready',
     },
   })
-  const activeWorkspaceId = meQuery.data?.activeOrganizationId ?? activeOrganizationId
+  const activeWorkspaceId = activeOrganizationId
+    ?? meQuery.data?.activeOrganizationId
+    ?? null
   const isSystemAdmin = meQuery.data?.isSystemAdmin ?? sessionIsSystemAdmin
   const accountLocale = meQuery.data ? meQuery.data.user.locale : sessionLocale
   const hasCheckedOrganization = !isSignedIn

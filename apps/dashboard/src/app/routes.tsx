@@ -9,7 +9,7 @@ import {
 import { Toaster } from '@talelabs/ui/components/sonner'
 import { useQueryClient } from '@tanstack/react-query'
 import { parseAsBoolean, useQueryState } from 'nuqs'
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Navigate, Route, Routes } from 'react-router'
 import { toast } from 'sonner'
@@ -24,6 +24,10 @@ import {
 import { CookiePreferencesDialog } from '../features/cookies/cookie-preferences-dialog'
 import { AcceptInvitationScreen } from '../features/organizations/accept-invitation-screen'
 import { CreateOrganizationScreen } from '../features/organizations/create-organization-screen'
+import {
+  invalidateOrganizationProductQueries,
+  removeOrganizationProductQueries,
+} from '../features/organizations/organization-query-cache'
 import { useOrganizationSession } from '../features/organizations/use-organization-session'
 import { useLanguage } from '../i18n/language-context'
 import { DashboardLayout } from '../layouts/dashboard-layout'
@@ -31,6 +35,8 @@ import { CreateOrganizationRoute } from '../routes/create-organization-route'
 import { ProtectedRoute } from '../routes/protected-route'
 import { PublicRoute } from '../routes/public-route'
 import { BlankPage } from '../shared/components/blank-page'
+import { ErrorBoundary } from '../shared/components/error-boundary'
+import { ErrorFallback } from '../shared/components/error-fallback'
 import { SplashScreen } from '../shared/components/splash-screen'
 import { getApiErrorMessage } from '../shared/lib/api-error'
 import {
@@ -41,6 +47,11 @@ import {
   getInitialThemePreference,
   storeThemePreference,
 } from '../shared/lib/theme'
+
+const AssetsScreen = lazy(async () => {
+  const module = await import('../features/assets/assets-screen')
+  return { default: module.AssetsScreen }
+})
 
 export function DashboardRoutes() {
   const { t } = useTranslation()
@@ -140,6 +151,7 @@ export function DashboardRoutes() {
   }
 
   async function handleCreateOrganization(name: string, slug: string) {
+    const previousOrganizationId = organization.activeWorkspaceId
     const result = await authClient.organization.create({ name, slug })
 
     if (result.error) {
@@ -159,6 +171,11 @@ export function DashboardRoutes() {
         toast.error(message)
         return message
       }
+
+      await removeOrganizationProductQueries(
+        queryClient,
+        previousOrganizationId,
+      )
     }
 
     if (result.data?.id)
@@ -167,6 +184,10 @@ export function DashboardRoutes() {
     await session.refetch()
     await organization.refreshOrganizationSession()
     await queryClient.invalidateQueries({ queryKey: getMeQueryKey() })
+    await removeOrganizationProductQueries(
+      queryClient,
+      previousOrganizationId,
+    )
     await queryClient.invalidateQueries({
       queryKey: listOrganizationsQueryKey(),
     })
@@ -175,6 +196,12 @@ export function DashboardRoutes() {
   }
 
   async function handleSwitchOrganization(organizationId: string) {
+    const previousOrganizationId = organization.activeWorkspaceId
+    await removeOrganizationProductQueries(
+      queryClient,
+      previousOrganizationId,
+    )
+
     try {
       await activateOrganization({ organizationId })
     }
@@ -184,6 +211,8 @@ export function DashboardRoutes() {
         'organizations.couldNotSwitch',
       )
       toast.error(message)
+      if (previousOrganizationId)
+        await invalidateOrganizationProductQueries(queryClient, previousOrganizationId)
       return message
     }
 
@@ -191,6 +220,10 @@ export function DashboardRoutes() {
     await session.refetch()
     await organization.refreshOrganizationSession()
     await queryClient.invalidateQueries({ queryKey: getMeQueryKey() })
+    await removeOrganizationProductQueries(
+      queryClient,
+      previousOrganizationId,
+    )
     await queryClient.invalidateQueries({
       queryKey: listOrganizationsQueryKey(),
     })
@@ -296,7 +329,24 @@ export function DashboardRoutes() {
           )}
         >
           <Route index element={<Navigate to="/assets" replace />} />
-          <Route path="assets" element={<BlankPage title={t('navigation.assets')} />} />
+          <Route
+            path="assets"
+            element={(
+              <ErrorBoundary
+                fallback={({ resetErrorBoundary }) => (
+                  <ErrorFallback
+                    description={t('assets.couldNotLoadDescription')}
+                    onRetry={resetErrorBoundary}
+                    title={t('assets.couldNotLoad')}
+                  />
+                )}
+              >
+                <Suspense fallback={<SplashScreen />}>
+                  <AssetsScreen />
+                </Suspense>
+              </ErrorBoundary>
+            )}
+          />
           <Route path="flows" element={<BlankPage title={t('navigation.flows')} />} />
           <Route path="elements" element={<BlankPage title={t('navigation.elements')} />} />
           <Route path="*" element={<Navigate to="/assets" replace />} />
