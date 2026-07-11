@@ -1,11 +1,8 @@
 import type { UserInvitationEmailProps } from './templates/user-invitation.js'
 
-import process from 'node:process'
-
 import { getResendClient } from './client.js'
+import { getInvitationFromAddress } from './config.js'
 import { UserInvitationEmail } from './templates/user-invitation.js'
-
-const DEFAULT_FROM_ADDRESS = 'TaleLabs <leo@tryconnecto.com>'
 
 export interface SendUserInvitationEmailInput extends UserInvitationEmailProps {
   invitationId: string
@@ -40,7 +37,7 @@ export async function sendUserInvitationEmail(input: SendUserInvitationEmailInpu
   const resend = getResendClient()
   const { data, error } = await resend.emails.send(
     {
-      from: process.env.RESEND_FROM_EMAIL ?? DEFAULT_FROM_ADDRESS,
+      from: getInvitationFromAddress(),
       to: [input.invitedEmail],
       subject: `Join ${input.organizationName} on TaleLabs`,
       react: <UserInvitationEmail {...input} />,

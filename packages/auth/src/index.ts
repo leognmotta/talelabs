@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import { db } from '@talelabs/db'
 import { sendUserInvitationEmail } from '@talelabs/email'
+import { validateEmailConfiguration } from '@talelabs/email/config'
 import { betterAuth } from 'better-auth'
 import { admin, organization } from 'better-auth/plugins'
 import {
@@ -9,6 +10,8 @@ import {
 import {
   defaultRoles as organizationDefaultRoles,
 } from 'better-auth/plugins/organization/access'
+
+validateEmailConfiguration()
 
 export const LAST_ORGANIZATION_COOKIE = 'talelabs_last_organization_id'
 export const SYSTEM_ADMIN_ROLE = 'system_admin'

@@ -1,4 +1,8 @@
 export {
+  getInvitationFromAddress,
+  validateEmailConfiguration,
+} from './config.js'
+export {
   EmailDeliveryError,
   sendUserInvitationEmail,
   type SendUserInvitationEmailInput,

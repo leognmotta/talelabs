@@ -8,6 +8,10 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
+    "./config": {
+      "types": "./src/config.ts",
+      "default": "./dist/config.js"
+    },
     "./templates/user-invitation": {
       "types": "./dist/templates/user-invitation.d.ts",
       "default": "./dist/templates/user-invitation.js"
@@ -15,7 +19,8 @@
   },
   "scripts": {
     "build": "tsc",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "dev:build": "tsc --watch --preserveWatchOutput"
   },
   "dependencies": {
     "react": "19.2.7",
