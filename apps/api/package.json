@@ -2,7 +2,7 @@
   "name": "api",
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
+    "dev": "NODE_ENV=development tsx watch src/index.ts",
     "build": "tsc",
     "check-types": "tsc --noEmit",
     "start": "node dist/index.js",
@@ -14,9 +14,12 @@
     "@hono/swagger-ui": "^0.6.1",
     "@hono/zod-openapi": "^1.4.0",
     "@paralleldrive/cuid2": "^3.3.0",
+    "@talelabs/assets": "*",
     "@talelabs/auth": "*",
     "@talelabs/db": "*",
     "@talelabs/i18n": "^0.0.0",
+    "@talelabs/storage": "*",
+    "@talelabs/trigger": "*",
     "hono": "^4.12.18",
     "zod": "^4.4.3"
   },
