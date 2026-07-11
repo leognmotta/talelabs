@@ -7,7 +7,13 @@ import { cn } from '@talelabs/ui/lib/utils'
 import { cva } from 'class-variance-authority'
 import * as React from 'react'
 
-function InputGroup({ className, ...props }: React.ComponentProps<'div'>) {
+function InputGroup({
+  className,
+  variant = 'default',
+  ...props
+}: React.ComponentProps<'div'> & {
+  variant?: 'default' | 'outline'
+}) {
   return (
     <div
       data-slot="input-group"
@@ -39,6 +45,7 @@ function InputGroup({ className, ...props }: React.ComponentProps<'div'>) {
           has-[>[data-align=inline-end]]:[&>input]:pr-1.5
           has-[>[data-align=inline-start]]:[&>input]:pl-1.5
         `,
+        variant === 'outline' && 'border-border bg-background shadow-xs',
         className,
       )}
       {...props}

@@ -42,10 +42,12 @@ function SheetOverlay({ className, ...props }: SheetPrimitive.Backdrop.Props) {
 function SheetContent({
   className,
   children,
+  closeLabel = 'Close',
   side = 'right',
   showCloseButton = true,
   ...props
 }: SheetPrimitive.Popup.Props & {
+  closeLabel?: string
   side?: 'top' | 'right' | 'bottom' | 'left'
   showCloseButton?: boolean
 }) {
@@ -100,7 +102,7 @@ function SheetContent({
             )}
           >
             <IconX />
-            <span className="sr-only">Close</span>
+            <span className="sr-only">{closeLabel}</span>
           </SheetPrimitive.Close>
         )}
       </SheetPrimitive.Popup>
