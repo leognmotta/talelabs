@@ -57,14 +57,14 @@ export function AppSidebar({
         <NavMain
           items={[
             {
-              title: t('navigation.assets'),
-              url: '/assets',
-              icon: <IconArchive />,
-            },
-            {
               title: t('navigation.flows'),
               url: '/flows',
               icon: <IconGitBranch />,
+            },
+            {
+              title: t('navigation.assets'),
+              url: '/assets',
+              icon: <IconArchive />,
             },
             {
               title: t('navigation.elements'),

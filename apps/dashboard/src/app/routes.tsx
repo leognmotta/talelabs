@@ -29,6 +29,7 @@ import {
   removeOrganizationProductQueries,
 } from '../features/organizations/organization-query-cache'
 import { useOrganizationSession } from '../features/organizations/use-organization-session'
+import { uploadManager } from '../features/uploads/upload-manager'
 import { useLanguage } from '../i18n/language-context'
 import { DashboardLayout } from '../layouts/dashboard-layout'
 import { CreateOrganizationRoute } from '../routes/create-organization-route'
@@ -51,6 +52,26 @@ import {
 const AssetsScreen = lazy(async () => {
   const module = await import('../features/assets/assets-screen')
   return { default: module.AssetsScreen }
+})
+
+const ElementsScreen = lazy(async () => {
+  const module = await import('../features/elements/elements-screen')
+  return { default: module.ElementsScreen }
+})
+
+const ElementDetailScreen = lazy(async () => {
+  const module = await import('../features/elements/element-detail-screen')
+  return { default: module.ElementDetailScreen }
+})
+
+const ElementCreateScreen = lazy(async () => {
+  const module = await import('../features/elements/element-create-screen')
+  return { default: module.ElementCreateScreen }
+})
+
+const ElementEditScreen = lazy(async () => {
+  const module = await import('../features/elements/element-edit-screen')
+  return { default: module.ElementEditScreen }
 })
 
 export function DashboardRoutes() {
@@ -91,6 +112,7 @@ export function DashboardRoutes() {
   }
 
   async function handleSignOut() {
+    await uploadManager.cancelAll()
     await signOut()
     queryClient.clear()
     clearLastOrganizationId()
@@ -152,9 +174,11 @@ export function DashboardRoutes() {
 
   async function handleCreateOrganization(name: string, slug: string) {
     const previousOrganizationId = organization.activeWorkspaceId
+    await uploadManager.cancelOrganization(previousOrganizationId)
     const result = await authClient.organization.create({ name, slug })
 
     if (result.error) {
+      uploadManager.setActiveOrganization(previousOrganizationId)
       const message = t('organizations.couldNotCreate')
       toast.error(message)
       return message
@@ -166,6 +190,7 @@ export function DashboardRoutes() {
       })
 
       if (activeResult.error) {
+        uploadManager.setActiveOrganization(previousOrganizationId)
         const message
           = t('organizations.couldNotActivate')
         toast.error(message)
@@ -197,6 +222,7 @@ export function DashboardRoutes() {
 
   async function handleSwitchOrganization(organizationId: string) {
     const previousOrganizationId = organization.activeWorkspaceId
+    await uploadManager.cancelOrganization(previousOrganizationId)
     await removeOrganizationProductQueries(
       queryClient,
       previousOrganizationId,
@@ -206,6 +232,7 @@ export function DashboardRoutes() {
       await activateOrganization({ organizationId })
     }
     catch (error) {
+      uploadManager.setActiveOrganization(previousOrganizationId)
       const message = getApiErrorMessage(
         error,
         'organizations.couldNotSwitch',
@@ -232,6 +259,7 @@ export function DashboardRoutes() {
   }
 
   async function handleInvitationAccepted(organizationId: string) {
+    await uploadManager.cancelAll()
     storeLastOrganizationId(organizationId)
     queryClient.clear()
     await session.refetch()
@@ -328,7 +356,7 @@ export function DashboardRoutes() {
             </ProtectedRoute>
           )}
         >
-          <Route index element={<Navigate to="/assets" replace />} />
+          <Route index element={<Navigate to="/flows" replace />} />
           <Route
             path="assets"
             element={(
@@ -348,7 +376,70 @@ export function DashboardRoutes() {
             )}
           />
           <Route path="flows" element={<BlankPage title={t('navigation.flows')} />} />
-          <Route path="elements" element={<BlankPage title={t('navigation.elements')} />} />
+          <Route
+            path="elements"
+            element={(
+              <ErrorBoundary
+                fallback={({ resetErrorBoundary }) => (
+                  <ErrorFallback
+                    description={t('elements.couldNotLoadDescription')}
+                    onRetry={resetErrorBoundary}
+                    title={t('elements.couldNotLoad')}
+                  />
+                )}
+              >
+                <Suspense fallback={<SplashScreen />}><ElementsScreen /></Suspense>
+              </ErrorBoundary>
+            )}
+          />
+          <Route
+            path="elements/new/:elementType"
+            element={(
+              <ErrorBoundary
+                fallback={({ resetErrorBoundary }) => (
+                  <ErrorFallback
+                    description={t('elements.couldNotLoadDescription')}
+                    onRetry={resetErrorBoundary}
+                    title={t('elements.couldNotLoad')}
+                  />
+                )}
+              >
+                <Suspense fallback={<SplashScreen />}><ElementCreateScreen /></Suspense>
+              </ErrorBoundary>
+            )}
+          />
+          <Route
+            path="elements/:elementId/edit"
+            element={(
+              <ErrorBoundary
+                fallback={({ resetErrorBoundary }) => (
+                  <ErrorFallback
+                    description={t('elements.couldNotLoadDescription')}
+                    onRetry={resetErrorBoundary}
+                    title={t('elements.couldNotLoad')}
+                  />
+                )}
+              >
+                <Suspense fallback={<SplashScreen />}><ElementEditScreen /></Suspense>
+              </ErrorBoundary>
+            )}
+          />
+          <Route
+            path="elements/:elementId"
+            element={(
+              <ErrorBoundary
+                fallback={({ resetErrorBoundary }) => (
+                  <ErrorFallback
+                    description={t('elements.couldNotLoadDescription')}
+                    onRetry={resetErrorBoundary}
+                    title={t('elements.couldNotLoad')}
+                  />
+                )}
+              >
+                <Suspense fallback={<SplashScreen />}><ElementDetailScreen /></Suspense>
+              </ErrorBoundary>
+            )}
+          />
           <Route path="*" element={<Navigate to="/assets" replace />} />
         </Route>
         <Route path="*" element={<Navigate to="/assets" replace />} />
