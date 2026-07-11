@@ -12,6 +12,7 @@ This is the **internal product API** consumed by the TaleLabs web app — not a 
 
 - **Hono + `@hono/zod-openapi`**: every route declares Zod request/response schemas; the OpenAPI document and Swagger UI are generated from them. The shapes in this document are the source for those Zod schemas — contract-first, one place.
 - **Better Auth** is mounted at `/api/auth/*` and owns sessions. All tenant resource routes (`/assets`, `/flows`, …) sit behind the repo's existing **`organizationMiddleware`** — it validates the session, requires an active organization (`403 active_organization_required`), and populates `organizationId`/`userId` for handlers. `authMiddleware + requireAuthMiddleware` alone is not enough: it does not resolve the active organization.
+- Organization-scoped product routes share one API-level fixed-window limit of **600 requests per 60 seconds per organization**, mounted after `organizationMiddleware`. The MVP store is intentionally process-local and bounded; each replica has an independent allowance until the store is replaced with shared Redis before horizontal scaling.
 - The error middleware already emits `apiError(code, message, details)` — this document's error contract is that helper, extended with the new codes below.
 - Route modules follow the existing pattern: `src/routes/<area>/<area>.routes.ts` + `<area>.schemas.ts`, one `register<Area>Routes(app)` per area.
 
@@ -40,7 +41,7 @@ type ListResponse<T> = { data: T[]; nextCursor: string | null };
 // ?limit=50 (default 50, max 200) &cursor=<opaque>
 ```
 
-Cursors are opaque encodings of **`(sort, order, sortValue, id)`** — stable under ties, and self-describing: a cursor replayed with different `sort`/`order` params → `400 validation_error` (the encoded sort wins over nothing; mismatch is a client bug, not a guess). Sort semantics, defined once: `name` compares case-insensitively (`lower(name)`); nullable sort keys (`sizeBytes`) order **nulls last in both directions**; `id` is always the final tiebreaker. Default sort `createdAt desc` unless stated.
+Cursors are opaque encodings of **`(sort, order, sortValue, id)`** — stable under ties, and self-describing: a cursor replayed with different `sort`/`order` params → `400 validation_error` (the encoded sort wins over nothing; mismatch is a client bug, not a guess). Sort semantics, defined once: `name` compares case-insensitively (`lower(name)`), and the cursor carries that exact PostgreSQL expression selected with the row rather than recomputing it in JavaScript; nullable sort keys (`sizeBytes`) order **nulls last in both directions**; `id` is always the final tiebreaker. Default sort `createdAt desc` unless stated.
 
 ### Errors
 
@@ -59,6 +60,7 @@ type ApiError = {
 | 400  | `validation_error`             | malformed body/params (Zod `defaultHook`; `details` per field)              |
 | 401  | `unauthenticated`              | no/expired session                                                          |
 | 403  | `active_organization_required` | session valid but no active organization selected                           |
+| 409  | `organization_context_changed` | request expected a different active organization; retry from current context |
 | 404  | `not_found`                    | missing resource **or** another org's resource                              |
 | 409  | `conflict`                     | duplicate where uniqueness matters (idempotency key reuse, edge duplicates) |
 | 409  | `revision_conflict`            | graph sync CAS lost — refetch graph and replay                              |
@@ -80,9 +82,11 @@ type ApiError = {
 
 | Area     | Endpoints                                                                                                                                                                                                              |
 | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Search   | `GET /search`                                                                                                                                                                                                          |
 | Uploads  | `POST /uploads`                                                                                                                                                                                                        |
-| Assets   | `GET /assets` · `POST /assets` · `GET /assets/:id` · `PATCH /assets/:id` · `DELETE /assets/:id` · `POST /assets/:id/restore` · `POST /assets/:id/purge` · `GET /assets/:id/usage` · `GET /assets/:id/download`         |
+| Assets   | `GET /assets` · `POST /assets` · `POST /assets/move` · `GET /assets/:id` · `PATCH /assets/:id` · `DELETE /assets/:id` · `POST /assets/:id/restore` · `POST /assets/:id/purge` · `GET /assets/:id/usage` · `GET /assets/:id/download` · `PUT/DELETE /assets/:id/favorite` · `PUT/DELETE /assets/:id/tags/:tagId` |
 | Folders  | `GET /folders` · `POST /folders` · `PATCH /folders/:id` · `DELETE /folders/:id`                                                                                                                                        |
+| Tags     | `GET /tags` · `POST /tags` · `DELETE /tags/:id`                                                                                                                                                                    |
 | Elements | `GET /elements` · `POST /elements` · `GET /elements/:id` · `PATCH /elements/:id` · `DELETE /elements/:id` · `GET/POST /elements/:id/assets` · `PATCH/DELETE /elements/:id/assets/:assetId` · `GET /elements/:id/usage` |
 | Flows    | `GET /flows` · `POST /flows` · `GET /flows/:id` · `PATCH /flows/:id` · `DELETE /flows/:id` · `GET /flows/:id/graph` · `POST /flows/:id/graph` · `GET /flows/:id/nodes/:nodeId/results`                                 |
 | Runs     | `POST /runs` · `GET /runs` · `GET /runs/:id` · `POST /runs/:id/cancel`                                                                                                                                                 |
@@ -97,6 +101,10 @@ type Folder = {
   id: string;
   parentId: string | null;
   name: string;
+  itemCount: number;
+  processingItemCount: number; // direct live Assets whose preview may still change
+  totalSizeBytes: number; // includes descendant folders
+  thumbnailUrls: string[];
   createdAt: string;
   updatedAt: string;
 };
@@ -105,6 +113,13 @@ type MediaType = "image" | "video" | "audio";
 type AssetType = MediaType | "document";
 type AssetSource = "upload" | "generation";
 type AssetLifecycle = "live" | "archived" | "purging" | "purged"; // derived from the timestamp trio
+
+type Tag = {
+  id: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+};
 
 // list-item shape — everything the library grid needs, nothing more
 type Asset = {
@@ -123,6 +138,8 @@ type Asset = {
   lifecycle: AssetLifecycle;
   processingState: "processing" | "ready" | "failed"; // ingestion, orthogonal to lifecycle
   processingError: string | null; // safe to display; set only when 'failed'
+  favorite: boolean; // current user inside the active organization
+  tags: Tag[]; // shared organization tags assigned to this Asset
   url: string | null; // signed, short-lived; null once purging/purged
   thumbnailUrl: string | null;
   createdBy: string | null;
@@ -265,6 +282,48 @@ type RunJob = {
 
 ---
 
+## Global search
+
+### `GET /search`
+
+Compact organization-scoped search for command palettes and other cross-resource
+navigation. This endpoint never returns original media URLs, tags, provenance, or
+full Folder/Asset records.
+
+Query:
+
+```txt
+?q=<2..100 characters>&type=asset&type=folder&limit=5
+```
+
+`type` is repeatable and defaults to both resource types. `limit` applies per
+resource type, defaults to 5, and has a hard maximum of 10.
+
+Response `200`:
+
+```ts
+{
+  assets: {
+    id: string
+    name: string
+    type: AssetType
+    thumbnailUrl: string | null
+  }[]
+  folders: {
+    id: string
+    name: string
+    path: string
+  }[]
+}
+```
+
+Every database query includes the active `organizationId`. Searches run with a
+bounded PostgreSQL statement timeout and use the lower-name trigram indexes from
+the database design. Search uses the same centralized organization-scoped API
+limit as the other product routes; it has no route-specific limiter.
+
+---
+
 ## Uploads
 
 Two-step presigned flow; the API never proxies bytes. Always the private bucket.
@@ -285,7 +344,11 @@ Request:
 } //                                must send the value the server will sign.)
 ```
 
-Validated against the mime allow-list and per-type size caps → `400`.
+Validated against the mime allow-list and per-type size caps → `400`. The
+non-sensitive MIME/type/size policy lives in the shared `@talelabs/assets`
+registry so the dashboard can reject unsupported or oversized files before
+hashing. Client validation is an early UX guard; this API validation remains
+authoritative.
 
 **Two independent guards make the stored object immutable-in-practice.** The presigned PUT URL stays valid until it expires — without protection, a client could upload, register (passing the `HEAD` check), then re-PUT different bytes to the same key, leaving DB metadata describing a file that no longer exists.
 
@@ -320,7 +383,7 @@ Request:
 
 Order of operations: verify grant signature + expiry → `HEAD` the object, confirm existence and that actual size/content-type/**checksum** match the grant → derive `type` from verified mime → insert the asset **and the optional element link in one transaction** (a crash can't produce an attached-but-unregistered or registered-but-unattached half-state).
 
-**Ingestion is durable, not fire-and-forget.** Uploads register as `processingState: 'processing'`; a Trigger.dev task (`idempotencyKey = assetId`) probes dimensions/duration, generates the thumbnail, fills `metadata`, and flips to `'ready'` — or to `'failed'` with a safe `processingError` for invalid/corrupt media. A reconciliation sweep redispatches assets stuck in `'processing'` (same pattern as job dispatch and purge — the crash window between insert and trigger is covered, nothing sits with null metadata forever). Generation outputs skip all of this: the generate task already probed and uploaded them, so they insert directly as `'ready'`.
+**Ingestion is durable, not fire-and-forget.** Uploads register as `processingState: 'processing'`; a Trigger.dev task (an explicitly global `idempotencyKey` derived from `assetId` for both initial dispatch and reconciliation) probes dimensions/duration, generates the thumbnail, fills `metadata`, and flips to `'ready'` — or to `'failed'` with a safe `processingError` for invalid/corrupt media. A reconciliation sweep redispatches assets stuck in `'processing'` (same pattern as job dispatch and purge — the crash window between insert and trigger is covered, nothing sits with null metadata forever). Generation outputs skip all of this: the generate task already probed and uploaded them, so they insert directly as `'ready'`.
 
 **Ingestion respects the purge lifecycle**: the sweep excludes purge-requested assets (the partial index encodes it), and the task's completing update is guarded with `"purgeRequestedAt" is null` — zero rows means purge won the race, and the task deletes whatever artifacts it just created instead of resurrecting them after the purge task finishes.
 
@@ -345,6 +408,8 @@ Response: `201` → `Asset` (`200` on replay). Grant invalid/expired/object miss
 | `folderId`  | string \| `'root'`                   | `'root'` = no folder                           |
 | `elementId` | string                               | via `elementAssets`; combine with `role`       |
 | `role`      | string                               | only with `elementId`                          |
+| `favorite`  | boolean                              | current user's favorites only                  |
+| `tagId`     | string (repeatable)                  | any selected tag                               |
 | `search`    | string                               | `ilike` on name (pg_trgm later; same contract) |
 | `archived`  | boolean                              | default `false`; `true` lists archived only    |
 | `sort`      | `createdAt` \| `name` \| `sizeBytes` | default `createdAt`                            |
@@ -364,6 +429,17 @@ Response: `200 AssetDetail` — render-complete for the panel: media, element li
 
 Response: `200 Asset`.
 
+### `POST /assets/move`
+
+```ts
+{ assetIds: string[]; folderId: string | null }
+```
+
+Moves up to 100 unique Assets in one organization-scoped transaction. The
+server locks and validates the complete selection and destination before any
+row changes, so the operation either moves every Asset or none. Response:
+`200 { data: Asset[] }` in request order.
+
 ### `DELETE /assets/:id` → archive, `204`.
 
 ### `POST /assets/:id/restore`
@@ -372,7 +448,7 @@ Guarded: `purgeRequestedAt` set → `409 invalid_state` ("permanent deletion in 
 
 ### `POST /assets/:id/purge` — permanent deletion
 
-Requires the client to have shown explicit confirmation (the endpoint exists so the destructive path is a distinct, auditable call — never an overload of DELETE). Marks intent (archiving if still live), dispatches the durable purge task (`idempotencyKey = assetId`), returns without waiting for storage deletion.
+Requires the client to have shown explicit confirmation (the endpoint exists so the destructive path is a distinct, auditable call — never an overload of DELETE). Marks intent (archiving if still live), dispatches the durable purge task with an explicitly global `idempotencyKey` derived from `assetId`, and returns without waiting for storage deletion. Reconciliation uses the same scope and key.
 
 **Purge must not destroy media an active generation still needs.** Purge and run creation coordinate through row locks with a fixed ordering (asset row first, always):
 
@@ -393,6 +469,27 @@ Response: `200 ListResponse<{ jobId: string; runId: string; role: string; create
 
 Response: `200 { url: string }` — signed URL with attachment disposition. Purging/purged → `404`.
 
+### Favorites and tags
+
+Favorites are idempotent and scoped to the current user inside the active organization:
+
+```txt
+PUT    /assets/:id/favorite             -> 204
+DELETE /assets/:id/favorite             -> 204
+```
+
+Tags are shared organization vocabulary. Creation returns an existing normalized-name match when one already exists; deleting a tag removes its assignments but never deletes Assets:
+
+```txt
+GET    /tags                             -> 200 { data: Tag[] }
+POST   /tags { name }                    -> 201 Tag
+DELETE /tags/:id                         -> 204
+PUT    /assets/:id/tags/:tagId           -> 204
+DELETE /assets/:id/tags/:tagId           -> 204
+```
+
+Favorite and tag assignment endpoints accept live and archived Assets. Purging or purged Assets reject mutation with `409 invalid_state`. Cross-organization Asset identifiers return `404`; assigning a cross-organization Tag also returns `404`. Removing a tag assignment is idempotent, so an unknown or already-unassigned `tagId` returns `204` without revealing whether that Tag exists elsewhere.
+
 ---
 
 ## Folders
@@ -407,7 +504,7 @@ DELETE /folders/:id                      -> 204
 ```
 
 - Move validation runs the recursive-CTE ancestor walk **inside the write transaction**; a cycle → `400 validation_error`.
-- **Operational bounds that keep "full list, no pagination" honest:** at most **10,000 folders per organization** (checked on create) and **32 levels of depth** (checked on create/move by the same ancestor CTE that already guards cycles — no extra query). Exceeding either → `400 validation_error`. These also bound what cascade deletion and tree assembly can ever cost.
+- **Operational bounds that keep the MVP's full list, no-pagination response honest:** at most **500 folders per organization** (checked on create) and **32 levels of depth** (checked on create/move by the same ancestor CTE that already guards cycles — no extra query). Exceeding either → `400 validation_error`. Supporting larger trees requires paginated or folder-scoped metadata before raising this cap.
 - Delete semantics (mirrors FKs): subfolders cascade; contained assets drop to no-folder, never deleted.
 
 ---
@@ -702,4 +799,4 @@ Serving the vocabularies here keeps them single-sourced — the client never har
 4. **Results are derived, never duplicated.** Node results come from `/nodes/:nodeId/results` (jobs + assets), not from node `data` — matching the DB rule that draft and provenance never share storage.
 5. **The idempotency ladder is client-visible only at the top.** The client supplies one `Idempotency-Key` per run request; everything below (child job keys, dispatch keys, provider submission markers) is server-derived, per the DB doc.
 6. **Server-authoritative generation.** Run requests carry _which node_, never _what to generate_ — context resolution, capability validation, and snapshotting happen server-side, so provenance can't be spoofed by a client and the Generate UX can evolve without API churn.
-7. **Deferred on purpose:** `POST /runs/estimate` + `402` (credits Phase 2 — costs are already recorded server-side per the DB doc); `downstream`/`all` modes (validator flip when the orchestrator ships); Tools/Recipes endpoints (new resources, same patterns); realtime push (polling contract stands); bulk asset operations (`POST /assets/bulk` when multi-select ships); tags/favorites (deliberately absent from the vision).
+7. **Deferred on purpose:** `POST /runs/estimate` + `402` (credits Phase 2 — costs are already recorded server-side per the DB doc); `downstream`/`all` modes (validator flip when the orchestrator ships); Tools/Recipes endpoints (new resources, same patterns); realtime push (polling contract stands); bulk asset operations beyond the atomic move endpoint (`POST /assets/bulk` when additional server-side bulk mutation becomes necessary).

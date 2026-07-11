@@ -70,7 +70,6 @@ batch and iterator nodes
 editor or cuts
 public API and MCP
 public galleries and links
-tags and favorites
 projects
 credits, subscriptions, and Stripe billing
 ```
@@ -330,7 +329,7 @@ npm run build -w @talelabs/storage
 
 **Scope**
 
-- Add the Trigger.dev ingestion task with `idempotencyKey = assetId` and ID-only payloads.
+- Add the Trigger.dev ingestion task with an explicitly global `idempotencyKey` derived from `assetId` for both initial dispatch and reconciliation, plus ID-only payloads.
 - Implement guarded `processing -> ready|failed` transitions and safe processing errors.
 - Add reconciliation for Assets stuck in processing.
 - Guard task completion with `purgeRequestedAt IS NULL`.
@@ -373,6 +372,7 @@ npm run build -w @talelabs/storage
 
 - Implement `GET /assets`, `GET /assets/:id`, `GET /assets/:id/usage`, and `GET /assets/:id/download`.
 - Implement stable cursor pagination, documented filters/sorts, tenant-safe signed URLs, and tombstone rendering.
+- Implement per-user favorites, workspace tags, and their canonical Asset-list filters.
 - Keep list responses lean and detail responses render-complete.
 - Expose processing and lifecycle states without exposing storage keys.
 - Regenerate the SDK.
@@ -403,7 +403,7 @@ npm run build -w @talelabs/storage
 **Scope**
 
 - Implement folder list/create/rename/move/delete.
-- Enforce cycle prevention, 32-level maximum depth, and 10,000-folder organization cap.
+- Enforce cycle prevention, 32-level maximum depth, and the 500-folder MVP organization cap. Add paginated or folder-scoped metadata before raising it.
 - Preserve Assets when folders are deleted by moving them to root through FK behavior.
 - Verify tenant isolation and tree constraints through focused smoke checks.
 
@@ -417,7 +417,7 @@ Implement file selection, checksum calculation, direct-to-R2 upload progress, re
 
 **Status:** Blocked by E-014 and E-017A
 
-Implement grid/list foundations, search, type/source filters, stable pagination, preview/playback, technical metadata, processing states, download, and an Asset detail surface. Keep the experience media-aware and drive-like.
+Implement grid/list foundations, search, type/source/tag/favorite filters, favorite actions, tag creation and assignment, stable pagination, preview/playback, technical metadata, processing states, download, and an Asset detail surface. Keep the experience media-aware and drive-like.
 
 ### E-017C - Build Folder And Lifecycle UI
 
@@ -431,11 +431,11 @@ Implement folder navigation and management, move-to-folder, rename, archive, res
 
 **Owner:** User
 
-The user validates the complete Asset workflow with mixed media, long names, nested folders, processing and failed media, missing previews, slow uploads, archived/purged states, keyboard operation, and desktop/mobile layouts. Findings become separate implementation tasks.
+The user validates the complete Asset workflow with mixed media, long names, nested folders, tags, personal favorites, processing and failed media, missing previews, slow uploads, archived/purged states, keyboard operation, and desktop/mobile layouts. Findings become separate implementation tasks.
 
 **M2 gate**
 
-A user can upload private image/video/audio media, see durable processing states, find it again, inspect it, organize it, download it, archive/restore it, and permanently purge it.
+A user can upload private image/video/audio media, see durable processing states, find it again, inspect it, organize it with folders and tags, favorite it personally, download it, archive/restore it, and permanently purge it.
 
 ---
 

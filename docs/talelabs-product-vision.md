@@ -144,6 +144,8 @@ direct upload
 folders
 search
 media-type filtering
+workspace tags and tag filtering
+per-user favorites and favorite filtering
 grid and list presentation
 preview and playback
 technical metadata
@@ -177,7 +179,9 @@ created date
 
 The asset picker is a core shared component. Elements and Flow nodes should select existing Assets through the same picker rather than creating separate media libraries.
 
-The initial asset system should not expand into a complete Google Drive replacement. Defer public galleries, public links, complex permissions, review workflows, advanced versioning, and elaborate taxonomies until real usage demonstrates a need.
+Tags are lightweight workspace organization shared by workspace members. Favorites are a personal view for each user within a workspace. Neither changes Asset ownership, visibility, or provenance, and both belong to the canonical Asset library and picker rather than separate media collections.
+
+The initial asset system should not expand into a complete Google Drive replacement. Defer public galleries, public links, complex permissions, review workflows, advanced versioning, and elaborate taxonomies beyond simple tags until real usage demonstrates a need.
 
 ## Elements
 

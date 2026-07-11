@@ -176,3 +176,9 @@ If API contracts changed and generated SDK output is affected, also run:
 ```bash
 npm run sdk:generate
 ```
+
+## Optimistic Updates
+
+https://tanstack.com/query/latest/docs/framework/react/guides/optimistic-updates
+
+Every time you are creating mutations ensure to make the ui have instant feedback by implementing optimistic update, load React Query skills if needed.

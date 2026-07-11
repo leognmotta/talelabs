@@ -55,6 +55,31 @@ Do not create every folder ahead of need. Add the structure as soon as a second 
 - `app.ts`: app assembly only; no business logic.
 - `index.ts`: server startup only; no routes.
 
+## Distributed Runtime
+
+The API is deployed across multiple horizontally scaled instances. Never use
+process-local memory as shared application infrastructure or as a source of
+truth.
+
+- Do not implement rate limits, caches, locks, counters, queues, leases,
+  idempotency, sessions, coordination, rolling metrics, or durable workflow
+  state with module-level variables, `Map`, `Set`, arrays, timers, or other
+  mutable in-memory structures.
+- Store durable and relational state in PostgreSQL, shared ephemeral state and
+  atomic admission controls in Redis, media in R2, and asynchronous execution
+  state in Trigger.dev.
+- Design shared-state concerns behind explicit interfaces so their backing
+  infrastructure is centralized and replaceable.
+- Emit raw structured metrics to centralized observability. Do not calculate
+  application-wide counters or percentiles inside an API process.
+- Immutable configuration, reusable stateless clients, and collections scoped
+  to a single request are allowed because correctness does not depend on them
+  surviving a restart or being visible to another instance.
+
+Any solution that behaves differently after a process restart or when the same
+request reaches another API replica is invalid unless that behavior is
+explicitly best-effort and approved by the user.
+
 ## Single Responsibility
 
 Keep each API file responsible for one architectural concern. Do not solve routing, validation, business logic, database access, provider integration, and response shaping in a single file just because the first implementation is small.

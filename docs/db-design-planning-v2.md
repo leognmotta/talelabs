@@ -2,13 +2,13 @@
 
 Supersedes `db-design-planning.md`. Designed from the current product vision: **Assets → Elements → Flows → Generated Assets → Continued Iteration**, built in that order.
 
-In scope: the three core entities, folders, the flow graph, and multi-context generation jobs executed through Trigger.dev.
+In scope: the three core entities, folders, Asset tags and favorites, the flow graph, and multi-context generation jobs executed through Trigger.dev.
 
-Out of scope (deferred, with seams noted in [Future-proofing](#future-proofing)): billing/credits enforcement (though **costs are recorded from day one** — see `generationJobs`), Recipes, Tools, Storyboard, collaboration, projects, tags/favorites, public galleries.
+Out of scope (deferred, with seams noted in [Future-proofing](#future-proofing)): billing/credits enforcement (though **costs are recorded from day one** — see `generationJobs`), Recipes, Tools, Storyboard, collaboration, projects, public galleries.
 
 Execution has **one spine from day one**: every run — single node now, whole-graph and Tools later — is a `flowRuns` row wrapping ordinary `generationJobs`. The runs tables ship in the initial migration even though only Run Node is exposed at first; this avoids maintaining two execution paths and retrofitting standalone legacy jobs later (section 11). Credit-system design has its own planning document: `credits-planning.md`.
 
-Retired from v1 — these do not return: `brands`, `products`, `characters`, `brand_characters`, `project_*` tables, job-level `character_id`, `credit_source`, `featured_at`, tags, favorites. Elements replace the per-entity context products; Flows replace Projects as the creative document.
+Retired from v1 — these do not return: `brands`, `products`, `characters`, `brand_characters`, `project_*` tables, job-level `character_id`, `credit_source`, and `featured_at`. Elements replace the per-entity context products; Flows replace Projects as the creative document. Tags and favorites remain as lightweight Asset-library organization, not as public-gallery metadata.
 
 Requires PostgreSQL 15+ (`unique nulls not distinct`, column-targeted `on delete set null`).
 
@@ -133,6 +133,12 @@ erDiagram
 
 ## Schema
 
+Asset and Folder name search uses PostgreSQL trigram indexes:
+
+```sql
+create extension if not exists pg_trgm;
+```
+
 ### 1. Folders — manual asset organization
 
 Adjacency-list tree, org-wide.
@@ -152,6 +158,8 @@ create table "folders" (
 
 create index "foldersOrgIdx" on "folders" ("organizationId");
 create index "foldersParentIdx" on "folders" ("parentId");
+create index "foldersNameSearchIdx"
+  on "folders" using gin (lower("name") gin_trgm_ops);
 ```
 
 **Cycle guard (app-layer, documented contract):** the adjacency list permits a folder to become its own descendant. Every folder _move_ must run inside the write transaction a recursive CTE walking the new parent's ancestor chain and reject the move if it contains the folder being moved. Creation can't produce cycles; only re-parenting can.
@@ -349,17 +357,74 @@ create index "assetsProcessingIdx" on "assets" ("createdAt")
   where "processingState" = 'processing' and "purgeRequestedAt" is null;
   -- serves the ingestion redispatch sweep; excludes purge-requested assets so
   -- ingestion can never race a purge back to life
+create index "assetsNameSearchIdx"
+  on "assets" using gin (lower("name") gin_trgm_ops)
+  where "deletedAt" is null and "purgeRequestedAt" is null;
 ```
 
 Notes:
 
-- **Two-tier deletion, and rows are never hard-deleted.** Archive sets `"deletedAt"` (reversible). Permanent deletion — the vision's explicit-confirmation action — is a **durable purge task with honest ordering**: mark `"purgeRequestedAt"` (also archiving if still live, so the library's partial indexes already exclude it), the task deletes the R2 objects with retries, and `"purgedAt"` is set **only after storage deletion succeeds** — the database never claims destruction that hasn't happened. The result is a tombstone row. Purge gets the same crash-window protection as job dispatch: the task is triggered with `idempotencyKey = assetId`, a reconciliation sweep re-triggers any asset stuck in `"purgeRequestedAt" is not null and "purgedAt" is null` (served by `"assetsPurgePendingIdx"`), and **restore is guarded** — un-archiving requires `"purgeRequestedAt" is null`, so a user can never restore an asset whose storage is being destroyed. **Purge also coordinates with active generations** through row locks with fixed ordering (asset row first, always): purge locks the asset and rejects if `generationJobInputs` references it from a `pending`/`running` job; run creation locks its selected input assets (ordered by id) and rejects purging/purged ones — the race serializes to exactly one of two clean rejections. Multi-node runs, which create downstream jobs later, will need run-level input leases or copied static references — a seam for that phase, deliberately not built now. This is what reconciles "permanent deletion" with "immutable generation provenance": the media is genuinely gone, but `generationJobInputs`, `elementAssets`, and `flowNodes` references stay intact and render as a tombstone placeholder instead of silently vanishing from history. Because rows persist, no cascade ever erases provenance; `generationJobInputs."assetId"` deliberately has **no** `on delete cascade`, so an accidental hard `DELETE` fails loudly on the FK instead of quietly rewriting job history.
+- **Two-tier deletion, and rows are never hard-deleted.** Archive sets `"deletedAt"` (reversible). Permanent deletion — the vision's explicit-confirmation action — is a **durable purge task with honest ordering**: mark `"purgeRequestedAt"` (also archiving if still live, so the library's partial indexes already exclude it), the task deletes the R2 objects with retries, and `"purgedAt"` is set **only after storage deletion succeeds** — the database never claims destruction that hasn't happened. The result is a tombstone row. Purge gets the same crash-window protection as job dispatch: initial dispatch and reconciliation use the same explicitly global Trigger.dev idempotency key derived from `assetId`; the sweep re-triggers any asset stuck in `"purgeRequestedAt" is not null and "purgedAt" is null` (served by `"assetsPurgePendingIdx"`), and **restore is guarded** — un-archiving requires `"purgeRequestedAt" is null`, so a user can never restore an asset whose storage is being destroyed. **Purge also coordinates with active generations** through row locks with fixed ordering (asset row first, always): purge locks the asset and rejects if `generationJobInputs` references it from a `pending`/`running` job; run creation locks its selected input assets (ordered by id) and rejects purging/purged ones — the race serializes to exactly one of two clean rejections. Multi-node runs, which create downstream jobs later, will need run-level input leases or copied static references — a seam for that phase, deliberately not built now. This is what reconciles "permanent deletion" with "immutable generation provenance": the media is genuinely gone, but `generationJobInputs`, `elementAssets`, and `flowNodes` references stay intact and render as a tombstone placeholder instead of silently vanishing from history. Because rows persist, no cascade ever erases provenance; `generationJobInputs."assetId"` deliberately has **no** `on delete cascade`, so an accidental hard `DELETE` fails loudly on the FK instead of quietly rewriting job history.
 - `"generationJobId"` on the asset (not `outputAssetId` on the job): one run can produce multiple outputs; uploads have `null`. Full provenance (model, settings, resolved prompt, inputs, elements) is one join away — never duplicated onto the asset. The `check` makes the link mandatory for `source = 'generation'` — a generated asset without its job is a contract violation, not a nullable edge case.
 - `"outputIndex"` + the unique `("generationJobId", "outputIndex")` index give generated outputs a stable identity: provider ordering survives, and a retried completion transaction upserts the same rows instead of duplicating them. Storage keys derive from the same identity (`generations/{jobId}/{outputIndex}`), which is what makes upload retries overwrite-safe and orphan cleanup a prefix listing.
 - `"storageKey"` is globally unique. If an asset-duplicate feature ever ships, it must copy the object, not share the key.
 - `"uploadId"` keeps the replay-safe presigned-upload flow: signed stateless grant (binds org, user, object key, mime, size, **sha-256 checksum**, expiry); registering the same grant twice returns the existing asset via the unique index. Two guards make the object immutable-in-practice: the presigned PUT signs `If-None-Match: *` (create-only — a still-valid URL can never overwrite), and the checksum binds content to the grant, verified at registration. Exact checksum header depends on an R2 spike — full-object SHA-256 support on PUT is uncertain there; `Content-MD5`/ETag is the documented fallback (API doc, Uploads). Upload object keys are deterministic per grant (`uploads/{grantId}`), so abandoned uploads (PUT completed, never registered) are sweepable: delete `uploads/` objects older than the grant TTL with no matching `"uploadId"` row — the storage-side twin of the generation-orphan sweep.
-- Search: `ilike` on `"name"` first; `pg_trgm` GIN index when it hurts — no schema change either way.
-- v1's `visibility`, tags, favorites, and `featured_at` are gone — the new vision doesn't include the public showcase, tagging, or favoriting. All delivery is signed-URL private for now; see [Future-proofing](#future-proofing) for the seams.
+- Search uses `pg_trgm` GIN indexes over `lower("name")` for live Asset and Folder
+  substring matching. Every search query still carries `"organizationId"`; the
+  trigram index accelerates candidate lookup without weakening tenant scope.
+- v1's `visibility` and `featured_at` are gone. Tags and favorites organize the private library only; they never make an Asset public. All delivery is signed-URL private for now; see [Future-proofing](#future-proofing) for the public-delivery seam.
+
+#### Asset favorites and tags
+
+Favorites are personal to a user inside one organization. Tags are shared organization vocabulary and may be assigned to many Assets. Both relationships use composite organization foreign keys so cross-tenant links are structurally impossible.
+
+```sql
+create table "assetFavorites" (
+  "organizationId" text not null references "organization"("id") on delete cascade,
+  "userId" text not null references "user"("id") on delete cascade,
+  "assetId" text not null,
+  "createdAt" timestamptz not null default now(),
+  primary key ("organizationId", "userId", "assetId"),
+  foreign key ("assetId", "organizationId")
+    references "assets" ("id", "organizationId") on delete cascade
+);
+
+create index "assetFavoritesAssetIdx"
+  on "assetFavorites" ("organizationId", "assetId");
+
+create table "tags" (
+  "id" text primary key,
+  "organizationId" text not null references "organization"("id") on delete cascade,
+  "createdBy" text references "user"("id") on delete set null,
+  "name" text not null,
+  "normalizedName" text not null,
+  "createdAt" timestamptz not null default now(),
+  "updatedAt" timestamptz not null default now(),
+  unique ("id", "organizationId"),
+  unique ("organizationId", "normalizedName")
+);
+
+create index "tagsOrgNameIdx"
+  on "tags" ("organizationId", "normalizedName", "id");
+
+create table "assetTags" (
+  "organizationId" text not null references "organization"("id") on delete cascade,
+  "assetId" text not null,
+  "tagId" text not null,
+  "createdBy" text references "user"("id") on delete set null,
+  "createdAt" timestamptz not null default now(),
+  primary key ("assetId", "tagId"),
+  foreign key ("assetId", "organizationId")
+    references "assets" ("id", "organizationId") on delete cascade,
+  foreign key ("tagId", "organizationId")
+    references "tags" ("id", "organizationId") on delete cascade
+);
+
+create index "assetTagsOrgTagIdx"
+  on "assetTags" ("organizationId", "tagId", "assetId");
+```
+
+Tag names are normalized in the application with Unicode NFKC normalization, collapsed whitespace, and case folding before the organization-level unique constraint is evaluated. Assigning a favorite or tag is idempotent. Deleting a tag removes its Asset assignments, never the Assets themselves.
 
 ### 5. Elements — reusable creative context
 
@@ -737,7 +802,7 @@ Seams that exist without speculative tables:
 - **Collaboration:** stable client-generated node/edge ids and per-row graph writes are the prerequisites, already in place; the flow `"revision"` CAS is the single-writer serialization point a sync layer would replace. Presence is ephemeral (never in Postgres); durable state is these tables.
 - **Billing/credits:** `"creditCost"` and `"providerCostUsd"` are already recorded per execution — the calibration dataset accumulates from launch. The ledger, balances, and reservation lifecycle attach to `generationJobs."id"` / `flowRuns."id"` later; full analysis in `credits-planning.md`.
 - **Public delivery / showcase:** if a public bucket returns, `assets` gains a `"visibility"` column (write-time snapshot, as designed in v1) — additive.
-- **Tags/favorites/projects:** deliberately dropped with the new vision; each returns as one small table or column _if_ usage proves the need. Folders + element filters are the bet.
+- **Projects:** deliberately dropped with the new vision. Flows are the creative documents; folders, tags, favorites, and Element filters organize the Asset library without introducing another ownership layer.
 - **Simple Generate page:** per the vision, it would create a lightweight flow (or one-off job rows with `"flowId"` null — the column is already nullable). No parallel generation architecture.
 
 ## What was deliberately not built
@@ -787,7 +852,7 @@ where "id" = $1 and "organizationId" = $2
 update "assets"
 set "purgeRequestedAt" = now(), "deletedAt" = coalesce("deletedAt", now()), "updatedAt" = now()
 where "id" = $1 and "organizationId" = $2 and "purgedAt" is null;
--- 2. trigger the durable purge task with idempotencyKey = assetId; it deletes the R2
+-- 2. trigger the durable purge task with the explicit global key derived from assetId; it deletes the R2
 --    objects ("storageKey"/"thumbnailKey"), retrying as needed
 -- 3. only after storage deletion succeeds:
 update "assets" set "purgedAt" = now(), "updatedAt" = now() where "id" = $1;
