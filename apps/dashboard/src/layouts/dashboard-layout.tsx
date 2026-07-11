@@ -19,7 +19,14 @@ import {
 import { TooltipProvider } from '@talelabs/ui/components/tooltip'
 import { parseAsStringEnum, useQueryState } from 'nuqs'
 
-import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
 import { useTranslation } from 'react-i18next'
 import { Outlet } from 'react-router'
 import { AssetViewerDialog } from '../features/assets/asset-viewer-dialog'
@@ -27,13 +34,17 @@ import { useAssetViewerUrlState } from '../features/assets/use-asset-viewer-url-
 import { OrganizationScopeProvider } from '../features/organizations/organization-scope'
 import { SettingsDialog } from '../features/settings/settings-dialog'
 import { settingsTabs } from '../features/settings/settings-state'
+import { UploadIndicator } from '../features/uploads/upload-indicator'
+import { UploadProvider } from '../features/uploads/upload-provider'
 import { AppSidebar } from './app-sidebar'
 import { GlobalSearch } from './global-search'
 
 const SIDEBAR_OPEN_DELAY_MS = 60
 const SIDEBAR_CLOSE_DELAY_MS = 240
 
-const loadAssetLibraryDialog = () => import('../features/assets/asset-library-dialog')
+function loadAssetLibraryDialog() {
+  return import('../features/assets/asset-library-dialog')
+}
 const AssetLibraryDialog = lazy(async () => ({
   default: (await loadAssetLibraryDialog()).AssetLibraryDialog,
 }))
@@ -138,22 +149,23 @@ export function DashboardLayout({
     }, SIDEBAR_OPEN_DELAY_MS)
   }, [clearSidebarCloseTimer, setSidebarOpenState])
 
-  const closeSidebarWithIntent = useCallback((options?: {
-    force?: boolean
-  }) => {
-    clearSidebarOpenTimer()
+  const closeSidebarWithIntent = useCallback(
+    (options?: { force?: boolean }) => {
+      clearSidebarOpenTimer()
 
-    if (!options?.force && isSidebarOverlayOpenRef.current)
-      return
+      if (!options?.force && isSidebarOverlayOpenRef.current)
+        return
 
-    if (!isSidebarOpenRef.current || sidebarCloseTimerRef.current !== null)
-      return
+      if (!isSidebarOpenRef.current || sidebarCloseTimerRef.current !== null)
+        return
 
-    sidebarCloseTimerRef.current = window.setTimeout(() => {
-      setSidebarOpenState(false)
-      sidebarCloseTimerRef.current = null
-    }, SIDEBAR_CLOSE_DELAY_MS)
-  }, [clearSidebarOpenTimer, setSidebarOpenState])
+      sidebarCloseTimerRef.current = window.setTimeout(() => {
+        setSidebarOpenState(false)
+        sidebarCloseTimerRef.current = null
+      }, SIDEBAR_CLOSE_DELAY_MS)
+    },
+    [clearSidebarOpenTimer, setSidebarOpenState],
+  )
 
   const handleSidebarPointerEnter = useCallback(() => {
     isSidebarPointerInsideRef.current = true
@@ -165,28 +177,31 @@ export function DashboardLayout({
     closeSidebarWithIntent()
   }, [closeSidebarWithIntent])
 
-  const handleSidebarOverlayOpenChange = useCallback((open: boolean) => {
-    isSidebarOverlayOpenRef.current = open
+  const handleSidebarOverlayOpenChange = useCallback(
+    (open: boolean) => {
+      isSidebarOverlayOpenRef.current = open
 
-    if (open) {
-      clearSidebarCloseTimer()
-      setSidebarOpenState(true)
-      return
-    }
+      if (open) {
+        clearSidebarCloseTimer()
+        setSidebarOpenState(true)
+        return
+      }
 
-    window.requestAnimationFrame(() => {
-      const isPointerInsideSidebar = isPointerOverSidebar()
-      isSidebarPointerInsideRef.current = isPointerInsideSidebar
+      window.requestAnimationFrame(() => {
+        const isPointerInsideSidebar = isPointerOverSidebar()
+        isSidebarPointerInsideRef.current = isPointerInsideSidebar
 
-      if (!isPointerInsideSidebar)
-        closeSidebarNow()
-    })
-  }, [
-    clearSidebarCloseTimer,
-    closeSidebarNow,
-    isPointerOverSidebar,
-    setSidebarOpenState,
-  ])
+        if (!isPointerInsideSidebar)
+          closeSidebarNow()
+      })
+    },
+    [
+      clearSidebarCloseTimer,
+      closeSidebarNow,
+      isPointerOverSidebar,
+      setSidebarOpenState,
+    ],
+  )
 
   useEffect(() => {
     function handleDocumentPointerDown(event: PointerEvent) {
@@ -274,122 +289,130 @@ export function DashboardLayout({
 
   return (
     <OrganizationScopeProvider organizationId={activeOrganizationId}>
-      <TooltipProvider>
-        <SidebarProvider
-          className="h-svh min-h-0 overflow-hidden"
-          open={isSidebarOpen}
-          onOpenChange={setSidebarOpenState}
-        >
-          <AppSidebar
-            activeOrganizationId={activeOrganizationId}
-            email={email}
-            name={name}
-            onCreateOrganization={onCreateOrganization}
-            onOpenInviteMemberSettings={handleOpenInviteMemberSettings}
-            onOpenSettings={handleOpenSettings}
-            onSignOut={onSignOut}
-            onSidebarOverlayOpenChange={handleSidebarOverlayOpenChange}
-            onSwitchOrganization={onSwitchOrganization}
-            onPointerEnter={handleSidebarPointerEnter}
-            onPointerLeave={handleSidebarPointerLeave}
-          />
-          <SidebarInset className="min-h-0 overflow-hidden">
-            <div className="
-              flex min-h-0 flex-1 flex-col bg-background text-foreground
-            "
-            >
-              <header className="flex h-16 shrink-0 items-center gap-3 px-6">
-                <SidebarTrigger className="md:hidden" />
-                <div className="flex min-w-0 flex-1 justify-center">
-                  <GlobalSearch
-                    onOpenInviteMemberSettings={handleOpenInviteMemberSettings}
-                    onOpenSettings={handleOpenSettings}
-                  />
-                </div>
-                <Button
-                  aria-label={t('navigation.assets')}
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsAssetLibraryOpen(true)}
-                  onFocus={() => void loadAssetLibraryDialog()}
-                  onMouseEnter={() => void loadAssetLibraryDialog()}
-                >
-                  <IconArchive data-icon="inline-start" />
-                  <span className="
-                    hidden
-                    sm:inline
-                  "
-                  >
-                    {t('navigation.assets')}
-                  </span>
-                </Button>
-                <DropdownMenu>
-                  <DropdownMenuTrigger
-                    render={(
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        aria-label={t('common.moreOptions')}
-                      />
-                    )}
-                  >
-                    <IconDots />
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuGroup>
-                      <DropdownMenuItem onClick={onOpenCookiePreferences}>
-                        <IconCookie />
-                        <span>{t('cookies.manage')}</span>
-                      </DropdownMenuItem>
-                    </DropdownMenuGroup>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </header>
-              <Separator />
-              <section className="
-                flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto p-6
-              "
+      <UploadProvider>
+        <TooltipProvider>
+          <SidebarProvider
+            className="h-svh min-h-0 overflow-hidden"
+            open={isSidebarOpen}
+            onOpenChange={setSidebarOpenState}
+          >
+            <AppSidebar
+              activeOrganizationId={activeOrganizationId}
+              email={email}
+              name={name}
+              onCreateOrganization={onCreateOrganization}
+              onOpenInviteMemberSettings={handleOpenInviteMemberSettings}
+              onOpenSettings={handleOpenSettings}
+              onSignOut={onSignOut}
+              onSidebarOverlayOpenChange={handleSidebarOverlayOpenChange}
+              onSwitchOrganization={onSwitchOrganization}
+              onPointerEnter={handleSidebarPointerEnter}
+              onPointerLeave={handleSidebarPointerLeave}
+            />
+            <SidebarInset className="min-h-0 overflow-hidden">
+              <div
+                className="
+                  flex min-h-0 flex-1 flex-col bg-background text-foreground
+                "
               >
-                <Outlet />
-              </section>
-            </div>
-          </SidebarInset>
-          <SettingsDialog
-            activeOrganizationId={activeOrganizationId}
-            currentSessionId={currentSessionId}
-            email={email || t('common.workspaceMember')}
-            isTeamInviteFormOpen={isTeamInviteFormOpen}
-            language={language}
-            name={name || t('common.talelabsUser')}
-            onLanguageChange={onLanguageChange}
-            onOpenChange={handleSettingsOpenChange}
-            onOpenCookiePreferences={onOpenCookiePreferences}
-            onProfileUpdated={onProfileUpdated}
-            onSignOut={onSignOut}
-            onTabChange={handleSettingsTabChange}
-            onTeamInviteFormOpenChange={setIsTeamInviteFormOpen}
-            onThemeChange={onThemeChange}
-            open={isSettingsOpen}
-            tab={activeSettingsTab}
-            theme={theme}
-          />
-          {isAssetLibraryOpen && (
-            <Suspense fallback={null}>
-              <AssetLibraryDialog
-                mode="manage"
-                open={isAssetLibraryOpen}
-                onOpenAsset={(asset) => {
-                  setIsAssetLibraryOpen(false)
-                  assetViewer.openAsset(asset.id)
-                }}
-                onOpenChange={setIsAssetLibraryOpen}
-              />
-            </Suspense>
-          )}
-          <AssetViewerDialog />
-        </SidebarProvider>
-      </TooltipProvider>
+                <header className="flex h-16 shrink-0 items-center gap-3 px-6">
+                  <SidebarTrigger className="md:hidden" />
+                  <div className="flex min-w-0 flex-1 justify-center">
+                    <GlobalSearch
+                      onOpenInviteMemberSettings={
+                        handleOpenInviteMemberSettings
+                      }
+                      onOpenSettings={handleOpenSettings}
+                    />
+                  </div>
+                  <UploadIndicator />
+                  <Button
+                    aria-label={t('navigation.assets')}
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsAssetLibraryOpen(true)}
+                    onFocus={() => void loadAssetLibraryDialog()}
+                    onMouseEnter={() => void loadAssetLibraryDialog()}
+                  >
+                    <IconArchive data-icon="inline-start" />
+                    <span
+                      className="
+                        hidden
+                        sm:inline
+                      "
+                    >
+                      {t('navigation.assets')}
+                    </span>
+                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger
+                      render={(
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          aria-label={t('common.moreOptions')}
+                        />
+                      )}
+                    >
+                      <IconDots />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuGroup>
+                        <DropdownMenuItem onClick={onOpenCookiePreferences}>
+                          <IconCookie />
+                          <span>{t('cookies.manage')}</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuGroup>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </header>
+                <Separator />
+                <section
+                  className="
+                    flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto p-6
+                  "
+                >
+                  <Outlet />
+                </section>
+              </div>
+            </SidebarInset>
+            <SettingsDialog
+              activeOrganizationId={activeOrganizationId}
+              currentSessionId={currentSessionId}
+              email={email || t('common.workspaceMember')}
+              isTeamInviteFormOpen={isTeamInviteFormOpen}
+              language={language}
+              name={name || t('common.talelabsUser')}
+              onLanguageChange={onLanguageChange}
+              onOpenChange={handleSettingsOpenChange}
+              onOpenCookiePreferences={onOpenCookiePreferences}
+              onProfileUpdated={onProfileUpdated}
+              onSignOut={onSignOut}
+              onTabChange={handleSettingsTabChange}
+              onTeamInviteFormOpenChange={setIsTeamInviteFormOpen}
+              onThemeChange={onThemeChange}
+              open={isSettingsOpen}
+              tab={activeSettingsTab}
+              theme={theme}
+            />
+            {isAssetLibraryOpen && (
+              <Suspense fallback={null}>
+                <AssetLibraryDialog
+                  mode="manage"
+                  open={isAssetLibraryOpen}
+                  onOpenAsset={(asset) => {
+                    setIsAssetLibraryOpen(false)
+                    assetViewer.openAsset(asset.id)
+                  }}
+                  onOpenChange={setIsAssetLibraryOpen}
+                />
+              </Suspense>
+            )}
+            <AssetViewerDialog />
+          </SidebarProvider>
+        </TooltipProvider>
+      </UploadProvider>
     </OrganizationScopeProvider>
   )
 }

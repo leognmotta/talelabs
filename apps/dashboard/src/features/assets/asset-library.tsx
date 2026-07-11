@@ -22,6 +22,7 @@ import {
   useRef,
 } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useActiveOrganizationId } from '../organizations/organization-scope-context'
 import { AssetFileDropOverlay } from './asset-file-drop-overlay'
 import { getFolderPath } from './asset-formatters'
 import { AssetGrid } from './asset-grid'
@@ -49,6 +50,7 @@ import { useAssetLibrarySelection } from './use-asset-library-selection'
 import { useAssetLibraryUpload } from './use-asset-library-upload'
 
 export function AssetLibrary({
+  allowedTypes,
   className,
   filters: controlledFilters,
   folderId: controlledFolderId,
@@ -64,6 +66,7 @@ export function AssetLibrary({
   view: controlledView,
 }: AssetLibraryProps) {
   const { t } = useTranslation()
+  const organizationId = useActiveOrganizationId()
   const libraryRef = useRef<HTMLElement>(null)
   const controls = useAssetLibraryControls({
     filters: controlledFilters,
@@ -83,6 +86,7 @@ export function AssetLibrary({
     ...filters,
     folderId,
     search: deferredSearch,
+    type: allowedTypes?.length ? allowedTypes : filters.type,
   })
   const searchPending
     = !assetsQuery.isPending
@@ -99,11 +103,6 @@ export function AssetLibrary({
     [foldersQuery.data?.data],
   )
   const upload = useAssetLibraryUpload({
-    createFolder: (input, signal) =>
-      folderMutations.create.mutateAsync({
-        ...input,
-        signal,
-      }),
     folderId,
     folders,
   })
@@ -161,6 +160,7 @@ export function AssetLibrary({
     getSelectedAssets: selection.getSelectedAssets,
     navigateToFolder,
     onOpenAsset,
+    organizationId,
     tagMutations,
     tags,
   })
@@ -173,10 +173,12 @@ export function AssetLibrary({
       assetMutations.move.mutateAsync({
         assets: movingAssets,
         destinationFolderId,
+        organizationId: organizationId!,
       }),
     moveFolder: (folder, destinationFolderId) =>
       folderMutations.update.mutateAsync({
         id: folder.id,
+        organizationId: organizationId!,
         parentId: destinationFolderId,
       }),
   })

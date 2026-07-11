@@ -6,10 +6,14 @@ import type {
 import type { LibraryDragData } from './drag-and-drop/asset-drag-data'
 import type { useAssetLibraryActions } from './use-asset-library-actions'
 
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useActiveOrganizationId } from '../organizations/organization-scope-context'
+import { uploadManager } from '../uploads/upload-manager'
 import { AssetNameDialog } from './asset-name-dialog'
 import { AssetPurgeDialog } from './asset-purge-dialog'
 import { FolderDeleteDialog } from './folder-delete-dialog'
+import { getFolderTreeIds } from './folder-query-cache'
 import { MoveToFolderDialog } from './move-to-folder-dialog'
 
 export function AssetLibraryDialogs({
@@ -31,6 +35,8 @@ export function AssetLibraryDialogs({
   ) => Promise<boolean>
 }) {
   const { t } = useTranslation()
+  const organizationId = useActiveOrganizationId()
+  const [cancelingFolderUploads, setCancelingFolderUploads] = useState(false)
   const {
     deleteFolder,
     moveTarget,
@@ -86,7 +92,10 @@ export function AssetLibraryDialogs({
           if (!purgeAsset)
             return
           const purged = await runAction(
-            () => assetMutations.purge.mutateAsync(purgeAsset.id),
+            () => assetMutations.purge.mutateAsync({
+              id: purgeAsset.id,
+              organizationId: organizationId!,
+            }),
             'assets.deletionStarted',
           )
           if (purged)
@@ -101,16 +110,31 @@ export function AssetLibraryDialogs({
         onConfirm={async () => {
           if (!deleteFolder)
             return
-          const deleted = await runAction(
-            () => folderMutations.remove.mutateAsync(deleteFolder.id),
-            'assets.folderDeleted',
-          )
-          if (deleted)
-            setDeleteFolder(null)
+          setCancelingFolderUploads(true)
+          try {
+            if (organizationId) {
+              await uploadManager.cancelFolders(
+                organizationId,
+                getFolderTreeIds(folders, deleteFolder.id),
+              )
+            }
+            const deleted = await runAction(
+              () => folderMutations.remove.mutateAsync({
+                id: deleteFolder.id,
+                organizationId: organizationId!,
+              }),
+              'assets.folderDeleted',
+            )
+            if (deleted)
+              setDeleteFolder(null)
+          }
+          finally {
+            setCancelingFolderUploads(false)
+          }
         }}
         onOpenChange={open => !open && setDeleteFolder(null)}
         open={Boolean(deleteFolder)}
-        pending={folderMutations.remove.isPending}
+        pending={cancelingFolderUploads || folderMutations.remove.isPending}
       />
       <AssetNameDialog
         description={
@@ -141,6 +165,7 @@ export function AssetLibraryDialogs({
               !(await runAction(
                 () => folderMutations.create.mutateAsync({
                   name,
+                  organizationId: organizationId!,
                   parentId: folderId,
                 }),
                 'assets.folderCreated',
@@ -155,6 +180,7 @@ export function AssetLibraryDialogs({
                 () => folderMutations.update.mutateAsync({
                   id: nameDialog.folder.id,
                   name,
+                  organizationId: organizationId!,
                 }),
                 'assets.renamedSuccess',
               ))
@@ -167,6 +193,7 @@ export function AssetLibraryDialogs({
               () => assetMutations.update.mutateAsync({
                 id: nameDialog.asset.id,
                 name,
+                organizationId: organizationId!,
               }),
               'assets.renamedSuccess',
             ))

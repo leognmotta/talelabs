@@ -24,11 +24,23 @@ export interface OptimisticAssetUpdate {
 interface AssetMutationContext {
   assets: Awaited<ReturnType<typeof snapshotAssetCache>>
   folders?: FolderListResponse
+  organizationId: string
 }
 
-export function optimisticAssetMutationOptions<TData, TVariables>(
+function hasOrganizationScopeCache(
   queryClient: QueryClient,
-  organizationId: null | string,
+  organizationId: string,
+) {
+  return queryClient.getQueryCache().findAll({
+    queryKey: assetQueryKeys.scope(organizationId),
+  }).length > 0
+}
+
+export function optimisticAssetMutationOptions<
+  TData,
+  TVariables extends { organizationId: string },
+>(
+  queryClient: QueryClient,
   options: {
     affectsFolderMetadata?: boolean | ((variables: TVariables) => boolean)
     getFolderMove?: (variables: TVariables) => {
@@ -43,9 +55,7 @@ export function optimisticAssetMutationOptions<TData, TVariables>(
   return {
     mutationFn: options.mutationFn,
     onMutate: async (variables) => {
-      if (!organizationId)
-        throw new Error('An active organization is required.')
-
+      const { organizationId } = variables
       const updates = options.getUpdates(variables)
       const assets = await snapshotAssetCache(
         queryClient,
@@ -80,30 +90,41 @@ export function optimisticAssetMutationOptions<TData, TVariables>(
         )
       }
 
-      return { assets, folders }
+      return { assets, folders, organizationId }
     },
     onError: (_error, _variables, snapshot) => {
+      if (!snapshot || !hasOrganizationScopeCache(
+        queryClient,
+        snapshot.organizationId,
+      )) {
+        return
+      }
       restoreAssetCache(queryClient, snapshot?.assets)
-      if (organizationId && snapshot?.folders)
-        restoreFolderCache(queryClient, organizationId, snapshot.folders)
+      if (snapshot?.folders) {
+        restoreFolderCache(
+          queryClient,
+          snapshot.organizationId,
+          snapshot.folders,
+        )
+      }
     },
-    onSuccess: (data) => {
+    onSuccess: (data, { organizationId }) => {
+      if (!hasOrganizationScopeCache(queryClient, organizationId))
+        return
       for (const asset of options.getServerAssets?.(data) ?? []) {
-        if (organizationId)
-          patchAssetCache(queryClient, organizationId, asset.id, asset)
+        patchAssetCache(queryClient, organizationId, asset.id, asset)
       }
     },
     onSettled: (_data, _error, variables) => {
+      const { organizationId } = variables
       const affectsFolderMetadata
         = typeof options.affectsFolderMetadata === 'function'
           ? options.affectsFolderMetadata(variables)
           : options.affectsFolderMetadata
 
       void Promise.all([
-        ...(organizationId
-          ? [invalidateAssetCache(queryClient, organizationId)]
-          : []),
-        ...(organizationId && affectsFolderMetadata
+        invalidateAssetCache(queryClient, organizationId),
+        ...(affectsFolderMetadata
           ? [invalidateFolderCache(queryClient, organizationId)]
           : []),
       ])

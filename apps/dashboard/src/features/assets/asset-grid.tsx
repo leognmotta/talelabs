@@ -3,6 +3,7 @@ import type { AssetActions, FolderActions } from './asset-actions.types'
 import type { AssetLibraryInteractions } from './asset-library.types'
 
 import { useTranslation } from 'react-i18next'
+import { MediaLibraryGrid } from '../../shared/components/media-library-card'
 import { AssetCard } from './asset-card'
 import { FolderCard } from './folder-card'
 
@@ -53,14 +54,7 @@ export function AssetGrid({
           >
             {t('navigation.assets')}
           </h2>
-          <div className="
-            grid grid-cols-2 gap-x-4 gap-y-6
-            sm:grid-cols-3
-            lg:grid-cols-4
-            xl:grid-cols-5
-            2xl:grid-cols-6
-          "
-          >
+          <MediaLibraryGrid>
             {assets.map(asset => (
               <AssetCard
                 actions={assetActions}
@@ -69,7 +63,7 @@ export function AssetGrid({
                 key={asset.id}
               />
             ))}
-          </div>
+          </MediaLibraryGrid>
         </section>
       )}
     </div>

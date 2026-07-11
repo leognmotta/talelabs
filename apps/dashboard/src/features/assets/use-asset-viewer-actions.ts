@@ -5,6 +5,7 @@ import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { getApiErrorMessage } from '../../shared/lib/api-error'
+import { useActiveOrganizationId } from '../organizations/organization-scope-context'
 import {
   useAssetMutations,
   useFoldersQuery,
@@ -20,6 +21,7 @@ export function useAssetViewerActions({
   onPurged: () => void
 }) {
   const { t } = useTranslation()
+  const organizationId = useActiveOrganizationId()
   const assetMutations = useAssetMutations()
   const tagMutations = useTagMutations()
   const foldersQuery = useFoldersQuery(Boolean(asset))
@@ -52,17 +54,34 @@ export function useAssetViewerActions({
     }
   }
 
+  function requireOrganizationId() {
+    if (!organizationId)
+      throw new Error('An active organization is required.')
+    return organizationId
+  }
+
   const actions: AssetActions = {
     favoritePending: assetMutations.favorite.isPending,
     onArchive: item =>
       void runAction(
-        () => assetMutations.archive.mutateAsync(item.id),
+        () => assetMutations.archive.mutateAsync({
+          id: item.id,
+          organizationId: requireOrganizationId(),
+        }),
         'assets.archivedSuccess',
       ),
     onCreateTag: async (item, name) => {
       try {
-        const tag = await tagMutations.create.mutateAsync(name)
-        await assetMutations.addTag.mutateAsync({ assetId: item.id, tag })
+        const scope = requireOrganizationId()
+        const tag = await tagMutations.create.mutateAsync({
+          name,
+          organizationId: scope,
+        })
+        await assetMutations.addTag.mutateAsync({
+          assetId: item.id,
+          organizationId: scope,
+          tag,
+        })
         toast.success(t('assets.tagAdded'))
       }
       catch (error) {
@@ -72,7 +91,10 @@ export function useAssetViewerActions({
     onDetails: () => {},
     onDownload: item =>
       void runAction(
-        () => assetMutations.download.mutateAsync(item.id),
+        () => assetMutations.download.mutateAsync({
+          id: item.id,
+          organizationId: requireOrganizationId(),
+        }),
         'assets.downloadStarted',
       ),
     onMove: setMoveAsset,
@@ -80,7 +102,10 @@ export function useAssetViewerActions({
     onRename: setRenameAsset,
     onRestore: item =>
       void runAction(
-        () => assetMutations.restore.mutateAsync(item.id),
+        () => assetMutations.restore.mutateAsync({
+          id: item.id,
+          organizationId: requireOrganizationId(),
+        }),
         'assets.restoredSuccess',
       ),
     onToggleFavorite: item =>
@@ -89,6 +114,7 @@ export function useAssetViewerActions({
           assetMutations.favorite.mutateAsync({
             favorite: !item.favorite,
             id: item.id,
+            organizationId: requireOrganizationId(),
           }),
         item.favorite ? 'assets.favoriteRemoved' : 'assets.favoriteAdded',
       ),
@@ -97,8 +123,16 @@ export function useAssetViewerActions({
       await runAction(
         () =>
           assigned
-            ? assetMutations.removeTag.mutateAsync({ assetId: item.id, tag })
-            : assetMutations.addTag.mutateAsync({ assetId: item.id, tag }),
+            ? assetMutations.removeTag.mutateAsync({
+                assetId: item.id,
+                organizationId: requireOrganizationId(),
+                tag,
+              })
+            : assetMutations.addTag.mutateAsync({
+                assetId: item.id,
+                organizationId: requireOrganizationId(),
+                tag,
+              }),
         assigned ? 'assets.tagRemoved' : 'assets.tagAdded',
       )
     },
@@ -136,6 +170,7 @@ export function useAssetViewerActions({
         assetMutations.move.mutateAsync({
           assets: [assetToMove],
           destinationFolderId,
+          organizationId: requireOrganizationId(),
         }),
       )
       if (moved) {
@@ -146,7 +181,10 @@ export function useAssetViewerActions({
       if (!purgeAsset)
         return
       const purged = await runAction(
-        () => assetMutations.purge.mutateAsync(purgeAsset.id),
+        () => assetMutations.purge.mutateAsync({
+          id: purgeAsset.id,
+          organizationId: requireOrganizationId(),
+        }),
         'assets.deletionStarted',
       )
       if (purged) {
@@ -158,7 +196,11 @@ export function useAssetViewerActions({
       if (!renameAsset)
         return
       const renamed = await runAction(
-        () => assetMutations.update.mutateAsync({ id: renameAsset.id, name }),
+        () => assetMutations.update.mutateAsync({
+          id: renameAsset.id,
+          name,
+          organizationId: requireOrganizationId(),
+        }),
         'assets.renamedSuccess',
       )
       if (renamed)

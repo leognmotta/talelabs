@@ -1,4 +1,4 @@
-import type { Asset } from '@talelabs/sdk'
+import type { Asset, AssetType } from '@talelabs/sdk'
 
 import {
   Dialog,
@@ -11,6 +11,7 @@ import { useTranslation } from 'react-i18next'
 import { AssetLibrary } from './asset-library'
 
 export function AssetLibraryDialog({
+  allowedTypes,
   mode = 'select',
   onOpenChange,
   onOpenAsset = () => {},
@@ -18,6 +19,7 @@ export function AssetLibraryDialog({
   open,
   selectedAssetIds,
 }: {
+  allowedTypes?: AssetType[]
   mode?: 'manage' | 'select'
   onOpenChange: (open: boolean) => void
   onOpenAsset?: (asset: Asset) => void
@@ -46,6 +48,7 @@ export function AssetLibraryDialog({
           </DialogDescription>
         </DialogHeader>
         <AssetLibrary
+          allowedTypes={allowedTypes}
           className="overflow-hidden"
           mode={mode}
           onOpenAsset={onOpenAsset}

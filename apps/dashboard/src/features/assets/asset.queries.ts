@@ -33,6 +33,7 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query'
+import { getOrganizationRequestHeaders } from '../../shared/lib/organization-request'
 import { useActiveOrganizationId } from '../organizations/organization-scope-context'
 import {
   invalidateAssetCache,
@@ -79,6 +80,15 @@ function assetNeedsProcessingRefresh(asset: Pick<Asset, 'lifecycle' | 'processin
   return asset.processingState === 'processing' || asset.lifecycle === 'purging'
 }
 
+function hasOrganizationScopeCache(
+  queryClient: ReturnType<typeof useQueryClient>,
+  organizationId: string,
+) {
+  return queryClient.getQueryCache().findAll({
+    queryKey: assetQueryKeys.scope(organizationId),
+  }).length > 0
+}
+
 export function useAssetLibraryQuery(filters: {
   archived: boolean
   favorite: boolean
@@ -88,7 +98,7 @@ export function useAssetLibraryQuery(filters: {
   sort: 'createdAt' | 'name' | 'sizeBytes'
   source?: AssetSource
   tagId?: string
-  type?: AssetType
+  type?: AssetType | AssetType[]
 }) {
   const organizationId = useActiveOrganizationId()
   const params: GetAssetsQueryParams = {
@@ -115,7 +125,10 @@ export function useAssetLibraryQuery(filters: {
         {
           params: { ...params, cursor: pageParam.cursor },
         },
-        { signal },
+        {
+          headers: getOrganizationRequestHeaders(organizationId!),
+          signal,
+        },
       ),
     getNextPageParam: (page, _pages, pageParam) => page.nextCursor
       ? {
@@ -166,7 +179,10 @@ export function useFoldersQuery(enabled = true) {
   const organizationId = useActiveOrganizationId()
   return useQuery({
     queryKey: assetQueryKeys.folders(organizationId),
-    queryFn: ({ signal }) => getFolders({ signal }),
+    queryFn: ({ signal }) => getFolders({
+      headers: getOrganizationRequestHeaders(organizationId!),
+      signal,
+    }),
     enabled: enabled && Boolean(organizationId),
     staleTime: 60_000,
     refetchInterval: query => query.state.data?.data.some(
@@ -182,7 +198,10 @@ export function useTagsQuery(enabled = true) {
   const organizationId = useActiveOrganizationId()
   return useQuery({
     queryKey: assetQueryKeys.tags(organizationId),
-    queryFn: ({ signal }) => getTags({ signal }),
+    queryFn: ({ signal }) => getTags({
+      headers: getOrganizationRequestHeaders(organizationId!),
+      signal,
+    }),
     enabled: enabled && Boolean(organizationId),
     staleTime: 60_000,
   })
@@ -192,7 +211,13 @@ export function useAssetDetailQuery(id: null | string) {
   const organizationId = useActiveOrganizationId()
   return useQuery({
     queryKey: assetQueryKeys.detail(organizationId, id),
-    queryFn: ({ signal }) => getAssetsId({ id: id! }, { signal }),
+    queryFn: ({ signal }) => getAssetsId(
+      { id: id! },
+      {
+        headers: getOrganizationRequestHeaders(organizationId!),
+        signal,
+      },
+    ),
     enabled: Boolean(organizationId && id),
     refetchInterval: query => query.state.data
       && assetNeedsProcessingRefresh(query.state.data)
@@ -204,28 +229,45 @@ export function useAssetDetailQuery(id: null | string) {
 
 export function useAssetMutations() {
   const queryClient = useQueryClient()
-  const organizationId = useActiveOrganizationId()
 
   return {
     archive: useMutation(
-      optimisticAssetMutationOptions(queryClient, organizationId, {
+      optimisticAssetMutationOptions(queryClient, {
         affectsFolderMetadata: true,
-        mutationFn: (id: string) => deleteAssetsId({ id }),
-        getUpdates: id => [{ id, patch: { lifecycle: 'archived' } }],
+        mutationFn: ({ id, organizationId }: {
+          id: string
+          organizationId: string
+        }) => deleteAssetsId(
+          { id },
+          { headers: getOrganizationRequestHeaders(organizationId) },
+        ),
+        getUpdates: ({ id }) => [{ id, patch: { lifecycle: 'archived' } }],
       }),
     ),
     download: useMutation({
-      mutationFn: async (id: string) => {
-        const result = await getAssetsIdDownload({ id })
+      mutationFn: async ({ id, organizationId }: {
+        id: string
+        organizationId: string
+      }) => {
+        const result = await getAssetsIdDownload(
+          { id },
+          { headers: getOrganizationRequestHeaders(organizationId) },
+        )
         window.location.assign(result.url)
       },
     }),
     purge: useMutation(
-      optimisticAssetMutationOptions(queryClient, organizationId, {
+      optimisticAssetMutationOptions(queryClient, {
         affectsFolderMetadata: true,
-        mutationFn: (id: string) => postAssetsIdPurge({ id }),
+        mutationFn: ({ id, organizationId }: {
+          id: string
+          organizationId: string
+        }) => postAssetsIdPurge(
+          { id },
+          { headers: getOrganizationRequestHeaders(organizationId) },
+        ),
         getServerAssets: asset => [asset],
-        getUpdates: id => [
+        getUpdates: ({ id }) => [
           {
             id,
             patch: {
@@ -238,30 +280,48 @@ export function useAssetMutations() {
       }),
     ),
     restore: useMutation(
-      optimisticAssetMutationOptions(queryClient, organizationId, {
+      optimisticAssetMutationOptions(queryClient, {
         affectsFolderMetadata: true,
-        mutationFn: (id: string) => postAssetsIdRestore({ id }),
+        mutationFn: ({ id, organizationId }: {
+          id: string
+          organizationId: string
+        }) => postAssetsIdRestore(
+          { id },
+          { headers: getOrganizationRequestHeaders(organizationId) },
+        ),
         getServerAssets: asset => [asset],
-        getUpdates: id => [{ id, patch: { lifecycle: 'live' } }],
+        getUpdates: ({ id }) => [{ id, patch: { lifecycle: 'live' } }],
       }),
     ),
     update: useMutation(
-      optimisticAssetMutationOptions(queryClient, organizationId, {
+      optimisticAssetMutationOptions(queryClient, {
         affectsFolderMetadata: variables => variables.folderId !== undefined,
         mutationFn: ({
+          folderId,
           id,
-          ...data
+          name,
+          organizationId,
         }: {
           folderId?: null | string
           id: string
           name?: string
-        }) => patchAssetsId({ id, data }),
+          organizationId: string
+        }) => patchAssetsId(
+          { id, data: { folderId, name } },
+          { headers: getOrganizationRequestHeaders(organizationId) },
+        ),
         getServerAssets: asset => [asset],
-        getUpdates: ({ id, ...patch }) => [{ id, patch }],
+        getUpdates: ({ folderId, id, name }) => [{
+          id,
+          patch: {
+            ...(folderId !== undefined ? { folderId } : {}),
+            ...(name !== undefined ? { name } : {}),
+          },
+        }],
       }),
     ),
     move: useMutation(
-      optimisticAssetMutationOptions(queryClient, organizationId, {
+      optimisticAssetMutationOptions(queryClient, {
         affectsFolderMetadata: true,
         getFolderMove: ({ assets, destinationFolderId }) => ({
           assets,
@@ -270,15 +330,20 @@ export function useAssetMutations() {
         mutationFn: ({
           assets,
           destinationFolderId,
+          organizationId,
         }: {
           assets: Asset[]
           destinationFolderId: null | string
-        }) => postAssetsMove({
-          data: {
-            assetIds: assets.map(asset => asset.id),
-            folderId: destinationFolderId,
+          organizationId: string
+        }) => postAssetsMove(
+          {
+            data: {
+              assetIds: assets.map(asset => asset.id),
+              folderId: destinationFolderId,
+            },
           },
-        }),
+          { headers: getOrganizationRequestHeaders(organizationId) },
+        ),
         getServerAssets: response => response.data,
         getUpdates: ({ assets, destinationFolderId }) =>
           assets.map(asset => ({
@@ -289,21 +354,37 @@ export function useAssetMutations() {
       }),
     ),
     favorite: useMutation(
-      optimisticAssetMutationOptions(queryClient, organizationId, {
-        mutationFn: ({ favorite, id }: { favorite: boolean, id: string }) =>
+      optimisticAssetMutationOptions(queryClient, {
+        mutationFn: ({ favorite, id, organizationId }: {
+          favorite: boolean
+          id: string
+          organizationId: string
+        }) =>
           favorite
-            ? putAssetsIdFavorite({ id })
-            : deleteAssetsIdFavorite({ id }),
+            ? putAssetsIdFavorite(
+                { id },
+                { headers: getOrganizationRequestHeaders(organizationId) },
+              )
+            : deleteAssetsIdFavorite(
+                { id },
+                { headers: getOrganizationRequestHeaders(organizationId) },
+              ),
         getUpdates: ({ favorite, id }) => [{ id, patch: { favorite } }],
       }),
     ),
     addTag: useMutation(
-      optimisticAssetMutationOptions(queryClient, organizationId, {
-        mutationFn: ({ assetId, tag }: { assetId: string, tag: Tag }) =>
-          putAssetsIdTagsTagid({
+      optimisticAssetMutationOptions(queryClient, {
+        mutationFn: ({ assetId, organizationId, tag }: {
+          assetId: string
+          organizationId: string
+          tag: Tag
+        }) => putAssetsIdTagsTagid(
+          {
             id: assetId,
             tagId: tag.id,
-          }),
+          },
+          { headers: getOrganizationRequestHeaders(organizationId) },
+        ),
         getUpdates: ({ assetId, tag }) => [
           {
             id: assetId,
@@ -317,12 +398,18 @@ export function useAssetMutations() {
       }),
     ),
     removeTag: useMutation(
-      optimisticAssetMutationOptions(queryClient, organizationId, {
-        mutationFn: ({ assetId, tag }: { assetId: string, tag: Tag }) =>
-          deleteAssetsIdTagsTagid({
+      optimisticAssetMutationOptions(queryClient, {
+        mutationFn: ({ assetId, organizationId, tag }: {
+          assetId: string
+          organizationId: string
+          tag: Tag
+        }) => deleteAssetsIdTagsTagid(
+          {
             id: assetId,
             tagId: tag.id,
-          }),
+          },
+          { headers: getOrganizationRequestHeaders(organizationId) },
+        ),
         getUpdates: ({ assetId, tag }) => [
           {
             id: assetId,
@@ -338,12 +425,19 @@ export function useAssetMutations() {
 
 export function useTagMutations() {
   const queryClient = useQueryClient()
-  const organizationId = useActiveOrganizationId()
 
   return {
     create: useMutation({
-      mutationFn: (name: string) => postTags({ data: { name } }),
-      onSuccess: (tag) => {
+      mutationFn: ({ name, organizationId }: {
+        name: string
+        organizationId: string
+      }) => postTags(
+        { data: { name } },
+        { headers: getOrganizationRequestHeaders(organizationId) },
+      ),
+      onSuccess: (tag, { organizationId }) => {
+        if (!hasOrganizationScopeCache(queryClient, organizationId))
+          return
         queryClient.setQueryData<TagListResponse>(
           assetQueryKeys.tags(organizationId),
           current =>
@@ -358,7 +452,7 @@ export function useTagMutations() {
               : { data: [tag] },
         )
       },
-      onSettled: (_data, error) => {
+      onSettled: (_data, error, { organizationId }) => {
         void queryClient.invalidateQueries({
           queryKey: assetQueryKeys.tags(organizationId),
           refetchType: error ? 'active' : 'none',
@@ -370,14 +464,6 @@ export function useTagMutations() {
 
 export function useFolderMutations() {
   const queryClient = useQueryClient()
-  const organizationId = useActiveOrganizationId()
-
-  function requireOrganizationId() {
-    if (!organizationId)
-      throw new Error('An active organization is required.')
-
-    return organizationId
-  }
 
   return {
     create: useMutation({
@@ -386,72 +472,96 @@ export function useFolderMutations() {
         ...data
       }: {
         name: string
+        organizationId: string
         parentId?: null | string
         signal?: AbortSignal
-      }) => postFolders({ data }, { signal }),
-      onMutate: async ({ parentId }) => {
-        const scope = requireOrganizationId()
+      }) => postFolders(
+        { data: { name: data.name, parentId: data.parentId } },
+        {
+          headers: getOrganizationRequestHeaders(data.organizationId),
+          signal,
+        },
+      ),
+      onMutate: async ({ organizationId, parentId }) => {
         await queryClient.cancelQueries({
-          queryKey: assetQueryKeys.folders(scope),
+          queryKey: assetQueryKeys.folders(organizationId),
         })
-        const snapshot = snapshotFolderCache(queryClient, scope)
+        const snapshot = snapshotFolderCache(queryClient, organizationId)
         if (parentId)
-          adjustFolderItemCountCache(queryClient, scope, parentId, 1)
-        return snapshot
+          adjustFolderItemCountCache(queryClient, organizationId, parentId, 1)
+        return { organizationId, snapshot }
       },
-      onError: (_error, _variables, snapshot) => {
-        if (organizationId)
-          restoreFolderCache(queryClient, organizationId, snapshot)
-      },
-      onSuccess: (folder) => {
-        if (organizationId)
-          upsertFolderCache(queryClient, organizationId, folder)
-      },
-      onSettled: (_data, error) => {
-        if (organizationId) {
-          void invalidateFolderCache(
+      onError: (_error, _variables, context) => {
+        if (context && hasOrganizationScopeCache(
+          queryClient,
+          context.organizationId,
+        )) {
+          restoreFolderCache(
             queryClient,
-            organizationId,
-            error ? 'active' : 'none',
+            context.organizationId,
+            context.snapshot,
           )
         }
       },
+      onSuccess: (folder, { organizationId }) => {
+        if (!hasOrganizationScopeCache(queryClient, organizationId))
+          return
+        upsertFolderCache(queryClient, organizationId, folder)
+      },
+      onSettled: (_data, error, { organizationId }) => {
+        void invalidateFolderCache(
+          queryClient,
+          organizationId,
+          error ? 'active' : 'none',
+        )
+      },
     }),
     remove: useMutation({
-      mutationFn: (id: string) => deleteFoldersId({ id }),
-      onMutate: async (id) => {
-        const scope = requireOrganizationId()
+      mutationFn: ({ id, organizationId }: {
+        id: string
+        organizationId: string
+      }) => deleteFoldersId(
+        { id },
+        { headers: getOrganizationRequestHeaders(organizationId) },
+      ),
+      onMutate: async ({ id, organizationId }) => {
         await queryClient.cancelQueries({
-          queryKey: assetQueryKeys.folders(scope),
+          queryKey: assetQueryKeys.folders(organizationId),
         })
-        const folders = snapshotFolderCache(queryClient, scope)
-        const assets = await snapshotAssetCache(queryClient, scope)
+        const folders = snapshotFolderCache(queryClient, organizationId)
+        const assets = await snapshotAssetCache(queryClient, organizationId)
         const removedFolder = folders?.data.find(folder => folder.id === id)
-        const removedIds = removeFolderTreeCache(queryClient, scope, id)
+        const removedIds = removeFolderTreeCache(queryClient, organizationId, id)
         if (removedFolder?.parentId) {
           adjustFolderItemCountCache(
             queryClient,
-            scope,
+            organizationId,
             removedFolder.parentId,
             -1,
           )
         }
         patchMatchingAssets(
           queryClient,
-          scope,
+          organizationId,
           asset => asset.folderId !== null && removedIds.has(asset.folderId),
           { folderId: null },
         )
-        return { assets, folders }
+        return { assets, folders, organizationId }
       },
-      onError: (_error, _id, snapshot) => {
-        if (organizationId)
-          restoreFolderCache(queryClient, organizationId, snapshot?.folders)
-        restoreAssetCache(queryClient, snapshot?.assets)
+      onError: (_error, _variables, context) => {
+        if (context && hasOrganizationScopeCache(
+          queryClient,
+          context.organizationId,
+        )) {
+          restoreFolderCache(
+            queryClient,
+            context.organizationId,
+            context.folders,
+          )
+          restoreAssetCache(queryClient, context.assets)
+        }
       },
-      onSettled: () => {
-        if (!organizationId)
-          return
+      onSettled: (_data, _error, { organizationId }) => {
         void Promise.all([
           invalidateFolderCache(queryClient, organizationId),
           invalidateAssetCache(queryClient, organizationId),
@@ -461,18 +571,27 @@ export function useFolderMutations() {
     update: useMutation({
       mutationFn: ({
         id,
-        ...data
+        name,
+        organizationId,
+        parentId,
       }: {
         id: string
         name?: string
+        organizationId: string
         parentId?: null | string
-      }) => patchFoldersId({ id, data }),
-      onMutate: async ({ id, ...patch }) => {
-        const scope = requireOrganizationId()
+      }) => patchFoldersId(
+        { id, data: { name, parentId } },
+        { headers: getOrganizationRequestHeaders(organizationId) },
+      ),
+      onMutate: async ({ id, name, organizationId, parentId }) => {
+        const patch = {
+          ...(name !== undefined ? { name } : {}),
+          ...(parentId !== undefined ? { parentId } : {}),
+        }
         await queryClient.cancelQueries({
-          queryKey: assetQueryKeys.folders(scope),
+          queryKey: assetQueryKeys.folders(organizationId),
         })
-        const snapshot = snapshotFolderCache(queryClient, scope)
+        const snapshot = snapshotFolderCache(queryClient, organizationId)
         const currentFolder = snapshot?.data.find(folder => folder.id === id)
         if (
           patch.parentId !== undefined
@@ -481,28 +600,42 @@ export function useFolderMutations() {
           if (currentFolder?.parentId) {
             adjustFolderItemCountCache(
               queryClient,
-              scope,
+              organizationId,
               currentFolder.parentId,
               -1,
             )
           }
-          if (patch.parentId)
-            adjustFolderItemCountCache(queryClient, scope, patch.parentId, 1)
+          if (patch.parentId) {
+            adjustFolderItemCountCache(
+              queryClient,
+              organizationId,
+              patch.parentId,
+              1,
+            )
+          }
         }
-        patchFolderCache(queryClient, scope, id, patch)
-        return snapshot
+        patchFolderCache(queryClient, organizationId, id, patch)
+        return { organizationId, snapshot }
       },
-      onError: (_error, _variables, snapshot) => {
-        if (organizationId)
-          restoreFolderCache(queryClient, organizationId, snapshot)
+      onError: (_error, _variables, context) => {
+        if (context && hasOrganizationScopeCache(
+          queryClient,
+          context.organizationId,
+        )) {
+          restoreFolderCache(
+            queryClient,
+            context.organizationId,
+            context.snapshot,
+          )
+        }
       },
-      onSuccess: (folder) => {
-        if (organizationId)
-          upsertFolderCache(queryClient, organizationId, folder)
+      onSuccess: (folder, { organizationId }) => {
+        if (!hasOrganizationScopeCache(queryClient, organizationId))
+          return
+        upsertFolderCache(queryClient, organizationId, folder)
       },
-      onSettled: () => {
-        if (organizationId)
-          void invalidateFolderCache(queryClient, organizationId)
+      onSettled: (_data, _error, { organizationId }) => {
+        void invalidateFolderCache(queryClient, organizationId)
       },
     }),
   }

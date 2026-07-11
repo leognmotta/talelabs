@@ -17,6 +17,7 @@ export interface AssetLibraryFilters {
 }
 
 export interface AssetLibraryProps {
+  allowedTypes?: AssetType[]
   className?: string
   filters?: AssetLibraryFilters
   folderId?: null | string

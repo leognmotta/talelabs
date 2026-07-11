@@ -22,6 +22,7 @@ export function useAssetLibraryActions({
   getSelectedAssets,
   navigateToFolder,
   onOpenAsset,
+  organizationId,
   tagMutations,
   tags,
 }: {
@@ -29,6 +30,7 @@ export function useAssetLibraryActions({
   getSelectedAssets: (asset: Asset) => Asset[]
   navigateToFolder: (folderId: null | string) => void
   onOpenAsset: (asset: Asset) => void
+  organizationId: null | string
   tagMutations: ReturnType<typeof useTagMutations>
   tags: Tag[]
 }) {
@@ -50,17 +52,29 @@ export function useAssetLibraryActions({
     }
   }
 
+  function requireOrganizationId() {
+    if (!organizationId)
+      throw new Error('An active organization is required.')
+    return organizationId
+  }
+
   const assetActions: AssetActions = {
     favoritePending: assetMutations.favorite.isPending,
     onArchive: asset =>
       void runAction(
-        () => assetMutations.archive.mutateAsync(asset.id),
+        () => assetMutations.archive.mutateAsync({
+          id: asset.id,
+          organizationId: requireOrganizationId(),
+        }),
         'assets.archivedSuccess',
       ),
     onDetails: onOpenAsset,
     onDownload: asset =>
       void runAction(
-        () => assetMutations.download.mutateAsync(asset.id),
+        () => assetMutations.download.mutateAsync({
+          id: asset.id,
+          organizationId: requireOrganizationId(),
+        }),
         'assets.downloadStarted',
       ),
     onMove: asset => setMoveTarget({
@@ -71,7 +85,10 @@ export function useAssetLibraryActions({
     onRename: asset => setNameDialog({ asset, kind: 'rename-asset' }),
     onRestore: asset =>
       void runAction(
-        () => assetMutations.restore.mutateAsync(asset.id),
+        () => assetMutations.restore.mutateAsync({
+          id: asset.id,
+          organizationId: requireOrganizationId(),
+        }),
         'assets.restoredSuccess',
       ),
     onToggleFavorite: asset =>
@@ -80,6 +97,7 @@ export function useAssetLibraryActions({
           assetMutations.favorite.mutateAsync({
             favorite: !asset.favorite,
             id: asset.id,
+            organizationId: requireOrganizationId(),
           }),
         asset.favorite ? 'assets.favoriteRemoved' : 'assets.favoriteAdded',
       ),
@@ -88,15 +106,31 @@ export function useAssetLibraryActions({
       await runAction(
         () =>
           assigned
-            ? assetMutations.removeTag.mutateAsync({ assetId: asset.id, tag })
-            : assetMutations.addTag.mutateAsync({ assetId: asset.id, tag }),
+            ? assetMutations.removeTag.mutateAsync({
+                assetId: asset.id,
+                organizationId: requireOrganizationId(),
+                tag,
+              })
+            : assetMutations.addTag.mutateAsync({
+                assetId: asset.id,
+                organizationId: requireOrganizationId(),
+                tag,
+              }),
         assigned ? 'assets.tagRemoved' : 'assets.tagAdded',
       )
     },
     onCreateTag: async (asset, name) => {
       try {
-        const tag = await tagMutations.create.mutateAsync(name)
-        await assetMutations.addTag.mutateAsync({ assetId: asset.id, tag })
+        const scope = requireOrganizationId()
+        const tag = await tagMutations.create.mutateAsync({
+          name,
+          organizationId: scope,
+        })
+        await assetMutations.addTag.mutateAsync({
+          assetId: asset.id,
+          organizationId: scope,
+          tag,
+        })
         toast.success(t('assets.tagAdded'))
       }
       catch (error) {
