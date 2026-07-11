@@ -21,7 +21,19 @@ function findUp(filename: string, startDir = process.cwd()) {
   }
 }
 
-const envPath = findUp('.env')
+const developmentEnvFiles = [
+  '.env',
+  '.env.development',
+  '.env.local',
+  '.env.development.local',
+  'dev.vars',
+]
+const envFiles = process.env.NODE_ENV === 'development'
+  ? developmentEnvFiles
+  : ['.env']
 
-if (envPath)
-  config({ path: envPath })
+for (const filename of envFiles) {
+  const envPath = findUp(filename)
+  if (envPath)
+    config({ override: filename !== '.env', path: envPath })
+}

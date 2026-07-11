@@ -1,8 +1,10 @@
 import process from 'node:process'
+import { fileURLToPath } from 'node:url'
+import { ffmpeg } from '@trigger.dev/build/extensions/core'
 import { defineConfig } from '@trigger.dev/sdk'
 import { config } from 'dotenv'
 
-config()
+config({ path: fileURLToPath(new URL('.env', import.meta.url)) })
 
 const project = process.env.TRIGGER_PROJECT_REF
 
@@ -11,9 +13,10 @@ if (!project)
 
 export default defineConfig({
   project,
-  dirs: ['./trigger'],
-  runtime: 'node',
+  dirs: ['./packages/trigger/src/tasks'],
+  runtime: 'node-22',
   logLevel: 'info',
+  maxDuration: 600,
   retries: {
     enabledInDev: false,
     default: {
@@ -22,5 +25,8 @@ export default defineConfig({
       maxTimeoutInMs: 10000,
       factor: 2,
     },
+  },
+  build: {
+    extensions: [ffmpeg({ version: '7' })],
   },
 })

@@ -1,0 +1,35 @@
+import type { AssetTaskPayload } from './asset-task.js'
+
+import { db } from '@talelabs/db'
+import {
+  buildThumbnailObjectKey,
+  deleteObject,
+  TALELABS_PRIVATE_BUCKET,
+} from '@talelabs/storage'
+
+export async function purgeAsset(payload: AssetTaskPayload) {
+  const asset = await db.selectFrom('assets')
+    .select(['storageKey', 'purgeRequestedAt', 'purgedAt'])
+    .where('organizationId', '=', payload.organizationId)
+    .where('id', '=', payload.assetId)
+    .executeTakeFirst()
+
+  if (!asset?.purgeRequestedAt || asset.purgedAt)
+    return { state: 'skipped' as const }
+
+  await deleteObject({ bucket: TALELABS_PRIVATE_BUCKET, key: asset.storageKey })
+  await deleteObject({
+    bucket: TALELABS_PRIVATE_BUCKET,
+    key: buildThumbnailObjectKey(payload.organizationId, payload.assetId),
+  })
+
+  await db.updateTable('assets')
+    .set({ purgedAt: new Date(), updatedAt: new Date() })
+    .where('organizationId', '=', payload.organizationId)
+    .where('id', '=', payload.assetId)
+    .where('purgeRequestedAt', 'is not', null)
+    .where('purgedAt', 'is', null)
+    .execute()
+
+  return { state: 'purged' as const }
+}
