@@ -1,3 +1,5 @@
+import type { TriggerTaskId, TriggerTaskMap } from './task-contracts.js'
+
 import process from 'node:process'
 import {
   batch,
@@ -42,6 +44,7 @@ export type TriggerEnv = Partial<
 
 export type TriggerTaskOptions = Parameters<typeof tasks.trigger>[2]
 export type TriggerBatchOptions = Parameters<typeof tasks.batchTrigger>[2]
+export type { TriggerTaskId, TriggerTaskMap } from './task-contracts.js'
 
 function requireEnvValue(
   env: TriggerEnv,
@@ -70,18 +73,18 @@ export function getTriggerEnvironment(env: TriggerEnv = process.env) {
   }
 }
 
-export async function triggerTask<TTask extends string>(
+export async function triggerTask<TTask extends TriggerTaskId>(
   id: TTask,
-  payload: unknown,
+  payload: TriggerTaskMap[TTask],
   options?: TriggerTaskOptions,
 ) {
   return tasks.trigger(id, payload, options)
 }
 
-export async function batchTriggerTask<TTask extends string>(
+export async function batchTriggerTask<TTask extends TriggerTaskId>(
   id: TTask,
   items: {
-    payload: unknown
+    payload: TriggerTaskMap[TTask]
   }[],
   options?: TriggerBatchOptions,
 ) {
