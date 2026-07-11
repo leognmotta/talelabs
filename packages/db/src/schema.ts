@@ -155,6 +155,7 @@ export interface FolderTable {
   organizationId: string
   parentId: string | null
   name: string
+  systemRole: Generated<string | null>
   createdAt: GeneratedTimestamp
   updatedAt: GeneratedTimestamp
 }
@@ -285,6 +286,7 @@ export interface ElementTable {
   id: string
   organizationId: string
   createdBy: string | null
+  assetFolderId: Generated<string | null>
   type: string
   name: string
   instructions: string | null
