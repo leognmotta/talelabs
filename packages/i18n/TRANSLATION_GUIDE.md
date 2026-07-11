@@ -19,9 +19,9 @@ the term that tells a person what they will see or do.
 | `pl` | Pliki | Elementy | Przepływy pracy | Adres URL obszaru roboczego |
 | `ro` | Fișiere | Elemente | Fluxuri de lucru | Adresa spațiului de lucru |
 
-“Assets” means the user’s image, video, and audio files. Therefore, localized
-navigation uses the natural word for “files,” even though the API entity remains
-`Asset`.
+“Assets” means the user’s reusable image, video, and audio media. English product
+copy consistently uses “Asset” rather than “file.” Other locales use the natural
+local term shown above, even though the API entity remains `Asset`.
 
 ## Voice and conventions
 
