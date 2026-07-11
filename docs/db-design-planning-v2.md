@@ -109,6 +109,7 @@ erDiagram
 
     folders ||--o{ folders : nests
     folders ||--o{ assets : contains
+    folders o|--o| elements : "organizes new uploads"
 
     elements }o--o{ assets : "elementAssets (role, order, primary)"
 
@@ -149,6 +150,7 @@ create table "folders" (
   "organizationId" text not null references "organization"("id") on delete cascade,
   "parentId" text,
   "name" text not null,
+  "systemRole" text,                 -- internal stable purpose; null for ordinary user folders
   "createdAt" timestamptz not null default now(),
   "updatedAt" timestamptz not null default now(),
   unique ("id", "organizationId"),    -- composite target for org-scoped FKs
@@ -158,6 +160,8 @@ create table "folders" (
 
 create index "foldersOrgIdx" on "folders" ("organizationId");
 create index "foldersParentIdx" on "folders" ("parentId");
+create unique index "foldersSystemRoleIdx"
+  on "folders" ("organizationId", "systemRole") where "systemRole" is not null;
 create index "foldersNameSearchIdx"
   on "folders" using gin (lower("name") gin_trgm_ops);
 ```
@@ -428,17 +432,18 @@ Tag names are normalized in the application with Unicode NFKC normalization, col
 
 ### 5. Elements — reusable creative context
 
-One generic table for all element types. The **type registry lives in code** (validation schema, form component, asset roles, `buildContext`) — the DB stores the registry key and the type-shaped payload, and deliberately does not constrain the key, so shipping a `location` or `style` type is a registry change, not a migration.
+One generic table for all element types. The framework-neutral **type registry lives in code** and contains versioned validation schemas plus structural Asset-role metadata. Dedicated React forms live in the dashboard and dedicated `buildContext` implementations live in the API. The DB stores the registry key and type-shaped validated payload, and deliberately does not constrain the key, so shipping a new type is a code-registry change, not a migration.
 
 **`"type"` is immutable after creation.** Changing a character into a product would orphan its `data` payload and asset roles; the product action for "wrong type" is creating a new element. Enforce in the app layer (no `update` path for the column).
 
-`"schemaVersion"` records which version of the registry's schema wrote `"data"`. Registry schemas will evolve; the version lets the app upcast old payloads deterministically instead of guessing shape.
+`"schemaVersion"` records which version of the registry's schema wrote `"data"`. Registry schemas will evolve; the version lets the app upcast old payloads deterministically instead of guessing shape. Each type retains a schema for every supported stored version and a sequential migration for every version transition. Reads validate with the stored-version schema before migrating, then validate the current result. Creates and updates write only the current version; reads may upcast without immediately rewriting the row.
 
 ```sql
 create table "elements" (
   "id" text primary key,
   "organizationId" text not null references "organization"("id") on delete cascade,
   "createdBy" text references "user"("id") on delete set null,
+  "assetFolderId" text,
   "type" text not null,               -- registry key: 'character', 'product', later 'location', ...
                                       -- no check: vocabulary owned by the code registry, validated app-side
   "name" text not null,
@@ -447,13 +452,19 @@ create table "elements" (
   "schemaVersion" smallint not null default 1,
   "createdAt" timestamptz not null default now(),
   "updatedAt" timestamptz not null default now(),
-  unique ("id", "organizationId")     -- composite target for org-scoped FKs
+  unique ("id", "organizationId"),    -- composite target for org-scoped FKs
+  foreign key ("assetFolderId", "organizationId")
+    references "folders" ("id", "organizationId") on delete set null ("assetFolderId")
 );
 
 create index "elementsOrgTypeIdx" on "elements" ("organizationId", "type");
 create index "elementsOrgUpdatedIdx"
   on "elements" ("organizationId", "updatedAt" desc, "id" desc);  -- element list cursor pagination
+create unique index "elementsAssetFolderIdx"
+  on "elements" ("assetFolderId") where "assetFolderId" is not null;
 ```
+
+`folders.systemRole = 'elements_root'` identifies the one workspace Elements root without relying on its mutable name or path. Element creation provisions a collision-safe child folder and stores its ID in `assetFolderId` in the same transaction. The FK makes folder moves/renames harmless and clears the association if the folder is deleted. Element deletion deliberately has no effect on the referenced folder. A later Element upload recreates a missing association before inserting the new Asset; existing-Asset links never alter `assets.folderId`.
 
 ### 6. Element ↔ Asset — the relationship that carries meaning
 
@@ -518,7 +529,7 @@ create index "flowNodesAssetIdx" on "flowNodes" ("assetId") where "assetId" is n
 
 - `"elementId"`/`"assetId"` as real FK columns (not buried in `"data"`) buy the two things jsonb can't: the "where is this Element used?" query, and `set null` behavior so deleting an Element leaves a visibly-unresolved node instead of a silently broken reference.
 - `"positionX"/"positionY"` as columns because drag-autosave is the hottest write path — a two-float HOT update per node beats rewriting a document.
-- A generation node's _draft_ config (chosen model, settings) lives in `"data"`; the run-time truth is snapshotted onto `generationJobs`. Draft and provenance never share storage.
+- A generation node's _draft_ config (chosen model, settings, and per-input `auto` or ordered-manual Asset selection policy) lives in `"data"`; incoming edges remain the sole source of topology, so node data never duplicates source node IDs or handles. The run-time truth is snapshotted onto `generationJobs`. Draft and provenance never share storage.
 - Autosave protocol (API concern, stated here because it shapes the tables): the client sends batched node upserts + deletes and edge inserts + deletes per debounce tick, wrapped in the flow-revision compare-and-swap described on `flows`. No whole-graph replacement endpoint.
 
 ### 8. Flow edges
@@ -585,6 +596,7 @@ The column/jsonb split is deliberate: `"elementId"` and `"assetId"` stay relatio
 Two resolution rules the vision requires but React Flow does not provide, defined here so `"sortOrder"` is never arbitrary:
 
 - **Source ordering:** React Flow edges are an unordered set, but the vision demands deterministic context ordering (it affects prompt composition). Default order = `(flowEdges."createdAt", "id")` of the incoming connections — stable and reproducible. The generation node's `"data"` may store an explicit user-defined ordering that overrides the default. Whichever rule applied, the job's `"sortOrder"` freezes the outcome — provenance never depends on re-deriving it.
+- **Collection selection belongs to the consumer:** an Element role handle resolves to an ordered candidate set, while the generation node's per-input `"data"` stores only `auto` or ordered manual Asset IDs. `auto` selects primary-first then role/order/id; `manual` must be a compatible subset of the candidates derived from incoming edges. Model maxima apply per target input across every source edge combined. Stale, incompatible, unavailable, singular-slot overflow, and model-limit overflow block execution instead of being silently truncated. `generationJobSources."snapshot"` freezes candidates and decisions; `generationJobInputs` freezes only the exact provider subset.
 - **`nodeOutput` resolution is run-aware:** inside a multi-node run, an upstream node's output resolves **strictly to the job with the same `"flowRunId"`** (via `flowRunNodes."jobId"`) — a concurrent manual run can never swap a downstream input mid-run. Across runs (manual canvas chaining), the default is the node's **latest succeeded job** (outputs ordered by `"outputIndex"`), and the consuming node's `"data"` may pin a specific output instead. Either way, resolution happens at job create and the concrete `"assetId"` lands on the source row — a later re-run of the upstream node never rewrites what this job actually consumed.
 
 ### 10. Generation job inputs — the exact provider subset
@@ -752,7 +764,7 @@ Three execution tiers, one spine: node run = a mode-`'node'` run wrapping one jo
 **Run one generation node:**
 
 1. API loads the node, walks `flowEdges` into it, loads connected text/asset/element nodes
-2. Resolves each element via the code registry's `buildContext` + `elementAssets`
+2. Resolves each element through the server-only `buildElementContext` contract + `elementAssets`: upcast data, compose deterministic text, and return ordered stable Asset IDs/roles/priority without signed URLs or storage keys
 3. Applies model capability limits, selects/asks about references, composes `"resolvedPrompt"`
 4. One transaction: insert `flowRuns` (mode `'node'`, graph snapshot) + `flowRunNodes` + `generationJobs` (+ `generationJobSources`, + `generationJobInputs`)
 5. After commit: `tasks.trigger("generate-image", { jobId }, { idempotencyKey: jobId })`, store `"triggerRunId"` (reconciliation sweep covers a crash in between)
@@ -795,7 +807,7 @@ Seams that exist without speculative tables:
 
 - **Video/audio generation nodes:** already absorbed — `generationJobs."mediaType"`, the same sources/inputs model, new node `"type"` values in the code registry. Zero migrations.
 - **New element types** (`location`, `style`, `brand`…) and **new provider input roles** (`mask`, `controlImage`…): registry entries + app validation. Zero migrations — that's why those columns have no checks.
-- **Registry schema evolution:** `"schemaVersion"` on `elements` and `flowNodes` lets new registry schemas upcast old payloads deterministically.
+- **Registry schema evolution:** `"schemaVersion"` on `elements` and `flowNodes` lets new registry schemas upcast old payloads deterministically. Registries retain version-specific schemas and gap-free sequential migrations; required additions, renames, removals, type changes, and semantic changes increment the version. Role changes also require migration/deprecation because `elementAssets."role"` is persisted data.
 - **Multi-node run modes:** `flowRuns`/`flowRunNodes` ship in the initial migration with mode `'node'` in use; enabling `'downstream'`/`'all'` is orchestrator code over the same tables — zero migrations. Tools add exactly the columns listed in section 11's seam.
 - **Recipes:** a `recipes` table holding a _cloned graph snapshot_ (jsonb is right there, since a template is a document, not a queried graph) + insertion logic that re-ids nodes/edges. The stable-id + normalized-graph design makes "save selection as recipe" a `select` and "add to flow" a batch insert with fresh cuid2s.
 - **Tools:** reuse the `flowRuns` orchestration model (section 11) over an immutable internal graph snapshot — a tool run spans providers and media types, so it is an orchestration record, never a `generationJobs` row; jobs stay single-provider, single-model execution units.

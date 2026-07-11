@@ -194,7 +194,7 @@ type Element = {
 
 type ElementAssetLink = {
   assetId: string;
-  role: string; // registry-defined per element type
+  role: string; // fixed registry role, or a validated custom role stored by an Other Element
   sortOrder: number;
   isPrimary: boolean;
   asset: Asset; // embedded — the element assets tab renders in one call
@@ -227,6 +227,18 @@ type FlowEdge = {
   targetNodeId: string;
   sourceHandle: string | null;
   targetHandle: string | null;
+};
+
+type InputSelection =
+  | { mode: "auto" }
+  | { mode: "manual"; assetIds: string[] };
+
+// Stored in generation-node data, keyed by the model input-slot ID. Edges remain
+// the sole source of connection topology; this stores only consumer-owned choice.
+type GenerationNodeData = {
+  modelId: string;
+  settings: Record<string, unknown>;
+  inputSelections: Record<string, InputSelection>;
 };
 
 type RunMode = "node" | "downstream" | "all" | "tool"; // only 'node' accepted initially
@@ -377,11 +389,17 @@ Request:
   name?: string      // defaults to original filename
   folderId?: string
   elementId?: string // convenience: also attach to an element on registration
-  role?: string      //   required with elementId; validated against the registry
+  role?: string      //   requires elementId; validated against fixed or stored custom roles
+  sortOrder?: number //   optional link position; requires elementId + role
+  isPrimary?: boolean //  optional role preview priority; requires elementId + role
 }
 ```
 
 Order of operations: verify grant signature + expiry → `HEAD` the object, confirm existence and that actual size/content-type/**checksum** match the grant → derive `type` from verified mime → insert the asset **and the optional element link in one transaction** (a crash can't produce an attached-but-unregistered or registered-but-unattached half-state).
+
+When `elementId` is present, the Element's stored `assetFolderId` is authoritative and the request's `folderId` is only a client hint. The transaction places the newly uploaded Asset in that folder; if the association was cleared because the folder was deleted, it provisions a new collision-safe child under the workspace's internally identified Elements root and updates the Element first. Linking an existing Asset through the Element kit endpoint never moves or copies that Asset.
+
+The Element creation UI deliberately uses the recoverable two-step variant instead: it registers with `folderId = assetFolderId` and `elementId` but no role, records the returned Asset ID, then calls `POST /elements/:id/assets`. Supplying `elementId` makes the Element's stored folder association authoritative and recreates a deleted association lazily; omitting the role keeps registration separate from linking. This lets a failed link retry independently without uploading or registering the file again. Supplying both `elementId` and `role` remains the optional atomic registration-and-link path for surfaces that do not need this queue recovery boundary.
 
 **Ingestion is durable, not fire-and-forget.** Uploads register as `processingState: 'processing'`; a Trigger.dev task (an explicitly global `idempotencyKey` derived from `assetId` for both initial dispatch and reconciliation) probes dimensions/duration, generates the thumbnail, fills `metadata`, and flips to `'ready'` — or to `'failed'` with a safe `processingError` for invalid/corrupt media. A reconciliation sweep redispatches assets stuck in `'processing'` (same pattern as job dispatch and purge — the crash window between insert and trigger is covered, nothing sits with null metadata forever). Generation outputs skip all of this: the generate task already probed and uploaded them, so they insert directly as `'ready'`.
 
@@ -391,7 +409,7 @@ Order of operations: verify grant signature + expiry → `HEAD` the object, conf
 
 Registration is **idempotent per grant** (`uploadId` unique index), and the replay semantics are deliberate: **replay returns the original registration result (`200`) and ignores the request's metadata entirely** — the grant binds the object, not the name/folder/element fields. A replay is a network retry; if the client actually wants different metadata, that's `PATCH /assets/:id` and the element link endpoints, after the fact. (The alternative — hashing the body and returning `409` on mismatch, as runs do — was considered and rejected: it costs a stored hash for a divergence that is always a client bug, and the ignored fields are all trivially correctable post-registration. Runs get the strict variant because their body determines an _execution_; here it only decorates a row.)
 
-Response: `201` → `Asset` (`200` on replay). Grant invalid/expired/object missing → `400`.
+Response: `201` → `Asset` (`200` on replay). Grant invalid/expired/object missing → `400`. Registration that also links to an Element returns `409 element_asset_role_capacity_reached` when the selected role has reached its capacity.
 
 ---
 
@@ -515,7 +533,7 @@ DELETE /folders/:id                      -> 204
 
 Query: `?type=&search=&limit=&cursor=` — sorted `updatedAt desc`.
 
-Response: `200 ListResponse<Element & { previewThumbnailUrl: string | null }>` — preview = the primary asset of the type's registry-designated preview role.
+Response: `200 ListResponse<Element & { previewThumbnailUrl: string | null }>` — preview = the primary asset of the type's registry-designated preview role. Types with validated custom roles use a deterministic primary Asset from their custom role set.
 
 ### `POST /elements`
 
@@ -528,7 +546,11 @@ Response: `200 ListResponse<Element & { previewThumbnailUrl: string | null }>` �
 }
 ```
 
-Response: `201 Element`. Unknown type or `data` failing the type schema → `400` with field details. The server stamps `schemaVersion` from the current registry.
+Response: `201 CreatedElement`, which is the full Element representation with a required `assetFolderId: string`. Unknown type or `data` failing the type schema → `400` with field details. The server stamps `schemaVersion` from the current registry.
+
+Creation lazily creates or reuses the internally identified workspace Elements root, creates a non-conflicting child folder from the Element name, and stores its ID as `assetFolderId` in the same transaction as the Element. Two Elements may share a name; their folder names receive deterministic numeric suffixes. Renaming an Element does not rename its folder.
+
+The generic API never trusts dashboard form validation: it selects the registered current Zod schema from `type`, validates the complete `data` payload independently, and persists only the parsed JSONB representation. Dashboard localization and dedicated React form layout are not part of this contract.
 
 ### `GET /elements/:id`
 
@@ -546,7 +568,7 @@ Response: `200 Element`.
 
 ### `DELETE /elements/:id` → `204`
 
-Kit links cascade; assets survive; flow nodes referencing it become visibly unresolved (`elementId: null`); job provenance keeps its snapshot.
+Kit links cascade; assets and the associated folder survive; flow nodes referencing it become visibly unresolved (`elementId: null`); job provenance keeps its snapshot.
 
 ### Element assets — the kit subresource
 
@@ -565,7 +587,7 @@ DELETE /elements/:id/assets/:assetId?role=<role>       -> 204
 
 `PATCH` body: `{ role: string; sortOrder?: number; isPrimary?: boolean }` (role identifies which link — the PK is element+asset+role).
 
-Validation, all `400` with field details: role must exist in the registry for this element's type; the asset's media type must be accepted by that role (`voice` → audio only); same-org (else `404`). Setting `isPrimary: true` atomically clears the previous primary for that role (the partial unique index backs it). Duplicate (asset, role) pair → `409 conflict`. Detach never deletes the asset.
+Validation: role must exist in the registry for this element's type or in the validated custom-role list stored by an `other` Element; the asset's media type must be accepted by that role (`voice` → audio only, `other` custom roles → image/video/audio); same-org (else `404`). Capacity is enforced independently for each role. By default, an image role accepts up to eight links, while a video or audio role accepts one. These are reusable-context limits rather than provider/model input limits; Flow consumers select a compatible subset at execution time. Existing-Asset attachment and upload registration serialize the role capacity check transactionally; exceeding it returns `409 element_asset_role_capacity_reached`. Setting `isPrimary: true` atomically clears the previous primary for that role (the partial unique index backs it). Duplicate (asset, role) pair → `409 conflict`. Detach never deletes the asset.
 
 ### `GET /elements/:id/usage` — "where is this used?"
 
@@ -583,6 +605,29 @@ type ElementUsage = {
 ```
 
 If a full paginated usage browser ever proves necessary, it becomes `GET /elements/:id/usage/flows` with the standard `ListResponse` — additive, not a reshape.
+
+### Server-only Element context contract
+
+M3 also provides an internal `buildElementContext(elementId)` service for later Flow and execution stages. It is not a public endpoint and does not return browser presentation URLs:
+
+```ts
+type BuiltElementContext = {
+  elementId: string;
+  type: string;
+  schemaVersion: number;
+  text: string;
+  assets: {
+    assetId: string;
+    role: string;
+    sortOrder: number;
+    isPrimary: boolean;
+    mediaType: "image" | "video" | "audio";
+    mimeType: string;
+  }[];
+};
+```
+
+Resolution validates and sequentially upcasts stored Element data, resolves same-organization kit links in deterministic role/order/id order, and excludes non-ready or non-readable Assets from executable candidates. The result contains stable IDs and metadata only: never R2 storage keys and never signed URLs. M4's Element node carries the Element reference; M5 calls this service while creating a run, applies model capability limits, and snapshots the resolved text and chosen Asset IDs into `generationJobSources` and `generationJobInputs`.
 
 ---
 
@@ -647,6 +692,10 @@ Validation (`400` unless noted): node/edge ids must be well-formed cuid2; node `
 
 **Connection semantics are registry-validated, not just referential.** The node registry declares, per node type, its handles (ids, the media/data types each accepts or emits, cardinality) and its payload requirements (an `element` node must carry `elementId`, an `asset` node `assetId`). Graph sync rejects — evaluated against the batch's _final_ state — edges into unknown handles, incompatible connections (an audio output into an image-only input), cardinality overflow, and type-payload violations. The boundary is deliberate: **incomplete is valid** (a half-built canvas with unconnected required inputs saves fine — that's normal editing), only _contradictory_ graphs are rejected; full executability is checked at run time, where the model's capabilities are known.
 
+Element nodes expose one resolved-context handle and one typed collection handle per registered Asset role. A role handle represents an ordered candidate set (`ImageSet`, `VideoSet`, or `AudioSet`), not one handle per Asset. Generation-node `inputSelections` is consumer-owned configuration: `auto` resolves primary-first then role order, while `manual` preserves ordered Asset IDs. The server derives candidates exclusively through incoming edges and rejects a manual ID that is not a current, compatible candidate. Input-slot maxima apply across all connected sources combined. Stale, unavailable, incompatible, or overflowing manual selections remain visible validation errors and are never silently replaced or truncated.
+
+`auto` and `manual` are persistence terms, not exposed product modes. The dashboard presents `auto` as `Using Element defaults`; changing any candidate creates `manual` implicitly, and `Reset to Element defaults` writes `auto` again. An automatic selection may recompute when the model or candidate collection changes. A manual selection is preserved and becomes invalid when stale or over capacity. Candidate inspectors group Assets by source, preserve explicit Asset order, and use the same contract for singular slots such as `firstFrame` (`max: 1`).
+
 ### `GET /flows/:id/nodes/:nodeId/results` — node run history
 
 Response: `200 ListResponse<RunJob & { runId: string }>` — newest first, outputs embedded. This is the derived node-result display (results are never stored in node `data`) and the picker for pinning a specific output. Backed by `generationJobsNodeHistoryIdx`.
@@ -690,7 +739,7 @@ Request:
 
 There is deliberately **no prompt/model/settings in this body**: the node's draft config and its connected context (text nodes, asset nodes, element nodes, upstream outputs) are read server-side and frozen into the run's `graphSnapshot` and the job's provenance rows — the server is authoritative for what executes (vision: "generation must remain server-authoritative").
 
-Server sequence (one transaction + dispatch, per the DB doc's integration contract): resolve upstream context via edges → resolve elements through the registry's `buildContext` → apply model capability limits (`422 unsupported_by_model` naming the offending setting/input) → compose `resolvedPrompt` → insert run + run-node + job + sources + inputs → commit → trigger the generate task.
+Server sequence (one transaction + dispatch, per the DB doc's integration contract): resolve upstream context and candidate collections via edges → call the server-only `buildElementContext` contract for connected Elements → apply each consuming input's `auto` or `manual` selection policy → validate membership, compatibility, semantic-slot cardinality, and aggregate model limits (`422 unsupported_by_model` naming the offending setting/input) → compose `resolvedPrompt` → insert run + run-node + job + sources + exact inputs → commit → trigger the generate task. Provider-facing URLs or uploads are resolved after the immutable Asset IDs have been selected; expiring signed URLs are never snapshot data.
 
 Run creation also **locks its selected input asset rows** (ordered by asset id) and requires every input to be **`lifecycle` live/archived AND `processingState: 'ready'`** — purging/purged inputs are rejected (the purge coordination contract under `POST /assets/:id/purge`), and `processing`/`failed` inputs are rejected with **`409 invalid_state`** naming the field (the request is well-formed; the asset is in an unusable state — the client can distinguish "wait for processing" from bad form data): an asset whose bytes haven't been verified or whose media is invalid must never reach a provider.
 

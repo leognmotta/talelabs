@@ -445,59 +445,73 @@ Elements are generic reusable AI context. Do not restore separate Brand, Product
 
 ### E-020 - Create The Element Type Registry Foundation
 
-**Status:** Blocked by M2
+**Status:** Complete
 
 **Scope**
 
 - Create the shared registry boundary used by API and dashboard.
-- Keep schemas, labels, field metadata, preview roles, Asset roles, accepted media types, and schema versions framework-neutral.
+- Keep only stable IDs, version-specific schemas, sequential migrations, preview roles, Asset roles, and accepted media types in the framework-neutral shared registry.
 - Keep React form components in the dashboard and server-only `buildContext` implementations out of the browser bundle.
-- Start with `character` and `product` types only.
+- Give every registered Element type a dedicated React Hook Form component and a dedicated server context builder. The shared registry is not a generic form renderer or field-definition language.
+- Do not store user-facing English display copy in shared Element definitions. Resolve type, field, and Asset-role labels/descriptions from stable IDs or translation keys in the dashboard, add the keys to every supported locale, and keep UI localization separate from server-generated model context.
+- Implement explicit version-specific schemas and gap-free sequential migrations (`v1 -> v2 -> v3`); validate the stored version before upcasting and the current result afterward.
+- Reject unknown future versions and invalid or unsupported historical payloads safely; create/update writes only the current version while reads may upcast in memory.
+- Keep the generic API and JSONB persistence independent of the number of registered types; adding a type requires its shared schema, dedicated dashboard form, dedicated API context builder, roles, and localized dashboard copy.
 - Encode the approved role examples, including character appearance/expression/motion/voice and product packshot/detail/lifestyle/demonstration.
+- Register the `Other` escape-hatch type with a versioned custom-role list capped at three roles; custom roles accept image, video, and audio while specialized types retain product-controlled roles.
 - Add startup validation for registry configuration.
 
 ### E-021 - Implement Elements CRUD API
 
-**Status:** Blocked by E-020 and E-003
+**Status:** Complete
 
-Implement list/create/detail/update/delete with registry-based data validation, immutable type, schema-version stamping/upcasting, preview metadata, usage counts, tenant isolation, OpenAPI, and SDK generation.
+Implement list/create/detail/update/delete with registry-based data validation, immutable type, schema-version stamping/upcasting, preview metadata, usage counts, tenant isolation, OpenAPI, and SDK generation. Creation transactionally provisions a collision-safe child under the workspace's stable Elements root and stores the folder ID on the Element; renaming or deleting the Element does not rename or delete that folder.
 
 ### E-022 - Implement Element Asset-Kit API
 
-**Status:** Blocked by E-021 and M2
+**Status:** Complete
 
 **Scope**
 
 - Implement the Element Asset subresource with role, order, and primary state.
 - Enforce role/media compatibility and the one-primary-per-role invariant.
+- Enforce capacity independently per Element Asset role: image roles accept up to eight Assets, while video and audio roles accept one by default. Check role capacity transactionally in both attach and upload-registration paths. These are reusable-context limits; model-specific selection remains a Flow concern.
 - Keep Assets canonical; linking/unlinking never copies or deletes media.
 - Complete the optional `elementId` + `role` path in `POST /assets` so upload registration and link insertion are one transaction.
+- Place newly uploaded Element Assets in the Element's stored folder. If folder deletion cleared the relationship, recreate it lazily during registration. Never move or copy an existing Asset when it is linked to another Element.
 - Permit processing Assets to be attached for upload UX, but generation resolution must never submit a non-ready Asset.
 
 ### E-023 - Implement Element Context And Usage Services
 
-**Status:** Blocked by E-022
+**Status:** Complete
 
-- Implement server-only `buildContext` for the initial Element types.
-- Return deterministic ordered candidate Assets and resolved text suitable for future job snapshots.
+- Implement server-only `buildElementContext` for the initial Element types, returning upcasted schema version, deterministic resolved text, and ordered candidate Asset IDs with role, order, primary state, media type, and MIME type.
+- Exclude processing, failed, purging, and purged Assets from executable candidates.
+- Return stable IDs and metadata only; never return storage keys or signed URLs, because M5 snapshots IDs and resolves provider-facing access only at execution time.
 - Implement the bounded `GET /elements/:id/usage` response.
 - Verify multiple Elements, multiple Assets per role, exclusions, primary selection, and deleted/failed references.
 
 ### E-024A - Build Element List And Data UI
 
-**Status:** Blocked by E-021
+**Status:** Complete
 
-Implement Element list/create/detail/delete and the registry-driven Data tab. Start with Character and Product forms while keeping the screen generic enough for later Element types.
+Implement Element list/create/detail/delete and dedicated type forms. Every creation form has exactly two sections (`Data` and `Assets`), keeps Data intentionally compact, and resolves all presentation copy in the dashboard.
+
+`Other` asks only for name and instructions. Its Assets section lets the user add, name, and remove up to three custom roles before creation.
 
 ### E-024B - Build Element Assets UI
 
-**Status:** Blocked by E-022 and E-024A
+**Status:** Complete
 
 Implement the Assets tab with role sections, primary selection, ordering, upload-and-attach, existing Asset picker, unlinking, processing feedback, and shared Asset previews.
 
+Creation drop zones retain role-aware `File` objects locally without uploading. Only after successful Element and folder creation do they transfer to the organization-scoped, non-persisted Zustand upload queue. Queue intents retain the returned `assetFolderId`, Element ID, role, order, and primary metadata across route navigation. The bounded worker exposes `queued`, `uploading`, `processing`, `linking`, `complete`, and `failed` states; after canonical Asset registration it checkpoints `assetId`, so a failed Element link retries only the link and never uploads the file again.
+
+Creation and detail Asset controls expose and prevalidate each role's capacity: eight Assets for an image role and one for a video or audio role by default. The API remains authoritative when concurrent actions race.
+
 ### E-025 - Elements User QA And UI Critique Gate
 
-**Status:** Blocked by E-023 and E-024B
+**Status:** Ready for user QA
 
 **Owner:** User
 
@@ -519,6 +533,8 @@ Flows are the primary product surface. The first version is a manual visual crea
 
 - Define framework-neutral node schemas, schema versions, typed handles, cardinality, connection compatibility, and payload requirements.
 - Start with exactly `text`, `asset`, `element`, and `imageGeneration` nodes.
+- Define Element nodes with one resolved-context output plus one typed collection output per registered Asset role. A role produces one stable `ImageSet`, `VideoSet`, or `AudioSet` handle, never one dynamic handle per related Asset.
+- Define generation inputs as model-capability slots with aggregate cardinality limits and a per-input selection policy: deterministic `auto` or ordered manual Asset IDs.
 - Keep React node components in the dashboard and server validation in shared/server-safe code.
 - Add startup validation for incompatible handles, missing payload references, and schema upcasting.
 
@@ -559,6 +575,8 @@ Implement pan/zoom, viewport restoration, selection, add/move/duplicate/delete, 
 
 Implement functional node components and selectors for Text, canonical Assets, and Elements. Support multiple connected context sources and deterministic ordering without adding automation behavior.
 
+The Element node stores only the Element reference. It exposes one resolved-context handle plus one typed collection handle per registered Asset role; it never embeds a copy of Element data, kit Assets, signed URLs, or `buildElementContext` output. The server resolves the current context and role candidates when a run is created.
+
 ### E-035 - Add Generation Configuration And Image Node Draft UI
 
 **Status:** Blocked by E-030 and E-034
@@ -569,6 +587,11 @@ Implement functional node components and selectors for Text, canonical Assets, a
 - Enable a deliberately small image-model catalog.
 - Render model choice and capability-aware settings inside the Image Generation node.
 - Expose only supported input slots/settings and validate node data through the registry.
+- Show compact thumbnail stacks and concise selected-reference counts on connected media inputs. The input row itself opens a contextual inspector; do not add a persistent `Change selection` button or expose `Automatic / Manual` terminology.
+- Make a compatible connection immediately runnable using deterministic Element defaults. The inspector shows selected order, total candidates, model maximum, candidates grouped by source, `Customize`, and `Reset to Element defaults`. Changing any candidate implicitly creates a custom selection.
+- Keep incoming edges as the topology source of truth. Persist only per-input selection policies in generation-node `data`; validate manual IDs as compatible members of the current candidate set.
+- Implement the four visible input states: unconnected, default, customized, and invalid. Singular slots use the same interaction constrained to one candidate.
+- Apply each model input's maximum across every connected source combined. Default selections may recompute after model, graph, Element, or Asset changes; preserve and visibly invalidate overflowing or stale custom selections and never truncate or replace them silently.
 - Do not execute the node yet.
 
 ### E-036 - Flows User QA And UI Critique Gate
