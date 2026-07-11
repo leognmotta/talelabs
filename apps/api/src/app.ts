@@ -1,4 +1,5 @@
 import type { OrganizationSessionResolver } from './middleware/organization.js'
+import type { RateLimitStore } from './rate-limit/rate-limit-store.js'
 import type { ProductRouteRegistrar } from './routes/product.routes.js'
 import type { ApiEnv } from './types.js'
 import { OpenAPIHono } from '@hono/zod-openapi'
@@ -11,9 +12,22 @@ import { corsMiddleware } from './middleware/cors.js'
 import { apiError, errorHandler } from './middleware/error.js'
 import { registerOpenApi } from './openapi.js'
 import { registerAccountRoutes } from './routes/account/account.routes.js'
+import { registerAssetRoutes } from './routes/assets/assets.routes.js'
+import { registerFolderRoutes } from './routes/folders/folders.routes.js'
 import { registerOrganizationRoutes } from './routes/organizations/organizations.routes.js'
 import { registerProductRoutes } from './routes/product.routes.js'
+import { registerSearchRoutes } from './routes/search/search.routes.js'
 import { registerSystemRoutes } from './routes/system/system.routes.js'
+import { registerTagRoutes } from './routes/tags/tags.routes.js'
+import { registerUploadRoutes } from './routes/uploads/uploads.routes.js'
+
+const defaultProductRouteRegistrars = [
+  registerUploadRoutes,
+  registerAssetRoutes,
+  registerFolderRoutes,
+  registerTagRoutes,
+  registerSearchRoutes,
+]
 
 function getValidationIssueDetails(issue: {
   code: string
@@ -58,6 +72,7 @@ function getValidationIssueDetails(issue: {
 export interface CreateApiAppOptions {
   organizationSessionResolver?: OrganizationSessionResolver
   productRouteRegistrars?: readonly ProductRouteRegistrar[]
+  rateLimitStore?: RateLimitStore
 }
 
 export function createApiApp(options: CreateApiAppOptions = {}) {
@@ -95,8 +110,9 @@ export function createApiApp(options: CreateApiAppOptions = {}) {
   registerOpenApi(app)
   registerProductRoutes(
     app,
-    options.productRouteRegistrars,
+    options.productRouteRegistrars ?? defaultProductRouteRegistrars,
     options.organizationSessionResolver,
+    options.rateLimitStore,
   )
 
   return app

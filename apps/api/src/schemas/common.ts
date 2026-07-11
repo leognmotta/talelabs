@@ -10,6 +10,11 @@ export const Cuid2Schema = z.string()
     pattern: '^[a-z][0-9a-z]+$',
   })
 
+export const UserIdSchema = z.string()
+  .min(1)
+  .max(255)
+  .openapi('UserId', { example: 'user_123' })
+
 export const TimestampSchema = z.iso.datetime().openapi('Timestamp', {
   example: '2026-07-10T12:00:00.000Z',
 })
@@ -96,6 +101,7 @@ export const ProductErrorCodeSchema = z.enum([
   'validation_error',
   'unauthenticated',
   'active_organization_required',
+  'organization_context_changed',
   'not_found',
   'conflict',
   'revision_conflict',
@@ -129,6 +135,6 @@ export const ResourceIdSchema = Cuid2Schema
 export function createListResponseSchema<Item extends z.ZodType>(item: Item) {
   return z.object({
     data: z.array(item),
-    nextCursor: CursorSchema.nullable(),
+    nextCursor: z.string().trim().min(1).max(2048).nullable(),
   })
 }

@@ -1,4 +1,3 @@
-import type { Context } from 'hono'
 import type { ApiEnv } from '../types.js'
 
 import { requireOrganizationSession } from '@talelabs/auth'
@@ -42,18 +41,21 @@ export function createOrganizationMiddleware(
       )
     }
 
+    const expectedOrganizationId = c.req.header('X-TaleLabs-Organization-Id')
+    if (
+      expectedOrganizationId
+      && expectedOrganizationId !== result.activeOrganizationId
+    ) {
+      throw new HttpError(
+        409,
+        'organization_context_changed',
+        'The active organization changed while this request was in progress.',
+      )
+    }
+
     c.set('organizationId', result.activeOrganizationId)
     c.set('userId', result.session.user.id)
 
     await next()
   })
-}
-
-export const organizationMiddleware = createOrganizationMiddleware()
-
-export function requireOrganization(c: Context<ApiEnv>) {
-  return {
-    organizationId: c.var.organizationId,
-    userId: c.var.userId,
-  }
 }
