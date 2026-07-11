@@ -7,6 +7,7 @@
     "create": "Erstellen",
     "delete": "Löschen",
     "email": "E-Mail",
+    "edit": "Bearbeiten",
     "loading": "Wird geladen...",
     "moreOptions": "Weitere Optionen",
     "member": "Mitglied",
@@ -165,7 +166,10 @@
       "image": "Bild",
       "video": "Video"
     },
-    "sources": { "generation": "Generiert", "upload": "Upload" },
+    "sources": {
+      "generation": "Generiert",
+      "upload": "Upload"
+    },
     "metadata": {
       "bitRate": "Bitrate",
       "channels": "Kanäle",
@@ -175,6 +179,356 @@
       "orientation": "Ausrichtung",
       "sampleRate": "Abtastrate",
       "space": "Farbraum"
+    }
+  },
+  "elements": {
+    "assetLimits": {
+      "countLabel": "{{current}} von {{maximum}} Dateien in dieser Rolle",
+      "exceeded": "Diese Rolle hat ihr Dateilimit erreicht. Entferne eine Datei aus dieser Rolle, bevor du eine weitere hinzufügst.",
+      "guidance": "Je nach Typ unterstützt jede Rolle bis zu 8 Bilder, 1 Video oder 1 Audiodatei.",
+      "summary": "Pro Rolle: bis zu 8 Bilder, 1 Video oder 1 Audiodatei."
+    },
+    "actionFailed": "Die Element-Aktion konnte nicht abgeschlossen werden.",
+    "addExisting": "Vorhandene hinzufügen",
+    "addReference": "Referenz hinzufügen",
+    "allTypes": "Alle Typen",
+    "alreadyLinked": "Diese Datei ist in dieser Rolle bereits verknüpft.",
+    "assetAttached": "Datei verknüpft",
+    "assetUnlinked": "Dateiverknüpfung entfernt",
+    "assetUpdated": "Datei-Kit aktualisiert",
+    "backToElement": "Zurück zum Element",
+    "backToElements": "Zurück zu Elemente",
+    "chooseType": "Wähle die Art des wiederverwendbaren Kontexts aus.",
+    "couldNotLoad": "Elemente konnten nicht geladen werden",
+    "couldNotLoadAssets": "Dieses Datei-Kit konnte nicht geladen werden.",
+    "couldNotLoadDescription": "Prüfe deine Verbindung und versuche es erneut.",
+    "create": "Element erstellen",
+    "createDescription": "Füge wiederverwendbare Details und Referenzdateien hinzu.",
+    "createEditor": {
+      "description": "Füge wiederverwendbare Details und Referenzdateien hinzu.",
+      "sectionNavigation": "Erstellungsbereiche",
+      "sections": {
+        "details": {
+          "description": "Identität und strukturierte Informationen.",
+          "label": "Details"
+        }
+      }
+    },
+    "createAssets": {
+      "description": "Füge Referenzen nach Rolle hinzu. Dateien werden erst nach dem Erstellen des Elements hochgeladen.",
+      "invalidFiles": "Einige Dateien konnten nicht hinzugefügt werden, weil Typ oder Größe für diese Rolle nicht unterstützt werden.",
+      "dropNow": "Dateien hier ablegen",
+      "chooseFiles": "Dateien hinzufügen",
+      "removeFile": "{{name}} entfernen",
+      "dropzoneDescription": "Unterstützte Dateien hier ablegen oder über die Schaltfläche auswählen.",
+      "selectedCount_one": "{{count}} Datei ausgewählt",
+      "selectedCount_other": "{{count}} Dateien ausgewählt",
+      "addRole": "Dateirolle hinzufügen",
+      "confirmRole": "Rolle hinzufügen",
+      "customRoleDescription": "Referenzen, die unter dieser eigenen Rolle gruppiert sind.",
+      "customRoleErrors": {
+        "duplicate": "Verwende einen anderen Rollennamen.",
+        "required": "Gib einen Rollennamen ein."
+      },
+      "customRoleName": "Rollenname",
+      "customRolePlaceholder": "Zum Beispiel Moodboard",
+      "noCustomRoles": "Noch keine Dateirollen",
+      "noCustomRolesDescription": "Füge bis zu {{count}} Rollen hinzu und ordne jeder Rolle Dateien zu.",
+      "removeRole": "Rolle {{name}} entfernen"
+    },
+    "customRoles": {
+      "title": "Benutzerdefinierte Dateirollen",
+      "description": "Füge bis zu {{count}} Rollen hinzu, um die Referenzen dieses Elements zu organisieren.",
+      "edit": "{{name}} umbenennen",
+      "remove": "{{name}} entfernen",
+      "inUse": "Trenne die Dateien dieser Rolle und brich ihre Uploads ab oder verwirf sie, bevor du die Rolle änderst.",
+      "updated": "Dateirollen aktualisiert"
+    },
+    "createType": "{{type}} erstellen",
+    "created": "Element erstellt",
+    "dataTab": "Daten",
+    "delete": "Element löschen",
+    "deleteDescription": "{{name}} löschen? Verknüpfte Dateien bleiben in der Bibliothek erhalten.",
+    "deleted": "Element gelöscht",
+    "deleting": "Wird gelöscht...",
+    "emptyDescription": "Erstelle einen Charakter oder ein Produkt, um dessen Kontext in Workflows wiederzuverwenden.",
+    "emptyTitle": "Erstelle dein erstes Element",
+    "editAssetsDescription": "Verwalte Referenzen nach Rolle. Neue Uploads starten sofort.",
+    "editType": "{{type}} bearbeiten",
+    "filterByType": "Nach Elementtyp filtern",
+    "loadMore": "Mehr laden",
+    "moveDown": "{{name}} nach unten verschieben",
+    "moveUp": "{{name}} nach oben verschieben",
+    "noResults": "Keine passenden Elemente",
+    "noResultsDescription": "Versuche eine andere Suche oder einen anderen Typfilter.",
+    "notFound": "Element nicht gefunden",
+    "noReferences": "Noch keine Referenzen",
+    "noReferencesDescription": "Füge Bilder, Videos oder Audio hinzu, die die Identität dieses Elements festhalten.",
+    "roleEmpty": "Keine Dateien in dieser Rolle.",
+    "search": "Elemente suchen",
+    "searchPlaceholder": "Elemente suchen...",
+    "makeThumbnail": "Als Vorschaubild festlegen",
+    "setPrimary": "{{name}} als primär festlegen",
+    "unlink": "{{name}} entfernen",
+    "updated": "Element aktualisiert",
+    "uploadAndAttach": "Hochladen und verknüpfen",
+    "uploadAttached": "Datei hochgeladen und verknüpft",
+    "linkingAsset": "Mit Element verknüpfen...",
+    "assetLinkFailedDescription": "Die Datei wurde hochgeladen, konnte aber nicht verknüpft werden. Versuche erneut, sie zu verknüpfen, ohne sie noch einmal hochzuladen.",
+    "types": {
+      "character": {
+        "label": "Charakter",
+        "description": "Eine wiederkehrende Person oder Identität.",
+        "fields": {
+          "description": {
+            "label": "Richtlinien"
+          },
+          "personality": {
+            "label": "Persönlichkeit"
+          }
+        },
+        "assetRoles": {
+          "appearance": {
+            "label": "Erscheinungsbild",
+            "description": "Zentrale visuelle Referenzen für den Charakter."
+          },
+          "expression": {
+            "label": "Ausdrücke",
+            "description": "Referenzen für Gesichtsausdrücke und Emotionen."
+          },
+          "motion": {
+            "label": "Bewegung",
+            "description": "Referenzen für Bewegung und Darstellung."
+          },
+          "voice": {
+            "label": "Stimme",
+            "description": "Referenzen für Sprache, Ton und Stimme."
+          }
+        }
+      },
+      "product": {
+        "label": "Produkt",
+        "description": "Ein physisches Produkt oder Requisit.",
+        "fields": {
+          "description": {
+            "label": "Richtlinien"
+          },
+          "sellingPoints": {
+            "label": "Verkaufsargumente",
+            "description": "Füge bis zu {{count}} kurze Vorteile oder Alleinstellungsmerkmale hinzu.",
+            "add": "Verkaufsargument hinzufügen",
+            "empty": "Noch keine Verkaufsargumente hinzugefügt.",
+            "placeholder": "z. B. Aus recyceltem Aluminium gefertigt",
+            "remove": "Verkaufsargument {{index}} entfernen",
+            "value": "Verkaufsargument {{index}}"
+          }
+        },
+        "assetRoles": {
+          "packshot": {
+            "label": "Produktfotos",
+            "description": "Klare Produktansichten und zentrale Referenzen."
+          },
+          "detail": {
+            "label": "Details",
+            "description": "Nahaufnahmen von Materialien, Oberflächen und Funktionen."
+          },
+          "lifestyle": {
+            "label": "Anwendungsszenen",
+            "description": "Das Produkt in einer realen oder idealisierten Umgebung."
+          },
+          "demonstration": {
+            "label": "Demonstrationen",
+            "description": "Das Produkt bei Handhabung oder Nutzung."
+          }
+        }
+      },
+      "brand": {
+        "label": "Marke",
+        "description": "Eine wiederverwendbare visuelle und kommunikative Identität.",
+        "fields": {
+          "description": {
+            "label": "Richtlinien"
+          },
+          "communicationStyle": {
+            "label": "Kommunikationsstil"
+          },
+          "colors": {
+            "label": "Markenfarben",
+            "description": "Füge bis zu {{count}} von der Marke verwendete HEX-Farben hinzu.",
+            "add": "Farbe hinzufügen",
+            "empty": "Noch keine Farben hinzugefügt",
+            "pick": "Farbe {{index}} auswählen",
+            "value": "HEX-Wert für Farbe {{index}}",
+            "remove": "{{color}} entfernen"
+          }
+        },
+        "assetRoles": {
+          "primaryLogo": {
+            "label": "Primärlogo",
+            "description": "Das wichtigste Logo zur Identifikation der Marke."
+          },
+          "alternateLogo": {
+            "label": "Alternative Logos",
+            "description": "Freigegebene Varianten für verschiedene Layouts und Hintergründe."
+          },
+          "icon": {
+            "label": "Symbole",
+            "description": "Kompakte Markenzeichen, Symbole und App-Icons."
+          },
+          "typography": {
+            "label": "Typografie",
+            "description": "Freigegebene Schriften, Hierarchien und Textstile."
+          },
+          "palette": {
+            "label": "Farbpalette",
+            "description": "Freigegebene Farben und ihre Verwendung."
+          },
+          "referenceCampaign": {
+            "label": "Referenzkampagnen",
+            "description": "Kampagnen, die die Marke in der Anwendung zeigen."
+          }
+        }
+      },
+      "location": {
+        "label": "Ort",
+        "description": "Ein wiederverwendbarer Ort oder eine Umgebung.",
+        "fields": {
+          "description": {
+            "label": "Richtlinien"
+          },
+          "atmosphere": {
+            "label": "Atmosphäre"
+          }
+        },
+        "assetRoles": {
+          "exterior": {
+            "label": "Außenansichten",
+            "description": "Weite Außenansichten, die den Ort erkennen lassen."
+          },
+          "interior": {
+            "label": "Innenansichten",
+            "description": "Erkennbare Räume und Grundrisse im Inneren."
+          },
+          "detail": {
+            "label": "Details",
+            "description": "Materialien, Ausstattung und Merkmale in Nahaufnahme."
+          },
+          "atmosphere": {
+            "label": "Atmosphäre",
+            "description": "Referenzen für Licht, Wetter, Tageszeit und Stimmung."
+          },
+          "referenceVideo": {
+            "label": "Referenzvideos",
+            "description": "Bewegung durch den Ort und räumliche Kontinuität."
+          }
+        }
+      },
+      "object": {
+        "label": "Objekt",
+        "description": "Eine wiederverwendbare Requisite, die kein Handelsprodukt ist.",
+        "fields": {
+          "description": {
+            "label": "Richtlinien"
+          },
+          "interactionGuidance": {
+            "label": "Interaktionshinweise"
+          }
+        },
+        "assetRoles": {
+          "appearance": {
+            "label": "Erscheinungsbild",
+            "description": "Hauptansichten, die die Identität des Objekts festlegen."
+          },
+          "detail": {
+            "label": "Details",
+            "description": "Materialien, Aufbau und besondere Merkmale in Nahaufnahme."
+          },
+          "interaction": {
+            "label": "Interaktion",
+            "description": "Wie Menschen oder andere Objekte damit umgehen."
+          },
+          "motion": {
+            "label": "Bewegung",
+            "description": "Wie sich das Objekt bewegt, öffnet oder reagiert."
+          }
+        }
+      },
+      "other": {
+        "label": "Sonstiges",
+        "description": "Flexibler Kontext, der zu keinem anderen Elementtyp passt.",
+        "fields": {
+          "instructions": {
+            "label": "Anweisungen",
+            "description": "Beschreibe, was TaleLabs verstehen und beibehalten soll.",
+            "placeholder": "Füge wiederverwendbaren Kontext, Vorgaben oder Richtlinien hinzu."
+          }
+        }
+      },
+      "vehicle": {
+        "label": "Fahrzeug",
+        "description": "Ein wiederverwendbares Fahrzeug mit konsistenter Identität und Bewegung.",
+        "fields": {
+          "description": {
+            "label": "Richtlinien"
+          },
+          "motionGuidance": {
+            "label": "Fahrhinweise"
+          }
+        },
+        "assetRoles": {
+          "exterior": {
+            "label": "Außenansichten",
+            "description": "Silhouette, Farbe und erkennbare äußere Merkmale."
+          },
+          "interior": {
+            "label": "Innenansichten",
+            "description": "Innenraum, Materialien, Bedienelemente und Sitze."
+          },
+          "detail": {
+            "label": "Details",
+            "description": "Design, Mechanik und Markenmerkmale in Nahaufnahme."
+          },
+          "movement": {
+            "label": "Bewegung",
+            "description": "Referenzen für Fahren, Fliegen und andere Bewegungen."
+          }
+        }
+      },
+      "voice": {
+        "label": "Stimme",
+        "description": "Eine wiederverwendbare Stimme für Figuren oder Erzählungen.",
+        "fields": {
+          "description": {
+            "label": "Richtlinien"
+          },
+          "languageAccent": {
+            "label": "Sprache und Akzent",
+            "placeholder": "Sprachen und Akzente suchen...",
+            "empty": "Keine passende Sprache und kein passender Akzent."
+          },
+          "tone": {
+            "label": "Tonfall"
+          }
+        },
+        "assetRoles": {
+          "cleanSample": {
+            "label": "Saubere Aufnahmen",
+            "description": "Klare, isolierte Aufnahmen, die die Stimme festlegen."
+          },
+          "emotionalSample": {
+            "label": "Emotionale Aufnahmen",
+            "description": "Aufnahmen mit emotionaler Bandbreite und Intensität."
+          },
+          "pronunciation": {
+            "label": "Aussprache",
+            "description": "Beispiele für Namen, Begriffe und schwierige Sätze."
+          },
+          "performanceReference": {
+            "label": "Sprechreferenzen",
+            "description": "Tempo, Vortrag, Figur und Erzählweise."
+          }
+        }
+      }
     }
   },
   "workspace": {
@@ -221,10 +575,12 @@
     "title": "Cookie-Einstellungen"
   },
   "search": {
-    "description": "Durchsuche Seiten, Einstellungen, Ordner und Dateien.",
+    "couldNotSearch": "Suche nicht möglich",
+    "couldNotSearchDescription": "Prüfe deine Verbindung und versuche es erneut.",
+    "description": "Durchsuche Seiten, Einstellungen, Ordner, Dateien und Elemente.",
     "empty": "Keine Ergebnisse gefunden.",
     "pages": "Seiten",
-    "placeholder": "Seiten, Einstellungen, Ordner und Dateien durchsuchen...",
+    "placeholder": "Seiten, Einstellungen, Ordner, Dateien und Elemente durchsuchen...",
     "settings": "Einstellungen",
     "title": "Suchen"
   },
@@ -364,19 +720,28 @@
   "validation": {
     "email": "Gib eine gültige E-Mail-Adresse ein.",
     "logoUrl": "Gib eine gültige Logo-URL ein.",
+    "maxItems": "Verwende weniger Einträge.",
+    "maxLength": "Verwende weniger Zeichen.",
     "nameRequired": "Name ist erforderlich.",
     "organizationNameRequired": "Der Name der Organisation ist erforderlich.",
     "organizationSlugRequired": "Wähle eine Workspace-URL.",
     "passwordCurrentRequired": "Aktuelles Passwort ist erforderlich.",
     "passwordMinLength": "Das Passwort muss mindestens {{minimum}} Zeichen lang sein.",
     "required": "Dieses Feld ist erforderlich.",
-    "workspaceSlugRequired": "Wähle eine Workspace-URL."
+    "workspaceSlugRequired": "Wähle eine Workspace-URL.",
+    "duplicate": "Verwende unterschiedliche Werte.",
+    "hexColor": "Gib eine gültige HEX-Farbe ein, zum Beispiel #1A2B3C."
   },
   "errors": {
     "active_organization_required": "Wähle eine Organisation aus oder erstelle eine neue, um fortzufahren.",
     "organization_context_changed": "Der Arbeitsbereich wurde gewechselt. Versuche die Aktion erneut.",
     "conflict": "Diese Änderung steht im Konflikt mit dem aktuellen Stand. Lade die Seite neu und versuche es erneut.",
     "email_delivery_failed": "Die E-Mail konnte nicht zugestellt werden. Versuche es später noch einmal.",
+    "asset_not_available": "Diese Datei ist archiviert oder zur Löschung vorgemerkt.",
+    "element_asset_already_attached": "Diese Datei ist bereits mit dieser Rolle verknüpft.",
+    "element_asset_media_type_not_accepted": "Wähle einen Dateityp, den diese Rolle akzeptiert.",
+    "element_asset_role_capacity_reached": "Diese Rolle hat ihr Dateilimit erreicht. Entferne eine verknüpfte Datei aus dieser Rolle, bevor du eine weitere hinzufügst.",
+    "element_asset_role_not_found": "Wähle eine für dieses Element verfügbare Dateirolle.",
     "internal_error": "Etwas ist schiefgelaufen. Versuche es erneut.",
     "not_found": "Das angeforderte Element wurde nicht gefunden.",
     "organization_access_required": "Du hast keinen Zugriff auf diese Organisation.",
@@ -386,5 +751,47 @@
     "unexpectedDescription": "Ein unerwarteter Fehler ist aufgetreten. Versuche es erneut oder lade die Seite neu.",
     "unexpectedTitle": "Etwas ist schiefgelaufen",
     "validation_error": "Prüfe die markierten Felder und versuche es erneut."
+  },
+  "uploads": {
+    "title": "Uploads",
+    "description": "Uploads laufen weiter, während du arbeitest.",
+    "open": "Uploads öffnen",
+    "openActive_one": "{{count}} aktiver Upload, {{progress}} abgeschlossen",
+    "openActive_other": "{{count}} aktive Uploads, {{progress}} abgeschlossen",
+    "openFailed_one": "{{count}} fehlgeschlagener Upload",
+    "openFailed_other": "{{count}} fehlgeschlagene Uploads",
+    "batchCompleted_one": "{{count}} Datei hochgeladen",
+    "batchCompleted_other": "{{count}} Dateien hochgeladen",
+    "batchFailed_one": "{{count}} Upload fehlgeschlagen",
+    "batchFailed_other": "{{count}} Uploads fehlgeschlagen",
+    "batchFailedDescription": "Prüfe die fehlgeschlagenen Dateien und versuche es erneut.",
+    "clearFinished": "Abgeschlossene entfernen",
+    "empty": "Noch keine Uploads.",
+    "assetBatch": "Datei-Upload",
+    "elementBatch": "Element-Dateien",
+    "cancelBatch": "Stapel abbrechen",
+    "retryFailed": "Fehlgeschlagene wiederholen",
+    "retryFile": "Upload von {{name}} wiederholen",
+    "dismiss": "Verwerfen",
+    "dismissFile": "Fehlgeschlagenen Upload von {{name}} verwerfen",
+    "stages": {
+      "queued": "In Warteschlange",
+      "hashing": "Wird vorbereitet",
+      "uploading": "Wird hochgeladen",
+      "registering": "Wird registriert",
+      "linking": "Wird mit Element verknüpft",
+      "completed": "Abgeschlossen",
+      "failed": "Fehlgeschlagen",
+      "canceled": "Abgebrochen"
+    },
+    "errors": {
+      "elementLimit": "Diese Rolle hat ihr Dateilimit erreicht.",
+      "fileTooLarge": "Diese Datei überschreitet das Größenlimit.",
+      "folderCreation": "Die Ordnerstruktur konnte nicht erstellt werden.",
+      "storageBlocked": "Die Speicheranfrage wurde blockiert.",
+      "storageRejected": "Der Speicher hat diesen Upload abgelehnt.",
+      "unsupportedType": "Dieser Dateityp wird nicht unterstützt.",
+      "generic": "Die Datei konnte nicht hochgeladen werden."
+    }
   }
 }

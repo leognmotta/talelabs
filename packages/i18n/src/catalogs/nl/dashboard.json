@@ -7,6 +7,7 @@
     "create": "Maken",
     "delete": "Verwijderen",
     "email": "E-mail",
+    "edit": "Bewerken",
     "loading": "Laden...",
     "moreOptions": "Meer opties",
     "member": "Lid",
@@ -165,7 +166,10 @@
       "image": "Afbeelding",
       "video": "Video"
     },
-    "sources": { "generation": "Gegenereerd", "upload": "Upload" },
+    "sources": {
+      "generation": "Gegenereerd",
+      "upload": "Upload"
+    },
     "metadata": {
       "bitRate": "Bitsnelheid",
       "channels": "Kanalen",
@@ -175,6 +179,356 @@
       "orientation": "Oriëntatie",
       "sampleRate": "Samplefrequentie",
       "space": "Kleurruimte"
+    }
+  },
+  "elements": {
+    "assetLimits": {
+      "countLabel": "{{current}} van {{maximum}} bestanden in deze rol",
+      "exceeded": "Deze rol heeft de bestandslimiet bereikt. Verwijder een bestand uit deze rol voordat je een nieuw bestand toevoegt.",
+      "guidance": "Afhankelijk van het type ondersteunt elke rol maximaal 8 afbeeldingen, 1 video of 1 audiobestand.",
+      "summary": "Per rol: maximaal 8 afbeeldingen, 1 video of 1 audiobestand."
+    },
+    "actionFailed": "De Element-actie kon niet worden voltooid.",
+    "addExisting": "Bestaand toevoegen",
+    "addReference": "Referentie toevoegen",
+    "allTypes": "Alle typen",
+    "alreadyLinked": "Dit bestand is al aan deze rol gekoppeld.",
+    "assetAttached": "Bestand gekoppeld",
+    "assetUnlinked": "Bestand ontkoppeld",
+    "assetUpdated": "Bestandenset bijgewerkt",
+    "backToElement": "Terug naar Element",
+    "backToElements": "Terug naar Elementen",
+    "chooseType": "Kies het type herbruikbare context dat je wilt maken.",
+    "couldNotLoad": "Elementen konden niet worden geladen",
+    "couldNotLoadAssets": "Deze bestandenset kon niet worden geladen.",
+    "couldNotLoadDescription": "Controleer je verbinding en probeer het opnieuw.",
+    "create": "Element maken",
+    "createDescription": "Voeg herbruikbare details en referentiebestanden toe.",
+    "createEditor": {
+      "description": "Voeg herbruikbare details en referentiebestanden toe.",
+      "sectionNavigation": "Onderdelen voor maken",
+      "sections": {
+        "details": {
+          "description": "Identiteit en gestructureerde informatie.",
+          "label": "Details"
+        }
+      }
+    },
+    "createAssets": {
+      "description": "Voeg referenties per rol toe. Bestanden worden pas geüpload nadat het Element is gemaakt.",
+      "invalidFiles": "Sommige bestanden konden niet worden toegevoegd omdat het type of formaat niet voor deze rol wordt ondersteund.",
+      "dropNow": "Zet bestanden hier neer",
+      "chooseFiles": "Bestanden toevoegen",
+      "removeFile": "{{name}} verwijderen",
+      "dropzoneDescription": "Zet ondersteunde bestanden hier neer of gebruik de knop om ze te kiezen.",
+      "selectedCount_one": "{{count}} bestand geselecteerd",
+      "selectedCount_other": "{{count}} bestanden geselecteerd",
+      "addRole": "Bestandsrol toevoegen",
+      "confirmRole": "Rol toevoegen",
+      "customRoleDescription": "Referenties die onder deze aangepaste rol zijn gegroepeerd.",
+      "customRoleErrors": {
+        "duplicate": "Gebruik een andere rolnaam.",
+        "required": "Voer een rolnaam in."
+      },
+      "customRoleName": "Rolnaam",
+      "customRolePlaceholder": "Bijvoorbeeld Moodboard",
+      "noCustomRoles": "Nog geen bestandsrollen",
+      "noCustomRolesDescription": "Voeg maximaal {{count}} rollen toe en voeg daarna bestanden aan elke rol toe.",
+      "removeRole": "Rol {{name}} verwijderen"
+    },
+    "customRoles": {
+      "title": "Aangepaste bestandsrollen",
+      "description": "Voeg maximaal {{count}} rollen toe om de referenties van dit Element te ordenen.",
+      "edit": "{{name}} hernoemen",
+      "remove": "{{name}} verwijderen",
+      "inUse": "Ontkoppel de bestanden en annuleer of verwijder de uploads voordat je deze rol wijzigt.",
+      "updated": "Bestandsrollen bijgewerkt"
+    },
+    "createType": "{{type}} maken",
+    "created": "Element gemaakt",
+    "dataTab": "Gegevens",
+    "delete": "Element verwijderen",
+    "deleteDescription": "{{name}} verwijderen? Gekoppelde bestanden blijven in de bibliotheek.",
+    "deleted": "Element verwijderd",
+    "deleting": "Verwijderen...",
+    "emptyDescription": "Maak een Personage of Product om de context in Workflows te hergebruiken.",
+    "emptyTitle": "Maak je eerste Element",
+    "editAssetsDescription": "Beheer referenties per rol. Nieuwe uploads starten direct.",
+    "editType": "{{type}} bewerken",
+    "filterByType": "Filteren op Elementtype",
+    "loadMore": "Meer laden",
+    "moveDown": "{{name}} omlaag verplaatsen",
+    "moveUp": "{{name}} omhoog verplaatsen",
+    "noResults": "Geen overeenkomende Elementen",
+    "noResultsDescription": "Probeer een andere zoekopdracht of ander typefilter.",
+    "notFound": "Element niet gevonden",
+    "noReferences": "Nog geen referenties",
+    "noReferencesDescription": "Voeg afbeeldingen, video of audio toe die de identiteit van dit Element helpen bewaren.",
+    "roleEmpty": "Geen bestanden in deze rol.",
+    "search": "Elementen zoeken",
+    "searchPlaceholder": "Elementen zoeken...",
+    "makeThumbnail": "Instellen als miniatuur",
+    "setPrimary": "{{name}} als primair instellen",
+    "unlink": "{{name}} ontkoppelen",
+    "updated": "Element bijgewerkt",
+    "uploadAndAttach": "Uploaden en koppelen",
+    "uploadAttached": "Bestand geüpload en gekoppeld",
+    "linkingAsset": "Koppelen aan Element...",
+    "assetLinkFailedDescription": "Het bestand is geüpload, maar kon niet worden gekoppeld. Probeer het opnieuw te koppelen zonder het opnieuw te uploaden.",
+    "types": {
+      "character": {
+        "label": "Personage",
+        "description": "Een terugkerend persoon of persona.",
+        "fields": {
+          "description": {
+            "label": "Richtlijnen"
+          },
+          "personality": {
+            "label": "Persoonlijkheid"
+          }
+        },
+        "assetRoles": {
+          "appearance": {
+            "label": "Uiterlijk",
+            "description": "Belangrijkste visuele referenties voor het personage."
+          },
+          "expression": {
+            "label": "Uitdrukkingen",
+            "description": "Referenties voor gezichtsuitdrukkingen en emoties."
+          },
+          "motion": {
+            "label": "Beweging",
+            "description": "Referenties voor beweging en performance."
+          },
+          "voice": {
+            "label": "Stem",
+            "description": "Referenties voor spraak, toon en stem."
+          }
+        }
+      },
+      "product": {
+        "label": "Product",
+        "description": "Een fysiek product of rekwisiet.",
+        "fields": {
+          "description": {
+            "label": "Richtlijnen"
+          },
+          "sellingPoints": {
+            "label": "Verkoopargumenten",
+            "description": "Voeg maximaal {{count}} korte voordelen of onderscheidende kenmerken toe.",
+            "add": "Verkoopargument toevoegen",
+            "empty": "Nog geen verkoopargumenten toegevoegd.",
+            "placeholder": "Bijv. Gemaakt van gerecycled aluminium",
+            "remove": "Verkoopargument {{index}} verwijderen",
+            "value": "Verkoopargument {{index}}"
+          }
+        },
+        "assetRoles": {
+          "packshot": {
+            "label": "Productfoto’s",
+            "description": "Heldere productweergaven en hoofdreferenties."
+          },
+          "detail": {
+            "label": "Details",
+            "description": "Close-ups van materialen, afwerking en functies."
+          },
+          "lifestyle": {
+            "label": "Gebruikssituaties",
+            "description": "Het product in een echte of inspirerende omgeving."
+          },
+          "demonstration": {
+            "label": "Demonstraties",
+            "description": "Het product terwijl het wordt gehanteerd of gebruikt."
+          }
+        }
+      },
+      "brand": {
+        "label": "Merk",
+        "description": "Een herbruikbare visuele en communicatieve identiteit.",
+        "fields": {
+          "description": {
+            "label": "Richtlijnen"
+          },
+          "communicationStyle": {
+            "label": "Communicatiestijl"
+          },
+          "colors": {
+            "label": "Merkkleuren",
+            "description": "Voeg maximaal {{count}} HEX-kleuren toe die het merk gebruikt.",
+            "add": "Kleur toevoegen",
+            "empty": "Nog geen kleuren toegevoegd",
+            "pick": "Kleur {{index}} kiezen",
+            "value": "HEX-waarde voor kleur {{index}}",
+            "remove": "{{color}} verwijderen"
+          }
+        },
+        "assetRoles": {
+          "primaryLogo": {
+            "label": "Primair logo",
+            "description": "Het hoofdlogo waarmee het merk wordt herkend."
+          },
+          "alternateLogo": {
+            "label": "Alternatieve logo’s",
+            "description": "Goedgekeurde varianten voor verschillende layouts en achtergronden."
+          },
+          "icon": {
+            "label": "Iconen",
+            "description": "Compacte merktekens, symbolen en app-iconen."
+          },
+          "typography": {
+            "label": "Typografie",
+            "description": "Goedgekeurde lettertypen, hiërarchie en tekststijlen."
+          },
+          "palette": {
+            "label": "Kleurenpalet",
+            "description": "Goedgekeurde kleuren en hun toepassing."
+          },
+          "referenceCampaign": {
+            "label": "Referentiecampagnes",
+            "description": "Campagnes die het merk in de praktijk tonen."
+          }
+        }
+      },
+      "location": {
+        "label": "Locatie",
+        "description": "Een herbruikbare plek of omgeving.",
+        "fields": {
+          "description": {
+            "label": "Richtlijnen"
+          },
+          "atmosphere": {
+            "label": "Sfeer"
+          }
+        },
+        "assetRoles": {
+          "exterior": {
+            "label": "Buitenaanzichten",
+            "description": "Ruime buitenbeelden die de locatie herkenbaar maken."
+          },
+          "interior": {
+            "label": "Binnenaanzichten",
+            "description": "Herkenbare ruimtes en indelingen binnen de locatie."
+          },
+          "detail": {
+            "label": "Details",
+            "description": "Materialen, elementen en kenmerken van dichtbij."
+          },
+          "atmosphere": {
+            "label": "Sfeer",
+            "description": "Referenties voor licht, weer, tijdstip en stemming."
+          },
+          "referenceVideo": {
+            "label": "Referentievideo’s",
+            "description": "Beweging door de locatie en ruimtelijke continuïteit."
+          }
+        }
+      },
+      "object": {
+        "label": "Object",
+        "description": "Een herbruikbaar rekwisiet dat geen commercieel product is.",
+        "fields": {
+          "description": {
+            "label": "Richtlijnen"
+          },
+          "interactionGuidance": {
+            "label": "Interactierichtlijnen"
+          }
+        },
+        "assetRoles": {
+          "appearance": {
+            "label": "Uiterlijk",
+            "description": "Hoofdaanzichten die de identiteit van het object bepalen."
+          },
+          "detail": {
+            "label": "Details",
+            "description": "Materialen, constructie en opvallende kenmerken van dichtbij."
+          },
+          "interaction": {
+            "label": "Interactie",
+            "description": "Hoe mensen of andere objecten het gebruiken."
+          },
+          "motion": {
+            "label": "Beweging",
+            "description": "Hoe het object beweegt, opent of reageert."
+          }
+        }
+      },
+      "other": {
+        "label": "Overig",
+        "description": "Flexibele context die niet bij een ander Elementtype past.",
+        "fields": {
+          "instructions": {
+            "label": "Instructies",
+            "description": "Beschrijf wat TaleLabs moet begrijpen en behouden.",
+            "placeholder": "Voeg herbruikbare context, beperkingen of richtlijnen toe."
+          }
+        }
+      },
+      "vehicle": {
+        "label": "Voertuig",
+        "description": "Een herbruikbaar voertuig met een consistente identiteit en beweging.",
+        "fields": {
+          "description": {
+            "label": "Richtlijnen"
+          },
+          "motionGuidance": {
+            "label": "Rijrichtlijnen"
+          }
+        },
+        "assetRoles": {
+          "exterior": {
+            "label": "Buitenkant",
+            "description": "Silhouet, kleur en herkenbare uiterlijke kenmerken."
+          },
+          "interior": {
+            "label": "Interieur",
+            "description": "Indeling, materialen, bediening en zitplaatsen."
+          },
+          "detail": {
+            "label": "Details",
+            "description": "Ontwerp, techniek en merkelementen van dichtbij."
+          },
+          "movement": {
+            "label": "Beweging",
+            "description": "Referenties voor rijden, vliegen en andere bewegingen."
+          }
+        }
+      },
+      "voice": {
+        "label": "Stem",
+        "description": "Een herbruikbare stem voor personages of vertelling.",
+        "fields": {
+          "description": {
+            "label": "Richtlijnen"
+          },
+          "languageAccent": {
+            "label": "Taal en accent",
+            "placeholder": "Zoek talen en accenten...",
+            "empty": "Geen overeenkomende taal of accent."
+          },
+          "tone": {
+            "label": "Toon"
+          }
+        },
+        "assetRoles": {
+          "cleanSample": {
+            "label": "Schone opnamen",
+            "description": "Heldere, geïsoleerde opnamen die de stem bepalen."
+          },
+          "emotionalSample": {
+            "label": "Emotionele opnamen",
+            "description": "Opnamen met emotioneel bereik en intensiteit."
+          },
+          "pronunciation": {
+            "label": "Uitspraak",
+            "description": "Voorbeelden van namen, termen en lastige zinnen."
+          },
+          "performanceReference": {
+            "label": "Uitvoeringsreferenties",
+            "description": "Tempo, voordracht, personage en vertelling."
+          }
+        }
+      }
     }
   },
   "workspace": {
@@ -221,10 +575,12 @@
     "title": "Cookie-voorkeuren"
   },
   "search": {
-    "description": "Zoek pagina's, instellingen, mappen en bestanden.",
+    "couldNotSearch": "Zoeken is niet gelukt",
+    "couldNotSearchDescription": "Controleer je verbinding en probeer het opnieuw.",
+    "description": "Zoek pagina's, instellingen, mappen, bestanden en elementen.",
     "empty": "Geen resultaten gevonden.",
     "pages": "Pagina's",
-    "placeholder": "Zoek pagina's, instellingen, mappen en bestanden...",
+    "placeholder": "Zoek pagina's, instellingen, mappen, bestanden en elementen...",
     "settings": "Instellingen",
     "title": "Zoeken"
   },
@@ -364,19 +720,28 @@
   "validation": {
     "email": "Voer een geldig e-mailadres in.",
     "logoUrl": "Voer een geldige logo-URL in.",
+    "maxItems": "Gebruik minder items.",
+    "maxLength": "Gebruik minder tekens.",
     "nameRequired": "Naam is verplicht.",
     "organizationNameRequired": "Organisatienaam is vereist.",
     "organizationSlugRequired": "Kies een URL voor de werkruimte.",
     "passwordCurrentRequired": "Huidig wachtwoord is vereist.",
     "passwordMinLength": "Het wachtwoord moet minimaal {{minimum}} tekens bevatten.",
     "required": "Dit veld is verplicht.",
-    "workspaceSlugRequired": "Kies een URL voor de werkruimte."
+    "workspaceSlugRequired": "Kies een URL voor de werkruimte.",
+    "duplicate": "Gebruik verschillende waarden.",
+    "hexColor": "Voer een geldige HEX-kleur in, bijvoorbeeld #1A2B3C."
   },
   "errors": {
     "active_organization_required": "Selecteer of maak een organisatie om door te gaan.",
     "organization_context_changed": "De werkruimte is gewijzigd. Probeer de actie opnieuw.",
     "conflict": "Die verandering is in strijd met de huidige staat. Vernieuw en probeer het opnieuw.",
     "email_delivery_failed": "De e-mail kon niet worden afgeleverd. Probeer het later opnieuw.",
+    "asset_not_available": "Dit bestand is gearchiveerd of wordt verwijderd.",
+    "element_asset_already_attached": "Dit bestand is al aan die rol gekoppeld.",
+    "element_asset_media_type_not_accepted": "Kies een bestandstype dat door deze rol wordt geaccepteerd.",
+    "element_asset_role_capacity_reached": "Deze rol heeft de bestandslimiet bereikt. Verwijder een gekoppeld bestand uit deze rol voordat je een nieuw bestand toevoegt.",
+    "element_asset_role_not_found": "Kies een bestandsrol die beschikbaar is voor dit Element.",
     "internal_error": "Er is iets misgegaan. Probeer het opnieuw.",
     "not_found": "Het gevraagde item is niet gevonden.",
     "organization_access_required": "Je hebt geen toegang tot deze organisatie.",
@@ -386,5 +751,47 @@
     "unexpectedDescription": "Er is een onverwachte fout opgetreden. Probeer het opnieuw of laad de pagina opnieuw.",
     "unexpectedTitle": "Er is iets misgegaan",
     "validation_error": "Controleer de gemarkeerde velden en probeer het opnieuw."
+  },
+  "uploads": {
+    "title": "Uploads",
+    "description": "Uploads gaan door terwijl je werkt.",
+    "open": "Uploads openen",
+    "openActive_one": "{{count}} actieve upload, {{progress}} voltooid",
+    "openActive_other": "{{count}} actieve uploads, {{progress}} voltooid",
+    "openFailed_one": "{{count}} mislukte upload",
+    "openFailed_other": "{{count}} mislukte uploads",
+    "batchCompleted_one": "{{count}} bestand geüpload",
+    "batchCompleted_other": "{{count}} bestanden geüpload",
+    "batchFailed_one": "{{count}} upload mislukt",
+    "batchFailed_other": "{{count}} uploads mislukt",
+    "batchFailedDescription": "Controleer de mislukte bestanden en probeer ze opnieuw.",
+    "clearFinished": "Voltooide wissen",
+    "empty": "Nog geen uploads.",
+    "assetBatch": "Bestanden uploaden",
+    "elementBatch": "Element-bestanden",
+    "cancelBatch": "Batch annuleren",
+    "retryFailed": "Mislukte opnieuw proberen",
+    "retryFile": "Upload van {{name}} opnieuw proberen",
+    "dismiss": "Verwijderen",
+    "dismissFile": "Mislukte upload van {{name}} verwijderen",
+    "stages": {
+      "queued": "In wachtrij",
+      "hashing": "Voorbereiden",
+      "uploading": "Uploaden",
+      "registering": "Registreren",
+      "linking": "Koppelen aan Element",
+      "completed": "Voltooid",
+      "failed": "Mislukt",
+      "canceled": "Geannuleerd"
+    },
+    "errors": {
+      "elementLimit": "Deze rol heeft de bestandslimiet bereikt.",
+      "fileTooLarge": "Dit bestand overschrijdt de groottelimiet.",
+      "folderCreation": "De mapstructuur kon niet worden gemaakt.",
+      "storageBlocked": "De opslagaanvraag is geblokkeerd.",
+      "storageRejected": "De opslag heeft deze upload geweigerd.",
+      "unsupportedType": "Dit bestandstype wordt niet ondersteund.",
+      "generic": "Het bestand kon niet worden geüpload."
+    }
   }
 }

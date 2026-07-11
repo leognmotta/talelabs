@@ -7,6 +7,7 @@
     "create": "Create",
     "delete": "Delete",
     "email": "Email",
+    "edit": "Edit",
     "loading": "Loading...",
     "moreOptions": "More options",
     "member": "Member",
@@ -180,6 +181,356 @@
       "space": "Color space"
     }
   },
+  "elements": {
+    "assetLimits": {
+      "countLabel": "{{current}} of {{maximum}} files in this role",
+      "exceeded": "This role has reached its file limit. Remove a file from this role before adding another.",
+      "guidance": "Each role supports up to 8 images, 1 video, or 1 audio file, depending on its type.",
+      "summary": "Per role: up to 8 images, 1 video, or 1 audio file."
+    },
+    "actionFailed": "The Element action could not be completed.",
+    "addExisting": "Add existing",
+    "addReference": "Add reference",
+    "allTypes": "All types",
+    "alreadyLinked": "That Asset is already linked in this role.",
+    "assetAttached": "Asset attached",
+    "assetUnlinked": "Asset unlinked",
+    "assetUpdated": "Asset kit updated",
+    "backToElement": "Back to Element",
+    "backToElements": "Back to Elements",
+    "chooseType": "Choose the type of reusable context to create.",
+    "couldNotLoad": "Could not load Elements",
+    "couldNotLoadAssets": "Could not load this Asset kit.",
+    "couldNotLoadDescription": "Check your connection and try again.",
+    "create": "Create Element",
+    "createDescription": "Add reusable details and reference Assets.",
+    "createEditor": {
+      "description": "Add reusable details and reference Assets.",
+      "sectionNavigation": "Creation sections",
+      "sections": {
+        "details": {
+          "description": "Identity and structured information.",
+          "label": "Details"
+        }
+      }
+    },
+    "createAssets": {
+      "description": "Add references by role. Files upload only after the Element is created.",
+      "invalidFiles": "Some files could not be added because their type or size is not supported for this role.",
+      "dropNow": "Drop files here",
+      "chooseFiles": "Add files",
+      "removeFile": "Remove {{name}}",
+      "dropzoneDescription": "Drop supported files here or use the button to choose files.",
+      "selectedCount_one": "{{count}} file selected",
+      "selectedCount_other": "{{count}} files selected",
+      "addRole": "Add Asset role",
+      "confirmRole": "Add role",
+      "customRoleDescription": "References grouped under this custom role.",
+      "customRoleErrors": {
+        "duplicate": "Use a different role name.",
+        "required": "Enter a role name."
+      },
+      "customRoleName": "Role name",
+      "customRolePlaceholder": "For example, Moodboard",
+      "noCustomRoles": "No Asset roles yet",
+      "noCustomRolesDescription": "Add up to {{count}} roles, then add files to each one.",
+      "removeRole": "Remove role {{name}}"
+    },
+    "customRoles": {
+      "title": "Custom Asset roles",
+      "description": "Add up to {{count}} roles for organizing this Element’s references.",
+      "edit": "Rename {{name}}",
+      "remove": "Remove {{name}}",
+      "inUse": "Unlink its files and cancel or dismiss its uploads before changing this role.",
+      "updated": "Asset roles updated"
+    },
+    "createType": "Create {{type}}",
+    "created": "Element created",
+    "dataTab": "Data",
+    "delete": "Delete Element",
+    "deleteDescription": "Delete {{name}}? Linked Assets remain in the Asset library.",
+    "deleted": "Element deleted",
+    "deleting": "Deleting...",
+    "emptyDescription": "Create a Character or Product to reuse its context across Flows.",
+    "emptyTitle": "Create your first Element",
+    "editAssetsDescription": "Manage references by role. New uploads start immediately.",
+    "editType": "Edit {{type}}",
+    "filterByType": "Filter by Element type",
+    "loadMore": "Load more",
+    "moveDown": "Move {{name}} down",
+    "moveUp": "Move {{name}} up",
+    "noResults": "No matching Elements",
+    "noResultsDescription": "Try a different search or type filter.",
+    "notFound": "Element not found",
+    "noReferences": "No references yet",
+    "noReferencesDescription": "Add images, video, or audio that helps preserve this Element's identity.",
+    "roleEmpty": "No Assets in this role.",
+    "search": "Search Elements",
+    "searchPlaceholder": "Search Elements...",
+    "makeThumbnail": "Make thumbnail",
+    "setPrimary": "Set {{name}} as primary",
+    "unlink": "Unlink {{name}}",
+    "updated": "Element updated",
+    "uploadAndAttach": "Upload and attach",
+    "uploadAttached": "Asset uploaded and attached",
+    "linkingAsset": "Linking to Element...",
+    "assetLinkFailedDescription": "The Asset was uploaded, but could not be linked. Retry to link it without uploading again.",
+    "types": {
+      "character": {
+        "label": "Character",
+        "description": "A recurring person or persona.",
+        "fields": {
+          "description": {
+            "label": "Guidelines"
+          },
+          "personality": {
+            "label": "Personality"
+          }
+        },
+        "assetRoles": {
+          "appearance": {
+            "label": "Appearance",
+            "description": "Core visual references for the character."
+          },
+          "expression": {
+            "label": "Expressions",
+            "description": "Facial expressions and emotional references."
+          },
+          "motion": {
+            "label": "Motion",
+            "description": "Movement and performance references."
+          },
+          "voice": {
+            "label": "Voice",
+            "description": "Speech, tone, and vocal references."
+          }
+        }
+      },
+      "product": {
+        "label": "Product",
+        "description": "A physical product or prop.",
+        "fields": {
+          "description": {
+            "label": "Guidelines"
+          },
+          "sellingPoints": {
+            "label": "Selling points",
+            "description": "Add up to {{count}} short benefits or differentiators.",
+            "add": "Add selling point",
+            "empty": "No selling points added.",
+            "placeholder": "e.g. Made from recycled aluminum",
+            "remove": "Remove selling point {{index}}",
+            "value": "Selling point {{index}}"
+          }
+        },
+        "assetRoles": {
+          "packshot": {
+            "label": "Packshots",
+            "description": "Clean product views and hero references."
+          },
+          "detail": {
+            "label": "Details",
+            "description": "Close-up materials, finishes, and features."
+          },
+          "lifestyle": {
+            "label": "Lifestyle",
+            "description": "The product in a real or aspirational setting."
+          },
+          "demonstration": {
+            "label": "Demonstrations",
+            "description": "The product being handled or used."
+          }
+        }
+      },
+      "brand": {
+        "label": "Brand",
+        "description": "A reusable visual and communication identity.",
+        "fields": {
+          "description": {
+            "label": "Guidelines"
+          },
+          "communicationStyle": {
+            "label": "Communication style"
+          },
+          "colors": {
+            "label": "Brand colors",
+            "description": "Add up to {{count}} HEX colors used by the brand.",
+            "add": "Add color",
+            "empty": "No colors added",
+            "pick": "Choose color {{index}}",
+            "value": "HEX value for color {{index}}",
+            "remove": "Remove {{color}}"
+          }
+        },
+        "assetRoles": {
+          "primaryLogo": {
+            "label": "Primary logo",
+            "description": "The main logo used to identify the brand."
+          },
+          "alternateLogo": {
+            "label": "Alternate logos",
+            "description": "Approved logo variations for different layouts and backgrounds."
+          },
+          "icon": {
+            "label": "Icons",
+            "description": "Compact brand marks, symbols, and app icons."
+          },
+          "typography": {
+            "label": "Typography",
+            "description": "Approved typefaces, hierarchy, and text treatments."
+          },
+          "palette": {
+            "label": "Color palette",
+            "description": "Approved colors and their intended use."
+          },
+          "referenceCampaign": {
+            "label": "Reference campaigns",
+            "description": "Campaign work that demonstrates the brand in practice."
+          }
+        }
+      },
+      "location": {
+        "label": "Location",
+        "description": "A reusable place or environment.",
+        "fields": {
+          "description": {
+            "label": "Guidelines"
+          },
+          "atmosphere": {
+            "label": "Atmosphere"
+          }
+        },
+        "assetRoles": {
+          "exterior": {
+            "label": "Exteriors",
+            "description": "Wide and identifying views of the location from outside."
+          },
+          "interior": {
+            "label": "Interiors",
+            "description": "Rooms, layouts, and identifying indoor views."
+          },
+          "detail": {
+            "label": "Details",
+            "description": "Materials, fixtures, and close-up location features."
+          },
+          "atmosphere": {
+            "label": "Atmosphere",
+            "description": "Lighting, weather, time of day, and mood references."
+          },
+          "referenceVideo": {
+            "label": "Reference videos",
+            "description": "Movement through the location and spatial continuity."
+          }
+        }
+      },
+      "object": {
+        "label": "Object",
+        "description": "A reusable prop that is not a commercial product.",
+        "fields": {
+          "description": {
+            "label": "Guidelines"
+          },
+          "interactionGuidance": {
+            "label": "Interaction guidance"
+          }
+        },
+        "assetRoles": {
+          "appearance": {
+            "label": "Appearance",
+            "description": "Core views that establish the object's identity."
+          },
+          "detail": {
+            "label": "Details",
+            "description": "Close-up materials, construction, and distinctive features."
+          },
+          "interaction": {
+            "label": "Interaction",
+            "description": "How people or other objects handle and use it."
+          },
+          "motion": {
+            "label": "Motion",
+            "description": "How the object moves, opens, transforms, or reacts."
+          }
+        }
+      },
+      "other": {
+        "label": "Other",
+        "description": "Flexible context that does not fit another Element type.",
+        "fields": {
+          "instructions": {
+            "label": "Instructions",
+            "description": "Describe what TaleLabs should understand and preserve.",
+            "placeholder": "Add reusable context, constraints, or guidance."
+          }
+        }
+      },
+      "vehicle": {
+        "label": "Vehicle",
+        "description": "A reusable vehicle with a consistent identity and motion.",
+        "fields": {
+          "description": {
+            "label": "Guidelines"
+          },
+          "motionGuidance": {
+            "label": "Movement guidance"
+          }
+        },
+        "assetRoles": {
+          "exterior": {
+            "label": "Exteriors",
+            "description": "Full exterior views, silhouette, color, and identifying features."
+          },
+          "interior": {
+            "label": "Interiors",
+            "description": "Cabin layout, materials, controls, and seating."
+          },
+          "detail": {
+            "label": "Details",
+            "description": "Close-up design, mechanical, and branding features."
+          },
+          "movement": {
+            "label": "Movement",
+            "description": "Driving, riding, flight, or other motion references."
+          }
+        }
+      },
+      "voice": {
+        "label": "Voice",
+        "description": "A reusable voice for characters or narration.",
+        "fields": {
+          "description": {
+            "label": "Guidelines"
+          },
+          "languageAccent": {
+            "label": "Language and accent",
+            "placeholder": "Search languages and accents...",
+            "empty": "No matching language or accent."
+          },
+          "tone": {
+            "label": "Tone"
+          }
+        },
+        "assetRoles": {
+          "cleanSample": {
+            "label": "Clean samples",
+            "description": "Clear, isolated recordings that establish the voice."
+          },
+          "emotionalSample": {
+            "label": "Emotional samples",
+            "description": "Recordings that demonstrate emotional range and intensity."
+          },
+          "pronunciation": {
+            "label": "Pronunciation",
+            "description": "Examples of names, terms, accents, and difficult phrases."
+          },
+          "performanceReference": {
+            "label": "Performance references",
+            "description": "Pacing, delivery, character, and narration references."
+          }
+        }
+      }
+    }
+  },
   "workspace": {
     "accessUnavailable": "Organization access unavailable",
     "activeOrganization": "Active organization: {{organizationId}}",
@@ -224,10 +575,12 @@
     "title": "Cookie preferences"
   },
   "search": {
-    "description": "Search pages, settings, folders, and assets.",
+    "couldNotSearch": "Could not search",
+    "couldNotSearchDescription": "Check your connection and try again.",
+    "description": "Search pages, settings, folders, assets, and elements.",
     "empty": "No results found.",
     "pages": "Pages",
-    "placeholder": "Search pages, settings, folders, and assets...",
+    "placeholder": "Search pages, settings, folders, assets, and elements...",
     "settings": "Settings",
     "title": "Search"
   },
@@ -367,19 +720,28 @@
   "validation": {
     "email": "Enter a valid email address.",
     "logoUrl": "Enter a valid logo URL.",
+    "maxItems": "Use fewer items.",
+    "maxLength": "Use fewer characters.",
     "nameRequired": "Name is required.",
     "organizationNameRequired": "Organization name is required.",
     "organizationSlugRequired": "Choose a workspace URL.",
     "passwordCurrentRequired": "Current password is required.",
     "passwordMinLength": "Password must be at least {{minimum}} characters.",
     "required": "This field is required.",
-    "workspaceSlugRequired": "Choose a workspace URL."
+    "workspaceSlugRequired": "Choose a workspace URL.",
+    "duplicate": "Use different values.",
+    "hexColor": "Enter a valid HEX color, such as #1A2B3C."
   },
   "errors": {
     "active_organization_required": "Select or create an organization to continue.",
     "organization_context_changed": "The workspace changed. Try the action again.",
     "conflict": "That change conflicts with the current state. Refresh and try again.",
     "email_delivery_failed": "The email could not be delivered. Try again later.",
+    "asset_not_available": "This file is archived or pending deletion.",
+    "element_asset_already_attached": "This file is already attached to that role.",
+    "element_asset_media_type_not_accepted": "Choose a file type accepted by this role.",
+    "element_asset_role_capacity_reached": "This role has reached its file limit. Remove a linked file from this role before adding another.",
+    "element_asset_role_not_found": "Choose an Asset role available for this Element.",
     "internal_error": "Something went wrong. Try again.",
     "not_found": "The requested item could not be found.",
     "organization_access_required": "You do not have access to this organization.",
@@ -389,5 +751,47 @@
     "unexpectedDescription": "An unexpected error occurred. Try again or reload the page.",
     "unexpectedTitle": "Something went wrong",
     "validation_error": "Check the highlighted fields and try again."
+  },
+  "uploads": {
+    "title": "Uploads",
+    "description": "Uploads continue while you work.",
+    "open": "Open uploads",
+    "openActive_one": "{{count}} active upload, {{progress}} complete",
+    "openActive_other": "{{count}} active uploads, {{progress}} complete",
+    "openFailed_one": "{{count}} failed upload",
+    "openFailed_other": "{{count}} failed uploads",
+    "batchCompleted_one": "{{count}} asset uploaded",
+    "batchCompleted_other": "{{count}} assets uploaded",
+    "batchFailed_one": "{{count}} upload failed",
+    "batchFailed_other": "{{count}} uploads failed",
+    "batchFailedDescription": "Review the failed assets and retry when ready.",
+    "clearFinished": "Clear finished",
+    "empty": "No uploads yet.",
+    "assetBatch": "Asset upload",
+    "elementBatch": "Element assets",
+    "cancelBatch": "Cancel batch",
+    "retryFailed": "Retry failed",
+    "retryFile": "Retry upload of {{name}}",
+    "dismiss": "Dismiss",
+    "dismissFile": "Dismiss failed upload of {{name}}",
+    "stages": {
+      "queued": "Queued",
+      "hashing": "Preparing",
+      "uploading": "Uploading",
+      "registering": "Registering",
+      "linking": "Linking to Element",
+      "completed": "Completed",
+      "failed": "Failed",
+      "canceled": "Canceled"
+    },
+    "errors": {
+      "elementLimit": "This role has reached its file limit.",
+      "fileTooLarge": "This asset exceeds the size limit.",
+      "folderCreation": "The folder structure could not be created.",
+      "storageBlocked": "The storage request was blocked.",
+      "storageRejected": "Storage rejected this upload.",
+      "unsupportedType": "This asset type is not supported.",
+      "generic": "The asset could not be uploaded."
+    }
   }
 }

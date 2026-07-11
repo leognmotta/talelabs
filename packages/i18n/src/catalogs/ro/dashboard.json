@@ -7,6 +7,7 @@
     "create": "Creează",
     "delete": "Șterge",
     "email": "E-mail",
+    "edit": "Editează",
     "loading": "Se încarcă...",
     "moreOptions": "Mai multe opțiuni",
     "member": "Membru",
@@ -165,7 +166,10 @@
       "image": "Imagine",
       "video": "Videoclip"
     },
-    "sources": { "generation": "Generat", "upload": "Încărcare" },
+    "sources": {
+      "generation": "Generat",
+      "upload": "Încărcare"
+    },
     "metadata": {
       "bitRate": "Rată de biți",
       "channels": "Canale",
@@ -175,6 +179,356 @@
       "orientation": "Orientare",
       "sampleRate": "Rată de eșantionare",
       "space": "Spațiu de culoare"
+    }
+  },
+  "elements": {
+    "assetLimits": {
+      "countLabel": "{{current}} din {{maximum}} fișiere în acest rol",
+      "exceeded": "Acest rol a atins limita de fișiere. Eliminați un fișier din acest rol înainte de a adăuga altul.",
+      "guidance": "În funcție de tip, fiecare rol acceptă până la 8 imagini, 1 videoclip sau 1 fișier audio.",
+      "summary": "Per rol: până la 8 imagini, 1 videoclip sau 1 fișier audio."
+    },
+    "actionFailed": "Acțiunea asupra Elementului nu a putut fi finalizată.",
+    "addExisting": "Adăugați un fișier existent",
+    "addReference": "Adăugați o referință",
+    "allTypes": "Toate tipurile",
+    "alreadyLinked": "Acest fișier este deja asociat acestui rol.",
+    "assetAttached": "Fișier asociat",
+    "assetUnlinked": "Fișier disociat",
+    "assetUpdated": "Kitul de fișiere a fost actualizat",
+    "backToElement": "Înapoi la Element",
+    "backToElements": "Înapoi la Elemente",
+    "chooseType": "Alegeți tipul de context reutilizabil pe care doriți să îl creați.",
+    "couldNotLoad": "Elementele nu au putut fi încărcate",
+    "couldNotLoadAssets": "Acest kit de fișiere nu a putut fi încărcat.",
+    "couldNotLoadDescription": "Verificați conexiunea și încercați din nou.",
+    "create": "Creați un Element",
+    "createDescription": "Adăugați detalii reutilizabile și fișiere de referință.",
+    "createEditor": {
+      "description": "Adăugați detalii reutilizabile și fișiere de referință.",
+      "sectionNavigation": "Secțiuni de creare",
+      "sections": {
+        "details": {
+          "description": "Identitate și informații structurate.",
+          "label": "Detalii"
+        }
+      }
+    },
+    "createAssets": {
+      "description": "Adaugă referințe în funcție de rol. Fișierele vor fi încărcate numai după crearea Elementului.",
+      "invalidFiles": "Unele fișiere nu au putut fi adăugate deoarece tipul sau dimensiunea lor nu este acceptată pentru acest rol.",
+      "dropNow": "Plasează fișierele aici",
+      "chooseFiles": "Adaugă fișiere",
+      "removeFile": "Elimină {{name}}",
+      "dropzoneDescription": "Plasează aici fișiere acceptate sau folosește butonul pentru a le selecta.",
+      "selectedCount_one": "{{count}} fișier selectat",
+      "selectedCount_other": "{{count}} fișiere selectate",
+      "addRole": "Adăugați un rol pentru fișiere",
+      "confirmRole": "Adăugați rolul",
+      "customRoleDescription": "Referințe grupate în acest rol personalizat.",
+      "customRoleErrors": {
+        "duplicate": "Folosiți un alt nume pentru rol.",
+        "required": "Introduceți un nume pentru rol."
+      },
+      "customRoleName": "Numele rolului",
+      "customRolePlaceholder": "De exemplu, Panou de referințe",
+      "noCustomRoles": "Nu există încă roluri pentru fișiere",
+      "noCustomRolesDescription": "Adăugați până la {{count}} roluri, apoi adăugați fișiere în fiecare.",
+      "removeRole": "Eliminați rolul {{name}}"
+    },
+    "customRoles": {
+      "title": "Roluri personalizate pentru fișiere",
+      "description": "Adăugați până la {{count}} roluri pentru a organiza referințele acestui Element.",
+      "edit": "Redenumiți {{name}}",
+      "remove": "Eliminați {{name}}",
+      "inUse": "Deconectați fișierele și anulați sau eliminați încărcările înainte de a modifica acest rol.",
+      "updated": "Rolurile fișierelor au fost actualizate"
+    },
+    "createType": "Creați: {{type}}",
+    "created": "Element creat",
+    "dataTab": "Date",
+    "delete": "Ștergeți Elementul",
+    "deleteDescription": "Ștergeți {{name}}? Fișierele asociate vor rămâne în bibliotecă.",
+    "deleted": "Element șters",
+    "deleting": "Se șterge...",
+    "emptyDescription": "Creați un Personaj sau un Produs pentru a-i reutiliza contextul în Fluxuri de lucru.",
+    "emptyTitle": "Creați primul Element",
+    "editAssetsDescription": "Gestionați referințele după rol. Încărcările noi încep imediat.",
+    "editType": "Editați {{type}}",
+    "filterByType": "Filtrați după tipul Elementului",
+    "loadMore": "Încărcați mai multe",
+    "moveDown": "Mutați {{name}} mai jos",
+    "moveUp": "Mutați {{name}} mai sus",
+    "noResults": "Nu există Elemente corespunzătoare",
+    "noResultsDescription": "Încercați o altă căutare sau un alt filtru de tip.",
+    "notFound": "Elementul nu a fost găsit",
+    "noReferences": "Nu există încă referințe",
+    "noReferencesDescription": "Adăugați imagini, materiale video sau audio care ajută la păstrarea identității acestui Element.",
+    "roleEmpty": "Nu există fișiere în acest rol.",
+    "search": "Căutați Elemente",
+    "searchPlaceholder": "Căutați Elemente...",
+    "makeThumbnail": "Setați ca miniatură",
+    "setPrimary": "Setați {{name}} drept principal",
+    "unlink": "Disociați {{name}}",
+    "updated": "Element actualizat",
+    "uploadAndAttach": "Încărcați și asociați",
+    "uploadAttached": "Fișier încărcat și asociat",
+    "linkingAsset": "Se asociază cu Elementul...",
+    "assetLinkFailedDescription": "Fișierul a fost încărcat, dar nu a putut fi asociat. Reîncercați asocierea fără să îl încărcați din nou.",
+    "types": {
+      "character": {
+        "label": "Personaj",
+        "description": "O persoană sau identitate recurentă.",
+        "fields": {
+          "description": {
+            "label": "Indicații"
+          },
+          "personality": {
+            "label": "Personalitate"
+          }
+        },
+        "assetRoles": {
+          "appearance": {
+            "label": "Aspect",
+            "description": "Referințe vizuale principale pentru personaj."
+          },
+          "expression": {
+            "label": "Expresii",
+            "description": "Referințe pentru expresii faciale și emoții."
+          },
+          "motion": {
+            "label": "Mișcare",
+            "description": "Referințe pentru mișcare și interpretare."
+          },
+          "voice": {
+            "label": "Voce",
+            "description": "Referințe pentru vorbire, ton și voce."
+          }
+        }
+      },
+      "product": {
+        "label": "Produs",
+        "description": "Un produs fizic sau un obiect de recuzită.",
+        "fields": {
+          "description": {
+            "label": "Indicații"
+          },
+          "sellingPoints": {
+            "label": "Argumente de vânzare",
+            "description": "Adăugați până la {{count}} beneficii sau diferențiatori conciși.",
+            "add": "Adăugați un argument",
+            "empty": "Nu a fost adăugat niciun argument de vânzare.",
+            "placeholder": "De ex., Fabricat din aluminiu reciclat",
+            "remove": "Eliminați argumentul {{index}}",
+            "value": "Argument de vânzare {{index}}"
+          }
+        },
+        "assetRoles": {
+          "packshot": {
+            "label": "Fotografii de produs",
+            "description": "Vederi clare ale produsului și referințe principale."
+          },
+          "detail": {
+            "label": "Detalii",
+            "description": "Prim-planuri cu materiale, finisaje și funcții."
+          },
+          "lifestyle": {
+            "label": "Scene de utilizare",
+            "description": "Produsul într-un mediu real sau aspirațional."
+          },
+          "demonstration": {
+            "label": "Demonstrații",
+            "description": "Produsul în timpul manipulării sau utilizării."
+          }
+        }
+      },
+      "brand": {
+        "label": "Marcă",
+        "description": "O identitate vizuală și de comunicare reutilizabilă.",
+        "fields": {
+          "description": {
+            "label": "Indicații"
+          },
+          "communicationStyle": {
+            "label": "Stil de comunicare"
+          },
+          "colors": {
+            "label": "Culorile mărcii",
+            "description": "Adăugați până la {{count}} culori HEX folosite de marcă.",
+            "add": "Adăugați culoare",
+            "empty": "Nu a fost adăugată nicio culoare",
+            "pick": "Alegeți culoarea {{index}}",
+            "value": "Valoarea HEX pentru culoarea {{index}}",
+            "remove": "Eliminați {{color}}"
+          }
+        },
+        "assetRoles": {
+          "primaryLogo": {
+            "label": "Siglă principală",
+            "description": "Sigla principală care identifică marca."
+          },
+          "alternateLogo": {
+            "label": "Sigle alternative",
+            "description": "Variante aprobate pentru machete și fundaluri diferite."
+          },
+          "icon": {
+            "label": "Pictograme",
+            "description": "Simboluri și însemne compacte ale mărcii."
+          },
+          "typography": {
+            "label": "Tipografie",
+            "description": "Fonturi, ierarhii și stiluri de text aprobate."
+          },
+          "palette": {
+            "label": "Paletă de culori",
+            "description": "Culori aprobate și utilizarea lor."
+          },
+          "referenceCampaign": {
+            "label": "Campanii de referință",
+            "description": "Campanii care arată marca în practică."
+          }
+        }
+      },
+      "location": {
+        "label": "Locație",
+        "description": "Un loc sau mediu reutilizabil.",
+        "fields": {
+          "description": {
+            "label": "Indicații"
+          },
+          "atmosphere": {
+            "label": "Atmosferă"
+          }
+        },
+        "assetRoles": {
+          "exterior": {
+            "label": "Exterioare",
+            "description": "Vederi exterioare ample care identifică locul."
+          },
+          "interior": {
+            "label": "Interioare",
+            "description": "Spații și configurații interioare recognoscibile."
+          },
+          "detail": {
+            "label": "Detalii",
+            "description": "Materiale, dotări și caracteristici văzute de aproape."
+          },
+          "atmosphere": {
+            "label": "Atmosferă",
+            "description": "Referințe de lumină, vreme, moment și ambianță."
+          },
+          "referenceVideo": {
+            "label": "Videoclipuri de referință",
+            "description": "Deplasarea prin locație și continuitatea spațială."
+          }
+        }
+      },
+      "object": {
+        "label": "Obiect",
+        "description": "Un element de recuzită reutilizabil care nu este un produs comercial.",
+        "fields": {
+          "description": {
+            "label": "Indicații"
+          },
+          "interactionGuidance": {
+            "label": "Indicații de interacțiune"
+          }
+        },
+        "assetRoles": {
+          "appearance": {
+            "label": "Aspect",
+            "description": "Vederi principale care definesc identitatea obiectului."
+          },
+          "detail": {
+            "label": "Detalii",
+            "description": "Materiale, construcție și trăsături distinctive."
+          },
+          "interaction": {
+            "label": "Interacțiune",
+            "description": "Cum este manipulat și folosit de oameni sau obiecte."
+          },
+          "motion": {
+            "label": "Mișcare",
+            "description": "Cum se mișcă, se deschide sau reacționează obiectul."
+          }
+        }
+      },
+      "other": {
+        "label": "Altul",
+        "description": "Context flexibil care nu se potrivește unui alt tip de Element.",
+        "fields": {
+          "instructions": {
+            "label": "Instrucțiuni",
+            "description": "Descrieți ce trebuie să înțeleagă și să păstreze TaleLabs.",
+            "placeholder": "Adăugați context reutilizabil, constrângeri sau indicații."
+          }
+        }
+      },
+      "vehicle": {
+        "label": "Vehicul",
+        "description": "Un vehicul reutilizabil cu identitate și mișcare consecvente.",
+        "fields": {
+          "description": {
+            "label": "Indicații"
+          },
+          "motionGuidance": {
+            "label": "Indicații de deplasare"
+          }
+        },
+        "assetRoles": {
+          "exterior": {
+            "label": "Exterioare",
+            "description": "Siluetă, culoare și trăsături exterioare distinctive."
+          },
+          "interior": {
+            "label": "Interioare",
+            "description": "Configurație, materiale, comenzi și scaune."
+          },
+          "detail": {
+            "label": "Detalii",
+            "description": "Design, mecanică și elemente de marcă în prim-plan."
+          },
+          "movement": {
+            "label": "Mișcare",
+            "description": "Referințe de condus, zbor și alte deplasări."
+          }
+        }
+      },
+      "voice": {
+        "label": "Voce",
+        "description": "O voce reutilizabilă pentru personaje sau narațiune.",
+        "fields": {
+          "description": {
+            "label": "Indicații"
+          },
+          "languageAccent": {
+            "label": "Limbă și accent",
+            "placeholder": "Căutați limbi și accente...",
+            "empty": "Nu există nicio limbă sau niciun accent corespunzător."
+          },
+          "tone": {
+            "label": "Ton"
+          }
+        },
+        "assetRoles": {
+          "cleanSample": {
+            "label": "Mostre curate",
+            "description": "Înregistrări clare și izolate care definesc vocea."
+          },
+          "emotionalSample": {
+            "label": "Mostre emoționale",
+            "description": "Înregistrări cu amplitudine emoțională și intensitate."
+          },
+          "pronunciation": {
+            "label": "Pronunție",
+            "description": "Exemple de nume, termeni și fraze dificile."
+          },
+          "performanceReference": {
+            "label": "Referințe de interpretare",
+            "description": "Ritm, livrare, personaj și narațiune."
+          }
+        }
+      }
     }
   },
   "workspace": {
@@ -221,10 +575,12 @@
     "title": "Preferințe cookie"
   },
   "search": {
-    "description": "Căutați pagini, setări, dosare și fișiere.",
+    "couldNotSearch": "Căutarea nu a putut fi efectuată",
+    "couldNotSearchDescription": "Verificați conexiunea și încercați din nou.",
+    "description": "Căutați pagini, setări, dosare, fișiere și elemente.",
     "empty": "Nu s-au găsit rezultate.",
     "pages": "Pagini",
-    "placeholder": "Căutați pagini, setări, dosare și fișiere...",
+    "placeholder": "Căutați pagini, setări, dosare, fișiere și elemente...",
     "settings": "Setări",
     "title": "Căutare"
   },
@@ -364,19 +720,28 @@
   "validation": {
     "email": "Introdu o adresă de e-mail validă.",
     "logoUrl": "Introduceți o adresă URL de siglă validă.",
+    "maxItems": "Folosiți mai puține elemente.",
+    "maxLength": "Folosiți mai puține caractere.",
     "nameRequired": "Numele este obligatoriu.",
     "organizationNameRequired": "Numele organizației este obligatoriu.",
     "organizationSlugRequired": "Alegeți o adresă pentru spațiul de lucru.",
     "passwordCurrentRequired": "Este necesară parola curentă.",
     "passwordMinLength": "Parola trebuie să aibă cel puțin {{minimum}} caractere.",
     "required": "Acest câmp este obligatoriu.",
-    "workspaceSlugRequired": "Alegeți o adresă pentru spațiul de lucru."
+    "workspaceSlugRequired": "Alegeți o adresă pentru spațiul de lucru.",
+    "duplicate": "Folosiți valori diferite.",
+    "hexColor": "Introduceți o culoare HEX validă, de exemplu #1A2B3C."
   },
   "errors": {
     "active_organization_required": "Selectați sau creați o organizație pentru a continua.",
     "organization_context_changed": "Spațiul de lucru s-a schimbat. Încercați din nou acțiunea.",
     "conflict": "Această schimbare intră în conflict cu starea actuală. Actualizați și încercați din nou.",
     "email_delivery_failed": "E-mailul nu a putut fi livrat. Încercați din nou mai târziu.",
+    "asset_not_available": "Acest fișier este arhivat sau în curs de ștergere.",
+    "element_asset_already_attached": "Acest fișier este deja asociat acestui rol.",
+    "element_asset_media_type_not_accepted": "Alegeți un tip de fișier acceptat de acest rol.",
+    "element_asset_role_capacity_reached": "Acest rol a atins limita de fișiere. Eliminați un fișier asociat din acest rol înainte de a adăuga altul.",
+    "element_asset_role_not_found": "Alegeți un rol de fișier disponibil pentru acest Element.",
     "internal_error": "Ceva nu a funcționat. Încercați din nou.",
     "not_found": "Elementul solicitat nu a fost găsit.",
     "organization_access_required": "Nu aveți acces la această organizație.",
@@ -386,5 +751,47 @@
     "unexpectedDescription": "A apărut o eroare neașteptată. Încercați din nou sau reîncărcați pagina.",
     "unexpectedTitle": "Ceva nu a funcționat",
     "validation_error": "Verificați câmpurile evidențiate și încercați din nou."
+  },
+  "uploads": {
+    "title": "Încărcări",
+    "description": "Încărcările continuă în timp ce lucrați.",
+    "open": "Deschideți încărcările",
+    "openActive_one": "{{count}} încărcare activă, {{progress}} finalizată",
+    "openActive_other": "{{count}} încărcări active, {{progress}} finalizate",
+    "openFailed_one": "{{count}} încărcare eșuată",
+    "openFailed_other": "{{count}} încărcări eșuate",
+    "batchCompleted_one": "{{count}} fișier încărcat",
+    "batchCompleted_other": "{{count}} fișiere încărcate",
+    "batchFailed_one": "{{count}} încărcare a eșuat",
+    "batchFailed_other": "{{count}} încărcări au eșuat",
+    "batchFailedDescription": "Verificați fișierele eșuate și încercați din nou când sunteți pregătit.",
+    "clearFinished": "Ștergeți finalizatele",
+    "empty": "Nu există încărcări încă.",
+    "assetBatch": "Încărcare fișiere",
+    "elementBatch": "Fișierele Elementului",
+    "cancelBatch": "Anulați lotul",
+    "retryFailed": "Reîncercați eșuatele",
+    "retryFile": "Reîncercați încărcarea {{name}}",
+    "dismiss": "Închideți",
+    "dismissFile": "Închideți încărcarea nereușită a fișierului {{name}}",
+    "stages": {
+      "queued": "În așteptare",
+      "hashing": "Se pregătește",
+      "uploading": "Se încarcă",
+      "registering": "Se înregistrează",
+      "linking": "Se asociază Elementului",
+      "completed": "Finalizat",
+      "failed": "Eșuat",
+      "canceled": "Anulat"
+    },
+    "errors": {
+      "elementLimit": "Acest rol a atins limita de fișiere.",
+      "fileTooLarge": "Acest fișier depășește limita de dimensiune.",
+      "folderCreation": "Structura de dosare nu a putut fi creată.",
+      "storageBlocked": "Solicitarea către spațiul de stocare a fost blocată.",
+      "storageRejected": "Spațiul de stocare a respins această încărcare.",
+      "unsupportedType": "Acest tip de fișier nu este acceptat.",
+      "generic": "Fișierul nu a putut fi încărcat."
+    }
   }
 }
