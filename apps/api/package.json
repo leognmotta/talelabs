@@ -2,7 +2,7 @@
   "name": "api",
   "type": "module",
   "scripts": {
-    "dev": "NODE_ENV=development tsx watch src/index.ts",
+    "dev": "NODE_ENV=development tsx watch --include '../../packages/{auth,db,email,storage,trigger}/dist/**/*.js' src/index.ts",
     "build": "tsc",
     "check-types": "tsc --noEmit",
     "start": "node dist/index.js",
@@ -17,6 +17,7 @@
     "@talelabs/assets": "*",
     "@talelabs/auth": "*",
     "@talelabs/db": "*",
+    "@talelabs/elements": "*",
     "@talelabs/i18n": "^0.0.0",
     "@talelabs/storage": "*",
     "@talelabs/trigger": "*",
@@ -24,8 +25,8 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@types/node": "^20.11.17",
+    "@types/node": "^22.15.3",
     "tsx": "^4.7.1",
-    "typescript": "^5.8.3"
+    "typescript": "5.9.2"
   }
 }

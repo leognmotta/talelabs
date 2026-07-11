@@ -5,13 +5,14 @@
   "private": true,
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
+      "types": "./src/index.ts",
       "default": "./dist/index.js"
     }
   },
   "scripts": {
     "build": "tsc",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "dev:build": "tsc --watch --preserveWatchOutput"
   },
   "dependencies": {
     "@talelabs/db": "*",

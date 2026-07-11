@@ -1,0 +1,11 @@
+{
+  "extends": ["//"],
+  "tasks": {
+    "dev": {
+      "with": [
+        "@talelabs/db#dev:build",
+        "@talelabs/storage#dev:build"
+      ]
+    }
+  }
+}

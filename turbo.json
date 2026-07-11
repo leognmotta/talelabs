@@ -10,6 +10,8 @@
     "R2_ACCESS_KEY_ID",
     "R2_ACCOUNT_ID",
     "R2_SECRET_ACCESS_KEY",
+    "RESEND_API_KEY",
+    "RESEND_FROM_EMAIL",
     "STRIPE_PUBLISHABLE_KEY",
     "STRIPE_SECRET_KEY",
     "TEST_POSTGRES_URL",
@@ -33,6 +35,10 @@
       "cache": false
     },
     "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "dev:build": {
       "cache": false,
       "persistent": true
     }

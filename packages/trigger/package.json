@@ -5,7 +5,7 @@
   "private": true,
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
+      "types": "./src/index.ts",
       "default": "./dist/index.js"
     }
   },
@@ -13,6 +13,7 @@
     "build": "tsc",
     "check-types": "tsc --noEmit",
     "dev": "trigger dev --config ../../trigger.config.ts --env-file ../../.env --skip-rules-install",
+    "dev:build": "tsc --watch --preserveWatchOutput",
     "predev": "node scripts/assert-dev-env.mjs --worker"
   },
   "dependencies": {

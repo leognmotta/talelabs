@@ -1,0 +1,14 @@
+{
+  "extends": ["//"],
+  "tasks": {
+    "dev": {
+      "with": [
+        "@talelabs/auth#dev:build",
+        "@talelabs/db#dev:build",
+        "@talelabs/email#dev:build",
+        "@talelabs/storage#dev:build",
+        "@talelabs/trigger#dev:build"
+      ]
+    }
+  }
+}

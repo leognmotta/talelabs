@@ -16,6 +16,7 @@
   "scripts": {
     "build": "tsc",
     "check-types": "tsc --noEmit",
+    "dev:build": "tsc --watch --preserveWatchOutput",
     "migrate": "tsx src/migrate.ts"
   },
   "dependencies": {
