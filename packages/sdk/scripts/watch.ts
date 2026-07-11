@@ -4,8 +4,6 @@ import { dirname, resolve } from 'node:path'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 
-import { writeOpenApiSpec } from './write-openapi.ts'
-
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const apiSource = resolve(packageRoot, '../../apps/api/src')
 const sdkConfig = resolve(packageRoot, 'kubb.config.ts')
@@ -14,11 +12,11 @@ let isGenerating = false
 let pendingGeneration = false
 let debounceTimer: ReturnType<typeof setTimeout> | undefined
 
-function runKubbGenerate() {
+function runGenerate() {
   return new Promise<void>((resolvePromise, reject) => {
-    const child = spawn('kubb', ['generate', '--config', 'kubb.config.ts'], {
+    const child = spawn('npm', ['run', 'generate'], {
       cwd: packageRoot,
-      shell: true,
+      shell: false,
       stdio: 'inherit',
     })
 
@@ -29,7 +27,7 @@ function runKubbGenerate() {
         return
       }
 
-      reject(new Error(`kubb generate exited with ${code}`))
+      reject(new Error(`SDK generation exited with ${code}`))
     })
   })
 }
@@ -43,8 +41,7 @@ async function generate() {
   isGenerating = true
 
   try {
-    await writeOpenApiSpec()
-    await runKubbGenerate()
+    await runGenerate()
   }
   catch (error) {
     console.error(error)

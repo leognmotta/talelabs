@@ -7,6 +7,7 @@ export const productErrorCodeEnum = {
   validation_error: "validation_error",
   unauthenticated: "unauthenticated",
   active_organization_required: "active_organization_required",
+  organization_context_changed: "organization_context_changed",
   not_found: "not_found",
   conflict: "conflict",
   revision_conflict: "revision_conflict",

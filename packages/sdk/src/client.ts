@@ -21,9 +21,14 @@ export type Client = <TData, _TError = unknown, TVariables = unknown>(
 ) => Promise<ResponseConfig<TData>>
 
 let requestLocale: string | null = null
+let requestOrganizationId: string | null = null
 
 export function setApiRequestLocale(locale: string | null) {
   requestLocale = locale
+}
+
+export function setApiRequestOrganizationId(organizationId: string | null) {
+  requestOrganizationId = organizationId
 }
 
 export class ApiError<TError = unknown> extends Error {
@@ -84,6 +89,9 @@ const client: Client = async <TData, TError = unknown, TVariables = unknown>(
     credentials: 'include',
     headers: {
       ...(requestLocale ? { 'Accept-Language': requestLocale } : {}),
+      ...(requestOrganizationId
+        ? { 'X-TaleLabs-Organization-Id': requestOrganizationId }
+        : {}),
       ...(config.data instanceof FormData ? {} : { 'Content-Type': 'application/json' }),
       ...config.headers,
     },
@@ -91,9 +99,11 @@ const client: Client = async <TData, TError = unknown, TVariables = unknown>(
   })
 
   const contentType = response.headers.get('content-type') ?? ''
-  const data = contentType.includes('application/json')
-    ? await response.json() as TData
-    : await response.text() as TData
+  const data = response.status === 204
+    ? undefined as TData
+    : contentType.includes('application/json')
+      ? await response.json() as TData
+      : await response.text() as TData
 
   if (!response.ok)
     throw new ApiError<TError>(response, data as unknown as TError)

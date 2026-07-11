@@ -10,6 +10,7 @@ export const productErrorCodeSchema = z.enum([
   "validation_error",
   "unauthenticated",
   "active_organization_required",
+  "organization_context_changed",
   "not_found",
   "conflict",
   "revision_conflict",
