@@ -23,4 +23,24 @@ export type RegisterAssetRequest = {
    * @type string | undefined
    */
   folderId?: Cuid2;
+  /**
+   * @pattern ^[a-z][0-9a-z]+$
+   * @type string | undefined
+   */
+  elementId?: Cuid2;
+  /**
+   * @minLength 1
+   * @maxLength 64
+   * @type string | undefined
+   */
+  role?: string;
+  /**
+   * @minLength 0
+   * @type integer | undefined
+   */
+  sortOrder?: number;
+  /**
+   * @type boolean | undefined
+   */
+  isPrimary?: boolean;
 };

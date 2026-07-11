@@ -13,4 +13,10 @@ export const registerAssetRequestSchema = z.object({
   get folderId() {
     return cuid2Schema.optional();
   },
+  get elementId() {
+    return cuid2Schema.optional();
+  },
+  role: z.optional(z.string().min(1).max(64)),
+  sortOrder: z.optional(z.int().min(0)),
+  isPrimary: z.optional(z.boolean()),
 }) as unknown as z.ZodType<RegisterAssetRequest>;

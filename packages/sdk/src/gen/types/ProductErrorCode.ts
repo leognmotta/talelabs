@@ -10,6 +10,12 @@ export const productErrorCodeEnum = {
   organization_context_changed: "organization_context_changed",
   not_found: "not_found",
   conflict: "conflict",
+  asset_not_available: "asset_not_available",
+  element_asset_already_attached: "element_asset_already_attached",
+  element_asset_media_type_not_accepted:
+    "element_asset_media_type_not_accepted",
+  element_asset_role_capacity_reached: "element_asset_role_capacity_reached",
+  element_asset_role_not_found: "element_asset_role_not_found",
   revision_conflict: "revision_conflict",
   invalid_state: "invalid_state",
   unsupported_by_model: "unsupported_by_model",
