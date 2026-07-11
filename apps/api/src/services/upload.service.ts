@@ -1,5 +1,4 @@
 import { Buffer } from 'node:buffer'
-
 import { createId } from '@paralleldrive/cuid2'
 import { getAssetUploadPolicy } from '@talelabs/assets'
 import {
@@ -12,7 +11,12 @@ import { idempotencyKeys, triggerTask } from '@talelabs/trigger'
 
 import { findAssetByUploadId, findFolderById, insertUploadedAsset } from '../data/assets.data.js'
 import { getUploadRegistrationGrantTtlSeconds } from '../domain/assets/asset-policy.js'
+import {
+  createElementAssetMediaTypeNotAcceptedError,
+  createElementAssetRoleNotFoundError,
+} from '../domain/elements/element-asset-role-policy.js'
 import { HttpError, TenantResourceNotFoundError } from '../middleware/error.js'
+import { createElementAssetRoleCapacityError } from './element-asset-limit-error.js'
 import { createUploadGrant, verifyUploadGrant } from './upload-grant.service.js'
 
 export async function createUpload(input: {
@@ -90,9 +94,13 @@ async function dispatchIngestion(organizationId: string, assetId: string) {
 }
 
 export async function registerUploadedAsset(input: {
+  elementId?: string
   folderId?: string
+  isPrimary?: boolean
   name?: string
   organizationId: string
+  role?: string
+  sortOrder?: number
   uploadId: string
   userId: string
 }) {
@@ -115,7 +123,9 @@ export async function registerUploadedAsset(input: {
   if (existing)
     return { asset: existing, replay: true }
 
-  if (input.folderId && !(await findFolderById(input.organizationId, input.folderId)))
+  // For Element uploads the stored association is authoritative. A stale client
+  // folder ID is ignored and a deleted association is recreated transactionally.
+  if (!input.elementId && input.folderId && !(await findFolderById(input.organizationId, input.folderId)))
     throw new TenantResourceNotFoundError('folderId')
 
   let object
@@ -153,18 +163,45 @@ export async function registerUploadedAsset(input: {
   let asset
   let replayed = false
   try {
-    asset = await insertUploadedAsset({
+    const created = await insertUploadedAsset({
       createdBy: input.userId,
+      elementId: input.elementId,
       folderId: input.folderId ?? null,
       id: createId(),
       mimeType: grant.mimeType,
       name: input.name ?? grant.filename,
       organizationId: input.organizationId,
+      role: input.role,
+      isPrimary: input.isPrimary,
+      sortOrder: input.sortOrder,
       sizeBytes: grant.sizeBytes,
       storageKey: grant.key,
       type: policy.type,
       uploadId: grant.grantId,
     })
+    if (created.status === 'element_not_found')
+      throw new TenantResourceNotFoundError('elementId')
+    if (created.status === 'role_not_found')
+      throw createElementAssetRoleNotFoundError(input.role ?? '')
+    if (created.status === 'incompatible_asset') {
+      throw createElementAssetMediaTypeNotAcceptedError(
+        input.role ?? '',
+        policy.type,
+        'role',
+      )
+    }
+    if (created.status === 'folder_limit' || created.status === 'folder_depth') {
+      throw new HttpError(400, 'validation_error', 'The Element folder could not be created.', [{
+        code: created.status,
+        field: 'folderId',
+        message: created.status === 'folder_limit'
+          ? 'This workspace has reached its folder limit.'
+          : 'The workspace Elements folder cannot contain another nested folder.',
+      }])
+    }
+    if (created.status === 'element_asset_role_capacity_reached')
+      throw createElementAssetRoleCapacityError('role', created)
+    asset = created.asset
   }
   catch (error) {
     const replay = await findAssetByUploadId(input.organizationId, grant.grantId)

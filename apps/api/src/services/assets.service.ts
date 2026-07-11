@@ -44,7 +44,7 @@ const assetPaginationConfig = {
   defaultSort: 'createdAt' as const,
 }
 
-async function presentAssetsForUser(input: {
+export async function presentAssetsForUser(input: {
   assets: NonNullable<Awaited<ReturnType<typeof findAssetById>>>[]
   organizationId: string
   userId: string

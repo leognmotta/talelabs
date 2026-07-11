@@ -10,6 +10,14 @@ export const Cuid2Schema = z.string()
     pattern: '^[a-z][0-9a-z]+$',
   })
 
+// Keep nullable IDs inline in OpenAPI. Referencing Cuid2 and then applying
+// nullable produces an allOf shape that some generators cannot emit correctly.
+export const NullableCuid2Schema = z.string()
+  .regex(/^[a-z][0-9a-z]+$/)
+  .min(2)
+  .max(32)
+  .nullable()
+
 export const UserIdSchema = z.string()
   .min(1)
   .max(255)
@@ -104,6 +112,11 @@ export const ProductErrorCodeSchema = z.enum([
   'organization_context_changed',
   'not_found',
   'conflict',
+  'asset_not_available',
+  'element_asset_already_attached',
+  'element_asset_media_type_not_accepted',
+  'element_asset_role_capacity_reached',
+  'element_asset_role_not_found',
   'revision_conflict',
   'invalid_state',
   'unsupported_by_model',

@@ -1,12 +1,6 @@
 import { z } from '@hono/zod-openapi'
 
-import { Cuid2Schema, TimestampSchema } from '../../schemas/common.js'
-
-const NullableCuid2Schema = z.string()
-  .regex(/^[a-z][0-9a-z]+$/)
-  .min(2)
-  .max(32)
-  .nullable()
+import { Cuid2Schema, NullableCuid2Schema, TimestampSchema } from '../../schemas/common.js'
 
 export const FolderSchema = z.object({
   id: Cuid2Schema,

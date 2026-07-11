@@ -13,6 +13,7 @@ import { apiError, errorHandler } from './middleware/error.js'
 import { registerOpenApi } from './openapi.js'
 import { registerAccountRoutes } from './routes/account/account.routes.js'
 import { registerAssetRoutes } from './routes/assets/assets.routes.js'
+import { registerElementRoutes } from './routes/elements/elements.routes.js'
 import { registerFolderRoutes } from './routes/folders/folders.routes.js'
 import { registerOrganizationRoutes } from './routes/organizations/organizations.routes.js'
 import { registerProductRoutes } from './routes/product.routes.js'
@@ -24,6 +25,7 @@ import { registerUploadRoutes } from './routes/uploads/uploads.routes.js'
 const defaultProductRouteRegistrars = [
   registerUploadRoutes,
   registerAssetRoutes,
+  registerElementRoutes,
   registerFolderRoutes,
   registerTagRoutes,
   registerSearchRoutes,

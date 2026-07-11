@@ -9,6 +9,15 @@ import type { Selectable, Transaction } from 'kysely'
 import type { PageCursor, SortOrder } from '../pagination/cursor.js'
 
 import { db, sql } from '@talelabs/db'
+import { getStoredElementAssetRole } from '../domain/elements/stored-element-asset-role.js'
+import {
+  findElementAssetRoleCapacityViolation,
+  lockElementAssetRole,
+} from './element-asset-limits.data.js'
+import {
+  lockFolderStructure,
+  provisionElementAssetFolderRow,
+} from './folders.data.js'
 
 export type AssetRecord = Selectable<AssetTable>
 export type AssetListRow = AssetRecord & { nameSortValue: string }
@@ -194,15 +203,141 @@ export async function insertUploadedAsset(input: {
   storageKey: string
   type: AssetType
   uploadId: string
+  elementId?: string
+  isPrimary?: boolean
+  role?: string
+  sortOrder?: number
 }) {
-  return db.insertInto('assets')
-    .values({
-      ...input,
-      source: 'upload',
-      processingState: 'processing',
-    })
-    .returningAll()
-    .executeTakeFirstOrThrow()
+  return db.transaction().execute(async (trx) => {
+    let folderId = input.folderId
+
+    if (input.elementId) {
+      // Folder deletion takes the same advisory lock before its FK action updates
+      // Elements. Keep this lock order consistent to avoid an Element/folder
+      // deadlock while lazily recreating an association.
+      await lockFolderStructure(trx, input.organizationId)
+      const element = await trx.selectFrom('elements')
+        .select([
+          'assetFolderId',
+          'data',
+          'id',
+          'name',
+          'schemaVersion',
+          'type',
+        ])
+        .where('organizationId', '=', input.organizationId)
+        .where('id', '=', input.elementId)
+        .forUpdate()
+        .executeTakeFirst()
+      if (!element)
+        return { status: 'element_not_found' as const }
+
+      if (element.assetFolderId) {
+        folderId = element.assetFolderId
+      }
+      else {
+        const provisioned = await provisionElementAssetFolderRow(trx, {
+          elementName: element.name,
+          organizationId: input.organizationId,
+        })
+        if (provisioned.status === 'limit')
+          return { status: 'folder_limit' as const }
+        if (provisioned.status === 'depth')
+          return { status: 'folder_depth' as const }
+
+        folderId = provisioned.folderId
+        await trx.updateTable('elements')
+          .set({ assetFolderId: folderId, updatedAt: new Date() })
+          .where('organizationId', '=', input.organizationId)
+          .where('id', '=', input.elementId)
+          .executeTakeFirstOrThrow()
+      }
+
+      if (input.role) {
+        const role = getStoredElementAssetRole(element, input.role)
+        if (!role)
+          return { status: 'role_not_found' as const }
+        if (input.type === 'document' || !role.accepts.includes(input.type))
+          return { status: 'incompatible_asset' as const }
+
+        await lockElementAssetRole(trx, {
+          elementId: input.elementId,
+          organizationId: input.organizationId,
+          role: input.role,
+        })
+        const limitViolation = await findElementAssetRoleCapacityViolation(trx, {
+          elementId: input.elementId,
+          maximum: role.maxAssets,
+          organizationId: input.organizationId,
+          role: input.role,
+        })
+        if (limitViolation) {
+          return {
+            ...limitViolation,
+            status: 'element_asset_role_capacity_reached' as const,
+          }
+        }
+      }
+    }
+
+    const {
+      elementId: _elementId,
+      folderId: _folderId,
+      isPrimary: _isPrimary,
+      role: _role,
+      sortOrder: _sortOrder,
+      ...assetInput
+    } = input
+    const asset = await trx.insertInto('assets')
+      .values({
+        ...assetInput,
+        folderId,
+        source: 'upload',
+        processingState: 'processing',
+      })
+      .returningAll()
+      .executeTakeFirstOrThrow()
+
+    if (input.elementId && input.role) {
+      const existing = await trx.selectFrom('elementAssets')
+        .select(['assetId', 'sortOrder'])
+        .where('organizationId', '=', input.organizationId)
+        .where('elementId', '=', input.elementId)
+        .where('role', '=', input.role)
+        .orderBy('sortOrder')
+        .orderBy('assetId')
+        .execute()
+      const targetOrder = Math.max(0, Math.min(
+        input.sortOrder ?? existing.length,
+        existing.length,
+      ))
+      if (input.isPrimary) {
+        await trx.updateTable('elementAssets')
+          .set({ isPrimary: false })
+          .where('organizationId', '=', input.organizationId)
+          .where('elementId', '=', input.elementId)
+          .where('role', '=', input.role)
+          .execute()
+      }
+      await trx.updateTable('elementAssets')
+        .set({ sortOrder: sql`"sortOrder" + 1` })
+        .where('organizationId', '=', input.organizationId)
+        .where('elementId', '=', input.elementId)
+        .where('role', '=', input.role)
+        .where('sortOrder', '>=', targetOrder)
+        .execute()
+      await trx.insertInto('elementAssets').values({
+        assetId: asset.id,
+        elementId: input.elementId,
+        isPrimary: input.isPrimary ?? false,
+        organizationId: input.organizationId,
+        role: input.role,
+        sortOrder: targetOrder,
+      }).execute()
+    }
+
+    return { asset, status: 'created' as const }
+  })
 }
 
 export async function updateAssetRow(input: {

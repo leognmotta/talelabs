@@ -8,6 +8,7 @@ import {
   createListResponseSchema,
   Cuid2Schema,
   CursorSchema,
+  NullableCuid2Schema,
   PaginationLimitSchema,
   SortOrderSchema,
   TimestampSchema,
@@ -15,11 +16,6 @@ import {
 } from '../../schemas/common.js'
 import { TagSchema } from '../tags/tags.schemas.js'
 
-const NullableCuid2Schema = z.string()
-  .regex(/^[a-z][0-9a-z]+$/)
-  .min(2)
-  .max(32)
-  .nullable()
 const NullableTimestampSchema = z.iso.datetime().nullable()
 
 export const AssetSchema = z.object({
@@ -119,6 +115,16 @@ export const RegisterAssetRequestSchema = z.object({
   uploadId: z.string().min(1).max(8192),
   name: z.string().trim().min(1).max(255).optional(),
   folderId: Cuid2Schema.optional(),
+  elementId: Cuid2Schema.optional(),
+  role: z.string().trim().min(1).max(64).optional(),
+  sortOrder: z.number().int().nonnegative().optional(),
+  isPrimary: z.boolean().optional(),
+}).refine(value => !value.role || Boolean(value.elementId), {
+  message: 'elementId is required when role is provided',
+  path: ['elementId'],
+}).refine(value => value.role || (value.sortOrder === undefined && value.isPrimary === undefined), {
+  message: 'role is required for Element link metadata',
+  path: ['role'],
 }).openapi('RegisterAssetRequest')
 
 export const UpdateAssetRequestSchema = z.object({
