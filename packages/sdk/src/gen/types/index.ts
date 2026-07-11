@@ -97,6 +97,7 @@ export type * from "./RevokeOrganizationInvitation.ts";
 export type * from "./RunMode.ts";
 export type * from "./RunStatus.ts";
 export type * from "./SearchAsset.ts";
+export type * from "./SearchElement.ts";
 export type * from "./SearchFolder.ts";
 export type * from "./SearchResponse.ts";
 export type * from "./SearchType.ts";

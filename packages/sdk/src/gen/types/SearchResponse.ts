@@ -4,6 +4,7 @@
  */
 
 import type { SearchAsset } from "./SearchAsset.ts";
+import type { SearchElement } from "./SearchElement.ts";
 import type { SearchFolder } from "./SearchFolder.ts";
 
 export type SearchResponse = {
@@ -11,6 +12,10 @@ export type SearchResponse = {
    * @type array
    */
   assets: SearchAsset[];
+  /**
+   * @type array
+   */
+  elements: SearchElement[];
   /**
    * @type array
    */

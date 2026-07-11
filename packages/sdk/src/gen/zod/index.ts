@@ -97,6 +97,7 @@ export * from "./revokeOrganizationInvitationSchema.ts";
 export * from "./runModeSchema.ts";
 export * from "./runStatusSchema.ts";
 export * from "./searchAssetSchema.ts";
+export * from "./searchElementSchema.ts";
 export * from "./searchFolderSchema.ts";
 export * from "./searchResponseSchema.ts";
 export * from "./searchTypeSchema.ts";

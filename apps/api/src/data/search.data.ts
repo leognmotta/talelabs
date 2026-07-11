@@ -1,4 +1,5 @@
 import type { AssetType, Database } from '@talelabs/db'
+import type { ElementType } from '@talelabs/elements'
 import type { Transaction } from 'kysely'
 
 import { db, sql } from '@talelabs/db'
@@ -16,6 +17,12 @@ export interface FolderSearchRow {
   id: string
   name: string
   path: string
+}
+
+export interface ElementSearchRow {
+  id: string
+  name: string
+  type: ElementType
 }
 
 function escapeLike(value: string) {
@@ -113,8 +120,40 @@ async function searchFolderRows(
   return result.rows
 }
 
+async function searchElementRows(
+  executor: Transaction<Database>,
+  input: { limit: number, organizationId: string, query: string },
+) {
+  const normalizedQuery = input.query.toLocaleLowerCase()
+  const containsPattern = `%${escapeLike(normalizedQuery)}%`
+  const prefixPattern = `${escapeLike(normalizedQuery)}%`
+
+  const result = await sql<ElementSearchRow>`
+    select
+      element."id",
+      element."name",
+      element."type"
+    from "elements" element
+    where element."organizationId" = ${input.organizationId}
+      and lower(element."name") like ${containsPattern} escape '\\'
+    order by
+      case
+        when lower(element."name") = ${normalizedQuery} then 0
+        when lower(element."name") like ${prefixPattern} escape '\\' then 1
+        else 2
+      end,
+      similarity(lower(element."name"), ${normalizedQuery}) desc,
+      lower(element."name"),
+      element."id"
+    limit ${input.limit}
+  `.execute(executor)
+
+  return result.rows
+}
+
 export function searchWorkspaceRows(input: {
   includeAssets: boolean
+  includeElements: boolean
   includeFolders: boolean
   limit: number
   organizationId: string
@@ -130,7 +169,10 @@ export function searchWorkspaceRows(input: {
     const folders = input.includeFolders
       ? await searchFolderRows(transaction, input)
       : []
+    const elements = input.includeElements
+      ? await searchElementRows(transaction, input)
+      : []
 
-    return { assets, folders }
+    return { assets, elements, folders }
   })
 }

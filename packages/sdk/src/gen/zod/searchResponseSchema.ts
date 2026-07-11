@@ -6,11 +6,15 @@
 import * as z from "zod";
 import type { SearchResponse } from "../types/SearchResponse.ts";
 import { searchAssetSchema } from "./searchAssetSchema.ts";
+import { searchElementSchema } from "./searchElementSchema.ts";
 import { searchFolderSchema } from "./searchFolderSchema.ts";
 
 export const searchResponseSchema = z.object({
   get assets() {
     return z.array(searchAssetSchema).max(10);
+  },
+  get elements() {
+    return z.array(searchElementSchema).max(10);
   },
   get folders() {
     return z.array(searchFolderSchema).max(10);

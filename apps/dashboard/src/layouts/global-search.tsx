@@ -2,10 +2,12 @@ import type { ReactNode } from 'react'
 import type { SettingsTab } from '../features/settings/settings-state'
 
 import {
+  IconAlertCircle,
   IconArchive,
   IconBuilding,
   IconComponents,
   IconGitBranch,
+  IconRefresh,
   IconSearch,
   IconSettings,
   IconUserCircle,
@@ -27,6 +29,7 @@ import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import { useAssetViewerUrlState } from '../features/assets/use-asset-viewer-url-state'
+import { elementTypeTranslationKey } from '../features/elements/element-i18n'
 import {
   GLOBAL_SEARCH_MIN_LENGTH,
   GLOBAL_SEARCH_RESULT_LIMIT,
@@ -34,6 +37,7 @@ import {
 import { useDebouncedSearch } from '../features/search/use-debounced-search'
 import { useWorkspaceSearchQuery } from '../features/search/use-workspace-search-query'
 import { GlobalSearchAssetThumbnail } from './global-search-asset-thumbnail'
+import { GlobalSearchElementThumbnail } from './global-search-element-thumbnail'
 import { GlobalSearchFolderThumbnail } from './global-search-folder-thumbnail'
 
 const pageActions: {
@@ -81,7 +85,7 @@ export function GlobalSearch({
 }) {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const viewer = useAssetViewerUrlState()
+  const { assetId, closeAsset, openAsset } = useAssetViewerUrlState()
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState('')
   const normalizedSearch = search.trim()
@@ -103,8 +107,12 @@ export function GlobalSearch({
   const visibleAssets = remoteSearchReady
     ? (searchQuery.data?.assets ?? []).slice(0, GLOBAL_SEARCH_RESULT_LIMIT)
     : []
+  const visibleElements = remoteSearchReady
+    ? (searchQuery.data?.elements ?? []).slice(0, GLOBAL_SEARCH_RESULT_LIMIT)
+    : []
   const loading = normalizedSearch.length >= GLOBAL_SEARCH_MIN_LENGTH
     && (!remoteSearchReady || searchQuery.isFetching)
+  const searchFailed = remoteSearchReady && searchQuery.isError
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -112,13 +120,18 @@ export function GlobalSearch({
         return
 
       event.preventDefault()
-      if (!viewer.assetId)
-        setOpen(currentOpen => !currentOpen)
+      if (assetId) {
+        closeAsset()
+        setOpen(true)
+        return
+      }
+
+      setOpen(currentOpen => !currentOpen)
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [viewer.assetId])
+  }, [assetId, closeAsset])
 
   function handleOpenChange(nextOpen: boolean) {
     setOpen(nextOpen)
@@ -210,9 +223,11 @@ export function GlobalSearch({
               <GlobalSearchFolderThumbnail />
               <span className="min-w-0 flex-1">
                 <span className="block truncate">{folder.name}</span>
-                <span className="
-                  block text-xs font-normal text-muted-foreground
-                "
+                <span
+                  className="
+                    block truncate text-xs font-normal text-muted-foreground
+                  "
+                  title={folder.path}
                 >
                   {folder.path}
                 </span>
@@ -236,7 +251,7 @@ export function GlobalSearch({
               value={`asset:${asset.id}`}
               onSelect={() => {
                 closeSearch()
-                viewer.openAsset(asset.id)
+                openAsset(asset.id)
               }}
             >
               <GlobalSearchAssetThumbnail asset={asset} />
@@ -247,6 +262,35 @@ export function GlobalSearch({
                 "
                 >
                   {t(`assets.types.${asset.type}`)}
+                </span>
+              </span>
+            </CommandItem>
+          ))}
+        </CommandGroup>
+      ),
+    })
+  }
+
+  if (visibleElements.length > 0) {
+    groups.push({
+      id: 'elements',
+      node: (
+        <CommandGroup heading={t('navigation.elements')}>
+          {visibleElements.map(element => (
+            <CommandItem
+              className="py-2.5"
+              key={element.id}
+              value={`element:${element.id}`}
+              onSelect={() => handleNavigate(`/elements/${element.id}`)}
+            >
+              <GlobalSearchElementThumbnail element={element} />
+              <span className="min-w-0 flex-1">
+                <span className="block truncate">{element.name}</span>
+                <span className="
+                  block text-xs font-normal text-muted-foreground
+                "
+                >
+                  {t(elementTypeTranslationKey(element.type, 'label'))}
                 </span>
               </span>
             </CommandItem>
@@ -299,7 +343,39 @@ export function GlobalSearch({
             onValueChange={setSearch}
           />
           <CommandList className="max-h-[min(560px,70svh)]">
-            {!loading && <CommandEmpty>{t('search.empty')}</CommandEmpty>}
+            {searchFailed && (
+              <div
+                className="
+                  m-1.5 flex items-center gap-3 rounded-2xl border
+                  border-destructive/30 bg-destructive/5 p-3
+                "
+                role="alert"
+              >
+                <IconAlertCircle
+                  aria-hidden
+                  className="size-5 shrink-0 text-destructive"
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium">{t('search.couldNotSearch')}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {t('search.couldNotSearchDescription')}
+                  </p>
+                </div>
+                <Button
+                  disabled={searchQuery.isFetching}
+                  size="sm"
+                  type="button"
+                  variant="outline"
+                  onClick={() => void searchQuery.refetch()}
+                >
+                  <IconRefresh data-icon="inline-start" />
+                  {t('common.retry')}
+                </Button>
+              </div>
+            )}
+            {!loading && !searchFailed && (
+              <CommandEmpty>{t('search.empty')}</CommandEmpty>
+            )}
             {groups.map((group, index) => (
               <Fragment key={group.id}>
                 {index > 0 && <CommandSeparator alwaysRender />}

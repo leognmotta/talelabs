@@ -5,6 +5,7 @@
 
 export const searchTypeEnum = {
   asset: "asset",
+  element: "element",
   folder: "folder",
 } as const;
 

@@ -1769,6 +1769,13 @@
             },
             "maxItems": 10
           },
+          "elements": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SearchElement"
+            },
+            "maxItems": 10
+          },
           "folders": {
             "type": "array",
             "items": {
@@ -1779,6 +1786,7 @@
         },
         "required": [
           "assets",
+          "elements",
           "folders"
         ]
       },
@@ -1793,6 +1801,31 @@
           },
           "type": {
             "$ref": "#/components/schemas/AssetType"
+          },
+          "thumbnailUrl": {
+            "type": "string",
+            "nullable": true,
+            "format": "uri"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "type",
+          "thumbnailUrl"
+        ]
+      },
+      "SearchElement": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Cuid2"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/ElementType"
           },
           "thumbnailUrl": {
             "type": "string",
@@ -1830,6 +1863,7 @@
         "type": "string",
         "enum": [
           "asset",
+          "element",
           "folder"
         ]
       }

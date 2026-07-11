@@ -2,6 +2,7 @@ import { getSearch } from '@talelabs/sdk'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
 
+import { getOrganizationRequestHeaders } from '../../shared/lib/organization-request'
 import { organizationQueryKeys } from '../organizations/organization-query-keys'
 import { useActiveOrganizationId } from '../organizations/organization-scope-context'
 import {
@@ -9,7 +10,7 @@ import {
   GLOBAL_SEARCH_RESULT_LIMIT,
 } from './search.constants'
 
-const searchTypes = ['asset', 'folder'] as const
+const searchTypes = ['asset', 'element', 'folder'] as const
 
 export const workspaceSearchQueryKeys = {
   all: (organizationId: null | string) => [
@@ -46,7 +47,10 @@ export function useWorkspaceSearchQuery(query: string, enabled: boolean) {
         q: query,
         type: [...searchTypes],
       },
-    }, { signal }),
+    }, {
+      headers: getOrganizationRequestHeaders(organizationId!),
+      signal,
+    }),
     enabled: canSearch,
     gcTime: 5 * 60_000,
     staleTime: 30_000,

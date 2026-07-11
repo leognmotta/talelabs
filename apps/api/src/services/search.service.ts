@@ -1,8 +1,11 @@
 import { createDownloadUrl, TALELABS_PRIVATE_BUCKET } from '@talelabs/storage'
 
+import { listElementPreviewAssets } from '../data/elements.data.js'
 import { searchWorkspaceRows } from '../data/search.data.js'
+import { ELEMENT_PREVIEW_ROLES } from '../domain/elements/element-preview-roles.js'
+import { createAssetThumbnailUrl } from './asset-presenter.js'
 
-export type WorkspaceSearchType = 'asset' | 'folder'
+export type WorkspaceSearchType = 'asset' | 'element' | 'folder'
 
 const MAX_RESULTS_PER_TYPE = 10
 
@@ -29,6 +32,7 @@ export async function searchWorkspace(input: {
   try {
     const result = await searchWorkspaceRows({
       includeAssets: types.has('asset'),
+      includeElements: types.has('element'),
       includeFolders: types.has('folder'),
       limit,
       organizationId: input.organizationId,
@@ -40,8 +44,23 @@ export async function searchWorkspace(input: {
       type: asset.type,
       thumbnailUrl: await createSearchThumbnailUrl(asset.thumbnailKey),
     })))
+    const previewRows = await listElementPreviewAssets({
+      elementIds: result.elements.map(element => element.id),
+      organizationId: input.organizationId,
+      previewRoles: ELEMENT_PREVIEW_ROLES,
+    })
+    const previews = new Map(previewRows.map(asset => [asset.elementId, asset]))
+    const elements = await Promise.all(result.elements.map(async (element) => {
+      const preview = previews.get(element.id)
+      return {
+        ...element,
+        thumbnailUrl: preview
+          ? await createAssetThumbnailUrl(preview)
+          : null,
+      }
+    }))
 
-    return { assets, folders: result.folders }
+    return { assets, elements, folders: result.folders }
   }
   catch (error) {
     console.error('Error searching workspace:', error)
