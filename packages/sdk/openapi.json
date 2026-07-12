@@ -1626,6 +1626,1983 @@
           "nodeCount"
         ]
       },
+      "FlowListResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Flow"
+            }
+          },
+          "nextCursor": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 1,
+            "maxLength": 2048
+          }
+        },
+        "required": [
+          "data",
+          "nextCursor"
+        ]
+      },
+      "Flow": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Cuid2"
+          },
+          "name": {
+            "type": "string"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "viewport": {
+            "$ref": "#/components/schemas/FlowViewport"
+          },
+          "createdBy": {
+            "$ref": "#/components/schemas/UserId"
+          },
+          "createdAt": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "updatedAt": {
+            "$ref": "#/components/schemas/Timestamp"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "revision",
+          "viewport",
+          "createdBy",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "FlowViewport": {
+        "type": "object",
+        "properties": {
+          "x": {
+            "type": "number"
+          },
+          "y": {
+            "type": "number"
+          },
+          "zoom": {
+            "type": "number",
+            "minimum": 0.05,
+            "maximum": 8
+          }
+        },
+        "required": [
+          "x",
+          "y",
+          "zoom"
+        ]
+      },
+      "CreateFlowRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "UpdateFlowRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "viewport": {
+            "$ref": "#/components/schemas/FlowViewport"
+          }
+        }
+      },
+      "FlowGraphResponse": {
+        "type": "object",
+        "properties": {
+          "revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "nodes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FlowNode"
+            }
+          },
+          "edges": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FlowEdge"
+            }
+          },
+          "activeRuns": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "runId": {
+                  "$ref": "#/components/schemas/Cuid2"
+                },
+                "nodeId": {
+                  "$ref": "#/components/schemas/Cuid2"
+                },
+                "nodeStatus": {
+                  "type": "string",
+                  "enum": [
+                    "pending",
+                    "running",
+                    "succeeded",
+                    "failed",
+                    "skipped",
+                    "canceled"
+                  ]
+                },
+                "jobStatus": {
+                  "type": "string",
+                  "nullable": true,
+                  "enum": [
+                    "pending",
+                    "running",
+                    "succeeded",
+                    "failed",
+                    "canceled",
+                    null
+                  ]
+                }
+              },
+              "required": [
+                "runId",
+                "nodeId",
+                "nodeStatus",
+                "jobStatus"
+              ]
+            }
+          }
+        },
+        "required": [
+          "revision",
+          "nodes",
+          "edges",
+          "activeRuns"
+        ]
+      },
+      "FlowNode": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Cuid2"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "asset",
+              "audioGeneration",
+              "element",
+              "imageGeneration",
+              "text",
+              "videoGeneration"
+            ]
+          },
+          "positionX": {
+            "type": "number"
+          },
+          "positionY": {
+            "type": "number"
+          },
+          "elementId": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 2,
+            "maxLength": 32,
+            "pattern": "^[a-z][0-9a-z]+$"
+          },
+          "assetId": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 2,
+            "maxLength": 32,
+            "pattern": "^[a-z][0-9a-z]+$"
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": {
+              "nullable": true
+            }
+          },
+          "schemaVersion": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "positionX",
+          "positionY",
+          "elementId",
+          "assetId",
+          "data",
+          "schemaVersion"
+        ]
+      },
+      "FlowEdge": {
+        "type": "object",
+        "properties": {
+          "createdAt": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "id": {
+            "$ref": "#/components/schemas/Cuid2"
+          },
+          "sourceNodeId": {
+            "$ref": "#/components/schemas/Cuid2"
+          },
+          "targetNodeId": {
+            "$ref": "#/components/schemas/Cuid2"
+          },
+          "sourceHandle": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "targetHandle": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "createdAt",
+          "id",
+          "sourceNodeId",
+          "targetNodeId",
+          "sourceHandle",
+          "targetHandle"
+        ]
+      },
+      "FlowGraphReferences": {
+        "type": "object",
+        "properties": {
+          "assets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FlowReferenceAsset"
+            },
+            "maxItems": 5000
+          },
+          "elements": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FlowReferenceElement"
+            }
+          },
+          "elementAssets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FlowElementAssetReference"
+            },
+            "maxItems": 10000
+          }
+        },
+        "required": [
+          "assets",
+          "elements",
+          "elementAssets"
+        ]
+      },
+      "FlowReferenceAsset": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Cuid2"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/AssetType"
+          },
+          "source": {
+            "$ref": "#/components/schemas/AssetSource"
+          },
+          "mimeType": {
+            "type": "string"
+          },
+          "sizeBytes": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": 0
+          },
+          "width": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": 0,
+            "exclusiveMinimum": true
+          },
+          "height": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": 0,
+            "exclusiveMinimum": true
+          },
+          "durationSeconds": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 0
+          },
+          "lifecycle": {
+            "$ref": "#/components/schemas/AssetLifecycle"
+          },
+          "processingState": {
+            "$ref": "#/components/schemas/AssetProcessingState"
+          },
+          "processingError": {
+            "type": "string",
+            "nullable": true
+          },
+          "url": {
+            "type": "string",
+            "nullable": true,
+            "format": "uri"
+          },
+          "thumbnailUrl": {
+            "type": "string",
+            "nullable": true,
+            "format": "uri"
+          },
+          "createdAt": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "generationModel": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "type",
+          "source",
+          "mimeType",
+          "sizeBytes",
+          "width",
+          "height",
+          "durationSeconds",
+          "lifecycle",
+          "processingState",
+          "processingError",
+          "url",
+          "thumbnailUrl",
+          "createdAt",
+          "generationModel"
+        ]
+      },
+      "FlowReferenceElement": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Cuid2"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "brand",
+              "character",
+              "location",
+              "object",
+              "product",
+              "vehicle",
+              "voice",
+              "other"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "instructions": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": {
+              "nullable": true
+            }
+          },
+          "schemaVersion": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "name",
+          "instructions",
+          "data",
+          "schemaVersion"
+        ]
+      },
+      "FlowElementAssetReference": {
+        "type": "object",
+        "properties": {
+          "elementId": {
+            "$ref": "#/components/schemas/Cuid2"
+          },
+          "assetId": {
+            "$ref": "#/components/schemas/Cuid2"
+          },
+          "role": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "sortOrder": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "isPrimary": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "elementId",
+          "assetId",
+          "role",
+          "sortOrder",
+          "isPrimary"
+        ]
+      },
+      "FlowGraphSyncResponse": {
+        "type": "object",
+        "properties": {
+          "revision": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "revision"
+        ]
+      },
+      "FlowGraphSyncRequest": {
+        "type": "object",
+        "properties": {
+          "baseRevision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "upsertNodes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FlowNode"
+            },
+            "maxItems": 500
+          },
+          "deleteNodeIds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Cuid2"
+            },
+            "maxItems": 500
+          },
+          "upsertEdges": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FlowEdge"
+            },
+            "maxItems": 500
+          },
+          "deleteEdgeIds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Cuid2"
+            },
+            "maxItems": 500
+          }
+        },
+        "required": [
+          "baseRevision"
+        ]
+      },
+      "GenerationConfigResponse": {
+        "type": "object",
+        "properties": {
+          "registryVersion": {
+            "type": "string"
+          },
+          "models": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "contractVersion": {
+                  "type": "string"
+                },
+                "id": {
+                  "type": "string"
+                },
+                "displayName": {
+                  "type": "string"
+                },
+                "labelKey": {
+                  "type": "string"
+                },
+                "mediaType": {
+                  "$ref": "#/components/schemas/MediaType"
+                },
+                "provider": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "displayName": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "displayName"
+                  ]
+                },
+                "enabled": {
+                  "type": "boolean"
+                },
+                "recommended": {
+                  "type": "boolean"
+                },
+                "defaultOperationId": {
+                  "type": "string"
+                },
+                "capabilities": {
+                  "type": "object",
+                  "properties": {
+                    "operations": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "labelKey": {
+                            "type": "string"
+                          },
+                          "descriptionKey": {
+                            "type": "string"
+                          },
+                          "inputs": {
+                            "type": "object",
+                            "additionalProperties": {
+                              "type": "object",
+                              "properties": {
+                                "required": {
+                                  "type": "boolean"
+                                },
+                                "oneOf": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string"
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "inputSlotIds": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "requiredSettingIds": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "settingIds": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "labelKey",
+                          "descriptionKey",
+                          "inputs",
+                          "inputSlotIds",
+                          "settingIds"
+                        ]
+                      }
+                    },
+                    "inputSlots": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "role": {
+                            "type": "string"
+                          },
+                          "label": {
+                            "type": "string"
+                          },
+                          "labelKey": {
+                            "type": "string"
+                          },
+                          "descriptionKey": {
+                            "type": "string"
+                          },
+                          "accepts": {
+                            "type": "array",
+                            "items": {
+                              "$ref": "#/components/schemas/AssetType"
+                            }
+                          },
+                          "valueTypes": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "enum": [
+                                "Text",
+                                "Asset",
+                                "ImageSet",
+                                "VideoSet",
+                                "AudioSet",
+                                "ElementContext"
+                              ]
+                            }
+                          },
+                          "min": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "max": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "exclusiveMinimum": true
+                          },
+                          "maxConnections": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "exclusiveMinimum": true
+                          }
+                        },
+                        "required": [
+                          "role",
+                          "label",
+                          "labelKey",
+                          "descriptionKey",
+                          "accepts",
+                          "valueTypes",
+                          "min",
+                          "max",
+                          "maxConnections"
+                        ]
+                      }
+                    },
+                    "settings": {
+                      "type": "array",
+                      "items": {
+                        "oneOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string"
+                              },
+                              "label": {
+                                "type": "string"
+                              },
+                              "labelKey": {
+                                "type": "string"
+                              },
+                              "descriptionKey": {
+                                "type": "string"
+                              },
+                              "advanced": {
+                                "type": "boolean"
+                              },
+                              "visibleWhen": {
+                                "type": "array",
+                                "items": {
+                                  "anyOf": [
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "field": {
+                                          "type": "string",
+                                          "enum": [
+                                            "operation"
+                                          ]
+                                        },
+                                        "operator": {
+                                          "type": "string",
+                                          "enum": [
+                                            "equals"
+                                          ]
+                                        },
+                                        "value": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "field",
+                                        "operator",
+                                        "value"
+                                      ]
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "field": {
+                                          "type": "string",
+                                          "enum": [
+                                            "setting"
+                                          ]
+                                        },
+                                        "id": {
+                                          "type": "string"
+                                        },
+                                        "operator": {
+                                          "type": "string",
+                                          "enum": [
+                                            "equals"
+                                          ]
+                                        },
+                                        "value": {
+                                          "anyOf": [
+                                            {
+                                              "type": "boolean"
+                                            },
+                                            {
+                                              "type": "number"
+                                            },
+                                            {
+                                              "type": "string"
+                                            }
+                                          ]
+                                        }
+                                      },
+                                      "required": [
+                                        "field",
+                                        "id",
+                                        "operator",
+                                        "value"
+                                      ]
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "field": {
+                                          "type": "string",
+                                          "enum": [
+                                            "setting"
+                                          ]
+                                        },
+                                        "id": {
+                                          "type": "string"
+                                        },
+                                        "operator": {
+                                          "type": "string",
+                                          "enum": [
+                                            "in"
+                                          ]
+                                        },
+                                        "values": {
+                                          "type": "array",
+                                          "items": {
+                                            "anyOf": [
+                                              {
+                                                "type": "boolean"
+                                              },
+                                              {
+                                                "type": "number"
+                                              },
+                                              {
+                                                "type": "string"
+                                              }
+                                            ]
+                                          }
+                                        }
+                                      },
+                                      "required": [
+                                        "field",
+                                        "id",
+                                        "operator",
+                                        "values"
+                                      ]
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "field": {
+                                          "type": "string",
+                                          "enum": [
+                                            "slot"
+                                          ]
+                                        },
+                                        "id": {
+                                          "type": "string"
+                                        },
+                                        "operator": {
+                                          "type": "string",
+                                          "enum": [
+                                            "connected"
+                                          ]
+                                        }
+                                      },
+                                      "required": [
+                                        "field",
+                                        "id",
+                                        "operator"
+                                      ]
+                                    }
+                                  ]
+                                }
+                              },
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "enum"
+                                ]
+                              },
+                              "default": {
+                                "type": "string"
+                              },
+                              "options": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "value": {
+                                      "type": "string"
+                                    },
+                                    "label": {
+                                      "type": "string"
+                                    },
+                                    "labelKey": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "value",
+                                    "label",
+                                    "labelKey"
+                                  ]
+                                }
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "label",
+                              "labelKey",
+                              "kind",
+                              "default",
+                              "options"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string"
+                              },
+                              "label": {
+                                "type": "string"
+                              },
+                              "labelKey": {
+                                "type": "string"
+                              },
+                              "descriptionKey": {
+                                "type": "string"
+                              },
+                              "advanced": {
+                                "type": "boolean"
+                              },
+                              "visibleWhen": {
+                                "type": "array",
+                                "items": {
+                                  "anyOf": [
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "field": {
+                                          "type": "string",
+                                          "enum": [
+                                            "operation"
+                                          ]
+                                        },
+                                        "operator": {
+                                          "type": "string",
+                                          "enum": [
+                                            "equals"
+                                          ]
+                                        },
+                                        "value": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "field",
+                                        "operator",
+                                        "value"
+                                      ]
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "field": {
+                                          "type": "string",
+                                          "enum": [
+                                            "setting"
+                                          ]
+                                        },
+                                        "id": {
+                                          "type": "string"
+                                        },
+                                        "operator": {
+                                          "type": "string",
+                                          "enum": [
+                                            "equals"
+                                          ]
+                                        },
+                                        "value": {
+                                          "anyOf": [
+                                            {
+                                              "type": "boolean"
+                                            },
+                                            {
+                                              "type": "number"
+                                            },
+                                            {
+                                              "type": "string"
+                                            }
+                                          ]
+                                        }
+                                      },
+                                      "required": [
+                                        "field",
+                                        "id",
+                                        "operator",
+                                        "value"
+                                      ]
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "field": {
+                                          "type": "string",
+                                          "enum": [
+                                            "setting"
+                                          ]
+                                        },
+                                        "id": {
+                                          "type": "string"
+                                        },
+                                        "operator": {
+                                          "type": "string",
+                                          "enum": [
+                                            "in"
+                                          ]
+                                        },
+                                        "values": {
+                                          "type": "array",
+                                          "items": {
+                                            "anyOf": [
+                                              {
+                                                "type": "boolean"
+                                              },
+                                              {
+                                                "type": "number"
+                                              },
+                                              {
+                                                "type": "string"
+                                              }
+                                            ]
+                                          }
+                                        }
+                                      },
+                                      "required": [
+                                        "field",
+                                        "id",
+                                        "operator",
+                                        "values"
+                                      ]
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "field": {
+                                          "type": "string",
+                                          "enum": [
+                                            "slot"
+                                          ]
+                                        },
+                                        "id": {
+                                          "type": "string"
+                                        },
+                                        "operator": {
+                                          "type": "string",
+                                          "enum": [
+                                            "connected"
+                                          ]
+                                        }
+                                      },
+                                      "required": [
+                                        "field",
+                                        "id",
+                                        "operator"
+                                      ]
+                                    }
+                                  ]
+                                }
+                              },
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "number"
+                                ]
+                              },
+                              "default": {
+                                "type": "number"
+                              },
+                              "min": {
+                                "type": "number"
+                              },
+                              "max": {
+                                "type": "number"
+                              },
+                              "step": {
+                                "type": "number",
+                                "minimum": 0,
+                                "exclusiveMinimum": true
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "label",
+                              "labelKey",
+                              "kind",
+                              "default",
+                              "min",
+                              "max",
+                              "step"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string"
+                              },
+                              "label": {
+                                "type": "string"
+                              },
+                              "labelKey": {
+                                "type": "string"
+                              },
+                              "descriptionKey": {
+                                "type": "string"
+                              },
+                              "advanced": {
+                                "type": "boolean"
+                              },
+                              "visibleWhen": {
+                                "type": "array",
+                                "items": {
+                                  "anyOf": [
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "field": {
+                                          "type": "string",
+                                          "enum": [
+                                            "operation"
+                                          ]
+                                        },
+                                        "operator": {
+                                          "type": "string",
+                                          "enum": [
+                                            "equals"
+                                          ]
+                                        },
+                                        "value": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "field",
+                                        "operator",
+                                        "value"
+                                      ]
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "field": {
+                                          "type": "string",
+                                          "enum": [
+                                            "setting"
+                                          ]
+                                        },
+                                        "id": {
+                                          "type": "string"
+                                        },
+                                        "operator": {
+                                          "type": "string",
+                                          "enum": [
+                                            "equals"
+                                          ]
+                                        },
+                                        "value": {
+                                          "anyOf": [
+                                            {
+                                              "type": "boolean"
+                                            },
+                                            {
+                                              "type": "number"
+                                            },
+                                            {
+                                              "type": "string"
+                                            }
+                                          ]
+                                        }
+                                      },
+                                      "required": [
+                                        "field",
+                                        "id",
+                                        "operator",
+                                        "value"
+                                      ]
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "field": {
+                                          "type": "string",
+                                          "enum": [
+                                            "setting"
+                                          ]
+                                        },
+                                        "id": {
+                                          "type": "string"
+                                        },
+                                        "operator": {
+                                          "type": "string",
+                                          "enum": [
+                                            "in"
+                                          ]
+                                        },
+                                        "values": {
+                                          "type": "array",
+                                          "items": {
+                                            "anyOf": [
+                                              {
+                                                "type": "boolean"
+                                              },
+                                              {
+                                                "type": "number"
+                                              },
+                                              {
+                                                "type": "string"
+                                              }
+                                            ]
+                                          }
+                                        }
+                                      },
+                                      "required": [
+                                        "field",
+                                        "id",
+                                        "operator",
+                                        "values"
+                                      ]
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "field": {
+                                          "type": "string",
+                                          "enum": [
+                                            "slot"
+                                          ]
+                                        },
+                                        "id": {
+                                          "type": "string"
+                                        },
+                                        "operator": {
+                                          "type": "string",
+                                          "enum": [
+                                            "connected"
+                                          ]
+                                        }
+                                      },
+                                      "required": [
+                                        "field",
+                                        "id",
+                                        "operator"
+                                      ]
+                                    }
+                                  ]
+                                }
+                              },
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "boolean"
+                                ]
+                              },
+                              "default": {
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "label",
+                              "labelKey",
+                              "kind",
+                              "default"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string"
+                              },
+                              "label": {
+                                "type": "string"
+                              },
+                              "labelKey": {
+                                "type": "string"
+                              },
+                              "descriptionKey": {
+                                "type": "string"
+                              },
+                              "advanced": {
+                                "type": "boolean"
+                              },
+                              "visibleWhen": {
+                                "type": "array",
+                                "items": {
+                                  "anyOf": [
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "field": {
+                                          "type": "string",
+                                          "enum": [
+                                            "operation"
+                                          ]
+                                        },
+                                        "operator": {
+                                          "type": "string",
+                                          "enum": [
+                                            "equals"
+                                          ]
+                                        },
+                                        "value": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "field",
+                                        "operator",
+                                        "value"
+                                      ]
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "field": {
+                                          "type": "string",
+                                          "enum": [
+                                            "setting"
+                                          ]
+                                        },
+                                        "id": {
+                                          "type": "string"
+                                        },
+                                        "operator": {
+                                          "type": "string",
+                                          "enum": [
+                                            "equals"
+                                          ]
+                                        },
+                                        "value": {
+                                          "anyOf": [
+                                            {
+                                              "type": "boolean"
+                                            },
+                                            {
+                                              "type": "number"
+                                            },
+                                            {
+                                              "type": "string"
+                                            }
+                                          ]
+                                        }
+                                      },
+                                      "required": [
+                                        "field",
+                                        "id",
+                                        "operator",
+                                        "value"
+                                      ]
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "field": {
+                                          "type": "string",
+                                          "enum": [
+                                            "setting"
+                                          ]
+                                        },
+                                        "id": {
+                                          "type": "string"
+                                        },
+                                        "operator": {
+                                          "type": "string",
+                                          "enum": [
+                                            "in"
+                                          ]
+                                        },
+                                        "values": {
+                                          "type": "array",
+                                          "items": {
+                                            "anyOf": [
+                                              {
+                                                "type": "boolean"
+                                              },
+                                              {
+                                                "type": "number"
+                                              },
+                                              {
+                                                "type": "string"
+                                              }
+                                            ]
+                                          }
+                                        }
+                                      },
+                                      "required": [
+                                        "field",
+                                        "id",
+                                        "operator",
+                                        "values"
+                                      ]
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "field": {
+                                          "type": "string",
+                                          "enum": [
+                                            "slot"
+                                          ]
+                                        },
+                                        "id": {
+                                          "type": "string"
+                                        },
+                                        "operator": {
+                                          "type": "string",
+                                          "enum": [
+                                            "connected"
+                                          ]
+                                        }
+                                      },
+                                      "required": [
+                                        "field",
+                                        "id",
+                                        "operator"
+                                      ]
+                                    }
+                                  ]
+                                }
+                              },
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "string"
+                                ]
+                              },
+                              "default": {
+                                "type": "string"
+                              },
+                              "maxLength": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "exclusiveMinimum": true
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "label",
+                              "labelKey",
+                              "kind",
+                              "default",
+                              "maxLength"
+                            ]
+                          }
+                        ]
+                      }
+                    },
+                    "constraints": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "messageKey": {
+                            "type": "string"
+                          },
+                          "when": {
+                            "type": "array",
+                            "items": {
+                              "anyOf": [
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "field": {
+                                      "type": "string",
+                                      "enum": [
+                                        "operation"
+                                      ]
+                                    },
+                                    "operator": {
+                                      "type": "string",
+                                      "enum": [
+                                        "equals"
+                                      ]
+                                    },
+                                    "value": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "field",
+                                    "operator",
+                                    "value"
+                                  ]
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "field": {
+                                      "type": "string",
+                                      "enum": [
+                                        "setting"
+                                      ]
+                                    },
+                                    "id": {
+                                      "type": "string"
+                                    },
+                                    "operator": {
+                                      "type": "string",
+                                      "enum": [
+                                        "equals"
+                                      ]
+                                    },
+                                    "value": {
+                                      "anyOf": [
+                                        {
+                                          "type": "boolean"
+                                        },
+                                        {
+                                          "type": "number"
+                                        },
+                                        {
+                                          "type": "string"
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "field",
+                                    "id",
+                                    "operator",
+                                    "value"
+                                  ]
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "field": {
+                                      "type": "string",
+                                      "enum": [
+                                        "setting"
+                                      ]
+                                    },
+                                    "id": {
+                                      "type": "string"
+                                    },
+                                    "operator": {
+                                      "type": "string",
+                                      "enum": [
+                                        "in"
+                                      ]
+                                    },
+                                    "values": {
+                                      "type": "array",
+                                      "items": {
+                                        "anyOf": [
+                                          {
+                                            "type": "boolean"
+                                          },
+                                          {
+                                            "type": "number"
+                                          },
+                                          {
+                                            "type": "string"
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  },
+                                  "required": [
+                                    "field",
+                                    "id",
+                                    "operator",
+                                    "values"
+                                  ]
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "field": {
+                                      "type": "string",
+                                      "enum": [
+                                        "slot"
+                                      ]
+                                    },
+                                    "id": {
+                                      "type": "string"
+                                    },
+                                    "operator": {
+                                      "type": "string",
+                                      "enum": [
+                                        "connected"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "field",
+                                    "id",
+                                    "operator"
+                                  ]
+                                }
+                              ]
+                            }
+                          },
+                          "require": {
+                            "type": "array",
+                            "items": {
+                              "anyOf": [
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "field": {
+                                      "type": "string",
+                                      "enum": [
+                                        "operation"
+                                      ]
+                                    },
+                                    "operator": {
+                                      "type": "string",
+                                      "enum": [
+                                        "equals"
+                                      ]
+                                    },
+                                    "value": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "field",
+                                    "operator",
+                                    "value"
+                                  ]
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "field": {
+                                      "type": "string",
+                                      "enum": [
+                                        "setting"
+                                      ]
+                                    },
+                                    "id": {
+                                      "type": "string"
+                                    },
+                                    "operator": {
+                                      "type": "string",
+                                      "enum": [
+                                        "equals"
+                                      ]
+                                    },
+                                    "value": {
+                                      "anyOf": [
+                                        {
+                                          "type": "boolean"
+                                        },
+                                        {
+                                          "type": "number"
+                                        },
+                                        {
+                                          "type": "string"
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "field",
+                                    "id",
+                                    "operator",
+                                    "value"
+                                  ]
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "field": {
+                                      "type": "string",
+                                      "enum": [
+                                        "setting"
+                                      ]
+                                    },
+                                    "id": {
+                                      "type": "string"
+                                    },
+                                    "operator": {
+                                      "type": "string",
+                                      "enum": [
+                                        "in"
+                                      ]
+                                    },
+                                    "values": {
+                                      "type": "array",
+                                      "items": {
+                                        "anyOf": [
+                                          {
+                                            "type": "boolean"
+                                          },
+                                          {
+                                            "type": "number"
+                                          },
+                                          {
+                                            "type": "string"
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  },
+                                  "required": [
+                                    "field",
+                                    "id",
+                                    "operator",
+                                    "values"
+                                  ]
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "field": {
+                                      "type": "string",
+                                      "enum": [
+                                        "slot"
+                                      ]
+                                    },
+                                    "id": {
+                                      "type": "string"
+                                    },
+                                    "operator": {
+                                      "type": "string",
+                                      "enum": [
+                                        "connected"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "field",
+                                    "id",
+                                    "operator"
+                                  ]
+                                }
+                              ]
+                            }
+                          },
+                          "forbid": {
+                            "type": "array",
+                            "items": {
+                              "anyOf": [
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "field": {
+                                      "type": "string",
+                                      "enum": [
+                                        "operation"
+                                      ]
+                                    },
+                                    "operator": {
+                                      "type": "string",
+                                      "enum": [
+                                        "equals"
+                                      ]
+                                    },
+                                    "value": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "field",
+                                    "operator",
+                                    "value"
+                                  ]
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "field": {
+                                      "type": "string",
+                                      "enum": [
+                                        "setting"
+                                      ]
+                                    },
+                                    "id": {
+                                      "type": "string"
+                                    },
+                                    "operator": {
+                                      "type": "string",
+                                      "enum": [
+                                        "equals"
+                                      ]
+                                    },
+                                    "value": {
+                                      "anyOf": [
+                                        {
+                                          "type": "boolean"
+                                        },
+                                        {
+                                          "type": "number"
+                                        },
+                                        {
+                                          "type": "string"
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "field",
+                                    "id",
+                                    "operator",
+                                    "value"
+                                  ]
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "field": {
+                                      "type": "string",
+                                      "enum": [
+                                        "setting"
+                                      ]
+                                    },
+                                    "id": {
+                                      "type": "string"
+                                    },
+                                    "operator": {
+                                      "type": "string",
+                                      "enum": [
+                                        "in"
+                                      ]
+                                    },
+                                    "values": {
+                                      "type": "array",
+                                      "items": {
+                                        "anyOf": [
+                                          {
+                                            "type": "boolean"
+                                          },
+                                          {
+                                            "type": "number"
+                                          },
+                                          {
+                                            "type": "string"
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  },
+                                  "required": [
+                                    "field",
+                                    "id",
+                                    "operator",
+                                    "values"
+                                  ]
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "field": {
+                                      "type": "string",
+                                      "enum": [
+                                        "slot"
+                                      ]
+                                    },
+                                    "id": {
+                                      "type": "string"
+                                    },
+                                    "operator": {
+                                      "type": "string",
+                                      "enum": [
+                                        "connected"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "field",
+                                    "id",
+                                    "operator"
+                                  ]
+                                }
+                              ]
+                            }
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "messageKey",
+                          "when"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "operations",
+                    "inputSlots",
+                    "settings",
+                    "constraints"
+                  ]
+                }
+              },
+              "required": [
+                "contractVersion",
+                "id",
+                "displayName",
+                "labelKey",
+                "mediaType",
+                "provider",
+                "enabled",
+                "recommended",
+                "defaultOperationId",
+                "capabilities"
+              ]
+            }
+          },
+          "elementTypes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "enum": [
+                    "brand",
+                    "character",
+                    "location",
+                    "object",
+                    "product",
+                    "vehicle",
+                    "voice",
+                    "other"
+                  ]
+                },
+                "previewRole": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "assetRoles": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "accepts": {
+                        "type": "array",
+                        "items": {
+                          "$ref": "#/components/schemas/AssetType"
+                        }
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "accepts"
+                    ]
+                  }
+                }
+              },
+              "required": [
+                "id",
+                "previewRole",
+                "assetRoles"
+              ]
+            }
+          },
+          "nodeTypes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "asset",
+                "audioGeneration",
+                "element",
+                "imageGeneration",
+                "text",
+                "videoGeneration"
+              ]
+            }
+          },
+          "inputRoles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "registryVersion",
+          "models",
+          "elementTypes",
+          "nodeTypes",
+          "inputRoles"
+        ]
+      },
       "FolderListResponse": {
         "type": "object",
         "properties": {
@@ -5064,6 +7041,911 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ElementUsage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Active organization required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Resource state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Organization request rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/flows": {
+      "get": {
+        "tags": [
+          "Flows"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "$ref": "#/components/schemas/Cursor"
+            },
+            "required": false,
+            "description": "Opaque cursor returned by a previous list response",
+            "name": "cursor",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "$ref": "#/components/schemas/PaginationLimit"
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "required": false,
+            "name": "search",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Flow list page",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FlowListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Active organization required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Resource state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Organization request rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Flows"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateFlowRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Flow created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Flow"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Active organization required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Resource state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Organization request rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/flows/{id}": {
+      "get": {
+        "tags": [
+          "Flows"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "$ref": "#/components/schemas/Cuid2"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Flow detail",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Flow"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Active organization required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Resource state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Organization request rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Flows"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "$ref": "#/components/schemas/Cuid2"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateFlowRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Flow updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Flow"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Active organization required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Resource state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Organization request rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Flows"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "$ref": "#/components/schemas/Cuid2"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Flow deleted"
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Active organization required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Resource state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Organization request rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/flows/{id}/graph": {
+      "get": {
+        "tags": [
+          "Flows"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "$ref": "#/components/schemas/Cuid2"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Flow graph",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FlowGraphResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Active organization required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Resource state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Organization request rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Flows"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "$ref": "#/components/schemas/Cuid2"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FlowGraphSyncRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Flow graph saved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FlowGraphSyncResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Active organization required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Resource state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Organization request rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/flows/{id}/references": {
+      "get": {
+        "tags": [
+          "Flows"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "$ref": "#/components/schemas/Cuid2"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Flow graph references",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FlowGraphReferences"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Active organization required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Resource state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Organization request rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/config/generation": {
+      "get": {
+        "tags": [
+          "Config"
+        ],
+        "responses": {
+          "200": {
+            "description": "Product-controlled generation configuration",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenerationConfigResponse"
                 }
               }
             }
