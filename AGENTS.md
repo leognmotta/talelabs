@@ -26,11 +26,19 @@ Source-of-truth design documents:
 
 ```txt
 docs/talelabs-product-vision.md   = product direction and scope
+docs/flow-nodes-planning.md       = Flow node, runtime-value, batching, execution, and Tool semantics
 docs/db-design-planning-v2.md     = database schema (PostgreSQL, Kysely, camelCase)
 docs/api-design-planning-v2.md    = API contract for the base features
 docs/mvp-execution-plan.md        = phased MVP implementation order and acceptance gates
 docs/credits-planning.md          = credit system planning (Phase 2 — do not implement)
+docs/feature-research/            = researched future capabilities; one self-contained file per feature
 ```
+
+Feature research is evidence and implementation guidance, not approved scope.
+Before planning or implementing a researched capability, read its file under
+`docs/feature-research/` and reconcile it with the product vision, Flow contract,
+database/API designs, and execution plan. Adding a research document must not
+silently add the feature to an MVP milestone.
 
 Deprecated documents — do not implement from these; they describe the retired Generate/Projects/Brands/Products/Characters architecture:
 
@@ -47,6 +55,35 @@ Execution rules that hold across all work:
 4. Element and node type vocabularies live in code registries, not the database.
 5. Costs (`creditCost`, `providerCostUsd`) are recorded on every generation job from day one; no balances or enforcement until the credit system ships.
 6. Credits and billing belong in account/header/billing UI, never the main creative navigation.
+7. Before changing Flow nodes, handles, planning, execution, iteration, caching,
+   Recipes, or Tools, read `docs/flow-nodes-planning.md`. Preserve its distinction
+   between an inner typed collection consumed together and outer runtime items
+   that represent execution multiplicity.
+8. Run admission creates an immutable, bounded `flowRuns.graphSnapshot` only
+   after revalidating the captured Flow and Element revisions and locking exact
+   Asset inputs. Trigger.dev receives tenant-scoped run/job IDs and loads the
+   snapshot from PostgreSQL; never execute from mutable Flow rows after admission.
+9. A Tool is mutable identity backed by an ordinary editable draft Flow. A
+   ToolVersion is an immutable, monotonically numbered published snapshot. Tool
+   nodes and runs pin a concrete version; a current-version pointer is only a
+   mutable default alias for new invocations.
+10. During the provider-independent engine milestone, mock only the normalized
+    provider adapter/result boundary. Mark each such replacement point with
+    `TODO(provider-integration)` as specified by `docs/mvp-execution-plan.md`.
+    Graph planning, snapshots, runs, jobs, Trigger.dev state, provenance, output
+    ingestion, and canonical Assets must remain production-shaped.
+11. TaleLabs owns a curated, code-versioned generation-model registry. Never
+    build production UI or server validation directly from live OpenRouter or
+    provider discovery responses. Discovery APIs are inputs to an explicit
+    review/drift-check process; registry changes ship through normal deployment.
+12. Persist stable TaleLabs model IDs in Flows and snapshots. Keep public model
+    capabilities separate from server-only provider routes, credentials,
+    fallbacks, and cost policy. A provider or endpoint change must not rewrite a
+    Flow's creative contract.
+13. Model capabilities include operation modes, typed slots, settings, and
+    cross-field constraints. Do not reduce them to independent input/setting
+    lists. If routing across multiple provider endpoints, expose only their safe
+    capability intersection unless the route is pinned to a concrete endpoint.
 
 ## Acceptance review rules
 
