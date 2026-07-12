@@ -17,6 +17,7 @@
     "previous": "Vorige",
     "role": "Rol",
     "reload": "Opnieuw laden",
+    "remove": "Verwijderen",
     "retry": "Opnieuw proberen",
     "save": "Opslaan",
     "saving": "Opslaan...",
@@ -33,6 +34,275 @@
     "organizationSettings": "Organisatie-instellingen",
     "profile": "Profiel",
     "settings": "Instellingen"
+  },
+  "flows": {
+    "actionFailed": "De workflowactie kon niet worden voltooid.",
+    "description": "Orden herbruikbare creatieve invoer en generatiestappen op een visueel canvas.",
+    "create": "Workflow maken",
+    "createDescription": "Geef je nieuwe visuele workflow een duidelijke naam.",
+    "created": "Workflow gemaakt",
+    "namePlaceholder": "Concepten voor de zomercampagne",
+    "rename": "Naam wijzigen",
+    "renameDescription": "Kies een naam waarmee deze workflow gemakkelijk te vinden is.",
+    "renamed": "Naam van workflow gewijzigd",
+    "delete": "Verwijderen",
+    "deleteDescription": "{{name}} verwijderen? De graaf wordt permanent verwijderd.",
+    "deleted": "Workflow verwijderd",
+    "deleting": "Verwijderen...",
+    "search": "Workflows zoeken",
+    "searchPlaceholder": "Workflows zoeken...",
+    "couldNotLoad": "Je workflows konden niet worden geladen",
+    "couldNotLoadDescription": "Controleer je verbinding en probeer het opnieuw.",
+    "emptyTitle": "Maak je eerste workflow",
+    "emptyDescription": "Combineer tekst, Assets, Elementen en generatieknopen in een herbruikbare visuele workflow.",
+    "noResults": "Geen workflows gevonden",
+    "noResultsDescription": "Probeer een andere zoekterm.",
+    "loadMore": "Meer laden",
+    "open": "{{name}} openen",
+    "updated": "Bijgewerkt op {{date}}",
+    "backToFlows": "Terug naar workflows",
+    "addNode": "Knoop toevoegen",
+    "addFirstNode": "Eerste knoop toevoegen",
+    "nodeTypes": "Knooptypen",
+    "nodeActions": "Knoopacties",
+    "duplicateNode": "Knoop dupliceren",
+    "deleteNode": "Knoop verwijderen",
+    "duplicateSelection": "Selectie dupliceren",
+    "deleteSelection": "Selectie verwijderen",
+    "fitView": "Weergave passend maken",
+    "autoFormat": "Automatisch rangschikken",
+    "selectAll": "Alles selecteren",
+    "connectionRejected": "Deze aansluitingen kunnen niet worden verbonden.",
+    "viewportSaveFailed": "De canvaspositie kon niet worden opgeslagen.",
+    "model": "Model",
+    "modelUnavailable": "Dit model is niet meer beschikbaar.",
+    "modelChange": {
+      "title": "Van model wisselen?",
+      "description_one": "{{model}} accepteert één huidige verbinding niet. Bij het wisselen wordt deze verwijderd.",
+      "description_other": "{{model}} accepteert {{count}} huidige verbindingen niet. Bij het wisselen worden ze verwijderd.",
+      "confirm": "Van model wisselen"
+    },
+    "nodeToolbar": {
+      "lock": "Knooppunt vergrendelen",
+      "unlock": "Knooppunt ontgrendelen",
+      "fullscreen": "Op volledig scherm weergeven",
+      "fullscreenFailed": "Volledig scherm kon niet worden geopend.",
+      "crop": "Afbeelding bijsnijden"
+    },
+    "cropEditor": {
+      "label": "Editor voor afbeeldingsuitsnede",
+      "cropArea": "Uitsnedegebied",
+      "resizeArea": "Uitsnedegebied aanpassen",
+      "reset": "Opnieuw instellen",
+      "apply": "Uitsnede toepassen"
+    },
+    "connectionInspector": {
+      "title": "Invoer en uitvoer",
+      "inputs": "Invoer",
+      "outputs": "Uitvoer"
+    },
+    "modelPicker": {
+      "searchLabel": "Modellen zoeken",
+      "searchPlaceholder": "Modellen zoeken...",
+      "noResults": "Geen modellen gevonden"
+    },
+    "textContent": "Tekstinhoud",
+    "textPlaceholder": "Beschrijf de scène, regie of het creatieve idee...",
+    "characterCount": "{{count}} / 16.000",
+    "chooseAsset": "Asset kiezen",
+    "chooseAssetDescription": "Selecteer een herbruikbaar bestand uit je bibliotheek.",
+    "changeAsset": "Asset wijzigen",
+    "chooseElement": "Element kiezen",
+    "chooseElementDescription": "Selecteer een herbruikbare creatieve context.",
+    "changeElement": "Element wijzigen",
+    "assetCount_one": "{{count}} Asset",
+    "assetCount_other": "{{count}} Assets",
+    "nodes": {
+      "text": "Tekst",
+      "asset": "Asset",
+      "element": "Element",
+      "imageGeneration": "Afbeeldingen genereren",
+      "videoGeneration": "Video genereren",
+      "audioGeneration": "Audio genereren"
+    },
+    "nodePicker": {
+      "searchPlaceholder": "Knopen zoeken",
+      "noResults": "Geen knopen gevonden",
+      "groups": {
+        "inputs": "Invoer",
+        "generation": "Generatie"
+      },
+      "descriptions": {
+        "text": "Schrijf prompts en herbruikbare tekst.",
+        "asset": "Voeg afbeeldingen, video, audio of documenten toe.",
+        "element": "Voeg herbruikbare creatieve context toe.",
+        "imageGeneration": "Configureer een stap voor afbeeldingsgeneratie.",
+        "videoGeneration": "Configureer een stap voor videogeneratie.",
+        "audioGeneration": "Configureer een stap voor audiogeneratie."
+      }
+    },
+    "outputs": {
+      "text": "Tekst",
+      "asset": "Asset",
+      "elementContext": "Context",
+      "images": "Afbeeldingen",
+      "videos": "Video’s",
+      "audio": "Audio"
+    },
+    "handles": {
+      "textOutput": "Tekstuitvoer",
+      "assetOutput": "Asset-uitvoer",
+      "elementContextOutput": "Contextuitvoer van Element",
+      "elementRoleOutput": "Uitvoer {{role}}",
+      "input": "Invoer {{input}}",
+      "output": "Uitgang voor {{output}}"
+    },
+    "models": {
+      "gptImage15": "GPT Image 1.5",
+      "veo31": "Veo 3.1",
+      "ltx23Pro": "LTX 2.3 Pro",
+      "elevenMultilingualV2": "Eleven Multilingual v2",
+      "elevenSoundEffectsV2": "Eleven Sound Effects v2"
+    },
+    "inputs": {
+      "prompt": "Prompt",
+      "promptDescription": "Tekstinstructies voor de generatie.",
+      "context": "Element-context",
+      "contextDescription": "Herbruikbare richtlijnen van het Element.",
+      "references": "Referenties",
+      "referencesDescription": "Afbeeldingen als visuele referentie.",
+      "firstFrame": "Eerste frame",
+      "firstFrameDescription": "Afbeelding als eerste videoframe.",
+      "lastFrame": "Laatste frame",
+      "lastFrameDescription": "Afbeelding als laatste videoframe.",
+      "referenceAudio": "Referentieaudio",
+      "referenceAudioDescription": "Audio als stem- of bewegingsreferentie."
+    },
+    "settings": {
+      "label": "Instellingen",
+      "aspectRatio": "Beeldverhouding",
+      "aspectRatios": {
+        "square": "Vierkant",
+        "landscape": "Liggend",
+        "portrait": "Staand",
+        "photo": "Foto",
+        "portraitPhoto": "Staande foto",
+        "ultrawide": "Ultrabreed"
+      },
+      "outputCount": "Uitvoer",
+      "quality": "Kwaliteit",
+      "resolution": "Resolutie",
+      "duration": "Duur",
+      "stability": "Stabiliteit",
+      "voiceId": "Stem-ID",
+      "loop": "Herhalen",
+      "promptInfluence": "Promptinvloed",
+      "qualities": {
+        "auto": "Automatisch",
+        "low": "Laag",
+        "medium": "Gemiddeld",
+        "high": "Hoog"
+      },
+      "durations": {
+        "seconds4": "4 seconden",
+        "seconds6": "6 seconden",
+        "seconds8": "8 seconden",
+        "seconds10": "10 seconden"
+      },
+      "resolutions": {
+        "720p": "720p",
+        "1080p": "1080p",
+        "1440p": "1440p",
+        "4k": "4K"
+      }
+    },
+    "inputStates": {
+      "invalid": "Controleer deze selectie",
+      "unconnected": "Niet verbonden",
+      "customized_one": "{{count}} / {{available}} geselecteerd · Aangepast",
+      "customized_other": "{{count}} / {{available}} geselecteerd · Aangepast",
+      "automatic_one": "{{count}} / {{available}} geselecteerd · Element-standaard",
+      "automatic_other": "{{count}} / {{available}} geselecteerd · Element-standaard",
+      "connections_one": "{{count}} verbinding",
+      "connections_other": "{{count}} verbindingen"
+    },
+    "saveStatus": {
+      "saved": "Opgeslagen",
+      "saving": "Opslaan...",
+      "unsaved": "Niet-opgeslagen wijzigingen",
+      "conflict": "Wijzigingen samenvoegen...",
+      "connectionsDropped_one": "{{count}} verbinding is verwijderd omdat een van de knopen in een andere sessie is gewijzigd.",
+      "connectionsDropped_other": "{{count}} verbindingen zijn verwijderd omdat de knopen in een andere sessie zijn gewijzigd.",
+      "error": "Opslaan mislukt"
+    },
+    "navigation": {
+      "description": "Sla je wijzigingen op voordat je deze Flow verlaat.",
+      "saveAndLeave": "Opslaan en verlaten"
+    },
+    "emptyCanvas": {
+      "title": "Geef je workflow vorm",
+      "description": "Voeg een knoop toe en verbind compatibele aansluitingen om de graaf te bouwen."
+    },
+    "elementPicker": {
+      "title": "Element kiezen",
+      "description": "Voeg een bestaand Element als herbruikbare context aan deze workflow toe.",
+      "couldNotLoad": "Elementen konden niet worden geladen",
+      "couldNotLoadDescription": "Controleer je verbinding en probeer het opnieuw.",
+      "search": "Elementen zoeken",
+      "searchPlaceholder": "Elementen zoeken...",
+      "noResults": "Geen Elementen gevonden",
+      "noResultsDescription": "Probeer een andere zoekterm of maak eerst een Element."
+    },
+    "inputInspector": {
+      "title": "{{input}} selecteren",
+      "description": "Kies maximaal {{maximum}} van de {{available}} beschikbare Assets of behoud de Element-standaard.",
+      "primary": "Primair",
+      "noCandidates": "Verbind een Asset of Element-rol om referenties beschikbaar te maken.",
+      "unavailable": "Niet-beschikbare referentie",
+      "unavailableDescription": "Deze opgeslagen referentie is niet meer beschikbaar. Verwijder deze of herstel de standaardwaarden van het Element.",
+      "useAutomatic": "Element-standaard herstellen"
+    },
+    "a11y": {
+      "canvas": "Workflowgraaf-editor",
+      "controls": "Canvasbediening",
+      "minimap": "Workflowminikaart",
+      "nodeDescription": "Druk op Enter of Spatie om deze knoop te selecteren. Gebruik Delete om hem te verwijderen en Escape om te annuleren."
+    },
+    "operation": "Bewerking",
+    "operationChange": {
+      "title": "Bewerking wijzigen?",
+      "description_one": "Deze bewerking accepteert één huidige verbinding niet. Bij wijzigen wordt deze verwijderd.",
+      "description_other": "Deze bewerking accepteert {{count}} huidige verbindingen niet. Bij wijzigen worden ze verwijderd.",
+      "confirm": "Bewerking wijzigen"
+    },
+    "operations": {
+      "textToImage": "Tekst naar afbeelding",
+      "textToImageDescription": "Genereer afbeeldingen op basis van tekst en Element-context.",
+      "imageToImage": "Afbeelding naar afbeelding",
+      "imageToImageDescription": "Genereer afbeeldingen met tekst, context en referenties.",
+      "textToVideo": "Tekst naar video",
+      "textToVideoDescription": "Genereer video op basis van tekst en Element-context.",
+      "firstLastFrameToVideo": "Eerste en laatste frame",
+      "firstLastFrameToVideoDescription": "Genereer video tussen bepaalde frames.",
+      "referencesToVideo": "Referenties naar video",
+      "referencesToVideoDescription": "Genereer video met visuele referenties.",
+      "imageToVideo": "Afbeelding naar video",
+      "imageToVideoDescription": "Animeer een eerste frame tot een video.",
+      "audioToVideo": "Audio naar video",
+      "audioToVideoDescription": "Genereer videobeweging op basis van audio en een optioneel frame.",
+      "textToSpeech": "Tekst naar spraak",
+      "textToSpeechDescription": "Maak gesproken audio van tekst met een optionele stemreferentie.",
+      "textToSoundEffect": "Tekst naar geluidseffect",
+      "textToSoundEffectDescription": "Maak een geluidseffect op basis van een beschrijving."
+    },
+    "constraints": {
+      "lastFrameRequiresFirstFrame": "Verbind een eerste frame voordat je het laatste gebruikt.",
+      "referencesRequireEightSeconds": "Video’s met referenties vereisen 8 seconden.",
+      "highResolutionRequiresEightSeconds": "Video’s in 1080p en 4K vereisen 8 seconden."
+    },
+    "nodeMedia": {
+      "play": "{{name}} afspelen"
+    }
   },
   "assets": {
     "actionFailed": "De bestandsactie kon niet worden voltooid.",
@@ -580,7 +850,7 @@
     "description": "Zoek pagina's, instellingen, mappen, bestanden en elementen.",
     "empty": "Geen resultaten gevonden.",
     "pages": "Pagina's",
-    "placeholder": "Zoek pagina's, instellingen, mappen, bestanden en elementen...",
+    "placeholder": "Zoeken...",
     "settings": "Instellingen",
     "title": "Zoeken"
   },

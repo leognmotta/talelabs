@@ -17,6 +17,7 @@
     "previous": "Poprzednia",
     "role": "Rola",
     "reload": "Odśwież stronę",
+    "remove": "Usuń",
     "retry": "Spróbuj ponownie",
     "save": "Zapisz",
     "saving": "Zapisywanie...",
@@ -33,6 +34,275 @@
     "organizationSettings": "Ustawienia organizacji",
     "profile": "Profil",
     "settings": "Ustawienia"
+  },
+  "flows": {
+    "actionFailed": "Nie udało się wykonać działania w przepływie pracy.",
+    "description": "Rozmieść wielokrotnego użytku dane kreatywne i etapy generowania na wizualnym obszarze roboczym.",
+    "create": "Utwórz przepływ",
+    "createDescription": "Nadaj nowemu wizualnemu przepływowi jasną nazwę.",
+    "created": "Utworzono przepływ",
+    "namePlaceholder": "Koncepcje kampanii letniej",
+    "rename": "Zmień nazwę",
+    "renameDescription": "Wybierz nazwę, która ułatwi znalezienie tego przepływu.",
+    "renamed": "Zmieniono nazwę przepływu",
+    "delete": "Usuń",
+    "deleteDescription": "Usunąć {{name}}? Graf zostanie trwale usunięty.",
+    "deleted": "Usunięto przepływ",
+    "deleting": "Usuwanie...",
+    "search": "Szukaj przepływów",
+    "searchPlaceholder": "Szukaj przepływów...",
+    "couldNotLoad": "Nie udało się wczytać przepływów",
+    "couldNotLoadDescription": "Sprawdź połączenie i spróbuj ponownie.",
+    "emptyTitle": "Utwórz pierwszy przepływ",
+    "emptyDescription": "Połącz tekst, Assets, Elementy i węzły generowania w wizualny przepływ wielokrotnego użytku.",
+    "noResults": "Nie znaleziono przepływów",
+    "noResultsDescription": "Spróbuj użyć innego hasła.",
+    "loadMore": "Wczytaj więcej",
+    "open": "Otwórz {{name}}",
+    "updated": "Zaktualizowano {{date}}",
+    "backToFlows": "Wróć do przepływów",
+    "addNode": "Dodaj węzeł",
+    "addFirstNode": "Dodaj pierwszy węzeł",
+    "nodeTypes": "Typy węzłów",
+    "nodeActions": "Działania węzła",
+    "duplicateNode": "Duplikuj węzeł",
+    "deleteNode": "Usuń węzeł",
+    "duplicateSelection": "Duplikuj zaznaczenie",
+    "deleteSelection": "Usuń zaznaczenie",
+    "fitView": "Dopasuj widok",
+    "autoFormat": "Rozmieść automatycznie",
+    "selectAll": "Zaznacz wszystko",
+    "connectionRejected": "Tych złączy nie można połączyć.",
+    "viewportSaveFailed": "Nie udało się zapisać położenia obszaru roboczego.",
+    "model": "Model",
+    "modelUnavailable": "Ten model nie jest już dostępny.",
+    "modelChange": {
+      "title": "Zmienić model?",
+      "description_one": "Model {{model}} nie obsługuje jednego obecnego połączenia. Zmiana spowoduje jego usunięcie.",
+      "description_other": "Model {{model}} nie obsługuje {{count}} obecnych połączeń. Zmiana spowoduje ich usunięcie.",
+      "confirm": "Zmień model"
+    },
+    "nodeToolbar": {
+      "lock": "Zablokuj węzeł",
+      "unlock": "Odblokuj węzeł",
+      "fullscreen": "Wyświetl na pełnym ekranie",
+      "fullscreenFailed": "Nie udało się otworzyć widoku pełnoekranowego.",
+      "crop": "Przytnij obraz"
+    },
+    "cropEditor": {
+      "label": "Edytor przycinania obrazu",
+      "cropArea": "Obszar przycięcia",
+      "resizeArea": "Zmień rozmiar obszaru przycięcia",
+      "reset": "Resetuj",
+      "apply": "Zastosuj przycięcie"
+    },
+    "connectionInspector": {
+      "title": "Wejścia i wyjścia",
+      "inputs": "Wejścia",
+      "outputs": "Wyjścia"
+    },
+    "modelPicker": {
+      "searchLabel": "Szukaj modeli",
+      "searchPlaceholder": "Szukaj modeli...",
+      "noResults": "Nie znaleziono modeli"
+    },
+    "textContent": "Treść tekstu",
+    "textPlaceholder": "Opisz scenę, kierunek lub pomysł kreatywny...",
+    "characterCount": "{{count}} / 16 000",
+    "chooseAsset": "Wybierz Asset",
+    "chooseAssetDescription": "Wybierz plik wielokrotnego użytku z biblioteki.",
+    "changeAsset": "Zmień Asset",
+    "chooseElement": "Wybierz Element",
+    "chooseElementDescription": "Wybierz kontekst kreatywny wielokrotnego użytku.",
+    "changeElement": "Zmień Element",
+    "assetCount_one": "{{count}} Asset",
+    "assetCount_other": "{{count}} Assets",
+    "nodes": {
+      "text": "Tekst",
+      "asset": "Asset",
+      "element": "Element",
+      "imageGeneration": "Generowanie obrazu",
+      "videoGeneration": "Generowanie wideo",
+      "audioGeneration": "Generowanie dźwięku"
+    },
+    "nodePicker": {
+      "searchPlaceholder": "Szukaj węzłów",
+      "noResults": "Nie znaleziono węzłów",
+      "groups": {
+        "inputs": "Dane wejściowe",
+        "generation": "Generowanie"
+      },
+      "descriptions": {
+        "text": "Twórz prompty i tekst wielokrotnego użytku.",
+        "asset": "Dodaj obrazy, filmy, dźwięk lub dokumenty.",
+        "element": "Dodaj kontekst kreatywny wielokrotnego użytku.",
+        "imageGeneration": "Skonfiguruj etap generowania obrazu.",
+        "videoGeneration": "Skonfiguruj krok generowania wideo.",
+        "audioGeneration": "Skonfiguruj krok generowania dźwięku."
+      }
+    },
+    "outputs": {
+      "text": "Tekst",
+      "asset": "Asset",
+      "elementContext": "Kontekst",
+      "images": "Obrazy",
+      "videos": "Wideo",
+      "audio": "Dźwięk"
+    },
+    "handles": {
+      "textOutput": "Wyjście tekstu",
+      "assetOutput": "Wyjście Asset",
+      "elementContextOutput": "Wyjście kontekstu Elementu",
+      "elementRoleOutput": "Wyjście {{role}}",
+      "input": "Wejście {{input}}",
+      "output": "Wyjście: {{output}}"
+    },
+    "models": {
+      "gptImage15": "GPT Image 1.5",
+      "veo31": "Veo 3.1",
+      "ltx23Pro": "LTX 2.3 Pro",
+      "elevenMultilingualV2": "Eleven Multilingual v2",
+      "elevenSoundEffectsV2": "Eleven Sound Effects v2"
+    },
+    "inputs": {
+      "prompt": "Prompt",
+      "promptDescription": "Instrukcje tekstowe do generowania.",
+      "context": "Kontekst Elementu",
+      "contextDescription": "Wielokrotnego użytku wskazówki Elementu.",
+      "references": "Materiały referencyjne",
+      "referencesDescription": "Obrazy używane jako wizualne materiały referencyjne.",
+      "firstFrame": "Pierwsza klatka",
+      "firstFrameDescription": "Obraz używany jako pierwsza klatka wideo.",
+      "lastFrame": "Ostatnia klatka",
+      "lastFrameDescription": "Obraz używany jako ostatnia klatka wideo.",
+      "referenceAudio": "Dźwięk referencyjny",
+      "referenceAudioDescription": "Dźwięk jako odniesienie dla głosu lub ruchu."
+    },
+    "settings": {
+      "label": "Ustawienia",
+      "aspectRatio": "Proporcje",
+      "aspectRatios": {
+        "square": "Kwadrat",
+        "landscape": "Poziomo",
+        "portrait": "Pionowo",
+        "photo": "Zdjęcie",
+        "portraitPhoto": "Zdjęcie pionowe",
+        "ultrawide": "Ultraszeroki"
+      },
+      "outputCount": "Wyniki",
+      "quality": "Jakość",
+      "resolution": "Rozdzielczość",
+      "duration": "Czas trwania",
+      "stability": "Stabilność",
+      "voiceId": "Identyfikator głosu",
+      "loop": "Zapętlenie",
+      "promptInfluence": "Wpływ promptu",
+      "qualities": {
+        "auto": "Automatyczna",
+        "low": "Niska",
+        "medium": "Średnia",
+        "high": "Wysoka"
+      },
+      "durations": {
+        "seconds4": "4 sekund",
+        "seconds6": "6 sekund",
+        "seconds8": "8 sekund",
+        "seconds10": "10 sekund"
+      },
+      "resolutions": {
+        "720p": "720p",
+        "1080p": "1080p",
+        "1440p": "1440p",
+        "4k": "4K"
+      }
+    },
+    "inputStates": {
+      "invalid": "Sprawdź to zaznaczenie",
+      "unconnected": "Niepołączone",
+      "customized_one": "Wybrano {{count}} / {{available}} · Własne",
+      "customized_other": "Wybrano {{count}} / {{available}} · Własne",
+      "automatic_one": "Wybrano {{count}} / {{available}} · Ustawienia Elementu",
+      "automatic_other": "Wybrano {{count}} / {{available}} · Ustawienia Elementu",
+      "connections_one": "{{count}} połączenie",
+      "connections_other": "{{count}} połączenia"
+    },
+    "saveStatus": {
+      "saved": "Zapisano",
+      "saving": "Zapisywanie...",
+      "unsaved": "Niezapisane zmiany",
+      "conflict": "Scalanie zmian...",
+      "connectionsDropped_one": "Usunięto {{count}} połączenie, ponieważ jeden z jego węzłów zmienił się w innej sesji.",
+      "connectionsDropped_other": "Usunięto {{count}} połączenia, ponieważ ich węzły zmieniły się w innej sesji.",
+      "error": "Nie udało się zapisać"
+    },
+    "navigation": {
+      "description": "Zapisz zmiany przed opuszczeniem tego Flow.",
+      "saveAndLeave": "Zapisz i wyjdź"
+    },
+    "emptyCanvas": {
+      "title": "Zacznij tworzyć przepływ",
+      "description": "Dodaj węzeł i połącz zgodne złącza, aby zbudować graf."
+    },
+    "elementPicker": {
+      "title": "Wybierz Element",
+      "description": "Dodaj istniejący Element jako kontekst wielokrotnego użytku w tym przepływie.",
+      "couldNotLoad": "Nie udało się wczytać Elementów",
+      "couldNotLoadDescription": "Sprawdź połączenie i spróbuj ponownie.",
+      "search": "Szukaj Elementów",
+      "searchPlaceholder": "Szukaj Elementów...",
+      "noResults": "Nie znaleziono Elementów",
+      "noResultsDescription": "Spróbuj innego hasła lub najpierw utwórz Element."
+    },
+    "inputInspector": {
+      "title": "Wybierz {{input}}",
+      "description": "Wybierz maksymalnie {{maximum}} z {{available}} dostępnych Assets albo zachowaj ustawienia Elementu.",
+      "primary": "Główny",
+      "noCandidates": "Połącz Asset lub rolę Elementu, aby udostępnić materiały referencyjne.",
+      "unavailable": "Niedostępna referencja",
+      "unavailableDescription": "Ta zapisana referencja nie jest już dostępna. Usuń ją lub przywróć ustawienia domyślne Elementu.",
+      "useAutomatic": "Przywróć ustawienia Elementu"
+    },
+    "a11y": {
+      "canvas": "Edytor grafu przepływu",
+      "controls": "Sterowanie obszarem roboczym",
+      "minimap": "Minimapa przepływu",
+      "nodeDescription": "Naciśnij Enter lub Spację, aby zaznaczyć ten węzeł. Usuń go klawiszem Delete lub anuluj klawiszem Escape."
+    },
+    "operation": "Operacja",
+    "operationChange": {
+      "title": "Zmienić operację?",
+      "description_one": "Ta operacja nie obsługuje jednego bieżącego połączenia. Zmiana je usunie.",
+      "description_other": "Ta operacja nie obsługuje {{count}} bieżących połączeń. Zmiana je usunie.",
+      "confirm": "Zmień operację"
+    },
+    "operations": {
+      "textToImage": "Tekst na obraz",
+      "textToImageDescription": "Generuj obrazy z tekstu i kontekstu Elementu.",
+      "imageToImage": "Obraz na obraz",
+      "imageToImageDescription": "Generuj obrazy z tekstu, kontekstu i referencji.",
+      "textToVideo": "Tekst na wideo",
+      "textToVideoDescription": "Generuj wideo z tekstu i kontekstu Elementu.",
+      "firstLastFrameToVideo": "Pierwsza i ostatnia klatka",
+      "firstLastFrameToVideoDescription": "Generuj wideo pomiędzy określonymi klatkami.",
+      "referencesToVideo": "Referencje na wideo",
+      "referencesToVideoDescription": "Generuj wideo z referencjami wizualnymi.",
+      "imageToVideo": "Obraz na wideo",
+      "imageToVideoDescription": "Animuj pierwszą klatkę w wideo.",
+      "audioToVideo": "Dźwięk na wideo",
+      "audioToVideoDescription": "Generuj ruch wideo z dźwięku i opcjonalnej klatki.",
+      "textToSpeech": "Tekst na mowę",
+      "textToSpeechDescription": "Twórz mowę z tekstu z opcjonalnym głosem referencyjnym.",
+      "textToSoundEffect": "Tekst na efekt dźwiękowy",
+      "textToSoundEffectDescription": "Twórz efekt dźwiękowy z opisu tekstowego."
+    },
+    "constraints": {
+      "lastFrameRequiresFirstFrame": "Połącz pierwszą klatkę przed użyciem ostatniej.",
+      "referencesRequireEightSeconds": "Wideo z referencjami wymaga 8 sekund.",
+      "highResolutionRequiresEightSeconds": "Wideo 1080p i 4K wymaga 8 sekund."
+    },
+    "nodeMedia": {
+      "play": "Odtwórz {{name}}"
+    }
   },
   "assets": {
     "actionFailed": "Nie udało się wykonać działania na pliku.",
@@ -580,7 +850,7 @@
     "description": "Przeszukaj strony, ustawienia, foldery, pliki i elementy.",
     "empty": "Nie znaleziono żadnych wyników.",
     "pages": "Strony",
-    "placeholder": "Przeszukaj strony, ustawienia, foldery, pliki i elementy...",
+    "placeholder": "Szukaj...",
     "settings": "Ustawienia",
     "title": "Szukaj"
   },

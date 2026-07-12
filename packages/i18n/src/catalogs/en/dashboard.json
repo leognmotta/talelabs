@@ -17,6 +17,7 @@
     "previous": "Previous",
     "role": "Role",
     "reload": "Reload",
+    "remove": "Remove",
     "retry": "Retry",
     "save": "Save",
     "saving": "Saving...",
@@ -33,6 +34,275 @@
     "organizationSettings": "Organization settings",
     "profile": "Profile",
     "settings": "Settings"
+  },
+  "flows": {
+    "actionFailed": "The Flow action could not be completed.",
+    "description": "Arrange reusable creative inputs and generation steps on a visual canvas.",
+    "create": "Create Flow",
+    "createDescription": "Give your new visual workflow a clear name.",
+    "created": "Flow created",
+    "namePlaceholder": "Summer campaign concepts",
+    "rename": "Rename",
+    "renameDescription": "Choose a name that makes this Flow easy to find.",
+    "renamed": "Flow renamed",
+    "delete": "Delete",
+    "deleteDescription": "Delete {{name}}? This removes its graph permanently.",
+    "deleted": "Flow deleted",
+    "deleting": "Deleting...",
+    "search": "Search Flows",
+    "searchPlaceholder": "Search Flows...",
+    "couldNotLoad": "Could not load your Flows",
+    "couldNotLoadDescription": "Check your connection and try again.",
+    "emptyTitle": "Build your first Flow",
+    "emptyDescription": "Combine text, Assets, Elements, and generation nodes in a reusable visual workflow.",
+    "noResults": "No Flows found",
+    "noResultsDescription": "Try another search term.",
+    "loadMore": "Load more",
+    "open": "Open {{name}}",
+    "updated": "Updated {{date}}",
+    "backToFlows": "Back to Flows",
+    "addNode": "Add node",
+    "addFirstNode": "Add first node",
+    "nodeTypes": "Node types",
+    "nodeActions": "Node actions",
+    "duplicateNode": "Duplicate node",
+    "deleteNode": "Delete node",
+    "duplicateSelection": "Duplicate selection",
+    "deleteSelection": "Delete selection",
+    "fitView": "Fit view",
+    "autoFormat": "Auto arrange",
+    "selectAll": "Select all",
+    "connectionRejected": "Those handles cannot be connected.",
+    "viewportSaveFailed": "The canvas position could not be saved.",
+    "model": "Model",
+    "modelUnavailable": "This model is no longer available.",
+    "modelChange": {
+      "title": "Switch model?",
+      "description_one": "{{model}} does not accept one current connection. Switching will remove it.",
+      "description_other": "{{model}} does not accept {{count}} current connections. Switching will remove them.",
+      "confirm": "Switch model"
+    },
+    "nodeToolbar": {
+      "lock": "Lock node",
+      "unlock": "Unlock node",
+      "fullscreen": "View fullscreen",
+      "fullscreenFailed": "Fullscreen could not be opened.",
+      "crop": "Crop image"
+    },
+    "cropEditor": {
+      "label": "Image crop editor",
+      "cropArea": "Crop area",
+      "resizeArea": "Resize crop area",
+      "reset": "Reset",
+      "apply": "Apply crop"
+    },
+    "connectionInspector": {
+      "title": "Inputs and outputs",
+      "inputs": "Inputs",
+      "outputs": "Outputs"
+    },
+    "modelPicker": {
+      "searchLabel": "Search models",
+      "searchPlaceholder": "Search models...",
+      "noResults": "No matching models"
+    },
+    "textContent": "Text content",
+    "textPlaceholder": "Describe the scene, direction, or creative idea...",
+    "characterCount": "{{count}} / 16,000",
+    "chooseAsset": "Choose an Asset",
+    "chooseAssetDescription": "Select a reusable file from your library.",
+    "changeAsset": "Change Asset",
+    "chooseElement": "Choose an Element",
+    "chooseElementDescription": "Select a reusable creative context.",
+    "changeElement": "Change Element",
+    "assetCount_one": "{{count}} Asset",
+    "assetCount_other": "{{count}} Assets",
+    "nodes": {
+      "text": "Text",
+      "asset": "Asset",
+      "element": "Element",
+      "imageGeneration": "Image generation",
+      "videoGeneration": "Video generation",
+      "audioGeneration": "Audio generation"
+    },
+    "nodePicker": {
+      "searchPlaceholder": "Search nodes",
+      "noResults": "No matching nodes",
+      "groups": {
+        "inputs": "Inputs",
+        "generation": "Generation"
+      },
+      "descriptions": {
+        "text": "Write prompts and reusable text.",
+        "asset": "Add image, video, audio, or documents.",
+        "element": "Add reusable creative context.",
+        "imageGeneration": "Configure an image generation step.",
+        "videoGeneration": "Configure a video generation step.",
+        "audioGeneration": "Configure an audio generation step."
+      }
+    },
+    "outputs": {
+      "text": "Text",
+      "asset": "Asset",
+      "elementContext": "Context",
+      "images": "Images",
+      "videos": "Videos",
+      "audio": "Audio"
+    },
+    "handles": {
+      "textOutput": "Text output",
+      "assetOutput": "Asset output",
+      "elementContextOutput": "Element context output",
+      "elementRoleOutput": "{{role}} output",
+      "input": "{{input}} input",
+      "output": "{{output}} output"
+    },
+    "models": {
+      "gptImage15": "GPT Image 1.5",
+      "veo31": "Veo 3.1",
+      "ltx23Pro": "LTX 2.3 Pro",
+      "elevenMultilingualV2": "Eleven Multilingual v2",
+      "elevenSoundEffectsV2": "Eleven Sound Effects v2"
+    },
+    "inputs": {
+      "prompt": "Prompt",
+      "promptDescription": "Text instructions for the generation.",
+      "context": "Element context",
+      "contextDescription": "Reusable Element guidance.",
+      "references": "References",
+      "referencesDescription": "Images used as visual references.",
+      "firstFrame": "First frame",
+      "firstFrameDescription": "Image used as the first video frame.",
+      "lastFrame": "Last frame",
+      "lastFrameDescription": "Image used as the final video frame.",
+      "referenceAudio": "Reference audio",
+      "referenceAudioDescription": "Audio used as a voice or motion reference."
+    },
+    "settings": {
+      "label": "Settings",
+      "aspectRatio": "Aspect ratio",
+      "aspectRatios": {
+        "square": "Square",
+        "landscape": "Landscape",
+        "portrait": "Portrait",
+        "photo": "Photo",
+        "portraitPhoto": "Portrait photo",
+        "ultrawide": "Ultrawide"
+      },
+      "outputCount": "Outputs",
+      "quality": "Quality",
+      "resolution": "Resolution",
+      "duration": "Duration",
+      "stability": "Stability",
+      "voiceId": "Voice ID",
+      "loop": "Loop",
+      "promptInfluence": "Prompt influence",
+      "qualities": {
+        "auto": "Auto",
+        "low": "Low",
+        "medium": "Medium",
+        "high": "High"
+      },
+      "durations": {
+        "seconds4": "4 seconds",
+        "seconds6": "6 seconds",
+        "seconds8": "8 seconds",
+        "seconds10": "10 seconds"
+      },
+      "resolutions": {
+        "720p": "720p",
+        "1080p": "1080p",
+        "1440p": "1440p",
+        "4k": "4K"
+      }
+    },
+    "inputStates": {
+      "invalid": "Review this selection",
+      "unconnected": "Not connected",
+      "customized_one": "{{count}} / {{available}} selected · Customized",
+      "customized_other": "{{count}} / {{available}} selected · Customized",
+      "automatic_one": "{{count}} / {{available}} selected · Element defaults",
+      "automatic_other": "{{count}} / {{available}} selected · Element defaults",
+      "connections_one": "{{count}} connection",
+      "connections_other": "{{count}} connections"
+    },
+    "saveStatus": {
+      "saved": "Saved",
+      "saving": "Saving...",
+      "unsaved": "Unsaved changes",
+      "conflict": "Merging changes...",
+      "connectionsDropped_one": "{{count}} connection was removed because one of its nodes changed elsewhere.",
+      "connectionsDropped_other": "{{count}} connections were removed because their nodes changed elsewhere.",
+      "error": "Save failed"
+    },
+    "navigation": {
+      "description": "Save your changes before leaving this Flow.",
+      "saveAndLeave": "Save and leave"
+    },
+    "emptyCanvas": {
+      "title": "Start shaping your Flow",
+      "description": "Add a node, then connect compatible handles to build the graph."
+    },
+    "elementPicker": {
+      "title": "Choose an Element",
+      "description": "Add an existing Element as reusable context in this Flow.",
+      "couldNotLoad": "Could not load Elements",
+      "couldNotLoadDescription": "Check your connection and try again.",
+      "search": "Search Elements",
+      "searchPlaceholder": "Search Elements...",
+      "noResults": "No Elements found",
+      "noResultsDescription": "Try another search term or create an Element first."
+    },
+    "inputInspector": {
+      "title": "Select {{input}}",
+      "description": "Choose up to {{maximum}} of {{available}} available Assets, or keep the Element defaults.",
+      "primary": "Primary",
+      "noCandidates": "Connect an Asset or Element role to make references available.",
+      "unavailable": "Unavailable reference",
+      "unavailableDescription": "This saved reference is no longer available. Remove it or reset to Element defaults.",
+      "useAutomatic": "Reset to Element defaults"
+    },
+    "a11y": {
+      "canvas": "Flow graph editor",
+      "controls": "Canvas controls",
+      "minimap": "Flow minimap",
+      "nodeDescription": "Press Enter or Space to select this node. Use Delete to remove it and Escape to cancel."
+    },
+    "operation": "Operation",
+    "operationChange": {
+      "title": "Switch operation?",
+      "description_one": "This operation does not accept one current connection. Switching will remove it.",
+      "description_other": "This operation does not accept {{count}} current connections. Switching will remove them.",
+      "confirm": "Switch operation"
+    },
+    "operations": {
+      "textToImage": "Text to image",
+      "textToImageDescription": "Generate images from text and Element context.",
+      "imageToImage": "Image to image",
+      "imageToImageDescription": "Generate images from text, context, and image references.",
+      "textToVideo": "Text to video",
+      "textToVideoDescription": "Generate video from text and Element context.",
+      "firstLastFrameToVideo": "First and last frame",
+      "firstLastFrameToVideoDescription": "Generate video between defined first and last frames.",
+      "referencesToVideo": "References to video",
+      "referencesToVideoDescription": "Generate video using a set of visual references.",
+      "imageToVideo": "Image to video",
+      "imageToVideoDescription": "Animate a first frame into a video.",
+      "audioToVideo": "Audio to video",
+      "audioToVideoDescription": "Generate video motion from reference audio and an optional first frame.",
+      "textToSpeech": "Text to speech",
+      "textToSpeechDescription": "Create spoken audio from text with an optional voice reference.",
+      "textToSoundEffect": "Text to sound effect",
+      "textToSoundEffectDescription": "Create a sound effect from a text description."
+    },
+    "constraints": {
+      "lastFrameRequiresFirstFrame": "Connect a first frame before using a last frame.",
+      "referencesRequireEightSeconds": "Reference videos require an 8-second duration.",
+      "highResolutionRequiresEightSeconds": "1080p and 4K videos require an 8-second duration."
+    },
+    "nodeMedia": {
+      "play": "Play {{name}}"
+    }
   },
   "assets": {
     "actionFailed": "The asset action could not be completed.",
@@ -580,7 +850,7 @@
     "description": "Search pages, settings, folders, assets, and elements.",
     "empty": "No results found.",
     "pages": "Pages",
-    "placeholder": "Search pages, settings, folders, assets, and elements...",
+    "placeholder": "Search...",
     "settings": "Settings",
     "title": "Search"
   },

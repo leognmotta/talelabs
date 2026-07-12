@@ -17,6 +17,7 @@
     "previous": "Zurück",
     "role": "Rolle",
     "reload": "Neu laden",
+    "remove": "Entfernen",
     "retry": "Erneut versuchen",
     "save": "Speichern",
     "saving": "Wird gespeichert...",
@@ -33,6 +34,275 @@
     "organizationSettings": "Organisationseinstellungen",
     "profile": "Profil",
     "settings": "Einstellungen"
+  },
+  "flows": {
+    "actionFailed": "Die Workflow-Aktion konnte nicht abgeschlossen werden.",
+    "description": "Ordne wiederverwendbare kreative Eingaben und Generierungsschritte auf einer visuellen Arbeitsfläche an.",
+    "create": "Workflow erstellen",
+    "createDescription": "Gib deinem neuen visuellen Workflow einen eindeutigen Namen.",
+    "created": "Workflow erstellt",
+    "namePlaceholder": "Konzepte für die Sommerkampagne",
+    "rename": "Umbenennen",
+    "renameDescription": "Wähle einen Namen, unter dem dieser Workflow leicht zu finden ist.",
+    "renamed": "Workflow umbenannt",
+    "delete": "Löschen",
+    "deleteDescription": "{{name}} löschen? Der Graph wird dauerhaft entfernt.",
+    "deleted": "Workflow gelöscht",
+    "deleting": "Wird gelöscht...",
+    "search": "Workflows durchsuchen",
+    "searchPlaceholder": "Workflows durchsuchen...",
+    "couldNotLoad": "Deine Workflows konnten nicht geladen werden",
+    "couldNotLoadDescription": "Prüfe deine Verbindung und versuche es erneut.",
+    "emptyTitle": "Erstelle deinen ersten Workflow",
+    "emptyDescription": "Kombiniere Text, Assets, Elemente und Generierungsknoten in einem wiederverwendbaren visuellen Workflow.",
+    "noResults": "Keine Workflows gefunden",
+    "noResultsDescription": "Versuche es mit einem anderen Suchbegriff.",
+    "loadMore": "Mehr laden",
+    "open": "{{name}} öffnen",
+    "updated": "Aktualisiert am {{date}}",
+    "backToFlows": "Zurück zu Workflows",
+    "addNode": "Knoten hinzufügen",
+    "addFirstNode": "Ersten Knoten hinzufügen",
+    "nodeTypes": "Knotentypen",
+    "nodeActions": "Knotenaktionen",
+    "duplicateNode": "Knoten duplizieren",
+    "deleteNode": "Knoten löschen",
+    "duplicateSelection": "Auswahl duplizieren",
+    "deleteSelection": "Auswahl löschen",
+    "fitView": "Ansicht anpassen",
+    "autoFormat": "Automatisch anordnen",
+    "selectAll": "Alles auswählen",
+    "connectionRejected": "Diese Anschlüsse können nicht verbunden werden.",
+    "viewportSaveFailed": "Die Position der Arbeitsfläche konnte nicht gespeichert werden.",
+    "model": "Modell",
+    "modelUnavailable": "Dieses Modell ist nicht mehr verfügbar.",
+    "modelChange": {
+      "title": "Modell wechseln?",
+      "description_one": "{{model}} unterstützt eine vorhandene Verbindung nicht. Beim Wechsel wird sie entfernt.",
+      "description_other": "{{model}} unterstützt {{count}} vorhandene Verbindungen nicht. Beim Wechsel werden sie entfernt.",
+      "confirm": "Modell wechseln"
+    },
+    "nodeToolbar": {
+      "lock": "Knoten sperren",
+      "unlock": "Knoten entsperren",
+      "fullscreen": "Im Vollbild anzeigen",
+      "fullscreenFailed": "Vollbild konnte nicht geöffnet werden.",
+      "crop": "Bild zuschneiden"
+    },
+    "cropEditor": {
+      "label": "Editor zum Zuschneiden von Bildern",
+      "cropArea": "Zuschneidebereich",
+      "resizeArea": "Zuschneidebereich skalieren",
+      "reset": "Zurücksetzen",
+      "apply": "Zuschnitt anwenden"
+    },
+    "connectionInspector": {
+      "title": "Ein- und Ausgaben",
+      "inputs": "Eingaben",
+      "outputs": "Ausgaben"
+    },
+    "modelPicker": {
+      "searchLabel": "Modelle suchen",
+      "searchPlaceholder": "Modelle suchen...",
+      "noResults": "Keine Modelle gefunden"
+    },
+    "textContent": "Textinhalt",
+    "textPlaceholder": "Beschreibe die Szene, Regie oder kreative Idee...",
+    "characterCount": "{{count}} / 16.000",
+    "chooseAsset": "Asset auswählen",
+    "chooseAssetDescription": "Wähle eine wiederverwendbare Datei aus deiner Bibliothek.",
+    "changeAsset": "Asset ändern",
+    "chooseElement": "Element auswählen",
+    "chooseElementDescription": "Wähle einen wiederverwendbaren kreativen Kontext.",
+    "changeElement": "Element ändern",
+    "assetCount_one": "{{count}} Asset",
+    "assetCount_other": "{{count}} Assets",
+    "nodes": {
+      "text": "Text",
+      "asset": "Asset",
+      "element": "Element",
+      "imageGeneration": "Bildgenerierung",
+      "videoGeneration": "Videogenerierung",
+      "audioGeneration": "Audiogenerierung"
+    },
+    "nodePicker": {
+      "searchPlaceholder": "Knoten suchen",
+      "noResults": "Keine Knoten gefunden",
+      "groups": {
+        "inputs": "Eingaben",
+        "generation": "Generierung"
+      },
+      "descriptions": {
+        "text": "Erstelle Prompts und wiederverwendbaren Text.",
+        "asset": "Füge Bilder, Videos, Audio oder Dokumente hinzu.",
+        "element": "Füge wiederverwendbaren kreativen Kontext hinzu.",
+        "imageGeneration": "Konfiguriere einen Schritt zur Bildgenerierung.",
+        "videoGeneration": "Konfiguriere einen Schritt zur Videogenerierung.",
+        "audioGeneration": "Konfiguriere einen Schritt zur Audiogenerierung."
+      }
+    },
+    "outputs": {
+      "text": "Text",
+      "asset": "Asset",
+      "elementContext": "Kontext",
+      "images": "Bilder",
+      "videos": "Videos",
+      "audio": "Audio"
+    },
+    "handles": {
+      "textOutput": "Textausgabe",
+      "assetOutput": "Asset-Ausgabe",
+      "elementContextOutput": "Element-Kontextausgabe",
+      "elementRoleOutput": "Ausgabe {{role}}",
+      "input": "Eingabe {{input}}",
+      "output": "Ausgabe: {{output}}"
+    },
+    "models": {
+      "gptImage15": "GPT Image 1.5",
+      "veo31": "Veo 3.1",
+      "ltx23Pro": "LTX 2.3 Pro",
+      "elevenMultilingualV2": "Eleven Multilingual v2",
+      "elevenSoundEffectsV2": "Eleven Sound Effects v2"
+    },
+    "inputs": {
+      "prompt": "Prompt",
+      "promptDescription": "Textanweisungen für die Generierung.",
+      "context": "Element-Kontext",
+      "contextDescription": "Wiederverwendbare Vorgaben des Elements.",
+      "references": "Referenzen",
+      "referencesDescription": "Bilder als visuelle Referenzen.",
+      "firstFrame": "Erstes Frame",
+      "firstFrameDescription": "Bild als erstes Video-Frame.",
+      "lastFrame": "Letztes Frame",
+      "lastFrameDescription": "Bild als letztes Video-Frame.",
+      "referenceAudio": "Referenz-Audio",
+      "referenceAudioDescription": "Audio als Referenz für Stimme oder Bewegung."
+    },
+    "settings": {
+      "label": "Einstellungen",
+      "aspectRatio": "Seitenverhältnis",
+      "aspectRatios": {
+        "square": "Quadratisch",
+        "landscape": "Querformat",
+        "portrait": "Hochformat",
+        "photo": "Foto",
+        "portraitPhoto": "Hochformatfoto",
+        "ultrawide": "Ultrabreit"
+      },
+      "outputCount": "Ausgaben",
+      "quality": "Qualität",
+      "resolution": "Auflösung",
+      "duration": "Dauer",
+      "stability": "Stabilität",
+      "voiceId": "Stimmen-ID",
+      "loop": "Schleife",
+      "promptInfluence": "Prompt-Einfluss",
+      "qualities": {
+        "auto": "Automatisch",
+        "low": "Niedrig",
+        "medium": "Mittel",
+        "high": "Hoch"
+      },
+      "durations": {
+        "seconds4": "4 Sekunden",
+        "seconds6": "6 Sekunden",
+        "seconds8": "8 Sekunden",
+        "seconds10": "10 Sekunden"
+      },
+      "resolutions": {
+        "720p": "720p",
+        "1080p": "1080p",
+        "1440p": "1440p",
+        "4k": "4K"
+      }
+    },
+    "inputStates": {
+      "invalid": "Überprüfe diese Auswahl",
+      "unconnected": "Nicht verbunden",
+      "customized_one": "{{count}} / {{available}} ausgewählt · Angepasst",
+      "customized_other": "{{count}} / {{available}} ausgewählt · Angepasst",
+      "automatic_one": "{{count}} / {{available}} ausgewählt · Element-Vorgaben",
+      "automatic_other": "{{count}} / {{available}} ausgewählt · Element-Vorgaben",
+      "connections_one": "{{count}} Verbindung",
+      "connections_other": "{{count}} Verbindungen"
+    },
+    "saveStatus": {
+      "saved": "Gespeichert",
+      "saving": "Wird gespeichert...",
+      "unsaved": "Ungespeicherte Änderungen",
+      "conflict": "Änderungen werden zusammengeführt...",
+      "connectionsDropped_one": "{{count}} Verbindung wurde entfernt, weil einer ihrer Knoten in einer anderen Sitzung geändert wurde.",
+      "connectionsDropped_other": "{{count}} Verbindungen wurden entfernt, weil ihre Knoten in einer anderen Sitzung geändert wurden.",
+      "error": "Speichern fehlgeschlagen"
+    },
+    "navigation": {
+      "description": "Speichere deine Änderungen, bevor du diesen Flow verlässt.",
+      "saveAndLeave": "Speichern und verlassen"
+    },
+    "emptyCanvas": {
+      "title": "Gestalte deinen Workflow",
+      "description": "Füge einen Knoten hinzu und verbinde kompatible Anschlüsse, um den Graphen zu erstellen."
+    },
+    "elementPicker": {
+      "title": "Element auswählen",
+      "description": "Füge diesem Workflow ein vorhandenes Element als wiederverwendbaren Kontext hinzu.",
+      "couldNotLoad": "Elemente konnten nicht geladen werden",
+      "couldNotLoadDescription": "Prüfe deine Verbindung und versuche es erneut.",
+      "search": "Elemente durchsuchen",
+      "searchPlaceholder": "Elemente durchsuchen...",
+      "noResults": "Keine Elemente gefunden",
+      "noResultsDescription": "Versuche einen anderen Suchbegriff oder erstelle zuerst ein Element."
+    },
+    "inputInspector": {
+      "title": "{{input}} auswählen",
+      "description": "Wähle bis zu {{maximum}} der {{available}} verfügbaren Assets oder behalte die Element-Vorgaben.",
+      "primary": "Primär",
+      "noCandidates": "Verbinde ein Asset oder eine Element-Rolle, um Referenzen verfügbar zu machen.",
+      "unavailable": "Nicht verfügbare Referenz",
+      "unavailableDescription": "Diese gespeicherte Referenz ist nicht mehr verfügbar. Entferne sie oder setze die Element-Standards zurück.",
+      "useAutomatic": "Element-Vorgaben wiederherstellen"
+    },
+    "a11y": {
+      "canvas": "Workflow-Graph-Editor",
+      "controls": "Steuerelemente der Arbeitsfläche",
+      "minimap": "Workflow-Übersicht",
+      "nodeDescription": "Drücke Eingabe oder Leertaste, um diesen Knoten auszuwählen. Entferne ihn mit Löschen und brich mit Escape ab."
+    },
+    "operation": "Vorgang",
+    "operationChange": {
+      "title": "Vorgang wechseln?",
+      "description_one": "Dieser Vorgang akzeptiert eine vorhandene Verbindung nicht. Beim Wechsel wird sie entfernt.",
+      "description_other": "Dieser Vorgang akzeptiert {{count}} vorhandene Verbindungen nicht. Beim Wechsel werden sie entfernt.",
+      "confirm": "Vorgang wechseln"
+    },
+    "operations": {
+      "textToImage": "Text zu Bild",
+      "textToImageDescription": "Erzeuge Bilder aus Text und Element-Kontext.",
+      "imageToImage": "Bild zu Bild",
+      "imageToImageDescription": "Erzeuge Bilder aus Text, Kontext und Bildreferenzen.",
+      "textToVideo": "Text zu Video",
+      "textToVideoDescription": "Erzeuge Videos aus Text und Element-Kontext.",
+      "firstLastFrameToVideo": "Erstes und letztes Frame",
+      "firstLastFrameToVideoDescription": "Erzeuge ein Video zwischen definierten Frames.",
+      "referencesToVideo": "Referenzen zu Video",
+      "referencesToVideoDescription": "Erzeuge ein Video mit visuellen Referenzen.",
+      "imageToVideo": "Bild zu Video",
+      "imageToVideoDescription": "Animiere ein erstes Frame zu einem Video.",
+      "audioToVideo": "Audio zu Video",
+      "audioToVideoDescription": "Erzeuge Videobewegung aus Referenz-Audio und einem optionalen Frame.",
+      "textToSpeech": "Text zu Sprache",
+      "textToSpeechDescription": "Erzeuge gesprochene Audiodaten aus Text mit optionaler Stimmreferenz.",
+      "textToSoundEffect": "Text zu Soundeffekt",
+      "textToSoundEffectDescription": "Erzeuge einen Soundeffekt aus einer Textbeschreibung."
+    },
+    "constraints": {
+      "lastFrameRequiresFirstFrame": "Verbinde ein erstes Frame, bevor du ein letztes verwendest.",
+      "referencesRequireEightSeconds": "Videos mit Referenzen benötigen 8 Sekunden.",
+      "highResolutionRequiresEightSeconds": "Videos in 1080p und 4K benötigen 8 Sekunden."
+    },
+    "nodeMedia": {
+      "play": "{{name}} abspielen"
+    }
   },
   "assets": {
     "actionFailed": "Die Dateiaktion konnte nicht abgeschlossen werden.",
@@ -580,7 +850,7 @@
     "description": "Durchsuche Seiten, Einstellungen, Ordner, Dateien und Elemente.",
     "empty": "Keine Ergebnisse gefunden.",
     "pages": "Seiten",
-    "placeholder": "Seiten, Einstellungen, Ordner, Dateien und Elemente durchsuchen...",
+    "placeholder": "Suchen...",
     "settings": "Einstellungen",
     "title": "Suchen"
   },

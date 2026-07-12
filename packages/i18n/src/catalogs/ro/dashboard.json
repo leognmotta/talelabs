@@ -17,6 +17,7 @@
     "previous": "Anterior",
     "role": "Rol",
     "reload": "Reîncărcați",
+    "remove": "Elimină",
     "retry": "Încearcă din nou",
     "save": "Salvează",
     "saving": "Se salvează...",
@@ -33,6 +34,275 @@
     "organizationSettings": "Setările organizației",
     "profile": "Profil",
     "settings": "Setări"
+  },
+  "flows": {
+    "actionFailed": "Acțiunea asupra fluxului nu a putut fi finalizată.",
+    "description": "Aranjează intrări creative reutilizabile și pași de generare pe o pânză vizuală.",
+    "create": "Creează flux",
+    "createDescription": "Alege un nume clar pentru noul flux de lucru vizual.",
+    "created": "Flux creat",
+    "namePlaceholder": "Concepte pentru campania de vară",
+    "rename": "Redenumește",
+    "renameDescription": "Alege un nume care face acest flux ușor de găsit.",
+    "renamed": "Flux redenumit",
+    "delete": "Șterge",
+    "deleteDescription": "Ștergi {{name}}? Graful va fi eliminat definitiv.",
+    "deleted": "Flux șters",
+    "deleting": "Se șterge...",
+    "search": "Caută fluxuri",
+    "searchPlaceholder": "Caută fluxuri...",
+    "couldNotLoad": "Fluxurile nu au putut fi încărcate",
+    "couldNotLoadDescription": "Verifică conexiunea și încearcă din nou.",
+    "emptyTitle": "Creează primul flux",
+    "emptyDescription": "Combină text, Assets, Elemente și noduri de generare într-un flux vizual reutilizabil.",
+    "noResults": "Nu s-au găsit fluxuri",
+    "noResultsDescription": "Încearcă alt termen de căutare.",
+    "loadMore": "Încarcă mai multe",
+    "open": "Deschide {{name}}",
+    "updated": "Actualizat la {{date}}",
+    "backToFlows": "Înapoi la fluxuri",
+    "addNode": "Adaugă nod",
+    "addFirstNode": "Adaugă primul nod",
+    "nodeTypes": "Tipuri de nod",
+    "nodeActions": "Acțiuni pentru nod",
+    "duplicateNode": "Duplică nodul",
+    "deleteNode": "Șterge nodul",
+    "duplicateSelection": "Duplică selecția",
+    "deleteSelection": "Șterge selecția",
+    "fitView": "Încadrează vizualizarea",
+    "autoFormat": "Aranjează automat",
+    "selectAll": "Selectează tot",
+    "connectionRejected": "Acești conectori nu pot fi legați.",
+    "viewportSaveFailed": "Poziția pânzei nu a putut fi salvată.",
+    "model": "Model",
+    "modelUnavailable": "Acest model nu mai este disponibil.",
+    "modelChange": {
+      "title": "Schimbi modelul?",
+      "description_one": "{{model}} nu acceptă o conexiune existentă. Schimbarea o va elimina.",
+      "description_other": "{{model}} nu acceptă {{count}} conexiuni existente. Schimbarea le va elimina.",
+      "confirm": "Schimbă modelul"
+    },
+    "nodeToolbar": {
+      "lock": "Blochează nodul",
+      "unlock": "Deblochează nodul",
+      "fullscreen": "Afișează pe ecran complet",
+      "fullscreenFailed": "Vizualizarea pe ecran complet nu a putut fi deschisă.",
+      "crop": "Decupează imaginea"
+    },
+    "cropEditor": {
+      "label": "Editor de decupare a imaginii",
+      "cropArea": "Zona de decupare",
+      "resizeArea": "Redimensionează zona de decupare",
+      "reset": "Resetează",
+      "apply": "Aplică decuparea"
+    },
+    "connectionInspector": {
+      "title": "Intrări și ieșiri",
+      "inputs": "Intrări",
+      "outputs": "Ieșiri"
+    },
+    "modelPicker": {
+      "searchLabel": "Caută modele",
+      "searchPlaceholder": "Caută modele...",
+      "noResults": "Nu s-au găsit modele"
+    },
+    "textContent": "Conținut text",
+    "textPlaceholder": "Descrie scena, regia sau ideea creativă...",
+    "characterCount": "{{count}} / 16.000",
+    "chooseAsset": "Alege Asset",
+    "chooseAssetDescription": "Selectează un fișier reutilizabil din bibliotecă.",
+    "changeAsset": "Schimbă Asset",
+    "chooseElement": "Alege Element",
+    "chooseElementDescription": "Selectează un context creativ reutilizabil.",
+    "changeElement": "Schimbă Elementul",
+    "assetCount_one": "{{count}} Asset",
+    "assetCount_other": "{{count}} de Assets",
+    "nodes": {
+      "text": "Text",
+      "asset": "Asset",
+      "element": "Element",
+      "imageGeneration": "Generare imagini",
+      "videoGeneration": "Generare video",
+      "audioGeneration": "Generare audio"
+    },
+    "nodePicker": {
+      "searchPlaceholder": "Caută noduri",
+      "noResults": "Nu s-au găsit noduri",
+      "groups": {
+        "inputs": "Intrări",
+        "generation": "Generare"
+      },
+      "descriptions": {
+        "text": "Scrie prompturi și text reutilizabil.",
+        "asset": "Adaugă imagini, videoclipuri, audio sau documente.",
+        "element": "Adaugă context creativ reutilizabil.",
+        "imageGeneration": "Configurează un pas de generare a imaginilor.",
+        "videoGeneration": "Configurează un pas de generare video.",
+        "audioGeneration": "Configurează un pas de generare audio."
+      }
+    },
+    "outputs": {
+      "text": "Text",
+      "asset": "Asset",
+      "elementContext": "Context",
+      "images": "Imagini",
+      "videos": "Videoclipuri",
+      "audio": "Audio"
+    },
+    "handles": {
+      "textOutput": "Ieșire text",
+      "assetOutput": "Ieșire Asset",
+      "elementContextOutput": "Ieșire context Element",
+      "elementRoleOutput": "Ieșire {{role}}",
+      "input": "Intrare {{input}}",
+      "output": "Ieșire {{output}}"
+    },
+    "models": {
+      "gptImage15": "GPT Image 1.5",
+      "veo31": "Veo 3.1",
+      "ltx23Pro": "LTX 2.3 Pro",
+      "elevenMultilingualV2": "Eleven Multilingual v2",
+      "elevenSoundEffectsV2": "Eleven Sound Effects v2"
+    },
+    "inputs": {
+      "prompt": "Prompt",
+      "promptDescription": "Instrucțiuni text pentru generare.",
+      "context": "Contextul Elementului",
+      "contextDescription": "Indicații reutilizabile ale Elementului.",
+      "references": "Referințe",
+      "referencesDescription": "Imagini folosite ca referințe vizuale.",
+      "firstFrame": "Primul cadru",
+      "firstFrameDescription": "Imagine folosită ca primul cadru al videoclipului.",
+      "lastFrame": "Ultimul cadru",
+      "lastFrameDescription": "Imagine folosită ca ultimul cadru al videoclipului.",
+      "referenceAudio": "Audio de referință",
+      "referenceAudioDescription": "Audio folosit ca referință pentru voce sau mișcare."
+    },
+    "settings": {
+      "label": "Setări",
+      "aspectRatio": "Raport de aspect",
+      "aspectRatios": {
+        "square": "Pătrat",
+        "landscape": "Peisaj",
+        "portrait": "Portret",
+        "photo": "Fotografie",
+        "portraitPhoto": "Fotografie portret",
+        "ultrawide": "Ultralarg"
+      },
+      "outputCount": "Rezultate",
+      "quality": "Calitate",
+      "resolution": "Rezoluție",
+      "duration": "Durată",
+      "stability": "Stabilitate",
+      "voiceId": "ID voce",
+      "loop": "Buclă",
+      "promptInfluence": "Influența promptului",
+      "qualities": {
+        "auto": "Automată",
+        "low": "Scăzută",
+        "medium": "Medie",
+        "high": "Ridicată"
+      },
+      "durations": {
+        "seconds4": "4 secunde",
+        "seconds6": "6 secunde",
+        "seconds8": "8 secunde",
+        "seconds10": "10 secunde"
+      },
+      "resolutions": {
+        "720p": "720p",
+        "1080p": "1080p",
+        "1440p": "1440p",
+        "4k": "4K"
+      }
+    },
+    "inputStates": {
+      "invalid": "Verifică această selecție",
+      "unconnected": "Neconectat",
+      "customized_one": "{{count}} / {{available}} selectată · Personalizată",
+      "customized_other": "{{count}} / {{available}} selectate · Personalizată",
+      "automatic_one": "{{count}} / {{available}} selectată · Valorile Elementului",
+      "automatic_other": "{{count}} / {{available}} selectate · Valorile Elementului",
+      "connections_one": "{{count}} conexiune",
+      "connections_other": "{{count}} de conexiuni"
+    },
+    "saveStatus": {
+      "saved": "Salvat",
+      "saving": "Se salvează...",
+      "unsaved": "Modificări nesalvate",
+      "conflict": "Se combină modificările...",
+      "connectionsDropped_one": "A fost eliminată {{count}} conexiune deoarece unul dintre nodurile sale s-a modificat în altă sesiune.",
+      "connectionsDropped_other": "Au fost eliminate {{count}} conexiuni deoarece nodurile lor s-au modificat în altă sesiune.",
+      "error": "Salvarea a eșuat"
+    },
+    "navigation": {
+      "description": "Salvează modificările înainte de a părăsi acest Flow.",
+      "saveAndLeave": "Salvează și ieși"
+    },
+    "emptyCanvas": {
+      "title": "Începe să construiești fluxul",
+      "description": "Adaugă un nod și conectează porturi compatibile pentru a crea graful."
+    },
+    "elementPicker": {
+      "title": "Alege Element",
+      "description": "Adaugă un Element existent drept context reutilizabil în acest flux.",
+      "couldNotLoad": "Elementele nu au putut fi încărcate",
+      "couldNotLoadDescription": "Verifică conexiunea și încearcă din nou.",
+      "search": "Caută Elemente",
+      "searchPlaceholder": "Caută Elemente...",
+      "noResults": "Nu s-au găsit Elemente",
+      "noResultsDescription": "Încearcă alt termen sau creează mai întâi un Element."
+    },
+    "inputInspector": {
+      "title": "Selectează {{input}}",
+      "description": "Alege până la {{maximum}} dintre cele {{available}} Assets disponibile sau păstrează valorile Elementului.",
+      "primary": "Principal",
+      "noCandidates": "Conectează un Asset sau un rol de Element pentru a face disponibile referințele.",
+      "unavailable": "Referință indisponibilă",
+      "unavailableDescription": "Această referință salvată nu mai este disponibilă. Elimin-o sau restabilește valorile implicite ale Elementului.",
+      "useAutomatic": "Restabilește valorile Elementului"
+    },
+    "a11y": {
+      "canvas": "Editor de graf pentru flux",
+      "controls": "Comenzile pânzei",
+      "minimap": "Miniharta fluxului",
+      "nodeDescription": "Apasă Enter sau Spațiu pentru a selecta acest nod. Folosește Delete pentru eliminare și Escape pentru anulare."
+    },
+    "operation": "Operație",
+    "operationChange": {
+      "title": "Schimbi operația?",
+      "description_one": "Această operație nu acceptă o conexiune actuală. Schimbarea o va elimina.",
+      "description_other": "Această operație nu acceptă {{count}} conexiuni actuale. Schimbarea le va elimina.",
+      "confirm": "Schimbă operația"
+    },
+    "operations": {
+      "textToImage": "Text în imagine",
+      "textToImageDescription": "Generează imagini din text și contextul Elementului.",
+      "imageToImage": "Imagine în imagine",
+      "imageToImageDescription": "Generează imagini din text, context și referințe.",
+      "textToVideo": "Text în video",
+      "textToVideoDescription": "Generează video din text și contextul Elementului.",
+      "firstLastFrameToVideo": "Primul și ultimul cadru",
+      "firstLastFrameToVideoDescription": "Generează video între cadre definite.",
+      "referencesToVideo": "Referințe în video",
+      "referencesToVideoDescription": "Generează video folosind referințe vizuale.",
+      "imageToVideo": "Imagine în video",
+      "imageToVideoDescription": "Animează un prim cadru într-un videoclip.",
+      "audioToVideo": "Audio în video",
+      "audioToVideoDescription": "Generează mișcare video din audio și un cadru opțional.",
+      "textToSpeech": "Text în vorbire",
+      "textToSpeechDescription": "Creează audio vorbit din text cu o referință vocală opțională.",
+      "textToSoundEffect": "Text în efect sonor",
+      "textToSoundEffectDescription": "Creează un efect sonor dintr-o descriere."
+    },
+    "constraints": {
+      "lastFrameRequiresFirstFrame": "Conectează un prim cadru înainte de ultimul.",
+      "referencesRequireEightSeconds": "Videoclipurile cu referințe necesită 8 secunde.",
+      "highResolutionRequiresEightSeconds": "Videoclipurile 1080p și 4K necesită 8 secunde."
+    },
+    "nodeMedia": {
+      "play": "Redă {{name}}"
+    }
   },
   "assets": {
     "actionFailed": "Acțiunea asupra fișierului nu a putut fi finalizată.",
@@ -580,7 +850,7 @@
     "description": "Căutați pagini, setări, dosare, fișiere și elemente.",
     "empty": "Nu s-au găsit rezultate.",
     "pages": "Pagini",
-    "placeholder": "Căutați pagini, setări, dosare, fișiere și elemente...",
+    "placeholder": "Căutați...",
     "settings": "Setări",
     "title": "Căutare"
   },
