@@ -554,20 +554,32 @@ Elements are optional accelerators. A user must still be able to connect raw Ass
 
 Flows are the main creative product surface.
 
+The canonical technical model for Flow handles, runtime values, reference sets,
+batch items, lineage, generation execution, iteration, full-flow orchestration,
+caching, Recipes, and Tools lives in `docs/flow-nodes-planning.md`. Flow work
+must preserve that document's distinction between collections consumed together
+and runtime items that multiply execution.
+
 A Flow is a visual document built with React Flow. Users connect prompts, Assets, Elements, and AI generation nodes to explore ideas, preserve creative provenance, branch into alternatives, and reuse previous outputs.
 
 The first Flow experience is a manual visual creative process. It is not an automation engine.
 
-The initial node set should remain narrow:
+The engine-foundation node set should remain narrow by purpose, while covering
+the three media types TaleLabs intends to execute through one runtime:
 
 ```txt
 Text or Prompt node
 Asset node
 Element node
 Image Generation node
+Video Generation node
+Audio Generation node
 ```
 
-Video Generation and Audio Generation nodes should be added only after the image-generation loop is reliable. Utility and transformation nodes should be introduced from demonstrated needs rather than speculative completeness.
+All three generation-node surfaces and their model capability rules are built
+before external provider integration. Utility/control nodes remain limited to
+the explicit iteration set authorized by the execution plan; other transformation
+nodes should still come from demonstrated needs rather than speculative completeness.
 
 The first Flow version should support:
 
@@ -578,6 +590,7 @@ autosave graph state
 select Assets and Elements
 configure a generation node
 run one selected generation node manually
+run a downstream branch or complete Flow when explicitly requested
 resolve compatible connected inputs
 show queued, running, succeeded, and failed states
 persist successful output as an Asset
@@ -587,31 +600,29 @@ branch and remix without losing earlier results
 preserve generation history and provenance
 ```
 
-The initial execution rule is explicit:
+The first UI action remains explicit and manual:
 
 ```txt
 Run selected node only.
 ```
 
-Running a generation node may resolve its connected upstream Text, Asset, and Element inputs. It must not automatically execute every downstream node.
+The mock-engine milestone then adds explicit `Run downstream` and `Run all`
+commands. Connecting nodes never starts execution by itself.
 
 Do not build the following into the first Flow engine:
 
 ```txt
-Run all
-automatic DAG execution
-run downstream branch
 triggers
 schedules
 webhooks
 conditional nodes
-iterators
-batch matrices
 external integrations
 general-purpose automation
 ```
 
-These capabilities add substantial orchestration, retry, caching, billing, and failure semantics. They should be considered only after manual Flows are already useful and customers demonstrate demand.
+The engine milestone may add bounded Iterator/Map, Collect, Zip, and Prompt
+Iterator semantics. Arbitrary scripting, hidden batch matrices, triggers, and
+general-purpose automation remain deferred.
 
 ### Simple Flows
 
@@ -635,15 +646,20 @@ Upload or find an Asset
 -> create or open a Flow
 -> add Text, Asset, Element, and Generation nodes
 -> connect the required context
--> run one generation node
+-> execute the graph against deterministic provider mocks
 -> process the job asynchronously
 -> save the output as an Asset
 -> reuse the output in the same or another Flow
+-> replace only the provider adapter with a controlled real integration
 ```
 
 The loop is not complete if generation results are temporary, if outputs cannot be found again, or if the user must re-upload the same references for every generation.
 
-The loop should be validated first with image generation. Video and audio should reuse the same asset, context-resolution, job, and result-ingestion foundations rather than creating independent products.
+The shared loop is validated with deterministic image, video, and audio outputs
+before any paid generation request. Inputs, planning, durable execution,
+provenance, and output ingestion are production-shaped; only provider responses
+are mocked. Real integrations must reuse that foundation rather than creating
+independent products.
 
 ## Generation Principles
 
@@ -663,9 +679,32 @@ seed
 other verified model capabilities
 ```
 
-Provider metadata can inform the interface, but TaleLabs still needs product-controlled configuration for enabled models, labels, defaults, fallbacks, pricing behavior, and feature flags.
+Provider metadata can inform the interface, but TaleLabs owns a curated,
+code-versioned model registry for enabled models, labels, defaults, operations,
+typed slots, cross-field constraints, pricing behavior, and feature flags. Live
+OpenRouter/provider discovery responses never directly control production UI or
+validation; they feed an explicit review and drift-check process.
+
+Flows persist stable TaleLabs model identities. Public capabilities are shared
+between the API and dashboard, while provider model IDs, endpoint pinning,
+fallbacks, credentials, negotiated costs, and routing policy remain server-only.
+TaleLabs may replace OpenRouter with a direct route for the same underlying model
+without migrating Flows. A materially different creative model receives a new
+TaleLabs model ID rather than silently changing existing semantics.
+
+Capabilities must describe generation modes and dependent constraints, not only
+independent controls. Examples include text-to-video versus image-to-video,
+first/last-frame requirements, reference-image limits, resolutions that force a
+specific duration, mutually exclusive inputs, and operation-specific audio
+contracts such as TTS versus sound effects.
 
 Generation must remain server-authoritative. The server resolves connected context, validates compatibility, records immutable job inputs, estimates cost later when credits exist, calls the provider, and ingests successful outputs into Assets.
+
+The provider adapter boundary supports both immediate results and asynchronous
+jobs. Images may complete immediately or stream, videos commonly submit and
+poll/webhook, and audio may return or stream raw bytes. Trigger.dev owns durable
+polling, reconciliation, retries, cancellation, and ingestion without creating a
+separate execution engine per media type.
 
 ### Multi-Context Generation
 
@@ -893,6 +932,22 @@ build and test the internal Flow
 -> publish a versioned Tool
 ```
 
+The Tool identity and its published versions have different mutability rules:
+
+```txt
+Tool                = editable product identity and metadata
+Tool draft          = an ordinary editable normalized Flow
+ToolVersion         = immutable published executable contract
+Tool invocation     = a run pinned to one resolved ToolVersion
+```
+
+Creating a Tool provisions or links an editable draft Flow. Users continue to
+edit and test that draft through the normal Flow editor. Publishing captures the
+draft's coherent Flow revision, declared ports, exposed settings, and static
+context into a new immutable ToolVersion. Editing the draft after publication
+never mutates an existing version; publishing again creates the next monotonic
+version number. Deleted version numbers are never reused.
+
 A Tool definition should include:
 
 ```txt
@@ -960,6 +1015,13 @@ Every successful Tool output must be persisted as a canonical Asset and remain u
 
 Tool nodes should reference a specific published Tool version. Publishing a new version must not silently alter existing Tool nodes or historical runs. Unpublishing should prevent new installations without breaking already-derived outputs or execution history.
 
+A Tool may expose a mutable current-published-version pointer for convenient UI,
+API, and MCP invocation. That pointer behaves like an alias, not execution truth:
+the invocation resolves it once at admission, records the concrete
+`toolVersionId`, and runs that immutable version. Callers that require stability
+may request a concrete version directly. Existing canvas Tool nodes remain pinned
+until the user explicitly upgrades them.
+
 Tool scopes may eventually include:
 
 ```txt
@@ -976,7 +1038,10 @@ Add to Flow = use it as one composite node
 Open as Tool = use a simplified form generated from its declared inputs
 ```
 
-Tools require a real internal graph executor even though the normal canvas initially supports only manual single-node execution. Do not build Tools, nested graph execution, or community Tool publishing before manual Flows and Recipes are dependable.
+Tools require the same internal graph executor introduced by the mock-engine
+milestone. Do not build Tools, nested Tool execution, or community Tool
+publishing merely because full-flow execution exists; manual Flows and the
+versioned Tool lifecycle must be dependable first.
 
 The intended progression is:
 
@@ -1024,12 +1089,9 @@ It must not become a second independent generation architecture. A simple genera
 Other possible later layers include:
 
 ```txt
-video and audio generation nodes
 Flow collaboration
 comments and review
 Flow version history
-run downstream or run all
-batch and iterator nodes
 Brand Kit governance
 simple editing or cuts
 Community Recipes library

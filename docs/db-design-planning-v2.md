@@ -210,8 +210,13 @@ create table "generationJobs" (
   "status" text not null default 'pending'
            check ("status" in ('pending', 'running', 'succeeded', 'failed', 'canceled')),
 
-  "provider" text not null,
-  "model" text not null,
+  "provider" text not null,          -- resolved provider/adapter family, not a UI model identity
+  "model" text not null,             -- stable TaleLabs product model id ('talelabs/veo-3.1')
+  "operation" text not null,         -- curated operation id ('imageToVideo', 'tts', ...)
+  "providerModel" text not null,     -- native provider model id selected at admission
+  "modelRegistryVersion" text not null,
+  "providerRouteVersion" text not null,
+  "adapterVersion" text not null,
   "settings" jsonb not null default '{}',  -- aspect ratio, resolution, seed, ... (model-shaped)
   "resolvedPrompt" text,            -- final instructions composed at create from all text/element sources
 
@@ -450,6 +455,7 @@ create table "elements" (
   "instructions" text,                -- description / generation instructions (the shared field)
   "data" jsonb not null default '{}', -- type-specific fields, validated by the registry's Zod schema
   "schemaVersion" smallint not null default 1,
+  "revision" bigint not null default 0, -- M5 snapshot guard; bumped for data and kit mutations
   "createdAt" timestamptz not null default now(),
   "updatedAt" timestamptz not null default now(),
   unique ("id", "organizationId"),    -- composite target for org-scoped FKs
@@ -494,6 +500,17 @@ create unique index "elementAssetsPrimaryIdx"
 The partial unique index makes "primary" mean something: at most one primary asset per role per element, enforced by the database rather than UI discipline.
 
 Removing a row never deletes the asset; deleting an element cascades only the rows. `/elements/:id/assets` is the global asset library filtered through this table — one asset system.
+
+`elements.revision` is the run-snapshot consistency guard. Every mutation to
+Element `name`, `instructions`, `data`, schema version, or any `elementAssets`
+role/order/primary relationship increments it in the same transaction. Run and
+Tool-version snapshot builders capture all participating Element revisions and
+re-read them immediately before commit. A mismatch rolls back and retries the
+whole admission/publication operation. This prevents automatic reference
+selection from observing a mixture of old Element data and a new kit, or one
+Element from before a concurrent edit and another from after it. This column is
+added with the M5 run-admission migration; M3 does not need to expose it through
+the public API.
 
 ### 7. Flow nodes — normalized graph, half relational, half document
 
@@ -664,6 +681,11 @@ create table "flowRuns" (
   "snapshotVersion" smallint not null default 1,
         -- structure version of graphSnapshot itself (node payloads carry their own
         -- schemaVersion); future executors can deterministically read old runs
+  "snapshotHash" text not null,
+        -- SHA-256 of canonical snapshot serialization; audit/integrity/dedup seam
+  "executorVersion" text not null,
+        -- Trigger.dev deployment/application release selected at admission;
+        -- local development uses an explicit dev version, never an implicit null
   "idempotencyKey" text not null,       -- required API header on every run request
   "requestHash" text not null,          -- detects same-key/different-body misuse
   "triggerRunId" text,                  -- orchestration task run (multi-node modes)
@@ -694,6 +716,20 @@ create unique index "flowRunsTriggerRunIdx" on "flowRuns" ("triggerRunId") where
 
 Per-node execution state is **rows, not mutated jsonb**. `"graphSnapshot"` stays immutable; progress, retries, and skip decisions live in `flowRunNodes` — one `pending` row per planned node at run creation, which is also what makes progress UI and partial-failure reporting a plain indexed read:
 
+`graphSnapshot`, `snapshotVersion`, and `snapshotHash` are insert-only domain
+facts. Status updates must never rewrite them. The data layer exposes no update
+method for these columns; add a database guard that rejects changes to them if
+run-state updates ever use broad row patches. Snapshot JSON has a bounded,
+versioned structure and contains IDs/object identity, never expiring signed URLs,
+provider media bytes, or mutable UI cache data.
+
+`snapshotHash` is SHA-256 over one shared canonical serializer: object keys are
+sorted recursively while semantically ordered arrays (nodes in deterministic
+plan order, edges in deterministic connection order, selected inputs in provider
+order) retain their order. The same serializer powers request hashing, audit
+verification, and any later organization-scoped snapshot deduplication; never
+hash ordinary `JSON.stringify` output assembled from unordered maps.
+
 ```sql
 create table "flowRunNodes" (
   "organizationId" text not null references "organization"("id") on delete cascade,
@@ -723,7 +759,15 @@ Execution semantics:
 - **Multi-node dispatch inherits the jobs durability contract:** when `'downstream'`/`'all'` ship, the parent orchestration task gets the identical treatment as generate tasks — `idempotencyKey = flowRunId` on trigger, two-writer `"triggerRunId"` (API stores the handle, the task persists its own `ctx.run.id` at start), and a reconciliation sweep over `status = 'pending' and "triggerRunId" is null and "mode" <> 'node'` (served by `"flowRunsUndispatchedIdx"`).
 - **Idempotency lives at two levels:** the run carries the API-facing key (unique per org — a retried Run request can never create two runs, same 200-vs-409 semantics as jobs), and child jobs derive theirs (`flowRunId || ':' || nodeId`) — a retried orchestrator can never double-create a node's job.
 - **State propagation is transactional:** the generate task writes job and run-node together — `'running'` at start, terminal states inside the completion transaction (contract steps 3 and 6). Mode-`'node'` runs mirror their single node onto the run row in the same transaction; multi-node runs leave parent aggregation to the orchestrator. Job, run-node, and run states can never drift apart.
-- **Snapshot at creation:** topological order, full node configurations, and edges are frozen into `"graphSnapshot"` (its container structure versioned by `"snapshotVersion"`). Assembly runs under **`READ COMMITTED` with revision re-validation** (read `flows.revision`, resolve, re-read before insert; changed → retry) — deliberately not `REPEATABLE READ`, whose snapshot is taken by the transaction's first statement (the admission advisory lock) _before_ the lock wait completes, which would make queued admissions evaluate limits against stale state. The captured flow `revision` is recorded inside the snapshot. Planning **rejects cycles among the executable nodes before the run row is created** — a cyclic selection is a validation error, never a stuck run. Later canvas or Element edits affect future runs only — the immutable-provenance rule applied to execution, not just to finished jobs.
+- **Snapshot at creation:** topological order, full node configurations, and edges are frozen into `"graphSnapshot"` (its container structure versioned by `"snapshotVersion"`). Assembly runs under **`READ COMMITTED` with revision re-validation** (read `flows.revision` and participating `elements.revision` values, resolve, re-read all revisions before insert; any change → retry) — deliberately not `REPEATABLE READ`, whose snapshot is taken by the transaction's first statement (the admission advisory lock) _before_ the lock wait completes, which would make queued admissions evaluate limits against stale state. Selected Asset rows are locked in stable ID order and revalidated as ready and not purging. Captured revisions are recorded inside the snapshot. Planning **rejects cycles among the executable nodes before the run row is created** — a cyclic selection is a validation error, never a stuck run. Later canvas, Element, kit, or Asset edits affect future runs only — the immutable-provenance rule applied to execution, not just to finished jobs.
+- **Model contract at creation:** the snapshot records the stable TaleLabs model
+  ID, curated registry version/hash, selected operation, normalized settings,
+  resolved capability decisions, and server-selected provider route/adapter
+  version. It never stores credentials or signed URLs. Provider discovery data is
+  not consulted dynamically while replaying a snapshot; historical execution is
+  interpreted through the pinned contract and executor version.
+- **Executor version:** production dispatch records the Trigger.dev deployment/application release selected for the run. API and task deployments are promoted atomically, and awaited child tasks remain version-compatible with their parent. Snapshot readers retain deterministic upcasters for old `snapshotVersion` values. Reconciliation dispatch uses the run's recorded compatible executor version rather than silently selecting unrelated code.
+- **Small durable dispatch:** Trigger.dev payloads contain only tenant-scoped run/job identity. Workers load immutable snapshots and exact inputs from PostgreSQL. Graph JSON, signed URLs, and media never travel in task payloads.
 - **Child jobs are created just-in-time, level by level** — not all at run start. This is forced by the snapshot model, and it's a feature: a downstream node's context includes upstream _outputs_ (`sourceType = 'nodeOutput'`), which don't exist until the upstream job succeeds. Per-job create-time snapshotting is preserved; the job's _static_ config comes from `"graphSnapshot"`, never from the live canvas.
 - **Output binding is run-scoped:** a downstream node's `nodeOutput` source resolves strictly to the upstream job **with the same `"flowRunId"`** (via `flowRunNodes."jobId"`) — a concurrent manual run of the same node can never swap an input mid-run (rule also stated in section 9).
 - **Parallel branches** run concurrently (`batchTriggerAndWait` on the level's jobs); Trigger.dev owns the waiting.
@@ -731,19 +775,26 @@ Execution semantics:
 - **Cancel** cancels the run and cascades `runs.cancel` + guarded updates to active children; remaining `pending` run-nodes go `'canceled'`.
 - **Costs:** each child records its own `"creditCost"`; the run's aggregate is the sum, denormalized onto the run row at completion. Credit reservation strategy for whole runs (aggregate up front vs. per node) is analyzed in `credits-planning.md`, not constrained by this schema.
 
-**Tools reuse this exact model — no separate `toolRuns` table, ever.** A tool is a packaged flow with declared, typed inputs and outputs; a tool run is a `flowRuns` row whose graph comes from an immutable published snapshot instead of a live flow. The complete seam, so nobody re-derives it later:
+**Tools reuse this exact model — no separate `toolRuns` table, ever.** A Tool is mutable identity/metadata backed by an ordinary editable draft Flow. A ToolVersion is the immutable packaged Flow with declared, typed inputs and outputs. A Tool run is a `flowRuns` row whose graph comes from one resolved published version instead of the live draft. The complete seam, so nobody re-derives it later:
 
 ```txt
-tools / toolVersions       -> added with the Tools feature: version = immutable graph
-                              snapshot (jsonb — a snapshot is a document, not a queried
-                              graph) + declared input/output ports; publishing a new
-                              version never mutates existing tool nodes or history
+tools                       -> mutable name/slug/description/visibility + draftFlowId
+                              referencing an ordinary editable Flow +
+                              currentPublishedVersionId as a mutable default pointer
+toolVersions                -> monotonic per-Tool version + immutable graph snapshot
+                              (jsonb) + snapshotVersion/hash + declared input/output
+                              ports; deleted version numbers are never reused
+publish                     -> same Flow/Element/Asset revision-revalidated snapshot
+                              builder as run admission; inserts a new version and may
+                              atomically move currentPublishedVersionId
 flowRuns.toolVersionId     -> added then; a tool run has toolVersionId set, flowId null,
                               mode 'tool', and graphSnapshot copied from the version
 flowRuns.parentRunId       -> added then; a tool node executing inside a flow run
                               nests one level (child run under the host run)
 flowRuns.invokedByNodeId   -> added then; which tool node in the host graph launched it
-output port bindings       -> added then; {portId -> assetId} map bound at completion —
+output port bindings       -> added then; ORDERED ITEMS per port (see
+                              flow-nodes-planning.md — a tool port speaks the same
+                              PortValue language as node handles), bound at completion —
                               jsonb on the run row (read back for display/wiring,
                               never queried into; the assets themselves stay relational)
 tool node on canvas        -> flowNodes.type = 'tool' (code registry, no migration);
@@ -757,6 +808,22 @@ outputs                    -> ordinary assets via generationJobId; the port-bind
 
 Three execution tiers, one spine: node run = a mode-`'node'` run wrapping one job; workflow run = a run over the live graph's snapshot; tool run = a run over a versioned snapshot. The job row never changes shape across tiers — orchestration is always a record on top, never a new kind of job.
 
+Default UI/API/MCP Tool invocation resolves `currentPublishedVersionId` under
+the admission transaction and stores the concrete version on `flowRuns`.
+Explicitly versioned invocation uses the requested version directly. Retries
+reuse the original domain idempotency key and resolved version; moving the
+default pointer can never change an admitted or historical run. Tool nodes store
+the concrete version ID and never auto-upgrade.
+
+Copying a bounded graph snapshot into each run is the deliberate MVP and early
+production design: it is self-contained and operationally simple. If measured
+run volume makes repeated snapshots material, introduce an immutable
+`flowGraphSnapshots` table keyed by organization plus canonical content hash and
+let `flowRuns`/`toolVersions` reference it. Keep invocation-specific resolved
+Element context and exact Asset selections in `generationJobSources` and
+`generationJobInputs`. Do not add this deduplication layer before storage/IO
+measurements justify it.
+
 ---
 
 ## How the product loop maps to this schema
@@ -767,7 +834,7 @@ Three execution tiers, one spine: node run = a mode-`'node'` run wrapping one jo
 2. Resolves each element through the server-only `buildElementContext` contract + `elementAssets`: upcast data, compose deterministic text, and return ordered stable Asset IDs/roles/priority without signed URLs or storage keys
 3. Applies model capability limits, selects/asks about references, composes `"resolvedPrompt"`
 4. One transaction: insert `flowRuns` (mode `'node'`, graph snapshot) + `flowRunNodes` + `generationJobs` (+ `generationJobSources`, + `generationJobInputs`)
-5. After commit: `tasks.trigger("generate-image", { jobId }, { idempotencyKey: jobId })`, store `"triggerRunId"` (reconciliation sweep covers a crash in between)
+5. After commit: trigger the version-pinned task with ID-only payload `{ generationJobId, organizationId }` and domain-derived idempotency key; store `"triggerRunId"` (reconciliation sweep covers a crash in between)
 6. Task submits to provider → persists `"providerJobId"` → polls → uploads output to R2 → one transaction: insert asset (`source = 'generation'`) + guarded status update to `succeeded`
 7. Canvas exposes the output **by derivation, never by copying**: the node's result display queries the latest jobs + output assets for `("flowId", "nodeId")` — storing output asset ids inside `"data"` would dangle when an asset is archived or purged, and would duplicate what one indexed query answers. The user may additionally materialize an output as a real asset node (that node's `"assetId"` FK then behaves like any asset reference: `set null` on delete, tombstone on purge)
 

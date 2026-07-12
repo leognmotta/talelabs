@@ -2,7 +2,11 @@
 
 Supersedes `api-design-planning.md` (deprecated). Companion to `db-design-planning-v2.md` — every endpoint here maps onto that schema and its contracts; nothing is invented API-side that the DB doc doesn't back.
 
-Scope: the base features in build order — **Assets → Folders → Elements → Flows (graph sync) → Run one node**. Deferred, with the API shape already prepared for them: multi-node run modes (`downstream`/`all`), Tools, Recipes, credits enforcement (`/runs/estimate`, `402`), realtime push, bulk operations, collaboration.
+Scope: the base features in build order — **Assets → Folders → Elements → Flows
+(graph sync) → provider-independent mock engine → controlled provider
+integration**. M5 accepts node, downstream, and full-flow run modes against
+deterministic provider mocks. Deferred: Tools, Recipes, credits enforcement
+(`/runs/estimate`, `402`), realtime push, bulk operations, and collaboration.
 
 This is the **internal product API** consumed by the TaleLabs web app — not a public API. When a public surface ships, it gets its own versioned contract and auth scheme.
 
@@ -88,7 +92,7 @@ type ApiError = {
 | Folders  | `GET /folders` · `POST /folders` · `PATCH /folders/:id` · `DELETE /folders/:id`                                                                                                                                        |
 | Tags     | `GET /tags` · `POST /tags` · `DELETE /tags/:id`                                                                                                                                                                    |
 | Elements | `GET /elements` · `POST /elements` · `GET /elements/:id` · `PATCH /elements/:id` · `DELETE /elements/:id` · `GET/POST /elements/:id/assets` · `PATCH/DELETE /elements/:id/assets/:assetId` · `GET /elements/:id/usage` |
-| Flows    | `GET /flows` · `POST /flows` · `GET /flows/:id` · `PATCH /flows/:id` · `DELETE /flows/:id` · `GET /flows/:id/graph` · `POST /flows/:id/graph` · `GET /flows/:id/nodes/:nodeId/results`                                 |
+| Flows    | `GET /flows` · `POST /flows` · `GET /flows/:id` · `PATCH /flows/:id` · `DELETE /flows/:id` · `GET /flows/:id/graph` · `GET /flows/:id/references` · `POST /flows/:id/graph` · `GET /flows/:id/nodes/:nodeId/results`          |
 | Runs     | `POST /runs` · `GET /runs` · `GET /runs/:id` · `POST /runs/:id/cancel`                                                                                                                                                 |
 | Config   | `GET /config/generation`                                                                                                                                                                                               |
 
@@ -241,7 +245,7 @@ type GenerationNodeData = {
   inputSelections: Record<string, InputSelection>;
 };
 
-type RunMode = "node" | "downstream" | "all" | "tool"; // only 'node' accepted initially
+type RunMode = "node" | "downstream" | "all" | "tool"; // Tool remains deferred
 type RunStatus =
   | "pending"
   | "running"
@@ -473,7 +477,11 @@ Requires the client to have shown explicit confirmation (the endpoint exists so 
 - Purge: `select … for update` the asset row, then check `generationJobInputs` joined to jobs in `('pending','running')` — referenced by an active job → `409 invalid_state` ("asset is in use by a running generation"), nothing marked.
 - Run creation: locks its selected input asset rows (same order: by asset id) inside the creation transaction and applies the full input rule from the Runs section — `purging`/`purged` → `404` on the field; `processing`/`failed` → `409 invalid_state`. Only `ready` assets reach a provider.
 
-Because both paths take the same lock in the same order, the race has exactly two serializable outcomes: the run sees a purging asset and rejects, or the purge sees an active job and rejects. (Multi-node runs create downstream jobs later — that phase needs run-level input leases or copied static references; noted as a seam in the DB doc, deliberately not built now.)
+Because both paths take the same lock in the same order, the race has exactly two
+serializable outcomes: the run sees a purging asset and rejects, or the purge
+sees an active job and rejects. M5 multi-node admission must extend this guarantee
+to just-in-time downstream jobs through run-level input leases or copied static
+references before `downstream`/`all` can be accepted.
 
 Response: `202` → `Asset` (`lifecycle: 'purging'`). Already purging/purged → `200`, idempotent.
 
@@ -663,6 +671,39 @@ Response `200`:
 
 Three indexed reads; everything the canvas needs to mount.
 
+### `GET /flows/:id/references` — hydrate the canvas references
+
+Response `200`:
+
+```ts
+{
+  assets: FlowReferenceAsset[]
+  elements: FlowReferenceElement[]
+  elementAssets: {
+    elementId: string
+    assetId: string
+    role: string
+    sortOrder: number
+    isPrimary: boolean
+  }[]
+}
+```
+
+This is the batched hydration contract for the Asset and Element nodes already
+present in the Flow graph. It is scoped to the active organization and returns
+`404 not_found` both for a missing Flow and for a Flow owned by another
+organization. Direct Asset nodes and every Asset linked to a referenced Element
+are returned once. Element links preserve role, primary-first ordering,
+`sortOrder`, and stable ID tie-breaking.
+
+Asset records include their current lifecycle and processing state. Readable
+media URLs and thumbnails are signed for the requesting user; storage keys are
+never exposed. Because Element data, role membership, Asset metadata, and signed
+media can all change independently of graph topology, clients invalidate the
+organization-scoped reference cache after relevant Element or Asset mutations.
+Mounted canvases refetch invalidated references immediately and retain periodic
+refresh only for signed-media renewal and asynchronous processing transitions.
+
 ### `POST /flows/:id/graph` — the autosave sync (the contract that matters most)
 
 The client is authoritative for graph _shape_ between syncs; the server is authoritative for _ordering_ via compare-and-swap on `revision`. Each debounce tick sends one batched mutation:
@@ -704,9 +745,11 @@ Response: `200 ListResponse<RunJob & { runId: string }>` — newest first, outpu
 
 ## Runs
 
-The execution surface. One spine: every execution is a run; only `mode: 'node'` is accepted initially — the request shape already carries the future (`downstream`, `all` → `400 validation_error` "mode not yet available" until they ship, so enabling them is a validator change, not an API change).
+The execution surface. One spine: every execution is a run. M5 accepts `node`,
+`downstream`, and `all` against the same durable mock-provider engine. `tool`
+remains unavailable until the versioned Tool product ships.
 
-### `POST /runs` — run one generation node
+### `POST /runs` — execute a node, downstream branch, or Flow
 
 **Admission control comes before credits exist.** Idempotency prevents _duplicate_ runs, not _many_ runs — different keys create unlimited executions, and Trigger.dev concurrency only queues them; every admitted job eventually spends provider money.
 
@@ -732,22 +775,22 @@ Request:
 ```ts
 {
   flowId: string;
-  mode: "node";
-  targetNodeId: string; // must be a generation-type node of this flow
+  mode: "node" | "downstream" | "all";
+  targetNodeId?: string; // required for node/downstream; omitted for all
 }
 ```
 
 There is deliberately **no prompt/model/settings in this body**: the node's draft config and its connected context (text nodes, asset nodes, element nodes, upstream outputs) are read server-side and frozen into the run's `graphSnapshot` and the job's provenance rows — the server is authoritative for what executes (vision: "generation must remain server-authoritative").
 
-Server sequence (one transaction + dispatch, per the DB doc's integration contract): resolve upstream context and candidate collections via edges → call the server-only `buildElementContext` contract for connected Elements → apply each consuming input's `auto` or `manual` selection policy → validate membership, compatibility, semantic-slot cardinality, and aggregate model limits (`422 unsupported_by_model` naming the offending setting/input) → compose `resolvedPrompt` → insert run + run-node + job + sources + exact inputs → commit → trigger the generate task. Provider-facing URLs or uploads are resolved after the immutable Asset IDs have been selected; expiring signed URLs are never snapshot data.
+Server sequence (one transaction + dispatch, per the DB doc's integration contract): capture the Flow revision and every participating Element revision → resolve upstream context and candidate collections via edges → call the server-only `buildElementContext` contract for connected Elements → apply each consuming input's `auto` or `manual` selection policy → validate membership, compatibility, semantic-slot cardinality, and aggregate model limits (`422 unsupported_by_model` naming the offending setting/input) → compose `resolvedPrompt` → lock and validate exact Asset inputs → revalidate Flow and Element revisions → insert run + run-node + job + sources + exact inputs → commit → trigger the version-pinned generate task with ID-only payload. Provider-facing URLs or uploads are resolved after the immutable Asset IDs have been selected; expiring signed URLs are never snapshot data.
 
 Run creation also **locks its selected input asset rows** (ordered by asset id) and requires every input to be **`lifecycle` live/archived AND `processingState: 'ready'`** — purging/purged inputs are rejected (the purge coordination contract under `POST /assets/:id/purge`), and `processing`/`failed` inputs are rejected with **`409 invalid_state`** naming the field (the request is well-formed; the asset is in an unusable state — the client can distinguish "wait for processing" from bad form data): an asset whose bytes haven't been verified or whose media is invalid must never reach a provider.
 
-**Snapshot consistency — `READ COMMITTED` + revision re-validation, deliberately not `REPEATABLE READ`.** RR has a trap here: the transaction's snapshot is taken by its _first statement_ — which is the advisory-lock call — _before_ the lock wait completes, so a queued transaction would evaluate the admission limits against a stale snapshot and the whole point of the lock evaporates. Under `READ COMMITTED`, every statement after the lock sees the latest committed state, which is exactly what admission needs. Graph consistency is then guaranteed by the revision, not the isolation level: read `flows.revision` before resolving, resolve (each individual read is internally consistent), **re-read the revision just before inserting** — changed → rollback and retry (rare; autosave collided). The captured `revision` is recorded inside `graphSnapshot` so every run states exactly which graph version it executed. Element edits between reads simply yield the newer element — each element+kit is read in one self-consistent statement, and "the context as of the click" is what provenance promises.
+**Snapshot consistency — `READ COMMITTED` + revision re-validation, deliberately not `REPEATABLE READ`.** RR has a trap here: the transaction's snapshot is taken by its _first statement_ — which is the advisory-lock call — _before_ the lock wait completes, so a queued transaction would evaluate the admission limits against a stale snapshot and the whole point of the lock evaporates. Under `READ COMMITTED`, every statement after the lock sees the latest committed state, which is exactly what admission needs. Coherence is then guaranteed by explicit revisions: read `flows.revision` and all participating `elements.revision` values before resolving, resolve, and **re-read every captured revision just before inserting**. Any mismatch rolls back and retries the complete operation. Element mutations increment their revision in the same transaction as data or Element-Asset role/order/primary changes. Selected Asset rows are locked in stable ID order and checked from their locked state. The snapshot records captured revisions, so a run cannot mix graph revision 51 with Element context assembled across two different kit states.
 
-Response: `202 FlowRun` — `nodes[0].job` embedded with status `pending`.
+Response: `202 FlowRun` with planned node/item counts and status `pending`.
 
-A Trigger dispatch failure _after_ commit still returns `202` with the persisted pending run — the reconciliation sweep redispatches it. **Provider failures are never synchronous HTTP errors**: generation happens inside Trigger.dev after this response, so failures surface as `errorCode`/`errorMessage` on the job and run via polling (there is deliberately no `502 provider_error` in this API).
+A Trigger dispatch failure _after_ commit still returns `202` with the persisted pending run — the reconciliation sweep redispatches it using the run's compatible executor deployment. Trigger payloads contain only `{ flowRunId, organizationId }` or `{ generationJobId, organizationId }`; workers load immutable snapshots and exact inputs from PostgreSQL. The application and Trigger tasks are deployed atomically and the resolved executor version is recorded on the run. **Provider failures are never synchronous HTTP errors**: generation happens inside Trigger.dev after this response, so failures surface as `errorCode`/`errorMessage` on the job and run via polling (there is deliberately no `502 provider_error` in this API).
 
 ### `GET /runs/:id` — the polling endpoint
 
@@ -768,9 +811,40 @@ type FlowRunSummary = Omit<FlowRun, "nodes"> & {
 Cancellation is honest about asynchrony (the provider may finish anyway), and it targets the right Trigger run per mode:
 
 - **mode `'node'`**: there is no parent orchestration run — the server cancels the **child job's** `triggerRunId` and applies the guarded transitions to job, run-node, and run together.
-- **multi-node modes (later)**: cancel the **parent** orchestration run _and_ any active children's runs, then the same guarded transitions; remaining pending run-nodes go `'canceled'`.
+- **multi-node modes**: cancel the **parent** orchestration run _and_ any active children's runs, then the same guarded transitions; remaining pending run-nodes go `'canceled'`.
 - run still active → `202 FlowRun` (statuses reflect whatever the guarded writes won; keep polling)
 - already terminal → `409 invalid_state`
+
+---
+
+## Deferred Tool API contract
+
+Tools are not MVP endpoints, but their version semantics are fixed so UI, public
+API, and MCP do not invent different execution paths later.
+
+```txt
+POST   /tools                              create mutable Tool + draft Flow
+PATCH  /tools/:id                          edit mutable metadata/default visibility
+POST   /tools/:id/publish                  publish coherent draft as next immutable version
+GET    /tools/:id/versions                 list immutable published versions
+POST   /tools/:id/runs                     invoke current published version
+POST   /tools/:id/versions/:version/runs   invoke concrete version
+```
+
+The draft graph uses the ordinary Flow CRUD and graph-sync contract through the
+Tool's `draftFlowId`; there is no second graph editor or persistence model.
+Publishing applies the same Flow/Element/Asset revision-revalidated snapshot
+builder as run admission, validates declared typed input/output contracts, and
+inserts a monotonic immutable ToolVersion. It may atomically update the Tool's
+current-published-version pointer.
+
+Default invocation resolves that pointer once under admission and stores the
+concrete `toolVersionId` on the run. Explicit invocation resolves the requested
+version directly. Both paths call the same run service used by canvas Tool nodes;
+MCP is an adapter over this contract, not a separate executor. Idempotent replay
+returns the originally resolved version even if the Tool default changed between
+requests. Tool nodes always store a concrete version ID and require explicit user
+upgrade.
 
 ---
 
@@ -778,26 +852,33 @@ Cancellation is honest about asynchrony (the provider may finish anyway), and it
 
 ### `GET /config/generation`
 
-The resolved, product-controlled configuration the client renders from — model catalog + code registries, merged server-side. `ETag`-cacheable; changes only on deploy or catalog refresh.
+The resolved public product contract the client renders from. TaleLabs owns this
+curated, code-versioned registry; live OpenRouter/provider discovery never drives
+the response directly. Discovery is used only by a reviewed manual/CI drift
+report. The endpoint is `ETag`-cacheable and changes only on deployment.
 
 Response `200`:
 
 ```ts
 {
   models: {
-    id: string // 'provider/model'
+    id: string // stable TaleLabs identity, for example 'talelabs/veo-3.1'
     displayName: string
     mediaType: MediaType
     enabled: boolean
     recommended: boolean
     capabilities: {
+      operations: {
+        id: string // 'textToVideo', 'imageToVideo', 'tts', 'soundEffect', ...
+        inputRoles: string[]
+      }[]
       // registry-driven, never fixed booleans: a new provider capability (mask,
       // control image, source video, audio reference) is a new slot/setting
       // entry in the registry — never a new API field
       inputSlots: {
         role: string // from the inputRoles vocabulary: 'reference', 'firstFrame', ...
         label: string // presentation ships with the data — no frontend id->label mapping tables
-        description?: string
+        descriptionKey?: string // localized by the client
         accepts: AssetType[]
         min: number
         max: number
@@ -808,6 +889,7 @@ Response `200`:
           | { kind: 'number'; min: number; max: number; step?: number; unit?: string; default?: number }
           | { kind: 'boolean'; default?: boolean }
         ))[]
+      constraints: GenerationConstraint[]
     }
   }[]
   elementTypes: {
@@ -830,13 +912,34 @@ Response `200`:
 type SettingBase = {
   id: string
   label: string
-  description?: string
+  descriptionKey?: string // localized by the client
   advanced?: boolean // collapsed behind "advanced" in the node UI
-  visibleWhen?: { settingId: string; equals: unknown } // simple dependent visibility
+  visibleWhen?: GenerationCondition[] // shared declarative visibility predicates
+}
+
+type GenerationConstraint = {
+  id: string
+  // Stable declarative predicates/actions interpreted by shared client/server
+  // validation. Never executable code sent to the browser.
+  when: Record<string, unknown>
+  require?: Record<string, unknown>
+  forbid?: Record<string, unknown>
 }
 ```
 
+`visibleWhen` is presentation metadata only. `operations` and `constraints` are
+the authoritative shared validation contract; hiding a control never makes an
+otherwise invalid combination executable.
+
 Serving the vocabularies here keeps them single-sourced — the client never hardcodes a role list the server validates against.
+
+Provider model IDs, endpoint tags, adapter names/versions, credentials, fallback
+policy, internal costs, and emergency controls are deliberately absent. A
+server-only route registry resolves a stable TaleLabs model ID to a concrete
+provider route during run admission and snapshots that route/version. If routing
+may choose among endpoints, the public capabilities are the verified intersection
+of every eligible endpoint; endpoint-specific capabilities require endpoint
+pinning.
 
 ---
 
@@ -848,4 +951,4 @@ Serving the vocabularies here keeps them single-sourced — the client never har
 4. **Results are derived, never duplicated.** Node results come from `/nodes/:nodeId/results` (jobs + assets), not from node `data` — matching the DB rule that draft and provenance never share storage.
 5. **The idempotency ladder is client-visible only at the top.** The client supplies one `Idempotency-Key` per run request; everything below (child job keys, dispatch keys, provider submission markers) is server-derived, per the DB doc.
 6. **Server-authoritative generation.** Run requests carry _which node_, never _what to generate_ — context resolution, capability validation, and snapshotting happen server-side, so provenance can't be spoofed by a client and the Generate UX can evolve without API churn.
-7. **Deferred on purpose:** `POST /runs/estimate` + `402` (credits Phase 2 — costs are already recorded server-side per the DB doc); `downstream`/`all` modes (validator flip when the orchestrator ships); Tools/Recipes endpoints (new resources, same patterns); realtime push (polling contract stands); bulk asset operations beyond the atomic move endpoint (`POST /assets/bulk` when additional server-side bulk mutation becomes necessary).
+7. **Deferred on purpose:** `POST /runs/estimate` + `402` (credits Phase 2 — costs are already recorded server-side per the DB doc); Tools/Recipes endpoints (new resources, same patterns); realtime push (polling contract stands); bulk asset operations beyond the atomic move endpoint (`POST /assets/bulk` when additional server-side bulk mutation becomes necessary).

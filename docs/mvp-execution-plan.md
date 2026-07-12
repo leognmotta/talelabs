@@ -22,13 +22,18 @@ Build and validate the first TaleLabs creative loop:
 Upload or find an Asset
 -> optionally create an Element
 -> create or open a Flow
--> connect Text, Asset, Element, and Image Generation nodes
--> run one selected generation node
+-> connect Text, Asset, Element, and Image/Video/Audio Generation nodes
+-> validate the complete runtime with deterministic provider mocks
+-> replace only the provider boundary with controlled real integrations
 -> persist the output as an Asset
 -> reuse that output in the same or another Flow
 ```
 
-The MVP proves this loop with image generation first. Video and audio generation reuse the same foundation after the image loop is reliable.
+The engine phase proves this loop for image, video, and audio without spending on
+AI generation. Inputs, graph state, snapshots, runs, jobs, Trigger.dev execution,
+provenance, and canonical output Assets are real. Only the provider submission
+and response are mocked. Real provider integrations begin only after that shared
+runtime is stable.
 
 ## Product Scope
 
@@ -47,18 +52,16 @@ The implementation order is mandatory unless the user explicitly changes the pro
 2. API foundation
 3. Assets and folders
 4. Elements
-5. Flows and graph editing
-6. Run one image-generation node
-7. Complete iteration and reliability
-8. Billing and credits in a separate productization phase
+5. Flows, graph editing, and image/video/audio generation-node configuration
+6. Provider-independent run engine using deterministic mocks
+7. Controlled real-provider integration
+8. Complete iteration, reliability, and internal MVP staging
+9. Billing and credits in a separate productization phase
 ```
 
 Explicitly deferred from the MVP:
 
 ```txt
-video and audio generation nodes
-run downstream and run all
-automatic DAG execution
 Tools
 Recipes
 Storyboard
@@ -66,7 +69,6 @@ simple Generate page
 collaboration and comments
 Flow version history
 triggers, schedules, and webhooks
-batch and iterator nodes
 editor or cuts
 public API and MCP
 public galleries and links
@@ -74,7 +76,11 @@ projects
 credits, subscriptions, and Stripe billing
 ```
 
-The initial database includes `flowRuns` and `flowRunNodes` because every execution belongs to a run from day one. That does not authorize implementing multi-node orchestration during the MVP.
+The initial database includes `flowRuns` and `flowRunNodes` because every
+execution belongs to a run from day one. M5 explicitly authorizes the bounded
+engine semantics listed there, including full-flow execution and explicit
+iteration primitives. It does not authorize triggers, schedules, arbitrary
+conditionals, or a general automation language.
 
 ## How To Execute A Task
 
@@ -91,6 +97,20 @@ For every implementation task:
 7. Update the database/API design documents only when implementation proves that an approved contract is impossible or incorrect.
 8. Report exactly what was verified and what remains for user QA.
 9. Stop when the acceptance criteria are met.
+
+When a task implements behavior that stands in for a future external AI
+provider, mark the exact replacement boundary with this searchable comment:
+
+```ts
+// TODO(provider-integration): Replace this deterministic mock with the real
+// provider adapter in M6; preserve the normalized request/result contract.
+```
+
+Use the comment only at the adapter or fixture-response boundary, not throughout
+ordinary engine code. Mock planners, alternate schemas, or mock persistence are
+forbidden: the provider response is mocked, not TaleLabs architecture. M6 must
+remove every applicable `TODO(provider-integration)` as each adapter becomes
+real, and its acceptance review must inventory any markers intentionally left.
 
 Do not combine a backend contract, a large UI implementation, and a visual-polish pass into one session.
 
@@ -164,9 +184,10 @@ Automated tests are not an MVP acceptance requirement. Their absence or failure 
 | M1: API foundation      | Product routes have one tenant-safe Hono/OpenAPI/SDK foundation.                                                         |
 | M2: Assets              | Private uploads become durable, processed, searchable, organized, and reusable Assets.                                   |
 | M3: Elements            | Generic reusable context with typed data and role-based Asset kits works end to end.                                     |
-| M4: Flows               | Users can build and autosave a valid manual creative graph with the initial node set.                                    |
-| M5: Image generation    | One selected image-generation node executes durably and produces canonical Assets with immutable provenance.             |
-| M6: MVP candidate       | Outputs can be reused for continued iteration and the complete loop passes engineering verification and user acceptance. |
+| M4: Flows               | Users build valid graphs with real inputs and capability-aware Image, Video, and Audio Generation nodes.                  |
+| M5: Mock run engine     | The production-shaped runtime executes node/full-flow scenarios against deterministic provider mocks without AI spend.    |
+| M6: Provider integration | Approved image, video, and audio adapters replace mocks without changing graph, run, job, provenance, or Asset contracts. |
+| M7: MVP candidate       | The integrated creative loop passes tenant, reliability, staging, engineering, and user-acceptance gates.                |
 
 ---
 
@@ -532,7 +553,9 @@ Flows are the primary product surface. The first version is a manual visual crea
 **Status:** Blocked by M3
 
 - Define framework-neutral node schemas, schema versions, typed handles, cardinality, connection compatibility, and payload requirements.
-- Start with exactly `text`, `asset`, `element`, and `imageGeneration` nodes.
+- Start the foundational registry with `text`, `asset`, `element`, and
+  `imageGeneration`. E-035 extends this same registry with `videoGeneration` and
+  `audioGeneration`; do not create a second media registry or validation path.
 - Define Element nodes with one resolved-context output plus one typed collection output per registered Asset role. A role produces one stable `ImageSet`, `VideoSet`, or `AudioSet` handle, never one dynamic handle per related Asset.
 - Define generation inputs as model-capability slots with aggregate cardinality limits and a per-input selection policy: deterministic `auto` or ordered manual Asset IDs.
 - Keep React node components in the dashboard and server validation in shared/server-safe code.
@@ -577,16 +600,39 @@ Implement functional node components and selectors for Text, canonical Assets, a
 
 The Element node stores only the Element reference. It exposes one resolved-context handle plus one typed collection handle per registered Asset role; it never embeds a copy of Element data, kit Assets, signed URLs, or `buildElementContext` output. The server resolves the current context and role candidates when a run is created.
 
-### E-035 - Add Generation Configuration And Image Node Draft UI
+### E-035 - Add Generation Configuration And Media Generation Draft Nodes
 
 **Status:** Blocked by E-030 and E-034
 
 **Scope**
 
 - Implement the product-controlled model/capability registry and `GET /config/generation`.
-- Enable a deliberately small image-model catalog.
-- Render model choice and capability-aware settings inside the Image Generation node.
+- Use stable TaleLabs model IDs in Flow node data. Split the public capability
+  registry from server-only provider routes, endpoint tags, credentials,
+  fallbacks, internal costs, and emergency policy.
+- Treat OpenRouter and direct-provider discovery APIs as reviewed research/drift
+  inputs only. Do not populate production UI or validation from live discovery.
+  Add a non-mutating manual/CI drift report for the initially approved models.
+- Register a deliberately small catalog of real image, video, and audio model
+  identities and their documented capabilities. This is configuration and
+  validation work only; no provider is called in M4 or M5.
+- Cover representative capability families rather than maximizing model count:
+  one image model with multi-reference/output-count behavior, one constrained
+  first/last/reference video family, one mixed-media-reference video family, one
+  TTS operation, and one sound-effect operation. Additional entries require
+  separate capability review.
+- Render model choice and capability-aware settings inside Image Generation,
+  Video Generation, and Audio Generation nodes.
 - Expose only supported input slots/settings and validate node data through the registry.
+- Represent model-specific slots explicitly, including combined reference limits,
+  first frame, last frame, reference video, reference audio, duration, aspect
+  ratio, resolution, output count, and mutually exclusive modes where supported.
+- Model operation modes and cross-field constraints explicitly, including
+  text/image/reference/video generation modes, settings that require another
+  setting value, mutually exclusive slots, and operation-specific audio contracts.
+- If a model may route across several provider endpoints, expose only the
+  verified capability intersection. Pin a concrete endpoint when TaleLabs exposes
+  endpoint-specific behavior.
 - Show compact thumbnail stacks and concise selected-reference counts on connected media inputs. The input row itself opens a contextual inspector; do not add a persistent `Change selection` button or expose `Automatic / Manual` terminology.
 - Make a compatible connection immediately runnable using deterministic Element defaults. The inspector shows selected order, total candidates, model maximum, candidates grouped by source, `Customize`, and `Reset to Element defaults`. Changing any candidate implicitly creates a custom selection.
 - Keep incoming edges as the topology source of truth. Persist only per-input selection policies in generation-node `data`; validate manual IDs as compatible members of the current candidate set.
@@ -600,154 +646,322 @@ The Element node stores only the Element reference. It exposes one resolved-cont
 
 **Owner:** User
 
-The user validates canvas ergonomics, simple two-node creation, multi-context graphs, node controls, connection feedback, autosave/conflicts, refresh recovery, direct URLs, keyboard behavior, and desktop/mobile constraints.
+The user validates canvas ergonomics, simple two-node creation, multi-context
+graphs, all three generation-node forms, model-dependent slot changes, reference
+limits, node controls, connection feedback, autosave/conflicts, refresh recovery,
+direct URLs, keyboard behavior, and desktop/mobile constraints.
 
 **M4 gate**
 
-A user can create and autosave a valid Flow containing Text, Asset, Element, and configured Image Generation nodes, including branches and multiple context sources.
+A user can create and autosave a valid Flow containing Text, Asset, Element, and
+configured Image, Video, and Audio Generation nodes, including branches and
+multiple context sources. The same capability registry drives UI visibility and
+server validation. No run or provider request occurs.
 
 ---
 
-## M5 - Run One Image Generation Node
+## M5 - Provider-Independent Run Engine
 
-The first execution experience runs one selected node manually. It does not run downstream nodes or the whole graph.
+M5 builds the real TaleLabs execution architecture without calling OpenRouter or
+any image, video, audio, or text generation API. Real Assets and Elements enter
+the graph. Deterministic mock adapters return fixture media through the same
+normalized result contract expected from future providers. Those outputs pass
+through the real ingestion path and become canonical Assets.
 
-### E-040 - Implement Run Planning And Snapshot Creation
+### E-040 - Harden The Model Capability Registry
 
 **Status:** Blocked by M4
 
-**Scope**
+- Define provider-independent schemas for image, video, and audio generation
+  requests and results.
+- Record real model identities and researched capabilities without implementing
+  their providers: modalities, generation modes, typed slots, total/per-slot
+  reference limits, accepted media constraints, duration, resolution, aspect
+  ratio, output count, and incompatible option combinations.
+- Make the shared registry drive node rendering, connection validation, reference
+  selection, cost estimates using mock price facts, and authoritative server
+  validation.
+- Add deterministic capability scenarios such as three image references, one
+  first frame, one last frame, one reference video, and unsupported combinations.
+- Do not add provider credentials, SDKs, HTTP calls, or paid smoke checks.
+- Define normalized provider lifecycle contracts for immediate outputs, raw or
+  streamed bytes, and asynchronous submit/poll/webhook jobs. Keep lifecycle
+  behavior independent from graph planning and media type.
 
-- Implement server-authoritative upstream traversal for one target Image Generation node.
-- Resolve multiple Text, Asset, Element, and prior-node-output sources in deterministic order.
-- Apply model capability limits and preserve all sources separately from the exact provider input subset.
-- Compose `resolvedPrompt` and create immutable source/input provenance.
-- Implement `READ COMMITTED` graph-revision revalidation and ordered Asset row locks.
-- Require every submitted Asset input to be `processingState = 'ready'` and not purging/purged.
-- Use a fake executor; do not call OpenRouter yet.
-
-### E-041 - Implement Run API And Admission Control
+### E-041A - Prototype Runtime Values And Graph Planning
 
 **Status:** Blocked by E-040
 
-**Scope**
+- Implement server-authoritative DAG validation, topological planning, and
+  selected-node, downstream, and full-flow execution plans in an isolated,
+  deterministic engine module before changing execution persistence.
+- Resolve real Text, Asset, Element-role, and same-run prior-output sources in
+  deterministic order.
+- Preserve the distinction between outer runtime items and inner typed
+  collections defined by `docs/flow-nodes-planning.md`.
+- Apply model capability limits while preserving all source candidates separately
+  from the exact selected provider inputs.
+- Compose resolved prompts and immutable source/input provenance.
+- Exercise representative plans for branches, multiple outputs, provider request
+  sharding, Zip, Cartesian dimensions, iteration, collection, and partial
+  failures using mock executor responses.
+- Expose an explicit development-only plan inspection path so the user can
+  understand item counts, request counts, selected inputs, and lineage before any
+  provider or durable orchestration is introduced.
+- Do not add provider SDKs or commit to a persistence migration until this runtime
+  contract has been reviewed.
 
-- Implement `POST /runs`, `GET /runs`, `GET /runs/:id`, and cancel.
-- Accept only `mode = 'node'`; reject future modes as documented.
-- Implement fast idempotency lookup plus authoritative recheck under the organization advisory lock.
-- Make the advisory lock the transaction's first database statement.
-- Enforce active-run cap, per-user rate limit, private-development allowlist, and exposure-aware emergency budget.
-- Create run, run-node, job, sources, and inputs atomically.
-- Record provider-cost and credit-cost facts without adding wallets or balance enforcement.
+### E-041B - Finalize Execution Persistence And Immutable Snapshots
 
-### E-042 - Implement Durable Trigger.dev Generation Execution
+**Status:** Blocked by E-041A and user review of the runtime contract
 
-**Status:** Blocked by E-041
+- Update `docs/db-design-planning-v2.md` and `docs/api-design-planning-v2.md`
+  first with the proven execution-item, provider-request, output-set, and run-mode
+  contracts. Do not let implementation silently redefine either source document.
+- Add the snapshot-guard migration and revision semantics defined by the database
+  design, including `elements.revision`, `flowRuns.snapshotHash`, and
+  `flowRuns.executorVersion`.
+- Add the reviewed job-level model provenance fields for stable TaleLabs model
+  identity, operation, curated registry version, native provider model, provider
+  route version, and adapter version. Backfill development rows deterministically.
+- Add the reviewed `flowRunNodeItems` and item-to-many-generation-jobs persistence
+  seam required by output sharding and explicit iteration; migrate any existing
+  development rows deterministically.
+- Canonically serialize and persist bounded immutable snapshots. Never place
+  signed URLs, provider payloads, or media bytes in snapshots.
 
-**Scope**
+### E-042 - Implement Run API, Admission, And Durable Dispatch
 
-- Add the ID-only generation task and dispatch reconciliation sweep.
-- Implement guarded pending/running/terminal state propagation across job, run-node, and mode-node run.
-- Implement the `providerSubmittedAt` / `providerJobId` uncertainty contract.
-- Implement cancellation and orphan-output cleanup.
-- Use a fake provider adapter first to exercise retries and failures without spend.
+**Status:** Blocked by E-041B
 
-### E-043 - Implement The First OpenRouter Image Adapter
+- Implement create/list/detail/cancel APIs for `node`, `downstream`, and `all`
+  modes.
+- Implement idempotency, organization advisory locks, active-run limits,
+  development allowlists, and emergency budget controls using mock costs.
+- Create run, run-node, execution-item, generation-job, source, and exact-input
+  facts atomically as authorized by the final planner shape.
+- Dispatch ID-only Trigger.dev tasks; workers load immutable state from
+  PostgreSQL.
+- Implement reconciliation, cancellation, executor-version pinning, and guarded
+  pending/running/terminal transitions.
+- No external AI provider may be called.
+
+### E-043 - Implement Deterministic Mock Provider Adapters
 
 **Status:** Blocked by E-042
 
-- Add one approved image-generation model behind a provider-independent adapter.
-- Normalize settings, context inputs, provider submission, polling/result handling, and safe errors.
-- Keep raw provider payloads in logs, never user-facing errors.
-- Keep any real-provider smoke check opt-in and require explicit credentials and spend approval.
-- Do not add fallback providers or direct-provider contracts yet.
+- Implement image, video, and audio adapters behind the production provider
+  interface.
+- Implement the production-shaped lifecycle surface: submit may return completed
+  outputs or a pending external job; polling and cancellation are optional
+  adapter capabilities. Trigger.dev owns durable polling/reconciliation rather
+  than holding one request open.
+- Accept the normalized real request and return deterministic fixture results,
+  configurable delay, output count, request sharding, retryable failure,
+  permanent failure, partial success, and cancellation behavior.
+- Put the required `TODO(provider-integration)` comment at every mock adapter's
+  replacement boundary.
+- Do not create a second mock planner, run table, job shape, ingestion path, or UI.
+- Keep mock media small and repository/development-bucket controlled; never call
+  an external generation endpoint.
 
-### E-044 - Persist Outputs And Expose Node Results
+### E-044 - Persist Mock Outputs And Build Result UX
 
 **Status:** Blocked by E-043 and M2
 
-**Scope**
+- Feed mock results through the same metadata probing, tenant-safe R2 key,
+  ingestion, and guarded Asset-creation path required by real providers.
+- Ensure every successful result becomes a canonical Asset with immutable
+  provenance and deterministic output identity.
+- Implement result history from jobs and Assets; never copy result IDs into node
+  configuration.
+- Build run controls and queued/running/succeeded/partial/failed/canceled states,
+  refresh recovery, output previews, rerun, and cancellation for all three media
+  generation nodes.
+- Allow a generated output to become an Asset node and connect to a downstream
+  generation input.
 
-- Ingest provider outputs into tenant-safe R2 keys.
-- Probe output metadata before inserting generated Assets directly as `ready`.
-- Complete job/run state and output Asset insertion in the guarded transaction order from the database design.
-- Implement node result history from jobs/Assets; never copy result IDs into node `data`.
-- Ensure retries reuse deterministic output keys and cannot duplicate Assets.
+### E-045 - Implement Multiplicity And Explicit Iteration
 
-### E-045 - Build Run-Node And Result UI
+**Status:** Blocked by E-044
 
-**Status:** Blocked by E-041 and E-044
+- Support requested multiple outputs without treating every member of a typed
+  media collection as a separate execution item.
+- Implement deterministic provider-request sharding in the planner so mocks can
+  model a provider that returns fewer outputs per call than requested.
+- Add the bounded initial control nodes: Iterator/Map, Collect, Zip, and Prompt
+  Iterator. Do not add arbitrary scripting, schedules, webhooks, or conditionals.
+- Implement stable item keys, dimensions, lineage, per-item state, retries,
+  failures, provenance, and cache/idempotency boundaries.
+- Make multiplication visible in the UI with item/output counts and a pre-run
+  mock cost estimate. Never hide Cartesian expansion behind an edge.
+- Preserve successful items during partial failure and make rerun scope explicit.
 
-Implement Run on the selected Image Generation node, submit locking, queued/running/succeeded/failed/canceled states, polling, refresh recovery, result history, output previews, and clear cost/error display where available. Realtime is deferred; polling remains the contract.
-
-### E-046 - Verify Generation Reliability And Provenance
+### E-046 - Verify The Mock Engine Objectively
 
 **Status:** Blocked by E-045
 
 **Owner:** AI
 
-Automate and objectively verify duplicate submit, idempotent replay, revision collision, multi-context resolution, reference limits, non-ready input rejection, purge race, lost dispatch, task retry, uncertain provider submission, success, failure, cancellation, output-ingestion failure, and immutable provenance after editing source Elements/Flows.
+Verify selected-node, downstream, and full-flow execution; real input resolution;
+model-specific limits; multiple context sources; zipped and Cartesian inputs;
+multiple outputs; iteration and collection; branches; deterministic planning;
+idempotent replay; snapshot collisions; task retries; lost dispatch; cancellation;
+partial failure; output-ingestion failure; canonical Asset reuse; and immutable
+historical provenance. Confirm through network controls/log inspection that no AI
+generation provider was contacted.
 
-### E-047 - Image Generation User QA And UI Critique Gate
+### E-047 - Mock Engine User QA And UI Critique Gate
 
 **Status:** Blocked by E-046
 
 **Owner:** User
 
-The user tests simple and multi-context image generation, model/settings ergonomics, async feedback, refresh behavior, result presentation, failure recovery, and overall canvas experience. Findings become separate implementation tasks.
+The user validates model-driven node forms, reference selection and overflow,
+image/video/audio runs, full-flow execution, visible iteration, output sets,
+partial failures, refresh recovery, result reuse, and overall canvas ergonomics.
 
 **M5 gate**
 
-A user can run one selected image-generation node, receive a durable generated Asset, inspect immutable provenance, and find the output in the global Asset library.
+TaleLabs can execute representative image, video, and audio creative graphs using
+real workspace inputs and production-shaped durable infrastructure. All generated
+media is deterministic mock output, becomes a canonical Asset, and can continue
+through the graph. No external AI generation request or generation spend occurs.
 
 ---
 
-## M6 - Continued Iteration And Internal MVP Candidate
+## M6 - Controlled Provider Integration
 
-### E-050 - Complete Output Reuse And Branching
+M6 replaces only the marked provider boundaries. Graph semantics, capability
+validation, snapshots, runs, jobs, provenance, Trigger.dev orchestration, output
+ingestion, and UI must not be redesigned to accommodate a provider.
+
+### E-060 - Implement The First Real Image Adapter
 
 **Status:** Blocked by M5
 
-- Allow a generated output to be materialized as an Asset node with a fresh client-generated node ID.
-- Allow outputs to connect into another generation node as context.
-- Support pinning a specific prior node output and default latest-succeeded resolution.
-- Verify later upstream runs never rewrite the concrete input of historical jobs.
+- Select one approved image model already represented in the capability registry.
+- Resolve its stable TaleLabs ID through the server-only route registry. Pin a
+  concrete endpoint or verify that every eligible endpoint supports the public
+  capability intersection.
+- Implement submission, result normalization, polling when required,
+  cancellation where supported, safe errors, and raw diagnostic logging behind
+  the existing adapter contract.
+- Remove the corresponding `TODO(provider-integration)` marker only after the
+  real adapter passes controlled opt-in smoke checks.
+- Keep the mock adapter available only through an explicit development/test
+  configuration, never an implicit production fallback.
 
-### E-051 - Run End-To-End Regression And Tenant Audit
+### E-061 - Implement The First Real Video Adapter
 
-**Status:** Blocked by E-050
+**Status:** Blocked by E-060
 
-Automate the highest-value loop across two organizations: upload, process, organize, create Element, attach kit Assets, create Flow, connect multi-context nodes, run image generation, persist output, reuse output, inspect provenance, archive/restore, and purge. Systematically attempt cross-organization IDs and verify signed URL isolation.
+Integrate one approved video model through the same contract. Verify first/last
+frame, reference limits, duration, asynchronous polling, cancellation support,
+large result ingestion, timeouts, and uncertain provider submission without
+changing Flow runtime semantics.
 
-### E-052 - Add Operational Reliability And Cleanup
+Verify OpenRouter/provider discovery drift before enabling the route, snapshot
+the resolved provider/adapter version, and reject capabilities that the selected
+endpoint cannot guarantee.
 
-**Status:** Blocked by E-051
+### E-062 - Implement The First Real Audio Adapter
 
-- Add structured request/run/job correlation logs and safe provider diagnostics.
-- Verify ingestion, generation dispatch, purge, abandoned-upload, failed-output, and thumbnail orphan reconciliation.
-- Configure Trigger.dev concurrency and retry policy.
-- Document emergency admission controls and provider-spend alerts.
-- Add a concise operations runbook without building a general admin product.
+**Status:** Blocked by E-060
 
-### E-053 - Stage The MVP And Run Engineering Verification
+Integrate one approved audio model through the same contract. Verify text and
+audio inputs, duration/format constraints, result metadata, ingestion, timeout,
+and cancellation behavior without creating a separate audio execution engine.
+Treat TTS, sound effects, music, speech-to-speech, isolation, and dubbing as
+distinct registry operations even when they share the `AudioSet` output type.
 
-**Status:** Blocked by E-051 and E-052
+### E-063 - Verify Provider Parity And Spend Controls
+
+**Status:** Blocked by E-061 and E-062
 
 **Owner:** AI
 
-Deploy dashboard, API, migrations, R2, Trigger.dev, and OpenRouter configuration to staging. Run health, auth, tenant, upload, processing, canvas, and controlled real-model smoke checks. Provide the staging URL, test-data expectations, known risks, and user handoff checklist.
+- Compare normalized mock and real adapter behavior for every supported model
+  capability and terminal state.
+- Verify provider-cost recording, bounded opt-in smoke budgets, emergency disable
+  controls, retry policy, uncertain submissions, orphan cleanup, and safe errors.
+- Inventory `TODO(provider-integration)` markers and document any model adapters
+  intentionally still mocked.
+- Confirm real integrations did not introduce provider-specific graph fields or
+  alternate persistence paths.
+- Confirm live discovery never mutated production capabilities automatically and
+  that every enabled route still satisfies its curated registry contract.
 
-### E-054 - Final MVP User Acceptance Gate
+### E-064 - Real Generation User QA Gate
 
-**Status:** Blocked by E-053
+**Status:** Blocked by E-063
 
 **Owner:** User
 
-The user evaluates the complete product as one system: Assets, Elements, Flows, generation, reuse, navigation, terminology, density, media states, destructive actions, responsive behavior, and creative value. Only the user can mark the MVP accepted.
+The user compares mock and real behavior, output presentation, latency feedback,
+model settings, reference handling, failure recovery, and practical creative
+quality. Findings become narrowly scoped adapter or UX tasks.
 
 **M6 gate**
 
-The image-based creative loop is stable enough for controlled internal or invited-user testing. It is not yet a paid launch.
+At least one approved image, video, and audio model runs through the same engine
+validated in M5. Replacing mocks required adapter work, not an execution-system
+rewrite.
+
+---
+
+## M7 - Internal MVP Candidate
+
+### E-070 - Run End-To-End Regression And Tenant Audit
+
+**Status:** Blocked by M6
+
+Exercise the highest-value loop across two organizations: upload, process,
+organize, create Element kits, create multi-context and iterative Flows, generate
+all three media types, persist/reuse outputs, inspect provenance, archive/restore,
+and purge. Systematically attempt cross-organization identifiers and signed URL
+access.
+
+### E-071 - Add Operational Reliability And Cleanup
+
+**Status:** Blocked by E-070
+
+- Add structured request/run/job/provider correlation logs.
+- Verify reconciliation for ingestion, dispatch, purge, abandoned upload, failed
+  output, thumbnails, and provider orphans.
+- Configure Trigger.dev concurrency/retry policies and provider-spend alerts.
+- Add an operations runbook without building a general admin product.
+
+### E-072 - Stage The MVP And Run Engineering Verification
+
+**Status:** Blocked by E-070 and E-071
+
+**Owner:** AI
+
+- Block production release while `npm audit --omit=dev` reports the tracked
+  Trigger.dev 4.5.3 / OpenTelemetry 2.7.1 baggage-allocation advisory. Recheck
+  the latest Trigger.dev release before staging; do not use npm's forced
+  downgrade to Trigger.dev 3.x. A narrowly scoped OpenTelemetry override must
+  pass Trigger task build and runtime smoke checks before adoption.
+
+Deploy dashboard, API, migrations, R2, Trigger.dev, and approved provider
+configuration to staging. Run controlled engineering smoke checks and provide the
+staging URL, known risks, test-data expectations, and user handoff checklist.
+
+### E-073 - Final MVP User Acceptance Gate
+
+**Status:** Blocked by E-072
+
+**Owner:** User
+
+The user evaluates Assets, Elements, Flows, generation, iteration, output reuse,
+navigation, terminology, media states, destructive actions, responsive behavior,
+and creative value as one product.
+
+**M7 gate**
+
+The integrated creative loop is stable enough for controlled internal or invited
+user testing. It is not yet a paid launch.
 
 ---
 
@@ -755,9 +969,12 @@ The image-based creative loop is stable enough for controlled internal or invite
 
 Do not silently append these to an MVP task.
 
-### Media Expansion
+### Model And Modality Expansion
 
-Add Video Generation and then Audio Generation nodes using the existing Asset, context, run, job, provider, and output-ingestion foundations. Each modality gets its own small provider task, node UI task, reliability verification, and user QA gate.
+Add more models and any new modalities through the existing capability registry,
+normalized adapter contract, runtime values, jobs, and output-ingestion path.
+Every addition gets its own bounded adapter task, capability verification, spend
+approval, and user QA gate. Do not redesign the engine per provider.
 
 ### Productization And Billing
 
@@ -778,7 +995,17 @@ welcome credits and abuse controls
 
 ### Later Creative Layers
 
-Plan Recipes, Tools, Storyboard, collaboration, simple Generate, public API/MCP, editing, and multi-node execution only after the MVP loop has evidence behind it. Their database seams are documented; their implementation is not authorized by this plan.
+Plan Recipes, Tools, Storyboard, collaboration, simple Generate, public API/MCP,
+and editing only after the MVP loop has evidence behind it. Their database seams
+are documented; their implementation is not authorized by this plan.
+
+When Tools are authorized, preserve the documented lifecycle: mutable Tool
+identity and metadata, one ordinary normalized Flow as the editable draft,
+immutable monotonic ToolVersions produced by coherent publication, a mutable
+current-published-version pointer used only as a default alias, concrete version
+pinning on Tool nodes and runs, and one shared execution service for canvas, UI,
+API, and MCP invocation. Do not create a second Tool graph persistence or
+executor.
 
 ## Prompt For The First Implementation Session
 
