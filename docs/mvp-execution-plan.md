@@ -613,6 +613,9 @@ The Element node stores only the Element reference. It exposes one resolved-cont
 - Treat OpenRouter and direct-provider discovery APIs as reviewed research/drift
   inputs only. Do not populate production UI or validation from live discovery.
   Add a non-mutating manual/CI drift report for the initially approved models.
+  The report must compare provider routes and lifecycle as well as reviewed
+  operation-level public settings, input limits, required-input rules, and
+  cross-field constraints against the current immutable contract version.
 - Register a deliberately small catalog of real image, video, and audio model
   identities and their documented capabilities. This is configuration and
   validation work only; no provider is called in M4 or M5.

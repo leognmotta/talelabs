@@ -696,13 +696,18 @@ organization. Direct Asset nodes and every Asset linked to a referenced Element
 are returned once. Element links preserve role, primary-first ordering,
 `sortOrder`, and stable ID tie-breaking.
 
-Asset records include their current lifecycle and processing state. Readable
-media URLs and thumbnails are signed for the requesting user; storage keys are
-never exposed. Because Element data, role membership, Asset metadata, and signed
-media can all change independently of graph topology, clients invalidate the
-organization-scoped reference cache after relevant Element or Asset mutations.
-Mounted canvases refetch invalidated references immediately and retain periodic
-refresh only for signed-media renewal and asynchronous processing transitions.
+Asset records include their current lifecycle and processing state. Initial
+hydration returns metadata and signed thumbnails, but leaves original media URLs
+null. The editor resolves an original URL from the tenant-scoped Asset detail
+endpoint only when playback or another explicit media action needs it. Storage
+keys are never exposed. Responses are bounded to 5,000 unique Assets and 10,000
+Element-Asset links; exceeding either limit fails explicitly instead of returning
+a silent partial graph. Because Element data, role membership, Asset metadata,
+thumbnails, and processing state can change independently of graph topology,
+clients invalidate the organization-scoped reference cache after relevant
+Element or Asset mutations. Mounted canvases refetch invalidated references
+immediately and retain periodic refresh only for thumbnail renewal and
+asynchronous processing transitions.
 
 ### `POST /flows/:id/graph` — the autosave sync (the contract that matters most)
 
@@ -855,7 +860,10 @@ upgrade.
 The resolved public product contract the client renders from. TaleLabs owns this
 curated, code-versioned registry; live OpenRouter/provider discovery never drives
 the response directly. Discovery is used only by a reviewed manual/CI drift
-report. The endpoint is `ETag`-cacheable and changes only on deployment.
+report. That report compares provider lifecycle, endpoint and parameter manifests,
+plus the reviewed public contract version, setting values/ranges, input limits,
+required-input rules, and applicable cross-field constraints. The endpoint is
+`ETag`-cacheable and changes only on deployment.
 
 Response `200`:
 
