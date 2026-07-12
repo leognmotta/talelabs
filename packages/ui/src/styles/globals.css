@@ -54,6 +54,15 @@
 }
 
 :root {
+  --flow-dot: oklch(0.54 0.012 264 / 35%);
+  --flow-edge-selected: oklch(0.72 0.16 264);
+  --flow-node-surface: var(--card);
+  --flow-type-asset: oklch(0.7 0.035 264);
+  --flow-type-audio: oklch(0.74 0.14 195);
+  --flow-type-context: oklch(0.72 0.16 145);
+  --flow-type-image: oklch(0.68 0.19 300);
+  --flow-type-text: oklch(0.76 0.105 170);
+  --flow-type-video: oklch(0.68 0.17 255);
   --background: oklch(0.975 0.004 264);
   --foreground: oklch(0.16 0.012 264);
   --card: oklch(0.995 0.002 264);
@@ -89,6 +98,8 @@
 }
 
 .dark {
+  --flow-dot: oklch(0.72 0.012 264 / 24%);
+  --flow-edge-selected: oklch(0.75 0.15 264);
   --background: oklch(0.105 0.008 264);
   --foreground: oklch(0.95 0.006 264);
   --card: oklch(0.155 0.01 264);
@@ -140,5 +151,127 @@
 
   html {
     @apply font-sans;
+  }
+}
+
+@layer components {
+  [data-flow-card-grid] {
+    background-image: radial-gradient(
+      circle,
+      color-mix(in oklab, var(--border) 90%, transparent) 1px,
+      transparent 1px
+    );
+    background-size: 16px 16px;
+  }
+
+  .react-flow {
+    --xy-background-color: var(--background);
+    --xy-edge-stroke: color-mix(in oklab, var(--primary) 72%, var(--muted-foreground));
+    --xy-edge-stroke-selected: var(--primary);
+    --xy-selection-background-color: color-mix(in oklab, var(--primary) 12%, transparent);
+    --xy-selection-border: 1px solid color-mix(in oklab, var(--primary) 55%, transparent);
+    --xy-controls-button-background-color: color-mix(in oklab, var(--card) 94%, transparent);
+    --xy-controls-button-background-color-hover: var(--accent);
+    --xy-controls-button-color: var(--foreground);
+    --xy-controls-button-border-color: var(--border);
+    color: var(--foreground);
+  }
+
+  .react-flow__node {
+    border-radius: calc(var(--radius) * 1.5);
+  }
+
+  .react-flow .react-flow__pane.selection {
+    cursor: crosshair;
+  }
+
+  .react-flow .react-flow__node.draggable,
+  .react-flow .react-flow__node.selectable {
+    cursor: default;
+  }
+
+  .react-flow .react-flow__node.draggable.dragging {
+    cursor: grabbing;
+  }
+
+  [data-flow-node-shell] [data-flow-port-tag] {
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  [data-flow-node-shell]:hover [data-flow-port-tag],
+  [data-flow-node-shell][data-selected="true"] [data-flow-port-tag],
+  [data-flow-node-shell]:focus-within [data-flow-port-tag] {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .react-flow__controls {
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius) * 1.25);
+    box-shadow: 0 10px 28px color-mix(in oklab, black 18%, transparent);
+  }
+
+  .react-flow__controls-button {
+    width: 30px;
+    height: 30px;
+  }
+
+  .flow-edge path {
+    transition: stroke 140ms ease, stroke-width 140ms ease;
+  }
+
+  [data-flow-handle] {
+    background: var(--flow-type-asset) !important;
+    box-shadow: 0 0 0 1px color-mix(in oklab, currentColor 18%, transparent);
+  }
+
+  [data-flow-handle][data-value-type="Text"] {
+    background: var(--flow-type-text) !important;
+  }
+
+  [data-flow-handle][data-value-type="ElementContext"] {
+    background: var(--flow-type-context) !important;
+  }
+
+  [data-flow-handle][data-value-type="ImageSet"] {
+    background: var(--flow-type-image) !important;
+  }
+
+  [data-flow-handle][data-value-type="VideoSet"] {
+    background: var(--flow-type-video) !important;
+  }
+
+  [data-flow-handle][data-value-type="AudioSet"] {
+    background: var(--flow-type-audio) !important;
+  }
+
+  [data-flow-output-preview] {
+    background-color: color-mix(in oklab, var(--muted) 26%, var(--background));
+    background-image:
+      linear-gradient(
+        45deg,
+        color-mix(in oklab, var(--muted) 48%, transparent) 25%,
+        transparent 25%,
+        transparent 75%,
+        color-mix(in oklab, var(--muted) 48%, transparent) 75%
+      ),
+      linear-gradient(
+        45deg,
+        color-mix(in oklab, var(--muted) 48%, transparent) 25%,
+        transparent 25%,
+        transparent 75%,
+        color-mix(in oklab, var(--muted) 48%, transparent) 75%
+      );
+    background-position: 0 0, 9px 9px;
+    background-size: 18px 18px;
+  }
+
+  [data-flow-save-status="error"],
+  [data-flow-save-status="conflict"] {
+    color: var(--destructive);
   }
 }
