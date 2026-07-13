@@ -2,8 +2,9 @@
   "name": "api",
   "type": "module",
   "scripts": {
-    "dev": "NODE_ENV=development tsx watch --include '../../packages/{auth,db,email,storage,trigger}/dist/**/*.js' src/index.ts",
-    "build": "tsc",
+    "dev": "NODE_ENV=development tsx watch --include '../../packages/{assets,auth,db,elements,email,flows,i18n,storage,trigger}/dist/**/*.js' src/index.ts",
+    "generation:check-drift": "tsx scripts/check-generation-model-drift.ts --snapshot=config/generation-discovery-baseline.json",
+    "build": "tsc -p tsconfig.build.json",
     "check-types": "tsc --noEmit",
     "start": "node dist/index.js",
     "test": "tsx --test src/tests/*.test.ts",
@@ -18,10 +19,11 @@
     "@talelabs/auth": "*",
     "@talelabs/db": "*",
     "@talelabs/elements": "*",
+    "@talelabs/flows": "*",
     "@talelabs/i18n": "^0.0.0",
     "@talelabs/storage": "*",
     "@talelabs/trigger": "*",
-    "hono": "^4.12.18",
+    "hono": "^4.12.29",
     "zod": "^4.4.3"
   },
   "devDependencies": {

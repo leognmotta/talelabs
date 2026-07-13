@@ -1,9 +1,11 @@
 import { serve } from '@hono/node-server'
 import app from './app.js'
 
+const port = Number.parseInt(process.env.PORT ?? '5174', 10)
+
 serve({
   fetch: app.fetch,
-  port: 5174,
+  port,
 }, (info) => {
   console.log(`Server is running on http://localhost:${info.port}`)
 })
