@@ -1,0 +1,310 @@
+{
+  "capture": {
+    "capturedAt": "2026-07-12T12:00:00.000Z",
+    "method": "external",
+    "sources": [
+      "https://platform.openai.com/docs/api-reference/images",
+      "https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/veo/3-1-generate",
+      "https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/video/use-reference-images-to-guide-video-generation",
+      "https://docs.cloud.google.com/vertex-ai/generative-ai/docs/release-notes",
+      "https://docs.ltx.video/api-documentation/api-reference/async-video-generation/submit-audio-to-video",
+      "https://docs.ltx.video/models",
+      "https://elevenlabs.io/docs/api-reference/text-to-speech/convert",
+      "https://elevenlabs.io/docs/api-reference/text-to-sound-effects/convert"
+    ]
+  },
+  "providerModels": [
+    {
+      "documentationUrl": "https://platform.openai.com/docs/api-reference/images",
+      "lifecycle": "active",
+      "modelId": "gpt-image-1.5",
+      "provider": "openai"
+    },
+    {
+      "documentationUrl": "https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/veo/3-1-generate",
+      "lifecycle": "active",
+      "modelId": "veo-3.1-generate-001",
+      "provider": "google-vertex"
+    },
+    {
+      "documentationUrl": "https://docs.cloud.google.com/vertex-ai/generative-ai/docs/video/use-reference-images-to-guide-video-generation",
+      "lifecycle": "active",
+      "modelId": "veo-3.1-generate-preview",
+      "provider": "google-vertex"
+    },
+    {
+      "documentationUrl": "https://docs.ltx.video/models",
+      "lifecycle": "active",
+      "modelId": "ltx-2-3-pro",
+      "provider": "ltx"
+    },
+    {
+      "documentationUrl": "https://elevenlabs.io/docs/api-reference/text-to-speech/convert",
+      "lifecycle": "active",
+      "modelId": "eleven_multilingual_v2",
+      "provider": "elevenlabs"
+    },
+    {
+      "documentationUrl": "https://elevenlabs.io/docs/api-reference/text-to-sound-effects/convert",
+      "lifecycle": "active",
+      "modelId": "eleven_text_to_sound_v2",
+      "provider": "elevenlabs"
+    }
+  ],
+  "operations": [
+    {
+      "endpoint": "/v1/images/generations",
+      "modelId": "gpt-image-1.5",
+      "operationId": "textToImage",
+      "contractVersion": "2026-07-12.5",
+      "productModelId": "talelabs/gpt-image-1.5",
+      "provider": "openai",
+      "publicContract": {
+        "constraints": [],
+        "inputRequirements": { "prompt": { "required": true } },
+        "inputLimits": { "prompt": 32, "context": 32 },
+        "requiredSettingIds": [],
+        "settings": {
+          "aspectRatio": { "kind": "enum", "values": ["1:1", "2:3", "3:2"] },
+          "outputCount": { "kind": "number", "max": 4, "min": 1, "step": 1 },
+          "quality": { "kind": "enum", "values": ["auto", "low", "medium", "high"] }
+        }
+      },
+      "supportedParameters": ["model", "n", "prompt", "quality", "size"]
+    },
+    {
+      "endpoint": "/v1/images/edits",
+      "modelId": "gpt-image-1.5",
+      "operationId": "imageToImage",
+      "contractVersion": "2026-07-12.5",
+      "productModelId": "talelabs/gpt-image-1.5",
+      "provider": "openai",
+      "publicContract": {
+        "constraints": [],
+        "inputRequirements": {
+          "prompt": { "required": true },
+          "references": { "required": true }
+        },
+        "inputLimits": { "prompt": 32, "context": 32, "references": 16 },
+        "requiredSettingIds": [],
+        "settings": {
+          "aspectRatio": { "kind": "enum", "values": ["1:1", "2:3", "3:2"] },
+          "outputCount": { "kind": "number", "max": 4, "min": 1, "step": 1 },
+          "quality": { "kind": "enum", "values": ["auto", "low", "medium", "high"] }
+        }
+      },
+      "supportedParameters": ["image", "model", "n", "prompt", "quality", "size"]
+    },
+    {
+      "endpoint": ":predictLongRunning",
+      "modelId": "veo-3.1-generate-001",
+      "operationId": "textToVideo",
+      "contractVersion": "2026-07-12.5",
+      "productModelId": "talelabs/veo-3.1",
+      "provider": "google-vertex",
+      "publicContract": {
+        "constraints": [{
+          "id": "high-resolution-requires-eight-seconds",
+          "when": [{ "field": "setting", "id": "resolution", "operator": "in", "values": ["1080p"] }],
+          "require": [{ "field": "setting", "id": "durationSeconds", "operator": "equals", "value": "8" }]
+        }],
+        "inputRequirements": { "prompt": { "required": true } },
+        "inputLimits": { "prompt": 32, "context": 32 },
+        "requiredSettingIds": [],
+        "settings": {
+          "aspectRatio": { "kind": "enum", "values": ["16:9", "9:16"] },
+          "durationSeconds": { "kind": "enum", "values": ["4", "6", "8"] },
+          "resolution": { "kind": "enum", "values": ["720p", "1080p"] }
+        }
+      },
+      "supportedParameters": ["aspectRatio", "durationSeconds", "prompt", "resolution"]
+    },
+    {
+      "endpoint": ":predictLongRunning",
+      "modelId": "veo-3.1-generate-001",
+      "operationId": "firstLastFrameToVideo",
+      "contractVersion": "2026-07-12.5",
+      "productModelId": "talelabs/veo-3.1",
+      "provider": "google-vertex",
+      "publicContract": {
+        "constraints": [
+          {
+            "id": "high-resolution-requires-eight-seconds",
+            "when": [{ "field": "setting", "id": "resolution", "operator": "in", "values": ["1080p"] }],
+            "require": [{ "field": "setting", "id": "durationSeconds", "operator": "equals", "value": "8" }]
+          },
+          {
+            "id": "last-frame-requires-first-frame",
+            "when": [{ "field": "slot", "id": "lastFrame", "operator": "connected" }],
+            "require": [{ "field": "slot", "id": "firstFrame", "operator": "connected" }]
+          }
+        ],
+        "inputRequirements": {
+          "firstFrame": { "required": true },
+          "prompt": { "required": true }
+        },
+        "inputLimits": {
+          "prompt": 32,
+          "context": 32,
+          "firstFrame": 1,
+          "lastFrame": 1
+        },
+        "requiredSettingIds": [],
+        "settings": {
+          "aspectRatio": { "kind": "enum", "values": ["16:9", "9:16"] },
+          "durationSeconds": { "kind": "enum", "values": ["4", "6", "8"] },
+          "resolution": { "kind": "enum", "values": ["720p", "1080p"] }
+        }
+      },
+      "supportedParameters": ["aspectRatio", "durationSeconds", "image", "lastFrame", "prompt", "resolution"]
+    },
+    {
+      "endpoint": ":predictLongRunning",
+      "modelId": "veo-3.1-generate-preview",
+      "operationId": "referencesToVideo",
+      "contractVersion": "2026-07-12.5",
+      "productModelId": "talelabs/veo-3.1",
+      "provider": "google-vertex",
+      "publicContract": {
+        "constraints": [
+          {
+            "id": "high-resolution-requires-eight-seconds",
+            "when": [{ "field": "setting", "id": "resolution", "operator": "in", "values": ["1080p"] }],
+            "require": [{ "field": "setting", "id": "durationSeconds", "operator": "equals", "value": "8" }]
+          },
+          {
+            "id": "references-require-eight-seconds",
+            "when": [{ "field": "operation", "operator": "equals", "value": "referencesToVideo" }],
+            "require": [{ "field": "setting", "id": "durationSeconds", "operator": "equals", "value": "8" }]
+          },
+          {
+            "id": "references-require-landscape",
+            "when": [{ "field": "operation", "operator": "equals", "value": "referencesToVideo" }],
+            "require": [{ "field": "setting", "id": "aspectRatio", "operator": "equals", "value": "16:9" }]
+          }
+        ],
+        "inputRequirements": {
+          "prompt": { "required": true },
+          "references": { "required": true }
+        },
+        "inputLimits": { "prompt": 32, "context": 32, "references": 3 },
+        "requiredSettingIds": [],
+        "settings": {
+          "aspectRatio": { "kind": "enum", "values": ["16:9"] },
+          "durationSeconds": { "kind": "enum", "values": ["8"] },
+          "resolution": { "kind": "enum", "values": ["720p", "1080p"] }
+        }
+      },
+      "supportedParameters": ["aspectRatio", "durationSeconds", "prompt", "referenceImages", "resolution"]
+    },
+    {
+      "endpoint": "/v2/text-to-video",
+      "modelId": "ltx-2-3-pro",
+      "operationId": "textToVideo",
+      "contractVersion": "2026-07-12.5",
+      "productModelId": "talelabs/ltx-2.3-pro",
+      "provider": "ltx",
+      "publicContract": {
+        "constraints": [],
+        "inputRequirements": { "prompt": { "required": true } },
+        "inputLimits": { "prompt": 32, "context": 32 },
+        "requiredSettingIds": [],
+        "settings": {
+          "aspectRatio": { "kind": "enum", "values": ["16:9", "9:16"] },
+          "durationSeconds": { "kind": "enum", "values": ["6", "8", "10"] },
+          "resolution": { "kind": "enum", "values": ["1080p"] }
+        }
+      },
+      "supportedParameters": ["duration", "model", "prompt", "resolution"]
+    },
+    {
+      "endpoint": "/v2/image-to-video",
+      "modelId": "ltx-2-3-pro",
+      "operationId": "imageToVideo",
+      "contractVersion": "2026-07-12.5",
+      "productModelId": "talelabs/ltx-2.3-pro",
+      "provider": "ltx",
+      "publicContract": {
+        "constraints": [],
+        "inputRequirements": {
+          "firstFrame": { "required": true },
+          "prompt": { "required": true }
+        },
+        "inputLimits": { "prompt": 32, "context": 32, "firstFrame": 1 },
+        "requiredSettingIds": [],
+        "settings": {
+          "aspectRatio": { "kind": "enum", "values": ["16:9", "9:16"] },
+          "durationSeconds": { "kind": "enum", "values": ["6", "8", "10"] },
+          "resolution": { "kind": "enum", "values": ["1080p"] }
+        }
+      },
+      "supportedParameters": ["duration", "image_uri", "model", "prompt", "resolution"]
+    },
+    {
+      "endpoint": "/v2/audio-to-video",
+      "modelId": "ltx-2-3-pro",
+      "operationId": "audioToVideo",
+      "contractVersion": "2026-07-12.5",
+      "productModelId": "talelabs/ltx-2.3-pro",
+      "provider": "ltx",
+      "publicContract": {
+        "constraints": [],
+        "inputRequirements": {
+          "referenceAudio": { "required": true },
+          "source": { "oneOf": ["prompt", "firstFrame"] }
+        },
+        "inputLimits": {
+          "prompt": 32,
+          "context": 32,
+          "referenceAudio": 1,
+          "firstFrame": 1
+        },
+        "requiredSettingIds": [],
+        "settings": {
+          "aspectRatio": { "kind": "enum", "values": ["16:9", "9:16"] },
+          "resolution": { "kind": "enum", "values": ["1080p"] }
+        }
+      },
+      "supportedParameters": ["audio_uri", "image_uri", "model", "prompt", "resolution"]
+    },
+    {
+      "endpoint": "/v1/text-to-speech/:voice_id",
+      "modelId": "eleven_multilingual_v2",
+      "operationId": "textToSpeech",
+      "contractVersion": "2026-07-12.5",
+      "productModelId": "talelabs/eleven-multilingual-v2",
+      "provider": "elevenlabs",
+      "publicContract": {
+        "constraints": [],
+        "inputRequirements": { "prompt": { "required": true } },
+        "inputLimits": { "prompt": 32, "context": 32 },
+        "requiredSettingIds": ["voiceId"],
+        "settings": {
+          "voiceId": { "kind": "string", "maxLength": 128 },
+          "stability": { "kind": "number", "max": 1, "min": 0, "step": 0.1 }
+        }
+      },
+      "supportedParameters": ["model_id", "text", "voice_id", "voice_settings"]
+    },
+    {
+      "endpoint": "/v1/sound-generation",
+      "modelId": "eleven_text_to_sound_v2",
+      "operationId": "textToSoundEffect",
+      "contractVersion": "2026-07-12.5",
+      "productModelId": "talelabs/eleven-sound-effects-v2",
+      "provider": "elevenlabs",
+      "publicContract": {
+        "constraints": [],
+        "inputRequirements": { "prompt": { "required": true } },
+        "inputLimits": { "prompt": 32, "context": 32 },
+        "requiredSettingIds": [],
+        "settings": {
+          "durationSeconds": { "kind": "number", "max": 30, "min": 0.5, "step": 0.5 },
+          "loop": { "kind": "boolean" },
+          "promptInfluence": { "kind": "number", "max": 1, "min": 0, "step": 0.1 }
+        }
+      },
+      "supportedParameters": ["duration_seconds", "loop", "prompt_influence", "text"]
+    }
+  ]
+}
