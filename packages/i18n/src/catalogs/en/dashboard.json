@@ -80,7 +80,8 @@
       "title": "Switch model?",
       "description_one": "{{model}} does not accept one current connection. Switching will remove it.",
       "description_other": "{{model}} does not accept {{count}} current connections. Switching will remove them.",
-      "confirm": "Switch model"
+      "confirm": "Switch model",
+      "update": "Update model"
     },
     "nodeToolbar": {
       "lock": "Lock node",
@@ -298,6 +299,7 @@
     "constraints": {
       "lastFrameRequiresFirstFrame": "Connect a first frame before using a last frame.",
       "referencesRequireEightSeconds": "Reference videos require an 8-second duration.",
+      "referencesRequireLandscape": "Reference-image video supports only 16:9.",
       "highResolutionRequiresEightSeconds": "1080p and 4K videos require an 8-second duration."
     },
     "nodeMedia": {

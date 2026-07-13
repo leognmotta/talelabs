@@ -80,7 +80,8 @@
       "title": "Changer de modèle ?",
       "description_one": "{{model}} n’accepte pas une connexion actuelle. Le changement la supprimera.",
       "description_other": "{{model}} n’accepte pas {{count}} connexions actuelles. Le changement les supprimera.",
-      "confirm": "Changer de modèle"
+      "confirm": "Changer de modèle",
+      "update": "Mettre à jour le modèle"
     },
     "nodeToolbar": {
       "lock": "Verrouiller le nœud",
@@ -298,6 +299,7 @@
     "constraints": {
       "lastFrameRequiresFirstFrame": "Connectez une première image avant d’utiliser la dernière.",
       "referencesRequireEightSeconds": "Les vidéos avec références nécessitent 8 secondes.",
+      "referencesRequireLandscape": "Les vidéos avec images de référence prennent uniquement en charge le format 16:9.",
       "highResolutionRequiresEightSeconds": "Les vidéos 1080p et 4K nécessitent 8 secondes."
     },
     "nodeMedia": {

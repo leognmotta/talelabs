@@ -80,7 +80,8 @@
       "title": "Schimbi modelul?",
       "description_one": "{{model}} nu acceptă o conexiune existentă. Schimbarea o va elimina.",
       "description_other": "{{model}} nu acceptă {{count}} conexiuni existente. Schimbarea le va elimina.",
-      "confirm": "Schimbă modelul"
+      "confirm": "Schimbă modelul",
+      "update": "Actualizează modelul"
     },
     "nodeToolbar": {
       "lock": "Blochează nodul",
@@ -298,6 +299,7 @@
     "constraints": {
       "lastFrameRequiresFirstFrame": "Conectează un prim cadru înainte de ultimul.",
       "referencesRequireEightSeconds": "Videoclipurile cu referințe necesită 8 secunde.",
+      "referencesRequireLandscape": "Videoclipurile cu imagini de referință acceptă doar formatul 16:9.",
       "highResolutionRequiresEightSeconds": "Videoclipurile 1080p și 4K necesită 8 secunde."
     },
     "nodeMedia": {

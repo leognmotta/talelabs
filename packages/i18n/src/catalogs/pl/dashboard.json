@@ -80,7 +80,8 @@
       "title": "Zmienić model?",
       "description_one": "Model {{model}} nie obsługuje jednego obecnego połączenia. Zmiana spowoduje jego usunięcie.",
       "description_other": "Model {{model}} nie obsługuje {{count}} obecnych połączeń. Zmiana spowoduje ich usunięcie.",
-      "confirm": "Zmień model"
+      "confirm": "Zmień model",
+      "update": "Zaktualizuj model"
     },
     "nodeToolbar": {
       "lock": "Zablokuj węzeł",
@@ -298,6 +299,7 @@
     "constraints": {
       "lastFrameRequiresFirstFrame": "Połącz pierwszą klatkę przed użyciem ostatniej.",
       "referencesRequireEightSeconds": "Wideo z referencjami wymaga 8 sekund.",
+      "referencesRequireLandscape": "Wideo z obrazami referencyjnymi obsługuje tylko format 16:9.",
       "highResolutionRequiresEightSeconds": "Wideo 1080p i 4K wymaga 8 sekund."
     },
     "nodeMedia": {

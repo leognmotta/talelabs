@@ -80,7 +80,8 @@
       "title": "Modell wechseln?",
       "description_one": "{{model}} unterstützt eine vorhandene Verbindung nicht. Beim Wechsel wird sie entfernt.",
       "description_other": "{{model}} unterstützt {{count}} vorhandene Verbindungen nicht. Beim Wechsel werden sie entfernt.",
-      "confirm": "Modell wechseln"
+      "confirm": "Modell wechseln",
+      "update": "Modell aktualisieren"
     },
     "nodeToolbar": {
       "lock": "Knoten sperren",
@@ -298,6 +299,7 @@
     "constraints": {
       "lastFrameRequiresFirstFrame": "Verbinde ein erstes Frame, bevor du ein letztes verwendest.",
       "referencesRequireEightSeconds": "Videos mit Referenzen benötigen 8 Sekunden.",
+      "referencesRequireLandscape": "Videos mit Referenzbildern unterstützen nur 16:9.",
       "highResolutionRequiresEightSeconds": "Videos in 1080p und 4K benötigen 8 Sekunden."
     },
     "nodeMedia": {

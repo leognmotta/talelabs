@@ -80,7 +80,8 @@
       "title": "Van model wisselen?",
       "description_one": "{{model}} accepteert één huidige verbinding niet. Bij het wisselen wordt deze verwijderd.",
       "description_other": "{{model}} accepteert {{count}} huidige verbindingen niet. Bij het wisselen worden ze verwijderd.",
-      "confirm": "Van model wisselen"
+      "confirm": "Van model wisselen",
+      "update": "Model bijwerken"
     },
     "nodeToolbar": {
       "lock": "Knooppunt vergrendelen",
@@ -298,6 +299,7 @@
     "constraints": {
       "lastFrameRequiresFirstFrame": "Verbind een eerste frame voordat je het laatste gebruikt.",
       "referencesRequireEightSeconds": "Video’s met referenties vereisen 8 seconden.",
+      "referencesRequireLandscape": "Video’s met referentiebeelden ondersteunen alleen 16:9.",
       "highResolutionRequiresEightSeconds": "Video’s in 1080p en 4K vereisen 8 seconden."
     },
     "nodeMedia": {
