@@ -325,11 +325,49 @@ Required-field additions, renames, removals, type changes, and semantic changes 
 
 Use dedicated typed form components rather than a generic form renderer, schema-driven field language, or field-definition DSL. Reuse ordinary controls and layout components only when multiple forms exhibit the same concrete behavior. Each form may evolve its validation-bound controls, layout, help text, and specialized interactions independently while the API continues to validate its shared Zod schema.
 
+### Element Consistency Contract
+
+Elements are not merely categorized Asset collections. They are
+provider-independent consistency sources of truth:
+
+```txt
+Element
+├── versioned identity guidance
+├── source evidence
+└── approved master references
+```
+
+Every specialized Element schema carries a shared identity block with a prose
+summary plus structured must-keep, may-vary, and avoid guidance. The current UI
+exposes only one optional `Consistency notes` prose field. Structured arrays are
+initialized safely and remain an internal seam for a later AI assistant; users
+must not maintain a taxonomy or complete a wizard.
+
+`elementAssets.referenceKind` distinguishes raw `source` evidence from approved
+`master` references. Existing and current ordinary uploads become masters by
+default, preserving the simple creation path. Sources remain canonical Assets but
+never appear in normal Element role outputs, never count against consuming model
+limits, and never silently reach a provider. Promotion from source to master is
+the approval action; no parallel approval-status state machine exists.
+
+The user vocabulary is deliberately smaller than the internal model:
+
+```txt
+References
+Consistency notes
+Improve consistency  (only when the assistant really exists)
+```
+
+Readiness is derived from current identity and usable masters. It is never a
+persisted status and never blocks creation. One usable reference is enough to use
+an Element. Provider reference limits and benchmarked selection policies belong
+to the consuming generation slot, not the Element.
+
 Element creation has two consistent sections: `Data` and `Assets`. Data asks only for the small set of guidelines that materially improves reuse for that type. Assets renders one role-aware drop zone per registered Asset role. Dropped `File` objects and preview object URLs stay only in the creation page's local memory until the Element and its Asset folder are created successfully; creation failure uploads nothing.
 
 After creation, the files and their structured intent transfer to a non-persisted, dashboard-level Zustand queue. Each intent retains the `File`, `assetFolderId`, Element ID, role, order, and primary state across SPA navigation, but is never serialized to browser storage. The bounded worker owns only the local transfer and registration lifecycle: `queued -> hashing -> uploading -> registering -> linking -> completed`, with `failed` retaining the failed stage. It uploads to R2, registers the canonical Asset in the Element folder, stores the returned Asset ID as a recovery checkpoint, and then creates the `elementAssets` relationship. Trigger.dev media processing continues independently after registration; its feedback comes from organization-scoped Asset queries rather than the local upload manager. A linking retry starts from the stored Asset ID and never uploads or registers the media again. Browser refresh or closure may still lose unfinished local files; resumable uploads are deferred.
 
-Each Element Asset role has its own capacity, determined by the role's media family: image roles accept up to eight Assets, while video and audio roles accept one Asset by default. These are per-role context limits, not Element-wide media totals and not provider/model input limits. An Element may therefore retain richer reusable collections across several roles; the consuming Flow node later selects a model-compatible subset. The dashboard prevents excess pending selections, while both existing-Asset attachment and upload registration enforce the same role capacity transactionally so concurrent requests cannot exceed it.
+Each Element Asset role has its own **master** capacity, determined by the role's media family: image roles accept up to eight masters, while video and audio roles accept one master by default. Sources use a separate bounded element-wide abuse cap. These are reusable-context limits, not provider/model input limits. An Element may therefore retain richer reusable collections across several roles; the consuming Flow node later selects a model-compatible subset of approved masters. The dashboard prevents excess pending selections, while existing-Asset attachment, upload registration, promotion, and demotion enforce the same policies transactionally with one global lock order: organization Flow-reference budget when executable references can increase, then Element, then role.
 
 The `Other` Element is the deliberate escape hatch for reusable context that does not fit a product-controlled type. It keeps Data to name and instructions, and lets the user define up to three custom Asset-role names. Those names are validated and stored in the Element's versioned data before any Asset upload begins, then persisted as the role on each Element-to-Asset relationship. Other accepts image, video, and audio references without weakening the fixed role contracts of specialized Element types.
 
@@ -345,6 +383,11 @@ Assets
 `Details` renders the dedicated type-specific form selected by the dashboard form registry. Shared fields such as name and type remain consistent, while each type composes its own context fields explicitly.
 
 `Assets` reuses the same asset-library components and behavior as the global Assets page, with a fixed filter for the current Element. It is not a second media library.
+
+In the current product stage this tab presents approved masters simply as
+`References`. Raw sources remain hidden until the consistency assistant can offer
+a real curation workflow; internal source/master terminology must not leak into
+ordinary creation or editing.
 
 Conceptually:
 
@@ -374,6 +417,8 @@ The Element-to-Asset relationship carries meaning beyond membership:
 role
 position
 primary or reference priority
+reference kind: source or master
+registry-validated relationship metadata
 ```
 
 One Asset may be related to multiple Elements. Removing an Asset from an Element must not delete it, and deleting an Element must not delete its canonical Assets.
@@ -403,13 +448,15 @@ voice                   -> AudioSet
 
 The role output is a collection, not one handle per Asset. For example, a Character's `appearance` role has one handle that can resolve to as many as eight candidate images. This keeps the canvas stable when Assets are added, removed, reordered, or reprioritized inside the Element.
 
-The complete Element context resolves to a bundle containing:
+The complete Element context resolves to a bundle containing approved masters
+only:
 
 ```txt
 Element identity and type
 text context produced by buildContext
-related Asset IDs
+approved master Asset IDs
 Asset media types, roles, and priority
+relationship metadata used for deterministic ranking
 ```
 
 The server contract is deliberately provider-independent:
@@ -425,6 +472,7 @@ type BuiltElementContext = {
     role: string;
     sortOrder: number;
     isPrimary: boolean;
+    referenceMetadata: Record<string, unknown>;
     mediaType: "image" | "video" | "audio";
     mimeType: string;
   }[];
@@ -433,13 +481,13 @@ type BuiltElementContext = {
 const context = await buildElementContext(elementId);
 ```
 
-`buildElementContext` upcasts and validates Element data, composes stable text, resolves kit Assets in deterministic role/order/id order, identifies primary references, and excludes processing, failed, purging, and purged Assets from executable context. It returns stable IDs and metadata, never signed URLs or storage keys. Signed URLs expire; provider-specific URLs or uploads are resolved only at execution time and must never be stored in graph or generation snapshots.
+`buildElementContext` upcasts and validates Element identity/data, composes stable text, resolves master Assets in deterministic primary/role/order/id order, and excludes sources plus processing, failed, purging, and purged Assets from executable context. It returns stable IDs and relationship metadata, never signed URLs or storage keys. Signed URLs expire; provider-specific URLs or uploads are resolved only at execution time and must never be stored in graph or generation snapshots.
 
 A generation node can receive multiple Element nodes, Element role collections, and raw Asset nodes. Role handles are generated from the product-controlled Element registry and remain stable IDs; the node never creates one dynamic handle per Asset.
 
 ### Consumer-Owned Reference Selection
 
-Reference selection does not happen inside the Element node and never modifies the Element's reusable Asset kit. The Element offers an ordered collection of candidates; the consuming generation node chooses which compatible members of that collection it will use for that specific node.
+Reference selection does not happen inside the Element node and never modifies the Element's reusable master set. The Element offers an ordered collection of approved master candidates; the consuming generation node chooses which compatible members of that collection it will use for that specific node. Raw sources never enter this candidate set.
 
 Conceptually:
 
@@ -726,7 +774,7 @@ The system must support multiplicity at two levels:
 
 ```txt
 one generation job -> multiple connected context sources
-one Element        -> multiple related reference Assets
+one Element        -> multiple approved master references
 ```
 
 A context source may come from:
@@ -744,8 +792,8 @@ Multi-context does not mean that every Asset from every connected Element is sen
 
 ```txt
 collect connected context sources
--> resolve Element instructions and related Assets
--> apply source roles, ordering, and priority
+-> resolve Element identity and approved master Assets
+-> apply role, relationship metadata, ordering, and primary priority
 -> validate selected model capabilities and limits
 -> select or ask the user to select compatible references
 -> show exclusions and input-limit warnings

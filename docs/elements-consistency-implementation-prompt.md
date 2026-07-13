@@ -132,6 +132,11 @@ Requirements:
   decreases the master set, and enforces the element-wide source cap. Document
   this order next to the helpers so later code cannot introduce a deadlock by
   reversing it.
+- Any mutation that can increase approved master references also takes the
+  organization-scoped Flow-reference-budget lock before the Element and role
+  locks, then rejects the mutation if an affected saved Flow would exceed its
+  complete hydration budget. Source links do not count toward that budget;
+  demotion can only reduce it.
 - Preserve tenant-safe composite foreign keys and organization predicates on
   every read and mutation.
 - Add only indexes justified by the actual master-filtered and Element-detail
@@ -246,7 +251,8 @@ Update the Element Asset contracts and generated SDK:
   capacity, invalid metadata, and invalid primary state.
 - Keep all endpoints organization-scoped and preserve existing authorization.
 - Avoid read-modify-write races. Capacity checks and mutations belong in one
-  transaction under the existing Element/role locking discipline.
+  transaction under the documented organization-budget, Element, then role
+  advisory-lock hierarchy.
 - Regenerate OpenAPI/Kubb outputs. Never hand-edit generated SDK files.
 
 Preserve compatibility for current dashboard callers by making new create-link
@@ -277,7 +283,7 @@ has been inspected and either changed or explicitly shown to be unaffected.
 - Asset detail reverse relations must include enough relationship information to
   distinguish source/master and role without exposing internal storage data.
   Usage counts include both kinds because both are real Element relationships.
-- Audit Asset optimistic updates, detail/list caches, Element kit caches, preview
+- Audit Asset optimistic updates, detail/list caches, Element reference caches, preview
   caches, and Flow-reference caches. Any kind/metadata/primary/order/role change
   must invalidate every presentation derived from that relationship.
 - Preserve the dashboard-level Zustand upload queue. Current intents may omit

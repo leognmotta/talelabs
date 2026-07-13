@@ -455,7 +455,7 @@ create table "elements" (
   "instructions" text,                -- description / generation instructions (the shared field)
   "data" jsonb not null default '{}', -- type-specific fields, validated by the registry's Zod schema
   "schemaVersion" smallint not null default 1,
-  "revision" bigint not null default 0, -- M5 snapshot guard; bumped for data and kit mutations
+  "revision" bigint not null default 0, -- M5 snapshot guard; bumped for identity/data and reference mutations
   "createdAt" timestamptz not null default now(),
   "updatedAt" timestamptz not null default now(),
   unique ("id", "organizationId"),    -- composite target for org-scoped FKs
@@ -474,7 +474,7 @@ create unique index "elementsAssetFolderIdx"
 
 ### 6. Element ↔ Asset — the relationship that carries meaning
 
-Role, ordering, and primary-reference priority, exactly as the vision specifies. Roles are validated app-side against the registry's `assetRoles` for the element's type (including the accepted media types, e.g. `voice` accepts only `audio`).
+Role, ordering, approved-reference state, primary priority, and relationship-specific metadata, exactly as the vision specifies. Roles and metadata are validated app-side against the registry for the Element type (including accepted media types, e.g. `voice` accepts only `audio`).
 
 ```sql
 create table "elementAssets" (
@@ -482,6 +482,9 @@ create table "elementAssets" (
   "elementId" text not null,
   "assetId" text not null,
   "role" text not null,               -- registry-defined per element type: 'appearance', 'packshot', ...
+  "referenceKind" text not null default 'master'
+    check ("referenceKind" in ('source', 'master')),
+  "referenceMetadata" jsonb not null default '{}',
   "sortOrder" smallint not null default 0,
   "isPrimary" boolean not null default false,
   "createdAt" timestamptz not null default now(),
@@ -489,7 +492,8 @@ create table "elementAssets" (
   foreign key ("elementId", "organizationId")
     references "elements" ("id", "organizationId") on delete cascade,
   foreign key ("assetId", "organizationId")
-    references "assets" ("id", "organizationId") on delete cascade
+    references "assets" ("id", "organizationId") on delete cascade,
+  check ("referenceKind" <> 'source' or not "isPrimary")
 );
 
 create index "elementAssetsAssetIdx" on "elementAssets" ("assetId");
@@ -497,13 +501,29 @@ create unique index "elementAssetsPrimaryIdx"
   on "elementAssets" ("elementId", "role") where "isPrimary";
 ```
 
-The partial unique index makes "primary" mean something: at most one primary asset per role per element, enforced by the database rather than UI discipline.
+The row check and partial unique index make "primary" mean one approved master:
+at most one primary master per role per Element, enforced by the database rather
+than UI discipline. Existing rows migrate to `master` without changing behavior.
+
+Master capacity remains registry-owned per role. Sources use a separate bounded
+Element-wide abuse cap. Application ordering is independent inside each
+`(elementId, role, referenceKind)` sequence so hidden sources cannot reorder
+visible masters. The global advisory-lock order is organization Flow-reference
+budget, Element, then role. Source-cap mutations take the Element lock;
+master-cap mutations take the role lock and first take the organization budget
+lock when they can increase executable references. Promotion takes all three.
+Each mutation acquires only the locks it needs, always in that order.
+
+`referenceMetadata` contains registry-validated interpretation of the
+relationship (for example view, framing, background, or variant). Intrinsic media
+facts remain on `assets.metadata`. Unknown relationship keys are rejected and
+signed URLs/provider IDs never belong in either Element data or link metadata.
 
 Removing a row never deletes the asset; deleting an element cascades only the rows. `/elements/:id/assets` is the global asset library filtered through this table — one asset system.
 
 `elements.revision` is the run-snapshot consistency guard. Every mutation to
 Element `name`, `instructions`, `data`, schema version, or any `elementAssets`
-role/order/primary relationship increments it in the same transaction. Run and
+role/order/primary/kind/metadata relationship increments it in the same transaction. Run and
 Tool-version snapshot builders capture all participating Element revisions and
 re-read them immediately before commit. A mismatch rolls back and retries the
 whole admission/publication operation. This prevents automatic reference
@@ -759,7 +779,7 @@ Execution semantics:
 - **Multi-node dispatch inherits the jobs durability contract:** when `'downstream'`/`'all'` ship, the parent orchestration task gets the identical treatment as generate tasks — `idempotencyKey = flowRunId` on trigger, two-writer `"triggerRunId"` (API stores the handle, the task persists its own `ctx.run.id` at start), and a reconciliation sweep over `status = 'pending' and "triggerRunId" is null and "mode" <> 'node'` (served by `"flowRunsUndispatchedIdx"`).
 - **Idempotency lives at two levels:** the run carries the API-facing key (unique per org — a retried Run request can never create two runs, same 200-vs-409 semantics as jobs), and child jobs derive theirs (`flowRunId || ':' || nodeId`) — a retried orchestrator can never double-create a node's job.
 - **State propagation is transactional:** the generate task writes job and run-node together — `'running'` at start, terminal states inside the completion transaction (contract steps 3 and 6). Mode-`'node'` runs mirror their single node onto the run row in the same transaction; multi-node runs leave parent aggregation to the orchestrator. Job, run-node, and run states can never drift apart.
-- **Snapshot at creation:** topological order, full node configurations, and edges are frozen into `"graphSnapshot"` (its container structure versioned by `"snapshotVersion"`). Assembly runs under **`READ COMMITTED` with revision re-validation** (read `flows.revision` and participating `elements.revision` values, resolve, re-read all revisions before insert; any change → retry) — deliberately not `REPEATABLE READ`, whose snapshot is taken by the transaction's first statement (the admission advisory lock) _before_ the lock wait completes, which would make queued admissions evaluate limits against stale state. Selected Asset rows are locked in stable ID order and revalidated as ready and not purging. Captured revisions are recorded inside the snapshot. Planning **rejects cycles among the executable nodes before the run row is created** — a cyclic selection is a validation error, never a stuck run. Later canvas, Element, kit, or Asset edits affect future runs only — the immutable-provenance rule applied to execution, not just to finished jobs.
+- **Snapshot at creation:** topological order, full node configurations, and edges are frozen into `"graphSnapshot"` (its container structure versioned by `"snapshotVersion"`). Assembly runs under **`READ COMMITTED` with revision re-validation** (read `flows.revision` and participating `elements.revision` values, resolve, re-read all revisions before insert; any change → retry) — deliberately not `REPEATABLE READ`, whose snapshot is taken by the transaction's first statement (the admission advisory lock) _before_ the lock wait completes, which would make queued admissions evaluate limits against stale state. Selected Asset rows are locked in stable ID order and revalidated as ready and not purging. Captured revisions are recorded inside the snapshot. Planning **rejects cycles among the executable nodes before the run row is created** — a cyclic selection is a validation error, never a stuck run. Later canvas, Element identity/reference, or Asset edits affect future runs only — the immutable-provenance rule applied to execution, not just to finished jobs.
 - **Model contract at creation:** the snapshot records the stable TaleLabs model
   ID, curated registry version/hash, selected operation, normalized settings,
   resolved capability decisions, and server-selected provider route/adapter
@@ -831,7 +851,7 @@ measurements justify it.
 **Run one generation node:**
 
 1. API loads the node, walks `flowEdges` into it, loads connected text/asset/element nodes
-2. Resolves each element through the server-only `buildElementContext` contract + `elementAssets`: upcast data, compose deterministic text, and return ordered stable Asset IDs/roles/priority without signed URLs or storage keys
+2. Resolves each Element through the server-only `buildElementContext` contract + `elementAssets`: upcast identity/data, compose deterministic text, and return ordered ready/readable master Asset IDs, roles, priority, and relationship metadata without source evidence, signed URLs, or storage keys
 3. Applies model capability limits, selects/asks about references, composes `"resolvedPrompt"`
 4. One transaction: insert `flowRuns` (mode `'node'`, graph snapshot) + `flowRunNodes` + `generationJobs` (+ `generationJobSources`, + `generationJobInputs`)
 5. After commit: trigger the version-pinned task with ID-only payload `{ generationJobId, organizationId }` and domain-derived idempotency key; store `"triggerRunId"` (reconciliation sweep covers a crash in between)
@@ -947,17 +967,19 @@ update "assets" set "purgedAt" = now(), "updatedAt" = now() where "id" = $1;
 select e.*, a."thumbnailKey"
 from "elements" e
 left join "elementAssets" ea
-  on ea."elementId" = e."id" and ea."isPrimary" and ea."role" = $2  -- preview role per type, from the registry
+  on ea."elementId" = e."id" and ea."referenceKind" = 'master'
+  and ea."isPrimary" and ea."role" = $2  -- preview role per type, from the registry
 left join "assets" a on a."id" = ea."assetId" and a."purgedAt" is null
 where e."organizationId" = $1
 order by e."updatedAt" desc, e."id" desc;
 
 -- Element assets tab = the global library filtered through the link table
-select a.*, ea."role", ea."sortOrder", ea."isPrimary"
+select a.*, ea."role", ea."referenceKind", ea."referenceMetadata",
+       ea."sortOrder", ea."isPrimary"
 from "elementAssets" ea
 join "assets" a on a."id" = ea."assetId"
 where ea."elementId" = $1 and a."deletedAt" is null and a."purgedAt" is null
-order by ea."role", ea."sortOrder", a."id";
+order by ea."referenceKind", ea."role", ea."sortOrder", a."id";
 
 -- Attach / set primary / reorder / detach: writes on "elementAssets"
 -- (partial unique index enforces one primary per role; app validates role against the registry)

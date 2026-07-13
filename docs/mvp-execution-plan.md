@@ -7,6 +7,7 @@ Read these before starting any task:
 ```txt
 AGENTS.md
 docs/talelabs-product-vision.md
+docs/elements-consistency-planning.md
 docs/db-design-planning-v2.md
 docs/api-design-planning-v2.md
 docs/mvp-execution-plan.md
@@ -21,6 +22,7 @@ Build and validate the first TaleLabs creative loop:
 ```txt
 Upload or find an Asset
 -> optionally create an Element
+-> reuse its approved identity context and master references
 -> create or open a Flow
 -> connect Text, Asset, Element, and Image/Video/Audio Generation nodes
 -> validate the complete runtime with deterministic provider mocks
@@ -53,10 +55,11 @@ The implementation order is mandatory unless the user explicitly changes the pro
 3. Assets and folders
 4. Elements
 5. Flows, graph editing, and image/video/audio generation-node configuration
-6. Provider-independent run engine using deterministic mocks
-7. Controlled real-provider integration
-8. Complete iteration, reliability, and internal MVP staging
-9. Billing and credits in a separate productization phase
+6. Element consistency foundation aligned to Flow consumption
+7. Provider-independent run engine using deterministic mocks
+8. Controlled real-provider integration
+9. Complete iteration, reliability, and internal MVP staging
+10. Billing and credits in a separate productization phase
 ```
 
 Explicitly deferred from the MVP:
@@ -183,8 +186,9 @@ Automated tests are not an MVP acceptance requirement. Their absence or failure 
 | M0: Database foundation | The complete v2 schema migrates and its structural tenant/data guarantees are inspectable.                                 |
 | M1: API foundation      | Product routes have one tenant-safe Hono/OpenAPI/SDK foundation.                                                         |
 | M2: Assets              | Private uploads become durable, processed, searchable, organized, and reusable Assets.                                   |
-| M3: Elements            | Generic reusable context with typed data and role-based Asset kits works end to end.                                     |
+| M3: Elements            | Generic reusable context with typed data and role-based Asset references works end to end.                               |
 | M4: Flows               | Users build valid graphs with real inputs and capability-aware Image, Video, and Audio Generation nodes.                  |
+| M4.5: Element consistency | Elements become simple, revision-ready identity systems whose approved masters are the only references consumed by Flows. |
 | M5: Mock run engine     | The production-shaped runtime executes node/full-flow scenarios against deterministic provider mocks without AI spend.    |
 | M6: Provider integration | Approved image, video, and audio adapters replace mocks without changing graph, run, job, provenance, or Asset contracts. |
 | M7: MVP candidate       | The integrated creative loop passes tenant, reliability, staging, engineering, and user-acceptance gates.                |
@@ -578,6 +582,8 @@ Implement Flow list/create/detail/update/delete, including viewport persistence,
 - Validate final-state references, same-flow edges, handles, media compatibility, cardinality, and type payloads.
 - Permit incomplete but non-contradictory graphs.
 - Enforce request, node-data, node-count, edge-count, and aggregate graph limits.
+- Enforce the same final-state reference hydration budget during graph sync and
+  every Element-link mutation that can add execution-relevant references.
 - Return `409 revision_conflict` without partial writes.
 
 ### E-033A - Build Flow List And Creation UI
@@ -598,7 +604,7 @@ Implement pan/zoom, viewport restoration, selection, add/move/duplicate/delete, 
 
 Implement functional node components and selectors for Text, canonical Assets, and Elements. Support multiple connected context sources and deterministic ordering without adding automation behavior.
 
-The Element node stores only the Element reference. It exposes one resolved-context handle plus one typed collection handle per registered Asset role; it never embeds a copy of Element data, kit Assets, signed URLs, or `buildElementContext` output. The server resolves the current context and role candidates when a run is created.
+The Element node stores only the Element reference. It exposes one resolved-context handle plus one typed collection handle per registered Asset role; it never embeds a copy of Element data, reference Assets, signed URLs, or `buildElementContext` output. M4.5 makes those role candidates master-only before the server resolves them for a run.
 
 ### E-035 - Add Generation Configuration And Media Generation Draft Nodes
 
@@ -667,6 +673,121 @@ server validation. No run or provider request occurs.
 
 ---
 
+## M4.5 - Element Consistency Foundation
+
+M4.5 is a required execution prerequisite, not an optional side feature. M4
+proves the canvas and consumer-side reference-selection UX; M4.5 makes the
+Element relationship model definitive before M5 freezes Element context and
+selected Asset IDs into immutable run snapshots.
+
+The user-facing contract remains deliberately simple:
+
+```txt
+create an Element -> add References -> optionally add Consistency notes
+-> use the Element in a Flow
+```
+
+Read `docs/elements-consistency-planning.md` and execute
+`docs/elements-consistency-implementation-prompt.md`. Internal source/master,
+identity, metadata, readiness, locking, and revision seams must not become a
+wizard or required classification workflow.
+
+### E-037A - Evolve Element Identity And Reference Persistence
+
+**Status:** Blocked by M4
+
+- Add one shared, versioned identity block to specialized Element schemas using
+  gap-free sequential migrations. Current UI writes optional prose to
+  `identity.summary`; structured `mustKeep`, `mayVary`, and `avoid` remain empty
+  until a later assistant can infer them.
+- Add `referenceKind = source | master` and registry-validated
+  `referenceMetadata` to `elementAssets`. Existing rows become masters.
+- Preserve canonical Assets and the existing Element relationship primary key.
+  Enforce structurally that a source can never be primary.
+- Treat ordering as a stable sequence per Element, role, and reference kind.
+  Promotion/demotion normalizes the old sequence and inserts into the new one.
+- Enforce an element-wide source cap and per-role master capacity transactionally.
+  Use one fixed advisory-lock hierarchy: organization Flow-reference-budget lock
+  when a mutation can increase executable masters, then Element lock, then role
+  lock. Acquire only the locks the mutation needs, always in that global order.
+- Update the Kysely schema and additive migration without introducing
+  `elements.revision` early; that run-admission guard remains E-041B work.
+
+### E-037B - Reconcile Assets, Elements, Uploads, And Flow Hydration
+
+**Status:** Blocked by E-037A
+
+- Centralize Element-link policy so existing-Asset attachment, atomic upload
+  registration, promotion/demotion, reorder/primary changes, and future generated
+  Asset attachment cannot drift into separate implementations.
+- Keep current uploads and attachments backward compatible: omitted kind means
+  master, omitted metadata means `{}`.
+- Make previews, `buildElementContext`, graph validation, Flow hydration, role
+  handles, automatic/manual candidate selection, model input counts, and future
+  snapshots consume ready, readable masters only. Sources remain canonical Assets
+  but never silently become Flow candidates or provider inputs.
+- Preserve Asset archive/purge and reverse-usage behavior. Asset detail can report
+  both relationship kinds; the current Element UI presents masters as References.
+- Reconcile Flow reference budgets so sources do not count and master promotion
+  cannot make a persisted Flow impossible to hydrate.
+- Update OpenAPI, regenerate the SDK, and invalidate organization-scoped Asset,
+  Element, preview, and Flow-reference caches after every execution-relevant link
+  change.
+
+### E-037C - Add The Minimal Consistency UX
+
+**Status:** Blocked by E-037B
+
+- Keep name as the only required creation field. One valid master reference makes
+  an Element immediately usable.
+- Add one optional localized `Consistency notes` field mapped to
+  `identity.summary`.
+- Add one non-blocking localized upload hint: clean, well-lit references with one
+  clear subject work best.
+- Keep existing upload, attach, ordering, primary, and role interactions. Do not
+  expose source/master vocabulary, metadata forms, quality scores, mandatory
+  labels, model selection, or an approval wizard.
+- Do not show `Improve consistency`, generate reference packs, analyze media, or
+  call OpenRouter in M4.5. The repository's funded `OPENROUTER_API_KEY` is not
+  authorization to spend credits.
+- Preserve the future improvement seam: after a user explicitly keeps a generated
+  result, a later phase may offer `Add to <Element>'s references` without nagging
+  after every run.
+
+### E-037D - Verify Element-To-Flow Consistency Invariants
+
+**Status:** Blocked by E-037C
+
+**Engineering owner:** AI
+
+- Add a repeatable, explicitly invoked acceptance script for migration
+  compatibility, primary-source rejection, source/master capacity, fixed lock
+  ordering under concurrency, tenant isolation, upload attachment, metadata
+  validation, and master-only context/Flow hydration. This focused script is not
+  authorization to build a general automated-test program.
+- Run SDK generation, type checks, i18n validation, lint, production build, and
+  `git diff --check`.
+- Recheck the M4 canvas with Element identity context, master-only role outputs,
+  stale manual selection after demotion, cache refresh, and reference-budget
+  behavior. No provider request may occur.
+
+**User QA owner:** User
+
+The user validates that creation remains as simple as before, References and
+Consistency notes use understandable language, existing Elements still work,
+Element previews remain useful, and Flow role handles/candidate selection update
+predictably after Element changes.
+
+**M4.5 gate**
+
+An Element is a provider-independent consistency source of truth with versioned
+identity guidance, canonical source evidence, and approved master references.
+Only masters reach Flow role outputs. The current UX remains name + References +
+optional Consistency notes, and the provider-free M5 engine can snapshot the
+result without redesigning Element persistence or selection semantics.
+
+---
+
 ## M5 - Provider-Independent Run Engine
 
 M5 builds the real TaleLabs execution architecture without calling OpenRouter or
@@ -675,9 +796,13 @@ the graph. Deterministic mock adapters return fixture media through the same
 normalized result contract expected from future providers. Those outputs pass
 through the real ingestion path and become canonical Assets.
 
+M5 starts only after the M4.5 gate. Its planner treats Element sources as
+non-executable evidence, resolves approved masters plus identity guidance, and
+uses `elements.revision` to prevent mixed reference snapshots.
+
 ### E-040 - Harden The Model Capability Registry
 
-**Status:** Blocked by M4
+**Status:** Blocked by M4.5
 
 - Define provider-independent schemas for image, video, and audio generation
   requests and results.
@@ -688,6 +813,14 @@ through the real ingestion path and become canonical Assets.
 - Make the shared registry drive node rendering, connection validation, reference
   selection, cost estimates using mock price facts, and authoritative server
   validation.
+- Keep enum settings as selections and numeric settings as bounded numeric
+  controls; never materialize numeric ranges as option arrays.
+- Extend consumer-side reference profiles without changing Elements: declared
+  maximum, benchmarked recommended maximum, supported reference purpose, multiple
+  subject support, and contact-sheet policy belong to the consuming model slot.
+- Select only approved Element masters. Preserve every considered master and
+  exclusion decision separately from the exact provider subset; raw sources are
+  never candidates.
 - Add deterministic capability scenarios such as three image references, one
   first frame, one last frame, one reference video, and unsupported combinations.
 - Do not add provider credentials, SDKs, HTTP calls, or paid smoke checks.
@@ -704,6 +837,10 @@ through the real ingestion path and become canonical Assets.
   deterministic engine module before changing execution persistence.
 - Resolve real Text, Asset, Element-role, and same-run prior-output sources in
   deterministic order.
+- Resolve Element text from the current upcasted identity contract and resolve
+  Element-role media from ready, readable masters only. Preserve relationship
+  metadata and primary/order ranking for target-aware selection without exposing
+  source evidence to the planner.
 - Preserve the distinction between outer runtime items and inner typed
   collections defined by `docs/flow-nodes-planning.md`.
 - Apply model capability limits while preserving all source candidates separately
@@ -728,6 +865,10 @@ through the real ingestion path and become canonical Assets.
 - Add the snapshot-guard migration and revision semantics defined by the database
   design, including `elements.revision`, `flowRuns.snapshotHash`, and
   `flowRuns.executorVersion`.
+- Increment `elements.revision` in the same transaction as identity/data/schema
+  changes and every execution-relevant Element link mutation: role, order,
+  primary, reference kind, and reference metadata. Run admission captures and
+  revalidates every participating revision before commit.
 - Add the reviewed job-level model provenance fields for stable TaleLabs model
   identity, operation, curated registry version, native provider model, provider
   route version, and adapter version. Backfill development rows deterministically.
@@ -736,6 +877,10 @@ through the real ingestion path and become canonical Assets.
   development rows deterministically.
 - Canonically serialize and persist bounded immutable snapshots. Never place
   signed URLs, provider payloads, or media bytes in snapshots.
+- Snapshot the exact approved master candidates considered, exclusion reasons,
+  exact selected Asset IDs, resolved identity text, relationship metadata used by
+  ranking, and captured Element revision. Never snapshot raw source evidence
+  unless a future explicit operation consumes it as an ordinary Asset input.
 
 ### E-042 - Implement Run API, Admission, And Durable Dispatch
 
@@ -747,6 +892,9 @@ through the real ingestion path and become canonical Assets.
   development allowlists, and emergency budget controls using mock costs.
 - Create run, run-node, execution-item, generation-job, source, and exact-input
   facts atomically as authorized by the final planner shape.
+- Re-read Flow and Element revisions immediately before insertion so an Element
+  promotion, demotion, reorder, metadata edit, or identity edit cannot produce a
+  mixed snapshot.
 - Dispatch ID-only Trigger.dev tasks; workers load immutable state from
   PostgreSQL.
 - Implement reconciliation, cancellation, executor-version pinning, and guarded
@@ -787,6 +935,9 @@ through the real ingestion path and become canonical Assets.
   generation nodes.
 - Allow a generated output to become an Asset node and connect to a downstream
   generation input.
+- Preserve the later improvement-loop seam: a kept generated Asset may be
+  explicitly attached as an Element master in a separate user action, but M5 does
+  not automatically modify Element identity or references after a run.
 
 ### E-045 - Implement Multiplicity And Explicit Iteration
 
@@ -815,8 +966,10 @@ model-specific limits; multiple context sources; zipped and Cartesian inputs;
 multiple outputs; iteration and collection; branches; deterministic planning;
 idempotent replay; snapshot collisions; task retries; lost dispatch; cancellation;
 partial failure; output-ingestion failure; canonical Asset reuse; and immutable
-historical provenance. Confirm through network controls/log inspection that no AI
-generation provider was contacted.
+historical provenance. Include concurrent Element identity/reference edits,
+master demotion after a saved manual selection, source exclusion, exact master
+candidate/selection provenance, and Element revision retries. Confirm through
+network controls/log inspection that no AI generation provider was contacted.
 
 ### E-047 - Mock Engine User QA And UI Critique Gate
 
@@ -826,14 +979,16 @@ generation provider was contacted.
 
 The user validates model-driven node forms, reference selection and overflow,
 image/video/audio runs, full-flow execution, visible iteration, output sets,
-partial failures, refresh recovery, result reuse, and overall canvas ergonomics.
+partial failures, refresh recovery, result reuse, Element consistency selection,
+and overall canvas ergonomics.
 
 **M5 gate**
 
 TaleLabs can execute representative image, video, and audio creative graphs using
-real workspace inputs and production-shaped durable infrastructure. All generated
-media is deterministic mock output, becomes a canonical Asset, and can continue
-through the graph. No external AI generation request or generation spend occurs.
+real workspace inputs, resolved Element identity, approved master references, and
+production-shaped durable infrastructure. All generated media is deterministic
+mock output, becomes a canonical Asset, and can continue through the graph. No
+external AI generation request or generation spend occurs.
 
 ---
 
@@ -858,6 +1013,9 @@ ingestion, and UI must not be redesigned to accommodate a provider.
   real adapter passes controlled opt-in smoke checks.
 - Keep the mock adapter available only through an explicit development/test
   configuration, never an implicit production fallback.
+- Verify the adapter receives only the exact master subset selected and
+  snapshotted by M5. Provider-specific reference uploads/IDs are ephemeral adapter
+  concerns and never mutate Element links or enter immutable snapshots.
 
 ### E-061 - Implement The First Real Video Adapter
 
@@ -867,6 +1025,12 @@ Integrate one approved video model through the same contract. Verify first/last
 frame, reference limits, duration, asynchronous polling, cancellation support,
 large result ingestion, timeouts, and uncertain provider submission without
 changing Flow runtime semantics.
+
+Benchmark Element master selection honestly for the chosen route: declared versus
+recommended reference count, separate-image versus contact-sheet behavior,
+multiple-subject support, and identity drift. Store curated benchmark facts in the
+model registry; do not weaken Element capacity or silently manufacture a sheet to
+fit one provider.
 
 Verify OpenRouter/provider discovery drift before enabling the route, snapshot
 the resolved provider/adapter version, and reject capabilities that the selected
@@ -890,6 +1054,9 @@ distinct registry operations even when they share the `AudioSet` output type.
 
 - Compare normalized mock and real adapter behavior for every supported model
   capability and terminal state.
+- Confirm model-specific ranking selects from approved masters only and that exact
+  selected IDs, identity context, relationship metadata, and exclusions match the
+  immutable M5 provenance.
 - Verify provider-cost recording, bounded opt-in smoke budgets, emergency disable
   controls, retry policy, uncertain submissions, orphan cleanup, and safe errors.
 - Inventory `TODO(provider-integration)` markers and document any model adapters
@@ -907,7 +1074,9 @@ distinct registry operations even when they share the `AudioSet` output type.
 
 The user compares mock and real behavior, output presentation, latency feedback,
 model settings, reference handling, failure recovery, and practical creative
-quality. Findings become narrowly scoped adapter or UX tasks.
+quality, including whether Character/Product/Location Elements remain recognizable
+with simple default selection. Findings become narrowly scoped adapter, registry,
+or UX tasks; they do not introduce provider-owned fields into Elements.
 
 **M6 gate**
 
@@ -924,10 +1093,12 @@ rewrite.
 **Status:** Blocked by M6
 
 Exercise the highest-value loop across two organizations: upload, process,
-organize, create Element kits, create multi-context and iterative Flows, generate
-all three media types, persist/reuse outputs, inspect provenance, archive/restore,
-and purge. Systematically attempt cross-organization identifiers and signed URL
-access.
+organize, create Elements with identity guidance and master references, create
+multi-context and iterative Flows, generate all three media types, persist/reuse
+outputs, inspect exact Element/master provenance, archive/restore, and purge.
+Exercise source/master promotion and demotion without exposing another
+organization's relationships. Systematically attempt cross-organization
+identifiers and signed URL access.
 
 ### E-071 - Add Operational Reliability And Cleanup
 
@@ -962,8 +1133,8 @@ staging URL, known risks, test-data expectations, and user handoff checklist.
 **Owner:** User
 
 The user evaluates Assets, Elements, Flows, generation, iteration, output reuse,
-navigation, terminology, media states, destructive actions, responsive behavior,
-and creative value as one product.
+navigation, consistency terminology, default reference selection, media states,
+destructive actions, responsive behavior, and creative value as one product.
 
 **M7 gate**
 

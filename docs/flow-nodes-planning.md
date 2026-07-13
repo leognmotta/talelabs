@@ -393,6 +393,12 @@ Model capabilities continue to define:
 - settings and output count;
 - automatic versus manual selection behavior.
 
+Enumeration settings render as finite selection controls. Numeric settings stay
+numeric end to end and render through a bounded number input, slider, or stepper
+using the registry's `min`, `max`, and `step`; the editor never expands a numeric
+range into a generated option list. This avoids floating-point string identity
+bugs and keeps large ranges renderable.
+
 ### Curated Model Registry And Provider Routes
 
 TaleLabs owns the production model catalog in versioned code. OpenRouter and
@@ -673,11 +679,14 @@ outputs:
 
 The Element has one stable handle per current registered role. Five roles mean
 five reusable media outputs. Each role output is one runtime item containing its
-ordered, ready, non-purging related Assets.
+ordered, ready, non-purging **master** Assets. Raw Element source evidence is not
+part of the role value, does not count against model limits, and never reaches a
+provider through an Element edge.
 
 `context` remains `ElementContext`, not plain Text. This preserves semantic
-origin, structured metadata, and provenance. The planner composes its resolved
-text into the provider prompt when appropriate.
+origin, the upcasted Element identity contract, structured metadata, and
+provenance. The planner composes its resolved text into the provider prompt when
+appropriate.
 
 ### Image Generation
 
@@ -716,6 +725,12 @@ For each planned generation work item, the server:
 8. stores the exact provider input subset separately;
 9. locks and validates selected canonical Assets;
 10. creates the durable job.
+
+For an Element source, "candidate media" means approved masters only. The source
+snapshot records the captured Element revision, resolved identity text, ordered
+master candidates, relationship metadata used for ranking, and exclusions. Raw
+source evidence is not silently included. `generationJobInputs` still stores only
+the exact master Asset subset submitted to the provider.
 
 This preserves two different facts:
 
@@ -793,8 +808,9 @@ planner reads the Flow revision, resolves the selected graph and every mutable
 Element/Asset dependency, and revalidates all participating revisions immediately
 before inserting the run. `flows.revision` protects nodes and edges. Each
 Element has its own revision that increments in the same transaction as Element
-data or Element-Asset role/order/primary changes. Selected Asset rows are locked
-in stable ID order and revalidated as ready and not purging. Any revision change
+identity/data/schema or Element-Asset role/order/primary/kind/metadata changes.
+Selected Asset rows are locked in stable ID order and revalidated as ready and
+not purging. Any revision change
 causes the admission transaction to roll back and retry; a run must never contain
 a graph from one moment and Element context from another.
 
@@ -1189,8 +1205,17 @@ M4  Canvas foundation
     autosave and conflict handling
     no execution
 
+M4.5  Element consistency foundation
+    versioned identity guidance with one optional Consistency notes field
+    source evidence separated from approved master references
+    master-only previews, context, role handles, and Flow hydration
+    transactional source/master capacity and fixed advisory-lock ordering
+    provider-independent relationship metadata and derived readiness
+    no AI analysis, pack generation, or provider calls
+
 M5  Provider-independent engine
-    real input resolution and immutable snapshots
+    real master-only Element input resolution and immutable snapshots
+    captured Element revisions, identity context, master candidates, and exact inputs
     selected-node, downstream, and full-flow execution
     normalized immediate/asynchronous provider lifecycle contract
     deterministic image, video, and audio provider mocks
@@ -1240,7 +1265,9 @@ leave its documented Tool/versioning seams without building that product surface
 11. Tool versions and run snapshots are immutable.
 12. React Flow remains an editor; server planning remains authoritative.
 13. Run admission revalidates Flow and Element revisions before commit.
-14. Every run is pinned to compatible executor code and receives only ID-sized
+14. Element role outputs contain approved masters only; raw source evidence is
+    never an implicit generation input.
+15. Every run is pinned to compatible executor code and receives only ID-sized
     Trigger payloads.
 
 The concise mental model is:
