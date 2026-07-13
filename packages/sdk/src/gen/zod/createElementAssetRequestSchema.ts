@@ -6,6 +6,8 @@
 import * as z from "zod";
 import type { CreateElementAssetRequest } from "../types/CreateElementAssetRequest.ts";
 import { cuid2Schema } from "./cuid2Schema.ts";
+import { elementReferenceKindSchema } from "./elementReferenceKindSchema.ts";
+import { elementReferenceMetadataSchema } from "./elementReferenceMetadataSchema.ts";
 
 export const createElementAssetRequestSchema = z.object({
   get assetId() {
@@ -14,4 +16,10 @@ export const createElementAssetRequestSchema = z.object({
   role: z.string().min(1).max(64),
   sortOrder: z.optional(z.int().min(0)),
   isPrimary: z.optional(z.boolean().default(false)),
+  get referenceKind() {
+    return elementReferenceKindSchema.optional();
+  },
+  get referenceMetadata() {
+    return elementReferenceMetadataSchema.optional();
+  },
 }) as unknown as z.ZodType<CreateElementAssetRequest>;

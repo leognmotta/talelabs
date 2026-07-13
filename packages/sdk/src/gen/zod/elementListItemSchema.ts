@@ -5,12 +5,17 @@
 
 import * as z from "zod";
 import type { ElementListItem } from "../types/ElementListItem.ts";
+import { elementReadinessSchema } from "./elementReadinessSchema.ts";
 import { elementSchema } from "./elementSchema.ts";
 
 export const elementListItemSchema = z
   .lazy(() => elementSchema)
   .and(
     z.object({
+      hasProcessingReferences: z.boolean(),
       previewThumbnailUrl: z.nullable(z.url()),
+      get readiness() {
+        return elementReadinessSchema;
+      },
     }),
   ) as unknown as z.ZodType<ElementListItem>;

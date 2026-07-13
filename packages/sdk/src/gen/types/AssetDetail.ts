@@ -5,6 +5,8 @@
 
 import type { Asset } from "./Asset.ts";
 import type { Cuid2 } from "./Cuid2.ts";
+import type { ElementReferenceKind } from "./ElementReferenceKind.ts";
+import type { ElementReferenceMetadata } from "./ElementReferenceMetadata.ts";
 import type { GenerationProvenance } from "./GenerationProvenance.ts";
 
 export type AssetDetail = Asset & {
@@ -31,6 +33,14 @@ export type AssetDetail = Asset & {
      * @type boolean
      */
     isPrimary: boolean;
+    /**
+     * @type string
+     */
+    referenceKind: ElementReferenceKind;
+    /**
+     * @type object
+     */
+    referenceMetadata: ElementReferenceMetadata;
   }[];
   /**
    * @type object

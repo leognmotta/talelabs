@@ -4,10 +4,19 @@
  */
 
 import type { Element } from "./Element.ts";
+import type { ElementReadiness } from "./ElementReadiness.ts";
 
 export type ElementListItem = Element & {
+  /**
+   * @type boolean
+   */
+  hasProcessingReferences: boolean;
   /**
    * @type string, uri
    */
   previewThumbnailUrl: string | null;
+  /**
+   * @type object
+   */
+  readiness: ElementReadiness;
 };

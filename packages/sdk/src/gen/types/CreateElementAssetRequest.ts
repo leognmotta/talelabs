@@ -4,6 +4,8 @@
  */
 
 import type { Cuid2 } from "./Cuid2.ts";
+import type { ElementReferenceKind } from "./ElementReferenceKind.ts";
+import type { ElementReferenceMetadata } from "./ElementReferenceMetadata.ts";
 
 export type CreateElementAssetRequest = {
   /**
@@ -27,4 +29,12 @@ export type CreateElementAssetRequest = {
    * @type boolean | undefined
    */
   isPrimary?: boolean;
+  /**
+   * @type string | undefined
+   */
+  referenceKind?: ElementReferenceKind;
+  /**
+   * @type object | undefined
+   */
+  referenceMetadata?: ElementReferenceMetadata;
 };

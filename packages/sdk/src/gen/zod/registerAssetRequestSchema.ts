@@ -6,6 +6,8 @@
 import * as z from "zod";
 import type { RegisterAssetRequest } from "../types/RegisterAssetRequest.ts";
 import { cuid2Schema } from "./cuid2Schema.ts";
+import { elementReferenceKindSchema } from "./elementReferenceKindSchema.ts";
+import { elementReferenceMetadataSchema } from "./elementReferenceMetadataSchema.ts";
 
 export const registerAssetRequestSchema = z.object({
   uploadId: z.string().min(1).max(8192),
@@ -19,4 +21,10 @@ export const registerAssetRequestSchema = z.object({
   role: z.optional(z.string().min(1).max(64)),
   sortOrder: z.optional(z.int().min(0)),
   isPrimary: z.optional(z.boolean()),
+  get referenceKind() {
+    return elementReferenceKindSchema.optional();
+  },
+  get referenceMetadata() {
+    return elementReferenceMetadataSchema.optional();
+  },
 }) as unknown as z.ZodType<RegisterAssetRequest>;

@@ -19,6 +19,7 @@ import type {
 } from "../types/GetElementsIdAssets.ts";
 import { cuid2Schema } from "./cuid2Schema.ts";
 import { elementAssetListResponseSchema } from "./elementAssetListResponseSchema.ts";
+import { elementReferenceKindSchema } from "./elementReferenceKindSchema.ts";
 import { errorResponseSchema } from "./errorResponseSchema.ts";
 
 export const getElementsIdAssetsPathParamsSchema = z.object({
@@ -30,6 +31,9 @@ export const getElementsIdAssetsPathParamsSchema = z.object({
 export const getElementsIdAssetsQueryParamsSchema = z
   .object({
     role: z.optional(z.string().min(1).max(64)),
+    get referenceKind() {
+      return elementReferenceKindSchema.optional();
+    },
   })
   .optional() as unknown as z.ZodType<GetElementsIdAssetsQueryParams>;
 

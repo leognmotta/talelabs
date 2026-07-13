@@ -120,6 +120,10 @@
           "element_asset_media_type_not_accepted",
           "element_asset_role_capacity_reached",
           "element_asset_role_not_found",
+          "element_master_role_capacity_reached",
+          "element_reference_metadata_invalid",
+          "element_source_capacity_reached",
+          "element_source_primary_invalid",
           "revision_conflict",
           "invalid_state",
           "unsupported_by_model",
@@ -936,11 +940,60 @@
           },
           "isPrimary": {
             "type": "boolean"
+          },
+          "referenceKind": {
+            "$ref": "#/components/schemas/ElementReferenceKind"
+          },
+          "referenceMetadata": {
+            "$ref": "#/components/schemas/ElementReferenceMetadata"
           }
         },
         "required": [
           "uploadId"
         ]
+      },
+      "ElementReferenceKind": {
+        "type": "string",
+        "enum": [
+          "source",
+          "master"
+        ]
+      },
+      "ElementReferenceMetadata": {
+        "type": "object",
+        "properties": {
+          "view": {
+            "type": "string",
+            "enum": [
+              "front",
+              "threeQuarter",
+              "profile",
+              "rear"
+            ]
+          },
+          "framing": {
+            "type": "string",
+            "enum": [
+              "portrait",
+              "halfBody",
+              "fullBody",
+              "detail"
+            ]
+          },
+          "background": {
+            "type": "string",
+            "enum": [
+              "clean",
+              "environment"
+            ]
+          },
+          "variant": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          }
+        },
+        "additionalProperties": false
       },
       "MoveAssetsResponse": {
         "type": "object",
@@ -1007,12 +1060,20 @@
                     },
                     "isPrimary": {
                       "type": "boolean"
+                    },
+                    "referenceKind": {
+                      "$ref": "#/components/schemas/ElementReferenceKind"
+                    },
+                    "referenceMetadata": {
+                      "$ref": "#/components/schemas/ElementReferenceMetadata"
                     }
                   },
                   "required": [
                     "elementId",
                     "role",
-                    "isPrimary"
+                    "isPrimary",
+                    "referenceKind",
+                    "referenceMetadata"
                   ]
                 }
               },
@@ -1280,14 +1341,22 @@
           {
             "type": "object",
             "properties": {
+              "hasProcessingReferences": {
+                "type": "boolean"
+              },
               "previewThumbnailUrl": {
                 "type": "string",
                 "nullable": true,
                 "format": "uri"
+              },
+              "readiness": {
+                "$ref": "#/components/schemas/ElementReadiness"
               }
             },
             "required": [
-              "previewThumbnailUrl"
+              "hasProcessingReferences",
+              "previewThumbnailUrl",
+              "readiness"
             ]
           }
         ]
@@ -1310,6 +1379,38 @@
         "additionalProperties": {
           "nullable": true
         }
+      },
+      "ElementReadiness": {
+        "type": "object",
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": [
+              "empty",
+              "usable",
+              "strong"
+            ]
+          },
+          "missing": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 32
+          },
+          "recommendations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 32
+          }
+        },
+        "required": [
+          "state",
+          "missing",
+          "recommendations"
+        ]
       },
       "Element": {
         "type": "object",
@@ -1453,10 +1554,14 @@
                   "type": "integer",
                   "minimum": 0
                 }
+              },
+              "readiness": {
+                "$ref": "#/components/schemas/ElementReadiness"
               }
             },
             "required": [
-              "assetCounts"
+              "assetCounts",
+              "readiness"
             ]
           }
         ]
@@ -1518,6 +1623,12 @@
           "isPrimary": {
             "type": "boolean"
           },
+          "referenceKind": {
+            "$ref": "#/components/schemas/ElementReferenceKind"
+          },
+          "referenceMetadata": {
+            "$ref": "#/components/schemas/ElementReferenceMetadata"
+          },
           "asset": {
             "$ref": "#/components/schemas/Asset"
           }
@@ -1527,6 +1638,8 @@
           "role",
           "sortOrder",
           "isPrimary",
+          "referenceKind",
+          "referenceMetadata",
           "asset"
         ]
       },
@@ -1548,6 +1661,12 @@
           "isPrimary": {
             "type": "boolean",
             "default": false
+          },
+          "referenceKind": {
+            "$ref": "#/components/schemas/ElementReferenceKind"
+          },
+          "referenceMetadata": {
+            "$ref": "#/components/schemas/ElementReferenceMetadata"
           }
         },
         "required": [
@@ -1563,12 +1682,23 @@
             "minLength": 1,
             "maxLength": 64
           },
+          "targetRole": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
           "sortOrder": {
             "type": "integer",
             "minimum": 0
           },
           "isPrimary": {
             "type": "boolean"
+          },
+          "referenceKind": {
+            "$ref": "#/components/schemas/ElementReferenceKind"
+          },
+          "referenceMetadata": {
+            "$ref": "#/components/schemas/ElementReferenceMetadata"
           }
         },
         "required": [
@@ -6600,6 +6730,14 @@
             },
             "required": false,
             "name": "role",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "$ref": "#/components/schemas/ElementReferenceKind"
+            },
+            "required": false,
+            "name": "referenceKind",
             "in": "query"
           }
         ],

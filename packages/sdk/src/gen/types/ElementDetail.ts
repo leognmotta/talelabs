@@ -4,6 +4,7 @@
  */
 
 import type { Element } from "./Element.ts";
+import type { ElementReadiness } from "./ElementReadiness.ts";
 
 export type ElementDetail = Element & {
   /**
@@ -12,4 +13,8 @@ export type ElementDetail = Element & {
   assetCounts: {
     [key: string]: number;
   };
+  /**
+   * @type object
+   */
+  readiness: ElementReadiness;
 };

@@ -5,6 +5,7 @@
 
 import * as z from "zod";
 import type { ElementDetail } from "../types/ElementDetail.ts";
+import { elementReadinessSchema } from "./elementReadinessSchema.ts";
 import { elementSchema } from "./elementSchema.ts";
 
 export const elementDetailSchema = z
@@ -12,5 +13,8 @@ export const elementDetailSchema = z
   .and(
     z.object({
       assetCounts: z.object({}).catchall(z.int().min(0)),
+      get readiness() {
+        return elementReadinessSchema;
+      },
     }),
   ) as unknown as z.ZodType<ElementDetail>;

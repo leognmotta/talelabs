@@ -3,6 +3,9 @@
  * Do not edit manually.
  */
 
+import type { ElementReferenceKind } from "./ElementReferenceKind.ts";
+import type { ElementReferenceMetadata } from "./ElementReferenceMetadata.ts";
+
 export type UpdateElementAssetRequest = {
   /**
    * @minLength 1
@@ -10,6 +13,12 @@ export type UpdateElementAssetRequest = {
    * @type string
    */
   role: string;
+  /**
+   * @minLength 1
+   * @maxLength 64
+   * @type string | undefined
+   */
+  targetRole?: string;
   /**
    * @minLength 0
    * @type integer | undefined
@@ -19,4 +28,12 @@ export type UpdateElementAssetRequest = {
    * @type boolean | undefined
    */
   isPrimary?: boolean;
+  /**
+   * @type string | undefined
+   */
+  referenceKind?: ElementReferenceKind;
+  /**
+   * @type object | undefined
+   */
+  referenceMetadata?: ElementReferenceMetadata;
 };

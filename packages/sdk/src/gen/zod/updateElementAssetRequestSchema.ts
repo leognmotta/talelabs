@@ -5,9 +5,18 @@
 
 import * as z from "zod";
 import type { UpdateElementAssetRequest } from "../types/UpdateElementAssetRequest.ts";
+import { elementReferenceKindSchema } from "./elementReferenceKindSchema.ts";
+import { elementReferenceMetadataSchema } from "./elementReferenceMetadataSchema.ts";
 
 export const updateElementAssetRequestSchema = z.object({
   role: z.string().min(1).max(64),
+  targetRole: z.optional(z.string().min(1).max(64)),
   sortOrder: z.optional(z.int().min(0)),
   isPrimary: z.optional(z.boolean()),
+  get referenceKind() {
+    return elementReferenceKindSchema.optional();
+  },
+  get referenceMetadata() {
+    return elementReferenceMetadataSchema.optional();
+  },
 }) as unknown as z.ZodType<UpdateElementAssetRequest>;

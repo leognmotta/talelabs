@@ -5,6 +5,7 @@
 
 import type { Cuid2 } from "./Cuid2.ts";
 import type { ElementAssetListResponse } from "./ElementAssetListResponse.ts";
+import type { ElementReferenceKind } from "./ElementReferenceKind.ts";
 import type { ErrorResponse } from "./ErrorResponse.ts";
 
 export type GetElementsIdAssetsPathParams = {
@@ -22,6 +23,10 @@ export type GetElementsIdAssetsQueryParams = {
    * @type string | undefined
    */
   role?: string;
+  /**
+   * @type string | undefined
+   */
+  referenceKind?: ElementReferenceKind;
 };
 
 /**

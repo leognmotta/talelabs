@@ -7,6 +7,8 @@ import * as z from "zod";
 import type { ElementAssetLink } from "../types/ElementAssetLink.ts";
 import { assetSchema } from "./assetSchema.ts";
 import { cuid2Schema } from "./cuid2Schema.ts";
+import { elementReferenceKindSchema } from "./elementReferenceKindSchema.ts";
+import { elementReferenceMetadataSchema } from "./elementReferenceMetadataSchema.ts";
 
 export const elementAssetLinkSchema = z.object({
   get assetId() {
@@ -15,6 +17,12 @@ export const elementAssetLinkSchema = z.object({
   role: z.string().min(1).max(64),
   sortOrder: z.int().min(0),
   isPrimary: z.boolean(),
+  get referenceKind() {
+    return elementReferenceKindSchema;
+  },
+  get referenceMetadata() {
+    return elementReferenceMetadataSchema;
+  },
   get asset() {
     return assetSchema;
   },
