@@ -35,7 +35,6 @@ import { DashboardLayout } from '../layouts/dashboard-layout'
 import { CreateOrganizationRoute } from '../routes/create-organization-route'
 import { ProtectedRoute } from '../routes/protected-route'
 import { PublicRoute } from '../routes/public-route'
-import { BlankPage } from '../shared/components/blank-page'
 import { ErrorBoundary } from '../shared/components/error-boundary'
 import { ErrorFallback } from '../shared/components/error-fallback'
 import { SplashScreen } from '../shared/components/splash-screen'
@@ -57,6 +56,16 @@ const AssetsScreen = lazy(async () => {
 const ElementsScreen = lazy(async () => {
   const module = await import('../features/elements/elements-screen')
   return { default: module.ElementsScreen }
+})
+
+const FlowsScreen = lazy(async () => {
+  const module = await import('../features/flows/flows-screen')
+  return { default: module.FlowsScreen }
+})
+
+const FlowEditorScreen = lazy(async () => {
+  const module = await import('../features/flows/flow-editor-screen')
+  return { default: module.FlowEditorScreen }
 })
 
 const ElementDetailScreen = lazy(async () => {
@@ -196,11 +205,6 @@ export function DashboardRoutes() {
         toast.error(message)
         return message
       }
-
-      await removeOrganizationProductQueries(
-        queryClient,
-        previousOrganizationId,
-      )
     }
 
     if (result.data?.id)
@@ -247,10 +251,6 @@ export function DashboardRoutes() {
     await session.refetch()
     await organization.refreshOrganizationSession()
     await queryClient.invalidateQueries({ queryKey: getMeQueryKey() })
-    await removeOrganizationProductQueries(
-      queryClient,
-      previousOrganizationId,
-    )
     await queryClient.invalidateQueries({
       queryKey: listOrganizationsQueryKey(),
     })
@@ -375,7 +375,38 @@ export function DashboardRoutes() {
               </ErrorBoundary>
             )}
           />
-          <Route path="flows" element={<BlankPage title={t('navigation.flows')} />} />
+          <Route
+            path="flows"
+            element={(
+              <ErrorBoundary
+                fallback={({ resetErrorBoundary }) => (
+                  <ErrorFallback
+                    description={t('flows.couldNotLoadDescription')}
+                    onRetry={resetErrorBoundary}
+                    title={t('flows.couldNotLoad')}
+                  />
+                )}
+              >
+                <Suspense fallback={<SplashScreen />}><FlowsScreen /></Suspense>
+              </ErrorBoundary>
+            )}
+          />
+          <Route
+            path="flows/:flowId"
+            element={(
+              <ErrorBoundary
+                fallback={({ resetErrorBoundary }) => (
+                  <ErrorFallback
+                    description={t('flows.couldNotLoadDescription')}
+                    onRetry={resetErrorBoundary}
+                    title={t('flows.couldNotLoad')}
+                  />
+                )}
+              >
+                <Suspense fallback={<SplashScreen />}><FlowEditorScreen /></Suspense>
+              </ErrorBoundary>
+            )}
+          />
           <Route
             path="elements"
             element={(

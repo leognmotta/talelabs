@@ -1,7 +1,7 @@
 import type { LanguagePreference } from '@talelabs/i18n'
 import type { SettingsTab } from '../features/settings/settings-state'
 import type { ThemePreference } from '../shared/lib/theme'
-import { IconArchive, IconCookie, IconDots } from '@tabler/icons-react'
+import { IconCookie, IconDots } from '@tabler/icons-react'
 import { Button } from '@talelabs/ui/components/button'
 import {
   DropdownMenu,
@@ -17,6 +17,7 @@ import {
   SidebarTrigger,
 } from '@talelabs/ui/components/sidebar'
 import { TooltipProvider } from '@talelabs/ui/components/tooltip'
+import { cn } from '@talelabs/ui/lib/utils'
 import { parseAsStringEnum, useQueryState } from 'nuqs'
 
 import {
@@ -28,7 +29,7 @@ import {
   useState,
 } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Outlet } from 'react-router'
+import { Outlet, useMatch } from 'react-router'
 import { AssetViewerDialog } from '../features/assets/asset-viewer-dialog'
 import { useAssetViewerUrlState } from '../features/assets/use-asset-viewer-url-state'
 import { OrganizationScopeProvider } from '../features/organizations/organization-scope'
@@ -36,6 +37,7 @@ import { SettingsDialog } from '../features/settings/settings-dialog'
 import { settingsTabs } from '../features/settings/settings-state'
 import { UploadIndicator } from '../features/uploads/upload-indicator'
 import { UploadProvider } from '../features/uploads/upload-provider'
+import { AssetIcon } from '../shared/domain-icons'
 import { AppSidebar } from './app-sidebar'
 import { GlobalSearch } from './global-search'
 
@@ -79,6 +81,7 @@ export function DashboardLayout({
   theme: ThemePreference
 }) {
   const { t } = useTranslation()
+  const isFlowEditor = Boolean(useMatch('/flows/:flowId'))
   const [settingsTab, setSettingsTab] = useQueryState(
     'settings',
     parseAsStringEnum<SettingsTab>([...settingsTabs]),
@@ -315,63 +318,73 @@ export function DashboardLayout({
                   flex min-h-0 flex-1 flex-col bg-background text-foreground
                 "
               >
-                <header className="flex h-16 shrink-0 items-center gap-3 px-6">
-                  <SidebarTrigger className="md:hidden" />
-                  <div className="flex min-w-0 flex-1 justify-center">
-                    <GlobalSearch
-                      onOpenInviteMemberSettings={
-                        handleOpenInviteMemberSettings
-                      }
-                      onOpenSettings={handleOpenSettings}
-                    />
-                  </div>
-                  <UploadIndicator />
-                  <Button
-                    aria-label={t('navigation.assets')}
-                    type="button"
-                    variant="outline"
-                    onClick={() => setIsAssetLibraryOpen(true)}
-                    onFocus={() => void loadAssetLibraryDialog()}
-                    onMouseEnter={() => void loadAssetLibraryDialog()}
-                  >
-                    <IconArchive data-icon="inline-start" />
-                    <span
-                      className="
-                        hidden
-                        sm:inline
-                      "
+                {!isFlowEditor && (
+                  <>
+                    <header className="
+                      flex h-16 shrink-0 items-center gap-3 px-6
+                    "
                     >
-                      {t('navigation.assets')}
-                    </span>
-                  </Button>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger
-                      render={(
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          aria-label={t('common.moreOptions')}
+                      <SidebarTrigger className="md:hidden" />
+                      <div className="flex min-w-0 flex-1 justify-center">
+                        <GlobalSearch
+                          onOpenInviteMemberSettings={
+                            handleOpenInviteMemberSettings
+                          }
+                          onOpenSettings={handleOpenSettings}
                         />
-                      )}
-                    >
-                      <IconDots />
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuGroup>
-                        <DropdownMenuItem onClick={onOpenCookiePreferences}>
-                          <IconCookie />
-                          <span>{t('cookies.manage')}</span>
-                        </DropdownMenuItem>
-                      </DropdownMenuGroup>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </header>
-                <Separator />
+                      </div>
+                      <UploadIndicator />
+                      <Button
+                        aria-label={t('navigation.assets')}
+                        type="button"
+                        variant="outline"
+                        onClick={() => setIsAssetLibraryOpen(true)}
+                        onFocus={() => void loadAssetLibraryDialog()}
+                        onMouseEnter={() => void loadAssetLibraryDialog()}
+                      >
+                        <AssetIcon data-icon="inline-start" />
+                        <span
+                          className="
+                            hidden
+                            sm:inline
+                          "
+                        >
+                          {t('navigation.assets')}
+                        </span>
+                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger
+                          render={(
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              aria-label={t('common.moreOptions')}
+                            />
+                          )}
+                        >
+                          <IconDots />
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuGroup>
+                            <DropdownMenuItem onClick={onOpenCookiePreferences}>
+                              <IconCookie />
+                              <span>{t('cookies.manage')}</span>
+                            </DropdownMenuItem>
+                          </DropdownMenuGroup>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </header>
+                    <Separator />
+                  </>
+                )}
                 <section
-                  className="
-                    flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto p-6
-                  "
+                  className={cn(
+                    'flex min-h-0 flex-1 flex-col',
+                    isFlowEditor
+                      ? 'overflow-hidden'
+                      : 'gap-6 overflow-y-auto p-6',
+                  )}
                 >
                   <Outlet />
                 </section>

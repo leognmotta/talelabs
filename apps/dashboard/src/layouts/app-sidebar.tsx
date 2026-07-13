@@ -2,8 +2,8 @@ import type { ComponentProps } from 'react'
 import type { SettingsTab } from '../features/settings/settings-state'
 
 import {
-  IconArchive,
   IconComponents,
+  IconFolderOpen,
   IconGitBranch,
   IconLogout,
 } from '@tabler/icons-react'
@@ -64,7 +64,7 @@ export function AppSidebar({
             {
               title: t('navigation.assets'),
               url: '/assets',
-              icon: <IconArchive />,
+              icon: <IconFolderOpen />,
             },
             {
               title: t('navigation.elements'),

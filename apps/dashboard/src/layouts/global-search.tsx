@@ -3,7 +3,6 @@ import type { SettingsTab } from '../features/settings/settings-state'
 
 import {
   IconAlertCircle,
-  IconArchive,
   IconBuilding,
   IconComponents,
   IconGitBranch,
@@ -36,17 +35,18 @@ import {
 } from '../features/search/search.constants'
 import { useDebouncedSearch } from '../features/search/use-debounced-search'
 import { useWorkspaceSearchQuery } from '../features/search/use-workspace-search-query'
+import { AssetIcon } from '../shared/domain-icons'
 import { GlobalSearchAssetThumbnail } from './global-search-asset-thumbnail'
 import { GlobalSearchElementThumbnail } from './global-search-element-thumbnail'
 import { GlobalSearchFolderThumbnail } from './global-search-folder-thumbnail'
 
 const pageActions: {
   hidden?: boolean
-  icon: typeof IconArchive
+  icon: typeof AssetIcon
   titleKey: 'navigation.assets' | 'navigation.elements' | 'navigation.flows'
   url: string
 }[] = [
-  { icon: IconArchive, titleKey: 'navigation.assets', url: '/assets' },
+  { icon: AssetIcon, titleKey: 'navigation.assets', url: '/assets' },
   { icon: IconGitBranch, titleKey: 'navigation.flows', url: '/flows' },
   { icon: IconComponents, titleKey: 'navigation.elements', url: '/elements' },
 ]
