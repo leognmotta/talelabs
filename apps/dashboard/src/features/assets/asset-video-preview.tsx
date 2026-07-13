@@ -20,7 +20,6 @@ export function AssetVideoPreview({
   if (mode === 'player') {
     return (
       <video
-        autoPlay
         aria-label={name}
         className={cn('size-full object-contain', className)}
         controls

@@ -18,7 +18,10 @@ export function AssetMediaPreview({
   videoPreviewActive = false,
   videoRef,
 }: {
-  asset: Asset
+  asset: Pick<
+    Asset,
+    'id' | 'name' | 'processingState' | 'thumbnailUrl' | 'type' | 'url'
+  >
   className?: string
   mode?: 'player' | 'thumbnail'
   videoPreviewActive?: boolean
@@ -27,14 +30,17 @@ export function AssetMediaPreview({
   if (asset.processingState === 'processing')
     return <Skeleton className={cn('size-full rounded-none', className)} />
 
-  if (asset.type === 'image' && asset.url) {
+  if (asset.type === 'image' && (asset.thumbnailUrl || asset.url)) {
+    const source = mode === 'player'
+      ? asset.url ?? asset.thumbnailUrl
+      : asset.thumbnailUrl ?? asset.url
     return (
       <img
         alt={asset.name}
         className={cn('size-full object-contain', className)}
         draggable={false}
         loading="lazy"
-        src={mode === 'player' ? asset.url : asset.thumbnailUrl ?? asset.url}
+        src={source!}
       />
     )
   }
@@ -74,7 +80,13 @@ export function AssetMediaPreview({
       "
       >
         <IconFileMusic aria-hidden className="size-16 text-muted-foreground" />
-        <audio aria-label={asset.name} className="w-full" controls src={asset.url} />
+        <audio
+          aria-label={asset.name}
+          className="w-full"
+          controls
+          preload="metadata"
+          src={asset.url}
+        />
       </div>
     )
   }
