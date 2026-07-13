@@ -433,6 +433,10 @@ class UploadManager {
     try {
       this.assertActive(batch, controller.signal)
       let assetId = initialItem.assetId
+      const recoveringElementLink = Boolean(
+        runtime.target.kind === 'element'
+        && (assetId || runtime.registrationUploadId),
+      )
       if (!assetId) {
         const asset = await uploadAsset({
           elementId: runtime.target.kind === 'element'
@@ -440,9 +444,18 @@ class UploadManager {
             : undefined,
           file: runtime.file,
           folderId: initialItem.destinationFolderId,
+          isPrimary: runtime.target.kind === 'element'
+            ? runtime.target.isPrimary
+            : undefined,
           organizationId: batch.organizationId,
           registrationUploadId: runtime.registrationUploadId,
+          role: runtime.target.kind === 'element'
+            ? runtime.target.role
+            : undefined,
           signal: controller.signal,
+          sortOrder: runtime.target.kind === 'element'
+            ? runtime.target.sortOrder
+            : undefined,
           onProgress: progress => this.updateProgress(itemId, runtime, progress),
           onRegistrationReady: (uploadId) => {
             runtime.registrationUploadId = uploadId
@@ -460,9 +473,20 @@ class UploadManager {
         uploadStore.getState().patchItem(itemId, { assetId, progress: 1 })
         await this.refreshRegisteredAsset(batch, asset)
         this.assertActive(batch, controller.signal)
+        if (runtime.target.kind === 'element') {
+          await this.refreshElement(
+            batch,
+            runtime.target.elementId,
+            asset.id,
+          )
+          this.assertActive(batch, controller.signal)
+        }
       }
 
-      if (runtime.target.kind === 'element') {
+      // Existing Asset IDs and retried registration grants may predate atomic
+      // registration or a response may have been lost after commit. Reconcile
+      // only those recovery paths; fresh uploads were linked by POST /assets.
+      if (runtime.target.kind === 'element' && recoveringElementLink) {
         uploadStore.getState().patchItem(itemId, {
           progress: 1,
           status: 'linking',
@@ -474,7 +498,7 @@ class UploadManager {
           controller.signal,
         )
         this.assertActive(batch, controller.signal)
-        await this.refreshElement(batch, runtime.target.elementId)
+        await this.refreshElement(batch, runtime.target.elementId, assetId)
         this.assertActive(batch, controller.signal)
       }
 
@@ -550,11 +574,15 @@ class UploadManager {
     }
   }
 
-  private async refreshElement(batch: RuntimeUploadBatch, elementId: string) {
+  private async refreshElement(
+    batch: RuntimeUploadBatch,
+    elementId: string,
+    assetId: string,
+  ) {
     if (!this.cache || !this.isOrganizationActive(batch.organizationId))
       return
     try {
-      await this.cache.elementLinked(batch.organizationId, elementId)
+      await this.cache.elementLinked(batch.organizationId, elementId, assetId)
     }
     catch (error) {
       console.error('Element Asset cache refresh failed.', {

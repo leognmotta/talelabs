@@ -15,6 +15,7 @@ const RESTART_UPLOAD_REGISTRATION_ERROR_CODES = new Set([
 
 export type AssetUploadErrorCode
   = | 'element_asset_role_capacity_reached'
+    | 'element_master_role_capacity_reached'
     | 'file_too_large'
     | 'storage_request_blocked'
     | 'storage_upload_rejected'
@@ -200,10 +201,14 @@ export async function uploadAsset(input: {
     )
   }
   catch (error) {
-    if (getApiErrorCode(error) === 'element_asset_role_capacity_reached') {
+    const code = getApiErrorCode(error)
+    if (
+      code === 'element_asset_role_capacity_reached'
+      || code === 'element_master_role_capacity_reached'
+    ) {
       throw new AssetUploadError(
         'The Element Asset role has reached its capacity.',
-        'element_asset_role_capacity_reached',
+        code,
       )
     }
     throw error

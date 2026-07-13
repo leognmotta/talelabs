@@ -43,9 +43,11 @@ export async function linkElementUploadTarget(
     try {
       const kit = await getElementsIdAssets({
         id: target.elementId,
-        params: { role: target.role },
+        params: { referenceKind: 'master', role: target.role },
       }, { headers, signal })
-      existing = kit.data.find(link => link.assetId === assetId)
+      existing = kit.data.find(link => (
+        link.assetId === assetId && link.referenceKind === 'master'
+      ))
     }
     catch {
       throw error

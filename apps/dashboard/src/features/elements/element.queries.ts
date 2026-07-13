@@ -1,4 +1,5 @@
 import type {
+  CreateElementAssetRequest,
   CreateElementRequest,
   Element,
   ElementAssetLink,
@@ -7,6 +8,7 @@ import type {
   ElementListResponse,
   ElementType,
   GetElementsQueryParams,
+  UpdateElementAssetRequest,
   UpdateElementRequest,
 } from '@talelabs/sdk'
 import type { InfiniteData, QueryClient } from '@tanstack/react-query'
@@ -29,16 +31,64 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query'
+import { useEffect, useRef } from 'react'
 import { getOrganizationRequestHeaders } from '../../shared/lib/organization-request'
+import { invalidateAssetCache } from '../assets/asset-query-cache'
 import {
   ASSET_PROCESSING_REFRESH_INTERVAL_MS,
   assetNeedsProcessingRefresh,
 } from '../assets/asset-query-timing'
 import { flowQueryKeys } from '../flows/flow-query-keys'
 import { useActiveOrganizationId } from '../organizations/organization-scope-context'
+import { invalidateElementCache } from './element-query-cache'
 import { elementQueryKeys } from './element-query-keys'
 
 const ELEMENT_PAGE_SIZE = 40
+
+interface ElementAssetMutationScope {
+  elementId: string
+  organizationId: string
+}
+
+type AttachElementAssetVariables
+  = CreateElementAssetRequest & ElementAssetMutationScope
+
+type UpdateElementAssetVariables = UpdateElementAssetRequest
+  & ElementAssetMutationScope
+  & { assetId: string }
+
+function selectMasterElementKit(response: ElementAssetListResponse) {
+  return {
+    ...response,
+    data: response.data.filter(link => link.referenceKind === 'master'),
+  }
+}
+
+interface ElementKitObservation {
+  elementId: string
+  fingerprint: string
+  organizationId: string
+}
+
+function getElementKitDerivationFingerprint(
+  response: ElementAssetListResponse | undefined,
+) {
+  if (!response)
+    return undefined
+
+  return JSON.stringify(response.data.map(link => [
+    link.assetId,
+    link.role,
+    link.isPrimary,
+    link.sortOrder,
+    link.referenceMetadata,
+    link.asset.lifecycle,
+    link.asset.processingState,
+    link.asset.type,
+    link.asset.thumbnailUrl !== null,
+  ]))
+}
+
 function patchElementEverywhere(
   queryClient: QueryClient,
   organizationId: string,
@@ -91,7 +141,14 @@ function updateKitCache(
 ) {
   queryClient.setQueryData<ElementAssetListResponse>(
     elementQueryKeys.kit(organizationId, elementId),
-    current => current ? { ...current, data: update(current.data) } : current,
+    current => current
+      ? {
+          ...current,
+          data: update(
+            current.data.filter(link => link.referenceKind === 'master'),
+          ).filter(link => link.referenceKind === 'master'),
+        }
+      : current,
   )
 }
 
@@ -136,6 +193,10 @@ export function useElementListQuery(input: {
     enabled: Boolean(organizationId),
     placeholderData: (previousData, previousQuery) =>
       previousQuery?.queryKey[1] === organizationId ? previousData : undefined,
+    refetchInterval: query => query.state.data?.pages.some(page =>
+      page.data.some(element => element.hasProcessingReferences))
+      ? ASSET_PROCESSING_REFRESH_INTERVAL_MS
+      : false,
   })
 }
 
@@ -156,22 +217,53 @@ export function useElementDetailQuery(elementId: null | string) {
 
 export function useElementKitQuery(elementId: null | string) {
   const organizationId = useActiveOrganizationId()
-  return useQuery({
+  const queryClient = useQueryClient()
+  const observationRef = useRef<ElementKitObservation | undefined>(undefined)
+  const query = useQuery({
     queryKey: elementQueryKeys.kit(organizationId, elementId),
     queryFn: ({ signal }) => getElementsIdAssets(
-      { id: elementId! },
+      {
+        id: elementId!,
+        params: { referenceKind: 'master' },
+      },
       {
         headers: getOrganizationRequestHeaders(organizationId!),
         signal,
       },
     ),
     enabled: Boolean(organizationId && elementId),
+    select: selectMasterElementKit,
     refetchInterval: query => query.state.data?.data.some(link =>
       assetNeedsProcessingRefresh(link.asset))
       ? ASSET_PROCESSING_REFRESH_INTERVAL_MS
       : false,
     refetchOnWindowFocus: true,
   })
+  const fingerprint = getElementKitDerivationFingerprint(query.data)
+
+  useEffect(() => {
+    if (!elementId || !organizationId || fingerprint === undefined)
+      return
+
+    const previous = observationRef.current
+    observationRef.current = { elementId, fingerprint, organizationId }
+
+    if (
+      !previous
+      || previous.elementId !== elementId
+      || previous.organizationId !== organizationId
+      || previous.fingerprint === fingerprint
+    ) {
+      return
+    }
+
+    void invalidateElementCache(queryClient, organizationId, {
+      elementId,
+      includeKit: false,
+    })
+  }, [elementId, fingerprint, organizationId, queryClient])
+
+  return query
 }
 
 export function useElementUsageQuery(elementId: null | string, enabled = true) {
@@ -201,14 +293,6 @@ export function useElementMutations() {
         { data },
         { headers: getOrganizationRequestHeaders(organizationId) },
       ),
-      onSuccess: (element, { organizationId }) => {
-        if (!hasOrganizationScopeCache(queryClient, organizationId))
-          return
-        queryClient.setQueryData(
-          elementQueryKeys.detail(organizationId, element.id),
-          { ...element, assetCounts: {} },
-        )
-      },
       onSettled: (_data, _error, { organizationId }) => {
         void queryClient.invalidateQueries({
           queryKey: elementQueryKeys.lists(organizationId),
@@ -307,20 +391,14 @@ export function useElementMutations() {
         queryClient.removeQueries({ queryKey: elementQueryKeys.kit(organizationId, id) })
         queryClient.removeQueries({ queryKey: elementQueryKeys.usage(organizationId, id) })
         void Promise.all([
+          invalidateAssetCache(queryClient, organizationId),
           queryClient.invalidateQueries({ queryKey: elementQueryKeys.lists(organizationId) }),
           queryClient.invalidateQueries({ queryKey: flowQueryKeys.allReferences(organizationId) }),
         ])
       },
     }),
     attachAsset: useMutation({
-      mutationFn: ({ elementId, organizationId, ...data }: {
-        assetId: string
-        elementId: string
-        isPrimary?: boolean
-        organizationId: string
-        role: string
-        sortOrder?: number
-      }) => postElementsIdAssets(
+      mutationFn: ({ elementId, organizationId, ...data }: AttachElementAssetVariables) => postElementsIdAssets(
         { id: elementId, data },
         { headers: getOrganizationRequestHeaders(organizationId) },
       ),
@@ -332,22 +410,14 @@ export function useElementMutations() {
       },
       onSettled: (_data, _error, { elementId, organizationId }) => {
         void Promise.all([
-          queryClient.invalidateQueries({ queryKey: elementQueryKeys.kit(organizationId, elementId) }),
-          queryClient.invalidateQueries({ queryKey: elementQueryKeys.detail(organizationId, elementId) }),
-          queryClient.invalidateQueries({ queryKey: elementQueryKeys.lists(organizationId) }),
+          invalidateAssetCache(queryClient, organizationId),
+          invalidateElementCache(queryClient, organizationId, { elementId }),
           queryClient.invalidateQueries({ queryKey: flowQueryKeys.allReferences(organizationId) }),
         ])
       },
     }),
     updateAsset: useMutation({
-      mutationFn: ({ assetId, elementId, organizationId, ...data }: {
-        assetId: string
-        elementId: string
-        isPrimary?: boolean
-        organizationId: string
-        role: string
-        sortOrder?: number
-      }) => patchElementsIdAssetsAssetid(
+      mutationFn: ({ assetId, elementId, organizationId, ...data }: UpdateElementAssetVariables) => patchElementsIdAssetsAssetid(
         { assetId, id: elementId, data },
         { headers: getOrganizationRequestHeaders(organizationId) },
       ),
@@ -363,6 +433,13 @@ export function useElementMutations() {
           variables.organizationId,
           variables.elementId,
           (links) => {
+            if (
+              variables.targetRole !== undefined
+              || variables.referenceKind !== undefined
+              || variables.referenceMetadata !== undefined
+            ) {
+              return links
+            }
             const roleLinks = links
               .filter(link => link.role === variables.role)
               .toSorted((left, right) => left.sortOrder - right.sortOrder)
@@ -411,17 +488,19 @@ export function useElementMutations() {
           queryClient,
           variables.organizationId,
           variables.elementId,
-          links => sortKit(links.map(item =>
-            item.assetId === link.assetId && item.role === link.role
-              ? link
-              : item)),
+          links => sortKit([
+            ...links.filter(item => !(
+              item.assetId === variables.assetId
+              && item.role === variables.role
+            )),
+            link,
+          ]),
         )
       },
       onSettled: (_data, _error, { elementId, organizationId }) => {
         void Promise.all([
-          queryClient.invalidateQueries({ queryKey: elementQueryKeys.kit(organizationId, elementId) }),
-          queryClient.invalidateQueries({ queryKey: elementQueryKeys.detail(organizationId, elementId) }),
-          queryClient.invalidateQueries({ queryKey: elementQueryKeys.lists(organizationId) }),
+          invalidateAssetCache(queryClient, organizationId),
+          invalidateElementCache(queryClient, organizationId, { elementId }),
           queryClient.invalidateQueries({ queryKey: flowQueryKeys.allReferences(organizationId) }),
         ])
       },
@@ -469,9 +548,8 @@ export function useElementMutations() {
       },
       onSettled: (_data, _error, { elementId, organizationId }) => {
         void Promise.all([
-          queryClient.invalidateQueries({ queryKey: elementQueryKeys.kit(organizationId, elementId) }),
-          queryClient.invalidateQueries({ queryKey: elementQueryKeys.detail(organizationId, elementId) }),
-          queryClient.invalidateQueries({ queryKey: elementQueryKeys.lists(organizationId) }),
+          invalidateAssetCache(queryClient, organizationId),
+          invalidateElementCache(queryClient, organizationId, { elementId }),
           queryClient.invalidateQueries({ queryKey: flowQueryKeys.allReferences(organizationId) }),
         ])
       },

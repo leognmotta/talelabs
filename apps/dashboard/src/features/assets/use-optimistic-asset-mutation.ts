@@ -1,6 +1,7 @@
 import type { Asset, FolderListResponse } from '@talelabs/sdk'
 import type { QueryClient, UseMutationOptions } from '@tanstack/react-query'
 
+import { invalidateElementCache } from '../elements/element-query-cache'
 import { flowQueryKeys } from '../flows/flow-query-keys'
 import {
   invalidateAssetCache,
@@ -43,6 +44,7 @@ export function optimisticAssetMutationOptions<
 >(
   queryClient: QueryClient,
   options: {
+    affectsElementReferences?: boolean
     affectsFolderMetadata?: boolean | ((variables: TVariables) => boolean)
     affectsFlowReferences?: boolean
     getFolderMove?: (variables: TVariables) => {
@@ -126,6 +128,9 @@ export function optimisticAssetMutationOptions<
 
       void Promise.all([
         invalidateAssetCache(queryClient, organizationId),
+        ...(options.affectsElementReferences
+          ? [invalidateElementCache(queryClient, organizationId)]
+          : []),
         ...(options.affectsFlowReferences
           ? [queryClient.invalidateQueries({
               queryKey: flowQueryKeys.allReferences(organizationId),

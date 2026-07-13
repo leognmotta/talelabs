@@ -43,6 +43,7 @@ function getErrorMessage(t: TFunction, item: UploadItemState) {
   const { errorCode } = item
   switch (errorCode) {
     case 'element_asset_role_capacity_reached':
+    case 'element_master_role_capacity_reached':
       return t('uploads.errors.elementLimit')
     case 'file_too_large':
       return t('uploads.errors.fileTooLarge')

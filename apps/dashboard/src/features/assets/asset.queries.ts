@@ -258,6 +258,7 @@ export function useAssetMutations() {
     }),
     purge: useMutation(
       optimisticAssetMutationOptions(queryClient, {
+        affectsElementReferences: true,
         affectsFolderMetadata: true,
         affectsFlowReferences: true,
         mutationFn: ({ id, organizationId }: {

@@ -39,6 +39,7 @@ export const elementQueryKeys = {
     ...elementScope(organizationId),
     'kit',
     elementId,
+    { referenceKind: 'master' as const },
   ] as const,
   usage: (organizationId: null | string, elementId: null | string) => [
     ...elementScope(organizationId),

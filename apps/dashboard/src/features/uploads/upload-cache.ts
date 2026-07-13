@@ -6,7 +6,8 @@ import { getOrganizationRequestHeaders } from '../../shared/lib/organization-req
 import { invalidateAssetCache, upsertAssetCache } from '../assets/asset-query-cache'
 import { assetQueryKeys } from '../assets/asset-query-keys'
 import { invalidateFolderCache, upsertFolderCache } from '../assets/folder-query-cache'
-import { elementQueryKeys } from '../elements/element-query-keys'
+import { invalidateElementCache } from '../elements/element-query-cache'
+import { flowQueryKeys } from '../flows/flow-query-keys'
 
 export interface UploadCacheAdapter {
   assetRegistered: (organizationId: string, asset: Asset) => Promise<void>
@@ -15,7 +16,11 @@ export interface UploadCacheAdapter {
     input: { name: string, parentId: null | string },
     signal: AbortSignal,
   ) => Promise<Folder>
-  elementLinked: (organizationId: string, elementId: string) => Promise<void>
+  elementLinked: (
+    organizationId: string,
+    elementId: string,
+    assetId: string,
+  ) => Promise<void>
 }
 
 export function createUploadCacheAdapter(
@@ -41,16 +46,17 @@ export function createUploadCacheAdapter(
       })
       return folder
     },
-    async elementLinked(organizationId, elementId) {
+    async elementLinked(organizationId, elementId, assetId) {
       await Promise.all([
         queryClient.invalidateQueries({
-          queryKey: elementQueryKeys.detail(organizationId, elementId),
+          queryKey: assetQueryKeys.detail(organizationId, assetId),
         }),
         queryClient.invalidateQueries({
-          queryKey: elementQueryKeys.kit(organizationId, elementId),
+          queryKey: assetQueryKeys.lists(organizationId),
         }),
+        invalidateElementCache(queryClient, organizationId, { elementId }),
         queryClient.invalidateQueries({
-          queryKey: elementQueryKeys.lists(organizationId),
+          queryKey: flowQueryKeys.allReferences(organizationId),
         }),
       ])
     },
