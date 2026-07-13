@@ -12,9 +12,10 @@ import {
 
 export function LocationElementDetail({ element }: ElementDetailViewProps) {
   const { t } = useTranslation()
-  const { atmosphere, description, ...unhandled }
+  const { atmosphere, description, identity, ...unhandled }
     = LocationElementDataSchema.parse(element.data)
   assertNoUnhandledElementFields(unhandled)
+  void identity
   if (!description && !atmosphere)
     return null
 

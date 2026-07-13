@@ -13,9 +13,10 @@ import {
 
 export function BrandElementDetail({ element }: ElementDetailViewProps) {
   const { t } = useTranslation()
-  const { colors, communicationStyle, description, ...unhandled }
+  const { colors, communicationStyle, description, identity, ...unhandled }
     = BrandElementDataSchema.parse(element.data)
   assertNoUnhandledElementFields(unhandled)
+  void identity
   if (!description && !communicationStyle && colors.length === 0)
     return null
 

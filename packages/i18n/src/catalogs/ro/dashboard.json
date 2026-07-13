@@ -471,6 +471,10 @@
     "backToElement": "Înapoi la Element",
     "backToElements": "Înapoi la Elemente",
     "chooseType": "Alegeți tipul de context reutilizabil pe care doriți să îl creați.",
+    "consistencyNotes": {
+      "description": "Ce trebuie să rămână mereu recognoscibil?",
+      "label": "Note de coerență"
+    },
     "couldNotLoad": "Elementele nu au putut fi încărcate",
     "couldNotLoadAssets": "Acest kit de fișiere nu a putut fi încărcat.",
     "couldNotLoadDescription": "Verificați conexiunea și încercați din nou.",
@@ -536,6 +540,12 @@
     "notFound": "Elementul nu a fost găsit",
     "noReferences": "Nu există încă referințe",
     "noReferencesDescription": "Adăugați imagini, materiale video sau audio care ajută la păstrarea identității acestui Element.",
+    "readiness": {
+      "readyToUse": "Gata de utilizare"
+    },
+    "references": "Referințe",
+    "referenceCount": "Referințe: {{count}}",
+    "referenceUploadHint": "Referințele clare, bine iluminate și cu un singur subiect evident dau cele mai bune rezultate.",
     "roleEmpty": "Nu există fișiere în acest rol.",
     "search": "Căutați Elemente",
     "searchPlaceholder": "Căutați Elemente...",
@@ -1013,6 +1023,10 @@
     "element_asset_already_attached": "Acest fișier este deja asociat acestui rol.",
     "element_asset_media_type_not_accepted": "Alegeți un tip de fișier acceptat de acest rol.",
     "element_asset_role_capacity_reached": "Acest rol a atins limita de fișiere. Eliminați un fișier asociat din acest rol înainte de a adăuga altul.",
+    "element_master_role_capacity_reached": "Acest rol a atins limita de referințe. Eliminați o referință din acest rol înainte de a adăuga alta.",
+    "element_reference_metadata_invalid": "Această referință nu a putut fi actualizată. Încercați din nou.",
+    "element_source_capacity_reached": "Acest Element a atins limita de referințe. Eliminați o referință înainte de a adăuga alta.",
+    "element_source_primary_invalid": "Această referință nu poate fi folosită ca miniatură a Elementului.",
     "element_asset_role_not_found": "Alegeți un rol de fișier disponibil pentru acest Element.",
     "internal_error": "Ceva nu a funcționat. Încercați din nou.",
     "not_found": "Elementul solicitat nu a fost găsit.",

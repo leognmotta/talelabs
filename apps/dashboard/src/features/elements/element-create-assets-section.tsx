@@ -85,12 +85,15 @@ export function ElementCreateAssetsSection({
       <CardHeader className="border-b">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <CardTitle>{t('navigation.assets')}</CardTitle>
+            <CardTitle>{t('elements.references')}</CardTitle>
             <CardDescription>
               {t('elements.createAssets.description')}
             </CardDescription>
             <CardDescription className="mt-2 max-w-2xl">
               {t('elements.assetLimits.guidance')}
+            </CardDescription>
+            <CardDescription className="mt-2 max-w-2xl">
+              {t('elements.referenceUploadHint')}
             </CardDescription>
           </div>
           {customPolicy && (

@@ -25,9 +25,10 @@ function getLanguageDisplayName(value: string, locale: string) {
 
 export function VoiceElementDetail({ element }: ElementDetailViewProps) {
   const { i18n, t } = useTranslation()
-  const { description, languageAccent, tone, ...unhandled }
+  const { description, identity, languageAccent, tone, ...unhandled }
     = VoiceElementDataSchema.parse(element.data)
   assertNoUnhandledElementFields(unhandled)
+  void identity
   if (!description && !languageAccent && !tone)
     return null
 

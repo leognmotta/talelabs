@@ -11,17 +11,20 @@ import { ELEMENT_TYPE_ICONS } from './element-type-icons'
 
 function selectPreviewLink(type: ElementDetail['type'], links: ElementAssetLink[]) {
   const previewRole = getElementTypeDefinition(type).previewRole
-  const visualLinks = links.filter(link =>
-    link.asset.type === 'image'
-    || (link.asset.type === 'video' && Boolean(link.asset.thumbnailUrl)))
+  const visualLinks = links.filter(link => (
+    link.referenceKind === 'master'
+    && link.asset.processingState === 'ready'
+    && link.asset.lifecycle !== 'purging'
+    && link.asset.lifecycle !== 'purged'
+    && (
+      link.asset.type === 'image'
+      || Boolean(link.asset.thumbnailUrl)
+    )
+  ))
 
-  return visualLinks.find(link =>
-    link.role === previewRole && link.isPrimary)
-  ?? visualLinks.find(link => link.role === previewRole)
-  ?? visualLinks.find(link => link.isPrimary)
-  ?? visualLinks[0]
-  ?? links.find(link => link.isPrimary)
-  ?? links[0]
+  return visualLinks.find(link => link.isPrimary)
+    ?? visualLinks.find(link => link.role === previewRole)
+    ?? visualLinks[0]
 }
 
 export function ElementIdentityHeader({
@@ -63,11 +66,17 @@ export function ElementIdentityHeader({
           <Badge variant="secondary">
             {t(elementTypeTranslationKey(element.type, 'label'))}
           </Badge>
+          {(element.readiness?.state === 'usable'
+            || element.readiness?.state === 'strong') && (
+            <Badge variant="outline">
+              {t('elements.readiness.readyToUse')}
+            </Badge>
+          )}
           {loading
             ? <Skeleton className="h-5 w-20" />
             : (
                 <span className="text-xs text-muted-foreground">
-                  {t('assets.fileCount', { count: links.length })}
+                  {t('elements.referenceCount', { count: links.length })}
                 </span>
               )}
         </div>

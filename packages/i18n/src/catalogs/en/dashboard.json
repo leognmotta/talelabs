@@ -471,6 +471,10 @@
     "backToElement": "Back to Element",
     "backToElements": "Back to Elements",
     "chooseType": "Choose the type of reusable context to create.",
+    "consistencyNotes": {
+      "description": "What should always remain recognizable?",
+      "label": "Consistency notes"
+    },
     "couldNotLoad": "Could not load Elements",
     "couldNotLoadAssets": "Could not load this Asset kit.",
     "couldNotLoadDescription": "Check your connection and try again.",
@@ -536,6 +540,12 @@
     "notFound": "Element not found",
     "noReferences": "No references yet",
     "noReferencesDescription": "Add images, video, or audio that helps preserve this Element's identity.",
+    "readiness": {
+      "readyToUse": "Ready to use"
+    },
+    "references": "References",
+    "referenceCount": "References: {{count}}",
+    "referenceUploadHint": "Clean, well-lit references with one clear subject work best.",
     "roleEmpty": "No Assets in this role.",
     "search": "Search Elements",
     "searchPlaceholder": "Search Elements...",
@@ -1013,6 +1023,10 @@
     "element_asset_already_attached": "This file is already attached to that role.",
     "element_asset_media_type_not_accepted": "Choose a file type accepted by this role.",
     "element_asset_role_capacity_reached": "This role has reached its file limit. Remove a linked file from this role before adding another.",
+    "element_master_role_capacity_reached": "This role has reached its reference limit. Remove a reference from this role before adding another.",
+    "element_reference_metadata_invalid": "This reference could not be updated. Try again.",
+    "element_source_capacity_reached": "This Element has reached its reference limit. Remove a reference before adding another.",
+    "element_source_primary_invalid": "This reference cannot be used as the Element thumbnail.",
     "element_asset_role_not_found": "Choose an Asset role available for this Element.",
     "internal_error": "Something went wrong. Try again.",
     "not_found": "The requested item could not be found.",

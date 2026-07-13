@@ -12,9 +12,10 @@ import {
 
 export function CharacterElementDetail({ element }: ElementDetailViewProps) {
   const { t } = useTranslation()
-  const { description, personality, ...unhandled }
+  const { description, identity, personality, ...unhandled }
     = CharacterElementDataSchema.parse(element.data)
   assertNoUnhandledElementFields(unhandled)
+  void identity
   if (!description && !personality)
     return null
 

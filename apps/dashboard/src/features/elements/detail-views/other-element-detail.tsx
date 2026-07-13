@@ -12,10 +12,11 @@ import {
 
 export function OtherElementDetail({ element }: ElementDetailViewProps) {
   const { t } = useTranslation()
-  const { assetRoles, ...unhandled }
+  const { assetRoles, identity, ...unhandled }
     = OtherElementDataSchema.parse(element.data)
   assertNoUnhandledElementFields(unhandled)
   void assetRoles
+  void identity
   const instructions = element.instructions?.trim() ?? ''
   if (!instructions)
     return null

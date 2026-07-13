@@ -471,6 +471,10 @@
     "backToElement": "Retour à l’élément",
     "backToElements": "Retour aux Éléments",
     "chooseType": "Choisissez le type de contexte réutilisable à créer.",
+    "consistencyNotes": {
+      "description": "Qu’est-ce qui doit toujours rester reconnaissable ?",
+      "label": "Notes de cohérence"
+    },
     "couldNotLoad": "Impossible de charger les Éléments",
     "couldNotLoadAssets": "Impossible de charger ce kit de fichiers.",
     "couldNotLoadDescription": "Vérifiez votre connexion et réessayez.",
@@ -536,6 +540,12 @@
     "notFound": "Élément introuvable",
     "noReferences": "Aucune référence pour le moment",
     "noReferencesDescription": "Ajoutez des images, des vidéos ou de l’audio pour préserver l’identité de cet Élément.",
+    "readiness": {
+      "readyToUse": "Prêt à l’emploi"
+    },
+    "references": "Références",
+    "referenceCount": "Références : {{count}}",
+    "referenceUploadHint": "Des références nettes, bien éclairées et centrées sur un seul sujet donnent de meilleurs résultats.",
     "roleEmpty": "Aucun fichier pour ce rôle.",
     "search": "Rechercher des Éléments",
     "searchPlaceholder": "Rechercher des Éléments...",
@@ -1013,6 +1023,10 @@
     "element_asset_already_attached": "Ce fichier est déjà associé à ce rôle.",
     "element_asset_media_type_not_accepted": "Choisissez un type de fichier accepté par ce rôle.",
     "element_asset_role_capacity_reached": "Ce rôle a atteint sa limite de fichiers. Retirez un fichier associé à ce rôle avant d’en ajouter un autre.",
+    "element_master_role_capacity_reached": "Ce rôle a atteint sa limite de références. Retirez une référence de ce rôle avant d’en ajouter une autre.",
+    "element_reference_metadata_invalid": "Cette référence n’a pas pu être mise à jour. Réessayez.",
+    "element_source_capacity_reached": "Cet Élément a atteint sa limite de références. Retirez une référence avant d’en ajouter une autre.",
+    "element_source_primary_invalid": "Cette référence ne peut pas servir de miniature à l’Élément.",
     "element_asset_role_not_found": "Choisissez un rôle de fichier disponible pour cet Élément.",
     "internal_error": "Une erreur est survenue. Réessayez.",
     "not_found": "L’élément demandé est introuvable.",

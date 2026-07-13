@@ -13,9 +13,10 @@ import {
 
 export function ProductElementDetail({ element }: ElementDetailViewProps) {
   const { t } = useTranslation()
-  const { description, sellingPoints, ...unhandled }
+  const { description, identity, sellingPoints, ...unhandled }
     = ProductElementDataSchema.parse(element.data)
   assertNoUnhandledElementFields(unhandled)
+  void identity
   if (!description && sellingPoints.length === 0)
     return null
 

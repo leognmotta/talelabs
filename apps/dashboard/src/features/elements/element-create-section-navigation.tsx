@@ -114,7 +114,7 @@ export function ElementCreateSectionNavigation() {
           href={`#${ELEMENT_FORM_SECTIONS.assets}`}
         >
           <IconArchive className="size-4" />
-          {t('navigation.assets')}
+          {t('elements.references')}
         </a>
       </CardContent>
     </Card>

@@ -21,12 +21,15 @@ export function ElementEditAssetsSection({
   return (
     <Card id={ELEMENT_FORM_SECTIONS.assets} className="scroll-mt-6">
       <CardHeader className="border-b">
-        <CardTitle>{t('navigation.assets')}</CardTitle>
+        <CardTitle>{t('elements.references')}</CardTitle>
         <CardDescription>
           {t('elements.editAssetsDescription')}
         </CardDescription>
         <CardDescription className="mt-2 max-w-2xl">
           {t('elements.assetLimits.guidance')}
+        </CardDescription>
+        <CardDescription className="mt-2 max-w-2xl">
+          {t('elements.referenceUploadHint')}
         </CardDescription>
       </CardHeader>
       <CardContent>

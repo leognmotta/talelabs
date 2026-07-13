@@ -471,6 +471,10 @@
     "backToElement": "Volver al elemento",
     "backToElements": "Volver a Elementos",
     "chooseType": "Elige el tipo de contexto reutilizable que quieres crear.",
+    "consistencyNotes": {
+      "description": "¿Qué debe seguir siendo siempre reconocible?",
+      "label": "Notas de consistencia"
+    },
     "couldNotLoad": "No se pudieron cargar los Elementos",
     "couldNotLoadAssets": "No se pudo cargar este kit de archivos.",
     "couldNotLoadDescription": "Comprueba tu conexión e inténtalo de nuevo.",
@@ -536,6 +540,12 @@
     "notFound": "Elemento no encontrado",
     "noReferences": "Aún no hay referencias",
     "noReferencesDescription": "Añade imágenes, vídeo o audio que ayuden a preservar la identidad de este Elemento.",
+    "readiness": {
+      "readyToUse": "Listo para usar"
+    },
+    "references": "Referencias",
+    "referenceCount": "Referencias: {{count}}",
+    "referenceUploadHint": "Las referencias nítidas, bien iluminadas y con un único sujeto claro funcionan mejor.",
     "roleEmpty": "No hay archivos en esta función.",
     "search": "Buscar Elementos",
     "searchPlaceholder": "Buscar Elementos...",
@@ -1013,6 +1023,10 @@
     "element_asset_already_attached": "Este archivo ya está vinculado a esa función.",
     "element_asset_media_type_not_accepted": "Elige un tipo de archivo aceptado por esta función.",
     "element_asset_role_capacity_reached": "Esta función ha alcanzado su límite de archivos. Elimina un archivo vinculado de esta función antes de añadir otro.",
+    "element_master_role_capacity_reached": "Esta función ha alcanzado su límite de referencias. Elimina una referencia de esta función antes de añadir otra.",
+    "element_reference_metadata_invalid": "No se pudo actualizar esta referencia. Inténtalo de nuevo.",
+    "element_source_capacity_reached": "Este Elemento ha alcanzado su límite de referencias. Elimina una referencia antes de añadir otra.",
+    "element_source_primary_invalid": "Esta referencia no se puede usar como miniatura del Elemento.",
     "element_asset_role_not_found": "Elige una función de archivo disponible para este Elemento.",
     "internal_error": "Algo salió mal. Inténtalo de nuevo.",
     "not_found": "No se encontró el elemento solicitado.",

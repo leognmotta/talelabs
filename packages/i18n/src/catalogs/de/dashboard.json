@@ -471,6 +471,10 @@
     "backToElement": "Zurück zum Element",
     "backToElements": "Zurück zu Elemente",
     "chooseType": "Wähle die Art des wiederverwendbaren Kontexts aus.",
+    "consistencyNotes": {
+      "description": "Was soll immer wiedererkennbar bleiben?",
+      "label": "Konsistenzhinweise"
+    },
     "couldNotLoad": "Elemente konnten nicht geladen werden",
     "couldNotLoadAssets": "Dieses Datei-Kit konnte nicht geladen werden.",
     "couldNotLoadDescription": "Prüfe deine Verbindung und versuche es erneut.",
@@ -536,6 +540,12 @@
     "notFound": "Element nicht gefunden",
     "noReferences": "Noch keine Referenzen",
     "noReferencesDescription": "Füge Bilder, Videos oder Audio hinzu, die die Identität dieses Elements festhalten.",
+    "readiness": {
+      "readyToUse": "Einsatzbereit"
+    },
+    "references": "Referenzen",
+    "referenceCount": "Referenzen: {{count}}",
+    "referenceUploadHint": "Klare, gut ausgeleuchtete Referenzen mit einem eindeutig erkennbaren Motiv funktionieren am besten.",
     "roleEmpty": "Keine Dateien in dieser Rolle.",
     "search": "Elemente suchen",
     "searchPlaceholder": "Elemente suchen...",
@@ -1013,6 +1023,10 @@
     "element_asset_already_attached": "Diese Datei ist bereits mit dieser Rolle verknüpft.",
     "element_asset_media_type_not_accepted": "Wähle einen Dateityp, den diese Rolle akzeptiert.",
     "element_asset_role_capacity_reached": "Diese Rolle hat ihr Dateilimit erreicht. Entferne eine verknüpfte Datei aus dieser Rolle, bevor du eine weitere hinzufügst.",
+    "element_master_role_capacity_reached": "Diese Rolle hat ihr Referenzlimit erreicht. Entferne eine Referenz aus dieser Rolle, bevor du eine weitere hinzufügst.",
+    "element_reference_metadata_invalid": "Diese Referenz konnte nicht aktualisiert werden. Versuche es erneut.",
+    "element_source_capacity_reached": "Dieses Element hat sein Referenzlimit erreicht. Entferne eine Referenz, bevor du eine weitere hinzufügst.",
+    "element_source_primary_invalid": "Diese Referenz kann nicht als Miniaturbild des Elements verwendet werden.",
     "element_asset_role_not_found": "Wähle eine für dieses Element verfügbare Dateirolle.",
     "internal_error": "Etwas ist schiefgelaufen. Versuche es erneut.",
     "not_found": "Das angeforderte Element wurde nicht gefunden.",

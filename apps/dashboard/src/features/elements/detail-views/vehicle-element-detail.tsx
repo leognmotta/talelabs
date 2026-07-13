@@ -12,9 +12,10 @@ import {
 
 export function VehicleElementDetail({ element }: ElementDetailViewProps) {
   const { t } = useTranslation()
-  const { description, motionGuidance, ...unhandled }
+  const { description, identity, motionGuidance, ...unhandled }
     = VehicleElementDataSchema.parse(element.data)
   assertNoUnhandledElementFields(unhandled)
+  void identity
   if (!description && !motionGuidance)
     return null
 

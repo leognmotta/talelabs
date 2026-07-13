@@ -471,6 +471,10 @@
     "backToElement": "Terug naar Element",
     "backToElements": "Terug naar Elementen",
     "chooseType": "Kies het type herbruikbare context dat je wilt maken.",
+    "consistencyNotes": {
+      "description": "Wat moet altijd herkenbaar blijven?",
+      "label": "Consistentienotities"
+    },
     "couldNotLoad": "Elementen konden niet worden geladen",
     "couldNotLoadAssets": "Deze bestandenset kon niet worden geladen.",
     "couldNotLoadDescription": "Controleer je verbinding en probeer het opnieuw.",
@@ -536,6 +540,12 @@
     "notFound": "Element niet gevonden",
     "noReferences": "Nog geen referenties",
     "noReferencesDescription": "Voeg afbeeldingen, video of audio toe die de identiteit van dit Element helpen bewaren.",
+    "readiness": {
+      "readyToUse": "Klaar voor gebruik"
+    },
+    "references": "Referenties",
+    "referenceCount": "Referenties: {{count}}",
+    "referenceUploadHint": "Heldere, goed belichte referenties met één duidelijk onderwerp werken het best.",
     "roleEmpty": "Geen bestanden in deze rol.",
     "search": "Elementen zoeken",
     "searchPlaceholder": "Elementen zoeken...",
@@ -1013,6 +1023,10 @@
     "element_asset_already_attached": "Dit bestand is al aan die rol gekoppeld.",
     "element_asset_media_type_not_accepted": "Kies een bestandstype dat door deze rol wordt geaccepteerd.",
     "element_asset_role_capacity_reached": "Deze rol heeft de bestandslimiet bereikt. Verwijder een gekoppeld bestand uit deze rol voordat je een nieuw bestand toevoegt.",
+    "element_master_role_capacity_reached": "Deze rol heeft de referentielimiet bereikt. Verwijder een referentie uit deze rol voordat je een nieuwe toevoegt.",
+    "element_reference_metadata_invalid": "Deze referentie kon niet worden bijgewerkt. Probeer het opnieuw.",
+    "element_source_capacity_reached": "Dit Element heeft de referentielimiet bereikt. Verwijder een referentie voordat je een nieuwe toevoegt.",
+    "element_source_primary_invalid": "Deze referentie kan niet als miniatuur van het Element worden gebruikt.",
     "element_asset_role_not_found": "Kies een bestandsrol die beschikbaar is voor dit Element.",
     "internal_error": "Er is iets misgegaan. Probeer het opnieuw.",
     "not_found": "Het gevraagde item is niet gevonden.",

@@ -12,9 +12,10 @@ import {
 
 export function ObjectElementDetail({ element }: ElementDetailViewProps) {
   const { t } = useTranslation()
-  const { description, interactionGuidance, ...unhandled }
+  const { description, identity, interactionGuidance, ...unhandled }
     = ObjectElementDataSchema.parse(element.data)
   assertNoUnhandledElementFields(unhandled)
+  void identity
   if (!description && !interactionGuidance)
     return null
 

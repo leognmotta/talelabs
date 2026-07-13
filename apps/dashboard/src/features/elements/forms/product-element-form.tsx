@@ -10,6 +10,7 @@ import { Textarea } from '@talelabs/ui/components/textarea'
 import { Controller, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { elementFieldTranslationKey } from '../element-i18n'
+import { ElementConsistencyNotesField } from './element-consistency-notes-field'
 import { ElementDataFormSection } from './element-data-form-section'
 import { ElementFormActions } from './element-form-actions'
 import { ElementFormField } from './element-form-field'
@@ -96,6 +97,10 @@ export function ProductElementForm({
                 onChange={field.onChange}
               />
             )}
+          />
+          <ElementConsistencyNotesField
+            error={errors.data?.identity?.summary}
+            registration={form.register('data.identity.summary')}
           />
         </FieldGroup>
       </ElementDataFormSection>

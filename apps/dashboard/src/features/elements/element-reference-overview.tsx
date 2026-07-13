@@ -53,7 +53,7 @@ export function ElementReferenceOverview({
   return (
     <section className="flex flex-col gap-5">
       <h2 className="text-lg font-semibold tracking-tight">
-        {t('navigation.assets')}
+        {t('elements.references')}
       </h2>
       {loading && (
         <div className="flex flex-wrap gap-4">

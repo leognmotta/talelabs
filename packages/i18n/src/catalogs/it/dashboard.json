@@ -471,6 +471,10 @@
     "backToElement": "Torna all'Elemento",
     "backToElements": "Torna agli Elementi",
     "chooseType": "Scegli il tipo di contesto riutilizzabile da creare.",
+    "consistencyNotes": {
+      "description": "Cosa deve rimanere sempre riconoscibile?",
+      "label": "Note di coerenza"
+    },
     "couldNotLoad": "Impossibile caricare gli Elementi",
     "couldNotLoadAssets": "Impossibile caricare questo kit di file.",
     "couldNotLoadDescription": "Controlla la connessione e riprova.",
@@ -536,6 +540,12 @@
     "notFound": "Elemento non trovato",
     "noReferences": "Ancora nessun riferimento",
     "noReferencesDescription": "Aggiungi immagini, video o audio che aiutino a preservare l’identità di questo Elemento.",
+    "readiness": {
+      "readyToUse": "Pronto all’uso"
+    },
+    "references": "Riferimenti",
+    "referenceCount": "Riferimenti: {{count}}",
+    "referenceUploadHint": "I riferimenti nitidi, ben illuminati e con un solo soggetto ben definito funzionano meglio.",
     "roleEmpty": "Nessun file in questo ruolo.",
     "search": "Cerca Elementi",
     "searchPlaceholder": "Cerca Elementi...",
@@ -1013,6 +1023,10 @@
     "element_asset_already_attached": "Questo file è già collegato a quel ruolo.",
     "element_asset_media_type_not_accepted": "Scegli un tipo di file accettato da questo ruolo.",
     "element_asset_role_capacity_reached": "Questo ruolo ha raggiunto il limite di file. Rimuovi un file collegato da questo ruolo prima di aggiungerne un altro.",
+    "element_master_role_capacity_reached": "Questo ruolo ha raggiunto il limite di riferimenti. Rimuovi un riferimento da questo ruolo prima di aggiungerne un altro.",
+    "element_reference_metadata_invalid": "Non è stato possibile aggiornare questo riferimento. Riprova.",
+    "element_source_capacity_reached": "Questo Elemento ha raggiunto il limite di riferimenti. Rimuovi un riferimento prima di aggiungerne un altro.",
+    "element_source_primary_invalid": "Questo riferimento non può essere usato come miniatura dell’Elemento.",
     "element_asset_role_not_found": "Scegli un ruolo file disponibile per questo Elemento.",
     "internal_error": "Qualcosa è andato storto. Riprova.",
     "not_found": "L’elemento richiesto non è stato trovato.",
