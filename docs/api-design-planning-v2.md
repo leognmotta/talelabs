@@ -943,8 +943,11 @@ Serving the vocabularies here keeps them single-sourced — the client never har
 
 Provider model IDs, endpoint tags, adapter names/versions, credentials, fallback
 policy, internal costs, and emergency controls are deliberately absent. A
-server-only route registry resolves a stable TaleLabs model ID to a concrete
-provider route during run admission and snapshots that route/version. If routing
+server-only route registry resolves the tuple `(productModelId,
+modelContractVersion, operationId)` to a concrete provider route during run
+admission and snapshots that route/version. Historical contracts remain readable
+but are not executable when that exact route is absent; the client must explicitly
+upgrade the node contract first. If routing
 may choose among endpoints, the public capabilities are the verified intersection
 of every eligible endpoint; endpoint-specific capabilities require endpoint
 pinning.
@@ -955,7 +958,7 @@ pinning.
 
 1. **One asset list for browsing, one subresource for kit management.** Library, pickers, and filters are all `GET /assets` + params; `GET /elements/:id/assets` exists for the distinct concern of managing link metadata (role, order, primary). Two purposes, two endpoints, zero shape divergence within each.
 2. **Detail endpoints are render-complete; list endpoints are lean.** `GET /assets/:id` carries full provenance; `GET /runs/:id` carries outputs. No screen needs a second round trip; no grid pays for detail weight.
-3. **The graph sync is the only stateful client contract.** Batched mutations + revision CAS + `409 revision_conflict` → refetch-and-replay. This is also the exact seam a future collaboration layer replaces — nothing else about the API changes.
+3. **The graph sync is the only stateful client contract.** Mutations within the request limit remain atomic. Larger client diffs advance through revision-CAS batches in dependency order (delete edges, delete nodes, upsert nodes, upsert edges); each accepted batch becomes the next replay baseline. `409 revision_conflict` still means refetch-and-replay. This is also the exact seam a future collaboration layer replaces — nothing else about the API changes.
 4. **Results are derived, never duplicated.** Node results come from `/nodes/:nodeId/results` (jobs + assets), not from node `data` — matching the DB rule that draft and provenance never share storage.
 5. **The idempotency ladder is client-visible only at the top.** The client supplies one `Idempotency-Key` per run request; everything below (child job keys, dispatch keys, provider submission markers) is server-derived, per the DB doc.
 6. **Server-authoritative generation.** Run requests carry _which node_, never _what to generate_ — context resolution, capability validation, and snapshotting happen server-side, so provenance can't be spoofed by a client and the Generate UX can evolve without API churn.

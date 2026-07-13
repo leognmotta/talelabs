@@ -610,6 +610,10 @@ The Element node stores only the Element reference. It exposes one resolved-cont
 - Use stable TaleLabs model IDs in Flow node data. Split the public capability
   registry from server-only provider routes, endpoint tags, credentials,
   fallbacks, internal costs, and emergency policy.
+- Pin every generation node to an immutable model contract version. Keep
+  historical contracts renderable, require an explicit same-model upgrade in
+  the editor, and key server-only routes by model ID, contract version, and
+  operation. A historical node without an exact route is not executable.
 - Treat OpenRouter and direct-provider discovery APIs as reviewed research/drift
   inputs only. Do not populate production UI or validation from live discovery.
   Add a non-mutating manual/CI drift report for the initially approved models.

@@ -416,6 +416,9 @@ The provider route is server-only and independently replaceable:
 
 ```ts
 type ProviderRoute = {
+  productModelId: 'talelabs/veo-3.1'
+  modelContractVersion: string
+  operationId: 'textToVideo'
   adapter: 'openrouter-video'
   providerModelId: 'google/veo-3.1'
   providerTag?: 'google'
@@ -427,6 +430,14 @@ Changing OpenRouter to a direct API for the same underlying model may update the
 route without changing the TaleLabs model ID or Flow schema. Replacing the
 underlying creative model with materially different behavior requires a new
 TaleLabs model identity; it must not silently change historical semantics.
+
+Persisted nodes keep their immutable model contract version. Historical
+contracts remain readable and editable, but they are executable only when the
+server retains an exact route keyed by `(productModelId, modelContractVersion,
+operationId)`. The initial execution milestone routes only the current contract;
+the editor must offer an explicit same-model upgrade that rewrites the pinned
+version, reconciles settings, and confirms removal of incompatible connections.
+It must never silently reinterpret an old node through the current contract.
 
 A capability definition is not just a flat collection of independent fields.
 It describes valid operations and relationships between inputs/settings:
