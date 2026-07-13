@@ -46,6 +46,10 @@ export interface AssetPresentationMetadata {
   tags: PresentedAssetTag[]
 }
 
+export interface AssetPresentationOptions {
+  includeOriginalUrl?: boolean
+}
+
 const emptyPresentationMetadata: AssetPresentationMetadata = {
   favorite: false,
   tags: [],
@@ -68,16 +72,19 @@ export function createAssetThumbnailUrl(asset: Pick<
 export async function presentAsset(
   asset: AssetRecord,
   presentation: AssetPresentationMetadata = emptyPresentationMetadata,
+  options: AssetPresentationOptions = {},
 ) {
   const lifecycle = getAssetLifecycle(asset)
   const canRead = lifecycle === 'live' || lifecycle === 'archived'
   const [url, thumbnailUrl] = canRead
     ? await Promise.all([
-        createDownloadUrl({
-          bucket: TALELABS_PRIVATE_BUCKET,
-          key: asset.storageKey,
-          responseContentType: asset.mimeType,
-        }),
+        options.includeOriginalUrl === false
+          ? Promise.resolve(null)
+          : createDownloadUrl({
+              bucket: TALELABS_PRIVATE_BUCKET,
+              key: asset.storageKey,
+              responseContentType: asset.mimeType,
+            }),
         createAssetThumbnailUrl(asset),
       ])
     : [null, null]

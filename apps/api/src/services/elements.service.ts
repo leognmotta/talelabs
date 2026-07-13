@@ -40,6 +40,7 @@ import {
 import { createAssetThumbnailUrl, toWireJsonObject } from './asset-presenter.js'
 import { presentAssetsForUser } from './assets.service.js'
 import { createElementAssetRoleCapacityError } from './element-asset-limit-error.js'
+import { assertElementFlowReferenceBudgets } from './flow-reference-budget.js'
 
 function validationDetails(error: ZodError, prefix = 'data') {
   return error.issues.map(issue => ({
@@ -74,7 +75,7 @@ function requireStoredElementType(type: string): ElementType {
   return type
 }
 
-function presentElement(element: NonNullable<Awaited<ReturnType<typeof findElementById>>>) {
+export function presentElement(element: NonNullable<Awaited<ReturnType<typeof findElementById>>>) {
   const type = requireStoredElementType(element.type)
   const upcasted = upcastElementData(type, element.schemaVersion, element.data)
 
@@ -314,6 +315,13 @@ export async function attachElementAsset(input: {
 }) {
   const result = await createElementAssetLinkRow({
     ...input,
+    validateFlowReferenceBudgets: executor => assertElementFlowReferenceBudgets(
+      executor,
+      {
+        elementId: input.elementId,
+        organizationId: input.organizationId,
+      },
+    ),
   })
   if (result.status === 'element_not_found')
     throw new TenantResourceNotFoundError()

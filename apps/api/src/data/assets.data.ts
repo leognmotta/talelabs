@@ -14,6 +14,7 @@ import {
   findElementAssetRoleCapacityViolation,
   lockElementAssetRole,
 } from './element-asset-limits.data.js'
+import { lockFlowReferenceBudget } from './flow-reference-budget.data.js'
 import {
   lockFolderStructure,
   provisionElementAssetFolderRow,
@@ -207,9 +208,16 @@ export async function insertUploadedAsset(input: {
   isPrimary?: boolean
   role?: string
   sortOrder?: number
+  validateFlowReferenceBudgets: (
+    executor: Transaction<Database>,
+  ) => Promise<void>
 }) {
   return db.transaction().execute(async (trx) => {
     let folderId = input.folderId
+    const createsElementLink = input.elementId !== undefined && input.role !== undefined
+
+    if (createsElementLink)
+      await lockFlowReferenceBudget(trx, input.organizationId)
 
     if (input.elementId) {
       // Folder deletion takes the same advisory lock before its FK action updates
@@ -286,6 +294,7 @@ export async function insertUploadedAsset(input: {
       isPrimary: _isPrimary,
       role: _role,
       sortOrder: _sortOrder,
+      validateFlowReferenceBudgets: _validateFlowReferenceBudgets,
       ...assetInput
     } = input
     const asset = await trx.insertInto('assets')
@@ -334,6 +343,7 @@ export async function insertUploadedAsset(input: {
         role: input.role,
         sortOrder: targetOrder,
       }).execute()
+      await input.validateFlowReferenceBudgets(trx)
     }
 
     return { asset, status: 'created' as const }

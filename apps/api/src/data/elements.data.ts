@@ -8,6 +8,7 @@ import {
   findElementAssetRoleCapacityViolation,
   lockElementAssetRole,
 } from './element-asset-limits.data.js'
+import { lockFlowReferenceBudget } from './flow-reference-budget.data.js'
 import { provisionElementAssetFolderRow } from './folders.data.js'
 
 export type ElementRecord = Selectable<ElementTable>
@@ -351,8 +352,12 @@ export function createElementAssetLinkRow(input: {
   organizationId: string
   role: string
   sortOrder?: number
+  validateFlowReferenceBudgets: (
+    executor: Transaction<Database>,
+  ) => Promise<void>
 }): Promise<CreateElementAssetLinkResult> {
   return db.transaction().execute(async (trx) => {
+    await lockFlowReferenceBudget(trx, input.organizationId)
     const element = await trx.selectFrom('elements')
       .select(['data', 'id', 'schemaVersion', 'type'])
       .where('organizationId', '=', input.organizationId)
@@ -441,6 +446,7 @@ export function createElementAssetLinkRow(input: {
       role: input.role,
       sortOrder: targetOrder,
     }).execute()
+    await input.validateFlowReferenceBudgets(trx)
 
     return {
       assetId: input.assetId,

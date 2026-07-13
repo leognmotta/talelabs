@@ -17,6 +17,7 @@ import {
 } from '../domain/elements/element-asset-role-policy.js'
 import { HttpError, TenantResourceNotFoundError } from '../middleware/error.js'
 import { createElementAssetRoleCapacityError } from './element-asset-limit-error.js'
+import { assertElementFlowReferenceBudgets } from './flow-reference-budget.js'
 import { createUploadGrant, verifyUploadGrant } from './upload-grant.service.js'
 
 export async function createUpload(input: {
@@ -178,6 +179,12 @@ export async function registerUploadedAsset(input: {
       storageKey: grant.key,
       type: policy.type,
       uploadId: grant.grantId,
+      validateFlowReferenceBudgets: executor => input.elementId
+        ? assertElementFlowReferenceBudgets(executor, {
+            elementId: input.elementId,
+            organizationId: input.organizationId,
+          })
+        : Promise.resolve(),
     })
     if (created.status === 'element_not_found')
       throw new TenantResourceNotFoundError('elementId')
