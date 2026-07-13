@@ -1,6 +1,11 @@
 import type { ElementTypeDefinition } from './types.js'
 import { z } from 'zod'
 import { imageRole, videoRole } from './asset-limits.js'
+import {
+  createEmptyElementIdentity,
+  DEFAULT_ELEMENT_READINESS_DEFINITION,
+  ElementIdentitySchema,
+} from './consistency.js'
 import { focusedText } from './schema-utils.js'
 
 export const PRODUCT_MAX_SELLING_POINTS = 10
@@ -18,17 +23,33 @@ export const ProductElementDataSchemaV1 = z.object({
     .default([]),
 }).strict()
 
+/** Product v2 adds shared consistency identity guidance. */
+export const ProductElementDataSchemaV2 = ProductElementDataSchemaV1.extend({
+  identity: ElementIdentitySchema.default(createEmptyElementIdentity()),
+}).strict()
+
+export function migrateProductV1ToV2(data: unknown) {
+  return {
+    ...ProductElementDataSchemaV1.parse(data),
+    identity: createEmptyElementIdentity(),
+  }
+}
+
 /** Schema used for new Product writes. Advance only with the definition version. */
-export const ProductElementDataSchema = ProductElementDataSchemaV1
+export const ProductElementDataSchema = ProductElementDataSchemaV2
 
 export type ProductElementData = z.infer<typeof ProductElementDataSchema>
 
 export const productElementDefinition = Object.freeze({
   id: 'product',
-  currentVersion: 1,
-  schemas: Object.freeze({ 1: ProductElementDataSchemaV1 }),
-  migrations: Object.freeze({}),
+  currentVersion: 2,
+  schemas: Object.freeze({
+    1: ProductElementDataSchemaV1,
+    2: ProductElementDataSchemaV2,
+  }),
+  migrations: Object.freeze({ 1: migrateProductV1ToV2 }),
   previewRole: 'packshot',
+  readiness: DEFAULT_ELEMENT_READINESS_DEFINITION,
   assetRoles: [
     imageRole('packshot'),
     imageRole('detail'),

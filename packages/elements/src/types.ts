@@ -1,4 +1,8 @@
 import type { z } from 'zod'
+import type {
+  ElementReadinessDefinition,
+  ElementReferenceMetadata,
+} from './consistency.js'
 
 /**
  * Stable identifiers for Element behaviors supported by the product.
@@ -55,6 +59,9 @@ export interface ElementAssetRoleDefinition<Role extends string = string> {
 
   /** Whether the role may contain more than one linked Asset. */
   multiple: boolean
+
+  /** Strict registry-owned schema for relationship-specific metadata. */
+  referenceMetadataSchema: z.ZodType<ElementReferenceMetadata>
 }
 
 /** Product policy for user-named Asset roles stored in Element data. */
@@ -111,6 +118,9 @@ export interface ElementTypeDefinition<
    * The value must reference one of `assetRoles`.
    */
   previewRole: null | string
+
+  /** Deterministic, framework-neutral rules for derived consistency readiness. */
+  readiness: ElementReadinessDefinition
 
   /**
    * Explicit Zod schemas for every supported stored representation, keyed by

@@ -1,6 +1,7 @@
 export * from './asset-limits.js'
 export * from './brand.js'
 export * from './character.js'
+export * from './consistency.js'
 export * from './location.js'
 export * from './object.js'
 export * from './other.js'

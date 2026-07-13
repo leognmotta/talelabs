@@ -42,6 +42,7 @@ type NullableNumericColumn = ColumnType<
 export type AssetType = 'audio' | 'document' | 'image' | 'video'
 export type AssetSource = 'generation' | 'upload'
 export type AssetProcessingState = 'failed' | 'processing' | 'ready'
+export type ElementReferenceKind = 'master' | 'source'
 export type FlowRunMode = 'all' | 'downstream' | 'node' | 'tool'
 export type FlowRunStatus
   = | 'canceled'
@@ -303,6 +304,8 @@ export interface ElementAssetTable {
   role: string
   sortOrder: Generated<number>
   isPrimary: Generated<boolean>
+  referenceKind: Generated<ElementReferenceKind>
+  referenceMetadata: GeneratedJsonColumn
   createdAt: GeneratedTimestamp
 }
 

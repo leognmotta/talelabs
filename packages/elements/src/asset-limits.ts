@@ -2,6 +2,7 @@ import type {
   ElementAssetMediaType,
   ElementAssetRoleDefinition,
 } from './types.js'
+import { ElementReferenceMetadataSchema } from './consistency.js'
 
 /**
  * Default Element context capacity per role media family.
@@ -27,6 +28,7 @@ export function createElementAssetRole<Role extends string>(
     id,
     maxAssets,
     multiple: maxAssets > 1,
+    referenceMetadataSchema: ElementReferenceMetadataSchema,
   }
 }
 
