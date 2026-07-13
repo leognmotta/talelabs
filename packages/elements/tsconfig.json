@@ -2,12 +2,15 @@
   "compilerOptions": {
     "target": "ES2023",
     "lib": ["ES2023"],
+    "rootDir": "src",
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "strict": true,
-    "noEmit": true,
+    "declaration": true,
+    "outDir": "dist",
     "verbatimModuleSyntax": true,
     "skipLibCheck": true
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"]
 }
