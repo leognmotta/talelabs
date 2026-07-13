@@ -37,7 +37,8 @@ Element
 
 ### 1. Identity contract
 
-Every Element type's `data` schema gains an identity block (arrays of plain strings — no taxonomy engine):
+Every current Element type's `data` schema, including the `Other` escape hatch,
+gains an identity block (arrays of plain strings — no taxonomy engine):
 
 ```ts
 type ElementIdentity = {
@@ -93,6 +94,23 @@ masterRoles: appearance 8, expression 8, motion 1, voice 1, ...   (registry, per
 
 Voice roles will eventually need duration budgets (total clean seconds) rather than item counts — that refinement ships with voice-model integration, as a role-constraint extension.
 
+All relationship mutations share one transactional policy rather than
+reimplementing those limits in Asset uploads and Element endpoints. The global
+lock order is Flow-reference budget when executable masters can increase,
+folder structure when an upload may provision an Element folder, Element, then
+role, then the existing Asset row for attachment or relationship updates.
+Attach, promote/demote, move/reorder, primary, metadata, detach, atomic upload
+registration, and future generated-Asset attachment acquire only the locks they
+need without reversing that order. The final Asset lock serializes those writes
+with permanent deletion and rejects `purgeRequestedAt` or `purgedAt` after any
+wait. Fresh Element uploads insert the
+canonical Asset, insert its link, and validate affected persisted-Flow budgets
+in the same transaction. Lost-response and concurrent same-grant replays return
+success only after the requested compatible link exists or has been reconciled
+through that same relationship policy. Folder-tree deletion takes the folder
+lock, resolves the affected subtree, and locks associated Elements before Assets
+so its foreign-key cleanup cannot reverse the same hierarchy.
+
 ### 4. Metadata: intrinsic facts on the Asset, interpretation on the link
 
 The same photo can contain two people and be linked to two different Character Elements — its sharpness is a fact about the file; _which person it depicts and how it should be used_ is a fact about the relationship.
@@ -106,7 +124,11 @@ elementAssets.referenceMetadata   view: front|threeQuarter|profile|rear
                                   variant: string
 ```
 
-Captured at curation time (retro-tagging a library later is the painful alternative). Keys are owned by the registry per role; unknown keys are rejected app-side, same contract as element `data`.
+Keys are owned by the registry per role; every current role starts with the same
+strict common schema and `{}` remains valid. Unknown keys and invalid values are
+rejected app-side, using the same fail-closed principle as Element `data`. M4.5
+does not expose a manual metadata form: ordinary uploads use `{}`, while a later
+assistant may infer these fields and let the user correct mistakes.
 
 ### 5. Readiness is derived, never stored
 
@@ -118,7 +140,20 @@ type ElementReadiness = {
 };
 ```
 
-The **type registry owns the rules** (e.g. Character `usable` = identity contract + ≥1 master appearance; `strong` = neutral portrait + profile/three-quarter + full body). The API computes the badge from current data — a stored status column is a cache that drifts, and its own "needs attention" state would exist to detect its own staleness. Store nothing until a query proves expensive.
+The **type registry owns the rules**. In M4.5, Character `usable` means at least
+one usable master in `appearance`; `strong` requires metadata-backed evidence for
+a clean portrait, a profile/three-quarter view, and a full-body reference. Other
+current types become usable from any valid usable master and do not claim
+`strong` before type-specific evidence rules exist. Identity notes improve
+context but remain optional and never block readiness. The API computes the
+badge from current data in batched queries — a stored status column is a cache
+that drifts, and its own "needs attention" state would exist to detect its own
+staleness. Store nothing until a query proves expensive.
+
+Element list responses also derive whether an eligible master is still being
+processed. A mounted list polls only while one of its currently loaded pages
+reports that signal, then stops after ingestion reaches ready or failed so card
+previews and readiness converge without permanent polling.
 
 ### 6. `elements.revision` — the snapshot consistency guard (kept)
 
@@ -175,7 +210,8 @@ Contact sheets, when a benchmarked model prefers them, are optional **derived** 
 ```txt
 1. Identity contracts: schema v+1 per type WITH sequential in-code migrations
 2. referenceKind on elementAssets (existing rows default 'master') + source cap
-3. referenceMetadata (registry-validated per role), captured in the curation UI
+3. referenceMetadata (strict and registry-validated per role; `{}` from the
+   current UI, inferred/correctable only when a later assistant exists)
 4. Role capacity + Flow role handles filter to masters only
 5. Derived readiness from registry rules (empty | usable | strong + missing[])
 6. elements.revision with the M5 run-admission migration (transactional bumps)
@@ -186,6 +222,18 @@ Contact sheets, when a benchmarked model prefers them, are optional **derived** 
 ```
 
 The rule the deferred work must obey: **AI suggests, the user approves — nothing silently replaces identity.**
+
+### M4.5 implementation baseline
+
+The shipped foundation uses additive migration `008_element_consistency`.
+Existing links become `master` with `{}` metadata through `not null` server
+defaults; PostgreSQL constrains the two kinds and rejects a primary source. The
+partial `elementAssetsMasterElementIdx` serves organization-scoped master-only
+reads. Identity stays in versioned Element JSONB and is lazily upcast: Character,
+Product, Location, Object, Vehicle, and Voice move from v1 to v2; Brand and
+Other move from v2 to v3 while retaining every historical schema and prior
+migration. No SQL rewrite of Element data and no `elements.revision` column ship
+in M4.5.
 
 ## UX contract — the machinery is ours, not the user's
 

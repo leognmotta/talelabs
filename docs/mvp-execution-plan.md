@@ -530,7 +530,7 @@ Implement Element list/create/detail/delete and dedicated type forms. Every crea
 
 Implement the Assets tab with role sections, primary selection, ordering, upload-and-attach, existing Asset picker, unlinking, processing feedback, and shared Asset previews.
 
-Creation drop zones retain role-aware `File` objects locally without uploading. Only after successful Element and folder creation do they transfer to the organization-scoped, non-persisted Zustand upload queue. Queue intents retain the returned `assetFolderId`, Element ID, role, order, and primary metadata across route navigation. The bounded worker owns the local `queued`, `hashing`, `uploading`, `registering`, `linking`, `completed`, and `failed` states; after canonical Asset registration it checkpoints `assetId`, so a failed Element link retries only the link and never uploads the file again. Trigger.dev processing continues independently and is reflected through organization-scoped Asset queries rather than the local upload queue.
+Creation drop zones retain role-aware `File` objects locally without uploading. Only after successful Element and folder creation do they transfer to the organization-scoped, non-persisted Zustand upload queue. Queue intents retain the returned `assetFolderId`, Element ID, role, order, and primary metadata across route navigation. As finalized in M4.5, fresh Element uploads send that complete link intent through `POST /assets`, so canonical Asset insertion and relationship insertion are one server transaction. The bounded worker retains its local `queued`, `hashing`, `uploading`, `registering`, `linking`, `completed`, and `failed` states and recovery checkpoints, but those labels do not split the atomic server mutation. Trigger.dev processing continues independently and is reflected through organization-scoped Asset queries rather than the local upload queue.
 
 Creation and detail Asset controls expose and prevalidate each role's capacity: eight Assets for an image role and one for a video or audio role by default. The API remains authoritative when concurrent actions race.
 
@@ -694,9 +694,9 @@ wizard or required classification workflow.
 
 ### E-037A - Evolve Element Identity And Reference Persistence
 
-**Status:** Blocked by M4
+**Status:** Complete
 
-- Add one shared, versioned identity block to specialized Element schemas using
+- Add one shared, versioned identity block to every current Element schema using
   gap-free sequential migrations. Current UI writes optional prose to
   `identity.summary`; structured `mustKeep`, `mayVary`, and `avoid` remain empty
   until a later assistant can infer them.
@@ -707,36 +707,52 @@ wizard or required classification workflow.
 - Treat ordering as a stable sequence per Element, role, and reference kind.
   Promotion/demotion normalizes the old sequence and inserts into the new one.
 - Enforce an element-wide source cap and per-role master capacity transactionally.
-  Use one fixed advisory-lock hierarchy: organization Flow-reference-budget lock
-  when a mutation can increase executable masters, then Element lock, then role
-  lock. Acquire only the locks the mutation needs, always in that global order.
+  Use one fixed mutation-lock hierarchy: organization Flow-reference-budget lock
+  when a mutation can increase executable masters, then folder structure when an
+  Element upload may provision a folder, then Element lock, then role lock, then
+  the existing Asset row when one is being linked or updated.
+  Acquire only the locks the mutation needs, always in that global order.
 - Update the Kysely schema and additive migration without introducing
   `elements.revision` early; that run-admission guard remains E-041B work.
 
 ### E-037B - Reconcile Assets, Elements, Uploads, And Flow Hydration
 
-**Status:** Blocked by E-037A
+**Status:** Complete
 
 - Centralize Element-link policy so existing-Asset attachment, atomic upload
   registration, promotion/demotion, reorder/primary changes, and future generated
   Asset attachment cannot drift into separate implementations.
 - Keep current uploads and attachments backward compatible: omitted kind means
   master, omitted metadata means `{}`.
+- Keep fresh dashboard Element uploads atomic by sending the role/order/primary
+  intent in `POST /assets`; registration and linking must not become two commits.
 - Make previews, `buildElementContext`, graph validation, Flow hydration, role
   handles, automatic/manual candidate selection, model input counts, and future
   snapshots consume ready, readable masters only. Sources remain canonical Assets
   but never silently become Flow candidates or provider inputs.
 - Preserve Asset archive/purge and reverse-usage behavior. Asset detail can report
   both relationship kinds; the current Element UI presents masters as References.
+  Existing-Asset attachments and relationship updates lock the tenant-owned Asset
+  row last and reject purging or purged Assets, so permanent deletion cannot race
+  a successful attachment or promotion. Folder-tree deletion locks affected
+  Elements before Assets after resolving its subtree under the folder lock, so
+  foreign-key cleanup cannot reverse the hierarchy.
 - Reconcile Flow reference budgets so sources do not count and master promotion
   cannot make a persisted Flow impossible to hydrate.
 - Update OpenAPI, regenerate the SDK, and invalidate organization-scoped Asset,
   Element, preview, and Flow-reference caches after every execution-relevant link
   change.
+- When Element-kit polling observes an Asset availability transition, invalidate
+  that Element's derived detail/readiness and organization list previews without
+  re-invalidating the polling kit. Purge invalidates the organization Element
+  scope because the client may not have every reverse Element ID cached.
+- Derive a pending-master signal on Element list items and poll a mounted list
+  only while one of its currently loaded pages contains processing references,
+  so Trigger.dev ingestion completion refreshes list previews and readiness.
 
 ### E-037C - Add The Minimal Consistency UX
 
-**Status:** Blocked by E-037B
+**Status:** Complete
 
 - Keep name as the only required creation field. One valid master reference makes
   an Element immediately usable.
@@ -756,15 +772,34 @@ wizard or required classification workflow.
 
 ### E-037D - Verify Element-To-Flow Consistency Invariants
 
-**Status:** Blocked by E-037C
+**Status:** Engineering verification complete; user product QA pending
 
 **Engineering owner:** AI
 
+Run the focused acceptance record explicitly with:
+
+```bash
+TEST_POSTGRES_URL='postgresql://user:password@localhost:5432/talelabs_test' \
+  npm run verify:m4.5 -w api
+```
+
+The verifier rejects a database whose name does not contain `test` or whose URL
+matches `POSTGRES_URL`, creates and removes its own isolated organizations, and
+never calls a provider. It covers migration compatibility/defaults, PostgreSQL
+primary-source rejection, source and master capacities, promotion/demotion and
+kind-specific order, strict metadata, tenant isolation, atomic upload
+attachment, same-grant concurrent replay/link reconciliation, master-only
+context/Flow hydration/budgets, purge-versus-attachment/promotion serialization,
+and concurrent lock-order scenarios. The M4.5 implementation run passed all 14
+invariant groups against a
+disposable PostgreSQL 17 database and cleaned its fixtures, schema, and container.
+
 - Add a repeatable, explicitly invoked acceptance script for migration
   compatibility, primary-source rejection, source/master capacity, fixed lock
-  ordering under concurrency, tenant isolation, upload attachment, metadata
-  validation, and master-only context/Flow hydration. This focused script is not
-  authorization to build a general automated-test program.
+  ordering under concurrency, tenant isolation, upload attachment, same-grant
+  concurrent replay/link reconciliation, metadata validation, and master-only
+  context/Flow hydration. This focused script is not authorization to build a
+  general automated-test program.
 - Run SDK generation, type checks, i18n validation, lint, production build, and
   `git diff --check`.
 - Recheck the M4 canvas with Element identity context, master-only role outputs,
@@ -773,7 +808,7 @@ wizard or required classification workflow.
 
 **User QA owner:** User
 
-The user validates that creation remains as simple as before, References and
+Product/browser QA remains pending. The user validates that creation remains as simple as before, References and
 Consistency notes use understandable language, existing Elements still work,
 Element previews remain useful, and Flow role handles/candidate selection update
 predictably after Element changes.

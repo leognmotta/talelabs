@@ -337,8 +337,8 @@ Element
 └── approved master references
 ```
 
-Every specialized Element schema carries a shared identity block with a prose
-summary plus structured must-keep, may-vary, and avoid guidance. The current UI
+Every current Element schema, including `Other`, carries a shared identity block
+with a prose summary plus structured must-keep, may-vary, and avoid guidance. The current UI
 exposes only one optional `Consistency notes` prose field. Structured arrays are
 initialized safely and remain an internal seam for a later AI assistant; users
 must not maintain a taxonomy or complete a wizard.
@@ -365,9 +365,9 @@ to the consuming generation slot, not the Element.
 
 Element creation has two consistent sections: `Data` and `Assets`. Data asks only for the small set of guidelines that materially improves reuse for that type. Assets renders one role-aware drop zone per registered Asset role. Dropped `File` objects and preview object URLs stay only in the creation page's local memory until the Element and its Asset folder are created successfully; creation failure uploads nothing.
 
-After creation, the files and their structured intent transfer to a non-persisted, dashboard-level Zustand queue. Each intent retains the `File`, `assetFolderId`, Element ID, role, order, and primary state across SPA navigation, but is never serialized to browser storage. The bounded worker owns only the local transfer and registration lifecycle: `queued -> hashing -> uploading -> registering -> linking -> completed`, with `failed` retaining the failed stage. It uploads to R2, registers the canonical Asset in the Element folder, stores the returned Asset ID as a recovery checkpoint, and then creates the `elementAssets` relationship. Trigger.dev media processing continues independently after registration; its feedback comes from organization-scoped Asset queries rather than the local upload manager. A linking retry starts from the stored Asset ID and never uploads or registers the media again. Browser refresh or closure may still lose unfinished local files; resumable uploads are deferred.
+After creation, the files and their structured intent transfer to a non-persisted, dashboard-level Zustand queue. Each intent retains the `File`, `assetFolderId`, Element ID, role, order, and primary state across SPA navigation, but is never serialized to browser storage. The bounded worker owns only the local transfer and registration lifecycle: `queued -> hashing -> uploading -> registering -> linking -> completed`, with `failed` retaining the failed stage. It uploads to R2, then sends the upload grant and complete Element-link intent to `POST /assets`. Asset insertion, Element-link insertion, affected persisted-Flow budget validation, and rollback are one server transaction; `registering` and `linking` remain useful local progress labels, not separate server mutations. Trigger.dev media processing continues independently after registration; its feedback comes from organization-scoped Asset queries rather than the local upload manager. Retrying reuses the same upload grant and cannot create a duplicate Asset or a half-linked registration. Browser refresh or closure may still lose unfinished local files; resumable uploads are deferred.
 
-Each Element Asset role has its own **master** capacity, determined by the role's media family: image roles accept up to eight masters, while video and audio roles accept one master by default. Sources use a separate bounded element-wide abuse cap. These are reusable-context limits, not provider/model input limits. An Element may therefore retain richer reusable collections across several roles; the consuming Flow node later selects a model-compatible subset of approved masters. The dashboard prevents excess pending selections, while existing-Asset attachment, upload registration, promotion, and demotion enforce the same policies transactionally with one global lock order: organization Flow-reference budget when executable references can increase, then Element, then role.
+Each Element Asset role has its own **master** capacity, determined by the role's media family: image roles accept up to eight masters, while video and audio roles accept one master by default. Sources use a separate bounded element-wide abuse cap. These are reusable-context limits, not provider/model input limits. An Element may therefore retain richer reusable collections across several roles; the consuming Flow node later selects a model-compatible subset of approved masters. The dashboard prevents excess pending selections, while existing-Asset attachment, upload registration, promotion, and demotion enforce the same policies transactionally with one global lock order: organization Flow-reference budget when executable references can increase, then folder structure when an Element upload may provision a folder, then Element, then role, then an existing Asset row when attaching or updating it. Mutations acquire only the locks they need and never reverse that order; the final tenant-scoped Asset lock rejects permanent-deletion lifecycle state after any concurrent purge wait. Folder-tree deletion resolves affected rows under the folder lock and locks Elements before Assets so its foreign-key cleanup follows the same order.
 
 The `Other` Element is the deliberate escape hatch for reusable context that does not fit a product-controlled type. It keeps Data to name and instructions, and lets the user define up to three custom Asset-role names. Those names are validated and stored in the Element's versioned data before any Asset upload begins, then persisted as the role on each Element-to-Asset relationship. Other accepts image, video, and audio references without weakening the fixed role contracts of specialized Element types.
 
@@ -377,12 +377,12 @@ Every Element detail page should have two primary surfaces:
 
 ```txt
 Details
-Assets
+References
 ```
 
 `Details` renders the dedicated type-specific form selected by the dashboard form registry. Shared fields such as name and type remain consistent, while each type composes its own context fields explicitly.
 
-`Assets` reuses the same asset-library components and behavior as the global Assets page, with a fixed filter for the current Element. It is not a second media library.
+`References` reuses the same asset-library components and behavior as the global Assets page, with a fixed filter for the current Element. It is not a second media library.
 
 In the current product stage this tab presents approved masters simply as
 `References`. Raw sources remain hidden until the consistency assistant can offer
@@ -397,7 +397,7 @@ Conceptually:
 /elements/:elementId/assets = the same filtered asset experience
 ```
 
-From the Element Assets tab, users should be able to:
+From the Element References section, users should be able to:
 
 ```txt
 upload a new Asset and attach it automatically

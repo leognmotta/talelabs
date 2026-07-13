@@ -124,6 +124,12 @@ Requirements:
 - Add one element-level advisory-lock helper for the source cap, keyed by
   organization and Element. Keep the existing role-level advisory lock for
   master capacity, keyed by organization, Element, and role.
+- Preserve the repository-wide mutation hierarchy: organization Flow-reference
+  budget when executable masters can increase, then folder structure when an
+  Element upload may provision a folder, then Element, then role, then an
+  existing Asset row when attaching or updating it. Acquire only the locks a
+  mutation needs and never reverse their relative order. Lock the Asset with
+  `FOR UPDATE` and reject `purgeRequestedAt` or `purgedAt` after any wait.
 - Any mutation that needs both locks takes them in one fixed order: Element lock
   first, role lock second. Source attachment takes the Element lock and enforces
   the source cap. Master attachment takes the role lock and enforces master
@@ -133,10 +139,10 @@ Requirements:
   this order next to the helpers so later code cannot introduce a deadlock by
   reversing it.
 - Any mutation that can increase approved master references also takes the
-  organization-scoped Flow-reference-budget lock before the Element and role
-  locks, then rejects the mutation if an affected saved Flow would exceed its
-  complete hydration budget. Source links do not count toward that budget;
-  demotion can only reduce it.
+  organization-scoped Flow-reference-budget lock before the optional folder,
+  Element, and role locks, then rejects the mutation if an affected saved Flow
+  would exceed its complete hydration budget. Source links do not count toward
+  that budget; demotion can only reduce it.
 - Preserve tenant-safe composite foreign keys and organization predicates on
   every read and mutation.
 - Add only indexes justified by the actual master-filtered and Element-detail
@@ -152,7 +158,7 @@ the revision in the same transaction.
 
 ## Identity Guidance
 
-Add a shared, versioned identity block to specialized Element data schemas:
+Add a shared, versioned identity block to every current Element data schema:
 
 ```ts
 type ElementIdentity = {
@@ -251,8 +257,8 @@ Update the Element Asset contracts and generated SDK:
   capacity, invalid metadata, and invalid primary state.
 - Keep all endpoints organization-scoped and preserve existing authorization.
 - Avoid read-modify-write races. Capacity checks and mutations belong in one
-  transaction under the documented organization-budget, Element, then role
-  advisory-lock hierarchy.
+  transaction under the documented organization-budget, optional folder,
+  Element, role, then existing-Asset lock hierarchy.
 - Regenerate OpenAPI/Kubb outputs. Never hand-edit generated SDK files.
 
 Preserve compatibility for current dashboard callers by making new create-link
@@ -280,15 +286,29 @@ has been inspected and either changed or explicitly shown to be unaffected.
   linked; purging/purged/failed/processing media must not become executable Flow
   candidates. Do not delete relationship or provenance rows merely because bytes
   are archived or purged.
+- Folder-tree deletion must preserve the same lock hierarchy around its
+  foreign-key cleanup: after the folder-structure lock, resolve the tenant-owned
+  subtree and lock associated Elements before Assets in stable ID order.
 - Asset detail reverse relations must include enough relationship information to
   distinguish source/master and role without exposing internal storage data.
   Usage counts include both kinds because both are real Element relationships.
 - Audit Asset optimistic updates, detail/list caches, Element reference caches, preview
   caches, and Flow-reference caches. Any kind/metadata/primary/order/role change
   must invalidate every presentation derived from that relationship.
-- Preserve the dashboard-level Zustand upload queue. Current intents may omit
-  `referenceKind` and receive the server-side `master` default. Do not persist
-  Files or sensitive upload state merely to support the new fields.
+- Keep derived Element readiness and previews fresh when Asset state changes:
+  Element-kit polling invalidates the affected detail and organization lists on
+  availability transitions, while purge invalidates the organization Element
+  scope when reverse Element IDs are not available to the client. Element list
+  responses expose a derived pending-reference signal, and mounted lists poll
+  only while a currently loaded page contains processing master references.
+- Preserve the dashboard-level Zustand upload queue. Fresh Element uploads send
+  their Element ID, role, order, and primary intent in the same `POST /assets`
+  registration that inserts the canonical Asset; do not restore a normal
+  register-then-attach split. Current intents may omit `referenceKind` and
+  receive the server-side `master` default. Recovery may reconcile a lost
+  response using its upload-grant/Asset checkpoint, but must never upload or
+  register the media twice. Do not persist Files or sensitive upload state merely
+  to support the new fields.
 
 ### Element System
 
@@ -498,9 +518,20 @@ Before reporting completion:
    - source exclusion from Flow hydration and context;
    - cross-organization rejection;
    - invalid metadata rejection;
-   - upload registration with atomic Element attachment;
+   - upload registration with atomic Element attachment and same-grant
+     concurrent replay reconciliation;
    - database rejection of a primary source;
+   - permanent purge serialized against existing-Asset attachment and source
+     promotion;
    - fixed lock-order behavior under concurrent promotion/attachment attempts.
+
+Invoke that acceptance record with an isolated database whose name contains
+`test` and whose URL differs from `POSTGRES_URL`:
+
+```bash
+TEST_POSTGRES_URL='postgresql://user:password@localhost:5432/talelabs_test' \
+  npm run verify:m4.5 -w api
+```
 
 UI and end-to-end product QA remain user-owned. Report what changed, migration
 behavior, verification results, residual risks, and any intentionally deferred

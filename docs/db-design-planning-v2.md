@@ -111,7 +111,7 @@ erDiagram
     folders ||--o{ assets : contains
     folders o|--o| elements : "organizes new uploads"
 
-    elements }o--o{ assets : "elementAssets (role, order, primary)"
+    elements }o--o{ assets : "elementAssets (kind, role, order, metadata, primary)"
 
     flows ||--o{ flowNodes : has
     flows ||--o{ flowEdges : has
@@ -443,6 +443,14 @@ One generic table for all element types. The framework-neutral **type registry l
 
 `"schemaVersion"` records which version of the registry's schema wrote `"data"`. Registry schemas will evolve; the version lets the app upcast old payloads deterministically instead of guessing shape. Each type retains a schema for every supported stored version and a sequential migration for every version transition. Reads validate with the stored-version schema before migrating, then validate the current result. Creates and updates write only the current version; reads may upcast without immediately rewriting the row.
 
+M4.5 adds the shared identity block through code-registry version bumps, not a
+JSONB rewrite: Character, Product, Location, Object, Vehicle, and Voice advance
+from v1 to v2; Brand and Other advance from v2 to v3 while retaining their
+earlier v1-to-v2 migrations. Every new transition validates the historical
+shape, initializes `{ summary: '', mustKeep: [], mayVary: [], avoid: [] }`, and
+then validates the new current schema. Unknown future versions and migration
+gaps continue to fail closed.
+
 ```sql
 create table "elements" (
   "id" text primary key,
@@ -455,7 +463,6 @@ create table "elements" (
   "instructions" text,                -- description / generation instructions (the shared field)
   "data" jsonb not null default '{}', -- type-specific fields, validated by the registry's Zod schema
   "schemaVersion" smallint not null default 1,
-  "revision" bigint not null default 0, -- M5 snapshot guard; bumped for identity/data and reference mutations
   "createdAt" timestamptz not null default now(),
   "updatedAt" timestamptz not null default now(),
   unique ("id", "organizationId"),    -- composite target for org-scoped FKs
@@ -470,6 +477,13 @@ create unique index "elementsAssetFolderIdx"
   on "elements" ("assetFolderId") where "assetFolderId" is not null;
 ```
 
+The current M4.5 schema intentionally has no `elements.revision` column. M5's
+run-admission migration adds it only when the snapshot builder exists, then
+starts incrementing it transactionally for identity/data/schema changes and
+execution-relevant relationship changes. Keeping the future guard out of
+migration `008_element_consistency` prevents an unused counter from suggesting
+snapshot safety before M5 can enforce it end to end.
+
 `folders.systemRole = 'elements_root'` identifies the one workspace Elements root without relying on its mutable name or path. Element creation provisions a collision-safe child folder and stores its ID in `assetFolderId` in the same transaction. The FK makes folder moves/renames harmless and clears the association if the folder is deleted. Element deletion deliberately has no effect on the referenced folder. A later Element upload recreates a missing association before inserting the new Asset; existing-Asset links never alter `assets.folderId`.
 
 ### 6. Element ↔ Asset — the relationship that carries meaning
@@ -483,8 +497,9 @@ create table "elementAssets" (
   "assetId" text not null,
   "role" text not null,               -- registry-defined per element type: 'appearance', 'packshot', ...
   "referenceKind" text not null default 'master'
-    check ("referenceKind" in ('source', 'master')),
-  "referenceMetadata" jsonb not null default '{}',
+    constraint "elementAssetsReferenceKindCheck"
+      check ("referenceKind" in ('source', 'master')),
+  "referenceMetadata" jsonb not null default '{}'::jsonb,
   "sortOrder" smallint not null default 0,
   "isPrimary" boolean not null default false,
   "createdAt" timestamptz not null default now(),
@@ -493,44 +508,82 @@ create table "elementAssets" (
     references "elements" ("id", "organizationId") on delete cascade,
   foreign key ("assetId", "organizationId")
     references "assets" ("id", "organizationId") on delete cascade,
-  check ("referenceKind" <> 'source' or not "isPrimary")
+  constraint "elementAssetsSourceNotPrimaryCheck"
+    check ("referenceKind" <> 'source' or not "isPrimary")
 );
 
 create index "elementAssetsAssetIdx" on "elementAssets" ("assetId");
 create unique index "elementAssetsPrimaryIdx"
   on "elementAssets" ("elementId", "role") where "isPrimary";
+create index "elementAssetsMasterElementIdx"
+  on "elementAssets" (
+    "organizationId", "elementId", "role", "sortOrder", "assetId"
+  )
+  where "referenceKind" = 'master';
 ```
 
 The row check and partial unique index make "primary" mean one approved master:
 at most one primary master per role per Element, enforced by the database rather
 than UI discipline. Existing rows migrate to `master` without changing behavior.
 
+These M4.5 fields ship additively in `008_element_consistency`: both columns are
+`not null`, their server defaults backfill every existing relationship as
+`master` with `{}` metadata, and the two named checks are installed in the same
+migration. The partial `elementAssetsMasterElementIdx` serves the hot
+organization-scoped, master-only Element preview/context/Flow reads while
+excluding source evidence from the index. The down migration drops that index,
+the named checks, and then the two columns; it is for disposable databases only.
+
 Master capacity remains registry-owned per role. Sources use a separate bounded
-Element-wide abuse cap. Application ordering is independent inside each
-`(elementId, role, referenceKind)` sequence so hidden sources cannot reorder
-visible masters. The global advisory-lock order is organization Flow-reference
-budget, Element, then role. Source-cap mutations take the Element lock;
+Element-wide abuse cap of 50 from shared code configuration. Application
+ordering is independent inside each
+`(organizationId, elementId, role, referenceKind)` sequence so hidden sources
+cannot reorder visible masters. The global mutation-lock order is organization
+Flow-reference budget, folder structure when an Element upload may provision a
+folder, Element, role, then the existing Asset row for attachment or relationship
+updates. Source-cap mutations take the Element lock;
 master-cap mutations take the role lock and first take the organization budget
-lock when they can increase executable references. Promotion takes all three.
-Each mutation acquires only the locks it needs, always in that order.
+lock when they can increase executable references. Promotion takes the budget,
+Element, role, and Asset locks; upload registration also takes the folder lock in
+its fixed position. The organization-scoped Asset lock uses `FOR UPDATE` and
+rechecks `purgeRequestedAt` and `purgedAt` after waiting. Fresh atomic upload
+registration has no existing Asset row at that point and inserts it later in the
+same transaction. Each mutation acquires only the locks it needs, always in that
+order. Folder-tree deletion first takes the folder-structure lock, resolves the
+tenant-owned subtree, and locks associated Element rows and then Asset rows in
+stable ID order before issuing the delete and its foreign-key actions.
 
 `referenceMetadata` contains registry-validated interpretation of the
 relationship (for example view, framing, background, or variant). Intrinsic media
 facts remain on `assets.metadata`. Unknown relationship keys are rejected and
 signed URLs/provider IDs never belong in either Element data or link metadata.
+Every current fixed and custom role uses the same strict common schema:
+`view` is `front | threeQuarter | profile | rear`, `framing` is
+`portrait | halfBody | fullBody | detail`, `background` is
+`clean | environment`, and `variant` is an optional bounded string. The schema
+is still owned through each registry role so a later role can evolve through a
+reviewed contract rather than accepting arbitrary JSON.
 
 Removing a row never deletes the asset; deleting an element cascades only the rows. `/elements/:id/assets` is the global asset library filtered through this table — one asset system.
 
-`elements.revision` is the run-snapshot consistency guard. Every mutation to
-Element `name`, `instructions`, `data`, schema version, or any `elementAssets`
-role/order/primary/kind/metadata relationship increments it in the same transaction. Run and
-Tool-version snapshot builders capture all participating Element revisions and
-re-read them immediately before commit. A mismatch rolls back and retries the
-whole admission/publication operation. This prevents automatic reference
-selection from observing a mixture of old Element data and a new kit, or one
-Element from before a concurrent edit and another from after it. This column is
-added with the M5 run-admission migration; M3 does not need to expose it through
-the public API.
+All relationship writes use one transactional mutation boundary. Existing-Asset
+attachment, promotion/demotion, role changes, kind-specific reorder, primary and
+metadata changes, detach, and future generated-Asset attachment cannot bypass
+the same validation and locks. Upload registration invokes that boundary inside
+the Asset transaction: Asset insertion, relationship insertion, affected
+persisted-Flow budget validation, and any folder provisioning commit or roll
+back together.
+
+Beginning with M5, `elements.revision` is the run-snapshot consistency guard.
+Every mutation to Element `name`, `instructions`, `data`, schema version, or any
+`elementAssets` role/order/primary/kind/metadata relationship increments it in
+the same transaction. Run and Tool-version snapshot builders capture all
+participating Element revisions and re-read them immediately before commit. A
+mismatch rolls back and retries the whole admission/publication operation. This
+prevents automatic reference selection from observing a mixture of old Element
+data and a new kit, or one Element from before a concurrent edit and another
+from after it. The column is added with the M5 run-admission migration and is not
+part of the M4.5 additive migration or public API.
 
 ### 7. Flow nodes — normalized graph, half relational, half document
 
@@ -860,7 +913,10 @@ measurements justify it.
 
 **Simple flow (prompt → generate):** two `flowNodes`, one `flowEdges` row, one run. No ceremony — the schema's minimum matches the vision's minimum.
 
-**Element detail / assets tab:** `elementAssets where "elementId"` joined to live assets — the same asset components, filtered.
+**Element detail / assets tab:** organization-scoped `elementAssets` joined to
+same-organization canonical Assets, including lifecycle/tombstone state needed
+to manage preserved links. The management API can request either kind; the
+current user surface requests masters and presents them as References.
 
 **"Where is this Element used?":** `flowNodes where "elementId" = $1` (canvases) ∪ `generationJobSources where "elementId" = $1` (runs).
 
@@ -967,9 +1023,12 @@ update "assets" set "purgedAt" = now(), "updatedAt" = now() where "id" = $1;
 select e.*, a."thumbnailKey"
 from "elements" e
 left join "elementAssets" ea
-  on ea."elementId" = e."id" and ea."referenceKind" = 'master'
+  on ea."organizationId" = e."organizationId"
+  and ea."elementId" = e."id" and ea."referenceKind" = 'master'
   and ea."isPrimary" and ea."role" = $2  -- preview role per type, from the registry
-left join "assets" a on a."id" = ea."assetId" and a."purgedAt" is null
+left join "assets" a
+  on a."organizationId" = e."organizationId"
+  and a."id" = ea."assetId" and a."purgedAt" is null
 where e."organizationId" = $1
 order by e."updatedAt" desc, e."id" desc;
 
@@ -977,20 +1036,25 @@ order by e."updatedAt" desc, e."id" desc;
 select a.*, ea."role", ea."referenceKind", ea."referenceMetadata",
        ea."sortOrder", ea."isPrimary"
 from "elementAssets" ea
-join "assets" a on a."id" = ea."assetId"
-where ea."elementId" = $1 and a."deletedAt" is null and a."purgedAt" is null
+join "assets" a
+  on a."organizationId" = ea."organizationId" and a."id" = ea."assetId"
+where ea."organizationId" = $1 and ea."elementId" = $2
+  and ($3::text is null or ea."referenceKind" = $3)
 order by ea."referenceKind", ea."role", ea."sortOrder", a."id";
 
 -- Attach / set primary / reorder / detach: writes on "elementAssets"
 -- (partial unique index enforces one primary per role; app validates role against the registry)
 
 -- "Where is this Element used?" (vision requirement): canvases ∪ runs
-select distinct "flowId" from "flowNodes" where "elementId" = $1
+select distinct "flowId" from "flowNodes"
+where "organizationId" = $1 and "elementId" = $2
 union
 select j."flowId"
 from "generationJobSources" s
-join "generationJobs" j on j."id" = s."jobId"
-where s."elementId" = $1 and j."flowId" is not null;
+join "generationJobs" j
+  on j."organizationId" = s."organizationId" and j."id" = s."jobId"
+where s."organizationId" = $1 and s."elementId" = $2
+  and j."flowId" is not null;
 ```
 
 ### Flows (build step 3)
@@ -1025,7 +1089,8 @@ from "flowEdges" e
 join "flowNodes" n on n."id" = e."sourceNodeId"
 where e."flowId" = $1 and e."targetNodeId" = $2
 order by e."createdAt", e."id";
--- then per element node: elementAssets rows; per nodeOutput source: resolution rules in
+-- then per element node: same-organization elementAssets rows filtered to
+-- referenceKind = 'master'; per nodeOutput source: resolution rules in
 -- section 9 (run-scoped inside multi-node runs, latest-succeeded across runs); compose
 -- resolvedPrompt; insert run + run-node + job + sources + inputs in one transaction;
 -- dispatch (integration contract steps 2-4)
@@ -1054,9 +1119,10 @@ join "generationJobs" j on j."id" = i."jobId"
 where i."assetId" = $1
 order by j."createdAt" desc;
 
--- Save a generated result back to an Element (vision requirement): one insert
-insert into "elementAssets" ("organizationId", "elementId", "assetId", "role")
-values ($1, $2, $3, $4);
+-- Save a generated result back to an Element (future UI action): call the same
+-- centralized transactional link mutation used by uploads and existing-Asset
+-- attachment. Do not issue a direct INSERT that bypasses tenant checks, metadata
+-- validation, kind-specific ordering, capacities, locks, or Flow budgets.
 ```
 
 Coverage verdict: every listed base feature resolves to an indexed access path at MVP volume; nothing requires schema the doc doesn't define or a jsonb unpack in a hot path. Two honest caveats rather than a blanket speed guarantee: the optional-`OR` predicate style and `%…%` `ILIKE` search won't always pick the ideal plan, and real latency claims belong to `EXPLAIN ANALYZE` on real data — acceptable now, verify as volume grows (the `pg_trgm` upgrade for search is already noted, and splitting optional predicates into built-up query branches is an app-layer change, not schema). The three contracts that needed defining beyond DDL (source ordering, `nodeOutput` resolution, derived node results) are specified in sections 9 and the product-loop mapping.

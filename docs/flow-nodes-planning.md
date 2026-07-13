@@ -806,11 +806,12 @@ Planning stages:
 Snapshot admission is a consistency boundary, not merely serialization. The
 planner reads the Flow revision, resolves the selected graph and every mutable
 Element/Asset dependency, and revalidates all participating revisions immediately
-before inserting the run. `flows.revision` protects nodes and edges. Each
-Element has its own revision that increments in the same transaction as Element
-identity/data/schema or Element-Asset role/order/primary/kind/metadata changes.
-Selected Asset rows are locked in stable ID order and revalidated as ready and
-not purging. Any revision change
+before inserting the run. `flows.revision` protects nodes and edges. M5 adds an
+Element revision in its run-admission migration; M4.5 deliberately does not add
+that column early. From M5 onward, the revision increments in the same
+transaction as Element identity/data/schema or Element-Asset
+role/order/primary/kind/metadata changes. Selected Asset rows are locked in
+stable ID order and revalidated as ready and not purging. Any revision change
 causes the admission transaction to roll back and retry; a run must never contain
 a graph from one moment and Element context from another.
 
