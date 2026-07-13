@@ -1,0 +1,6 @@
+interface:
+  display_name: "TaleLabs Code Review"
+  short_description: "Research-based TaleLabs implementation reviews"
+  default_prompt: "Use $talelabs-code-review to perform an evidence-based review of the current TaleLabs changes."
+policy:
+  allow_implicit_invocation: true
