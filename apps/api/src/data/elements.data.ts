@@ -1,14 +1,9 @@
-import type { Database, ElementTable, JsonValue } from '@talelabs/db'
-import type { Selectable, Transaction } from 'kysely'
+import type { ElementTable, JsonValue } from '@talelabs/db'
+import type { ElementReferenceKind } from '@talelabs/elements'
+import type { Selectable } from 'kysely'
 import type { PageCursor } from '../pagination/cursor.js'
 
 import { db, sql } from '@talelabs/db'
-import { getStoredElementAssetRole } from '../domain/elements/stored-element-asset-role.js'
-import {
-  findElementAssetRoleCapacityViolation,
-  lockElementAssetRole,
-} from './element-asset-limits.data.js'
-import { lockFlowReferenceBudget } from './flow-reference-budget.data.js'
 import { provisionElementAssetFolderRow } from './folders.data.js'
 
 export type ElementRecord = Selectable<ElementTable>
@@ -162,6 +157,7 @@ export function countElementAssetsByRole(organizationId: string, elementId: stri
     ])
     .where('organizationId', '=', organizationId)
     .where('elementId', '=', elementId)
+    .where('referenceKind', '=', 'master')
     .groupBy('role')
     .execute()
 }
@@ -218,10 +214,11 @@ export function listElementPreviewAssets(input: {
       and (a."type" = 'image' or a."thumbnailKey" is not null)
     where e."organizationId" = ${input.organizationId}
       and e."id" in (${sql.join(input.elementIds.map(id => sql`${id}`))})
+      and ea."referenceKind" = 'master'
     order by
       e."id",
-      case when ${preferredRoleCondition} then 0 else 1 end,
       case when ea."isPrimary" then 0 else 1 end,
+      case when ${preferredRoleCondition} then 0 else 1 end,
       ea."role",
       ea."sortOrder",
       ea."assetId"
@@ -231,6 +228,7 @@ export function listElementPreviewAssets(input: {
 export function listElementAssetRows(input: {
   elementId: string
   organizationId: string
+  referenceKind?: ElementReferenceKind
   role?: string
 }) {
   let query = db.selectFrom('elementAssets as link')
@@ -242,6 +240,8 @@ export function listElementAssetRows(input: {
       'link.role',
       'link.sortOrder',
       'link.isPrimary',
+      'link.referenceKind',
+      'link.referenceMetadata',
       'asset.id as id',
       'asset.organizationId',
       'asset.createdBy',
@@ -273,9 +273,12 @@ export function listElementAssetRows(input: {
 
   if (input.role)
     query = query.where('link.role', '=', input.role)
+  if (input.referenceKind)
+    query = query.where('link.referenceKind', '=', input.referenceKind)
 
   return query
     .orderBy('link.role')
+    .orderBy('link.referenceKind')
     .orderBy('link.sortOrder')
     .orderBy('link.assetId')
     .execute()
@@ -294,11 +297,13 @@ export function listUsableElementContextAssetRows(input: {
       'link.role',
       'link.sortOrder',
       'link.isPrimary',
+      'link.referenceMetadata',
       'asset.type as mediaType',
       'asset.mimeType',
     ])
     .where('link.organizationId', '=', input.organizationId)
     .where('link.elementId', '=', input.elementId)
+    .where('link.referenceKind', '=', 'master')
     .where('asset.processingState', '=', 'ready')
     .where('asset.purgeRequestedAt', 'is', null)
     .where('asset.purgedAt', 'is', null)
@@ -306,297 +311,36 @@ export function listUsableElementContextAssetRows(input: {
     .execute()
 }
 
-async function normalizeRoleOrder(
-  trx: Transaction<Database>,
-  input: { elementId: string, organizationId: string, role: string },
-) {
-  const links = await trx.selectFrom('elementAssets')
-    .select(['assetId', 'sortOrder'])
-    .where('organizationId', '=', input.organizationId)
-    .where('elementId', '=', input.elementId)
-    .where('role', '=', input.role)
-    .orderBy('sortOrder')
-    .orderBy('assetId')
-    .execute()
-
-  for (const [index, link] of links.entries()) {
-    await trx.updateTable('elementAssets')
-      .set({ sortOrder: index })
-      .where('organizationId', '=', input.organizationId)
-      .where('elementId', '=', input.elementId)
-      .where('assetId', '=', link.assetId)
-      .where('role', '=', input.role)
-      .execute()
-  }
-}
-
-export type CreateElementAssetLinkResult
-  = | { status: 'asset_not_available' | 'asset_not_found' | 'element_not_found' }
-    | {
-      mediaType: 'audio' | 'document' | 'image' | 'video'
-      status: 'incompatible_asset'
-    }
-    | { status: 'role_not_found' }
-    | {
-      status: 'element_asset_role_capacity_reached'
-      maximum: number
-      role: string
-    }
-    | { status: 'conflict' }
-    | { status: 'created', assetId: string, isPrimary: boolean, role: string, sortOrder: number }
-
-export function createElementAssetLinkRow(input: {
-  assetId: string
-  elementId: string
-  isPrimary: boolean
+/**
+ * Batch-loads eligible masters for derived readiness and pending-state
+ * observation without per-Element reads.
+ */
+export function listElementReadinessRows(input: {
+  elementIds: readonly string[]
   organizationId: string
-  role: string
-  sortOrder?: number
-  validateFlowReferenceBudgets: (
-    executor: Transaction<Database>,
-  ) => Promise<void>
-}): Promise<CreateElementAssetLinkResult> {
-  return db.transaction().execute(async (trx) => {
-    await lockFlowReferenceBudget(trx, input.organizationId)
-    const element = await trx.selectFrom('elements')
-      .select(['data', 'id', 'schemaVersion', 'type'])
-      .where('organizationId', '=', input.organizationId)
-      .where('id', '=', input.elementId)
-      .forUpdate()
-      .executeTakeFirst()
-    if (!element)
-      return { status: 'element_not_found' }
-
-    const role = getStoredElementAssetRole(element, input.role)
-    if (!role)
-      return { status: 'role_not_found' }
-
-    await lockElementAssetRole(trx, {
-      elementId: input.elementId,
-      organizationId: input.organizationId,
-      role: input.role,
-    })
-
-    const asset = await trx.selectFrom('assets')
-      .select(['deletedAt', 'id', 'type', 'purgeRequestedAt'])
-      .where('organizationId', '=', input.organizationId)
-      .where('id', '=', input.assetId)
-      .executeTakeFirst()
-    if (!asset)
-      return { status: 'asset_not_found' }
-    if (asset.deletedAt || asset.purgeRequestedAt)
-      return { status: 'asset_not_available' }
-    if (asset.type === 'document' || !role.accepts.includes(asset.type))
-      return { mediaType: asset.type, status: 'incompatible_asset' }
-
-    const duplicate = await trx.selectFrom('elementAssets')
-      .select('assetId')
-      .where('organizationId', '=', input.organizationId)
-      .where('elementId', '=', input.elementId)
-      .where('assetId', '=', input.assetId)
-      .where('role', '=', input.role)
-      .executeTakeFirst()
-    if (duplicate)
-      return { status: 'conflict' }
-
-    const limitViolation = await findElementAssetRoleCapacityViolation(trx, {
-      elementId: input.elementId,
-      maximum: role.maxAssets,
-      organizationId: input.organizationId,
-      role: input.role,
-    })
-    if (limitViolation) {
-      return {
-        ...limitViolation,
-        status: 'element_asset_role_capacity_reached',
-      }
-    }
-
-    const existing = await trx.selectFrom('elementAssets')
-      .select(['assetId', 'sortOrder'])
-      .where('organizationId', '=', input.organizationId)
-      .where('elementId', '=', input.elementId)
-      .where('role', '=', input.role)
-      .orderBy('sortOrder')
-      .orderBy('assetId')
-      .execute()
-    const targetOrder = Math.max(0, Math.min(input.sortOrder ?? existing.length, existing.length))
-
-    if (input.isPrimary) {
-      await trx.updateTable('elementAssets')
-        .set({ isPrimary: false })
-        .where('organizationId', '=', input.organizationId)
-        .where('elementId', '=', input.elementId)
-        .where('role', '=', input.role)
-        .execute()
-    }
-
-    await trx.updateTable('elementAssets')
-      .set({ sortOrder: sql`"sortOrder" + 1` })
-      .where('organizationId', '=', input.organizationId)
-      .where('elementId', '=', input.elementId)
-      .where('role', '=', input.role)
-      .where('sortOrder', '>=', targetOrder)
-      .execute()
-    await trx.insertInto('elementAssets').values({
-      assetId: input.assetId,
-      elementId: input.elementId,
-      isPrimary: input.isPrimary,
-      organizationId: input.organizationId,
-      role: input.role,
-      sortOrder: targetOrder,
-    }).execute()
-    await input.validateFlowReferenceBudgets(trx)
-
-    return {
-      assetId: input.assetId,
-      isPrimary: input.isPrimary,
-      role: input.role,
-      sortOrder: targetOrder,
-      status: 'created',
-    }
-  })
-}
-
-export type UpdateElementAssetLinkResult
-  = | { status: 'element_not_found' | 'link_not_found' }
-    | { status: 'updated', assetId: string, isPrimary: boolean, role: string, sortOrder: number }
-
-export function updateElementAssetLinkRow(input: {
-  assetId: string
-  elementId: string
-  isPrimary?: boolean
-  organizationId: string
-  role: string
-  sortOrder?: number
-}): Promise<UpdateElementAssetLinkResult> {
-  return db.transaction().execute(async (trx) => {
-    const element = await trx.selectFrom('elements')
-      .select('id')
-      .where('organizationId', '=', input.organizationId)
-      .where('id', '=', input.elementId)
-      .forUpdate()
-      .executeTakeFirst()
-    if (!element)
-      return { status: 'element_not_found' }
-
-    const current = await trx.selectFrom('elementAssets')
-      .selectAll()
-      .where('organizationId', '=', input.organizationId)
-      .where('elementId', '=', input.elementId)
-      .where('assetId', '=', input.assetId)
-      .where('role', '=', input.role)
-      .executeTakeFirst()
-    if (!current)
-      return { status: 'link_not_found' }
-
-    if (input.sortOrder !== undefined && input.sortOrder !== current.sortOrder) {
-      const count = await trx.selectFrom('elementAssets')
-        .select(({ fn }) => fn.countAll<number>().as('count'))
-        .where('organizationId', '=', input.organizationId)
-        .where('elementId', '=', input.elementId)
-        .where('role', '=', input.role)
-        .executeTakeFirstOrThrow()
-      const target = Math.max(0, Math.min(input.sortOrder, Number(count.count) - 1))
-
-      await trx.updateTable('elementAssets')
-        .set({ sortOrder: -1 })
-        .where('organizationId', '=', input.organizationId)
-        .where('elementId', '=', input.elementId)
-        .where('assetId', '=', input.assetId)
-        .where('role', '=', input.role)
-        .execute()
-
-      if (target < current.sortOrder) {
-        await trx.updateTable('elementAssets')
-          .set({ sortOrder: sql`"sortOrder" + 1` })
-          .where('organizationId', '=', input.organizationId)
-          .where('elementId', '=', input.elementId)
-          .where('role', '=', input.role)
-          .where('sortOrder', '>=', target)
-          .where('sortOrder', '<', current.sortOrder)
-          .execute()
-      }
-      else {
-        await trx.updateTable('elementAssets')
-          .set({ sortOrder: sql`"sortOrder" - 1` })
-          .where('organizationId', '=', input.organizationId)
-          .where('elementId', '=', input.elementId)
-          .where('role', '=', input.role)
-          .where('sortOrder', '>', current.sortOrder)
-          .where('sortOrder', '<=', target)
-          .execute()
-      }
-
-      await trx.updateTable('elementAssets')
-        .set({ sortOrder: target })
-        .where('organizationId', '=', input.organizationId)
-        .where('elementId', '=', input.elementId)
-        .where('assetId', '=', input.assetId)
-        .where('role', '=', input.role)
-        .execute()
-    }
-
-    if (input.isPrimary === true) {
-      await trx.updateTable('elementAssets')
-        .set({ isPrimary: false })
-        .where('organizationId', '=', input.organizationId)
-        .where('elementId', '=', input.elementId)
-        .where('role', '=', input.role)
-        .execute()
-    }
-
-    if (input.isPrimary !== undefined) {
-      await trx.updateTable('elementAssets')
-        .set({ isPrimary: input.isPrimary })
-        .where('organizationId', '=', input.organizationId)
-        .where('elementId', '=', input.elementId)
-        .where('assetId', '=', input.assetId)
-        .where('role', '=', input.role)
-        .execute()
-    }
-
-    await normalizeRoleOrder(trx, input)
-    const updated = await trx.selectFrom('elementAssets')
-      .select(['assetId', 'isPrimary', 'role', 'sortOrder'])
-      .where('organizationId', '=', input.organizationId)
-      .where('elementId', '=', input.elementId)
-      .where('assetId', '=', input.assetId)
-      .where('role', '=', input.role)
-      .executeTakeFirstOrThrow()
-    return { ...updated, status: 'updated' }
-  })
-}
-
-export function deleteElementAssetLinkRow(input: {
-  assetId: string
-  elementId: string
-  organizationId: string
-  role: string
 }) {
-  return db.transaction().execute(async (trx) => {
-    const element = await trx.selectFrom('elements')
-      .select('id')
-      .where('organizationId', '=', input.organizationId)
-      .where('id', '=', input.elementId)
-      .forUpdate()
-      .executeTakeFirst()
-    if (!element)
-      return false
+  if (input.elementIds.length === 0)
+    return Promise.resolve([])
 
-    const deleted = await trx.deleteFrom('elementAssets')
-      .where('organizationId', '=', input.organizationId)
-      .where('elementId', '=', input.elementId)
-      .where('assetId', '=', input.assetId)
-      .where('role', '=', input.role)
-      .returning('assetId')
-      .executeTakeFirst()
-    if (!deleted)
-      return false
-
-    await normalizeRoleOrder(trx, input)
-    return true
-  })
+  return db.selectFrom('elementAssets as link')
+    .innerJoin('assets as asset', join => join
+      .onRef('asset.id', '=', 'link.assetId')
+      .onRef('asset.organizationId', '=', 'link.organizationId'))
+    .select([
+      'link.elementId',
+      'link.referenceKind',
+      'link.referenceMetadata',
+      'link.role',
+      'asset.processingState',
+    ])
+    .where('link.organizationId', '=', input.organizationId)
+    .where('link.elementId', 'in', [...input.elementIds])
+    .where('link.referenceKind', '=', 'master')
+    .where('asset.processingState', 'in', ['processing', 'ready'])
+    .where('asset.purgeRequestedAt', 'is', null)
+    .where('asset.purgedAt', 'is', null)
+    .where('asset.type', 'in', ['image', 'video', 'audio'])
+    .execute()
 }
 
 export async function getElementUsageRows(organizationId: string, elementId: string) {

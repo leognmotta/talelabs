@@ -85,6 +85,19 @@ export function createApiApp(options: CreateApiAppOptions = {}) {
   const app = new OpenAPIHono<ApiEnv>({
     defaultHook: (result, c) => {
       if (!result.success) {
+        const referenceMetadataIssues = result.error.issues.filter(issue =>
+          issue.path.includes('referenceMetadata'))
+        if (referenceMetadataIssues.length) {
+          return c.json(apiError(
+            'element_reference_metadata_invalid',
+            'Element reference metadata is invalid.',
+            referenceMetadataIssues.map(issue => ({
+              code: 'element_reference_metadata_invalid',
+              field: issue.path.map(String).join('.'),
+              message: issue.message,
+            })),
+          ), 400)
+        }
         return c.json(apiError(
           'validation_error',
           'The request could not be validated.',

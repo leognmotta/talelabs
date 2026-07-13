@@ -1,4 +1,7 @@
-import type { ElementType } from '@talelabs/elements'
+import type {
+  ElementReferenceMetadata,
+  ElementType,
+} from '@talelabs/elements'
 
 export interface BuiltElementContext {
   assets: Array<{
@@ -6,6 +9,7 @@ export interface BuiltElementContext {
     isPrimary: boolean
     mediaType: 'audio' | 'image' | 'video'
     mimeType: string
+    referenceMetadata: ElementReferenceMetadata
     role: string
     sortOrder: number
   }>

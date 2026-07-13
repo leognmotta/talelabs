@@ -52,11 +52,13 @@ export async function getFlowReferenceBudget(
     .select(({ fn }) => fn.countAll<number>().as('count'))
     .where('organizationId', '=', input.organizationId)
     .where('elementId', 'in', elementIds)
+    .where('referenceKind', '=', 'master')
     .executeTakeFirstOrThrow()
   let linkedAssetQuery = executor.selectFrom('elementAssets')
     .select(({ fn }) => fn.count<number>('assetId').distinct().as('count'))
     .where('organizationId', '=', input.organizationId)
     .where('elementId', 'in', elementIds)
+    .where('referenceKind', '=', 'master')
   if (assetIds.length)
     linkedAssetQuery = linkedAssetQuery.where('assetId', 'not in', assetIds)
   const linkedAssetCount = await linkedAssetQuery.executeTakeFirstOrThrow()
@@ -107,6 +109,7 @@ export async function findElementFlowReferenceBudgetViolation(
       join "elementAssets" link
         on link."organizationId" = ${input.organizationId}
         and link."elementId" = element."elementId"
+        and link."referenceKind" = 'master'
     ),
     "assetReferences" as (
       select "flowId", "assetId" from "directAssets"

@@ -372,6 +372,46 @@ export async function deleteFolderRow(organizationId: string, id: string) {
   return db.transaction().execute(async (trx) => {
     await lockFolderStructure(trx, organizationId)
 
+    const subtree = await sql<{ id: string }>`
+      with recursive descendants as (
+        select folder."id"
+        from "folders" folder
+        where folder."organizationId" = ${organizationId}
+          and folder."id" = ${id}
+        union all
+        select child."id"
+        from "folders" child
+        join descendants
+          on child."parentId" = descendants."id"
+        where child."organizationId" = ${organizationId}
+      )
+      select "id"
+      from descendants
+      order by "id"
+    `.execute(trx)
+    const folderIds = subtree.rows.map(folder => folder.id)
+    if (folderIds.length === 0)
+      return undefined
+
+    // The FK actions clear both Element and Asset folder references. Lock the
+    // affected rows explicitly in the shared folder -> Element -> Asset order
+    // so a link mutation cannot hold an Element while waiting on an Asset that
+    // the folder delete locked before its FK action reaches that Element.
+    await trx.selectFrom('elements')
+      .select('id')
+      .where('organizationId', '=', organizationId)
+      .where('assetFolderId', 'in', folderIds)
+      .orderBy('id')
+      .forUpdate()
+      .execute()
+    await trx.selectFrom('assets')
+      .select('id')
+      .where('organizationId', '=', organizationId)
+      .where('folderId', 'in', folderIds)
+      .orderBy('id')
+      .forUpdate()
+      .execute()
+
     return trx.deleteFrom('folders')
       .where('organizationId', '=', organizationId)
       .where('id', '=', id)

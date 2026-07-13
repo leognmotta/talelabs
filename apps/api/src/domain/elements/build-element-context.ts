@@ -1,6 +1,8 @@
 import type { OtherElementData } from '@talelabs/elements'
 
 import {
+  ElementIdentitySchema,
+  getElementAssetRole,
   getElementAssetRoles,
   isElementType,
   upcastElementData,
@@ -11,6 +13,7 @@ import {
   listUsableElementContextAssetRows,
 } from '../../data/elements.data.js'
 import { TenantResourceNotFoundError } from '../../middleware/error.js'
+import { addElementIdentityGuidance } from './add-context-section.js'
 import { buildOtherContext } from './build-other-context.js'
 import { getElementContextBuilder } from './element-context-builders.js'
 
@@ -23,18 +26,34 @@ export async function buildElementContext(input: {
     throw new TenantResourceNotFoundError()
   if (!isElementType(element.type))
     throw new Error(`Stored Element type is not registered: ${element.type}`)
+  const elementType = element.type
 
-  const parsed = upcastElementData(element.type, element.schemaVersion, element.data)
+  const parsed = upcastElementData(elementType, element.schemaVersion, element.data)
   const roleOrder = new Map<string, number>(
-    getElementAssetRoles(element.type, parsed.data)
+    getElementAssetRoles(elementType, parsed.data)
       .map((role, index) => [role.id, index]),
   )
   const rows = await listUsableElementContextAssetRows(input)
   const assets = rows
-    .filter((row): row is typeof row & { mediaType: 'audio' | 'image' | 'video' } =>
-      row.mediaType !== 'document')
+    .flatMap((row) => {
+      if (row.mediaType === 'document')
+        return []
+      const mediaType = row.mediaType
+      const role = getElementAssetRole(elementType, row.role, parsed.data)
+      const metadata = role?.referenceMetadataSchema.safeParse(
+        row.referenceMetadata,
+      )
+      if (!metadata?.success)
+        return []
+      return [{
+        ...row,
+        mediaType,
+        referenceMetadata: metadata.data,
+      }]
+    })
     .toSorted((left, right) =>
-      (roleOrder.get(left.role) ?? Number.MAX_SAFE_INTEGER)
+      Number(right.isPrimary) - Number(left.isPrimary)
+      || (roleOrder.get(left.role) ?? Number.MAX_SAFE_INTEGER)
       - (roleOrder.get(right.role) ?? Number.MAX_SAFE_INTEGER)
       || left.sortOrder - right.sortOrder
       || left.assetId.localeCompare(right.assetId))
@@ -43,6 +62,7 @@ export async function buildElementContext(input: {
       isPrimary: row.isPrimary,
       mediaType: row.mediaType,
       mimeType: row.mimeType,
+      referenceMetadata: row.referenceMetadata,
       role: row.role,
       sortOrder: row.sortOrder,
     }))
@@ -54,11 +74,17 @@ export async function buildElementContext(input: {
     name: element.name,
     schemaVersion: parsed.schemaVersion,
   }
-  return element.type === 'other'
+  const context = elementType === 'other'
     ? buildOtherContext({
         ...contextInput,
         data: parsed.data as OtherElementData,
         instructions: element.instructions,
       })
-    : getElementContextBuilder(element.type)(contextInput)
+    : getElementContextBuilder(elementType)(contextInput)
+  const sections = [context.text]
+  addElementIdentityGuidance(
+    sections,
+    ElementIdentitySchema.parse(parsed.data.identity),
+  )
+  return { ...context, text: sections.filter(Boolean).join('\n') }
 }

@@ -1,9 +1,14 @@
 import type { JsonValue } from '@talelabs/db'
-import type { ElementType } from '@talelabs/elements'
+import type {
+  ElementReadinessReference,
+  ElementReferenceKind,
+  ElementType,
+} from '@talelabs/elements'
 import type { ZodError } from 'zod'
 
 import { createId } from '@paralleldrive/cuid2'
 import {
+  evaluateElementReadiness,
   getElementAssetRoles,
   getElementTypeDefinition,
   isElementType,
@@ -12,17 +17,20 @@ import {
 } from '@talelabs/elements'
 
 import {
-  countElementAssetsByRole,
   createElementAssetLinkRow,
   deleteElementAssetLinkRow,
+  updateElementAssetLinkRow,
+} from '../data/element-asset-links.data.js'
+import {
+  countElementAssetsByRole,
   deleteElementRow,
   findElementById,
   getElementUsageRows,
   insertElementWithAssetFolderRow,
   listElementAssetRows,
   listElementPreviewAssets,
+  listElementReadinessRows,
   listElementRows,
-  updateElementAssetLinkRow,
   updateElementRow,
 } from '../data/elements.data.js'
 import {
@@ -39,7 +47,12 @@ import {
 } from '../pagination/pagination.js'
 import { createAssetThumbnailUrl, toWireJsonObject } from './asset-presenter.js'
 import { presentAssetsForUser } from './assets.service.js'
-import { createElementAssetRoleCapacityError } from './element-asset-limit-error.js'
+import {
+  createElementMasterRoleCapacityError,
+  createElementReferenceMetadataError,
+  createElementSourceCapacityError,
+  createElementSourcePrimaryError,
+} from './element-asset-limit-error.js'
 import { assertElementFlowReferenceBudgets } from './flow-reference-budget.js'
 
 function validationDetails(error: ZodError, prefix = 'data') {
@@ -93,6 +106,21 @@ export function presentElement(element: NonNullable<Awaited<ReturnType<typeof fi
   }
 }
 
+function deriveElementReadiness(
+  element: NonNullable<Awaited<ReturnType<typeof findElementById>>>,
+  rows: Awaited<ReturnType<typeof listElementReadinessRows>>,
+) {
+  const type = requireStoredElementType(element.type)
+  const upcasted = upcastElementData(type, element.schemaVersion, element.data)
+  const references: ElementReadinessReference[] = rows.map(row => ({
+    isUsable: row.processingState === 'ready',
+    referenceKind: row.referenceKind,
+    referenceMetadata: row.referenceMetadata,
+    role: row.role,
+  }))
+  return evaluateElementReadiness(type, references, upcasted.data)
+}
+
 export async function listElements(input: {
   cursor?: string
   limit: number
@@ -127,8 +155,16 @@ export async function listElements(input: {
     }),
     serialize: row => row,
   })
+  const elementIds = page.data.map(element => element.id)
+  // Observe pending state before the ready-only preview query. Since ingestion
+  // transitions are terminal, this order cannot report no pending work while
+  // returning a preview captured before the same Asset became ready.
+  const readinessRows = await listElementReadinessRows({
+    elementIds,
+    organizationId: input.organizationId,
+  })
   const previewRows = await listElementPreviewAssets({
-    elementIds: page.data.map(element => element.id),
+    elementIds,
     organizationId: input.organizationId,
     previewRoles: ELEMENT_PREVIEW_ROLES,
   })
@@ -136,12 +172,27 @@ export async function listElements(input: {
     asset.elementId,
     await createAssetThumbnailUrl(asset),
   ] as const)))
+  const readinessRowsByElement = new Map<string, typeof readinessRows>()
+  for (const row of readinessRows) {
+    const rows = readinessRowsByElement.get(row.elementId) ?? []
+    rows.push(row)
+    readinessRowsByElement.set(row.elementId, rows)
+  }
 
   return {
-    data: page.data.map(element => ({
-      ...presentElement(element),
-      previewThumbnailUrl: previews.get(element.id) ?? null,
-    })),
+    data: page.data.map((element) => {
+      const elementReadinessRows
+        = readinessRowsByElement.get(element.id) ?? []
+
+      return {
+        ...presentElement(element),
+        hasProcessingReferences: elementReadinessRows.some(
+          row => row.processingState === 'processing',
+        ),
+        previewThumbnailUrl: previews.get(element.id) ?? null,
+        readiness: deriveElementReadiness(element, elementReadinessRows),
+      }
+    }),
     nextCursor: page.nextCursor,
   }
 }
@@ -195,10 +246,14 @@ export async function getElementDetail(organizationId: string, id: string) {
   if (!element)
     throw new TenantResourceNotFoundError()
 
-  const counts = await countElementAssetsByRole(organizationId, id)
+  const [counts, readinessRows] = await Promise.all([
+    countElementAssetsByRole(organizationId, id),
+    listElementReadinessRows({ elementIds: [id], organizationId }),
+  ])
   return {
     ...presentElement(element),
     assetCounts: Object.fromEntries(counts.map(row => [row.role, Number(row.count)])),
+    readiness: deriveElementReadiness(element, readinessRows),
   }
 }
 
@@ -279,6 +334,7 @@ async function requireElement(organizationId: string, elementId: string) {
 export async function listElementAssets(input: {
   elementId: string
   organizationId: string
+  referenceKind?: ElementReferenceKind
   role?: string
   userId: string
 }) {
@@ -293,13 +349,26 @@ export async function listElementAssets(input: {
     userId: input.userId,
   })
   return {
-    data: rows.map((row, index) => ({
-      assetId: row.assetId,
-      role: row.role,
-      sortOrder: row.sortOrder,
-      isPrimary: row.isPrimary,
-      asset: assets[index]!,
-    })),
+    data: rows.map((row, index) => {
+      const role = requireElementAssetRole(type, row.role, data)
+      const metadata = role.referenceMetadataSchema.safeParse(
+        row.referenceMetadata,
+      )
+      if (!metadata.success) {
+        throw new Error(
+          `Stored Element reference metadata is invalid for role ${row.role}`,
+        )
+      }
+      return {
+        assetId: row.assetId,
+        role: row.role,
+        sortOrder: row.sortOrder,
+        isPrimary: row.isPrimary,
+        referenceKind: row.referenceKind,
+        referenceMetadata: metadata.data,
+        asset: assets[index]!,
+      }
+    }),
     nextCursor: null,
   }
 }
@@ -309,6 +378,8 @@ export async function attachElementAsset(input: {
   elementId: string
   isPrimary: boolean
   organizationId: string
+  referenceKind: ElementReferenceKind
+  referenceMetadata: unknown
   role: string
   sortOrder?: number
   userId: string
@@ -343,8 +414,14 @@ export async function attachElementAsset(input: {
       'assetId',
     )
   }
-  if (result.status === 'element_asset_role_capacity_reached')
-    throw createElementAssetRoleCapacityError('assetId', result)
+  if (result.status === 'element_master_role_capacity_reached')
+    throw createElementMasterRoleCapacityError('assetId', result)
+  if (result.status === 'element_source_capacity_reached')
+    throw createElementSourceCapacityError('assetId', result.maximum)
+  if (result.status === 'invalid_reference_metadata')
+    throw createElementReferenceMetadataError()
+  if (result.status === 'source_primary_invalid')
+    throw createElementSourcePrimaryError()
   if (result.status === 'conflict') {
     throw new HttpError(409, 'element_asset_already_attached', 'The Asset is already attached.', [{
       code: 'element_asset_already_attached',
@@ -381,16 +458,61 @@ export async function updateElementAsset(input: {
   elementId: string
   isPrimary?: boolean
   organizationId: string
+  referenceKind?: ElementReferenceKind
+  referenceMetadata?: unknown
   role: string
   sortOrder?: number
+  targetRole?: string
   userId: string
 }) {
-  const { data, type } = await requireElement(input.organizationId, input.elementId)
-  requireElementAssetRole(type, input.role, data)
-  const result = await updateElementAssetLinkRow(input)
-  if (result.status !== 'updated')
+  const result = await updateElementAssetLinkRow({
+    ...input,
+    validateFlowReferenceBudgets: executor => assertElementFlowReferenceBudgets(
+      executor,
+      {
+        elementId: input.elementId,
+        organizationId: input.organizationId,
+      },
+    ),
+  })
+  if (result.status === 'element_not_found' || result.status === 'link_not_found')
     throw new TenantResourceNotFoundError()
-  return getElementAssetLink(input)
+  if (result.status === 'asset_not_found')
+    throw new TenantResourceNotFoundError('assetId')
+  if (result.status === 'role_not_found')
+    throw createElementAssetRoleNotFoundError(input.targetRole ?? input.role)
+  if (result.status === 'incompatible_asset') {
+    throw createElementAssetMediaTypeNotAcceptedError(
+      input.targetRole ?? input.role,
+      result.mediaType,
+      'role',
+    )
+  }
+  if (result.status === 'element_master_role_capacity_reached')
+    throw createElementMasterRoleCapacityError('role', result)
+  if (result.status === 'element_source_capacity_reached')
+    throw createElementSourceCapacityError('role', result.maximum)
+  if (result.status === 'invalid_reference_metadata')
+    throw createElementReferenceMetadataError()
+  if (result.status === 'source_primary_invalid')
+    throw createElementSourcePrimaryError()
+  if (result.status === 'asset_not_available') {
+    throw new HttpError(409, 'asset_not_available', 'The Asset is not available.')
+  }
+  if (result.status === 'conflict') {
+    throw new HttpError(409, 'element_asset_already_attached', 'The Asset is already attached.', [{
+      code: 'element_asset_already_attached',
+      field: 'targetRole',
+      message: 'The Asset is already attached to the target Element role.',
+      params: { role: input.targetRole ?? input.role },
+    }])
+  }
+  if (result.status !== 'updated')
+    throw new Error(`Unhandled Element Asset link result: ${result.status}`)
+  return getElementAssetLink({
+    ...input,
+    role: result.role,
+  })
 }
 
 export async function unlinkElementAsset(input: {
@@ -399,8 +521,6 @@ export async function unlinkElementAsset(input: {
   organizationId: string
   role: string
 }) {
-  const { data, type } = await requireElement(input.organizationId, input.elementId)
-  requireElementAssetRole(type, input.role, data)
   if (!(await deleteElementAssetLinkRow(input)))
     throw new TenantResourceNotFoundError()
 }

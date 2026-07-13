@@ -10,6 +10,10 @@ import {
   TimestampSchema,
   UserIdSchema,
 } from '../../schemas/common.js'
+import {
+  ElementReferenceKindSchema,
+  ElementReferenceMetadataSchema,
+} from '../../schemas/element-reference.js'
 import { AssetSchema } from '../assets/assets.schemas.js'
 
 export const ElementTypeSchema = z.enum(ELEMENT_TYPES)
@@ -31,13 +35,21 @@ export const ElementSchema = z.object({
   updatedAt: TimestampSchema,
 }).openapi('Element')
 
+export const ElementReadinessSchema = z.object({
+  state: z.enum(['empty', 'usable', 'strong']),
+  missing: z.array(z.string()).max(32),
+  recommendations: z.array(z.string()).max(32),
+}).openapi('ElementReadiness')
+
 export const CreatedElementSchema = z.object({
   ...ElementSchema.shape,
   assetFolderId: Cuid2Schema,
 }).openapi('CreatedElement')
 
 export const ElementListItemSchema = ElementSchema.extend({
+  hasProcessingReferences: z.boolean(),
   previewThumbnailUrl: z.url().nullable(),
+  readiness: ElementReadinessSchema,
 }).openapi('ElementListItem')
 
 export const ElementListResponseSchema = createListResponseSchema(ElementListItemSchema)
@@ -45,6 +57,7 @@ export const ElementListResponseSchema = createListResponseSchema(ElementListIte
 
 export const ElementDetailSchema = ElementSchema.extend({
   assetCounts: z.record(z.string(), z.number().int().nonnegative()),
+  readiness: ElementReadinessSchema,
 }).openapi('ElementDetail')
 
 export const ElementListQuerySchema = z.object({
@@ -76,6 +89,8 @@ export const ElementAssetLinkSchema = z.object({
   role: z.string().min(1).max(64),
   sortOrder: z.number().int().nonnegative(),
   isPrimary: z.boolean(),
+  referenceKind: ElementReferenceKindSchema,
+  referenceMetadata: ElementReferenceMetadataSchema,
   asset: AssetSchema,
 }).openapi('ElementAssetLink')
 
@@ -84,6 +99,7 @@ export const ElementAssetListResponseSchema = createListResponseSchema(ElementAs
 
 export const ElementAssetListQuerySchema = z.object({
   role: z.string().trim().min(1).max(64).optional(),
+  referenceKind: ElementReferenceKindSchema.optional(),
 })
 
 export const CreateElementAssetRequestSchema = z.object({
@@ -91,6 +107,8 @@ export const CreateElementAssetRequestSchema = z.object({
   role: z.string().trim().min(1).max(64),
   sortOrder: z.number().int().nonnegative().optional(),
   isPrimary: z.boolean().default(false),
+  referenceKind: ElementReferenceKindSchema.default('master'),
+  referenceMetadata: ElementReferenceMetadataSchema.default({}),
 }).openapi('CreateElementAssetRequest')
 
 export const ElementAssetParamsSchema = ElementParamsSchema.extend({
@@ -99,9 +117,17 @@ export const ElementAssetParamsSchema = ElementParamsSchema.extend({
 
 export const UpdateElementAssetRequestSchema = z.object({
   role: z.string().trim().min(1).max(64),
+  targetRole: z.string().trim().min(1).max(64).optional(),
   sortOrder: z.number().int().nonnegative().optional(),
   isPrimary: z.boolean().optional(),
-}).refine(value => value.sortOrder !== undefined || value.isPrimary !== undefined, {
+  referenceKind: ElementReferenceKindSchema.optional(),
+  referenceMetadata: ElementReferenceMetadataSchema.optional(),
+}).refine(value =>
+  value.targetRole !== undefined
+  || value.sortOrder !== undefined
+  || value.isPrimary !== undefined
+  || value.referenceKind !== undefined
+  || value.referenceMetadata !== undefined, {
   message: 'At least one mutable field is required',
 }).openapi('UpdateElementAssetRequest')
 

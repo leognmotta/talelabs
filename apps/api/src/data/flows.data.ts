@@ -218,12 +218,14 @@ export async function listFlowGraphReferenceRows(
         ])
         .where('link.organizationId', '=', input.organizationId)
         .where('link.elementId', 'in', input.elementIds)
+        .where('link.referenceKind', '=', 'master')
         .where('asset.processingState', '=', 'ready')
         .where('asset.purgeRequestedAt', 'is', null)
         .where('asset.purgedAt', 'is', null)
+        .where('asset.type', 'in', ['image', 'video', 'audio'])
         .orderBy('link.elementId')
-        .orderBy('link.role')
         .orderBy(sql`case when "link"."isPrimary" then 0 else 1 end`)
+        .orderBy('link.role')
         .orderBy('link.sortOrder')
         .orderBy('link.assetId')
         .execute()
@@ -249,21 +251,29 @@ export async function listFlowGraphHydrationRows(input: {
           .execute()
       : Promise.resolve([] as FlowReferenceElementRecord[]),
     input.elementIds.length
-      ? db.selectFrom('elementAssets')
+      ? db.selectFrom('elementAssets as link')
+          .innerJoin('assets as asset', join => join
+            .onRef('asset.id', '=', 'link.assetId')
+            .onRef('asset.organizationId', '=', 'link.organizationId'))
           .select([
-            'elementId',
-            'assetId',
-            'role',
-            'sortOrder',
-            'isPrimary',
+            'link.elementId',
+            'link.assetId',
+            'link.role',
+            'link.sortOrder',
+            'link.isPrimary',
           ])
-          .where('organizationId', '=', input.organizationId)
-          .where('elementId', 'in', input.elementIds)
-          .orderBy('elementId')
-          .orderBy('role')
-          .orderBy(sql`case when "isPrimary" then 0 else 1 end`)
-          .orderBy('sortOrder')
-          .orderBy('assetId')
+          .where('link.organizationId', '=', input.organizationId)
+          .where('link.elementId', 'in', input.elementIds)
+          .where('link.referenceKind', '=', 'master')
+          .where('asset.processingState', '=', 'ready')
+          .where('asset.purgeRequestedAt', 'is', null)
+          .where('asset.purgedAt', 'is', null)
+          .where('asset.type', 'in', ['image', 'video', 'audio'])
+          .orderBy('link.elementId')
+          .orderBy(sql`case when "link"."isPrimary" then 0 else 1 end`)
+          .orderBy('link.role')
+          .orderBy('link.sortOrder')
+          .orderBy('link.assetId')
           .limit(input.elementAssetLimit + 1)
           .execute()
       : Promise.resolve([]),
