@@ -30,12 +30,15 @@ import {
   useQueryClient,
 } from '@tanstack/react-query'
 import { getOrganizationRequestHeaders } from '../../shared/lib/organization-request'
+import {
+  ASSET_PROCESSING_REFRESH_INTERVAL_MS,
+  assetNeedsProcessingRefresh,
+} from '../assets/asset-query-timing'
+import { flowQueryKeys } from '../flows/flow-query-keys'
 import { useActiveOrganizationId } from '../organizations/organization-scope-context'
 import { elementQueryKeys } from './element-query-keys'
 
 const ELEMENT_PAGE_SIZE = 40
-const PROCESSING_REFRESH_MS = 3_000
-
 function patchElementEverywhere(
   queryClient: QueryClient,
   organizationId: string,
@@ -164,9 +167,8 @@ export function useElementKitQuery(elementId: null | string) {
     ),
     enabled: Boolean(organizationId && elementId),
     refetchInterval: query => query.state.data?.data.some(link =>
-      link.asset.processingState === 'processing'
-      || link.asset.lifecycle === 'purging')
-      ? PROCESSING_REFRESH_MS
+      assetNeedsProcessingRefresh(link.asset))
+      ? ASSET_PROCESSING_REFRESH_INTERVAL_MS
       : false,
     refetchOnWindowFocus: true,
   })
@@ -268,6 +270,7 @@ export function useElementMutations() {
         void Promise.all([
           queryClient.invalidateQueries({ queryKey: elementQueryKeys.detail(organizationId, id) }),
           queryClient.invalidateQueries({ queryKey: elementQueryKeys.lists(organizationId) }),
+          queryClient.invalidateQueries({ queryKey: flowQueryKeys.allReferences(organizationId) }),
         ])
       },
     }),
@@ -303,7 +306,10 @@ export function useElementMutations() {
         queryClient.removeQueries({ queryKey: elementQueryKeys.detail(organizationId, id) })
         queryClient.removeQueries({ queryKey: elementQueryKeys.kit(organizationId, id) })
         queryClient.removeQueries({ queryKey: elementQueryKeys.usage(organizationId, id) })
-        void queryClient.invalidateQueries({ queryKey: elementQueryKeys.lists(organizationId) })
+        void Promise.all([
+          queryClient.invalidateQueries({ queryKey: elementQueryKeys.lists(organizationId) }),
+          queryClient.invalidateQueries({ queryKey: flowQueryKeys.allReferences(organizationId) }),
+        ])
       },
     }),
     attachAsset: useMutation({
@@ -329,6 +335,7 @@ export function useElementMutations() {
           queryClient.invalidateQueries({ queryKey: elementQueryKeys.kit(organizationId, elementId) }),
           queryClient.invalidateQueries({ queryKey: elementQueryKeys.detail(organizationId, elementId) }),
           queryClient.invalidateQueries({ queryKey: elementQueryKeys.lists(organizationId) }),
+          queryClient.invalidateQueries({ queryKey: flowQueryKeys.allReferences(organizationId) }),
         ])
       },
     }),
@@ -415,6 +422,7 @@ export function useElementMutations() {
           queryClient.invalidateQueries({ queryKey: elementQueryKeys.kit(organizationId, elementId) }),
           queryClient.invalidateQueries({ queryKey: elementQueryKeys.detail(organizationId, elementId) }),
           queryClient.invalidateQueries({ queryKey: elementQueryKeys.lists(organizationId) }),
+          queryClient.invalidateQueries({ queryKey: flowQueryKeys.allReferences(organizationId) }),
         ])
       },
     }),
@@ -464,6 +472,7 @@ export function useElementMutations() {
           queryClient.invalidateQueries({ queryKey: elementQueryKeys.kit(organizationId, elementId) }),
           queryClient.invalidateQueries({ queryKey: elementQueryKeys.detail(organizationId, elementId) }),
           queryClient.invalidateQueries({ queryKey: elementQueryKeys.lists(organizationId) }),
+          queryClient.invalidateQueries({ queryKey: flowQueryKeys.allReferences(organizationId) }),
         ])
       },
     }),

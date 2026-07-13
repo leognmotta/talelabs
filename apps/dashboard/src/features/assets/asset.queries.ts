@@ -43,6 +43,11 @@ import {
 } from './asset-query-cache'
 import { assetQueryKeys } from './asset-query-keys'
 import {
+  ASSET_MEDIA_REFRESH_INTERVAL_MS,
+  ASSET_PROCESSING_REFRESH_INTERVAL_MS,
+  assetNeedsProcessingRefresh,
+} from './asset-query-timing'
+import {
   adjustFolderItemCountCache,
   invalidateFolderCache,
   patchFolderCache,
@@ -55,8 +60,6 @@ import { optimisticAssetMutationOptions } from './use-optimistic-asset-mutation'
 
 export { assetQueryKeys } from './asset-query-keys'
 
-const ASSET_MEDIA_REFRESH_INTERVAL_MS = 45 * 60 * 1_000
-const ASSET_PROCESSING_REFRESH_INTERVAL_MS = 3_000
 export const ASSET_LIBRARY_PAGE_SIZE = 60
 
 export interface AssetPageParam {
@@ -74,10 +77,6 @@ function isSearchTransition(
   const { search: _previousSearch, ...previousFilters } = previous
   const { search: _nextSearch, ...nextFilters } = next
   return JSON.stringify(previousFilters) === JSON.stringify(nextFilters)
-}
-
-function assetNeedsProcessingRefresh(asset: Pick<Asset, 'lifecycle' | 'processingState'>) {
-  return asset.processingState === 'processing' || asset.lifecycle === 'purging'
 }
 
 function hasOrganizationScopeCache(
@@ -207,7 +206,7 @@ export function useTagsQuery(enabled = true) {
   })
 }
 
-export function useAssetDetailQuery(id: null | string) {
+export function useAssetDetailQuery(id: null | string, enabled = true) {
   const organizationId = useActiveOrganizationId()
   return useQuery({
     queryKey: assetQueryKeys.detail(organizationId, id),
@@ -218,7 +217,7 @@ export function useAssetDetailQuery(id: null | string) {
         signal,
       },
     ),
-    enabled: Boolean(organizationId && id),
+    enabled: enabled && Boolean(organizationId && id),
     refetchInterval: query => query.state.data
       && assetNeedsProcessingRefresh(query.state.data)
       ? ASSET_PROCESSING_REFRESH_INTERVAL_MS
@@ -234,6 +233,7 @@ export function useAssetMutations() {
     archive: useMutation(
       optimisticAssetMutationOptions(queryClient, {
         affectsFolderMetadata: true,
+        affectsFlowReferences: true,
         mutationFn: ({ id, organizationId }: {
           id: string
           organizationId: string
@@ -259,6 +259,7 @@ export function useAssetMutations() {
     purge: useMutation(
       optimisticAssetMutationOptions(queryClient, {
         affectsFolderMetadata: true,
+        affectsFlowReferences: true,
         mutationFn: ({ id, organizationId }: {
           id: string
           organizationId: string
@@ -282,6 +283,7 @@ export function useAssetMutations() {
     restore: useMutation(
       optimisticAssetMutationOptions(queryClient, {
         affectsFolderMetadata: true,
+        affectsFlowReferences: true,
         mutationFn: ({ id, organizationId }: {
           id: string
           organizationId: string
@@ -296,6 +298,7 @@ export function useAssetMutations() {
     update: useMutation(
       optimisticAssetMutationOptions(queryClient, {
         affectsFolderMetadata: variables => variables.folderId !== undefined,
+        affectsFlowReferences: true,
         mutationFn: ({
           folderId,
           id,
