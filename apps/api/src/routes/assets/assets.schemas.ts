@@ -14,6 +14,10 @@ import {
   TimestampSchema,
   UserIdSchema,
 } from '../../schemas/common.js'
+import {
+  ElementReferenceKindSchema,
+  ElementReferenceMetadataSchema,
+} from '../../schemas/element-reference.js'
 import { TagSchema } from '../tags/tags.schemas.js'
 
 const NullableTimestampSchema = z.iso.datetime().nullable()
@@ -78,6 +82,8 @@ export const AssetDetailSchema = AssetSchema.extend({
     elementId: Cuid2Schema,
     role: z.string(),
     isPrimary: z.boolean(),
+    referenceKind: ElementReferenceKindSchema,
+    referenceMetadata: ElementReferenceMetadataSchema,
   })),
   generation: GenerationProvenanceSchema.nullable(),
   usedAsInputCount: z.number().int().nonnegative(),
@@ -119,10 +125,17 @@ export const RegisterAssetRequestSchema = z.object({
   role: z.string().trim().min(1).max(64).optional(),
   sortOrder: z.number().int().nonnegative().optional(),
   isPrimary: z.boolean().optional(),
+  referenceKind: ElementReferenceKindSchema.optional(),
+  referenceMetadata: ElementReferenceMetadataSchema.optional(),
 }).refine(value => !value.role || Boolean(value.elementId), {
   message: 'elementId is required when role is provided',
   path: ['elementId'],
-}).refine(value => value.role || (value.sortOrder === undefined && value.isPrimary === undefined), {
+}).refine(value => value.role || (
+  value.sortOrder === undefined
+  && value.isPrimary === undefined
+  && value.referenceKind === undefined
+  && value.referenceMetadata === undefined
+), {
   message: 'role is required for Element link metadata',
   path: ['role'],
 }).openapi('RegisterAssetRequest')

@@ -1,5 +1,10 @@
 import type { AssetSource, AssetType } from '@talelabs/db'
 
+import {
+  getElementAssetRole,
+  isElementType,
+  upcastElementData,
+} from '@talelabs/elements'
 import { createDownloadUrl, TALELABS_PRIVATE_BUCKET } from '@talelabs/storage'
 import { idempotencyKeys, triggerTask } from '@talelabs/trigger'
 
@@ -167,11 +172,36 @@ export async function getAssetDetail(organizationId: string, userId: string, id:
     getAssetDetailRelations(organizationId, asset),
   ])
   const presented = presentedAssets[0]!
+  const elementLinks = relations.elementLinks.map((link) => {
+    if (!isElementType(link.elementType))
+      throw new Error(`Stored Element type is not registered: ${link.elementType}`)
+    const elementData = upcastElementData(
+      link.elementType,
+      link.elementSchemaVersion,
+      link.elementData,
+    ).data
+    const role = getElementAssetRole(link.elementType, link.role, elementData)
+    const metadata = role?.referenceMetadataSchema.safeParse(
+      link.referenceMetadata,
+    )
+    if (!metadata?.success) {
+      throw new Error(
+        `Stored Element reference metadata is invalid for role ${link.role}`,
+      )
+    }
+    return {
+      elementId: link.elementId,
+      isPrimary: link.isPrimary,
+      referenceKind: link.referenceKind,
+      referenceMetadata: metadata.data,
+      role: link.role,
+    }
+  })
 
   return {
     ...presented,
     metadata: toWireJsonObject(asset.metadata),
-    elementLinks: relations.elementLinks,
+    elementLinks,
     generation: relations.generation
       ? presentGenerationProvenance(relations.generation)
       : null,

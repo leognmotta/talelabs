@@ -5,16 +5,15 @@ import type {
   Database,
   JsonValue,
 } from '@talelabs/db'
+import type { ElementReferenceKind } from '@talelabs/elements'
 import type { Selectable, Transaction } from 'kysely'
 import type { PageCursor, SortOrder } from '../pagination/cursor.js'
 
 import { db, sql } from '@talelabs/db'
-import { getStoredElementAssetRole } from '../domain/elements/stored-element-asset-role.js'
 import {
-  findElementAssetRoleCapacityViolation,
-  lockElementAssetRole,
-} from './element-asset-limits.data.js'
-import { lockFlowReferenceBudget } from './flow-reference-budget.data.js'
+  insertPreparedElementAssetAttachment,
+  prepareElementAssetAttachment,
+} from './element-asset-links.data.js'
 import {
   lockFolderStructure,
   provisionElementAssetFolderRow,
@@ -206,6 +205,8 @@ export async function insertUploadedAsset(input: {
   uploadId: string
   elementId?: string
   isPrimary?: boolean
+  referenceKind?: ElementReferenceKind
+  referenceMetadata?: unknown
   role?: string
   sortOrder?: number
   validateFlowReferenceBudgets: (
@@ -215,28 +216,46 @@ export async function insertUploadedAsset(input: {
   return db.transaction().execute(async (trx) => {
     let folderId = input.folderId
     const createsElementLink = input.elementId !== undefined && input.role !== undefined
+    const referenceKind = input.referenceKind ?? 'master'
+    let preparedLink: Awaited<ReturnType<typeof prepareElementAssetAttachment>> | undefined
 
-    if (createsElementLink)
-      await lockFlowReferenceBudget(trx, input.organizationId)
+    if (createsElementLink) {
+      preparedLink = await prepareElementAssetAttachment(trx, {
+        assetId: input.id,
+        assetType: input.type,
+        elementId: input.elementId!,
+        isPrimary: input.isPrimary ?? false,
+        lockFolder: true,
+        organizationId: input.organizationId,
+        referenceKind,
+        referenceMetadata: input.referenceMetadata ?? {},
+        role: input.role!,
+      })
+      if (preparedLink.status !== 'prepared')
+        return preparedLink
+    }
 
     if (input.elementId) {
       // Folder deletion takes the same advisory lock before its FK action updates
       // Elements. Keep this lock order consistent to avoid an Element/folder
       // deadlock while lazily recreating an association.
-      await lockFolderStructure(trx, input.organizationId)
-      const element = await trx.selectFrom('elements')
-        .select([
-          'assetFolderId',
-          'data',
-          'id',
-          'name',
-          'schemaVersion',
-          'type',
-        ])
-        .where('organizationId', '=', input.organizationId)
-        .where('id', '=', input.elementId)
-        .forUpdate()
-        .executeTakeFirst()
+      if (!createsElementLink)
+        await lockFolderStructure(trx, input.organizationId)
+      const element = preparedLink?.status === 'prepared'
+        ? preparedLink.element
+        : await trx.selectFrom('elements')
+            .select([
+              'assetFolderId',
+              'data',
+              'id',
+              'name',
+              'schemaVersion',
+              'type',
+            ])
+            .where('organizationId', '=', input.organizationId)
+            .where('id', '=', input.elementId)
+            .forUpdate()
+            .executeTakeFirst()
       if (!element)
         return { status: 'element_not_found' as const }
 
@@ -260,38 +279,14 @@ export async function insertUploadedAsset(input: {
           .where('id', '=', input.elementId)
           .executeTakeFirstOrThrow()
       }
-
-      if (input.role) {
-        const role = getStoredElementAssetRole(element, input.role)
-        if (!role)
-          return { status: 'role_not_found' as const }
-        if (input.type === 'document' || !role.accepts.includes(input.type))
-          return { status: 'incompatible_asset' as const }
-
-        await lockElementAssetRole(trx, {
-          elementId: input.elementId,
-          organizationId: input.organizationId,
-          role: input.role,
-        })
-        const limitViolation = await findElementAssetRoleCapacityViolation(trx, {
-          elementId: input.elementId,
-          maximum: role.maxAssets,
-          organizationId: input.organizationId,
-          role: input.role,
-        })
-        if (limitViolation) {
-          return {
-            ...limitViolation,
-            status: 'element_asset_role_capacity_reached' as const,
-          }
-        }
-      }
     }
 
     const {
       elementId: _elementId,
       folderId: _folderId,
       isPrimary: _isPrimary,
+      referenceKind: _referenceKind,
+      referenceMetadata: _referenceMetadata,
       role: _role,
       sortOrder: _sortOrder,
       validateFlowReferenceBudgets: _validateFlowReferenceBudgets,
@@ -307,43 +302,15 @@ export async function insertUploadedAsset(input: {
       .returningAll()
       .executeTakeFirstOrThrow()
 
-    if (input.elementId && input.role) {
-      const existing = await trx.selectFrom('elementAssets')
-        .select(['assetId', 'sortOrder'])
-        .where('organizationId', '=', input.organizationId)
-        .where('elementId', '=', input.elementId)
-        .where('role', '=', input.role)
-        .orderBy('sortOrder')
-        .orderBy('assetId')
-        .execute()
-      const targetOrder = Math.max(0, Math.min(
-        input.sortOrder ?? existing.length,
-        existing.length,
-      ))
-      if (input.isPrimary) {
-        await trx.updateTable('elementAssets')
-          .set({ isPrimary: false })
-          .where('organizationId', '=', input.organizationId)
-          .where('elementId', '=', input.elementId)
-          .where('role', '=', input.role)
-          .execute()
-      }
-      await trx.updateTable('elementAssets')
-        .set({ sortOrder: sql`"sortOrder" + 1` })
-        .where('organizationId', '=', input.organizationId)
-        .where('elementId', '=', input.elementId)
-        .where('role', '=', input.role)
-        .where('sortOrder', '>=', targetOrder)
-        .execute()
-      await trx.insertInto('elementAssets').values({
+    if (input.elementId && input.role && preparedLink?.status === 'prepared') {
+      await insertPreparedElementAssetAttachment(trx, {
         assetId: asset.id,
         elementId: input.elementId,
-        isPrimary: input.isPrimary ?? false,
         organizationId: input.organizationId,
-        role: input.role,
-        sortOrder: targetOrder,
-      }).execute()
-      await input.validateFlowReferenceBudgets(trx)
+        prepared: preparedLink,
+        sortOrder: input.sortOrder,
+        validateFlowReferenceBudgets: input.validateFlowReferenceBudgets,
+      })
     }
 
     return { asset, status: 'created' as const }
@@ -448,51 +415,59 @@ export type PurgeRequestResult
     | { status: 'active_generation' }
     | { status: 'not_found' }
 
+export async function requestAssetPurgeInTransaction(
+  trx: Transaction<Database>,
+  organizationId: string,
+  id: string,
+): Promise<PurgeRequestResult> {
+  const asset = await trx.selectFrom('assets')
+    .selectAll()
+    .where('organizationId', '=', organizationId)
+    .where('id', '=', id)
+    .forUpdate()
+    .executeTakeFirst()
+
+  if (!asset)
+    return { status: 'not_found' }
+
+  if (asset.purgeRequestedAt)
+    return { asset, status: 'already_requested' }
+
+  const activeGeneration = await trx.selectFrom('generationJobInputs as input')
+    .innerJoin('generationJobs as job', join => join
+      .onRef('job.id', '=', 'input.jobId')
+      .onRef('job.organizationId', '=', 'input.organizationId'))
+    .select('input.assetId')
+    .where('input.organizationId', '=', organizationId)
+    .where('input.assetId', '=', id)
+    .where('job.status', 'in', ['pending', 'running'])
+    .executeTakeFirst()
+
+  if (activeGeneration)
+    return { status: 'active_generation' }
+
+  const now = new Date()
+  const updated = await trx.updateTable('assets')
+    .set({
+      deletedAt: asset.deletedAt ?? now,
+      purgeRequestedAt: now,
+      updatedAt: now,
+    })
+    .where('organizationId', '=', organizationId)
+    .where('id', '=', id)
+    .returningAll()
+    .executeTakeFirstOrThrow()
+
+  return { asset: updated, status: 'requested' }
+}
+
 export async function requestAssetPurge(
   organizationId: string,
   id: string,
 ): Promise<PurgeRequestResult> {
-  return db.transaction().execute(async (trx) => {
-    const asset = await trx.selectFrom('assets')
-      .selectAll()
-      .where('organizationId', '=', organizationId)
-      .where('id', '=', id)
-      .forUpdate()
-      .executeTakeFirst()
-
-    if (!asset)
-      return { status: 'not_found' }
-
-    if (asset.purgeRequestedAt)
-      return { asset, status: 'already_requested' }
-
-    const activeGeneration = await trx.selectFrom('generationJobInputs as input')
-      .innerJoin('generationJobs as job', join => join
-        .onRef('job.id', '=', 'input.jobId')
-        .onRef('job.organizationId', '=', 'input.organizationId'))
-      .select('input.assetId')
-      .where('input.organizationId', '=', organizationId)
-      .where('input.assetId', '=', id)
-      .where('job.status', 'in', ['pending', 'running'])
-      .executeTakeFirst()
-
-    if (activeGeneration)
-      return { status: 'active_generation' }
-
-    const now = new Date()
-    const updated = await trx.updateTable('assets')
-      .set({
-        deletedAt: asset.deletedAt ?? now,
-        purgeRequestedAt: now,
-        updatedAt: now,
-      })
-      .where('organizationId', '=', organizationId)
-      .where('id', '=', id)
-      .returningAll()
-      .executeTakeFirstOrThrow()
-
-    return { asset: updated, status: 'requested' }
-  })
+  return db.transaction().execute(trx => (
+    requestAssetPurgeInTransaction(trx, organizationId, id)
+  ))
 }
 
 export async function getAssetDetailRelations(
@@ -500,10 +475,22 @@ export async function getAssetDetailRelations(
   asset: AssetRecord,
 ) {
   const [elementLinks, usedAsInput, generation] = await Promise.all([
-    db.selectFrom('elementAssets')
-      .select(['elementId', 'role', 'isPrimary'])
-      .where('organizationId', '=', organizationId)
-      .where('assetId', '=', asset.id)
+    db.selectFrom('elementAssets as link')
+      .innerJoin('elements as element', join => join
+        .onRef('element.id', '=', 'link.elementId')
+        .onRef('element.organizationId', '=', 'link.organizationId'))
+      .select([
+        'link.elementId',
+        'link.role',
+        'link.isPrimary',
+        'link.referenceKind',
+        'link.referenceMetadata',
+        'element.type as elementType',
+        'element.data as elementData',
+        'element.schemaVersion as elementSchemaVersion',
+      ])
+      .where('link.organizationId', '=', organizationId)
+      .where('link.assetId', '=', asset.id)
       .execute(),
     db.selectFrom('generationJobInputs')
       .select(({ fn }) => fn.countAll<number>().as('count'))
