@@ -26,6 +26,7 @@
     "@talelabs/ui": "*",
     "@tanstack/react-query": "^5.100.10",
     "@tanstack/react-table": "^8.21.3",
+    "@trigger.dev/react-hooks": "^4.5.4",
     "@xyflow/react": "^12.11.2",
     "better-auth": "^1.6.23",
     "i18next": "^26.3.6",
