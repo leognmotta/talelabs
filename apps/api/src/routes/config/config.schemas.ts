@@ -1,8 +1,9 @@
 import { z } from '@hono/zod-openapi'
-import { ELEMENT_TYPES } from '@talelabs/elements'
-import { FLOW_NODE_TYPES } from '@talelabs/flows'
+import { FLOW_NODE_TYPES, GENERATION_NODE_TYPES } from '@talelabs/flows'
 
-import { AssetTypeSchema, MediaTypeSchema } from '../../schemas/common.js'
+import { AssetTypeSchema } from '../../schemas/common.js'
+
+const GenerationOutputTypeSchema = z.enum(['audio', 'image', 'text', 'video'])
 
 const FlowValueTypeSchema = z.enum([
   'Text',
@@ -10,12 +11,55 @@ const FlowValueTypeSchema = z.enum([
   'ImageSet',
   'VideoSet',
   'AudioSet',
-  'ElementContext',
 ])
+
+const GenerationAcceptedMediaSchema = z.object({
+  mimeTypes: z.array(z.string()).min(1),
+  maxBytes: z.number().int().positive().optional(),
+  durationSeconds: z
+    .object({
+      min: z.number().nonnegative(),
+      max: z.number().nonnegative(),
+    })
+    .optional(),
+  framesPerSecond: z.array(z.number().positive()).min(1).optional(),
+  resolutions: z.array(z.string()).min(1).optional(),
+  aspectRatios: z.array(z.string()).min(1).optional(),
+})
+
+const GenerationReferenceProfileSchema = z.object({
+  contactSheetPolicy: z.enum([
+    'never',
+    'not-applicable',
+    'preferred',
+    'supported',
+  ]),
+  multipleSubjectSupport: z.enum([
+    'not-applicable',
+    'supported',
+    'unknown',
+    'unsupported',
+  ]),
+  purposes: z
+    .array(
+      z.enum([
+        'audioGuidance',
+        'composition',
+        'firstFrame',
+        'identity',
+        'lastFrame',
+        'motion',
+        'style',
+        'subject',
+        'videoExtension',
+      ]),
+    )
+    .min(1),
+  recommendedMaxItems: z.number().int().positive().optional(),
+})
 
 const GenerationInputSlotSchema = z.object({
   role: z.string(),
-  label: z.string(),
   labelKey: z.string(),
   descriptionKey: z.string(),
   accepts: z.array(AssetTypeSchema),
@@ -23,6 +67,8 @@ const GenerationInputSlotSchema = z.object({
   min: z.number().int().nonnegative(),
   max: z.number().int().positive(),
   maxConnections: z.number().int().positive(),
+  acceptedMedia: GenerationAcceptedMediaSchema.optional(),
+  referenceProfile: GenerationReferenceProfileSchema.optional(),
 })
 
 const GenerationConditionSchema = z.union([
@@ -52,7 +98,6 @@ const GenerationConditionSchema = z.union([
 
 const SettingBaseSchema = z.object({
   id: z.string(),
-  label: z.string(),
   labelKey: z.string(),
   descriptionKey: z.string().optional(),
   advanced: z.boolean().optional(),
@@ -63,11 +108,12 @@ const GenerationSettingSchema = z.discriminatedUnion('kind', [
   SettingBaseSchema.extend({
     kind: z.literal('enum'),
     default: z.string(),
-    options: z.array(z.object({
-      value: z.string(),
-      label: z.string(),
-      labelKey: z.string(),
-    })),
+    options: z.array(
+      z.object({
+        value: z.string(),
+        labelKey: z.string(),
+      }),
+    ),
   }),
   SettingBaseSchema.extend({
     kind: z.literal('number'),
@@ -95,47 +141,104 @@ const GenerationConstraintSchema = z.object({
   forbid: z.array(GenerationConditionSchema).optional(),
 })
 
-export const GenerationConfigResponseSchema = z.object({
-  registryVersion: z.string(),
-  models: z.array(z.object({
-    contractVersion: z.string(),
-    id: z.string(),
-    displayName: z.string(),
-    labelKey: z.string(),
-    mediaType: MediaTypeSchema,
-    provider: z.object({
-      id: z.string(),
-      displayName: z.string(),
-    }),
-    enabled: z.boolean(),
-    recommended: z.boolean(),
-    defaultOperationId: z.string(),
-    capabilities: z.object({
-      operations: z.array(z.object({
+export const GenerationConfigResponseSchema = z
+  .object({
+    registryVersion: z.string(),
+    models: z.array(
+      z.object({
+        contractVersion: z.string(),
         id: z.string(),
+        displayName: z.string(),
         labelKey: z.string(),
-        descriptionKey: z.string(),
-        inputs: z.record(z.string(), z.object({
-          required: z.boolean().optional(),
-          oneOf: z.array(z.string()).optional(),
-        })),
-        inputSlotIds: z.array(z.string()),
-        requiredSettingIds: z.array(z.string()).optional(),
-        settingIds: z.array(z.string()),
-      })),
-      inputSlots: z.array(GenerationInputSlotSchema),
-      settings: z.array(GenerationSettingSchema),
-      constraints: z.array(GenerationConstraintSchema),
-    }),
-  })),
-  elementTypes: z.array(z.object({
-    id: z.enum(ELEMENT_TYPES),
-    previewRole: z.string().nullable(),
-    assetRoles: z.array(z.object({
-      id: z.string(),
-      accepts: z.array(AssetTypeSchema),
-    })),
-  })),
-  nodeTypes: z.array(z.enum(FLOW_NODE_TYPES)),
-  inputRoles: z.array(z.string()),
-}).openapi('GenerationConfigResponse')
+        mediaType: GenerationOutputTypeSchema,
+        enabled: z.boolean(),
+        recommended: z.boolean(),
+        presentation: z.object({
+          descriptionKey: z.string(),
+          logoId: z.enum([
+            'bytedance',
+            'claude',
+            'deepseek',
+            'elevenlabs',
+            'flux',
+            'gemini',
+            'google',
+            'lightricks',
+            'llm',
+            'mistral',
+            'nanobanana',
+            'openai',
+            'recraft',
+            'stability',
+            'xai',
+          ]),
+        }),
+        defaultOperationId: z.string(),
+        capabilities: z.object({
+          llm: z.object({
+            reasoning: z.object({
+              default: z.enum([
+                'off',
+                'auto',
+                'minimal',
+                'low',
+                'medium',
+                'high',
+                'max',
+                'xhigh',
+              ]),
+              mandatory: z.boolean(),
+              options: z.array(z.enum([
+                'off',
+                'auto',
+                'minimal',
+                'low',
+                'medium',
+                'high',
+                'max',
+                'xhigh',
+              ])).min(1),
+            }).optional(),
+          }).optional(),
+          operations: z.array(
+            z.object({
+              id: z.string(),
+              labelKey: z.string(),
+              descriptionKey: z.string(),
+              inputs: z.record(
+                z.string(),
+                z.object({
+                  required: z.boolean().optional(),
+                  oneOf: z.array(z.string()).optional(),
+                  atLeastOne: z.array(z.string()).optional(),
+                }),
+              ),
+              inputSlotIds: z.array(z.string()),
+              nodeType: z.enum(GENERATION_NODE_TYPES),
+              output: z.object({
+                mediaType: GenerationOutputTypeSchema,
+                count: z.object({
+                  default: z.number().int().positive(),
+                  min: z.number().int().positive(),
+                  max: z.number().int().positive(),
+                  settingId: z.string().optional(),
+                }),
+              }),
+              referenceLimit: z.object({
+                maxItems: z.number().int().nonnegative(),
+                slotIds: z.array(z.string()),
+              }),
+              requiredSettingIds: z.array(z.string()).optional(),
+              settingIds: z.array(z.string()),
+            }),
+          ),
+          inputSlots: z.array(GenerationInputSlotSchema),
+          settings: z.array(GenerationSettingSchema),
+          constraints: z.array(GenerationConstraintSchema),
+        }),
+      }),
+    ),
+    nodeTypes: z.array(z.enum(FLOW_NODE_TYPES)),
+    inputRoles: z.array(z.string()),
+  })
+  .openapi('GenerationConfigResponse')

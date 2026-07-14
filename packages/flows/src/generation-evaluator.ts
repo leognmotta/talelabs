@@ -8,6 +8,7 @@ import {
   getActiveGenerationInputSlots,
   getActiveGenerationSettings,
   getGenerationOperation,
+  isGenerationSettingValueValid,
   matchesGenerationCondition,
 } from './generation-registry.js'
 
@@ -15,8 +16,14 @@ export interface GenerationContractIssue {
   code:
     | 'generation_constraint'
     | 'generation_input_cardinality'
+    | 'generation_input_at_least_one'
+    | 'generation_input_inactive'
+    | 'generation_input_items'
     | 'generation_input_one_of'
     | 'generation_input_required'
+    | 'generation_output_count'
+    | 'generation_reference_limit'
+    | 'generation_setting_invalid'
     | 'generation_setting_required'
     | 'unknown_generation_operation'
   constraintId?: string
@@ -33,6 +40,7 @@ export interface GenerationContractEvaluation {
 
 export interface GenerationContractEvaluationInput {
   connectionCounts?: Readonly<Record<string, number>>
+  itemCounts?: Readonly<Record<string, number>>
   model: GenerationModelDefinition
   operationId: string
   requireComplete?: boolean
@@ -67,8 +75,16 @@ export function evaluateGenerationContract(
   }
 
   const connectionCounts = input.connectionCounts ?? {}
+  const itemCounts = input.itemCounts ?? connectionCounts
   const connectedSlotIds = new Set(
-    Object.entries(connectionCounts)
+    [...new Set([
+      ...Object.keys(connectionCounts),
+      ...Object.keys(itemCounts),
+    ])]
+      .map(slotId => [
+        slotId,
+        Math.max(connectionCounts[slotId] ?? 0, itemCounts[slotId] ?? 0),
+      ] as const)
       .filter(([, count]) => count > 0)
       .map(([slotId]) => slotId),
   )
@@ -80,6 +96,16 @@ export function evaluateGenerationContract(
   const activeSlots = getActiveGenerationInputSlots(input.model, operation.id)
   const activeSettings = getActiveGenerationSettings(input.model, operation.id)
   const issues: GenerationContractIssue[] = []
+  const activeSlotIds = new Set(activeSlots.map(slot => slot.id))
+
+  for (const slotId of connectedSlotIds) {
+    if (!activeSlotIds.has(slotId)) {
+      issues.push({
+        code: 'generation_input_inactive',
+        inputId: slotId,
+      })
+    }
+  }
 
   for (const slot of activeSlots) {
     if ((connectionCounts[slot.id] ?? 0) > slot.maxConnections) {
@@ -88,12 +114,34 @@ export function evaluateGenerationContract(
         inputId: slot.id,
       })
     }
+    if ((itemCounts[slot.id] ?? 0) > slot.maxItems) {
+      issues.push({
+        code: 'generation_input_items',
+        inputId: slot.id,
+      })
+    }
+  }
+
+  if (operation.referenceLimit) {
+    const referenceCount = operation.referenceLimit.slotIds.reduce(
+      (total, slotId) => total + (itemCounts[slotId] ?? 0),
+      0,
+    )
+    if (referenceCount > operation.referenceLimit.maxItems)
+      issues.push({ code: 'generation_reference_limit' })
   }
 
   for (const [inputId, contract] of Object.entries(operation.inputs)) {
-    if (contract.oneOf) {
+    if (contract.atLeastOne) {
+      const connected = contract.atLeastOne.filter(slotId => (
+        (itemCounts[slotId] ?? 0) > 0
+      ))
+      if (input.requireComplete && connected.length < 1)
+        issues.push({ code: 'generation_input_at_least_one', inputId })
+    }
+    else if (contract.oneOf) {
       const connected = contract.oneOf.filter(slotId => (
-        (connectionCounts[slotId] ?? 0) > 0
+        (itemCounts[slotId] ?? 0) > 0
       ))
       if (connected.length > 1 || (input.requireComplete && connected.length !== 1)) {
         issues.push({ code: 'generation_input_one_of', inputId })
@@ -102,9 +150,36 @@ export function evaluateGenerationContract(
     else if (
       input.requireComplete
       && contract.required
-      && (connectionCounts[inputId] ?? 0) < 1
+      && (itemCounts[inputId] ?? 0) < 1
     ) {
       issues.push({ code: 'generation_input_required', inputId })
+    }
+  }
+
+  for (const setting of activeSettings) {
+    const value = input.settings[setting.id]
+    if (value !== undefined && !isGenerationSettingValueValid(setting, value)) {
+      issues.push({
+        code: 'generation_setting_invalid',
+        settingId: setting.id,
+      })
+    }
+  }
+
+  if (operation.output) {
+    const count = operation.output.count.settingId
+      ? input.settings[operation.output.count.settingId]
+      : operation.output.count.default
+    if (
+      typeof count !== 'number'
+      || !Number.isInteger(count)
+      || count < operation.output.count.min
+      || count > operation.output.count.max
+    ) {
+      issues.push({
+        code: 'generation_output_count',
+        settingId: operation.output.count.settingId,
+      })
     }
   }
 
@@ -126,7 +201,7 @@ export function evaluateGenerationContract(
     const missingRequirement = constraint.require?.some(condition => (
       !matchesGenerationCondition(condition, conditionContext)
     ))
-    const forbiddenCondition = constraint.forbid?.some(condition => (
+    const forbiddenCondition = constraint.forbid?.every(condition => (
       matchesGenerationCondition(condition, conditionContext)
     ))
     if (missingRequirement || forbiddenCondition) {

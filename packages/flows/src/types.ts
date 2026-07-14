@@ -3,10 +3,15 @@ import type { z } from 'zod'
 export type FlowNodeType
   = | 'asset'
     | 'audioGeneration'
-    | 'element'
     | 'imageGeneration'
+    | 'llm'
+    | 'musicGeneration'
+    | 'soundEffectGeneration'
+    | 'speechGeneration'
     | 'text'
     | 'videoGeneration'
+    | 'voiceChanger'
+    | 'voiceIsolation'
 
 export type FlowAssetType = 'audio' | 'document' | 'image' | 'video'
 
@@ -29,7 +34,7 @@ export interface FlowHandleDefinition {
   valueTypes: readonly FlowValueType[]
 }
 
-export type FlowNodeReference = 'asset' | 'element' | 'none'
+export type FlowNodeReference = 'asset' | 'none'
 
 export interface FlowImageCrop {
   height: number
@@ -54,7 +59,6 @@ export interface FlowNodeTypeDefinition<
 export interface FlowGraphNode {
   assetId: null | string
   data: Record<string, unknown>
-  elementId: null | string
   id: string
   positionX: number
   positionY: number
@@ -71,15 +75,8 @@ export interface FlowGraphEdge {
   targetNodeId: string
 }
 
-export interface ResolvedElementRole {
-  assetIds: readonly string[]
-  id: string
-  valueType: 'AudioSet' | 'ImageSet' | 'VideoSet'
-}
-
 export interface FlowGraphValidationContext {
   assetTypesById: Readonly<Record<string, FlowAssetType>>
-  elementRolesById: Readonly<Record<string, readonly ResolvedElementRole[]>>
 }
 
 export interface FlowGraphIssue {
@@ -112,4 +109,19 @@ export interface GenerationNodeData {
   settings: Record<string, boolean | number | string>
 }
 
-export type ImageGenerationNodeData = GenerationNodeData
+export type ImageGenerationNodeData = GenerationNodeData & { prompt: string }
+export type LlmNodeData = GenerationNodeData & {
+  instructions: string
+  prompt: string
+}
+export type VideoGenerationNodeData = GenerationNodeData & { prompt: string }
+export type SpeechGenerationNodeData = GenerationNodeData & { prompt: string }
+export type MusicGenerationNodeData = GenerationNodeData & {
+  lyrics: string
+  prompt: string
+}
+export type SoundEffectGenerationNodeData = GenerationNodeData & {
+  prompt: string
+}
+export type VoiceChangerNodeData = GenerationNodeData
+export type VoiceIsolationNodeData = GenerationNodeData

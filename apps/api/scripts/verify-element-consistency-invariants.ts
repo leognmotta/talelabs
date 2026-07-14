@@ -119,10 +119,9 @@ async function withTimeout<T>(promise: Promise<T>, milliseconds: number) {
 configureVerificationDatabase(verificationSchema)
 
 async function main() {
-  const [{ db, destroyDb, sql }, elementContracts, flowContracts] = await Promise.all([
+  const [{ db, destroyDb, sql }, elementContracts] = await Promise.all([
     import('@talelabs/db'),
     import('@talelabs/elements'),
-    import('@talelabs/flows'),
   ])
   const {
     createElementAssetLinkRow,
@@ -132,14 +131,9 @@ async function main() {
     insertUploadedAsset,
     requestAssetPurgeInTransaction,
   } = await import('../src/data/assets.data.js')
-  const {
-    getFlowReferenceBudget,
-    lockFlowReferenceBudget,
-  } = await import('../src/data/flow-reference-budget.data.js')
-  const {
-    listFlowGraphHydrationRows,
-    listFlowGraphReferenceRows,
-  } = await import('../src/data/flows.data.js')
+  const { lockFlowReferenceBudget } = await import(
+    '../src/data/flow-reference-budget.data.js',
+  )
   const { buildElementContext } = await import(
     '../src/domain/elements/build-element-context.js',
   )
@@ -863,246 +857,7 @@ async function main() {
       assert.equal(asset, undefined)
       assert.equal(link, undefined)
     })
-
-    await verify('promotion budget rejection rolls back the relationship', async () => {
-      const element = await createElement(primary)
-      const sourceId = await createReadyImage(primary, element, 'budget-promotion')
-      await seedLink({
-        assetId: sourceId,
-        elementId: element.id,
-        organizationId: primary.organizationId,
-        referenceKind: 'source',
-      })
-      const flowId = uniqueId('flow')
-      await db.insertInto('flows').values({
-        createdBy: primary.userId,
-        id: flowId,
-        name: 'Promotion budget fixture',
-        organizationId: primary.organizationId,
-        viewport: asJson({ x: 0, y: 0, zoom: 1 }),
-      }).execute()
-      await db.insertInto('flowNodes').values({
-        assetId: null,
-        data: asJson({}),
-        elementId: element.id,
-        flowId,
-        id: uniqueId('flow-node'),
-        organizationId: primary.organizationId,
-        positionX: 0,
-        positionY: 0,
-        schemaVersion: 1,
-        type: 'element',
-      }).execute()
-
-      const productData = elementContracts.parseElementData('product', {})
-      const role = elementContracts.getElementAssetRole(
-        'product',
-        'packshot',
-        productData,
-      )
-      assert.ok(role)
-      for (let index = 0; index < role.maxAssets - 1; index += 1) {
-        const assetId = await createReadyImage(
-          primary,
-          element,
-          `budget-target-master-${index}`,
-        )
-        await seedLink({
-          assetId,
-          elementId: element.id,
-          organizationId: primary.organizationId,
-          referenceKind: 'master',
-          sortOrder: index,
-        })
-      }
-
-      // Build a valid saved Flow at the distinct-reference limit without
-      // routing thousands of fixtures through provider or storage code. The
-      // target Element retains one open master slot; promoting its source is
-      // therefore rejected specifically by the persisted-Flow budget query.
-      const directAssetId = await createReadyImage(
-        primary,
-        element,
-        'budget-direct-asset',
-      )
-      await db.insertInto('flowNodes').values({
-        assetId: directAssetId,
-        data: asJson({}),
-        elementId: null,
-        flowId,
-        id: uniqueId('flow-direct-node'),
-        organizationId: primary.organizationId,
-        positionX: 0,
-        positionY: 0,
-        schemaVersion: 1,
-        type: 'asset',
-      }).execute()
-
-      const targetMasterCount = role.maxAssets - 1
-      const supportMasterCount
-        = flowContracts.FLOW_GRAPH_LIMITS.referenceAssets
-          - targetMasterCount
-          - 1
-      assert.equal(supportMasterCount % role.maxAssets, 0)
-      const supportElementCount = supportMasterCount / role.maxAssets
-      const supportPrefix = uniqueId('budget-support')
-      const productSchemaVersion
-        = elementContracts.getElementTypeDefinition('product').currentVersion
-
-      await sql`
-        insert into "elements" (
-          "id",
-          "organizationId",
-          "createdBy",
-          "assetFolderId",
-          "type",
-          "name",
-          "instructions",
-          "data",
-          "schemaVersion"
-        )
-        select
-          ${supportPrefix} || '-element-' || series::text,
-          ${primary.organizationId},
-          ${primary.userId},
-          null,
-          'product',
-          'Budget support Element',
-          null,
-          ${JSON.stringify(productData)}::jsonb,
-          ${productSchemaVersion}
-        from generate_series(1, ${supportElementCount}) as series
-      `.execute(db)
-      await sql`
-        insert into "assets" (
-          "id",
-          "organizationId",
-          "createdBy",
-          "folderId",
-          "name",
-          "type",
-          "source",
-          "storageKey",
-          "mimeType",
-          "sizeBytes",
-          "processingState",
-          "uploadId"
-        )
-        select
-          ${supportPrefix} || '-asset-' || series::text,
-          ${primary.organizationId},
-          ${primary.userId},
-          null,
-          'Budget support image ' || series::text,
-          'image',
-          'upload',
-          ${supportPrefix} || '/asset-' || series::text || '.png',
-          'image/png',
-          1,
-          'ready',
-          null
-        from generate_series(1, ${supportMasterCount}) as series
-      `.execute(db)
-      await sql`
-        insert into "elementAssets" (
-          "organizationId",
-          "elementId",
-          "assetId",
-          "role",
-          "sortOrder",
-          "isPrimary",
-          "referenceKind",
-          "referenceMetadata"
-        )
-        select
-          ${primary.organizationId},
-          ${supportPrefix} || '-element-'
-            || (((series - 1) / ${role.maxAssets}) + 1)::text,
-          ${supportPrefix} || '-asset-' || series::text,
-          'packshot',
-          (series - 1) % ${role.maxAssets},
-          false,
-          'master',
-          '{}'::jsonb
-        from generate_series(1, ${supportMasterCount}) as series
-      `.execute(db)
-      await sql`
-        insert into "flowNodes" (
-          "id",
-          "organizationId",
-          "flowId",
-          "type",
-          "positionX",
-          "positionY",
-          "elementId",
-          "assetId",
-          "data",
-          "schemaVersion"
-        )
-        select
-          ${supportPrefix} || '-node-' || series::text,
-          ${primary.organizationId},
-          ${flowId},
-          'element',
-          0,
-          0,
-          ${supportPrefix} || '-element-' || series::text,
-          null,
-          '{}'::jsonb,
-          1
-        from generate_series(1, ${supportElementCount}) as series
-      `.execute(db)
-
-      await assertElementFlowReferenceBudgets(db, {
-        elementId: element.id,
-        organizationId: primary.organizationId,
-      })
-      await assert.rejects(updateElementAssetLinkRow({
-        assetId: sourceId,
-        elementId: element.id,
-        organizationId: primary.organizationId,
-        referenceKind: 'master',
-        role: 'packshot',
-        validateFlowReferenceBudgets: executor =>
-          assertElementFlowReferenceBudgets(executor, {
-            elementId: element.id,
-            organizationId: primary.organizationId,
-          }),
-      }), (error: unknown) => {
-        assert.ok(error && typeof error === 'object')
-        assert.equal('code' in error ? error.code : undefined, 'validation_error')
-        const details = 'details' in error && Array.isArray(error.details)
-          ? error.details
-          : []
-        const violation = details.find(detail => (
-          detail && typeof detail === 'object'
-          && 'code' in detail
-          && detail.code === 'reference_hydration_limit'
-        )) as { params?: Record<string, unknown> } | undefined
-        assert.equal(
-          violation?.params?.actual,
-          flowContracts.FLOW_GRAPH_LIMITS.referenceAssets + 1,
-        )
-        assert.equal(
-          violation?.params?.maximum,
-          flowContracts.FLOW_GRAPH_LIMITS.referenceAssets,
-        )
-        assert.equal(violation?.params?.flowId, flowId)
-        return true
-      })
-      const stored = await db.selectFrom('elementAssets')
-        .select(['isPrimary', 'referenceKind', 'sortOrder'])
-        .where('organizationId', '=', primary.organizationId)
-        .where('elementId', '=', element.id)
-        .where('assetId', '=', sourceId)
-        .where('role', '=', 'packshot')
-        .executeTakeFirstOrThrow()
-      assert.equal(stored.referenceKind, 'source')
-      assert.equal(stored.isPrimary, false)
-      assert.equal(stored.sortOrder, 0)
-    })
-
-    await verify('sources are excluded from context, Flow paths, and budgets', async () => {
+    await verify('sources are excluded from standalone Element context', async () => {
       const identitySummary = 'Keep the cobalt bottle and white geometric label.'
       const element = await createElement(primary, {
         data: elementContracts.parseElementData('product', {
@@ -1133,27 +888,6 @@ async function main() {
         referenceKind: 'source',
         referenceMetadata: { background: 'environment', view: 'rear' },
       })
-      const flowId = uniqueId('flow')
-      await db.insertInto('flows').values({
-        createdBy: primary.userId,
-        id: flowId,
-        name: 'Master-only hydration fixture',
-        organizationId: primary.organizationId,
-        viewport: asJson({ x: 0, y: 0, zoom: 1 }),
-      }).execute()
-      await db.insertInto('flowNodes').values({
-        assetId: null,
-        data: asJson({}),
-        elementId: element.id,
-        flowId,
-        id: uniqueId('flow-node'),
-        organizationId: primary.organizationId,
-        positionX: 0,
-        positionY: 0,
-        schemaVersion: 1,
-        type: 'element',
-      }).execute()
-
       const context = await buildElementContext({
         elementId: element.id,
         organizationId: primary.organizationId,
@@ -1164,32 +898,6 @@ async function main() {
         background: 'clean',
         view: 'front',
       })
-
-      const references = await db.transaction().execute(executor =>
-        listFlowGraphReferenceRows(executor, {
-          assetIds: [],
-          elementIds: [element.id],
-          organizationId: primary.organizationId,
-        }))
-      assert.deepEqual(references.elementAssets.map(link => link.assetId), [masterId])
-
-      const hydration = await listFlowGraphHydrationRows({
-        assetIds: [],
-        assetLimit: 10,
-        elementAssetLimit: 10,
-        elementIds: [element.id],
-        organizationId: primary.organizationId,
-      })
-      assert.equal(hydration.limitExceeded, null)
-      assert.deepEqual(hydration.elementAssets.map(link => link.assetId), [masterId])
-      assert.deepEqual(hydration.assets.map(asset => asset.id), [masterId])
-
-      const budget = await getFlowReferenceBudget(db, {
-        assetIds: [],
-        elementIds: [element.id],
-        organizationId: primary.organizationId,
-      })
-      assert.deepEqual(budget, { assets: 1, elementAssets: 1 })
     })
 
     await verify('permanent purge serializes against attachment and promotion', async () => {

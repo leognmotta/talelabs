@@ -4,7 +4,90 @@
  */
 
 import type { AssetType } from "./AssetType.ts";
-import type { MediaType } from "./MediaType.ts";
+
+export const modelsMediaTypeEnum = {
+  audio: "audio",
+  image: "image",
+  text: "text",
+  video: "video",
+} as const;
+
+export type ModelsMediaTypeEnumKey =
+  (typeof modelsMediaTypeEnum)[keyof typeof modelsMediaTypeEnum];
+
+export const presentationLogoIdEnum = {
+  bytedance: "bytedance",
+  claude: "claude",
+  deepseek: "deepseek",
+  elevenlabs: "elevenlabs",
+  flux: "flux",
+  gemini: "gemini",
+  google: "google",
+  lightricks: "lightricks",
+  llm: "llm",
+  mistral: "mistral",
+  nanobanana: "nanobanana",
+  openai: "openai",
+  recraft: "recraft",
+  stability: "stability",
+  xai: "xai",
+} as const;
+
+export type PresentationLogoIdEnumKey =
+  (typeof presentationLogoIdEnum)[keyof typeof presentationLogoIdEnum];
+
+export const reasoningDefaultEnum = {
+  off: "off",
+  auto: "auto",
+  minimal: "minimal",
+  low: "low",
+  medium: "medium",
+  high: "high",
+  max: "max",
+  xhigh: "xhigh",
+} as const;
+
+export type ReasoningDefaultEnumKey =
+  (typeof reasoningDefaultEnum)[keyof typeof reasoningDefaultEnum];
+
+export const reasoningOptionsEnum = {
+  off: "off",
+  auto: "auto",
+  minimal: "minimal",
+  low: "low",
+  medium: "medium",
+  high: "high",
+  max: "max",
+  xhigh: "xhigh",
+} as const;
+
+export type ReasoningOptionsEnumKey =
+  (typeof reasoningOptionsEnum)[keyof typeof reasoningOptionsEnum];
+
+export const operationsNodeTypeEnum = {
+  audioGeneration: "audioGeneration",
+  imageGeneration: "imageGeneration",
+  llm: "llm",
+  musicGeneration: "musicGeneration",
+  soundEffectGeneration: "soundEffectGeneration",
+  speechGeneration: "speechGeneration",
+  videoGeneration: "videoGeneration",
+  voiceChanger: "voiceChanger",
+  voiceIsolation: "voiceIsolation",
+} as const;
+
+export type OperationsNodeTypeEnumKey =
+  (typeof operationsNodeTypeEnum)[keyof typeof operationsNodeTypeEnum];
+
+export const outputMediaTypeEnum = {
+  audio: "audio",
+  image: "image",
+  text: "text",
+  video: "video",
+} as const;
+
+export type OutputMediaTypeEnumKey =
+  (typeof outputMediaTypeEnum)[keyof typeof outputMediaTypeEnum];
 
 export const inputSlotsValueTypesEnum = {
   Text: "Text",
@@ -12,11 +95,45 @@ export const inputSlotsValueTypesEnum = {
   ImageSet: "ImageSet",
   VideoSet: "VideoSet",
   AudioSet: "AudioSet",
-  ElementContext: "ElementContext",
 } as const;
 
 export type InputSlotsValueTypesEnumKey =
   (typeof inputSlotsValueTypesEnum)[keyof typeof inputSlotsValueTypesEnum];
+
+export const referenceProfileContactSheetPolicyEnum = {
+  never: "never",
+  "not-applicable": "not-applicable",
+  preferred: "preferred",
+  supported: "supported",
+} as const;
+
+export type ReferenceProfileContactSheetPolicyEnumKey =
+  (typeof referenceProfileContactSheetPolicyEnum)[keyof typeof referenceProfileContactSheetPolicyEnum];
+
+export const referenceProfileMultipleSubjectSupportEnum = {
+  "not-applicable": "not-applicable",
+  supported: "supported",
+  unknown: "unknown",
+  unsupported: "unsupported",
+} as const;
+
+export type ReferenceProfileMultipleSubjectSupportEnumKey =
+  (typeof referenceProfileMultipleSubjectSupportEnum)[keyof typeof referenceProfileMultipleSubjectSupportEnum];
+
+export const referenceProfilePurposesEnum = {
+  audioGuidance: "audioGuidance",
+  composition: "composition",
+  firstFrame: "firstFrame",
+  identity: "identity",
+  lastFrame: "lastFrame",
+  motion: "motion",
+  style: "style",
+  subject: "subject",
+  videoExtension: "videoExtension",
+} as const;
+
+export type ReferenceProfilePurposesEnumKey =
+  (typeof referenceProfilePurposesEnum)[keyof typeof referenceProfilePurposesEnum];
 
 export const visibleWhenFieldEnum = {
   operation: "operation",
@@ -214,27 +331,18 @@ export const forbidOperatorEnum3 = {
 export type ForbidOperatorEnum3Key =
   (typeof forbidOperatorEnum3)[keyof typeof forbidOperatorEnum3];
 
-export const elementTypesIdEnum = {
-  brand: "brand",
-  character: "character",
-  location: "location",
-  object: "object",
-  product: "product",
-  vehicle: "vehicle",
-  voice: "voice",
-  other: "other",
-} as const;
-
-export type ElementTypesIdEnumKey =
-  (typeof elementTypesIdEnum)[keyof typeof elementTypesIdEnum];
-
 export const generationConfigResponseNodeTypesEnum = {
   asset: "asset",
   audioGeneration: "audioGeneration",
-  element: "element",
   imageGeneration: "imageGeneration",
+  llm: "llm",
+  musicGeneration: "musicGeneration",
+  soundEffectGeneration: "soundEffectGeneration",
+  speechGeneration: "speechGeneration",
   text: "text",
   videoGeneration: "videoGeneration",
+  voiceChanger: "voiceChanger",
+  voiceIsolation: "voiceIsolation",
 } as const;
 
 export type GenerationConfigResponseNodeTypesEnumKey =
@@ -268,20 +376,7 @@ export type GenerationConfigResponse = {
     /**
      * @type string
      */
-    mediaType: MediaType;
-    /**
-     * @type object
-     */
-    provider: {
-      /**
-       * @type string
-       */
-      id: string;
-      /**
-       * @type string
-       */
-      displayName: string;
-    };
+    mediaType: ModelsMediaTypeEnumKey;
     /**
      * @type boolean
      */
@@ -291,6 +386,19 @@ export type GenerationConfigResponse = {
      */
     recommended: boolean;
     /**
+     * @type object
+     */
+    presentation: {
+      /**
+       * @type string
+       */
+      descriptionKey: string;
+      /**
+       * @type string
+       */
+      logoId: PresentationLogoIdEnumKey;
+    };
+    /**
      * @type string
      */
     defaultOperationId: string;
@@ -298,6 +406,28 @@ export type GenerationConfigResponse = {
      * @type object
      */
     capabilities: {
+      /**
+       * @type object | undefined
+       */
+      llm?: {
+        /**
+         * @type object | undefined
+         */
+        reasoning?: {
+          /**
+           * @type string
+           */
+          default: ReasoningDefaultEnumKey;
+          /**
+           * @type boolean
+           */
+          mandatory: boolean;
+          /**
+           * @type array
+           */
+          options: ReasoningOptionsEnumKey[];
+        };
+      };
       /**
        * @type array
        */
@@ -327,12 +457,64 @@ export type GenerationConfigResponse = {
              * @type array | undefined
              */
             oneOf?: string[];
+            /**
+             * @type array | undefined
+             */
+            atLeastOne?: string[];
           };
         };
         /**
          * @type array
          */
         inputSlotIds: string[];
+        /**
+         * @type string
+         */
+        nodeType: OperationsNodeTypeEnumKey;
+        /**
+         * @type object
+         */
+        output: {
+          /**
+           * @type string
+           */
+          mediaType: OutputMediaTypeEnumKey;
+          /**
+           * @type object
+           */
+          count: {
+            /**
+             * @type integer
+             */
+            default: number;
+            /**
+             * @type integer
+             */
+            min: number;
+            /**
+             * @type integer
+             */
+            max: number;
+            /**
+             * @type string | undefined
+             */
+            settingId?: string;
+          };
+        };
+        /**
+         * @type object
+         */
+        referenceLimit: {
+          /**
+           * @minLength 0
+           * @type integer
+           */
+          maxItems: number;
+          /**
+           * @type array
+           */
+          slotIds: string[];
+        };
         /**
          * @type array | undefined
          */
@@ -350,10 +532,6 @@ export type GenerationConfigResponse = {
          * @type string
          */
         role: string;
-        /**
-         * @type string
-         */
-        label: string;
         /**
          * @type string
          */
@@ -383,6 +561,67 @@ export type GenerationConfigResponse = {
          * @type integer
          */
         maxConnections: number;
+        /**
+         * @type object | undefined
+         */
+        acceptedMedia?: {
+          /**
+           * @type array
+           */
+          mimeTypes: string[];
+          /**
+           * @type integer | undefined
+           */
+          maxBytes?: number;
+          /**
+           * @type object | undefined
+           */
+          durationSeconds?: {
+            /**
+             * @minLength 0
+             * @type number
+             */
+            min: number;
+            /**
+             * @minLength 0
+             * @type number
+             */
+            max: number;
+          };
+          /**
+           * @type array | undefined
+           */
+          framesPerSecond?: number[];
+          /**
+           * @type array | undefined
+           */
+          resolutions?: string[];
+          /**
+           * @type array | undefined
+           */
+          aspectRatios?: string[];
+        };
+        /**
+         * @type object | undefined
+         */
+        referenceProfile?: {
+          /**
+           * @type string
+           */
+          contactSheetPolicy: ReferenceProfileContactSheetPolicyEnumKey;
+          /**
+           * @type string
+           */
+          multipleSubjectSupport: ReferenceProfileMultipleSubjectSupportEnumKey;
+          /**
+           * @type array
+           */
+          purposes: ReferenceProfilePurposesEnumKey[];
+          /**
+           * @type integer | undefined
+           */
+          recommendedMaxItems?: number;
+        };
       }[];
       /**
        * @type array
@@ -393,10 +632,6 @@ export type GenerationConfigResponse = {
              * @type string
              */
             id: string;
-            /**
-             * @type string
-             */
-            label: string;
             /**
              * @type string
              */
@@ -494,10 +729,6 @@ export type GenerationConfigResponse = {
               /**
                * @type string
                */
-              label: string;
-              /**
-               * @type string
-               */
               labelKey: string;
             }[];
           }
@@ -506,10 +737,6 @@ export type GenerationConfigResponse = {
              * @type string
              */
             id: string;
-            /**
-             * @type string
-             */
-            label: string;
             /**
              * @type string
              */
@@ -617,10 +844,6 @@ export type GenerationConfigResponse = {
             /**
              * @type string
              */
-            label: string;
-            /**
-             * @type string
-             */
             labelKey: string;
             /**
              * @type string | undefined
@@ -710,10 +933,6 @@ export type GenerationConfigResponse = {
              * @type string
              */
             id: string;
-            /**
-             * @type string
-             */
-            label: string;
             /**
              * @type string
              */
@@ -1018,32 +1237,6 @@ export type GenerationConfigResponse = {
         )[];
       }[];
     };
-  }[];
-  /**
-   * @type array
-   */
-  elementTypes: {
-    /**
-     * @type string
-     */
-    id: ElementTypesIdEnumKey;
-    /**
-     * @type string
-     */
-    previewRole: string | null;
-    /**
-     * @type array
-     */
-    assetRoles: {
-      /**
-       * @type string
-       */
-      id: string;
-      /**
-       * @type array
-       */
-      accepts: AssetType[];
-    }[];
   }[];
   /**
    * @type array

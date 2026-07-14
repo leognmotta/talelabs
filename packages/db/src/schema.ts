@@ -316,7 +316,6 @@ export interface FlowNodeTable {
   type: string
   positionX: number
   positionY: number
-  elementId: string | null
   assetId: string | null
   data: GeneratedJsonColumn
   schemaVersion: Generated<number>

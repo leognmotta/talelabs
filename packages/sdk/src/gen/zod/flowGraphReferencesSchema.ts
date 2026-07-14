@@ -5,18 +5,10 @@
 
 import * as z from "zod";
 import type { FlowGraphReferences } from "../types/FlowGraphReferences.ts";
-import { flowElementAssetReferenceSchema } from "./flowElementAssetReferenceSchema.ts";
 import { flowReferenceAssetSchema } from "./flowReferenceAssetSchema.ts";
-import { flowReferenceElementSchema } from "./flowReferenceElementSchema.ts";
 
 export const flowGraphReferencesSchema = z.object({
   get assets() {
     return z.array(flowReferenceAssetSchema).max(5000);
-  },
-  get elements() {
-    return z.array(flowReferenceElementSchema);
-  },
-  get elementAssets() {
-    return z.array(flowElementAssetReferenceSchema).max(10000);
   },
 }) as unknown as z.ZodType<FlowGraphReferences>;

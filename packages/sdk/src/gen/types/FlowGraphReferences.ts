@@ -3,21 +3,11 @@
  * Do not edit manually.
  */
 
-import type { FlowElementAssetReference } from "./FlowElementAssetReference.ts";
 import type { FlowReferenceAsset } from "./FlowReferenceAsset.ts";
-import type { FlowReferenceElement } from "./FlowReferenceElement.ts";
 
 export type FlowGraphReferences = {
   /**
    * @type array
    */
   assets: FlowReferenceAsset[];
-  /**
-   * @type array
-   */
-  elements: FlowReferenceElement[];
-  /**
-   * @type array
-   */
-  elementAssets: FlowElementAssetReference[];
 };

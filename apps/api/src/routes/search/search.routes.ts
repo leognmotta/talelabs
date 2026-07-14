@@ -22,7 +22,7 @@ export function registerSearchRoutes(app: OpenAPIHono<ApiEnv>) {
     const query = c.req.valid('query')
     const types = query.type
       ? Array.isArray(query.type) ? query.type : [query.type]
-      : ['asset', 'element', 'folder'] as const
+      : ['asset', 'folder'] as const
 
     return c.json(await searchWorkspace({
       limit: query.limit,

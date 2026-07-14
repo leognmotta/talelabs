@@ -8,6 +8,5 @@ import type { SearchType } from "../types/SearchType.ts";
 
 export const searchTypeSchema = z.enum([
   "asset",
-  "element",
   "folder",
 ]) as unknown as z.ZodType<SearchType>;

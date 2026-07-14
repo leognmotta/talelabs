@@ -4,7 +4,6 @@ import type { FlowReferenceBudgetExecutor } from '../data/flow-reference-budget.
 import { getFlowReferenceBudgetViolation } from '@talelabs/flows'
 
 import {
-  findElementFlowReferenceBudgetViolation,
   getFlowReferenceBudget,
 } from '../data/flow-reference-budget.data.js'
 import { HttpError } from '../middleware/error.js'
@@ -44,13 +43,14 @@ export async function assertFlowReferenceBudget(
 }
 
 export async function assertElementFlowReferenceBudgets(
-  executor: FlowReferenceBudgetExecutor,
-  input: {
+  _executor: FlowReferenceBudgetExecutor,
+  _input: {
     elementId: string
     organizationId: string
   },
 ) {
-  const violation = await findElementFlowReferenceBudgetViolation(executor, input)
-  if (violation)
-    throw createFlowReferenceBudgetError(violation)
+  // Compatibility seam for the dormant Element API. Elements no longer
+  // participate in Flow graphs, so changing an Element cannot affect a Flow
+  // reference budget.
+  return Promise.resolve()
 }

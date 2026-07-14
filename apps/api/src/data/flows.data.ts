@@ -1,7 +1,6 @@
 import type {
   AssetTable,
   Database,
-  ElementTable,
   FlowEdgeTable,
   FlowNodeTable,
   FlowTable,
@@ -11,7 +10,6 @@ import type { Selectable, Transaction } from 'kysely'
 import type { PageCursor } from '../pagination/cursor.js'
 
 import { db, sql } from '@talelabs/db'
-import { lockFlowReferenceBudget } from './flow-reference-budget.data.js'
 
 export type FlowRecord = Selectable<FlowTable>
 export type FlowNodeRecord = Selectable<FlowNodeTable>
@@ -19,12 +17,9 @@ export type FlowEdgeRecord = Selectable<FlowEdgeTable>
 export type FlowReferenceAssetRecord = Selectable<AssetTable> & {
   generationModel: null | string
 }
-export type FlowReferenceElementRecord = Selectable<ElementTable>
-
 export interface FlowNodeWrite {
   assetId: null | string
   data: JsonValue
-  elementId: null | string
   id: string
   positionX: number
   positionY: number
@@ -185,7 +180,6 @@ export async function listFlowGraphReferenceRows(
   executor: FlowGraphTransaction,
   input: {
     assetIds: string[]
-    elementIds: string[]
     organizationId: string
   },
 ) {
@@ -196,105 +190,18 @@ export async function listFlowGraphReferenceRows(
         .where('id', 'in', input.assetIds)
         .execute()
     : []
-  const elements = input.elementIds.length
-    ? await executor.selectFrom('elements')
-        .select(['id', 'type', 'data', 'schemaVersion'])
-        .where('organizationId', '=', input.organizationId)
-        .where('id', 'in', input.elementIds)
-        .execute()
-    : []
-  const elementAssets = input.elementIds.length
-    ? await executor.selectFrom('elementAssets as link')
-        .innerJoin('assets as asset', join => join
-          .onRef('asset.id', '=', 'link.assetId')
-          .onRef('asset.organizationId', '=', 'link.organizationId'))
-        .select([
-          'link.elementId',
-          'link.role',
-          'link.assetId',
-          'link.sortOrder',
-          'link.isPrimary',
-          'asset.type',
-        ])
-        .where('link.organizationId', '=', input.organizationId)
-        .where('link.elementId', 'in', input.elementIds)
-        .where('link.referenceKind', '=', 'master')
-        .where('asset.processingState', '=', 'ready')
-        .where('asset.purgeRequestedAt', 'is', null)
-        .where('asset.purgedAt', 'is', null)
-        .where('asset.type', 'in', ['image', 'video', 'audio'])
-        .orderBy('link.elementId')
-        .orderBy(sql`case when "link"."isPrimary" then 0 else 1 end`)
-        .orderBy('link.role')
-        .orderBy('link.sortOrder')
-        .orderBy('link.assetId')
-        .execute()
-    : []
-
-  return { assets, elementAssets, elements }
+  return { assets }
 }
 
 export async function listFlowGraphHydrationRows(input: {
   assetLimit: number
   assetIds: string[]
-  elementAssetLimit: number
-  elementIds: string[]
   organizationId: string
 }) {
-  const [elements, elementAssets] = await Promise.all([
-    input.elementIds.length
-      ? db.selectFrom('elements')
-          .selectAll()
-          .where('organizationId', '=', input.organizationId)
-          .where('id', 'in', input.elementIds)
-          .orderBy('id')
-          .execute()
-      : Promise.resolve([] as FlowReferenceElementRecord[]),
-    input.elementIds.length
-      ? db.selectFrom('elementAssets as link')
-          .innerJoin('assets as asset', join => join
-            .onRef('asset.id', '=', 'link.assetId')
-            .onRef('asset.organizationId', '=', 'link.organizationId'))
-          .select([
-            'link.elementId',
-            'link.assetId',
-            'link.role',
-            'link.sortOrder',
-            'link.isPrimary',
-          ])
-          .where('link.organizationId', '=', input.organizationId)
-          .where('link.elementId', 'in', input.elementIds)
-          .where('link.referenceKind', '=', 'master')
-          .where('asset.processingState', '=', 'ready')
-          .where('asset.purgeRequestedAt', 'is', null)
-          .where('asset.purgedAt', 'is', null)
-          .where('asset.type', 'in', ['image', 'video', 'audio'])
-          .orderBy('link.elementId')
-          .orderBy(sql`case when "link"."isPrimary" then 0 else 1 end`)
-          .orderBy('link.role')
-          .orderBy('link.sortOrder')
-          .orderBy('link.assetId')
-          .limit(input.elementAssetLimit + 1)
-          .execute()
-      : Promise.resolve([]),
-  ])
-  if (elementAssets.length > input.elementAssetLimit) {
-    return {
-      assets: [],
-      elementAssets: [],
-      elements,
-      limitExceeded: 'elementAssets' as const,
-    }
-  }
-  const allAssetIds = [...new Set([
-    ...input.assetIds,
-    ...elementAssets.map(link => link.assetId),
-  ])]
+  const allAssetIds = [...new Set(input.assetIds)]
   if (allAssetIds.length > input.assetLimit) {
     return {
       assets: [],
-      elementAssets: [],
-      elements,
       limitExceeded: 'assets' as const,
     }
   }
@@ -311,7 +218,7 @@ export async function listFlowGraphHydrationRows(input: {
         .execute()
     : []
 
-  return { assets, elementAssets, elements, limitExceeded: null }
+  return { assets, limitExceeded: null }
 }
 
 export async function syncFlowGraphRows(input: {
@@ -319,7 +226,6 @@ export async function syncFlowGraphRows(input: {
   deleteEdgeIds: string[]
   deleteNodeIds: string[]
   flowId: string
-  lockReferenceBudget: boolean
   organizationId: string
   prepare: (input: {
     edges: FlowEdgeRecord[]
@@ -331,8 +237,6 @@ export async function syncFlowGraphRows(input: {
 }) {
   try {
     return await db.transaction().execute(async (trx) => {
-      if (input.lockReferenceBudget)
-        await lockFlowReferenceBudget(trx, input.organizationId)
       const flow = await trx.selectFrom('flows')
         .select(['id', 'revision'])
         .where('organizationId', '=', input.organizationId)
@@ -401,7 +305,6 @@ export async function syncFlowGraphRows(input: {
             .doUpdateSet(eb => ({
               assetId: eb.ref('excluded.assetId'),
               data: eb.ref('excluded.data'),
-              elementId: eb.ref('excluded.elementId'),
               positionX: eb.ref('excluded.positionX'),
               positionY: eb.ref('excluded.positionY'),
               schemaVersion: eb.ref('excluded.schemaVersion'),

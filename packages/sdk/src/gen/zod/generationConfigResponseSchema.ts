@@ -6,7 +6,6 @@
 import * as z from "zod";
 import type { GenerationConfigResponse } from "../types/GenerationConfigResponse.ts";
 import { assetTypeSchema } from "./assetTypeSchema.ts";
-import { mediaTypeSchema } from "./mediaTypeSchema.ts";
 
 export const generationConfigResponseSchema = z.object({
   registryVersion: z.string(),
@@ -16,17 +15,64 @@ export const generationConfigResponseSchema = z.object({
       id: z.string(),
       displayName: z.string(),
       labelKey: z.string(),
-      get mediaType() {
-        return mediaTypeSchema;
-      },
-      provider: z.object({
-        id: z.string(),
-        displayName: z.string(),
-      }),
+      mediaType: z.enum(["audio", "image", "text", "video"]),
       enabled: z.boolean(),
       recommended: z.boolean(),
+      presentation: z.object({
+        descriptionKey: z.string(),
+        logoId: z.enum([
+          "bytedance",
+          "claude",
+          "deepseek",
+          "elevenlabs",
+          "flux",
+          "gemini",
+          "google",
+          "lightricks",
+          "llm",
+          "mistral",
+          "nanobanana",
+          "openai",
+          "recraft",
+          "stability",
+          "xai",
+        ]),
+      }),
       defaultOperationId: z.string(),
       capabilities: z.object({
+        llm: z.optional(
+          z.object({
+            reasoning: z.optional(
+              z.object({
+                default: z.enum([
+                  "off",
+                  "auto",
+                  "minimal",
+                  "low",
+                  "medium",
+                  "high",
+                  "max",
+                  "xhigh",
+                ]),
+                mandatory: z.boolean(),
+                options: z
+                  .array(
+                    z.enum([
+                      "off",
+                      "auto",
+                      "minimal",
+                      "low",
+                      "medium",
+                      "high",
+                      "max",
+                      "xhigh",
+                    ]),
+                  )
+                  .min(1),
+              }),
+            ),
+          }),
+        ),
         operations: z.array(
           z.object({
             id: z.string(),
@@ -36,9 +82,34 @@ export const generationConfigResponseSchema = z.object({
               z.object({
                 required: z.optional(z.boolean()),
                 oneOf: z.optional(z.array(z.string())),
+                atLeastOne: z.optional(z.array(z.string())),
               }),
             ),
             inputSlotIds: z.array(z.string()),
+            nodeType: z.enum([
+              "audioGeneration",
+              "imageGeneration",
+              "llm",
+              "musicGeneration",
+              "soundEffectGeneration",
+              "speechGeneration",
+              "videoGeneration",
+              "voiceChanger",
+              "voiceIsolation",
+            ]),
+            output: z.object({
+              mediaType: z.enum(["audio", "image", "text", "video"]),
+              count: z.object({
+                default: z.int().gt(0),
+                min: z.int().gt(0),
+                max: z.int().gt(0),
+                settingId: z.optional(z.string()),
+              }),
+            }),
+            referenceLimit: z.object({
+              maxItems: z.int().min(0),
+              slotIds: z.array(z.string()),
+            }),
             requiredSettingIds: z.optional(z.array(z.string())),
             settingIds: z.array(z.string()),
           }),
@@ -46,32 +117,70 @@ export const generationConfigResponseSchema = z.object({
         inputSlots: z.array(
           z.object({
             role: z.string(),
-            label: z.string(),
             labelKey: z.string(),
             descriptionKey: z.string(),
             get accepts() {
               return z.array(assetTypeSchema);
             },
             valueTypes: z.array(
-              z.enum([
-                "Text",
-                "Asset",
-                "ImageSet",
-                "VideoSet",
-                "AudioSet",
-                "ElementContext",
-              ]),
+              z.enum(["Text", "Asset", "ImageSet", "VideoSet", "AudioSet"]),
             ),
             min: z.int().min(0),
             max: z.int().gt(0),
             maxConnections: z.int().gt(0),
+            acceptedMedia: z.optional(
+              z.object({
+                mimeTypes: z.array(z.string()).min(1),
+                maxBytes: z.optional(z.int().gt(0)),
+                durationSeconds: z.optional(
+                  z.object({
+                    min: z.number().min(0),
+                    max: z.number().min(0),
+                  }),
+                ),
+                framesPerSecond: z.optional(z.array(z.number().gt(0)).min(1)),
+                resolutions: z.optional(z.array(z.string()).min(1)),
+                aspectRatios: z.optional(z.array(z.string()).min(1)),
+              }),
+            ),
+            referenceProfile: z.optional(
+              z.object({
+                contactSheetPolicy: z.enum([
+                  "never",
+                  "not-applicable",
+                  "preferred",
+                  "supported",
+                ]),
+                multipleSubjectSupport: z.enum([
+                  "not-applicable",
+                  "supported",
+                  "unknown",
+                  "unsupported",
+                ]),
+                purposes: z
+                  .array(
+                    z.enum([
+                      "audioGuidance",
+                      "composition",
+                      "firstFrame",
+                      "identity",
+                      "lastFrame",
+                      "motion",
+                      "style",
+                      "subject",
+                      "videoExtension",
+                    ]),
+                  )
+                  .min(1),
+                recommendedMaxItems: z.optional(z.int().gt(0)),
+              }),
+            ),
           }),
         ),
         settings: z.array(
           z.union([
             z.object({
               id: z.string(),
-              label: z.string(),
               labelKey: z.string(),
               descriptionKey: z.optional(z.string()),
               advanced: z.optional(z.boolean()),
@@ -110,14 +219,12 @@ export const generationConfigResponseSchema = z.object({
               options: z.array(
                 z.object({
                   value: z.string(),
-                  label: z.string(),
                   labelKey: z.string(),
                 }),
               ),
             }),
             z.object({
               id: z.string(),
-              label: z.string(),
               labelKey: z.string(),
               descriptionKey: z.optional(z.string()),
               advanced: z.optional(z.boolean()),
@@ -159,7 +266,6 @@ export const generationConfigResponseSchema = z.object({
             }),
             z.object({
               id: z.string(),
-              label: z.string(),
               labelKey: z.string(),
               descriptionKey: z.optional(z.string()),
               advanced: z.optional(z.boolean()),
@@ -198,7 +304,6 @@ export const generationConfigResponseSchema = z.object({
             }),
             z.object({
               id: z.string(),
-              label: z.string(),
               labelKey: z.string(),
               descriptionKey: z.optional(z.string()),
               advanced: z.optional(z.boolean()),
@@ -335,37 +440,19 @@ export const generationConfigResponseSchema = z.object({
       }),
     }),
   ),
-  elementTypes: z.array(
-    z.object({
-      id: z.enum([
-        "brand",
-        "character",
-        "location",
-        "object",
-        "product",
-        "vehicle",
-        "voice",
-        "other",
-      ]),
-      previewRole: z.nullable(z.string()),
-      assetRoles: z.array(
-        z.object({
-          id: z.string(),
-          get accepts() {
-            return z.array(assetTypeSchema);
-          },
-        }),
-      ),
-    }),
-  ),
   nodeTypes: z.array(
     z.enum([
       "asset",
       "audioGeneration",
-      "element",
       "imageGeneration",
+      "llm",
+      "musicGeneration",
+      "soundEffectGeneration",
+      "speechGeneration",
       "text",
       "videoGeneration",
+      "voiceChanger",
+      "voiceIsolation",
     ]),
   ),
   inputRoles: z.array(z.string()),

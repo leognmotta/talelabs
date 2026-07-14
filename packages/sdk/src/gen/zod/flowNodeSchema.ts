@@ -14,20 +14,18 @@ export const flowNodeSchema = z.object({
   type: z.enum([
     "asset",
     "audioGeneration",
-    "element",
     "imageGeneration",
+    "llm",
+    "musicGeneration",
+    "soundEffectGeneration",
+    "speechGeneration",
     "text",
     "videoGeneration",
+    "voiceChanger",
+    "voiceIsolation",
   ]),
   positionX: z.number(),
   positionY: z.number(),
-  elementId: z.nullable(
-    z
-      .string()
-      .min(2)
-      .max(32)
-      .regex(/^[a-z][0-9a-z]+$/),
-  ),
   assetId: z.nullable(
     z
       .string()

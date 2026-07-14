@@ -1,12 +1,7 @@
 import type { Database } from '@talelabs/db'
-import type { FlowReferenceBudgetViolation } from '@talelabs/flows'
 import type { Kysely, Transaction } from 'kysely'
 
 import { sql } from '@talelabs/db'
-import {
-  FLOW_GRAPH_LIMITS,
-  getFlowReferenceBudgetViolation,
-} from '@talelabs/flows'
 
 export type FlowReferenceBudgetExecutor
   = | Kysely<Database>
@@ -67,91 +62,4 @@ export async function getFlowReferenceBudget(
     assets: assetIds.length + Number(linkedAssetCount.count),
     elementAssets: Number(linkCount.count),
   }
-}
-
-export async function findElementFlowReferenceBudgetViolation(
-  executor: FlowReferenceBudgetExecutor,
-  input: {
-    elementId: string
-    organizationId: string
-  },
-): Promise<(FlowReferenceBudgetViolation & { flowId: string }) | null> {
-  const result = await sql<{
-    assets: number
-    elementAssets: number
-    flowId: string
-  }>`
-    with "affectedFlows" as (
-      select distinct "flowId"
-      from "flowNodes"
-      where "organizationId" = ${input.organizationId}
-        and "elementId" = ${input.elementId}
-    ),
-    "flowElements" as (
-      select distinct node."flowId", node."elementId"
-      from "flowNodes" node
-      join "affectedFlows" affected
-        on affected."flowId" = node."flowId"
-      where node."organizationId" = ${input.organizationId}
-        and node."elementId" is not null
-    ),
-    "directAssets" as (
-      select distinct node."flowId", node."assetId"
-      from "flowNodes" node
-      join "affectedFlows" affected
-        on affected."flowId" = node."flowId"
-      where node."organizationId" = ${input.organizationId}
-        and node."assetId" is not null
-    ),
-    "elementLinks" as (
-      select element."flowId", link."assetId"
-      from "flowElements" element
-      join "elementAssets" link
-        on link."organizationId" = ${input.organizationId}
-        and link."elementId" = element."elementId"
-        and link."referenceKind" = 'master'
-    ),
-    "assetReferences" as (
-      select "flowId", "assetId" from "directAssets"
-      union
-      select "flowId", "assetId" from "elementLinks"
-    ),
-    "linkBudgets" as (
-      select "flowId", count(*)::integer as count
-      from "elementLinks"
-      group by "flowId"
-    ),
-    "assetBudgets" as (
-      select "flowId", count(*)::integer as count
-      from "assetReferences"
-      group by "flowId"
-    )
-    select
-      affected."flowId",
-      coalesce(assets.count, 0)::integer as assets,
-      coalesce(links.count, 0)::integer as "elementAssets"
-    from "affectedFlows" affected
-    left join "assetBudgets" assets
-      on assets."flowId" = affected."flowId"
-    left join "linkBudgets" links
-      on links."flowId" = affected."flowId"
-    where coalesce(links.count, 0) > ${FLOW_GRAPH_LIMITS.referenceLinks}
-      or coalesce(assets.count, 0) > ${FLOW_GRAPH_LIMITS.referenceAssets}
-    order by
-      case
-        when coalesce(links.count, 0) > ${FLOW_GRAPH_LIMITS.referenceLinks}
-          then 0
-        else 1
-      end,
-      affected."flowId"
-    limit 1
-  `.execute(executor)
-
-  const budget = result.rows[0]
-  if (!budget)
-    return null
-  const violation = getFlowReferenceBudgetViolation(budget)
-  if (!violation)
-    throw new Error('Flow reference budget query returned a valid budget')
-  return { ...violation, flowId: budget.flowId }
 }

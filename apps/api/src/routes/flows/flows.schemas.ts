@@ -1,5 +1,4 @@
 import { z } from '@hono/zod-openapi'
-import { ELEMENT_TYPES } from '@talelabs/elements'
 import { FLOW_GRAPH_LIMITS, FLOW_NODE_TYPES } from '@talelabs/flows'
 
 import {
@@ -61,7 +60,6 @@ export const FlowNodeSchema = z.object({
   type: z.enum(FLOW_NODE_TYPES),
   positionX: z.number().finite(),
   positionY: z.number().finite(),
-  elementId: NullableCuid2Schema,
   assetId: NullableCuid2Schema,
   data: NodeDataSchema,
   schemaVersion: z.number().int().positive(),
@@ -112,28 +110,8 @@ export const FlowReferenceAssetSchema = z.object({
   generationModel: z.string().nullable(),
 }).openapi('FlowReferenceAsset')
 
-export const FlowReferenceElementSchema = z.object({
-  id: Cuid2Schema,
-  type: z.enum(ELEMENT_TYPES),
-  name: z.string(),
-  instructions: z.string().nullable(),
-  data: z.record(z.string(), z.any()),
-  schemaVersion: z.number().int().positive(),
-}).openapi('FlowReferenceElement')
-
-export const FlowElementAssetReferenceSchema = z.object({
-  elementId: Cuid2Schema,
-  assetId: Cuid2Schema,
-  role: z.string().min(1).max(64),
-  sortOrder: z.number().int().nonnegative(),
-  isPrimary: z.boolean(),
-}).openapi('FlowElementAssetReference')
-
 export const FlowGraphReferencesSchema = z.object({
   assets: z.array(FlowReferenceAssetSchema).max(FLOW_GRAPH_LIMITS.referenceAssets),
-  elements: z.array(FlowReferenceElementSchema),
-  elementAssets: z.array(FlowElementAssetReferenceSchema)
-    .max(FLOW_GRAPH_LIMITS.referenceLinks),
 }).openapi('FlowGraphReferences')
 
 export const FlowGraphResponseSchema = z.object({

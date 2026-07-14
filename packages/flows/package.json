@@ -13,12 +13,14 @@
     "build": "tsc",
     "check-types": "tsc --noEmit",
     "dev:build": "tsc --watch --preserveWatchOutput",
+    "generation:check": "tsx scripts/check-generation-registry.ts",
     "lint": "eslint ."
   },
   "dependencies": {
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "tsx": "^4.7.1",
     "typescript": "5.9.2"
   }
 }

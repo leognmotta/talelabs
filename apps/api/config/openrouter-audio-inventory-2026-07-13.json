@@ -1,0 +1,77 @@
+{
+  "capturedAt": "2026-07-13T22:41:40.000Z",
+  "count": 9,
+  "documentation": [
+    "https://openrouter.ai/docs/guides/overview/multimodal/tts",
+    "https://openrouter.ai/docs/api/api-reference/speech/create-audio-speech",
+    "https://openrouter.ai/docs/guides/overview/multimodal/audio"
+  ],
+  "models": [
+    {
+      "id": "microsoft/mai-voice-2",
+      "inputModalities": ["text"],
+      "name": "Microsoft: MAI-Voice-2",
+      "outputModalities": ["speech"],
+      "review": "inventory-only"
+    },
+    {
+      "id": "x-ai/grok-voice-tts-1.0",
+      "inputModalities": ["text"],
+      "name": "xAI: Grok Voice TTS 1.0",
+      "outputModalities": ["speech"],
+      "review": "inventory-only"
+    },
+    {
+      "id": "google/gemini-3.1-flash-tts-preview",
+      "inputModalities": ["text"],
+      "name": "Google: Gemini 3.1 Flash TTS Preview",
+      "outputModalities": ["speech"],
+      "review": "inventory-only"
+    },
+    {
+      "id": "zyphra/zonos-v0.1-transformer",
+      "inputModalities": ["text"],
+      "name": "Zyphra: Zonos v0.1 Transformer",
+      "outputModalities": ["speech"],
+      "review": "inventory-only"
+    },
+    {
+      "id": "zyphra/zonos-v0.1-hybrid",
+      "inputModalities": ["text"],
+      "name": "Zyphra: Zonos v0.1 Hybrid",
+      "outputModalities": ["speech"],
+      "review": "inventory-only"
+    },
+    {
+      "id": "canopylabs/orpheus-3b-0.1-ft",
+      "inputModalities": ["text"],
+      "name": "Canopy Labs: Orpheus 3B",
+      "outputModalities": ["speech"],
+      "review": "inventory-only"
+    },
+    {
+      "id": "sesame/csm-1b",
+      "inputModalities": ["text"],
+      "name": "Sesame: CSM 1B",
+      "outputModalities": ["speech"],
+      "review": "inventory-only"
+    },
+    {
+      "id": "hexgrad/kokoro-82m",
+      "inputModalities": ["text"],
+      "name": "hexgrad: Kokoro 82M",
+      "outputModalities": ["speech"],
+      "review": "inventory-only"
+    },
+    {
+      "id": "mistralai/voxtral-mini-tts-2603",
+      "inputModalities": ["text"],
+      "name": "Mistral: Voxtral Mini TTS",
+      "outputModalities": ["speech"],
+      "review": "inventory-only"
+    }
+  ],
+  "schemaVersion": 1,
+  "scope": "OpenRouter text-to-speech discovery only; generic chat audio input/output is reviewed separately and does not imply Speech-node eligibility.",
+  "source": "https://openrouter.ai/api/v1/models?output_modalities=speech"
+}

@@ -1,0 +1,156 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-07-13T18:30:00.000Z",
+  "source": "https://openrouter.ai/api/v1/videos/models",
+  "scope": "Read-only discovery evidence. This inventory is not a production UI contract or provider routing policy.",
+  "models": [
+    {
+      "id": "alibaba/happyhorse-1.1",
+      "canonicalSlug": "alibaba/happyhorse-1.1-20260624",
+      "supportedResolutions": ["720p", "1080p"],
+      "supportedDurations": [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+      "supportedFrameImages": ["first_frame"],
+      "generateAudio": null,
+      "review": "discovered-only"
+    },
+    {
+      "id": "alibaba/happyhorse-1.0",
+      "canonicalSlug": "alibaba/happyhorse-1.0-20260624",
+      "supportedResolutions": ["720p", "1080p"],
+      "supportedDurations": [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+      "supportedFrameImages": ["first_frame"],
+      "generateAudio": null,
+      "review": "superseded"
+    },
+    {
+      "id": "x-ai/grok-imagine-video",
+      "canonicalSlug": "x-ai/grok-imagine-video-20260512",
+      "supportedResolutions": ["480p", "720p"],
+      "supportedDurations": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+      "supportedFrameImages": ["first_frame"],
+      "generateAudio": null,
+      "review": "enabled-narrow",
+      "productModelId": "talelabs/grok-imagine-video"
+    },
+    {
+      "id": "kwaivgi/kling-v3.0-pro",
+      "canonicalSlug": "kwaivgi/kling-v3.0-pro-20260429",
+      "supportedResolutions": ["720p"],
+      "supportedDurations": [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+      "supportedFrameImages": ["first_frame", "last_frame"],
+      "generateAudio": true,
+      "review": "discovered-only"
+    },
+    {
+      "id": "kwaivgi/kling-v3.0-std",
+      "canonicalSlug": "kwaivgi/kling-v3.0-std-20260429",
+      "supportedResolutions": ["720p"],
+      "supportedDurations": [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+      "supportedFrameImages": ["first_frame", "last_frame"],
+      "generateAudio": true,
+      "review": "discovered-only"
+    },
+    {
+      "id": "google/veo-3.1-fast",
+      "canonicalSlug": "google/veo-3.1-fast-20260320",
+      "supportedResolutions": ["720p", "1080p", "4K"],
+      "supportedDurations": [4, 6, 8],
+      "supportedFrameImages": ["first_frame", "last_frame"],
+      "generateAudio": true,
+      "review": "discovered-only"
+    },
+    {
+      "id": "google/veo-3.1-lite",
+      "canonicalSlug": "google/veo-3.1-lite-20260331",
+      "supportedResolutions": ["720p", "1080p"],
+      "supportedDurations": [8, 4, 6],
+      "supportedFrameImages": ["first_frame", "last_frame"],
+      "generateAudio": true,
+      "review": "enabled-narrow",
+      "productModelId": "talelabs/veo-3.1-lite"
+    },
+    {
+      "id": "kwaivgi/kling-video-o1",
+      "canonicalSlug": "kwaivgi/kling-video-o1-20260420",
+      "supportedResolutions": ["720p"],
+      "supportedDurations": [5, 10],
+      "supportedFrameImages": ["first_frame", "last_frame"],
+      "generateAudio": true,
+      "review": "discovered-only"
+    },
+    {
+      "id": "minimax/hailuo-2.3",
+      "canonicalSlug": "minimax/hailuo-2.3-20260420",
+      "supportedResolutions": ["1080p"],
+      "supportedDurations": [6, 10],
+      "supportedFrameImages": ["first_frame"],
+      "generateAudio": false,
+      "review": "discovered-only"
+    },
+    {
+      "id": "bytedance/seedance-2.0",
+      "canonicalSlug": "bytedance/seedance-2.0-20260414",
+      "supportedResolutions": ["480p", "720p", "1080p", "4K"],
+      "supportedDurations": [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+      "supportedFrameImages": ["first_frame", "last_frame"],
+      "generateAudio": true,
+      "review": "enabled-narrow",
+      "productModelId": "talelabs/seedance-2.0"
+    },
+    {
+      "id": "alibaba/wan-2.7",
+      "canonicalSlug": "alibaba/wan-2.7-20260414",
+      "supportedResolutions": ["720p", "1080p"],
+      "supportedDurations": [2, 3, 4, 5, 6, 7, 8, 9, 10],
+      "supportedFrameImages": ["first_frame", "last_frame"],
+      "generateAudio": true,
+      "review": "discovered-only"
+    },
+    {
+      "id": "bytedance/seedance-2.0-fast",
+      "canonicalSlug": "bytedance/seedance-2.0-fast-20260414",
+      "supportedResolutions": ["480p", "720p"],
+      "supportedDurations": [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+      "supportedFrameImages": ["first_frame", "last_frame"],
+      "generateAudio": true,
+      "review": "discovered-only"
+    },
+    {
+      "id": "alibaba/wan-2.6",
+      "canonicalSlug": "alibaba/wan-2.6-20260327",
+      "supportedResolutions": ["720p", "1080p"],
+      "supportedDurations": [5, 10],
+      "supportedFrameImages": ["first_frame"],
+      "generateAudio": true,
+      "review": "discovered-only"
+    },
+    {
+      "id": "bytedance/seedance-1-5-pro",
+      "canonicalSlug": "bytedance/seedance-1-5-pro-20260320",
+      "supportedResolutions": ["480p", "720p", "1080p"],
+      "supportedDurations": [4, 5, 6, 7, 8, 9, 10, 11, 12],
+      "supportedFrameImages": ["first_frame", "last_frame"],
+      "generateAudio": true,
+      "review": "superseded"
+    },
+    {
+      "id": "openai/sora-2-pro",
+      "canonicalSlug": "openai/sora-2-pro-20260320",
+      "supportedResolutions": ["720p", "1080p"],
+      "supportedDurations": [4, 8, 12, 16, 20],
+      "supportedFrameImages": null,
+      "generateAudio": true,
+      "review": "discovered-only"
+    },
+    {
+      "id": "google/veo-3.1",
+      "canonicalSlug": "google/veo-3.1-20260320",
+      "supportedResolutions": ["720p", "1080p", "4K"],
+      "supportedDurations": [4, 6, 8],
+      "supportedFrameImages": ["first_frame", "last_frame"],
+      "generateAudio": true,
+      "review": "direct-route-authoritative",
+      "productModelId": "talelabs/veo-3.1"
+    }
+  ]
+}

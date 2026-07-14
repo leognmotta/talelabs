@@ -8,10 +8,15 @@ import type { Cuid2 } from "./Cuid2.ts";
 export const flowNodeTypeEnum = {
   asset: "asset",
   audioGeneration: "audioGeneration",
-  element: "element",
   imageGeneration: "imageGeneration",
+  llm: "llm",
+  musicGeneration: "musicGeneration",
+  soundEffectGeneration: "soundEffectGeneration",
+  speechGeneration: "speechGeneration",
   text: "text",
   videoGeneration: "videoGeneration",
+  voiceChanger: "voiceChanger",
+  voiceIsolation: "voiceIsolation",
 } as const;
 
 export type FlowNodeTypeEnumKey =
@@ -35,13 +40,6 @@ export type FlowNode = {
    * @type number
    */
   positionY: number;
-  /**
-   * @minLength 2
-   * @maxLength 32
-   * @pattern ^[a-z][0-9a-z]+$
-   * @type string
-   */
-  elementId: string | null;
   /**
    * @minLength 2
    * @maxLength 32

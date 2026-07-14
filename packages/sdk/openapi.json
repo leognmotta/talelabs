@@ -1941,10 +1941,15 @@
             "enum": [
               "asset",
               "audioGeneration",
-              "element",
               "imageGeneration",
+              "llm",
+              "musicGeneration",
+              "soundEffectGeneration",
+              "speechGeneration",
               "text",
-              "videoGeneration"
+              "videoGeneration",
+              "voiceChanger",
+              "voiceIsolation"
             ]
           },
           "positionX": {
@@ -1952,13 +1957,6 @@
           },
           "positionY": {
             "type": "number"
-          },
-          "elementId": {
-            "type": "string",
-            "nullable": true,
-            "minLength": 2,
-            "maxLength": 32,
-            "pattern": "^[a-z][0-9a-z]+$"
           },
           "assetId": {
             "type": "string",
@@ -1984,7 +1982,6 @@
           "type",
           "positionX",
           "positionY",
-          "elementId",
           "assetId",
           "data",
           "schemaVersion"
@@ -2036,25 +2033,10 @@
               "$ref": "#/components/schemas/FlowReferenceAsset"
             },
             "maxItems": 5000
-          },
-          "elements": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/FlowReferenceElement"
-            }
-          },
-          "elementAssets": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/FlowElementAssetReference"
-            },
-            "maxItems": 10000
           }
         },
         "required": [
-          "assets",
-          "elements",
-          "elementAssets"
+          "assets"
         ]
       },
       "FlowReferenceAsset": {
@@ -2144,83 +2126,6 @@
           "generationModel"
         ]
       },
-      "FlowReferenceElement": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "$ref": "#/components/schemas/Cuid2"
-          },
-          "type": {
-            "type": "string",
-            "enum": [
-              "brand",
-              "character",
-              "location",
-              "object",
-              "product",
-              "vehicle",
-              "voice",
-              "other"
-            ]
-          },
-          "name": {
-            "type": "string"
-          },
-          "instructions": {
-            "type": "string",
-            "nullable": true
-          },
-          "data": {
-            "type": "object",
-            "additionalProperties": {
-              "nullable": true
-            }
-          },
-          "schemaVersion": {
-            "type": "integer",
-            "minimum": 0,
-            "exclusiveMinimum": true
-          }
-        },
-        "required": [
-          "id",
-          "type",
-          "name",
-          "instructions",
-          "data",
-          "schemaVersion"
-        ]
-      },
-      "FlowElementAssetReference": {
-        "type": "object",
-        "properties": {
-          "elementId": {
-            "$ref": "#/components/schemas/Cuid2"
-          },
-          "assetId": {
-            "$ref": "#/components/schemas/Cuid2"
-          },
-          "role": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 64
-          },
-          "sortOrder": {
-            "type": "integer",
-            "minimum": 0
-          },
-          "isPrimary": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "elementId",
-          "assetId",
-          "role",
-          "sortOrder",
-          "isPrimary"
-        ]
-      },
       "FlowGraphSyncResponse": {
         "type": "object",
         "properties": {
@@ -2297,21 +2202,12 @@
                   "type": "string"
                 },
                 "mediaType": {
-                  "$ref": "#/components/schemas/MediaType"
-                },
-                "provider": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "string"
-                    },
-                    "displayName": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "id",
-                    "displayName"
+                  "type": "string",
+                  "enum": [
+                    "audio",
+                    "image",
+                    "text",
+                    "video"
                   ]
                 },
                 "enabled": {
@@ -2320,12 +2216,92 @@
                 "recommended": {
                   "type": "boolean"
                 },
+                "presentation": {
+                  "type": "object",
+                  "properties": {
+                    "descriptionKey": {
+                      "type": "string"
+                    },
+                    "logoId": {
+                      "type": "string",
+                      "enum": [
+                        "bytedance",
+                        "claude",
+                        "deepseek",
+                        "elevenlabs",
+                        "flux",
+                        "gemini",
+                        "google",
+                        "lightricks",
+                        "llm",
+                        "mistral",
+                        "nanobanana",
+                        "openai",
+                        "recraft",
+                        "stability",
+                        "xai"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "descriptionKey",
+                    "logoId"
+                  ]
+                },
                 "defaultOperationId": {
                   "type": "string"
                 },
                 "capabilities": {
                   "type": "object",
                   "properties": {
+                    "llm": {
+                      "type": "object",
+                      "properties": {
+                        "reasoning": {
+                          "type": "object",
+                          "properties": {
+                            "default": {
+                              "type": "string",
+                              "enum": [
+                                "off",
+                                "auto",
+                                "minimal",
+                                "low",
+                                "medium",
+                                "high",
+                                "max",
+                                "xhigh"
+                              ]
+                            },
+                            "mandatory": {
+                              "type": "boolean"
+                            },
+                            "options": {
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "enum": [
+                                  "off",
+                                  "auto",
+                                  "minimal",
+                                  "low",
+                                  "medium",
+                                  "high",
+                                  "max",
+                                  "xhigh"
+                                ]
+                              },
+                              "minItems": 1
+                            }
+                          },
+                          "required": [
+                            "default",
+                            "mandatory",
+                            "options"
+                          ]
+                        }
+                      }
+                    },
                     "operations": {
                       "type": "array",
                       "items": {
@@ -2353,6 +2329,12 @@
                                   "items": {
                                     "type": "string"
                                   }
+                                },
+                                "atLeastOne": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string"
+                                  }
                                 }
                               }
                             }
@@ -2362,6 +2344,85 @@
                             "items": {
                               "type": "string"
                             }
+                          },
+                          "nodeType": {
+                            "type": "string",
+                            "enum": [
+                              "audioGeneration",
+                              "imageGeneration",
+                              "llm",
+                              "musicGeneration",
+                              "soundEffectGeneration",
+                              "speechGeneration",
+                              "videoGeneration",
+                              "voiceChanger",
+                              "voiceIsolation"
+                            ]
+                          },
+                          "output": {
+                            "type": "object",
+                            "properties": {
+                              "mediaType": {
+                                "type": "string",
+                                "enum": [
+                                  "audio",
+                                  "image",
+                                  "text",
+                                  "video"
+                                ]
+                              },
+                              "count": {
+                                "type": "object",
+                                "properties": {
+                                  "default": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "exclusiveMinimum": true
+                                  },
+                                  "min": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "exclusiveMinimum": true
+                                  },
+                                  "max": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "exclusiveMinimum": true
+                                  },
+                                  "settingId": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "default",
+                                  "min",
+                                  "max"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "mediaType",
+                              "count"
+                            ]
+                          },
+                          "referenceLimit": {
+                            "type": "object",
+                            "properties": {
+                              "maxItems": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "slotIds": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              }
+                            },
+                            "required": [
+                              "maxItems",
+                              "slotIds"
+                            ]
                           },
                           "requiredSettingIds": {
                             "type": "array",
@@ -2382,6 +2443,9 @@
                           "descriptionKey",
                           "inputs",
                           "inputSlotIds",
+                          "nodeType",
+                          "output",
+                          "referenceLimit",
                           "settingIds"
                         ]
                       }
@@ -2392,9 +2456,6 @@
                         "type": "object",
                         "properties": {
                           "role": {
-                            "type": "string"
-                          },
-                          "label": {
                             "type": "string"
                           },
                           "labelKey": {
@@ -2418,8 +2479,7 @@
                                 "Asset",
                                 "ImageSet",
                                 "VideoSet",
-                                "AudioSet",
-                                "ElementContext"
+                                "AudioSet"
                               ]
                             }
                           },
@@ -2436,11 +2496,121 @@
                             "type": "integer",
                             "minimum": 0,
                             "exclusiveMinimum": true
+                          },
+                          "acceptedMedia": {
+                            "type": "object",
+                            "properties": {
+                              "mimeTypes": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "minItems": 1
+                              },
+                              "maxBytes": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "exclusiveMinimum": true
+                              },
+                              "durationSeconds": {
+                                "type": "object",
+                                "properties": {
+                                  "min": {
+                                    "type": "number",
+                                    "minimum": 0
+                                  },
+                                  "max": {
+                                    "type": "number",
+                                    "minimum": 0
+                                  }
+                                },
+                                "required": [
+                                  "min",
+                                  "max"
+                                ]
+                              },
+                              "framesPerSecond": {
+                                "type": "array",
+                                "items": {
+                                  "type": "number",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true
+                                },
+                                "minItems": 1
+                              },
+                              "resolutions": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "minItems": 1
+                              },
+                              "aspectRatios": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "minItems": 1
+                              }
+                            },
+                            "required": [
+                              "mimeTypes"
+                            ]
+                          },
+                          "referenceProfile": {
+                            "type": "object",
+                            "properties": {
+                              "contactSheetPolicy": {
+                                "type": "string",
+                                "enum": [
+                                  "never",
+                                  "not-applicable",
+                                  "preferred",
+                                  "supported"
+                                ]
+                              },
+                              "multipleSubjectSupport": {
+                                "type": "string",
+                                "enum": [
+                                  "not-applicable",
+                                  "supported",
+                                  "unknown",
+                                  "unsupported"
+                                ]
+                              },
+                              "purposes": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "enum": [
+                                    "audioGuidance",
+                                    "composition",
+                                    "firstFrame",
+                                    "identity",
+                                    "lastFrame",
+                                    "motion",
+                                    "style",
+                                    "subject",
+                                    "videoExtension"
+                                  ]
+                                },
+                                "minItems": 1
+                              },
+                              "recommendedMaxItems": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "exclusiveMinimum": true
+                              }
+                            },
+                            "required": [
+                              "contactSheetPolicy",
+                              "multipleSubjectSupport",
+                              "purposes"
+                            ]
                           }
                         },
                         "required": [
                           "role",
-                          "label",
                           "labelKey",
                           "descriptionKey",
                           "accepts",
@@ -2459,9 +2629,6 @@
                             "type": "object",
                             "properties": {
                               "id": {
-                                "type": "string"
-                              },
-                              "label": {
                                 "type": "string"
                               },
                               "labelKey": {
@@ -2628,16 +2795,12 @@
                                     "value": {
                                       "type": "string"
                                     },
-                                    "label": {
-                                      "type": "string"
-                                    },
                                     "labelKey": {
                                       "type": "string"
                                     }
                                   },
                                   "required": [
                                     "value",
-                                    "label",
                                     "labelKey"
                                   ]
                                 }
@@ -2645,7 +2808,6 @@
                             },
                             "required": [
                               "id",
-                              "label",
                               "labelKey",
                               "kind",
                               "default",
@@ -2656,9 +2818,6 @@
                             "type": "object",
                             "properties": {
                               "id": {
-                                "type": "string"
-                              },
-                              "label": {
                                 "type": "string"
                               },
                               "labelKey": {
@@ -2831,7 +2990,6 @@
                             },
                             "required": [
                               "id",
-                              "label",
                               "labelKey",
                               "kind",
                               "default",
@@ -2844,9 +3002,6 @@
                             "type": "object",
                             "properties": {
                               "id": {
-                                "type": "string"
-                              },
-                              "label": {
                                 "type": "string"
                               },
                               "labelKey": {
@@ -3008,7 +3163,6 @@
                             },
                             "required": [
                               "id",
-                              "label",
                               "labelKey",
                               "kind",
                               "default"
@@ -3018,9 +3172,6 @@
                             "type": "object",
                             "properties": {
                               "id": {
-                                "type": "string"
-                              },
-                              "label": {
                                 "type": "string"
                               },
                               "labelKey": {
@@ -3187,7 +3338,6 @@
                             },
                             "required": [
                               "id",
-                              "label",
                               "labelKey",
                               "kind",
                               "default",
@@ -3645,62 +3795,11 @@
                 "displayName",
                 "labelKey",
                 "mediaType",
-                "provider",
                 "enabled",
                 "recommended",
+                "presentation",
                 "defaultOperationId",
                 "capabilities"
-              ]
-            }
-          },
-          "elementTypes": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string",
-                  "enum": [
-                    "brand",
-                    "character",
-                    "location",
-                    "object",
-                    "product",
-                    "vehicle",
-                    "voice",
-                    "other"
-                  ]
-                },
-                "previewRole": {
-                  "type": "string",
-                  "nullable": true
-                },
-                "assetRoles": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "id": {
-                        "type": "string"
-                      },
-                      "accepts": {
-                        "type": "array",
-                        "items": {
-                          "$ref": "#/components/schemas/AssetType"
-                        }
-                      }
-                    },
-                    "required": [
-                      "id",
-                      "accepts"
-                    ]
-                  }
-                }
-              },
-              "required": [
-                "id",
-                "previewRole",
-                "assetRoles"
               ]
             }
           },
@@ -3711,10 +3810,15 @@
               "enum": [
                 "asset",
                 "audioGeneration",
-                "element",
                 "imageGeneration",
+                "llm",
+                "musicGeneration",
+                "soundEffectGeneration",
+                "speechGeneration",
                 "text",
-                "videoGeneration"
+                "videoGeneration",
+                "voiceChanger",
+                "voiceIsolation"
               ]
             }
           },
@@ -3728,7 +3832,6 @@
         "required": [
           "registryVersion",
           "models",
-          "elementTypes",
           "nodeTypes",
           "inputRoles"
         ]
@@ -3876,13 +3979,6 @@
             },
             "maxItems": 10
           },
-          "elements": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/SearchElement"
-            },
-            "maxItems": 10
-          },
           "folders": {
             "type": "array",
             "items": {
@@ -3893,7 +3989,6 @@
         },
         "required": [
           "assets",
-          "elements",
           "folders"
         ]
       },
@@ -3908,31 +4003,6 @@
           },
           "type": {
             "$ref": "#/components/schemas/AssetType"
-          },
-          "thumbnailUrl": {
-            "type": "string",
-            "nullable": true,
-            "format": "uri"
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "type",
-          "thumbnailUrl"
-        ]
-      },
-      "SearchElement": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "$ref": "#/components/schemas/Cuid2"
-          },
-          "name": {
-            "type": "string"
-          },
-          "type": {
-            "$ref": "#/components/schemas/ElementType"
           },
           "thumbnailUrl": {
             "type": "string",
@@ -3970,7 +4040,6 @@
         "type": "string",
         "enum": [
           "asset",
-          "element",
           "folder"
         ]
       }

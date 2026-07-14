@@ -1,23 +1,15 @@
 import type { AssetSource, AssetType, JsonValue } from '@talelabs/db'
-import type { ElementType } from '@talelabs/elements'
 import type {
   FlowAssetType,
   FlowGraphEdge,
   FlowGraphNode,
   FlowGraphValidationContext,
   FlowNodeType,
-  ResolvedElementRole,
 } from '@talelabs/flows'
 
 import { createId } from '@paralleldrive/cuid2'
 import { db } from '@talelabs/db'
 import {
-  getElementAssetRoles,
-  isElementType,
-  upcastElementData,
-} from '@talelabs/elements'
-import {
-  assetTypeToValueType,
   compareFlowEdgesByPriority,
   FLOW_GRAPH_LIMITS,
   isFlowNodeType,
@@ -43,11 +35,6 @@ import {
   resolvePagination,
 } from '../pagination/pagination.js'
 import { presentAsset, toWireJsonObject } from './asset-presenter.js'
-import { presentElement } from './elements.service.js'
-import {
-  assertFlowReferenceBudget,
-  createFlowReferenceBudgetError,
-} from './flow-reference-budget.js'
 
 interface FlowReferenceAssetResponse {
   createdAt: string
@@ -68,25 +55,8 @@ interface FlowReferenceAssetResponse {
   width: null | number
 }
 
-interface FlowReferenceElementResponse {
-  data: Record<string, any>
-  id: string
-  instructions: null | string
-  name: string
-  schemaVersion: number
-  type: ElementType
-}
-
 interface FlowReferencesResponse {
   assets: FlowReferenceAssetResponse[]
-  elementAssets: Array<{
-    assetId: string
-    elementId: string
-    isPrimary: boolean
-    role: string
-    sortOrder: number
-  }>
-  elements: FlowReferenceElementResponse[]
 }
 
 function presentViewport(value: JsonValue) {
@@ -114,7 +84,6 @@ function presentFlow(flow: NonNullable<Awaited<ReturnType<typeof findFlowById>>>
 function presentNode(node: {
   assetId: null | string
   data: JsonValue
-  elementId: null | string
   id: string
   positionX: number
   positionY: number
@@ -123,7 +92,6 @@ function presentNode(node: {
 }): {
   assetId: null | string
   data: Record<string, any>
-  elementId: null | string
   id: string
   positionX: number
   positionY: number
@@ -139,7 +107,6 @@ function presentNode(node: {
     type: parsed.type,
     positionX: node.positionX,
     positionY: node.positionY,
-    elementId: node.elementId,
     assetId: node.assetId,
     data: toWireJsonObject(parsed.data),
     schemaVersion: parsed.schemaVersion,
@@ -172,51 +139,21 @@ async function getValidationContext(input: {
   organizationId: string
 }): Promise<FlowGraphValidationContext> {
   const assetIds = [...new Set(input.nodes.flatMap(node => node.assetId ? [node.assetId] : []))]
-  const elementIds = [...new Set(input.nodes.flatMap(node => node.elementId ? [node.elementId] : []))]
   const rows = await listFlowGraphReferenceRows(input.executor, {
     assetIds,
-    elementIds,
     organizationId: input.organizationId,
   })
   const assetsById = new Map(rows.assets.map(asset => [asset.id, asset]))
-  const elementsById = new Map(rows.elements.map(element => [element.id, element]))
 
   for (const node of input.nodes) {
     if (node.assetId && !assetsById.has(node.assetId))
       throw new TenantResourceNotFoundError(`nodes.${node.id}.assetId`)
-    if (node.elementId && !elementsById.has(node.elementId))
-      throw new TenantResourceNotFoundError(`nodes.${node.id}.elementId`)
-  }
-  const assetsByElementRole = new Map<string, string[]>()
-  for (const asset of rows.elementAssets) {
-    const key = `${asset.elementId}:${asset.role}`
-    const ids = assetsByElementRole.get(key) ?? []
-    ids.push(asset.assetId)
-    assetsByElementRole.set(key, ids)
-  }
-
-  const elementRolesById: Record<string, ResolvedElementRole[]> = {}
-  for (const element of rows.elements) {
-    if (!isElementType(element.type))
-      throw new Error(`Stored Element type is not registered: ${element.type}`)
-    const data = upcastElementData(
-      element.type,
-      element.schemaVersion,
-      element.data,
-    ).data
-    elementRolesById[element.id] = getElementAssetRoles(element.type, data)
-      .map(role => ({
-        assetIds: assetsByElementRole.get(`${element.id}:${role.id}`) ?? [],
-        id: role.id,
-        valueType: assetTypeToValueType(role.accepts[0]) as ResolvedElementRole['valueType'],
-      }))
   }
 
   return {
     assetTypesById: Object.fromEntries(
       rows.assets.map(asset => [asset.id, asset.type as FlowAssetType]),
     ),
-    elementRolesById,
   }
 }
 
@@ -347,32 +284,17 @@ export async function getFlowReferences(
   const assetIds = [...new Set(nodes.flatMap(node => (
     node.assetId ? [node.assetId] : []
   )))]
-  const elementIds = [...new Set(nodes.flatMap(node => (
-    node.elementId ? [node.elementId] : []
-  )))]
-  await assertFlowReferenceBudget(db, {
-    assetIds,
-    elementIds,
-    organizationId,
-  })
   const hydration = await listFlowGraphHydrationRows({
     assetLimit: FLOW_GRAPH_LIMITS.referenceAssets,
     assetIds,
-    elementAssetLimit: FLOW_GRAPH_LIMITS.referenceLinks,
-    elementIds,
     organizationId,
   })
   if (hydration.limitExceeded) {
-    const maximum = hydration.limitExceeded === 'assets'
-      ? FLOW_GRAPH_LIMITS.referenceAssets
-      : FLOW_GRAPH_LIMITS.referenceLinks
-    throw createFlowReferenceBudgetError({
-      actual: maximum + 1,
-      field: hydration.limitExceeded === 'assets'
-        ? 'assets'
-        : 'elementAssets',
-      maximum,
-    })
+    throw validationError([{
+      code: 'reference_asset_limit',
+      field: 'assets',
+      params: { maximum: FLOW_GRAPH_LIMITS.referenceAssets },
+    }])
   }
   const presentedAssets = await Promise.all(hydration.assets.map(asset => (
     presentAsset(asset, undefined, { includeOriginalUrl: false })
@@ -397,18 +319,6 @@ export async function getFlowReferences(
       createdAt: asset.createdAt,
       generationModel: hydration.assets[index]?.generationModel ?? null,
     })),
-    elements: hydration.elements.map((element) => {
-      const presented = presentElement(element)
-      return {
-        id: presented.id,
-        type: presented.type,
-        name: presented.name,
-        instructions: presented.instructions,
-        data: presented.data,
-        schemaVersion: presented.schemaVersion,
-      }
-    }),
-    elementAssets: hydration.elementAssets,
   }
 }
 
@@ -440,9 +350,6 @@ export async function syncFlowGraph(input: {
     deleteEdgeIds,
     deleteNodeIds,
     flowId: input.flowId,
-    lockReferenceBudget: upsertNodes.some(node => (
-      node.assetId !== null || node.elementId !== null
-    )),
     organizationId: input.organizationId,
     upsertEdges,
     upsertNodes: upsertNodes.map(node => ({
@@ -479,11 +386,6 @@ export async function syncFlowGraph(input: {
 
       const nodeValues = [...finalNodes.values()]
       const edgeValues = [...finalEdges.values()].toSorted(compareFlowEdgesByPriority)
-      await assertFlowReferenceBudget(executor, {
-        assetIds: nodeValues.flatMap(node => node.assetId ? [node.assetId] : []),
-        elementIds: nodeValues.flatMap(node => node.elementId ? [node.elementId] : []),
-        organizationId: input.organizationId,
-      })
       const context = await getValidationContext({
         executor,
         nodes: nodeValues,

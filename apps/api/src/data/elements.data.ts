@@ -344,41 +344,26 @@ export function listElementReadinessRows(input: {
 }
 
 export async function getElementUsageRows(organizationId: string, elementId: string) {
-  const [flowSummary, flows, runSummary] = await Promise.all([
-    db.selectFrom('flowNodes')
-      .select(({ fn }) => fn.count<number>('flowId').distinct().as('count'))
-      .where('organizationId', '=', organizationId)
-      .where('elementId', '=', elementId)
-      .executeTakeFirstOrThrow(),
-    db.selectFrom('flowNodes as node')
-      .innerJoin('flows as flow', join => join
-        .onRef('flow.id', '=', 'node.flowId')
-        .onRef('flow.organizationId', '=', 'node.organizationId'))
-      .select(({ fn }) => [
-        'flow.id as flowId',
-        'flow.name as flowName',
-        'flow.updatedAt',
-        fn.countAll<number>().as('nodeCount'),
-      ])
-      .where('node.organizationId', '=', organizationId)
-      .where('node.elementId', '=', elementId)
-      .groupBy(['flow.id', 'flow.name', 'flow.updatedAt'])
-      .orderBy('flow.updatedAt', 'desc')
-      .orderBy('flow.id', 'desc')
-      .limit(20)
-      .execute(),
-    db.selectFrom('generationJobSources as source')
-      .innerJoin('generationJobs as job', join => join
-        .onRef('job.id', '=', 'source.jobId')
-        .onRef('job.organizationId', '=', 'source.organizationId'))
-      .select(({ fn }) => [
-        fn.count<number>('source.jobId').distinct().as('count'),
-        fn.max<Date>('job.createdAt').as('lastUsedAt'),
-      ])
-      .where('source.organizationId', '=', organizationId)
-      .where('source.elementId', '=', elementId)
-      .executeTakeFirstOrThrow(),
-  ])
+  const runSummary = await db.selectFrom('generationJobSources as source')
+    .innerJoin('generationJobs as job', join => join
+      .onRef('job.id', '=', 'source.jobId')
+      .onRef('job.organizationId', '=', 'source.organizationId'))
+    .select(({ fn }) => [
+      fn.count<number>('source.jobId').distinct().as('count'),
+      fn.max<Date>('job.createdAt').as('lastUsedAt'),
+    ])
+    .where('source.organizationId', '=', organizationId)
+    .where('source.elementId', '=', elementId)
+    .executeTakeFirstOrThrow()
 
-  return { flowSummary, flows, runSummary }
+  // Elements are dormant and no longer participate in active Flow graphs.
+  return {
+    flowSummary: { count: 0 },
+    flows: [] as Array<{
+      flowId: string
+      flowName: string
+      nodeCount: number
+    }>,
+    runSummary,
+  }
 }

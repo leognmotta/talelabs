@@ -6,13 +6,17 @@ import type {
   FlowGraphValidationResult,
   FlowInputSelection,
   FlowValueType,
-  ResolvedElementRole,
 } from './types.js'
 
+import {
+  getAdaptiveGenerationInlineValues,
+  resolveAdaptiveGenerationState,
+} from './adaptive-generation-resolver.js'
 import { evaluateGenerationContract } from './generation-evaluator.js'
 import {
   getActiveGenerationInputSlots,
   getGenerationModel,
+  isAdaptiveGenerationNodeType,
   isGenerationNodeType,
 } from './generation-registry.js'
 import {
@@ -79,20 +83,8 @@ function normalizeNodes(
   return { nodes: normalizedNodes, validNodeIds }
 }
 
-function getElementRole(
-  context: FlowGraphValidationContext,
-  elementId: string,
-  handleId: string,
-): ResolvedElementRole | undefined {
-  if (!handleId.startsWith('role:'))
-    return undefined
-  const roleId = handleId.slice('role:'.length)
-  return context.elementRolesById[elementId]?.find(role => role.id === roleId)
-}
-
 function sourceCandidateAssetIds(
   node: FlowGraphNode,
-  edge: FlowGraphEdge,
   context: FlowGraphValidationContext,
   acceptedTypes: readonly FlowValueType[],
 ) {
@@ -103,14 +95,13 @@ function sourceCandidateAssetIds(
       : []
   }
 
-  if (node.type === 'element' && node.elementId && edge.sourceHandle) {
-    const role = getElementRole(context, node.elementId, edge.sourceHandle)
-    return role && acceptedTypes.includes(role.valueType)
-      ? [...role.assetIds]
-      : []
-  }
-
   return []
+}
+
+function sourceRuntimeItemCount(node: FlowGraphNode) {
+  if (node.type === 'text')
+    return String(node.data.text ?? '').trim().length > 0 ? 1 : 0
+  return isGenerationNodeType(node.type) ? 1 : 0
 }
 
 function validateGenerationSelections(
@@ -124,22 +115,31 @@ function validateGenerationSelections(
     if (!isGenerationNodeType(node.type))
       continue
 
-    const modelId = typeof node.data.modelId === 'string' ? node.data.modelId : ''
-    const model = getGenerationModel(
-      modelId,
-      node.data.modelContractVersion,
-    )
+    const modelId
+      = typeof node.data.modelId === 'string' ? node.data.modelId : ''
+    const model = getGenerationModel(modelId, node.data.modelContractVersion)
     if (!model)
       continue
 
-    const selections = node.data.inputSelections as Record<string, FlowInputSelection>
+    const selections = node.data.inputSelections as Record<
+      string,
+      FlowInputSelection
+    >
     const slotsById = new Map(model.inputSlots.map(slot => [slot.id, slot]))
     for (const slotId of Object.keys(selections)) {
-      if (!slotsById.has(slotId))
-        issue(issues, 'unknown_input_selection', `nodes.${node.id}.data.inputSelections.${slotId}`)
+      if (!slotsById.has(slotId)) {
+        issue(
+          issues,
+          'unknown_input_selection',
+          `nodes.${node.id}.data.inputSelections.${slotId}`,
+        )
+      }
     }
 
-    for (const slot of getActiveGenerationInputSlots(model, node.data.operationId)) {
+    const selectionSlots = isAdaptiveGenerationNodeType(node.type)
+      ? model.inputSlots
+      : getActiveGenerationInputSlots(model, node.data.operationId)
+    for (const slot of selectionSlots) {
       const selection = selections[slot.id]
       if (!selection || selection.mode === 'auto')
         continue
@@ -161,7 +161,6 @@ function validateGenerationSelections(
           continue
         for (const assetId of sourceCandidateAssetIds(
           sourceNode,
-          edge,
           context,
           slot.accepts,
         )) {
@@ -172,9 +171,9 @@ function validateGenerationSelections(
       if (!strictSelections)
         continue
 
-      const validSelectedCount = selection.assetIds.filter(assetId => (
-        candidates.has(assetId)
-      )).length
+      const validSelectedCount = selection.assetIds.filter(assetId =>
+        candidates.has(assetId),
+      ).length
       if (validSelectedCount > slot.maxItems) {
         issue(
           issues,
@@ -200,6 +199,7 @@ function validateGenerationSelections(
 function validateGenerationConstraints(
   nodesById: Map<string, FlowGraphNode>,
   edges: readonly FlowGraphEdge[],
+  context: FlowGraphValidationContext,
   issues: FlowGraphIssue[],
   requireComplete: boolean,
 ) {
@@ -220,14 +220,84 @@ function validateGenerationConstraints(
       connectionCounts[edge.targetHandle]
         = (connectionCounts[edge.targetHandle] ?? 0) + 1
     }
-    const evaluation = evaluateGenerationContract({
-      connectionCounts,
-      model,
-      operationId: String(node.data.operationId ?? ''),
-      requireComplete,
-      settings: node.data.settings as Record<string, boolean | number | string>,
-    })
+    const settings = node.data.settings as Record<
+      string,
+      boolean | number | string
+    >
+    const itemCounts: Record<string, number> = {}
+    const selections = node.data.inputSelections as Record<
+      string,
+      FlowInputSelection
+    >
+    for (const slot of model.inputSlots) {
+      const candidates = new Set<string>()
+      let opaqueRuntimeItems = 0
+      for (const edge of edges.toSorted(
+        (left, right) =>
+          left.createdAt.localeCompare(right.createdAt)
+          || left.id.localeCompare(right.id),
+      )) {
+        if (edge.targetNodeId !== node.id || edge.targetHandle !== slot.id)
+          continue
+        const sourceNode = nodesById.get(edge.sourceNodeId)
+        if (!sourceNode)
+          continue
+        const assetIds = sourceCandidateAssetIds(
+          sourceNode,
+          context,
+          slot.accepts,
+        )
+        for (const assetId of assetIds) candidates.add(assetId)
+        if (!assetIds.length)
+          opaqueRuntimeItems += sourceRuntimeItemCount(sourceNode)
+      }
+      const selection = selections[slot.id]
+      const selectedCandidateCount
+        = selection?.mode === 'manual'
+          ? selection.assetIds.length
+          : Math.min(candidates.size, slot.maxItems)
+      itemCounts[slot.id] = selectedCandidateCount + opaqueRuntimeItems
+    }
+    const adaptiveEvaluation = isAdaptiveGenerationNodeType(node.type)
+      ? resolveAdaptiveGenerationState({
+          connectionCounts,
+          ...getAdaptiveGenerationInlineValues(node.data),
+          itemCounts,
+          model,
+          nodeType: node.type,
+          settings,
+        })
+      : null
+    const evaluation
+      = adaptiveEvaluation
+        ?? evaluateGenerationContract({
+          connectionCounts,
+          itemCounts,
+          model,
+          operationId: String(node.data.operationId ?? ''),
+          requireComplete,
+          settings,
+        })
+    if (
+      adaptiveEvaluation
+      && adaptiveEvaluation.resolvedOperationId
+      !== String(node.data.operationId ?? '')
+    ) {
+      issue(
+        issues,
+        'derived_operation_mismatch',
+        `nodes.${node.id}.data.operationId`,
+        { resolvedOperationId: adaptiveEvaluation.resolvedOperationId ?? '' },
+      )
+    }
+    const incompleteCodes = new Set([
+      'generation_input_at_least_one',
+      'generation_input_required',
+      'generation_setting_required',
+    ])
     for (const contractIssue of evaluation.issues) {
+      if (!requireComplete && incompleteCodes.has(contractIssue.code))
+        continue
       issue(
         issues,
         contractIssue.code,
@@ -272,27 +342,24 @@ function validateGraph(
     const bytes = dataByteLength(node.data)
     aggregateDataBytes += bytes
     if (bytes > FLOW_GRAPH_LIMITS.nodeDataBytes) {
-      issue(
-        issues,
-        'node_data_limit',
-        `nodes.${index}.data`,
-        { maximum: FLOW_GRAPH_LIMITS.nodeDataBytes },
-      )
+      issue(issues, 'node_data_limit', `nodes.${index}.data`, {
+        maximum: FLOW_GRAPH_LIMITS.nodeDataBytes,
+      })
     }
 
-    if (node.type === 'asset' && node.assetId && !input.context.assetTypesById[node.assetId])
+    if (
+      node.type === 'asset'
+      && node.assetId
+      && !input.context.assetTypesById[node.assetId]
+    ) {
       issue(issues, 'unresolved_asset_reference', `nodes.${index}.assetId`)
-    if (node.type === 'element' && node.elementId && !input.context.elementRolesById[node.elementId])
-      issue(issues, 'unresolved_element_reference', `nodes.${index}.elementId`)
+    }
   }
 
   if (aggregateDataBytes > FLOW_GRAPH_LIMITS.aggregateNodeDataBytes) {
-    issue(
-      issues,
-      'aggregate_node_data_limit',
-      'nodes',
-      { maximum: FLOW_GRAPH_LIMITS.aggregateNodeDataBytes },
-    )
+    issue(issues, 'aggregate_node_data_limit', 'nodes', {
+      maximum: FLOW_GRAPH_LIMITS.aggregateNodeDataBytes,
+    })
   }
 
   const nodesById = new Map(
@@ -339,12 +406,14 @@ function validateGraph(
 
     const sourceHandles = getFlowNodeHandles(sourceNode, input.context)
     const targetHandles = getFlowNodeHandles(targetNode, input.context)
-    const sourceHandle = sourceHandles.find(handle => (
-      handle.direction === 'output' && handle.id === edge.sourceHandle
-    ))
-    const targetHandle = targetHandles.find(handle => (
-      handle.direction === 'input' && handle.id === edge.targetHandle
-    ))
+    const sourceHandle = sourceHandles.find(
+      handle =>
+        handle.direction === 'output' && handle.id === edge.sourceHandle,
+    )
+    const targetHandle = targetHandles.find(
+      handle =>
+        handle.direction === 'input' && handle.id === edge.targetHandle,
+    )
 
     if (!sourceHandle) {
       issue(issues, 'unknown_source_handle', `edges.${index}.sourceHandle`)
@@ -368,9 +437,10 @@ function validateGraph(
   for (const node of nodesById.values()) {
     for (const handle of getFlowNodeHandles(node, input.context)) {
       const key = `${node.id}:${handle.id}`
-      const count = handle.direction === 'input'
-        ? incomingCounts.get(key) ?? 0
-        : outgoingCounts.get(key) ?? 0
+      const count
+        = handle.direction === 'input'
+          ? (incomingCounts.get(key) ?? 0)
+          : (outgoingCounts.get(key) ?? 0)
       if (handle.maxConnections !== null && count > handle.maxConnections) {
         issue(
           issues,
@@ -397,7 +467,13 @@ function validateGraph(
     issues,
     requireComplete,
   )
-  validateGenerationConstraints(nodesById, input.edges, issues, requireComplete)
+  validateGenerationConstraints(
+    nodesById,
+    input.edges,
+    input.context,
+    issues,
+    requireComplete,
+  )
 
   return { issues, nodes, valid: issues.length === 0 }
 }
