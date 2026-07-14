@@ -1896,6 +1896,7 @@
                     "pending",
                     "running",
                     "succeeded",
+                    "partial",
                     "failed",
                     "skipped",
                     "canceled"
@@ -2176,6 +2177,760 @@
         },
         "required": [
           "baseRevision"
+        ]
+      },
+      "FlowRunPlanResponse": {
+        "type": "object",
+        "properties": {
+          "flowId": {
+            "$ref": "#/components/schemas/Cuid2"
+          },
+          "flowRevision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "planHash": {
+            "type": "string"
+          },
+          "expectedOutputCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "plannedExecutableCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "plannedItemCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "plannedJobCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "requestedExecutableCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "topologicalDepth": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "node",
+              "downstream",
+              "upstream",
+              "selection",
+              "all"
+            ]
+          }
+        },
+        "required": [
+          "flowId",
+          "flowRevision",
+          "planHash",
+          "expectedOutputCount",
+          "plannedExecutableCount",
+          "plannedItemCount",
+          "plannedJobCount",
+          "requestedExecutableCount",
+          "topologicalDepth"
+        ]
+      },
+      "FlowRunPlanRequest": {
+        "type": "object",
+        "properties": {
+          "command": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "expectedFlowRevision": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "mode": {
+                    "type": "string",
+                    "enum": [
+                      "node"
+                    ]
+                  },
+                  "targetNodeId": {
+                    "$ref": "#/components/schemas/Cuid2"
+                  }
+                },
+                "required": [
+                  "expectedFlowRevision",
+                  "mode",
+                  "targetNodeId"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "expectedFlowRevision": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "mode": {
+                    "type": "string",
+                    "enum": [
+                      "downstream"
+                    ]
+                  },
+                  "targetNodeId": {
+                    "$ref": "#/components/schemas/Cuid2"
+                  }
+                },
+                "required": [
+                  "expectedFlowRevision",
+                  "mode",
+                  "targetNodeId"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "expectedFlowRevision": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "mode": {
+                    "type": "string",
+                    "enum": [
+                      "upstream"
+                    ]
+                  },
+                  "targetNodeId": {
+                    "$ref": "#/components/schemas/Cuid2"
+                  }
+                },
+                "required": [
+                  "expectedFlowRevision",
+                  "mode",
+                  "targetNodeId"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "expectedFlowRevision": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "mode": {
+                    "type": "string",
+                    "enum": [
+                      "selection"
+                    ]
+                  },
+                  "selectedNodeIds": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/Cuid2"
+                    },
+                    "minItems": 1,
+                    "maxItems": 100
+                  }
+                },
+                "required": [
+                  "expectedFlowRevision",
+                  "mode",
+                  "selectedNodeIds"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "expectedFlowRevision": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "mode": {
+                    "type": "string",
+                    "enum": [
+                      "all"
+                    ]
+                  }
+                },
+                "required": [
+                  "expectedFlowRevision",
+                  "mode"
+                ]
+              }
+            ]
+          }
+        },
+        "required": [
+          "command"
+        ]
+      },
+      "RunListResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FlowRunSummary"
+            }
+          },
+          "nextCursor": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "data",
+          "nextCursor"
+        ]
+      },
+      "FlowRunSummary": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Cuid2"
+          },
+          "flowId": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 2,
+            "maxLength": 32,
+            "pattern": "^[a-z][0-9a-z]+$"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "node",
+              "downstream",
+              "upstream",
+              "selection",
+              "all"
+            ]
+          },
+          "targetNodeId": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 2,
+            "maxLength": 32,
+            "pattern": "^[a-z][0-9a-z]+$"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "running",
+              "succeeded",
+              "partial",
+              "failed",
+              "canceled"
+            ]
+          },
+          "planHash": {
+            "type": "string"
+          },
+          "snapshotHash": {
+            "type": "string"
+          },
+          "errorCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "errorMessage": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "startedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "completedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "summary": {
+            "type": "object",
+            "properties": {
+              "expectedOutputCount": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "plannedExecutableCount": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "plannedItemCount": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "plannedJobCount": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "expectedOutputCount",
+              "plannedExecutableCount",
+              "plannedItemCount",
+              "plannedJobCount"
+            ]
+          },
+          "nodeCounts": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "required": [
+          "id",
+          "flowId",
+          "mode",
+          "targetNodeId",
+          "status",
+          "planHash",
+          "snapshotHash",
+          "errorCode",
+          "errorMessage",
+          "createdAt",
+          "startedAt",
+          "completedAt",
+          "summary",
+          "nodeCounts"
+        ]
+      },
+      "FlowRun": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Cuid2"
+          },
+          "flowId": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 2,
+            "maxLength": 32,
+            "pattern": "^[a-z][0-9a-z]+$"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "node",
+              "downstream",
+              "upstream",
+              "selection",
+              "all"
+            ]
+          },
+          "targetNodeId": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 2,
+            "maxLength": 32,
+            "pattern": "^[a-z][0-9a-z]+$"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "running",
+              "succeeded",
+              "partial",
+              "failed",
+              "canceled"
+            ]
+          },
+          "planHash": {
+            "type": "string"
+          },
+          "snapshotHash": {
+            "type": "string"
+          },
+          "errorCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "errorMessage": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "startedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "completedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "summary": {
+            "type": "object",
+            "properties": {
+              "expectedOutputCount": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "plannedExecutableCount": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "plannedItemCount": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "plannedJobCount": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "expectedOutputCount",
+              "plannedExecutableCount",
+              "plannedItemCount",
+              "plannedJobCount"
+            ]
+          },
+          "nodes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FlowRunNodeState"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "flowId",
+          "mode",
+          "targetNodeId",
+          "status",
+          "planHash",
+          "snapshotHash",
+          "errorCode",
+          "errorMessage",
+          "createdAt",
+          "startedAt",
+          "completedAt",
+          "summary",
+          "nodes"
+        ]
+      },
+      "FlowRunNodeState": {
+        "type": "object",
+        "properties": {
+          "nodeId": {
+            "$ref": "#/components/schemas/Cuid2"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "running",
+              "succeeded",
+              "partial",
+              "failed",
+              "skipped",
+              "canceled"
+            ]
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FlowRunNodeItem"
+            }
+          },
+          "jobs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FlowRunJob"
+            }
+          }
+        },
+        "required": [
+          "nodeId",
+          "status",
+          "items",
+          "jobs"
+        ]
+      },
+      "FlowRunNodeItem": {
+        "type": "object",
+        "properties": {
+          "nodeId": {
+            "$ref": "#/components/schemas/Cuid2"
+          },
+          "itemKey": {
+            "type": "string"
+          },
+          "sortOrder": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "running",
+              "succeeded",
+              "partial",
+              "failed",
+              "skipped",
+              "canceled"
+            ]
+          },
+          "dimensions": {
+            "type": "object",
+            "additionalProperties": {
+              "nullable": true
+            }
+          },
+          "lineage": {
+            "type": "array",
+            "items": {
+              "nullable": true
+            }
+          }
+        },
+        "required": [
+          "nodeId",
+          "itemKey",
+          "sortOrder",
+          "status",
+          "dimensions",
+          "lineage"
+        ]
+      },
+      "FlowRunJob": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Cuid2"
+          },
+          "nodeId": {
+            "$ref": "#/components/schemas/Cuid2"
+          },
+          "itemKey": {
+            "type": "string"
+          },
+          "requestIndex": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "mediaType": {
+            "type": "string",
+            "enum": [
+              "image",
+              "video",
+              "audio",
+              "text"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "running",
+              "succeeded",
+              "failed",
+              "canceled"
+            ]
+          },
+          "model": {
+            "type": "string"
+          },
+          "operation": {
+            "type": "string"
+          },
+          "errorCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "errorMessage": {
+            "type": "string",
+            "nullable": true
+          },
+          "assetOutputs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FlowRunAssetOutput"
+            }
+          },
+          "textOutputs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FlowRunTextOutput"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "nodeId",
+          "itemKey",
+          "requestIndex",
+          "mediaType",
+          "status",
+          "model",
+          "operation",
+          "errorCode",
+          "errorMessage",
+          "assetOutputs",
+          "textOutputs"
+        ]
+      },
+      "FlowRunAssetOutput": {
+        "type": "object",
+        "properties": {
+          "assetId": {
+            "$ref": "#/components/schemas/Cuid2"
+          },
+          "jobId": {
+            "$ref": "#/components/schemas/Cuid2"
+          },
+          "mimeType": {
+            "type": "string"
+          },
+          "outputIndex": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "thumbnailUrl": {
+            "type": "string",
+            "nullable": true,
+            "format": "uri"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "image",
+              "video",
+              "audio",
+              "document"
+            ]
+          },
+          "url": {
+            "type": "string",
+            "nullable": true,
+            "format": "uri"
+          }
+        },
+        "required": [
+          "assetId",
+          "jobId",
+          "mimeType",
+          "outputIndex",
+          "thumbnailUrl",
+          "type",
+          "url"
+        ]
+      },
+      "FlowRunTextOutput": {
+        "type": "object",
+        "properties": {
+          "jobId": {
+            "$ref": "#/components/schemas/Cuid2"
+          },
+          "outputIndex": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "jobId",
+          "outputIndex",
+          "text"
+        ]
+      },
+      "CreateRunRequest": {
+        "type": "object",
+        "properties": {
+          "expectedPlanHash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "flowId": {
+            "$ref": "#/components/schemas/Cuid2"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "node",
+              "downstream",
+              "upstream",
+              "selection",
+              "all"
+            ]
+          },
+          "expectedFlowRevision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "targetNodeId": {
+            "$ref": "#/components/schemas/Cuid2"
+          },
+          "selectedNodeIds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Cuid2"
+            },
+            "minItems": 1,
+            "maxItems": 100
+          }
+        },
+        "required": [
+          "flowId",
+          "mode",
+          "expectedFlowRevision"
+        ]
+      },
+      "CreateFlowRunRequest": {
+        "type": "object",
+        "properties": {
+          "expectedPlanHash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "node",
+              "downstream",
+              "upstream",
+              "selection",
+              "all"
+            ]
+          },
+          "expectedFlowRevision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "targetNodeId": {
+            "$ref": "#/components/schemas/Cuid2"
+          },
+          "selectedNodeIds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Cuid2"
+            },
+            "minItems": 1,
+            "maxItems": 100
+          }
+        },
+        "required": [
+          "mode",
+          "expectedFlowRevision"
         ]
       },
       "GenerationConfigResponse": {
@@ -8064,6 +8819,749 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/FlowGraphReferences"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Active organization required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Resource state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Organization request rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/flows/{id}/run-plans": {
+      "post": {
+        "tags": [
+          "Runs"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "$ref": "#/components/schemas/Cuid2"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FlowRunPlanRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Run plan preview",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FlowRunPlanResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Active organization required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Resource state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Organization request rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/runs": {
+      "get": {
+        "tags": [
+          "Runs"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "$ref": "#/components/schemas/Cursor"
+            },
+            "required": false,
+            "description": "Opaque cursor returned by a previous list response",
+            "name": "cursor",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "$ref": "#/components/schemas/Cuid2"
+            },
+            "required": false,
+            "name": "flowId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "$ref": "#/components/schemas/PaginationLimit"
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pending",
+                "running",
+                "succeeded",
+                "partial",
+                "failed",
+                "canceled"
+              ]
+            },
+            "required": false,
+            "name": "status",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Run list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Active organization required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Resource state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Organization request rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Runs"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRunRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Run admitted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FlowRun"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Active organization required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Resource state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Organization request rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/flows/{flowId}/runs": {
+      "post": {
+        "tags": [
+          "Runs"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "$ref": "#/components/schemas/Cuid2"
+            },
+            "required": true,
+            "name": "flowId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateFlowRunRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Run admitted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FlowRun"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Active organization required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Resource state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Organization request rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/runs/{id}": {
+      "get": {
+        "tags": [
+          "Runs"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "$ref": "#/components/schemas/Cuid2"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Run detail",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FlowRun"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Active organization required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Resource state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Organization request rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/runs/{id}/cancel": {
+      "post": {
+        "tags": [
+          "Runs"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "$ref": "#/components/schemas/Cuid2"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Run cancellation requested",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FlowRun"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Active organization required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Resource state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Organization request rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/runs/reconcile": {
+      "post": {
+        "tags": [
+          "Runs"
+        ],
+        "responses": {
+          "200": {
+            "description": "Run dispatch reconciliation result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "dispatched": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  },
+                  "required": [
+                    "dispatched"
+                  ]
                 }
               }
             }

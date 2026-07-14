@@ -29,6 +29,7 @@ export const flowGraphResponseSchema = z.object({
         "pending",
         "running",
         "succeeded",
+        "partial",
         "failed",
         "skipped",
         "canceled",

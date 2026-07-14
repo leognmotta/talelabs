@@ -11,6 +11,7 @@ export const activeRunsNodeStatusEnum = {
   pending: "pending",
   running: "running",
   succeeded: "succeeded",
+  partial: "partial",
   failed: "failed",
   skipped: "skipped",
   canceled: "canceled",
