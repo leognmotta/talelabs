@@ -4,7 +4,6 @@ import type { SettingsTab } from '../features/settings/settings-state'
 import {
   IconAlertCircle,
   IconBuilding,
-  IconComponents,
   IconGitBranch,
   IconRefresh,
   IconSearch,
@@ -28,7 +27,6 @@ import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import { useAssetViewerUrlState } from '../features/assets/use-asset-viewer-url-state'
-import { elementTypeTranslationKey } from '../features/elements/element-i18n'
 import {
   GLOBAL_SEARCH_MIN_LENGTH,
   GLOBAL_SEARCH_RESULT_LIMIT,
@@ -37,18 +35,16 @@ import { useDebouncedSearch } from '../features/search/use-debounced-search'
 import { useWorkspaceSearchQuery } from '../features/search/use-workspace-search-query'
 import { AssetIcon } from '../shared/domain-icons'
 import { GlobalSearchAssetThumbnail } from './global-search-asset-thumbnail'
-import { GlobalSearchElementThumbnail } from './global-search-element-thumbnail'
 import { GlobalSearchFolderThumbnail } from './global-search-folder-thumbnail'
 
 const pageActions: {
   hidden?: boolean
   icon: typeof AssetIcon
-  titleKey: 'navigation.assets' | 'navigation.elements' | 'navigation.flows'
+  titleKey: 'navigation.assets' | 'navigation.flows'
   url: string
 }[] = [
   { icon: AssetIcon, titleKey: 'navigation.assets', url: '/assets' },
   { icon: IconGitBranch, titleKey: 'navigation.flows', url: '/flows' },
-  { icon: IconComponents, titleKey: 'navigation.elements', url: '/elements' },
 ]
 
 const settingsActions = [
@@ -106,9 +102,6 @@ export function GlobalSearch({
     : []
   const visibleAssets = remoteSearchReady
     ? (searchQuery.data?.assets ?? []).slice(0, GLOBAL_SEARCH_RESULT_LIMIT)
-    : []
-  const visibleElements = remoteSearchReady
-    ? (searchQuery.data?.elements ?? []).slice(0, GLOBAL_SEARCH_RESULT_LIMIT)
     : []
   const loading = normalizedSearch.length >= GLOBAL_SEARCH_MIN_LENGTH
     && (!remoteSearchReady || searchQuery.isFetching)
@@ -262,35 +255,6 @@ export function GlobalSearch({
                 "
                 >
                   {t(`assets.types.${asset.type}`)}
-                </span>
-              </span>
-            </CommandItem>
-          ))}
-        </CommandGroup>
-      ),
-    })
-  }
-
-  if (visibleElements.length > 0) {
-    groups.push({
-      id: 'elements',
-      node: (
-        <CommandGroup heading={t('navigation.elements')}>
-          {visibleElements.map(element => (
-            <CommandItem
-              className="py-2.5"
-              key={element.id}
-              value={`element:${element.id}`}
-              onSelect={() => handleNavigate(`/elements/${element.id}`)}
-            >
-              <GlobalSearchElementThumbnail element={element} />
-              <span className="min-w-0 flex-1">
-                <span className="block truncate">{element.name}</span>
-                <span className="
-                  block text-xs font-normal text-muted-foreground
-                "
-                >
-                  {t(elementTypeTranslationKey(element.type, 'label'))}
                 </span>
               </span>
             </CommandItem>

@@ -2,7 +2,6 @@ import type { ComponentProps } from 'react'
 import type { SettingsTab } from '../features/settings/settings-state'
 
 import {
-  IconComponents,
   IconFolderOpen,
   IconGitBranch,
   IconLogout,
@@ -16,6 +15,7 @@ import {
 
 import { useTranslation } from 'react-i18next'
 import { OrganizationSwitcher } from '../features/organizations/organization-switcher'
+import { TaleLabsLogo } from '../shared/components/talelabs-logo'
 import { NavMain } from './nav-main'
 import { NavUser } from './nav-user'
 
@@ -46,6 +46,29 @@ export function AppSidebar({
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
+        <div className="
+          flex h-10 items-center px-3
+          group-data-[collapsible=icon]:justify-center
+          group-data-[collapsible=icon]:px-0
+        "
+        >
+          <TaleLabsLogo
+            alt={t('common.appName')}
+            className="
+              h-6 w-32
+              group-data-[collapsible=icon]:hidden
+            "
+            variant="full"
+          />
+          <TaleLabsLogo
+            alt={t('common.appName')}
+            className="
+              hidden size-8
+              group-data-[collapsible=icon]:block
+            "
+            variant="icon"
+          />
+        </div>
         <OrganizationSwitcher
           activeOrganizationId={activeOrganizationId}
           onCreateOrganization={onCreateOrganization}
@@ -65,11 +88,6 @@ export function AppSidebar({
               title: t('navigation.assets'),
               url: '/assets',
               icon: <IconFolderOpen />,
-            },
-            {
-              title: t('navigation.elements'),
-              url: '/elements',
-              icon: <IconComponents />,
             },
           ]}
         />

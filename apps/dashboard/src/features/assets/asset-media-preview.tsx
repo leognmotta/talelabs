@@ -15,6 +15,11 @@ export function AssetMediaPreview({
   asset,
   className,
   mode = 'thumbnail',
+  onAspectRatioChange,
+  onVideoAspectRatioChange,
+  onVideoPlaybackError,
+  onVideoPlaying,
+  videoAutoPlay = false,
   videoPreviewActive = false,
   videoRef,
 }: {
@@ -24,11 +29,21 @@ export function AssetMediaPreview({
   >
   className?: string
   mode?: 'player' | 'thumbnail'
+  onAspectRatioChange?: (aspectRatio: number) => void
+  onVideoAspectRatioChange?: (aspectRatio: number) => void
+  onVideoPlaybackError?: () => void
+  onVideoPlaying?: () => void
+  videoAutoPlay?: boolean
   videoPreviewActive?: boolean
   videoRef?: Ref<HTMLVideoElement>
 }) {
   if (asset.processingState === 'processing')
     return <Skeleton className={cn('size-full rounded-none', className)} />
+
+  function reportAspectRatio(aspectRatio: number) {
+    onAspectRatioChange?.(aspectRatio)
+    onVideoAspectRatioChange?.(aspectRatio)
+  }
 
   if (asset.type === 'image' && (asset.thumbnailUrl || asset.url)) {
     const source = mode === 'player'
@@ -41,6 +56,11 @@ export function AssetMediaPreview({
         draggable={false}
         loading="lazy"
         src={source!}
+        onLoad={(event) => {
+          const { naturalHeight, naturalWidth } = event.currentTarget
+          if (naturalWidth > 0 && naturalHeight > 0)
+            onAspectRatioChange?.(naturalWidth / naturalHeight)
+        }}
       />
     )
   }
@@ -49,9 +69,13 @@ export function AssetMediaPreview({
     if (asset.url && (mode === 'player' || videoPreviewActive)) {
       return (
         <AssetVideoPreview
+          autoPlay={videoAutoPlay}
           className={className}
           mode={mode}
           name={asset.name}
+          onAspectRatioChange={reportAspectRatio}
+          onPlaybackError={onVideoPlaybackError}
+          onPlaying={onVideoPlaying}
           poster={asset.thumbnailUrl ?? undefined}
           src={asset.url}
           videoRef={videoRef}
@@ -68,6 +92,11 @@ export function AssetMediaPreview({
           draggable={false}
           loading="lazy"
           src={asset.thumbnailUrl}
+          onLoad={(event) => {
+            const { naturalHeight, naturalWidth } = event.currentTarget
+            if (naturalWidth > 0 && naturalHeight > 0)
+              reportAspectRatio(naturalWidth / naturalHeight)
+          }}
         />
       )
     }

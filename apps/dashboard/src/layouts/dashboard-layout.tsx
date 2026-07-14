@@ -18,8 +18,6 @@ import {
 } from '@talelabs/ui/components/sidebar'
 import { TooltipProvider } from '@talelabs/ui/components/tooltip'
 import { cn } from '@talelabs/ui/lib/utils'
-import { parseAsStringEnum, useQueryState } from 'nuqs'
-
 import {
   lazy,
   Suspense,
@@ -34,7 +32,7 @@ import { AssetViewerDialog } from '../features/assets/asset-viewer-dialog'
 import { useAssetViewerUrlState } from '../features/assets/use-asset-viewer-url-state'
 import { OrganizationScopeProvider } from '../features/organizations/organization-scope'
 import { SettingsDialog } from '../features/settings/settings-dialog'
-import { settingsTabs } from '../features/settings/settings-state'
+import { useSettingsTabState } from '../features/settings/settings-state'
 import { UploadIndicator } from '../features/uploads/upload-indicator'
 import { UploadProvider } from '../features/uploads/upload-provider'
 import { AssetIcon } from '../shared/domain-icons'
@@ -82,10 +80,7 @@ export function DashboardLayout({
 }) {
   const { t } = useTranslation()
   const isFlowEditor = Boolean(useMatch('/flows/:flowId'))
-  const [settingsTab, setSettingsTab] = useQueryState(
-    'settings',
-    parseAsStringEnum<SettingsTab>([...settingsTabs]),
-  )
+  const [settingsTab, setSettingsTab] = useSettingsTabState()
   const activeSettingsTab = settingsTab ?? 'general'
   const isSettingsOpen = settingsTab !== null
   const assetViewer = useAssetViewerUrlState()
@@ -290,6 +285,47 @@ export function DashboardLayout({
     void setSettingsTab(nextTab)
   }
 
+  const settingsDialog = (
+    <SettingsDialog
+      activeOrganizationId={activeOrganizationId}
+      currentSessionId={currentSessionId}
+      email={email || t('common.workspaceMember')}
+      isTeamInviteFormOpen={isTeamInviteFormOpen}
+      language={language}
+      name={name || t('common.talelabsUser')}
+      onLanguageChange={onLanguageChange}
+      onOpenChange={handleSettingsOpenChange}
+      onOpenCookiePreferences={onOpenCookiePreferences}
+      onProfileUpdated={onProfileUpdated}
+      onSignOut={onSignOut}
+      onTabChange={handleSettingsTabChange}
+      onTeamInviteFormOpenChange={setIsTeamInviteFormOpen}
+      onThemeChange={onThemeChange}
+      open={isSettingsOpen}
+      tab={activeSettingsTab}
+      theme={theme}
+    />
+  )
+
+  if (isFlowEditor) {
+    return (
+      <OrganizationScopeProvider organizationId={activeOrganizationId}>
+        <UploadProvider>
+          <TooltipProvider>
+            <main className="
+              flex h-svh min-h-0 flex-col overflow-hidden bg-background
+              text-foreground
+            "
+            >
+              <Outlet />
+            </main>
+            {settingsDialog}
+          </TooltipProvider>
+        </UploadProvider>
+      </OrganizationScopeProvider>
+    )
+  }
+
   return (
     <OrganizationScopeProvider organizationId={activeOrganizationId}>
       <UploadProvider>
@@ -390,25 +426,7 @@ export function DashboardLayout({
                 </section>
               </div>
             </SidebarInset>
-            <SettingsDialog
-              activeOrganizationId={activeOrganizationId}
-              currentSessionId={currentSessionId}
-              email={email || t('common.workspaceMember')}
-              isTeamInviteFormOpen={isTeamInviteFormOpen}
-              language={language}
-              name={name || t('common.talelabsUser')}
-              onLanguageChange={onLanguageChange}
-              onOpenChange={handleSettingsOpenChange}
-              onOpenCookiePreferences={onOpenCookiePreferences}
-              onProfileUpdated={onProfileUpdated}
-              onSignOut={onSignOut}
-              onTabChange={handleSettingsTabChange}
-              onTeamInviteFormOpenChange={setIsTeamInviteFormOpen}
-              onThemeChange={onThemeChange}
-              open={isSettingsOpen}
-              tab={activeSettingsTab}
-              theme={theme}
-            />
+            {settingsDialog}
             {isAssetLibraryOpen && (
               <Suspense fallback={null}>
                 <AssetLibraryDialog

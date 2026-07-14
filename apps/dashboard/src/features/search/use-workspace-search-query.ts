@@ -10,7 +10,7 @@ import {
   GLOBAL_SEARCH_RESULT_LIMIT,
 } from './search.constants'
 
-const searchTypes = ['asset', 'element', 'folder'] as const
+const searchTypes = ['asset', 'folder'] as const
 
 export const workspaceSearchQueryKeys = {
   all: (organizationId: null | string) => [

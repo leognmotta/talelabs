@@ -53,11 +53,6 @@ const AssetsScreen = lazy(async () => {
   return { default: module.AssetsScreen }
 })
 
-const ElementsScreen = lazy(async () => {
-  const module = await import('../features/elements/elements-screen')
-  return { default: module.ElementsScreen }
-})
-
 const FlowsScreen = lazy(async () => {
   const module = await import('../features/flows/flows-screen')
   return { default: module.FlowsScreen }
@@ -66,21 +61,6 @@ const FlowsScreen = lazy(async () => {
 const FlowEditorScreen = lazy(async () => {
   const module = await import('../features/flows/flow-editor-screen')
   return { default: module.FlowEditorScreen }
-})
-
-const ElementDetailScreen = lazy(async () => {
-  const module = await import('../features/elements/element-detail-screen')
-  return { default: module.ElementDetailScreen }
-})
-
-const ElementCreateScreen = lazy(async () => {
-  const module = await import('../features/elements/element-create-screen')
-  return { default: module.ElementCreateScreen }
-})
-
-const ElementEditScreen = lazy(async () => {
-  const module = await import('../features/elements/element-edit-screen')
-  return { default: module.ElementEditScreen }
 })
 
 export function DashboardRoutes() {
@@ -407,73 +387,9 @@ export function DashboardRoutes() {
               </ErrorBoundary>
             )}
           />
-          <Route
-            path="elements"
-            element={(
-              <ErrorBoundary
-                fallback={({ resetErrorBoundary }) => (
-                  <ErrorFallback
-                    description={t('elements.couldNotLoadDescription')}
-                    onRetry={resetErrorBoundary}
-                    title={t('elements.couldNotLoad')}
-                  />
-                )}
-              >
-                <Suspense fallback={<SplashScreen />}><ElementsScreen /></Suspense>
-              </ErrorBoundary>
-            )}
-          />
-          <Route
-            path="elements/new/:elementType"
-            element={(
-              <ErrorBoundary
-                fallback={({ resetErrorBoundary }) => (
-                  <ErrorFallback
-                    description={t('elements.couldNotLoadDescription')}
-                    onRetry={resetErrorBoundary}
-                    title={t('elements.couldNotLoad')}
-                  />
-                )}
-              >
-                <Suspense fallback={<SplashScreen />}><ElementCreateScreen /></Suspense>
-              </ErrorBoundary>
-            )}
-          />
-          <Route
-            path="elements/:elementId/edit"
-            element={(
-              <ErrorBoundary
-                fallback={({ resetErrorBoundary }) => (
-                  <ErrorFallback
-                    description={t('elements.couldNotLoadDescription')}
-                    onRetry={resetErrorBoundary}
-                    title={t('elements.couldNotLoad')}
-                  />
-                )}
-              >
-                <Suspense fallback={<SplashScreen />}><ElementEditScreen /></Suspense>
-              </ErrorBoundary>
-            )}
-          />
-          <Route
-            path="elements/:elementId"
-            element={(
-              <ErrorBoundary
-                fallback={({ resetErrorBoundary }) => (
-                  <ErrorFallback
-                    description={t('elements.couldNotLoadDescription')}
-                    onRetry={resetErrorBoundary}
-                    title={t('elements.couldNotLoad')}
-                  />
-                )}
-              >
-                <Suspense fallback={<SplashScreen />}><ElementDetailScreen /></Suspense>
-              </ErrorBoundary>
-            )}
-          />
-          <Route path="*" element={<Navigate to="/assets" replace />} />
+          <Route path="*" element={<Navigate to="/flows" replace />} />
         </Route>
-        <Route path="*" element={<Navigate to="/assets" replace />} />
+        <Route path="*" element={<Navigate to="/flows" replace />} />
       </Routes>
       <Toaster theme={theme} />
       <CookiePreferencesDialog
