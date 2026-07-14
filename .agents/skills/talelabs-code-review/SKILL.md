@@ -134,6 +134,37 @@ questions instead of performing a broad market survey for every change.
 - Prefer reusable systems where they remove meaningful duplication or make an
   extension safer. Reject premature abstractions that obscure simple behavior.
 
+### Consistency, componentization, and reuse
+
+- Treat consistency and reuse as mandatory review dimensions, not optional
+  cleanup. Before accepting a new component, hook, helper, registry, schema, or
+  service, search the repository for the same responsibility and inspect the
+  closest sibling implementations.
+- Compare related screens and node families for shared layout, actions,
+  inspectors, handles, states, menus, forms, feedback, accessibility, and
+  interaction behavior. Flag visible or behavioral drift unless the difference
+  is an explicit product requirement.
+- Identify repeated business rules, state transitions, query keys, cache
+  invalidation, validation, serialization, error handling, and translation
+  mappings. These require an authoritative shared implementation when their
+  contract is the same.
+- Identify repeated UI structure and interaction logic that should use an
+  existing design-system primitive, feature primitive, composition pattern,
+  hook, or helper. Name the existing implementation and every duplication site
+  in the finding.
+- Do not recommend abstraction solely because code looks similar. Share code
+  when behavior and ownership are genuinely common; keep separate components
+  when future variation is part of the domain. Avoid giant generic components,
+  boolean-prop APIs, and abstraction layers that only move duplication.
+- Evaluate extension cost explicitly. Adding another generation node or model
+  should usually compose existing node shells, action bars, inspectors, input
+  and output views, controls, validation, and registries rather than recreate
+  them. Report the files that a representative extension would require changing
+  and flag unrelated edits or repeated plumbing.
+- Check consistency across all representations of a contract: database, API,
+  generated SDK, domain/runtime registry, dashboard UI, i18n, snapshots, and
+  active documentation.
+
 ### Structure and responsibility
 
 - Keep code in the repository's established package, feature, domain, service,

@@ -1,8 +1,15 @@
 # TaleLabs - Flow Node And Runtime Planning
 
+> **MVP scope notice (2026-07-14):** `assets-flows-mvp-contract.md` supersedes
+> every Element-specific graph and runtime requirement in this document. The
+> active graph accepts Text, canonical Assets, and prior node outputs only.
+> Element sections remain historical design research and are not implementation
+> requirements. The adaptive canvas UX is approved; M5 now implements the
+> provider-independent durable engine described by the active sections below.
+
 **Purpose:** define one durable mental model for the TaleLabs Flow canvas and
 execution engine. This document explains what nodes and wires represent, how
-Assets and Elements become reusable context, how generation executes, and how
+Assets become reusable inputs, how generation executes, and how
 iteration, multiple outputs, full-flow runs, caching, Recipes, and Tools can ship
 without replacing the initial foundation.
 
@@ -23,7 +30,6 @@ The core product instinct is correct:
 
 ```txt
 Assets are nodes.
-Elements are nodes whose reusable roles are outputs.
 Generation is a node for image, video, or audio.
 Every successful generated file becomes a canonical Asset.
 Tools are immutable, versioned Flows exposed behind declared ports.
@@ -48,12 +54,12 @@ value resolution, planning, execution, persistence, and billing behavior.
 The word "multiple" describes four independent concepts. They must not share
 one accidental implementation.
 
-| Concept | Example | Meaning |
-| --- | --- | --- |
-| Multiple handles | Character has Appearance, Motion, and Voice | Different semantic outputs |
-| Collection | Appearance contains eight images | Several references consumed together |
-| Provider outputs | One image request asks for four variations | One job produces several Assets |
-| Batch items | Four prompts leave a Text Iterator | Several node executions |
+| Concept          | Example                                     | Meaning                              |
+| ---------------- | ------------------------------------------- | ------------------------------------ |
+| Multiple handles | Video has first frame, references, and audio | Different semantic inputs             |
+| Collection       | One upstream output contains four images     | Several references consumed together  |
+| Provider outputs | One image request asks for four variations  | One job produces several Assets      |
+| Batch items      | Four prompts leave a Text Iterator          | Several node executions              |
 
 There is also node history: running the same node again creates another run and
 another immutable result set. History is not a batch and is not stored in node
@@ -74,7 +80,7 @@ Reference: <https://reactflow.dev/learn/customization/handles>
 Take:
 
 - named, typed-looking ports;
-- dynamic Element role handles;
+- dynamic model input-slot handles;
 - controlled graph state;
 - custom node and edge rendering.
 
@@ -183,13 +189,12 @@ It never stores transient runtime values or generated result IDs in node data.
 Graph-time handle types remain the current creative vocabulary:
 
 ```ts
-type FlowValueType =
-  | 'Text'
-  | 'ElementContext'
-  | 'Asset'
-  | 'ImageSet'
-  | 'VideoSet'
-  | 'AudioSet'
+type ActiveFlowValueType =
+  | "Text"
+  | "Asset"
+  | "ImageSet"
+  | "VideoSet"
+  | "AudioSet";
 ```
 
 `ImageSet`, `VideoSet`, and `AudioSet` are deliberate. A set is a collection of
@@ -200,9 +205,10 @@ canonical edge order in the editor, API hydration, graph snapshots, and planner.
 Automatic input selection must sort by that rule before applying model limits;
 it must never depend on browser insertion order or database row order.
 
-The current `packages/flows` registry already follows this direction. Asset
-nodes emit a typed media set, Element role handles emit typed sets, and model
-input slots state which set types they accept.
+The current `packages/flows` registry already follows this direction. Asset and
+generation nodes emit typed media sets, and model input slots state which set
+types they accept. Released historical contracts may still decode
+`ElementContext`, but current nodes must not expose or produce it.
 
 ---
 
@@ -213,45 +219,45 @@ Every resolved output port returns an ordered array of runtime items:
 ```ts
 interface FlowItem<T> {
   /** Stable identity used by lineage, caching, retries, and idempotency. */
-  key: string
+  key: string;
 
   /** The value carried by this execution item. */
-  value: T
+  value: T;
 
   /** Upstream items that contributed to this item. */
-  lineage: readonly FlowItemReference[]
+  lineage: readonly FlowItemReference[];
 
   /** Explicit batch axes and the selected coordinate on each axis. */
-  dimensions: Readonly<Record<string, string>>
+  dimensions: Readonly<Record<string, string>>;
 }
 
 interface FlowItemReference {
-  handleId: string
-  itemKey: string
-  nodeId: string
+  handleId: string;
+  itemKey: string;
+  nodeId: string;
 }
 
-type PortValue<T> = readonly FlowItem<T>[]
+type PortValue<T> = readonly FlowItem<T>[];
 ```
 
 Media values are collections:
 
 ```ts
 interface AssetReference {
-  assetId: string
-  mediaType: 'image' | 'video' | 'audio' | 'document'
+  assetId: string;
+  mediaType: "image" | "video" | "audio" | "document";
 }
 
 interface ImageSet {
-  assets: readonly AssetReference[]
+  assets: readonly AssetReference[];
 }
 
 interface VideoSet {
-  assets: readonly AssetReference[]
+  assets: readonly AssetReference[];
 }
 
 interface AudioSet {
-  assets: readonly AssetReference[]
+  assets: readonly AssetReference[];
 }
 ```
 
@@ -277,36 +283,36 @@ An image Asset produces one runtime item containing one reference:
 ```ts
 const assetOutput: PortValue<ImageSet> = [
   {
-    key: 'asset:asset_123',
+    key: "asset:asset_123",
     value: {
-      assets: [{ assetId: 'asset_123', mediaType: 'image' }],
+      assets: [{ assetId: "asset_123", mediaType: "image" }],
     },
     lineage: [],
     dimensions: {},
   },
-]
+];
 ```
 
-### Element role
+### Media collection
 
-Maya's Appearance role with three images produces one runtime item containing
-three references:
+A prior image-generation result with three outputs produces one runtime item
+containing three references:
 
 ```ts
 const appearanceOutput: PortValue<ImageSet> = [
   {
-    key: 'element:maya:appearance',
+    key: "run-node:image-generation:outputs",
     value: {
       assets: [frontImage, profileImage, fullBodyImage],
     },
     lineage: [],
     dimensions: {},
   },
-]
+];
 ```
 
-This means one reusable collection. Connecting it to References does not create
-three jobs.
+This means one reusable collection. Connecting it to a references input does
+not create three jobs.
 
 ### Image Iterator
 
@@ -315,31 +321,32 @@ An Image Iterator transforms that one collection into three runtime items:
 ```ts
 const iteratorOutput: PortValue<ImageSet> = [
   {
-    key: 'iterator_1:0',
+    key: "iterator_1:0",
     value: { assets: [frontImage] },
     lineage: [appearanceReference],
-    dimensions: { iterator_1: '0' },
+    dimensions: { iterator_1: "0" },
   },
   {
-    key: 'iterator_1:1',
+    key: "iterator_1:1",
     value: { assets: [profileImage] },
     lineage: [appearanceReference],
-    dimensions: { iterator_1: '1' },
+    dimensions: { iterator_1: "1" },
   },
   {
-    key: 'iterator_1:2',
+    key: "iterator_1:2",
     value: { assets: [fullBodyImage] },
     lineage: [appearanceReference],
-    dimensions: { iterator_1: '2' },
+    dimensions: { iterator_1: "2" },
   },
-]
+];
 ```
 
 The Iterator explicitly introduces an execution axis. A downstream generation
 node can now plan three work items.
 
-This distinction cannot be represented by a flat `image[]` alone because an
-Element collection and an Iterator batch would become indistinguishable.
+This distinction cannot be represented by a flat `image[]` alone because a
+collection consumed together and an Iterator batch would become
+indistinguishable.
 
 ---
 
@@ -349,16 +356,15 @@ An input-slot definition controls how values at one batch coordinate combine:
 
 ```ts
 type InputAggregation =
-  | 'compose' // combine ordered Text or ElementContext fragments
-  | 'gather'  // combine media references into one candidate set
-  | 'single'  // resolve exactly one selected value
+  | "compose" // combine ordered Text fragments
+  | "gather" // combine media references into one candidate set
+  | "single"; // resolve exactly one selected value
 ```
 
 Examples:
 
 ```txt
 prompt       -> compose
-context      -> compose
 references   -> gather
 firstFrame   -> single
 endFrame     -> single
@@ -387,10 +393,16 @@ This preserves one References port while allowing several incoming edges.
 Model capabilities continue to define:
 
 - accepted value types;
+- accepted media MIME, byte, duration, frame-rate, resolution, and aspect-ratio
+  constraints where a media slot needs them;
 - maximum incoming connections;
-- maximum selected items;
-- required inputs;
-- settings and output count;
+- declared per-slot and total operation reference limits;
+- a researched lower recommended maximum when evidence supports one;
+- reference purposes, multiple-subject support, and contact-sheet policy;
+- required inputs, exact-one (`oneOf`) input groups, and at-least-one
+  (`atLeastOne`) groups that allow several members together;
+- operation output media and fixed or configurable output count;
+- settings, visibility conditions, and incompatible option combinations;
 - automatic versus manual selection behavior.
 
 Enumeration settings render as finite selection controls. Numeric settings stay
@@ -401,6 +413,76 @@ bugs and keeps large ranges renderable.
 
 ### Curated Model Registry And Provider Routes
 
+#### Adaptive Video Operation Resolution
+
+The Video Generation node has no operation picker. Its model exposes all
+reviewed semantic inputs, while `resolveVideoGenerationState` derives one
+operation from connection counts, selected item counts, settings, and the inline
+prompt. The same React-free resolver drives handle availability, global
+connection admission, setting visibility, graph validation, and future run
+admission. Server validation rederives the operation and rejects a stored
+`operationId` mismatch; the persisted field is derived compatibility/snapshot
+data, never client authority.
+
+The stable video input IDs are `prompt`, `firstFrame`, `lastFrame`,
+`imageReferences`, `videoReferences`, and `audioReferences`. Unsupported handles
+are absent. Conflicting supported handles remain visible and disabled. Frame
+intent is established by either frame, but a last frame alone stays incomplete
+until the required first frame is present. Reference-mode operations may use an
+`atLeastOne` group so reviewed image, video, and audio references can coexist.
+Frame and reference families remain mutually exclusive whenever no curated
+operation accepts both.
+
+Model changes apply immediately. They preserve compatible edges and settings,
+remove or reset incompatible state without an interrupting confirmation dialog,
+and update the model, edge reconciliation, setting normalization, input
+selections, and derived operation in one canvas mutation. React Flow renders
+stable handle IDs, keeps connected handles measurable, and refreshes node
+internals after the model-supported handle set changes.
+
+#### Adaptive Image Operation Resolution
+
+Image Generation is also one dedicated model-adaptive node with no operation
+picker. Its only semantic handles are `prompt`, optional `imageReferences`, and
+the `images` output. `resolveImageGenerationState` derives `textToImage` when no
+reference runtime items are selected and `imageToImage` when at least one is
+selected. It combines connection counts with selected item counts, so one
+incoming `ImageSet` edge can fill a model's multi-image limit. The same pure
+resolver drives handle availability, connection admission, setting visibility,
+setting normalization, draft validation, and later server admission; the server
+rederives and verifies the stored compatibility `operationId`.
+
+The selected product model decides whether references are supported, their hard
+limit, and the settings visible in the inspector. The current Image catalog
+fixes output count to one, so the node exposes no output amount control. Fixed
+facts are not disabled controls. Model changes immediately
+preserve compatible state and atomically remove or reset incompatible edges,
+selections, and settings. The historical `references` handle is rewritten once
+to `imageReferences` only during an explicit contract upgrade; immutable old
+contracts remain unchanged.
+
+The reviewed Image setting surface is route-specific:
+
+- Nano Banana 2 Lite exposes aspect ratio; resolution is fixed at 1K.
+- Nano Banana 2 exposes aspect ratio and 512/1K/2K/4K resolution.
+- Nano Banana Pro exposes aspect ratio and the safe 1K/2K endpoint
+  intersection.
+- GPT Image 2 exposes quality, plus background as an advanced setting.
+- Seedream 4.5 exposes aspect ratio (including provider `auto`) and
+  1K/2K/4K resolution.
+- FLUX.2 Pro exposes output format as an advanced setting.
+- Recraft 4.1 has no editable scalar setting on the reviewed OpenRouter route.
+
+There is no generic `creativity` setting. Seed, guidance, steps, Recraft
+controls, and other provider passthrough values remain evidence-only until
+TaleLabs defines an honest provider-independent control and its validation.
+
+One request emits one `PortValue` item whose `ImageSet` contains one Asset. The
+typed collection remains stable for downstream compatibility and does not create
+an outer runtime item. The initial seven-model catalog is a reviewed subset of
+the 39-model discovery snapshot. It has no Element input, provider route, or
+live provider dependency on the canvas.
+
 TaleLabs owns the production model catalog in versioned code. OpenRouter and
 direct-provider discovery endpoints are research and drift-detection inputs, not
 runtime sources of truth for the canvas. A remote catalog change must never add,
@@ -410,26 +492,41 @@ Every persisted model reference uses a stable TaleLabs identity:
 
 ```ts
 type ProductModelDefinition = {
-  id: 'talelabs/veo-3.1'
-  mediaType: 'video'
-  operations: GenerationOperationDefinition[]
-  settings: GenerationSettingDefinition[]
-  constraints: GenerationConstraintDefinition[]
-}
+  id: "talelabs/veo-3.1";
+  capabilitySchemaVersion: 2;
+  labelKey: "flows.models.veo31";
+  mediaType: "video";
+  inputSlots: GenerationInputSlotDefinition[];
+  operations: GenerationOperationDefinition[];
+  settings: GenerationSettingDefinition[];
+  constraints: GenerationConstraintDefinition[];
+};
 ```
 
 The provider route is server-only and independently replaceable:
 
 ```ts
 type ProviderRoute = {
-  productModelId: 'talelabs/veo-3.1'
-  modelContractVersion: string
-  operationId: 'textToVideo'
-  adapter: 'openrouter-video'
-  providerModelId: 'google/veo-3.1'
-  providerTag?: 'google'
-  routeVersion: string
-}
+  productModelId: "talelabs/veo-3.1";
+  modelContractVersion: string;
+  operationId: "textToVideo";
+  adapter: "google-vertex";
+  providerRoute: {
+    policy: "pinned";
+    endpoint: ":predictLongRunning";
+    nativeModelId: "veo-3.1-generate-001";
+    supportedParameters: string[];
+  };
+  lifecycle: {
+    submission: "asynchronous";
+    completions: ["poll"];
+    deliveries: ["url"];
+    cancellation: "unsupported";
+  };
+  evidence: { reviewedAt: string; sources: [string, ...string[]] };
+  mockPricing: { source: "mock"; creditCost: 0; providerCostUsd: 0 };
+  routeVersion: string;
+};
 ```
 
 Changing OpenRouter to a direct API for the same underlying model may update the
@@ -442,36 +539,80 @@ contracts remain readable and editable, but they are executable only when the
 server retains an exact route keyed by `(productModelId, modelContractVersion,
 operationId)`. The initial execution milestone routes only the current contract;
 the editor must offer an explicit same-model upgrade that rewrites the pinned
-version, reconciles settings, and confirms removal of incompatible connections.
-It must never silently reinterpret an old node through the current contract.
+version and reconciles incompatible connections, selections, and settings
+immediately as one undoable canvas mutation. The user's model or contract
+selection is the confirmation: do not interrupt it with a confirmation dialog,
+notification modal, or required follow-up action. This explicit transition is
+separate from passive hydration; loading an old node must never silently
+reinterpret it through the current contract.
 
 A capability definition is not just a flat collection of independent fields.
 It describes valid operations and relationships between inputs/settings:
 
 ```ts
 operations: [
-  { id: 'textToVideo', inputSlots: ['prompt'] },
-  { id: 'imageToVideo', inputSlots: ['prompt', 'firstFrame', 'lastFrame'] },
-  { id: 'referenceToVideo', inputSlots: ['prompt', 'references'] },
-]
+  {
+    id: "textToVideo",
+    inputs: { prompt: { required: true } },
+    inputSlotIds: ["prompt"],
+    settingIds: ["aspectRatio", "durationSeconds", "resolution", "outputCount"],
+    output: {
+      mediaType: "video",
+      count: { min: 1, max: 4, default: 1, settingId: "outputCount" },
+    },
+    referenceLimit: { maxItems: 0, slotIds: [] },
+  },
+  {
+    id: "firstLastFrameToVideo",
+    inputs: { prompt: { required: true }, firstFrame: { required: true } },
+    inputSlotIds: ["prompt", "firstFrame", "lastFrame"],
+    referenceLimit: { maxItems: 2, slotIds: ["firstFrame", "lastFrame"] },
+  },
+  {
+    id: "referencesToVideo",
+    inputs: { prompt: { required: true }, imageReferences: { required: true } },
+    inputSlotIds: ["prompt", "imageReferences"],
+    referenceLimit: { maxItems: 3, slotIds: ["imageReferences"] },
+  },
+  {
+    id: "extendVideo",
+    inputs: { videoReferences: { required: true } },
+    inputSlotIds: ["prompt", "videoReferences"],
+    referenceLimit: { maxItems: 1, slotIds: ["videoReferences"] },
+  },
+];
 
 constraints: [
   {
-    when: { slot: 'references', minimumItems: 1 },
-    require: { duration: 8 },
+    id: "references-require-eight-seconds",
+    when: [
+      { field: "operation", operator: "equals", value: "referencesToVideo" },
+    ],
+    require: [
+      {
+        field: "setting",
+        id: "durationSeconds",
+        operator: "equals",
+        value: "8",
+      },
+    ],
   },
   {
-    when: { setting: 'resolution', oneOf: ['1080p', '4k'] },
-    require: { duration: 8 },
+    id: "last-frame-requires-first-frame",
+    when: [{ field: "slot", id: "lastFrame", operator: "connected" }],
+    require: [{ field: "slot", id: "firstFrame", operator: "connected" }],
   },
-]
+];
 ```
 
 The shared public registry drives node rendering, handle visibility, connection
-validation, selection limits, settings, and server validation. Private routing,
-credentials, provider fallbacks, negotiated pricing, and emergency controls stay
-in a server-only registry. `GET /config/generation` returns only the resolved
-public product contract.
+validation, exact-one and at-least-one input rules, output counts, accepted-media/reference
+profiles, selection limits, settings, and server validation. Public presentation
+uses translation keys rather than provider-name mapping tables. Native provider
+identity and endpoints, lifecycle/cancellation behavior, dated evidence, route
+versions, credentials, fallbacks, mock pricing, negotiated costs, and emergency
+controls stay in a server-only registry. `GET /config/generation` returns only the
+resolved public product contract.
 
 Provider discovery has two safe policies:
 
@@ -485,56 +626,134 @@ ignore one of those parameters. A manual/CI drift report may compare the curated
 registry with OpenRouter's image/video/model discovery APIs, but it cannot edit
 production behavior automatically.
 
-Audio remains one output media family but has distinct operations such as TTS,
-sound effects, music, speech-to-speech, isolation, and dubbing. Operation-specific
-contracts belong in the registry; sharing `AudioSet` does not imply sharing one
-provider request shape.
+Audio remains one output media family but is not one product intent. The canvas
+has separate `speechGeneration`, `musicGeneration`, `soundEffectGeneration`,
+`voiceChanger`, and `voiceIsolation` nodes. Every operation carries an
+authoritative `nodeType`; pickers and server validation filter by that tag, not
+by model ID, provider ID, operation label, or `mediaType`. A single model may
+therefore expose separately tagged Music and Sound Effect operations while
+remaining absent from Speech. Users never choose an operation from a dropdown.
+All five nodes emit `AudioSet` through stable output handle `audio`, but they do
+not share one provider request shape.
+
+Known legacy `audioGeneration` nodes are lazily upcast during graph hydration:
+ElevenLabs `textToSpeech` becomes `speechGeneration`, while
+`textToSoundEffect` becomes `soundEffectGeneration`. Lock state, compatible
+input selection, and compatible sound-effect controls are preserved. Unknown or
+ambiguous legacy contracts remain on a hidden compatibility parser/renderer and
+are never guessed into a new intent. The next ordinary graph save persists the
+upcasted node type and schema.
 
 The provider boundary uses one lifecycle contract without pretending every
 provider completes synchronously:
 
 ```ts
-type ProviderSubmission =
-  | { status: 'completed'; outputs: NormalizedProviderOutput[] }
-  | { status: 'pending'; externalJobId: string; pollAfterMs: number }
+type NormalizedGenerationSubmission =
+  | { status: "completed"; outputs: NormalizedGenerationOutput[] }
+  | { status: "submitted"; externalJobId: string; pollAfterMs?: number };
 
-interface GenerationAdapter {
-  submit(request: NormalizedGenerationRequest): Promise<ProviderSubmission>
-  poll?(externalJobId: string): Promise<ProviderSubmission | ProviderFailure>
-  cancel?(externalJobId: string): Promise<void>
-}
+type NormalizedGenerationCompletionResult =
+  | { status: "pending"; pollAfterMs?: number }
+  | { status: "completed"; outputs: NormalizedGenerationOutput[] }
+  | { status: "failed"; code: string; message: string; retryable: boolean };
+
+type ProviderLifecycle = {
+  submission: "immediate" | "asynchronous";
+  completions: ("response" | "poll" | "webhook")[];
+  deliveries: ("bytes" | "stream" | "url")[];
+  cancellation: "supported" | "best-effort" | "unsupported";
+};
+
+type CompletionAdapter =
+  | {
+      lifecycle: ImmediateLifecycle;
+      submit: CompletedSubmit;
+      poll?: never;
+      normalizeWebhook?: never;
+    }
+  | {
+      lifecycle: PollLifecycle;
+      submit: SubmittedSubmit;
+      poll: Poll;
+      normalizeWebhook?: never;
+    }
+  | {
+      lifecycle: WebhookLifecycle;
+      submit: SubmittedSubmit;
+      poll?: never;
+      normalizeWebhook: NormalizeWebhook;
+    }
+  | {
+      lifecycle: PollWebhookLifecycle;
+      submit: SubmittedSubmit;
+      poll: Poll;
+      normalizeWebhook: NormalizeWebhook;
+    };
+
+type CancellationAdapter =
+  | { lifecycle: { cancellation: "unsupported" }; cancel?: never }
+  | {
+      lifecycle: { cancellation: "supported" | "best-effort" };
+      cancel: Cancel;
+    };
+
+type GenerationAdapter = CompletionAdapter & CancellationAdapter;
 ```
 
-An adapter may normalize immediate image results, raw/streamed audio bytes, or an
-asynchronous video job. Trigger.dev durably coordinates pending jobs, callbacks,
-polling, retries, cancellation, and reconciliation; graph planning and output
-ingestion remain provider-independent.
+An adapter may normalize immediate image results, raw/streamed media bytes, a
+signature-verified webhook completion, or an asynchronous video job. Trigger.dev
+durably coordinates submitted jobs, callbacks, polling, retries, cancellation,
+and reconciliation; graph planning and output ingestion remain provider-
+independent. The adapter discriminants require every method advertised by the
+route lifecycle and prohibit poll, webhook, or cancellation methods when that
+lifecycle does not support them.
 
 ### Research Baseline
 
-The registry design is grounded in current official platform/provider behavior:
+The E-040 registry was reviewed against primary provider documentation on
+2026-07-13:
 
-- FLORA connects text, image, and video blocks and makes reference-frame behavior
-  model-dependent: <https://docs.flora.ai/editor/canvas>.
-- Runway separates quick generation from repeatable Workflows and exposes input,
-  media-model, and LLM nodes: <https://help.runwayml.com/hc/en-us/articles/45763528999699-Introduction-to-Workflows>.
-- OpenRouter exposes dedicated image/video discovery APIs, per-endpoint image
-  capability descriptors, asynchronous video jobs, polling, and webhooks:
-  <https://openrouter.ai/docs/guides/overview/multimodal/image-generation> and
-  <https://openrouter.ai/docs/guides/overview/multimodal/video-generation>.
-- Veo demonstrates cross-field constraints: first/last frames, up to three
-  references, operation-specific inputs, and duration/resolution combinations:
-  <https://ai.google.dev/gemini-api/docs/video>.
-- Runway's model catalog demonstrates that image, video, upscale, TTS, sound
-  effect, isolation, dubbing, and speech-to-speech operations cannot share one
-  flat request shape: <https://docs.dev.runwayml.com/guides/models/>.
-- OpenRouter TTS and ElevenLabs sound effects demonstrate immediate/streamed
-  audio responses and operation-specific duration/voice/looping controls:
-  <https://openrouter.ai/docs/guides/overview/multimodal/tts> and
+- OpenAI marks GPT Image 1.5 deprecated with removal scheduled for 2026-12-01.
+  It is absent from the current creative catalog and remains resolvable only in
+  immutable historical contracts. New image nodes use stable TaleLabs ID
+  `talelabs/gpt-image-2`, privately pinned to snapshot
+  `gpt-image-2-2026-04-21`. The provider supports one through ten outputs, but
+  the TaleLabs creative contract fixes that native parameter to one and does not
+  expose it as a canvas setting. The curated safe contract keeps generate/edit,
+  up to sixteen native image inputs, inline bytes or partial-image streaming,
+  and no asynchronous job/cancel capability:
+  <https://developers.openai.com/api/docs/deprecations>,
+  <https://developers.openai.com/api/docs/models/gpt-image-2>, and
+  <https://developers.openai.com/api/docs/guides/image-generation>.
+- Veo 3.1 is privately pinned to stable `veo-3.1-generate-001` for text,
+  first/last-frame, reference-image, and video-extension operations. The retired
+  preview route is not eligible. The safe contract exposes 720p/1080p, both
+  supported aspect ratios, at most three same-subject reference images, an
+  eight-second reference operation, output count one through four, and async
+  polling without claiming provider cancellation:
+  <https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/veo/3-1-generate>,
+  <https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/video/use-reference-images-to-guide-video-generation>, and
+  <https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/video/extend-a-veo-video>.
+- LTX 2.3 Pro evidence covers text and reference-audio operations with an
+  optional image reference through asynchronous submit/poll jobs. TaleLabs
+  deliberately retains the narrower verified 1080p product contract and one output:
+  <https://docs.ltx.video/models> and
+  <https://docs.ltx.video/api-documentation/api-reference/async-video-generation/get-job-status>.
+- Eleven Multilingual v2 and Eleven Sound Effects v2 use distinct immediate
+  audio contracts; TTS also has a pinned streaming route, while sound effects
+  retain one output, duration 0.5–30 seconds, loop, and prompt influence:
+  <https://elevenlabs.io/docs/api-reference/text-to-speech/convert>,
+  <https://elevenlabs.io/docs/api-reference/text-to-speech/stream>, and
   <https://elevenlabs.io/docs/api-reference/text-to-sound-effects/convert>.
 
-These sources are a research baseline, not a permanent runtime contract. The
-curated registry remains authoritative until an explicit reviewed update.
+The checked-in 2026-07-13 OpenRouter inventory contains all sixteen models
+returned by the read-only video catalog. It is evidence, not production
+configuration. Narrow reviewed TaleLabs contracts enable Veo 3.1 Lite, Grok
+Imagine Video, and Seedance 2.0 alongside the direct Veo 3.1 and LTX routes;
+superseded, ambiguous, or insufficiently documented entries remain inventory-
+only. No discovery response edits production behavior automatically. The
+curated, versioned registry and its checked-in primary evidence remain
+authoritative until an explicit reviewed deployment.
 
 Element role capacity and provider input capacity remain different constraints.
 An Element may retain eight Appearance references while the selected model
@@ -586,11 +805,7 @@ No graph operation should silently create an unbounded product.
 The registry should distinguish execution behavior from visual node type:
 
 ```ts
-type NodeExecutionKind =
-  | 'source'
-  | 'transform'
-  | 'executor'
-  | 'composite'
+type NodeExecutionKind = "source" | "transform" | "executor" | "composite";
 ```
 
 ### Source nodes
@@ -600,7 +815,6 @@ Resolve existing state and do not require Trigger.dev:
 ```txt
 Text
 Asset
-Element
 future manual input nodes
 ```
 
@@ -624,8 +838,13 @@ Create durable jobs and usually run through Trigger.dev:
 
 ```txt
 Image Generation
+LLM
 Video Generation
-Audio Generation
+Speech Generation
+Music Generation
+Sound Effect Generation
+Voice Changer
+Voice Isolation
 Upscale
 Background Removal
 other provider-backed processing
@@ -668,7 +887,11 @@ output:
 
 The output contains one item and normally one Asset reference.
 
-### Element
+### Deferred Element node (historical, not registered)
+
+The active graph registry has no Element node and M5 must not resolve this
+contract. The following shape is retained only as prior research for a possible
+post-billable-loop redesign:
 
 ```txt
 elementId: relational FK
@@ -709,6 +932,73 @@ output:
 Video and audio generation reuse the same execution architecture with their own
 typed model registries and slots.
 
+### Audio intent nodes
+
+```txt
+Speech
+  data: prompt + shared generation configuration
+  input: prompt (shown as Script), Text, at most one connection
+
+Music
+  data: prompt + lyrics draft + shared generation configuration
+  input: prompt; lyrics/image guidance only when an enabled model documents them
+
+Sound Effect
+  data: prompt + shared generation configuration
+  input: prompt, Text, at most one connection
+
+Voice Changer
+  data: shared generation configuration, no prompt
+  input: sourceMedia, AudioSet | VideoSet, exactly one selected runtime item
+
+Voice Isolation
+  data: shared generation configuration, no prompt
+  input: sourceMedia, AudioSet | VideoSet, exactly one selected runtime item
+
+all outputs:
+  audio -> PortValue<AudioSet>
+```
+
+`resolveSpeechGenerationState`, `resolveMusicGenerationState`,
+`resolveSoundEffectGenerationState`, `resolveVoiceChangerState`, and
+`resolveVoiceIsolationState` are React-free wrappers over the shared audio
+contract evaluator. Connected Text is authoritative without erasing an inline
+draft. Unsupported handles and controls are absent. Model changes preserve
+compatible data, report reset settings, keep stable compatible edges, and never
+silently reinterpret the node's intent. Voice Isolation does not claim music
+stem separation. No custom-voice or Element-backed voice system is part of the
+first contract.
+
+### LLM
+
+```txt
+data:
+  modelId
+  modelContractVersion
+  operationId
+  prompt
+  instructions
+  settings
+  inputSelections
+
+inputs:
+  instructions      -> Text, optional, at most one connection
+  prompt            -> Text, required unless the inline draft is non-empty,
+                       at most one connection
+  imageReferences   -> ImageSet, vision models only, at most eight items
+
+output:
+  text -> PortValue<Text>
+```
+
+The LLM node has no operation picker. `resolveLlmState` derives `textToText`
+when no image runtime items are selected and `visionToText` when one or more are
+selected. Instructions remain a separate input and never select an operation.
+Connected prompt and instructions override, but do not erase, their inline
+drafts. The first canvas behavior produces one deterministic ephemeral mocked
+Text preview; it does not authorize run-engine, provider, job, provenance,
+credit, or Asset-persistence work.
+
 ---
 
 ## 11. Generation Selection And Provenance
@@ -726,11 +1016,11 @@ For each planned generation work item, the server:
 9. locks and validates selected canonical Assets;
 10. creates the durable job.
 
-For an Element source, "candidate media" means approved masters only. The source
-snapshot records the captured Element revision, resolved identity text, ordered
-master candidates, relationship metadata used for ranking, and exclusions. Raw
-source evidence is not silently included. `generationJobInputs` still stores only
-the exact master Asset subset submitted to the provider.
+For a direct Asset source, the candidate is the referenced canonical Asset. For
+an upstream node output, candidates are the ordered runtime items emitted by the
+same run and lineage. The source snapshot records every candidate and exclusion;
+`generationJobInputs` stores only the exact canonical Asset subset selected for
+the provider-facing request.
 
 This preserves two different facts:
 
@@ -739,11 +1029,11 @@ generationJobSources = everything connected and considered
 generationJobInputs  = exact binary Assets sent to the provider
 ```
 
-Later edits to Elements, role relationships, node configuration, or Flow edges
+Later edits to Assets, node configuration, or Flow edges
 must never rewrite historical provenance.
 
-Manual selection currently applies naturally to static Asset and Element
-candidates. When generated upstream outputs participate in full-flow runs, the
+Manual selection applies naturally to static Asset candidates. When generated
+upstream outputs participate in multi-node runs, the
 selection contract must also support runtime policies such as automatic, first,
 all-within-limit, or a pinned prior result. Draft node data must not contain
 future Asset IDs that do not exist yet.
@@ -787,11 +1077,30 @@ full Flow.
 The server compiles a saved graph into an execution plan. React Flow is not
 involved in server execution.
 
+The five approved commands select executable generation/LLM/audio nodes as
+follows. Source and deterministic control nodes participate in dependency
+resolution but do not create provider jobs by themselves:
+
+```txt
+node        Run node       target executable node only; resolve required sources
+downstream  Run from here  target plus executable descendants
+upstream    Run till here  target plus executable ancestors needed to reach it
+selection   Run selection  selected executable nodes plus their minimum required
+                           executable upstream dependency closure
+all         Run all        every executable node in the saved Flow
+```
+
+`Run selection` must preview the actual planned executable-node count before
+admission whenever its dependency closure adds nodes that were not selected.
+Selected edges and non-executable nodes alone do not make the command available.
+The node toolbar owns `node`, `downstream`, and `upstream`; the main canvas action
+bar owns `all`; the selection context menu owns `selection`.
+
 Planning stages:
 
 ```txt
-1. Load the Flow and immutable revision.
-2. Select the target subgraph for node, downstream, all, or Tool mode.
+1. Flush canvas autosave, then load and verify the expected saved Flow revision.
+2. Select the target subgraph for node, downstream, upstream, selection, or all.
 3. Validate node schemas, handles, edges, required inputs, and DAG acyclicity.
 4. Snapshot graph configuration and deterministic edge order.
 5. Topologically order dependencies.
@@ -803,17 +1112,18 @@ Planning stages:
 11. Dispatch durable executor work through Trigger.dev.
 ```
 
+The browser submits only command IDs and the expected revision, never graph
+JSON. A server preflight returns a canonical `planHash` and scope/multiplicity
+summary. Final admission replans and rejects revision or plan drift; it never
+silently changes the graph revision behind the user's command.
+
 Snapshot admission is a consistency boundary, not merely serialization. The
 planner reads the Flow revision, resolves the selected graph and every mutable
-Element/Asset dependency, and revalidates all participating revisions immediately
-before inserting the run. `flows.revision` protects nodes and edges. M5 adds an
-Element revision in its run-admission migration; M4.5 deliberately does not add
-that column early. From M5 onward, the revision increments in the same
-transaction as Element identity/data/schema or Element-Asset
-role/order/primary/kind/metadata changes. Selected Asset rows are locked in
-stable ID order and revalidated as ready and not purging. Any revision change
-causes the admission transaction to roll back and retry; a run must never contain
-a graph from one moment and Element context from another.
+Asset dependency, and revalidates the Flow revision immediately before inserting
+the run. `flows.revision` protects nodes and edges. Selected Asset rows are
+locked in stable ID order and revalidated as ready and not purging. Any revision
+change causes the admission transaction to roll back and retry; a run must never
+contain graph topology from one revision and node configuration from another.
 
 The resulting `graphSnapshot` is immutable and contains the selected executable
 subgraph, captured Flow revision, full node configuration, deterministic edge
@@ -827,17 +1137,16 @@ The M5 planner returns explicit work items for both simple and iterative graphs:
 
 ```ts
 interface PlannedNodeExecution {
-  itemKey: string
-  dimensions: Readonly<Record<string, string>>
-  inputs: ResolvedInputMap
-  lineage: readonly FlowItemReference[]
+  itemKey: string;
+  dimensions: Readonly<Record<string, string>>;
+  inputs: ResolvedInputMap;
+  lineage: readonly FlowItemReference[];
 }
 
 interface NodeExecutionPlan {
-  nodeId: string
-  workItems: readonly PlannedNodeExecution[]
+  nodeId: string;
+  workItems: readonly PlannedNodeExecution[];
 }
-
 ```
 
 A simple graph naturally returns one item. Iterator, Zip, and independent input
@@ -873,8 +1182,12 @@ queued or retried old runs remain executable after application deployments.
 Task payloads stay intentionally small:
 
 ```ts
-{ flowRunId, organizationId }
-{ generationJobId, organizationId }
+{
+  (flowRunId, organizationId);
+}
+{
+  (generationJobId, organizationId);
+}
 ```
 
 Workers load snapshots and provider inputs from PostgreSQL. Do not send graph
@@ -1068,11 +1381,11 @@ Tool ports use the same runtime model as ordinary node ports:
 
 ```ts
 interface ToolPortDefinition {
-  id: string
-  valueType: FlowValueType
-  aggregation: InputAggregation
-  required: boolean
-  maxItems: number | null
+  id: string;
+  valueType: FlowValueType;
+  aggregation: InputAggregation;
+  required: boolean;
+  maxItems: number | null;
 }
 ```
 
@@ -1090,9 +1403,9 @@ mapping:
 
 ```ts
 interface ToolOutputBinding<T> {
-  items: readonly FlowItem<T>[]
-  portId: string
-  valueType: FlowValueType
+  items: readonly FlowItem<T>[];
+  portId: string;
+  valueType: FlowValueType;
 }
 ```
 
@@ -1140,7 +1453,10 @@ documents.
 
 The engine model should make the UI clearer, not expose implementation details.
 
-### Element node
+### Deferred Element node research
+
+This section is historical product research. Elements are not active MVP nodes,
+run inputs, or dependencies.
 
 ```txt
 Character: Maya
@@ -1196,30 +1512,26 @@ The node presents:
 
 ```txt
 M4  Canvas foundation
-    Text, Asset, Element
-    Image, Video, Audio Generation
+    Text and Asset source nodes
+    Image, Video, LLM, Speech, Music, Sound Effect, Voice Changer, Voice Isolation
     curated stable TaleLabs model identities
     operation/mode, capability, and cross-field-constraint-driven node forms
     public capability registry separated from server-only provider routes
     typed handles and connection validation
-    dynamic Element role handles
     autosave and conflict handling
-    no execution
+    approved adaptive node UX
 
-M4.5  Element consistency foundation
-    versioned identity guidance with one optional Consistency notes field
-    source evidence separated from approved master references
-    master-only previews, context, role handles, and Flow hydration
-    transactional source/master capacity and fixed advisory-lock ordering
-    provider-independent relationship metadata and derived readiness
-    no AI analysis, pack generation, or provider calls
+Deferred Element experiment
+    retained outside navigation, search, graph schemas, hydration, and execution
+    reconsidered only after the Assets + Canvas billable loop works
 
 M5  Provider-independent engine
-    real master-only Element input resolution and immutable snapshots
-    captured Element revisions, identity context, master candidates, and exact inputs
-    selected-node, downstream, and full-flow execution
+    direct Asset and same-run upstream-output resolution
+    immutable graph, model-contract, candidate, selection, and input snapshots
+    Run node, Run from here, Run till here, Run selection, and Run all
     normalized immediate/asynchronous provider lifecycle contract
-    deterministic image, video, and audio provider mocks
+    deterministic image, video, audio, and text provider mocks
+    versioned private media fixtures copied to unique canonical output keys
     multiple outputs and request sharding
     Iterator/Map, Collect, Zip, Prompt Iterator
     Trigger.dev durability, retries, cancellation, partial failure
@@ -1254,21 +1566,19 @@ leave its documented Tool/versioning seams without building that product surface
 
 1. Every successful generated file becomes a canonical Asset.
 2. Graph topology and draft configuration never contain generated result truth.
-3. Element role collections and batch execution items remain distinct.
+3. Typed media collections and batch execution items remain distinct.
 4. Iteration is explicit and cost-visible.
-5. Provider limits are enforced by consuming model slots, not Element capacity.
+5. Provider limits are enforced by consuming model slots after source resolution.
 6. Every provider call has its own durable job, retry boundary, and cost record.
 7. Every runtime item has stable identity and lineage.
 8. Full-flow upstream outputs resolve within the same run and item lineage.
-9. Historical provenance never changes after later Flow, Element, or Asset-link
-   edits.
+9. Historical provenance never changes after later Flow or Asset edits.
 10. Tools execute through the same planner and run system as ordinary Flows.
 11. Tool versions and run snapshots are immutable.
 12. React Flow remains an editor; server planning remains authoritative.
-13. Run admission revalidates Flow and Element revisions before commit.
-14. Element role outputs contain approved masters only; raw source evidence is
-    never an implicit generation input.
-15. Every run is pinned to compatible executor code and receives only ID-sized
+13. Run admission revalidates the Flow revision and locks exact Asset inputs
+    before commit.
+14. Every run is pinned to compatible executor code and receives only ID-sized
     Trigger payloads.
 
 The concise mental model is:

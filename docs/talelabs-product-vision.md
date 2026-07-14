@@ -2,6 +2,11 @@
 
 This document is the source of truth for what TaleLabs is trying to become and what the first sellable product loop must prove. Read it before planning product work, designing UI, creating database models, defining APIs, or integrating AI providers.
 
+> **Active MVP boundary:** read `assets-flows-mvp-contract.md` first. Elements
+> are deferred. Any Element-specific material retained later in this document
+> is historical research only and must not shape navigation, Flow contracts,
+> execution, provider integration, or MVP acceptance.
+
 This document defines product direction and scope. It intentionally does not prescribe the database schema or API contract. Those documents must be redesigned separately after this vision is accepted.
 
 ## What TaleLabs Wants To Be
@@ -10,38 +15,42 @@ TaleLabs is a visual AI creative workspace for generating, organizing, and reusi
 
 The product is not a generic directory of AI models and it is not initially an end-to-end video editor. Models are execution engines inside a visual creative process. TaleLabs should become the place where creators can collect references, preserve reusable context, connect creative steps, generate media, and continue iterating from previous outputs.
 
-The core product loop is:
+The active product loop is:
 
 ```txt
-Assets -> Elements -> Flows -> Generated Assets -> Continued Iteration
+Assets -> Flows -> Generated Assets -> Continued Iteration
 ```
 
-TaleLabs is built around three primary product entities:
+The first sellable foundation is built around two primary product entities:
 
 ```txt
 Assets
-Elements
 Flows
 ```
 
 Each entity has one clear responsibility:
 
 ```txt
-Assets   = media the user owns and can reuse
-Elements = reusable context assembled from assets and instructions
-Flows    = the visual environment where users create
+Assets = media the user owns and can reuse
+Flows  = the visual environment where users create
 ```
 
-The interface and implementation should remain centered on these three concepts until the first product loop is reliable and valuable enough to monetize.
+Elements remain an implemented experiment and a possible later reusable-context
+feature. They are not part of the active product sequence and must not shape or
+block the first Asset-to-Flow generation loop.
+
+The adaptive canvas and generation-node UX were approved on 2026-07-14. The
+immediate product goal is now the provider-independent M5 run engine: execute
+real saved canvas inputs through deterministic mock adapters, persist canonical
+output Assets, and validate the complete run experience before M6 provider calls.
 
 ## Product Navigation
 
 The initial navigation is deliberately narrow:
 
 ```txt
-Assets
 Flows
-Elements
+Assets
 ```
 
 ## Build Order
@@ -50,15 +59,53 @@ The implementation order is:
 
 ```txt
 1. Assets
-2. Elements
-3. Flows
-4. Complete generation loop
-5. Billing and credits
+2. Canvas foundation
+3. Model-adaptive Video Generation node
+4. Model-adaptive Image Generation and LLM nodes, followed by dedicated Speech,
+   Music, Sound Effect, Voice Changer, and Voice Isolation nodes
+5. User-approved adaptive canvas and node UX (complete)
+6. Provider-independent durable run engine with deterministic mock adapters
+7. User-owned run UX and end-to-end QA
+8. Real provider integration
+9. Billing and credits only after the creative loop is proven
 ```
 
-Flows are the main product experience and long-term differentiator. Assets must be implemented first because every upload, reference, Element, generation input, and generation output depends on a trustworthy asset system. Elements come second because they define how reusable context is represented and selected inside Flows.
+Flows are the main product experience and long-term differentiator. Assets come
+first because every reference, generation input, and generation output depends
+on a trustworthy media system. Generation-node UX comes next because it defines
+the actual creative contract the later run engine and provider adapters must
+execute.
 
-Do not begin by building a large canvas with placeholder data. Establish the asset foundation, then the reusable context layer, then the visual creation surface.
+M5 run-engine work is authorized. Real OpenRouter/provider calls remain blocked
+until the user approves the complete run UX and durable mock loop.
+
+Image Generation is one dedicated, model-adaptive canvas node. The user selects
+a curated TaleLabs model, not a provider operation: no selected image reference
+means text-to-image, while one or more selected runtime image items means
+image-to-image. The model contract controls whether the `imageReferences`
+handle exists, its item limit, and visible settings. The approved Image canvas
+contract fixes each generation to one image and therefore exposes no output
+amount control. The result still travels through one stable `images` handle as
+an `ImageSet`, preserving the typed collection boundary without implying Flow
+iteration. The initial picker is deliberately smaller than external model
+discovery. M5 executes this approved node through provider-independent
+deterministic mocks.
+
+LLM is one dedicated, model-adaptive text-output node. It consumes a required
+prompt, optional system instructions, and up to eight images when the selected
+model supports vision. Image presence derives `visionToText`; absence derives
+`textToText`. The approved M4 preview remains ephemeral; M5 adds durable run and
+job results without writing result truth into mutable node data.
+
+Audio is one output media family but not one creative intent. TaleLabs exposes
+five dedicated model-adaptive nodes: Speech, Music, Sound Effect, Voice Changer,
+and Voice Isolation. Model operations carry an authoritative node-intent tag,
+so one provider-neutral product model may appear in more than one compatible
+picker without appearing in unrelated ones. Users never choose a native
+operation. All five nodes emit one typed `AudioSet` through stable handle
+`audio`; their inputs, settings, and readiness remain intent-specific. M5 runs
+them through deterministic adapters and canonical Asset ingestion. Real adapters
+remain M6 scope.
 
 ## Core Technology Choices
 
@@ -120,7 +167,7 @@ User clicks Run node
 
 Do not use Trigger.dev as evidence that TaleLabs needs a run-all Flow engine. In the first product loop, every generation node is executed manually and independently. Trigger.dev provides durability for that one execution; it does not change the manual Flow product model.
 
-Short deterministic operations remain in the TaleLabs API, including graph persistence, connection validation, context previews, cost estimates, signed-upload creation, and ordinary Asset or Element updates.
+Short deterministic operations remain in the TaleLabs API, including graph persistence, connection validation, input previews, cost estimates, signed-upload creation, and ordinary Asset updates.
 
 ## Assets
 
@@ -159,7 +206,7 @@ reusable asset selection
 generated-output ingestion
 ```
 
-Assets must be globally available within the user's workspace. They should not be owned exclusively by a Flow or Element. A single Asset may be referenced by multiple Elements and multiple Flows.
+Assets must be globally available within the user's workspace. They are not owned exclusively by a Flow; one Asset may be referenced by many Flows and nodes.
 
 Every generated Asset should preserve useful provenance:
 
@@ -171,19 +218,25 @@ model and provider
 generation settings
 resolved prompt or instructions
 input asset references
-input Element references
 generation job
 creator
 created date
 ```
 
-The asset picker is a core shared component. Elements and Flow nodes should select existing Assets through the same picker rather than creating separate media libraries.
+The Asset picker is a core shared component. Every Flow node that needs existing media should use the same canonical picker rather than creating another media library.
 
 Tags are lightweight workspace organization shared by workspace members. Favorites are a personal view for each user within a workspace. Neither changes Asset ownership, visibility, or provenance, and both belong to the canonical Asset library and picker rather than separate media collections.
 
 The initial asset system should not expand into a complete Google Drive replacement. Defer public galleries, public links, complex permissions, review workflows, advanced versioning, and elaborate taxonomies beyond simple tags until real usage demonstrates a need.
 
 ## Elements
+
+**Deferred from the active product sequence.** The detailed Element design in
+this section is retained as implemented architecture and future research. It is
+not a prerequisite for Assets, Flows, generation nodes, mocked canvas behavior,
+or the first provider integration. New canvas work must remain fully usable with
+raw Assets and must not add new Element requirements unless the user explicitly
+reactivates this feature.
 
 Elements are reusable creative context.
 
@@ -534,9 +587,7 @@ The product language is deliberately `Using Element defaults`, `Customize`, `Cus
 Internally, defaults map to `auto` and a customized choice maps to `manual`. Incoming React Flow edges remain the sole source of graph topology; generation-node `data` stores only the per-input selection policy, without duplicating source node IDs or handles:
 
 ```ts
-type InputSelection =
-  | { mode: "auto" }
-  | { mode: "manual"; assetIds: string[] };
+type InputSelection = { mode: "auto" } | { mode: "manual"; assetIds: string[] };
 
 type GenerationNodeInputSelections = Record<string, InputSelection>;
 ```
@@ -582,7 +633,12 @@ Singular semantic inputs use the same model with less ceremony. Connecting an `I
 
 The generation node is responsible for showing which compatible references will be used. Models have different media support and input limits, so a connected Element does not imply that every related Asset will be sent to the provider.
 
-When a generation node runs, the server resolves and snapshots the connected Element's upcasted data, resolved text, schema version, complete candidate references, selection policy, selection exclusions, and exact selected Asset references. Later Element edits affect future runs but must not change historical generation provenance. M4 exposes the context and role collection handles; M5 applies the consuming model's capability limits and writes immutable job sources and exact provider inputs.
+This was the proposed Element execution contract before the Assets + Flows
+reset. It is not active in M5: current runs do not resolve Element data, expose
+Element role handles, or snapshot Element references. If Elements are
+reconsidered after the billable loop works, their execution contract must be
+redesigned against the then-current run engine rather than copied from this
+historical proposal.
 
 Users should be able to:
 
@@ -608,7 +664,7 @@ caching, Recipes, and Tools lives in `docs/flow-nodes-planning.md`. Flow work
 must preserve that document's distinction between collections consumed together
 and runtime items that multiply execution.
 
-A Flow is a visual document built with React Flow. Users connect prompts, Assets, Elements, and AI generation nodes to explore ideas, preserve creative provenance, branch into alternatives, and reuse previous outputs.
+A Flow is a visual document built with React Flow. Users connect prompts, Assets, prior outputs, and AI generation nodes to explore ideas, preserve creative provenance, branch into alternatives, and reuse previous outputs.
 
 The first Flow experience is a manual visual creative process. It is not an automation engine.
 
@@ -618,13 +674,17 @@ the three media types TaleLabs intends to execute through one runtime:
 ```txt
 Text or Prompt node
 Asset node
-Element node
 Image Generation node
+LLM node
 Video Generation node
-Audio Generation node
+Speech Generation node
+Music Generation node
+Sound Effect Generation node
+Voice Changer node
+Voice Isolation node
 ```
 
-All three generation-node surfaces and their model capability rules are built
+All dedicated generation-node surfaces and their model capability rules are built
 before external provider integration. Utility/control nodes remain limited to
 the explicit iteration set authorized by the execution plan; other transformation
 nodes should still come from demonstrated needs rather than speculative completeness.
@@ -635,7 +695,7 @@ The first Flow version should support:
 create and rename a Flow
 add, move, connect, duplicate, and delete nodes
 autosave graph state
-select Assets and Elements
+select Assets
 configure a generation node
 run one selected generation node manually
 run a downstream branch or complete Flow when explicitly requested
@@ -648,14 +708,19 @@ branch and remix without losing earlier results
 preserve generation history and provenance
 ```
 
-The first UI action remains explicit and manual:
+All execution remains explicit and manual:
 
 ```txt
-Run selected node only.
+Run node       = only the target node
+Run from here  = target plus descendants
+Run till here  = target plus ancestors
+Run selection  = selected nodes plus required upstream closure
+Run all        = every executable node
 ```
 
-The mock-engine milestone then adds explicit `Run downstream` and `Run all`
-commands. Connecting nodes never starts execution by itself.
+The node toolbar owns the first three commands. `Run all` belongs on the main
+canvas action bar. `Run selection` belongs in the selected-node context menu.
+Connecting nodes never starts execution by itself.
 
 Do not build the following into the first Flow engine:
 
@@ -682,7 +747,7 @@ The product should make this path quick:
 Create Flow -> enter prompt -> choose model/settings -> run node -> receive Asset
 ```
 
-Users can progressively add Assets, Elements, and branches when their creative process becomes more complex.
+Users can progressively add Assets, prior outputs, and branches when their creative process becomes more complex.
 
 ## First Sellable Product Loop
 
@@ -690,9 +755,8 @@ The first sellable loop is:
 
 ```txt
 Upload or find an Asset
--> optionally create an Element
 -> create or open a Flow
--> add Text, Asset, Element, and Generation nodes
+-> add Text, Asset, and Generation nodes
 -> connect the required context
 -> execute the graph against deterministic provider mocks
 -> process the job asynchronously
@@ -703,15 +767,54 @@ Upload or find an Asset
 
 The loop is not complete if generation results are temporary, if outputs cannot be found again, or if the user must re-upload the same references for every generation.
 
-The shared loop is validated with deterministic image, video, and audio outputs
-before any paid generation request. Inputs, planning, durable execution,
-provenance, and output ingestion are production-shaped; only provider responses
-are mocked. Real integrations must reuse that foundation rather than creating
-independent products.
+The canvas loop was validated with deterministic image, video, text, and audio
+previews before any paid generation request. M5 now makes planning, snapshots,
+runs, jobs, provenance, output ingestion, and canonical Assets production-shaped
+while keeping only the normalized provider adapter deterministic and mocked.
 
 ## Generation Principles
 
 Model choice belongs inside generation nodes. Power users should be able to choose a supported model and compatible settings, but provider terminology should not dominate the creative experience.
+
+### Model-Adaptive Generation Nodes
+
+Generation nodes follow a stable creative intent. Image, Video, and LLM each
+have a dedicated output-family surface; audio deliberately splits into Speech,
+Music, Sound Effect, Voice Changer, and Voice Isolation because those intents
+have different inputs and request shapes despite sharing `AudioSet`. Users
+choose a model and connect creative inputs; they never choose a provider operation such as
+text-to-video, image-to-video, reference-to-video, or audio-to-video. The model's
+curated contract determines which semantic handles exist, and one shared pure
+resolver derives the concrete operation from the connected inputs for graph
+validation, planning, routing, snapshots, and provenance.
+
+Unsupported inputs are absent. Model-supported inputs that conflict with the
+current connection family remain visible but disabled with a localized reason.
+For routes where frame inputs take precedence over references, TaleLabs makes
+the frame and reference families mutually exclusive instead of silently sending
+inputs the provider would ignore. Changing models preserves compatible
+connections and settings and applies the reconciled graph and derived operation
+atomically. Every generation node reconciles immediately, including LLM and
+audio nodes. The user's model selection is the confirmation: incompatible
+connections, selections, and settings may be removed or reset without a modal
+or notification, and Undo restores the previous graph state in one step.
+
+Video nodes use stable semantic handles: `prompt`, `firstFrame`, `lastFrame`,
+`imageReferences`, `videoReferences`, `audioReferences`, and output `videos`.
+The inline video prompt is preserved in node data. When an external Text edge is
+connected to `prompt`, that text is authoritative and the inline editor is
+disabled; TaleLabs never silently concatenates both sources.
+
+LLM nodes use stable semantic handles: `instructions`, `prompt`, optional
+`imageReferences`, and output `text`. Connected prompt or instructions are
+authoritative while the corresponding inline draft remains preserved. The
+selected curated model controls vision support and the exact response-length
+and reasoning options; provider parameters, native model IDs, prices, and raw
+reasoning traces do not belong on the canvas.
+
+The first approved loop is Asset-driven and deterministic-provider-mocked.
+Elements do not shape Video Generation readiness or input presentation in this
+phase. Real provider integration begins only after user-owned canvas UX approval.
 
 The node UI should expose only controls supported by the selected model, such as:
 
@@ -740,8 +843,8 @@ TaleLabs may replace OpenRouter with a direct route for the same underlying mode
 without migrating Flows. A materially different creative model receives a new
 TaleLabs model ID rather than silently changing existing semantics.
 
-Capabilities must describe generation modes and dependent constraints, not only
-independent controls. Examples include text-to-video versus image-to-video,
+Capabilities must describe internal generation operations and dependent
+constraints, not only independent controls. Examples include text-to-video versus image-to-video,
 first/last-frame requirements, reference-image limits, resolutions that force a
 specific duration, mutually exclusive inputs, and operation-specific audio
 contracts such as TTS versus sound effects.
@@ -754,80 +857,49 @@ poll/webhook, and audio may return or stream raw bytes. Trigger.dev owns durable
 polling, reconciliation, retries, cancellation, and ingestion without creating a
 separate execution engine per media type.
 
-### Multi-Context Generation
+### Multi-Source Generation
 
-Multi-context generation is a foundational Flow requirement and must be supported from the first generation-job design.
-
-A generation node can receive several context sources in one manually initiated run:
-
-```txt
-Character Element ─┐
-Character Element ─┤
-Product Element ───┼─> Image Generation
-Location Element ──┤
-Style Element ─────┤
-Raw Asset ─────────┤
-Text Prompt ───────┘
-```
-
-The system must support multiplicity at two levels:
+Generation nodes must support several connected sources without introducing an
+Element abstraction. A source may be:
 
 ```txt
-one generation job -> multiple connected context sources
-one Element        -> multiple approved master references
-```
-
-A context source may come from:
-
-```txt
-Text or Prompt node
-Element node
-raw Asset node
+Text node
+Asset node
 compatible output from another Flow node
 ```
 
-Context sources should preserve deterministic ordering, role, and priority where those values affect prompt composition or provider input selection.
-
-Multi-context does not mean that every Asset from every connected Element is sent to the provider. The selected model may support only certain media types or a limited number of references. Resolution must follow this sequence:
+Multiplicity has two distinct meanings:
 
 ```txt
-collect connected context sources
--> resolve Element identity and approved master Assets
--> apply role, relationship metadata, ordering, and primary priority
--> validate selected model capabilities and limits
--> select or ask the user to select compatible references
--> show exclusions and input-limit warnings
--> snapshot the exact provider inputs
+one consumer input may receive a typed collection consumed together
+one upstream iterator or multi-output run may create multiple runtime items
 ```
 
-The generation record must preserve both:
+Do not conflate a collection of image references with repeated execution. The
+selected model contract determines accepted media, connection limits, combined
+item limits, mutually exclusive input families, and payload order.
+
+Resolution follows this sequence:
 
 ```txt
-all context sources connected to the generation node
-the exact subset of text and Asset inputs submitted to the provider
+collect connected Text, Asset, and prior-output sources
+-> resolve canonical ready Asset records
+-> apply deterministic edge and item ordering
+-> validate the selected model operation and limits
+-> apply automatic or explicit item selection where required
+-> show exclusions and input-limit errors
+-> snapshot exact submitted text and Asset IDs during future run admission
 ```
 
-At execution time, snapshot:
+Future execution records preserve both the connected source lineage and the
+exact subset submitted to the provider. Later edits to a Flow or Asset must not
+rewrite historical inputs.
 
-```txt
-connected node IDs and source types
-Element IDs and Element types
-resolved Element text context
-candidate Asset references and roles
-selected provider Asset inputs
-final resolved prompt or instructions
-model and generation settings
-```
-
-Later edits to a Flow, Element, or Asset relationship must not rewrite historical generation inputs.
-
-Future database and API designs must not reduce generation context to a single `characterId`, `elementId`, or `assetId`. Generation inputs are plural by design. Retired relationships such as a job-level `characterId` or `brandCharacters` do not represent the new Element and Flow architecture.
-
-Multi-context is separate from batch generation, multiple prompts, and run-all execution. The MVP may still execute one generation node and produce one requested result while resolving several context sources for that run.
-
+Multi-source input is separate from iteration, batch generation, multiple
+outputs, and run-all execution. Those runtime semantics must remain explicit.
 ## Workspace Scope
 
-Assets, Elements, and Flows belong to a user workspace or organization boundary. Tenant isolation is required for every read, write, selection, generation input, storage operation, and realtime room.
+Assets and Flows belong to a user workspace or organization boundary. Tenant isolation is required for every read, write, selection, generation input, storage operation, and realtime room.
 
 The MVP does not need a separate Project entity. A Flow is the primary creative document, and folders organize Assets. Do not introduce Projects as an additional organizing layer until user behavior proves that Flows and folders are insufficient.
 
@@ -1171,15 +1243,15 @@ Credits belong in the header, account, usage, and billing experiences rather tha
 
 ## Product Principles
 
-1. Build Assets before Elements and Elements before Flows.
+1. Build Assets first, then make the Flow canvas and generation nodes excellent.
 2. Treat Flows as the main product experience, not as an auxiliary feature.
-3. Make simple one-node generation easy inside a Flow.
-4. Run one selected node manually before considering graph automation.
+3. Make simple one-node generation easy without requiring Elements or technical operation selection.
+4. Approve model-adaptive node UX with deterministic mocks before designing the run engine.
 5. Persist every successful output as a reusable Asset.
 6. Keep Assets canonical and globally reusable within a workspace.
-7. Use Elements to unify reusable context instead of building separate Brand, Product, and Character products.
+7. Treat Elements as a deferred optional accelerator, not a core-loop dependency.
 8. Treat multiple connected context sources as a core generation capability, not a later migration.
-9. Preserve immutable generation provenance even when Elements later change.
+9. Preserve immutable generation provenance when execution work resumes.
 10. Add new surfaces only when they extend the core loop and have evidence behind them.
 11. Defer Storyboard, simple Generate, editing, collaboration, Recipes, and Tools until the core loop works.
 12. Keep models behind a creative, capability-aware interface.
@@ -1193,8 +1265,7 @@ Before adding a feature, ask:
 
 ```txt
 Does this make Assets more reliable or reusable?
-Does this make Elements more useful as context?
-Does this make manual Flows better for creating media?
+Does this make the canvas or its generation nodes easier and more capable?
 Does this complete or monetize the current product loop?
 ```
 

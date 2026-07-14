@@ -1,14 +1,31 @@
 # TaleLabs — Database Design v2 (PostgreSQL)
 
-Supersedes `db-design-planning.md`. Designed from the current product vision: **Assets → Elements → Flows → Generated Assets → Continued Iteration**, built in that order.
+> **Active MVP override (2026-07-14):** the runtime product spine is
+> **Assets → Flows → Generated Assets → Continued Iteration**. Standalone
+> Element tables are preserved as dormant historical work, but `flowNodes` no
+> longer carries `elementId` and active execution must not hydrate Element
+> context. M5 implements five provider-independent run modes with deterministic
+> mocks; M6 replaces only the adapter boundary with real providers. See
+> `assets-flows-mvp-contract.md`.
 
-In scope: the three core entities, folders, Asset tags and favorites, the flow graph, and multi-context generation jobs executed through Trigger.dev.
+Supersedes `db-design-planning.md`. The active MVP is designed around **Assets → Flows → Generated Assets → Continued Iteration**.
+
+In scope: Assets, folders, Asset tags and favorites, the normalized Flow graph,
+immutable run snapshots, durable generation jobs, explicit iteration, and
+multi-context generation executed through Trigger.dev.
 
 Out of scope (deferred, with seams noted in [Future-proofing](#future-proofing)): billing/credits enforcement (though **costs are recorded from day one** — see `generationJobs`), Recipes, Tools, Storyboard, collaboration, projects, public galleries.
 
-Execution has **one spine from day one**: every run — single node now, whole-graph and Tools later — is a `flowRuns` row wrapping ordinary `generationJobs`. The runs tables ship in the initial migration even though only Run Node is exposed at first; this avoids maintaining two execution paths and retrofitting standalone legacy jobs later (section 11). Credit-system design has its own planning document: `credits-planning.md`.
+Execution has **one spine**: every M5 command (`node`, `downstream`, `upstream`,
+`selection`, or `all`) creates a `flowRuns` row wrapping ordinary
+`generationJobs`. Future Tools reuse this spine. Credit-system design has its own
+planning document: `credits-planning.md`.
 
-Retired from v1 — these do not return: `brands`, `products`, `characters`, `brand_characters`, `project_*` tables, job-level `character_id`, `credit_source`, and `featured_at`. Elements replace the per-entity context products; Flows replace Projects as the creative document. Tags and favorites remain as lightweight Asset-library organization, not as public-gallery metadata.
+Retired from v1 — these do not return: `brands`, `products`, `characters`,
+`brand_characters`, `project_*` tables, job-level `character_id`, `credit_source`,
+and `featured_at`. The later Element experiment remains dormant and is not an
+MVP dependency. Flows are the creative document; Tags, folders, and favorites
+provide lightweight Asset-library organization.
 
 Requires PostgreSQL 15+ (`unique nulls not distinct`, column-targeted `on delete set null`).
 
@@ -18,10 +35,10 @@ Requires PostgreSQL 15+ (`unique nulls not distinct`, column-targeted `on delete
 
 **React Flow (`@xyflow/react` v12)** serializes a canvas as `{ nodes, edges, viewport }`, where a node is `{ id, type, position: {x, y}, data }` and an edge is `{ id, source, target, sourceHandle?, targetHandle? }`. React Flow is UI only — it is not the source of truth. The DB stores the graph in **normalized `flowNodes` / `flowEdges` tables**, not one jsonb document, because the product requires relational answers React Flow can't give:
 
-- "Where is this Element used?" (vision requirement) → `select "flowId" from "flowNodes" where "elementId" = $1`
 - Server-side upstream context resolution at run time → walk `flowEdges` in SQL, no document parsing
 - Autosave = per-node upserts (position changes touch one small row, not a rewritten megabyte document under TOAST)
-- Referential integrity: a node's `elementId`/`assetId` are real FKs; deleting an Element nulls the reference instead of leaving silent dangling ids inside jsonb
+- Referential integrity: an Asset node's `assetId` is a real FK; purge keeps a
+  tombstone and prevents silent dangling IDs
 - Collaboration later = per-row updates merge; a whole-document write is last-writer-wins by construction
 
 Node/edge **ids are client-generated cuid2** (same `@paralleldrive/cuid2` lib runs in the browser) — React Flow creates nodes locally before any server round trip, and stable ids are the vision's prerequisite for future collaboration. The server validates format and uniqueness on write.
@@ -29,25 +46,22 @@ Node/edge **ids are client-generated cuid2** (same `@paralleldrive/cuid2` lib ru
 **Trigger.dev (v4)** owns queueing, retries, concurrency, cancellation, and run observability on its platform — we do not rebuild any of that in Postgres. What the DB owns is the **domain job record** (`generationJobs`): tenancy, provenance, immutable input snapshots, and the resulting Asset. The integration contract:
 
 ```txt
-1. API validates + resolves context, INSERTs the run row (mode 'node'), its
-   flowRunNodes row, the job row (status 'pending') and snapshot rows in one
-   transaction — run-level idempotency (API header) rejects duplicate requests here
-2. After commit: tasks.trigger("generate-image", { jobId }, { idempotencyKey: jobId })
-   — payload carries ids only, the task loads state from the DB
-3. The run id has two writers so it can never be permanently lost: the API stores
-   the returned handle id, AND the task's first action persists its own ctx.run.id
-   with the transition to 'running' — an API crash after triggering cannot leave a
-   running job without its triggerRunId (cancellation/observability stay intact).
-   That same write moves the flowRunNodes row — and, for mode-'node' runs, the
-   parent flowRuns row — to 'running': job state and run state never diverge
-4. Provider submission is write-ahead: set providerSubmittedAt, call the provider
-   (passing jobId as the provider-side idempotency key where supported), then
-   persist providerJobId. On task retry:
-     providerJobId set                          -> resume polling, never resubmit
-     providerSubmittedAt set, providerJobId null -> outcome UNCERTAIN: query the
-       provider by client reference if it supports one; otherwise fail the job
-       with errorCode 'submission_uncertain' — never auto-resubmit expensive media
-5. Output uploads use deterministic keys (generations/{jobId}/{outputIndex}), so a
+1. API validates and plans the requested mode, then inserts the immutable run,
+   node summaries, expanded items, initial jobs, and provenance in one admission
+   transaction. Run-level idempotency rejects duplicate user requests.
+2. After commit, trigger one parent orchestration task for every mode with
+   { flowRunId, organizationId } and idempotencyKey = flowRunId. Payloads carry
+   IDs only; tasks load immutable state from PostgreSQL.
+3. Trigger run IDs have two writers: the API stores the returned handle and the
+   task persists ctx.run.id as its first action. Reconciliation redispatches a
+   pending run whose triggerRunId remains null.
+4. The orchestrator executes ready topological levels and creates/dispatches
+   item/request jobs just in time using the deterministic key
+   flowRunId:nodeId:itemKey:requestIndex. In M5 those jobs call local mock
+   adapters only. M6 introduces provider submission/polling behind the same
+   adapter contract and retains the write-ahead uncertainty rules.
+5. Mock and future provider media uploads use deterministic keys
+   (generations/{jobId}/{outputIndex}), so a
    retried upload overwrites its own partial object instead of orphaning a new one
 6. Completion is one transaction, and ORDER MATTERS — a constraint violation
    aborts a Postgres transaction (no reads allowed without rollback/savepoint),
@@ -61,18 +75,15 @@ Node/edge **ids are client-generated cuid2** (same `@paralleldrive/cuid2` lib ru
           'canceled'/'failed' -> delete only objects no asset row references
      c. won -> INSERT output Assets with ON CONFLICT (generationJobId, outputIndex)
         DO NOTHING (harmless belt against replayed partial state)
-     d. propagate run state in the SAME transaction: flowRunNodes row -> 'succeeded';
-        for mode-'node' runs also the parent flowRuns row -> 'succeeded'
-        (+ completedAt, aggregate creditCost). Multi-node runs update only the
-        run-node here — the orchestrator aggregates the parent when levels settle.
-        Failures mirror the same shape ('failed' + errorCode).
+     d. update job + run item together; aggregate item -> node -> run in guarded
+        transactions. Failures and partial success mirror the same hierarchy.
      e. COMMIT. Cancel racing completion resolves to exactly one outcome; a
         completion retry can never destroy a canonical output; job, run-node,
         and run states can never diverge.
 7. Cancellation = runs.cancel(triggerRunId) + the same guarded update
 8. Reconciliation sweeps: (a) redispatch status = 'pending' AND triggerRunId IS NULL
-   AND createdAt < now() - interval '1 minute' — safe because idempotencyKey = jobId
-   makes redispatch a no-op if the original trigger landed (running jobs never need
+   AND createdAt < now() - interval '1 minute' — safe because domain-derived
+   idempotency makes redispatch a no-op if the original trigger landed (running jobs never need
    this sweep thanks to step 3); (b) delete storage objects under generations/{jobId}/
    for terminally failed/canceled jobs — cleans orphans from crashes between upload
    and commit.
@@ -80,7 +91,12 @@ Node/edge **ids are client-generated cuid2** (same `@paralleldrive/cuid2` lib ru
    public access token — either way the DB row is the domain truth
 ```
 
-Duplicate protection, one mechanism per boundary: the run's idempotency key (API header, unique per org) stops a retried _user_ request from creating two runs; the job's derived key (`flowRunId:nodeId`) stops a retried _orchestration_ from creating two jobs for a node; `idempotencyKey: jobId` stops a retried _dispatch_ from creating two Trigger.dev runs; the write-ahead `providerSubmittedAt` + `providerJobId` pair (plus the unique `(provider, providerJobId)` index) stops a retried _task_ from creating or claiming two provider generations. True exactly-once at the provider is only possible where the provider supports idempotency keys — everywhere else the contract degrades to "at-most-once with explicit uncertainty", never "maybe twice".
+Duplicate protection has one mechanism per boundary: the run key stops duplicate
+user requests; the run/node/item/request tuple stops duplicate planned jobs;
+Trigger idempotency stops duplicate task runs. M6 additionally uses the
+write-ahead `providerSubmittedAt` + `providerJobId` pair. True provider
+exactly-once exists only where that provider supports idempotency; elsewhere the
+contract is at-most-once with explicit uncertainty.
 
 ---
 
@@ -103,22 +119,16 @@ Duplicate protection, one mechanism per boundary: the run's idempotency key (API
 erDiagram
     organization ||--o{ folders : owns
     organization ||--o{ assets : owns
-    organization ||--o{ elements : owns
     organization ||--o{ flows : owns
     organization ||--o{ generationJobs : owns
 
     folders ||--o{ folders : nests
     folders ||--o{ assets : contains
-    folders o|--o| elements : "organizes new uploads"
-
-    elements }o--o{ assets : "elementAssets (kind, role, order, metadata, primary)"
-
     flows ||--o{ flowNodes : has
     flows ||--o{ flowEdges : has
     flows ||--o{ flowRuns : "executed by"
     flowRuns ||--o{ flowRunNodes : "per-node state"
     flowRuns ||--o{ generationJobs : wraps
-    flowNodes }o--|| elements : "element node ref"
     flowNodes }o--|| assets : "asset node ref"
     flowEdges }o--|| flowNodes : "source/target (same flow, enforced)"
 
@@ -126,7 +136,6 @@ erDiagram
     generationJobs ||--o{ generationJobSources : "connected context (snapshot)"
     generationJobs ||--o{ generationJobInputs : "exact provider inputs"
     generationJobs ||--o{ assets : produces
-    generationJobSources }o--|| elements : "resolved from"
     generationJobInputs }o--|| assets : uses
 ```
 
@@ -190,9 +199,13 @@ create table "flows" (
 create index "flowsOrgUpdatedIdx" on "flows" ("organizationId", "updatedAt" desc, "id" desc);
 ```
 
-### 3. Generation jobs — the durable domain record of one node execution
+### 3. Generation jobs — one durable provider-shaped request
 
-One row per generation-node execution — whether the user ran that node directly or a future flow run executed it as part of the graph. The job is always the atomic unit: single provider, single model, one node. Everything the provider will see is snapshotted at create time (the vision's immutable-provenance rule); Trigger.dev executes it.
+One row per provider-shaped request. A node work item normally creates one job,
+but request sharding may create several. The job remains the atomic retry and
+cost unit: one adapter, one model, one operation, one work item, one request
+index. Everything the adapter sees is snapshotted at creation; Trigger.dev
+executes it.
 
 ```sql
 create table "generationJobs" (
@@ -200,13 +213,14 @@ create table "generationJobs" (
   "organizationId" text not null references "organization"("id") on delete cascade,
   "createdBy" text references "user"("id") on delete set null,
 
-  "flowRunId" text not null,        -- every job belongs to exactly one run (section 11);
-                                    -- a mode-'node' run wraps a single job
+  "flowRunId" text not null,        -- every job belongs to exactly one run (section 11)
   "flowId" text,                    -- denormalized for canvas queries; history survives flow deletion
   "nodeId" text not null,           -- generation node id at run time; no FK — it's a snapshot,
                                     -- the node may be deleted or reused later
+  "itemKey" text not null,          -- deterministic flowRunNodeItems identity
+  "requestIndex" integer not null default 0, -- bounded shard within the item
 
-  "mediaType" text not null check ("mediaType" in ('image', 'video', 'audio')),
+  "mediaType" text not null check ("mediaType" in ('text', 'image', 'video', 'audio')),
   "status" text not null default 'pending'
            check ("status" in ('pending', 'running', 'succeeded', 'failed', 'canceled')),
 
@@ -218,9 +232,9 @@ create table "generationJobs" (
   "providerRouteVersion" text not null,
   "adapterVersion" text not null,
   "settings" jsonb not null default '{}',  -- aspect ratio, resolution, seed, ... (model-shaped)
-  "resolvedPrompt" text,            -- final instructions composed at create from all text/element sources
+  "resolvedPrompt" text,            -- final instructions composed from resolved Text sources
 
-  "idempotencyKey" text not null,   -- server-derived: flowRunId || ':' || nodeId; the API-facing
+  "idempotencyKey" text not null,   -- server-derived from run/node/item/request; the API-facing
                                     -- key lives on flowRuns — retried orchestration can never
                                     -- double-create a node's job
   "requestHash" text not null,      -- hash of the snapshotted job payload
@@ -243,10 +257,7 @@ create table "generationJobs" (
   "completedAt" timestamptz,
 
   unique ("id", "organizationId"),    -- composite target for org-scoped FKs
-  unique ("id", "flowRunId", "nodeId", "organizationId"),
-    -- FK target for flowRunNodes."jobId": structurally guarantees a run-node can
-    -- only link a job of its own run AND its own node (id alone is unique, so this
-    -- adds no new uniqueness — it exists purely as a composite reference target)
+  unique ("flowRunId", "nodeId", "itemKey", "requestIndex"),
   foreign key ("flowRunId", "organizationId")
     references "flowRuns" ("id", "organizationId"),
     -- no delete action: runs are immutable execution history, never deleted individually
@@ -277,12 +288,21 @@ create unique index "generationJobsProviderJobIdx"
 Notes:
 
 - **No `characterId`, no `elementId`, no single `assetId`.** Context is plural by design and lives entirely in `generationJobSources` / `generationJobInputs` below.
-- **No prompt column for user input.** In the Flow model, text arrives from connected Text nodes (plural); the raw texts are snapshotted per source, and `"resolvedPrompt"` is the composed result.
+- **No generation-job prompt column for user input.** Video node schema version
+  3 may preserve an inline prompt inside `flowNodes.data`; connected Text nodes
+  remain separate sources. At admission the connected Text input is
+  authoritative when present, the server rederives the concrete operation, and
+  the chosen prompt plus raw sources are frozen into the immutable snapshot and
+  `"resolvedPrompt"`. Inline and connected prompts are never silently concatenated.
 - **No retry/attempt/queue columns.** Trigger.dev owns retries, concurrency, and queueing; duplicating its state machine in Postgres would drift. `"status"` is the _domain_ outcome, written under the guarded-update rule (see the integration contract, including the atomic completion-vs-cancel transaction).
 - **No `cancelRequestedAt`.** With `runs.cancel(triggerRunId)` doing the actual interruption, a single guarded status write suffices — if the task already finished, the update affects zero rows and the terminal status stands.
-- `"mediaType"` includes video/audio from day one because the vision requires those nodes to reuse this exact foundation — same table, same snapshot model, no parallel systems.
+- `"mediaType"` includes text, image, video, and audio. Successful media outputs
+  become Assets; successful text outputs use the dedicated durable text-output
+  relation described with the run tables.
 - **Costs are recorded before billing exists.** `"creditCost"` and `"providerCostUsd"` are execution-time facts that cannot be faithfully reconstructed later (provider pricing changes, settings-dependent pricing). Recording them from the first shipped generation produces the real usage dataset the credit system will be calibrated against — the ledger and enforcement attach later (see `credits-planning.md`), the measurements start now.
-- **`"flowRunId"` is `not null` from day one.** Single-node execution is a mode-`'node'` run wrapping one job — one execution path across node, workflow, and tool runs, no standalone legacy jobs to retrofit when multi-node modes ship (section 11).
+- **`"flowRunId"` is `not null`.** Even a node command creates a run and may
+  expand to multiple items or shards. There are no standalone jobs to reconcile
+  with the workflow path later.
 - **Provider exactly-once is honest, not assumed.** `"providerSubmittedAt"` (write-ahead) + `"providerJobId"` (write-behind) bracket the provider call; the gap between them is the uncertainty window a retry must respect (contract step 4). The unique `(provider, "providerJobId")` index guarantees two job rows can never claim the same provider execution.
 - The composite FK on `("flowId", "organizationId")` makes a cross-org flow reference structurally impossible — see [Tenant isolation](#tenant-isolation).
 
@@ -435,7 +455,12 @@ create index "assetTagsOrgTagIdx"
 
 Tag names are normalized in the application with Unicode NFKC normalization, collapsed whitespace, and case folding before the organization-level unique constraint is evaluated. Assigning a favorite or tag is idempotent. Deleting a tag removes its Asset assignments, never the Assets themselves.
 
-### 5. Elements — reusable creative context
+### 5. Deferred Elements — dormant historical schema
+
+The following tables preserve the completed experiment for possible
+reconsideration after the billable Assets + Canvas loop. They are not part of
+Flow schemas, reference hydration, run admission, M5 acceptance, or M6 provider
+integration. Do not add new active runtime dependencies on them.
 
 One generic table for all element types. The framework-neutral **type registry lives in code** and contains versioned validation schemas plus structural Asset-role metadata. Dedicated React forms live in the dashboard and dedicated `buildContext` implementations live in the API. The DB stores the registry key and type-shaped validated payload, and deliberately does not constrain the key, so shipping a new type is a code-registry change, not a migration.
 
@@ -477,12 +502,10 @@ create unique index "elementsAssetFolderIdx"
   on "elements" ("assetFolderId") where "assetFolderId" is not null;
 ```
 
-The current M4.5 schema intentionally has no `elements.revision` column. M5's
-run-admission migration adds it only when the snapshot builder exists, then
-starts incrementing it transactionally for identity/data/schema changes and
-execution-relevant relationship changes. Keeping the future guard out of
-migration `008_element_consistency` prevents an unused counter from suggesting
-snapshot safety before M5 can enforce it end to end.
+The dormant Element schema intentionally has no `elements.revision` column.
+M5 does not add one because active run admission does not read or snapshot
+Elements. If Elements return later, revision and snapshot semantics must be
+designed against the then-current run engine.
 
 `folders.systemRole = 'elements_root'` identifies the one workspace Elements root without relying on its mutable name or path. Element creation provisions a collision-safe child folder and stores its ID in `assetFolderId` in the same transaction. The FK makes folder moves/renames harmless and clears the association if the folder is deleted. Element deletion deliberately has no effect on the referenced folder. A later Element upload recreates a missing association before inserting the new Asset; existing-Asset links never alter `assets.folderId`.
 
@@ -574,16 +597,9 @@ the Asset transaction: Asset insertion, relationship insertion, affected
 persisted-Flow budget validation, and any folder provisioning commit or roll
 back together.
 
-Beginning with M5, `elements.revision` is the run-snapshot consistency guard.
-Every mutation to Element `name`, `instructions`, `data`, schema version, or any
-`elementAssets` role/order/primary/kind/metadata relationship increments it in
-the same transaction. Run and Tool-version snapshot builders capture all
-participating Element revisions and re-read them immediately before commit. A
-mismatch rolls back and retries the whole admission/publication operation. This
-prevents automatic reference selection from observing a mixture of old Element
-data and a new kit, or one Element from before a concurrent edit and another
-from after it. The column is added with the M5 run-admission migration and is not
-part of the M4.5 additive migration or public API.
+No `elements.revision` migration is part of M5. If Elements return later, their
+snapshot and revision strategy must be designed against the then-current run
+engine instead of being inferred from this dormant schema.
 
 ### 7. Flow nodes — normalized graph, half relational, half document
 
@@ -594,10 +610,9 @@ create table "flowNodes" (
   "id" text primary key,              -- client-generated cuid2; stable for provenance + future collab
   "organizationId" text not null references "organization"("id") on delete cascade,
   "flowId" text not null,
-  "type" text not null,               -- 'text' | 'asset' | 'element' | 'imageGeneration' — code registry, no check
+  "type" text not null,               -- active code registry: text/asset/imageGeneration/videoGeneration/llm plus audio-intent and control nodes; no check
   "positionX" double precision not null,
   "positionY" double precision not null,
-  "elementId" text,                   -- set for element nodes
   "assetId" text,                     -- set for asset nodes (and generation outputs)
   "data" jsonb not null default '{}', -- node-type payload: text content, model+settings draft, ui state
   "schemaVersion" smallint not null default 1,  -- registry schema version that wrote "data"
@@ -606,20 +621,28 @@ create table "flowNodes" (
   unique ("flowId", "id"),            -- composite target for flow-scoped edge FKs below
   foreign key ("flowId", "organizationId")
     references "flows" ("id", "organizationId") on delete cascade,
-  foreign key ("elementId", "organizationId")
-    references "elements" ("id", "organizationId") on delete set null ("elementId"),
   foreign key ("assetId", "organizationId")
     references "assets" ("id", "organizationId") on delete set null ("assetId")
 );
 
 create index "flowNodesFlowIdx" on "flowNodes" ("flowId");
-create index "flowNodesElementIdx" on "flowNodes" ("elementId") where "elementId" is not null;
 create index "flowNodesAssetIdx" on "flowNodes" ("assetId") where "assetId" is not null;
 ```
 
-- `"elementId"`/`"assetId"` as real FK columns (not buried in `"data"`) buy the two things jsonb can't: the "where is this Element used?" query, and `set null` behavior so deleting an Element leaves a visibly-unresolved node instead of a silently broken reference.
+- `"assetId"` is a real FK column rather than a value buried in `"data"`, so
+  tenant integrity and lifecycle behavior remain enforceable by PostgreSQL.
 - `"positionX"/"positionY"` as columns because drag-autosave is the hottest write path — a two-float HOT update per node beats rewriting a document.
-- A generation node's _draft_ config (chosen model, settings, and per-input `auto` or ordered-manual Asset selection policy) lives in `"data"`; incoming edges remain the sole source of topology, so node data never duplicates source node IDs or handles. The run-time truth is snapshotted onto `generationJobs`. Draft and provenance never share storage.
+- A generation node's _draft_ config (chosen model, settings, derived operation,
+  optional inline prompt, and per-input `auto` or ordered-manual Asset selection
+  policy) lives in `"data"`; incoming edges remain the sole source of topology,
+  so node data never duplicates source node IDs or handles. Image schema version
+  6, Video schema version 3, and LLM schema version 1 include the preserved
+  inline `prompt`; LLM also preserves inline `instructions`. The server
+  rederives Image, Video, and LLM operations from the final graph and rejects
+  client drift. Image contract upgrades rewrite the legacy
+  `references` edge handle to `imageReferences` in the same graph mutation.
+  The run-time truth is snapshotted onto `generationJobs`. Draft and provenance
+  never share storage.
 - Autosave protocol (API concern, stated here because it shapes the tables): the client sends batched node upserts + deletes and edge inserts + deletes per debounce tick, wrapped in the flow-revision compare-and-swap described on `flows`. No whole-graph replacement endpoint.
 
 ### 8. Flow edges
@@ -649,7 +672,12 @@ create index "flowEdgesTargetIdx" on "flowEdges" ("targetNodeId");
 
 ### 9. Generation job sources — every connected context source, snapshotted
 
-The vision's first provenance level: _all context sources connected to the generation node_, with deterministic ordering, resolved element text, and the candidate references considered — frozen at create time. Later edits to flows, elements, or element-asset links must never rewrite these rows.
+The first provenance level is every source connected to the executable node,
+with deterministic ordering and every candidate/selection decision frozen at
+job creation. Active M5 writes use `text`, `asset`, and `nodeOutput`. The legacy
+`element` vocabulary and nullable `elementId` column remain only for historical
+compatibility with any pre-reset records; the active planner must never create
+them. Later Flow or Asset edits must never rewrite these rows.
 
 ```sql
 create table "generationJobSources" (
@@ -660,12 +688,12 @@ create table "generationJobSources" (
   "sourceType" text not null
                check ("sourceType" in ('text', 'element', 'asset', 'nodeOutput')),
   "nodeId" text not null,             -- flow node this source came from (snapshot, no FK)
-  "elementId" text,                   -- live pointer for "jobs using this element"
+  "elementId" text,                   -- legacy compatibility only; active M5 writes null
   "assetId" text,                     -- for raw-asset / node-output sources
-  "resolvedText" text,                -- text node content, or the element's buildContext output
+  "resolvedText" text,                -- resolved Text-node content/instructions
   "snapshot" jsonb not null default '{}',
-               -- frozen payload: element type, candidate asset refs {assetId, role, priority},
-               -- exclusions + input-limit decisions. Snapshot data — queried never, replayed always.
+               -- frozen candidate refs, exclusions, selection and input-limit
+               -- decisions. Snapshot data — queried never, replayed always.
   unique ("jobId", "sortOrder"),
   unique ("jobId", "id"),             -- composite target for job-scoped input FK below
   foreign key ("jobId", "organizationId")
@@ -681,13 +709,26 @@ create index "generationJobSourcesElementIdx" on "generationJobSources" ("elemen
   where "elementId" is not null;
 ```
 
-The column/jsonb split is deliberate: `"elementId"` and `"assetId"` stay relational because "which runs used this element/asset as context" is a product query; the candidate list and exclusion decisions go into `"snapshot"` because they are read back only to display provenance — normalizing them would add a fourth table for zero query value.
+The active column/jsonb split is deliberate: `"assetId"` stays relational because
+"which runs used this Asset" is a product query; candidate lists and exclusion
+decisions live in `"snapshot"` because they are read back for provenance rather
+than filtered relationally.
 
 Two resolution rules the vision requires but React Flow does not provide, defined here so `"sortOrder"` is never arbitrary:
 
 - **Source ordering:** React Flow edges are an unordered set, but the vision demands deterministic context ordering (it affects prompt composition). Default order = `(flowEdges."createdAt", "id")` of the incoming connections — stable and reproducible. The generation node's `"data"` may store an explicit user-defined ordering that overrides the default. Whichever rule applied, the job's `"sortOrder"` freezes the outcome — provenance never depends on re-deriving it.
-- **Collection selection belongs to the consumer:** an Element role handle resolves to an ordered candidate set, while the generation node's per-input `"data"` stores only `auto` or ordered manual Asset IDs. `auto` selects primary-first then role/order/id; `manual` must be a compatible subset of the candidates derived from incoming edges. Model maxima apply per target input across every source edge combined. Stale, incompatible, unavailable, singular-slot overflow, and model-limit overflow block execution instead of being silently truncated. `generationJobSources."snapshot"` freezes candidates and decisions; `generationJobInputs` freezes only the exact provider subset.
-- **`nodeOutput` resolution is run-aware:** inside a multi-node run, an upstream node's output resolves **strictly to the job with the same `"flowRunId"`** (via `flowRunNodes."jobId"`) — a concurrent manual run can never swap a downstream input mid-run. Across runs (manual canvas chaining), the default is the node's **latest succeeded job** (outputs ordered by `"outputIndex"`), and the consuming node's `"data"` may pin a specific output instead. Either way, resolution happens at job create and the concrete `"assetId"` lands on the source row — a later re-run of the upstream node never rewrites what this job actually consumed.
+- **Collection selection belongs to the consumer:** direct Asset inputs and
+  upstream output collections resolve in deterministic order. Consumer policy
+  chooses the exact subset at run time. Model maxima apply per target slot across
+  every source edge combined. Stale, incompatible, unavailable, singular-slot
+  overflow, and model-limit overflow block execution rather than being silently
+  truncated. `generationJobSources."snapshot"` freezes candidates and decisions;
+  `generationJobInputs` freezes only the exact provider subset.
+- **`nodeOutput` resolution is run-aware:** inside a multi-node run, an upstream
+  output resolves strictly to jobs with the same `flowRunId` and compatible item
+  lineage. A concurrent manual run cannot swap an input mid-run. Across runs,
+  manual chaining may resolve the latest succeeded or explicitly pinned result.
+  Concrete Asset IDs are frozen when the consuming job is created.
 
 ### 10. Generation job inputs — the exact provider subset
 
@@ -725,15 +766,28 @@ Text inputs need no row here: the submitted text _is_ `generationJobs."resolvedP
 
 ### 11. Flow runs — one execution spine for node, workflow, and tool runs
 
-Whole-graph runs and Tools are committed product directions, so **every execution is a run from day one** — the runs tables ship in the initial migration even though only Run Node is exposed at first. One path, no standalone legacy jobs to retrofit:
+M5 activates the existing run spine for every approved canvas command. Tools
+remain a later consumer of the same architecture:
 
 ```txt
-Run node     -> 1 flowRun (mode 'node')      -> 1 generationJob
-Run workflow -> 1 flowRun (mode 'all')       -> N generationJobs
-Run tool     -> child flowRun (mode 'tool')  -> N generationJobs
+Run node      -> 1 flowRun (mode 'node')      -> N work items/jobs
+Run branch    -> 1 flowRun (up/downstream)    -> N work items/jobs
+Run selection -> 1 flowRun (mode 'selection') -> N work items/jobs
+Run all       -> 1 flowRun (mode 'all')       -> N work items/jobs
+Run tool      -> child flowRun (mode 'tool')  -> N work items/jobs (later)
 ```
 
-A run is an orchestration record, never a new kind of execution: each node execution inside it is an ordinary `generationJobs` row — same snapshot model, same provenance, same Trigger.dev task, same cost columns.
+A run is an orchestration record, never a new kind of execution. M5 adds an
+explicit work-item layer because one node can execute once, once per iterator
+item, or across several request shards. Every provider-shaped request remains an
+ordinary `generationJobs` row with the same provenance and retry boundary.
+
+**M5 migration reconciliation:** the current migration-004 baseline predates the
+final runtime design. M5 must extend the run-mode check, add
+`snapshotHash`/`executorVersion`, add the item/shard columns and tables below,
+add `text` job output support, and remove the singular `flowRunNodes.jobId`
+assumption. Apply this as an additive/transforming migration and update Kysely
+types; never edit released migrations.
 
 ```sql
 create table "flowRuns" (
@@ -741,16 +795,18 @@ create table "flowRuns" (
   "organizationId" text not null references "organization"("id") on delete cascade,
   "createdBy" text references "user"("id") on delete set null,
   "flowId" text,
-  "mode" text not null check ("mode" in ('node', 'downstream', 'all', 'tool')),
-  "targetNodeId" text,                  -- entry node for 'node'/'downstream' modes
+  "mode" text not null check ("mode" in
+    ('node', 'downstream', 'upstream', 'selection', 'all', 'tool')),
+  "targetNodeId" text,                  -- required for node/downstream/upstream
   "status" text not null default 'pending'
            check ("status" in ('pending', 'running', 'succeeded', 'partial', 'failed', 'canceled')),
   "graphSnapshot" jsonb not null default '{}',
         -- IMMUTABLE from run creation: the executable nodes with their full
         -- configuration (type, data, model/settings), the edges among them, and
-        -- static context — canvas or Element edits during an active run cannot
+        -- static context — Flow or Asset edits during an active run cannot
         -- change what executes. Only dynamic upstream OUTPUT asset ids resolve
-        -- later, and they resolve inside this snapshot's graph.
+        -- later, and they resolve inside this snapshot's graph. Selection-mode
+        -- snapshots include requested node ids and the expanded dependency closure.
   "snapshotVersion" smallint not null default 1,
         -- structure version of graphSnapshot itself (node payloads carry their own
         -- schemaVersion); future executors can deterministically read old runs
@@ -761,7 +817,8 @@ create table "flowRuns" (
         -- local development uses an explicit dev version, never an implicit null
   "idempotencyKey" text not null,       -- required API header on every run request
   "requestHash" text not null,          -- detects same-key/different-body misuse
-  "triggerRunId" text,                  -- orchestration task run (multi-node modes)
+  "triggerRunId" text,                  -- parent orchestration task run (every M5 mode)
+  "retryOfRunId" text,                  -- new immutable run derived from a terminal run
   "creditCost" integer,                 -- aggregate of child job costs, denormalized at completion
   "errorCode" text,
   "errorMessage" text,
@@ -770,24 +827,30 @@ create table "flowRuns" (
   "completedAt" timestamptz,
 
   unique ("id", "organizationId"),
-  check ("mode" not in ('node', 'downstream') or "targetNodeId" is not null),
+  check ("mode" not in ('node', 'downstream', 'upstream') or "targetNodeId" is not null),
   foreign key ("flowId", "organizationId")
-    references "flows" ("id", "organizationId") on delete set null ("flowId")
+    references "flows" ("id", "organizationId") on delete set null ("flowId"),
+  foreign key ("retryOfRunId", "organizationId")
+    references "flowRuns" ("id", "organizationId") on delete set null ("retryOfRunId")
 );
 
 create index "flowRunsOrgCreatedIdx" on "flowRuns" ("organizationId", "createdAt" desc, "id" desc);
 create index "flowRunsFlowIdx" on "flowRuns" ("flowId");
 create index "flowRunsUndispatchedIdx" on "flowRuns" ("createdAt")
-  where "status" = 'pending' and "triggerRunId" is null and "mode" <> 'node';
-  -- exactly the future parent-dispatch sweep (mode-'node' runs never need it)
+  where "status" = 'pending' and "triggerRunId" is null;
+  -- every M5 mode uses the same parent orchestration/reconciliation path
 create index "flowRunsOrgActiveIdx" on "flowRuns" ("organizationId")
   where "status" in ('pending', 'running');
   -- serves the admission-control active-runs count (API doc, Runs) — near-empty in steady state
 create unique index "flowRunsIdempotencyIdx" on "flowRuns" ("organizationId", "idempotencyKey");
 create unique index "flowRunsTriggerRunIdx" on "flowRuns" ("triggerRunId") where "triggerRunId" is not null;
+create index "flowRunsRetryOfIdx" on "flowRuns" ("retryOfRunId") where "retryOfRunId" is not null;
 ```
 
-Per-node execution state is **rows, not mutated jsonb**. `"graphSnapshot"` stays immutable; progress, retries, and skip decisions live in `flowRunNodes` — one `pending` row per planned node at run creation, which is also what makes progress UI and partial-failure reporting a plain indexed read:
+Per-node and per-item execution state are **rows, not mutated jsonb**.
+`"graphSnapshot"` stays immutable. `flowRunNodes` is the node summary;
+`flowRunNodeItems` holds expanded iterator dimensions. This keeps progress,
+partial failure, retry, and UI queries relational without mutating the snapshot.
 
 `graphSnapshot`, `snapshotVersion`, and `snapshotHash` are insert-only domain
 facts. Status updates must never rewrite them. The data layer exposes no update
@@ -809,30 +872,81 @@ create table "flowRunNodes" (
   "flowRunId" text not null,
   "nodeId" text not null,               -- snapshot node id (no FK — the graph IS the snapshot)
   "status" text not null default 'pending'
-           check ("status" in ('pending', 'running', 'succeeded', 'failed', 'skipped', 'canceled')),
-  "jobId" text,                         -- filled when the node's job is created just-in-time
+           check ("status" in ('pending', 'running', 'succeeded', 'partial', 'failed', 'skipped', 'canceled')),
   "createdAt" timestamptz not null default now(),
   "updatedAt" timestamptz not null default now(),
   primary key ("flowRunId", "nodeId"),
+  unique ("flowRunId", "nodeId", "organizationId"),
   foreign key ("flowRunId", "organizationId")
-    references "flowRuns" ("id", "organizationId") on delete cascade,
-  foreign key ("jobId", "flowRunId", "nodeId", "organizationId")
-    references "generationJobs" ("id", "flowRunId", "nodeId", "organizationId")
-    on delete set null ("jobId")
-    -- four-column FK: the linked job provably belongs to THIS run and THIS node —
-    -- run-scoped output resolution cannot be spoofed by any same-org job
+    references "flowRuns" ("id", "organizationId") on delete cascade
 );
 
-create index "flowRunNodesJobIdx" on "flowRunNodes" ("jobId") where "jobId" is not null;
+create table "flowRunNodeItems" (
+  "organizationId" text not null references "organization"("id") on delete cascade,
+  "flowRunId" text not null,
+  "nodeId" text not null,
+  "itemKey" text not null,              -- deterministic from lineage/dimensions
+  "sortOrder" integer not null,
+  "dimensions" jsonb not null default '{}',
+  "lineage" jsonb not null default '[]',
+  "status" text not null default 'pending'
+           check ("status" in ('pending', 'running', 'succeeded', 'partial', 'failed', 'skipped', 'canceled')),
+  "createdAt" timestamptz not null default now(),
+  "updatedAt" timestamptz not null default now(),
+  primary key ("flowRunId", "nodeId", "itemKey"),
+  unique ("flowRunId", "nodeId", "itemKey", "organizationId"),
+  unique ("flowRunId", "nodeId", "sortOrder"),
+  foreign key ("flowRunId", "nodeId", "organizationId")
+    references "flowRunNodes" ("flowRunId", "nodeId", "organizationId")
+    on delete cascade
+);
+
+create index "flowRunNodeItemsStatusIdx"
+  on "flowRunNodeItems" ("flowRunId", "status");
+
+alter table "generationJobs"
+  add foreign key ("flowRunId", "nodeId", "itemKey", "organizationId")
+  references "flowRunNodeItems"
+    ("flowRunId", "nodeId", "itemKey", "organizationId");
 ```
+
+M5 also adds `generationJobs.itemKey` and `generationJobs.requestIndex`.
+`itemKey` points at `flowRunNodeItems`; `requestIndex` distinguishes bounded
+provider-request shards for one work item. The unique domain idempotency boundary
+is `(flowRunId, nodeId, itemKey, requestIndex)`, and its Trigger key derives from
+the same tuple. One job may still produce several ordered output Assets.
+
+LLM execution adds `text` to `generationJobs.mediaType`. Text results are durable
+rows in a dedicated `generationJobTextOutputs(jobId, outputIndex, text)` table;
+they are not fake files and therefore do not become Assets. Every successful
+image, video, or audio output continues to become a canonical Asset through the
+existing generation-ingestion path.
 
 Execution semantics:
 
-- **Mode `'node'` (the first shipped experience):** the snapshot contains the target node plus its resolved upstream static context; one `flowRunNodes` row; one child job. No parent orchestration task — the API creates run + run-node + job in one transaction and triggers the generate task directly. The run row is thin bookkeeping that buys the single execution path.
-- **Multi-node dispatch inherits the jobs durability contract:** when `'downstream'`/`'all'` ship, the parent orchestration task gets the identical treatment as generate tasks — `idempotencyKey = flowRunId` on trigger, two-writer `"triggerRunId"` (API stores the handle, the task persists its own `ctx.run.id` at start), and a reconciliation sweep over `status = 'pending' and "triggerRunId" is null and "mode" <> 'node'` (served by `"flowRunsUndispatchedIdx"`).
-- **Idempotency lives at two levels:** the run carries the API-facing key (unique per org — a retried Run request can never create two runs, same 200-vs-409 semantics as jobs), and child jobs derive theirs (`flowRunId || ':' || nodeId`) — a retried orchestrator can never double-create a node's job.
-- **State propagation is transactional:** the generate task writes job and run-node together — `'running'` at start, terminal states inside the completion transaction (contract steps 3 and 6). Mode-`'node'` runs mirror their single node onto the run row in the same transaction; multi-node runs leave parent aggregation to the orchestrator. Job, run-node, and run states can never drift apart.
-- **Snapshot at creation:** topological order, full node configurations, and edges are frozen into `"graphSnapshot"` (its container structure versioned by `"snapshotVersion"`). Assembly runs under **`READ COMMITTED` with revision re-validation** (read `flows.revision` and participating `elements.revision` values, resolve, re-read all revisions before insert; any change → retry) — deliberately not `REPEATABLE READ`, whose snapshot is taken by the transaction's first statement (the admission advisory lock) _before_ the lock wait completes, which would make queued admissions evaluate limits against stale state. Selected Asset rows are locked in stable ID order and revalidated as ready and not purging. Captured revisions are recorded inside the snapshot. Planning **rejects cycles among the executable nodes before the run row is created** — a cyclic selection is a validation error, never a stuck run. Later canvas, Element identity/reference, or Asset edits affect future runs only — the immutable-provenance rule applied to execution, not just to finished jobs.
+- **Five M5 modes:** `node` targets one executable node; `downstream` adds its
+  executable descendants; `upstream` adds executable ancestors needed to reach
+  the target; `selection` includes selected executable nodes plus their minimum
+  required executable upstream closure; `all` includes every executable node.
+  Source/control nodes may be captured without receiving jobs.
+- **Node mode uses the same item model:** it may expand into several work items
+  or request shards, so it never assumes one job per node.
+- **One durable dispatch path:** every M5 mode, including `node`, uses a parent
+  orchestration task with `idempotencyKey = flowRunId`, two-writer
+  `"triggerRunId"`, and reconciliation over pending undispatched parent runs.
+- **Idempotency lives at two levels:** the run carries the API-facing key. Child
+  jobs derive theirs from `flowRunId:nodeId:itemKey:requestIndex`, so retried
+  orchestration cannot duplicate an iterator item or request shard.
+- **State propagation is transactional:** tasks update job and run-item together;
+  item states aggregate into the node summary, and node summaries aggregate into
+  the run. Partial success is preserved at item, node, and run levels.
+- **Snapshot at creation:** topological order, full node configurations, edges,
+  selected model contracts, mode request, expanded selection closure, static
+  source candidates, and deterministic planning decisions are frozen into
+  `"graphSnapshot"`. Assembly uses `READ COMMITTED` with `flows.revision`
+  re-validation. Selected existing Asset rows are locked in stable ID order and
+  revalidated as ready and not purging. Planning rejects executable cycles before
+  insertion. Later canvas or Asset edits affect future runs only.
 - **Model contract at creation:** the snapshot records the stable TaleLabs model
   ID, curated registry version/hash, selected operation, normalized settings,
   resolved capability decisions, and server-selected provider route/adapter
@@ -842,10 +956,15 @@ Execution semantics:
 - **Executor version:** production dispatch records the Trigger.dev deployment/application release selected for the run. API and task deployments are promoted atomically, and awaited child tasks remain version-compatible with their parent. Snapshot readers retain deterministic upcasters for old `snapshotVersion` values. Reconciliation dispatch uses the run's recorded compatible executor version rather than silently selecting unrelated code.
 - **Small durable dispatch:** Trigger.dev payloads contain only tenant-scoped run/job identity. Workers load immutable snapshots and exact inputs from PostgreSQL. Graph JSON, signed URLs, and media never travel in task payloads.
 - **Child jobs are created just-in-time, level by level** — not all at run start. This is forced by the snapshot model, and it's a feature: a downstream node's context includes upstream _outputs_ (`sourceType = 'nodeOutput'`), which don't exist until the upstream job succeeds. Per-job create-time snapshotting is preserved; the job's _static_ config comes from `"graphSnapshot"`, never from the live canvas.
-- **Output binding is run-scoped:** a downstream node's `nodeOutput` source resolves strictly to the upstream job **with the same `"flowRunId"`** (via `flowRunNodes."jobId"`) — a concurrent manual run of the same node can never swap an input mid-run (rule also stated in section 9).
+- **Output binding is run-scoped and lineage-aware:** downstream sources resolve
+  only upstream jobs with the same `flowRunId` and compatible item lineage. A
+  concurrent manual run can never replace an in-flight input.
 - **Parallel branches** run concurrently (`batchTriggerAndWait` on the level's jobs); Trigger.dev owns the waiting.
 - **Partial failure:** a failed node marks its downstream dependents `'skipped'` in `flowRunNodes`; the run ends `'partial'` if some jobs succeeded, `'failed'` if none did. Succeeded outputs are already durable assets — a partial run loses nothing that completed.
 - **Cancel** cancels the run and cascades `runs.cancel` + guarded updates to active children; remaining `pending` run-nodes go `'canceled'`.
+- **Product retry creates a new run:** it derives a new immutable snapshot from
+  the terminal source run, records `retryOfRunId`, freezes any reused successful
+  outputs, and never reopens or mutates the source run.
 - **Costs:** each child records its own `"creditCost"`; the run's aggregate is the sum, denormalized onto the run row at completion. Credit reservation strategy for whole runs (aggregate up front vs. per node) is analyzed in `credits-planning.md`, not constrained by this schema.
 
 **Tools reuse this exact model — no separate `toolRuns` table, ever.** A Tool is mutable identity/metadata backed by an ordinary editable draft Flow. A ToolVersion is the immutable packaged Flow with declared, typed inputs and outputs. A Tool run is a `flowRuns` row whose graph comes from one resolved published version instead of the live draft. The complete seam, so nobody re-derives it later:
@@ -857,7 +976,7 @@ tools                       -> mutable name/slug/description/visibility + draftF
 toolVersions                -> monotonic per-Tool version + immutable graph snapshot
                               (jsonb) + snapshotVersion/hash + declared input/output
                               ports; deleted version numbers are never reused
-publish                     -> same Flow/Element/Asset revision-revalidated snapshot
+publish                     -> same Flow/Asset revision-revalidated snapshot
                               builder as run admission; inserts a new version and may
                               atomically move currentPublishedVersionId
 flowRuns.toolVersionId     -> added then; a tool run has toolVersionId set, flowId null,
@@ -879,7 +998,10 @@ outputs                    -> ordinary assets via generationJobId; the port-bind
                               names them
 ```
 
-Three execution tiers, one spine: node run = a mode-`'node'` run wrapping one job; workflow run = a run over the live graph's snapshot; tool run = a run over a versioned snapshot. The job row never changes shape across tiers — orchestration is always a record on top, never a new kind of job.
+Three execution tiers, one spine: node run = a mode-`'node'` run over one target;
+workflow run = a mode-selected live-graph snapshot; tool run = a later run over a
+versioned snapshot. Every tier may contain multiple items/jobs; the job shape
+does not change.
 
 Default UI/API/MCP Tool invocation resolves `currentPublishedVersionId` under
 the admission transaction and stores the concrete version on `flowRuns`.
@@ -892,8 +1014,8 @@ Copying a bounded graph snapshot into each run is the deliberate MVP and early
 production design: it is self-contained and operationally simple. If measured
 run volume makes repeated snapshots material, introduce an immutable
 `flowGraphSnapshots` table keyed by organization plus canonical content hash and
-let `flowRuns`/`toolVersions` reference it. Keep invocation-specific resolved
-Element context and exact Asset selections in `generationJobSources` and
+let `flowRuns`/`toolVersions` reference it. Keep invocation-specific exact Asset
+selections in `generationJobSources` and
 `generationJobInputs`. Do not add this deduplication layer before storage/IO
 measurements justify it.
 
@@ -903,24 +1025,26 @@ measurements justify it.
 
 **Run one generation node:**
 
-1. API loads the node, walks `flowEdges` into it, loads connected text/asset/element nodes
-2. Resolves each Element through the server-only `buildElementContext` contract + `elementAssets`: upcast identity/data, compose deterministic text, and return ordered ready/readable master Asset IDs, roles, priority, and relationship metadata without source evidence, signed URLs, or storage keys
-3. Applies model capability limits, selects/asks about references, composes `"resolvedPrompt"`
-4. One transaction: insert `flowRuns` (mode `'node'`, graph snapshot) + `flowRunNodes` + `generationJobs` (+ `generationJobSources`, + `generationJobInputs`)
-5. After commit: trigger the version-pinned task with ID-only payload `{ generationJobId, organizationId }` and domain-derived idempotency key; store `"triggerRunId"` (reconciliation sweep covers a crash in between)
-6. Task submits to provider → persists `"providerJobId"` → polls → uploads output to R2 → one transaction: insert asset (`source = 'generation'`) + guarded status update to `succeeded`
-7. Canvas exposes the output **by derivation, never by copying**: the node's result display queries the latest jobs + output assets for `("flowId", "nodeId")` — storing output asset ids inside `"data"` would dangle when an asset is archived or purged, and would duplicate what one indexed query answers. The user may additionally materialize an output as a real asset node (that node's `"assetId"` FK then behaves like any asset reference: `set null` on delete, tombstone on purge)
+1. API loads the node and walks incoming `flowEdges` to connected Text, Asset,
+   deterministic control nodes, and same-run upstream outputs.
+2. It resolves ordered candidates, validates the adaptive model operation and
+   settings, applies slot limits/selection, and composes `"resolvedPrompt"`.
+3. One admission transaction inserts `flowRuns`, `flowRunNodes`, expanded
+   `flowRunNodeItems`, initial `generationJobs`, `generationJobSources`, and exact
+   `generationJobInputs` after Flow-revision and Asset-row validation.
+4. After commit: trigger the version-pinned task with ID-only payload `{ generationJobId, organizationId }` and domain-derived idempotency key; store `"triggerRunId"` (reconciliation sweep covers a crash in between)
+5. In M5 the task calls a deterministic local mock adapter; M6 replaces that
+   boundary with provider submit/poll or immediate execution. Successful media
+   goes through R2 and canonical Asset ingestion; text goes to durable text
+   outputs.
+6. Canvas exposes the output **by derivation, never by copying**: the node's result display queries the latest jobs + output assets for `("flowId", "nodeId")` — storing output asset ids inside `"data"` would dangle when an asset is archived or purged, and would duplicate what one indexed query answers. The user may additionally materialize an output as a real asset node (that node's `"assetId"` FK then behaves like any asset reference: `set null` on delete, tombstone on purge)
 
 **Simple flow (prompt → generate):** two `flowNodes`, one `flowEdges` row, one run. No ceremony — the schema's minimum matches the vision's minimum.
 
-**Element detail / assets tab:** organization-scoped `elementAssets` joined to
-same-organization canonical Assets, including lifecycle/tombstone state needed
-to manage preserved links. The management API can request either kind; the
-current user surface requests masters and presents them as References.
-
-**"Where is this Element used?":** `flowNodes where "elementId" = $1` (canvases) ∪ `generationJobSources where "elementId" = $1` (runs).
-
-**Iteration/branching:** outputs are assets; assets are nodes; nodes connect onward. Provenance chains are walkable: asset → `"generationJobId"` → sources → upstream asset/element ids → their jobs, recursively.
+**Iteration/branching:** outputs are ordered runtime items. Explicit iterator
+nodes create dimensions; Collect and Zip reshape them. Media outputs become
+Assets and can be connected onward. Provenance chains remain walkable from Asset
+to generation job, source Assets, and upstream same-run jobs.
 
 ---
 
@@ -932,8 +1056,8 @@ DB-enforced, by mechanism:
 
 ```txt
 same-org   folders."parentId", assets."folderId"/."generationJobId",
-           generationJobs."flowId", flowNodes (flow/element/asset),
-           elementAssets (element/asset), generationJobSources (job/element/asset),
+           generationJobs."flowId", flowNodes (flow/asset),
+           generationJobSources (job/asset),
            generationJobInputs (job/asset)          -> composite org FKs
 same-flow  flowEdges endpoints                      -> composite ("flowId", nodeId) FKs
            (org implied transitively through the node FKs)
@@ -948,16 +1072,24 @@ The service layer still owns _authorization_ (is this caller allowed to touch th
 
 Seams that exist without speculative tables:
 
-- **Video/audio generation nodes:** already absorbed — `generationJobs."mediaType"`, the same sources/inputs model, new node `"type"` values in the code registry. Zero migrations.
-- **New element types** (`location`, `style`, `brand`…) and **new provider input roles** (`mask`, `controlImage`…): registry entries + app validation. Zero migrations — that's why those columns have no checks.
-- **Registry schema evolution:** `"schemaVersion"` on `elements` and `flowNodes` lets new registry schemas upcast old payloads deterministically. Registries retain version-specific schemas and gap-free sequential migrations; required additions, renames, removals, type changes, and semantic changes increment the version. Role changes also require migration/deprecation because `elementAssets."role"` is persisted data.
-- **Multi-node run modes:** `flowRuns`/`flowRunNodes` ship in the initial migration with mode `'node'` in use; enabling `'downstream'`/`'all'` is orchestrator code over the same tables — zero migrations. Tools add exactly the columns listed in section 11's seam.
+- **Video/audio generation nodes:** already absorbed — `generationJobs."mediaType"`, the same sources/inputs model, and code-registry node types. Audio uses `speechGeneration`, `musicGeneration`, `soundEffectGeneration`, `voiceChanger`, and `voiceIsolation`; sharing `AudioSet` does not collapse their persisted intent. Known legacy `audioGeneration` payloads upcast through the node registry and persist on the next graph save. Zero database migrations.
+- **Dormant Elements:** new Element types and relationship behavior are frozen
+  until after the billable loop. Any revival starts from measured product need
+  and the then-current M5/M6 snapshot contract.
+- **Registry schema evolution:** `"schemaVersion"` on active `flowNodes` lets node
+  schemas upcast old payloads deterministically. Released versions and migrations
+  remain gap-free and immutable.
+- **M5 run modes:** the M5 migration extends the existing check to `upstream` and
+  `selection`, adds work-item persistence, and removes the one-job-per-node
+  assumption. Tools later add only the columns listed in section 11's seam.
 - **Recipes:** a `recipes` table holding a _cloned graph snapshot_ (jsonb is right there, since a template is a document, not a queried graph) + insertion logic that re-ids nodes/edges. The stable-id + normalized-graph design makes "save selection as recipe" a `select` and "add to flow" a batch insert with fresh cuid2s.
 - **Tools:** reuse the `flowRuns` orchestration model (section 11) over an immutable internal graph snapshot — a tool run spans providers and media types, so it is an orchestration record, never a `generationJobs` row; jobs stay single-provider, single-model execution units.
 - **Collaboration:** stable client-generated node/edge ids and per-row graph writes are the prerequisites, already in place; the flow `"revision"` CAS is the single-writer serialization point a sync layer would replace. Presence is ephemeral (never in Postgres); durable state is these tables.
 - **Billing/credits:** `"creditCost"` and `"providerCostUsd"` are already recorded per execution — the calibration dataset accumulates from launch. The ledger, balances, and reservation lifecycle attach to `generationJobs."id"` / `flowRuns."id"` later; full analysis in `credits-planning.md`.
 - **Public delivery / showcase:** if a public bucket returns, `assets` gains a `"visibility"` column (write-time snapshot, as designed in v1) — additive.
-- **Projects:** deliberately dropped with the new vision. Flows are the creative documents; folders, tags, favorites, and Element filters organize the Asset library without introducing another ownership layer.
+- **Projects:** deliberately dropped with the new vision. Flows are the creative
+  documents; folders, tags, and favorites organize the Asset library without
+  another ownership layer.
 - **Simple Generate page:** per the vision, it would create a lightweight flow (or one-off job rows with `"flowId"` null — the column is already nullable). No parallel generation architecture.
 
 ## What was deliberately not built
@@ -965,9 +1097,11 @@ Seams that exist without speculative tables:
 - **No jsonb graph document** — normalized nodes/edges for queries, integrity, autosave granularity, and collab-readiness (rationale in the React Flow section).
 - **No Trigger.dev state mirror** — no attempts/queue/retry columns; their platform owns execution mechanics, our row owns the domain outcome (`"providerJobId"` is provider state, not Trigger state — it's what makes task retries resume instead of resubmit).
 - **No outbox table** — the reconciliation sweep over the targeted `"generationJobsUndispatchedIdx"` partial index redispatches undispatched jobs; idempotent dispatch makes it safe without new schema.
-- **No element-type / node-type / input-role tables or checks** — the code registries own those vocabularies; the DB stores keys and validated payloads.
+- **No node-type / input-role tables or checks** — code registries own those
+  vocabularies; the DB stores keys and validated payloads.
 - **No hard asset deletion path** — purge tombstones satisfy both "permanent deletion" and "immutable provenance"; a cascade that rewrites job history is not a feature.
-- **No parent orchestration task for mode-`'node'` runs** — the run row is bookkeeping around a directly-triggered job; the orchestrator task ships with multi-node modes. One execution path without paying orchestration overhead on day one.
+- **No specialized direct-dispatch path** — every M5 mode uses the same parent
+  orchestration and reconciliation contract, including `node`.
 - **No recipe, tool, or collaboration tables yet** — seams documented above, built when their layer ships.
 - **No graph-history/versioning tables** — autosave overwrites under revision CAS; version history is a later product layer.
 - **No projects** — the vision retires them; flows are the document, folders organize assets.
@@ -976,7 +1110,11 @@ Seams that exist without speculative tables:
 
 ## Appendix — base features exercised against the schema
 
-Every query the vision's build order (Assets → Elements → Flows → generation loop) needs, written out. If a base feature required a query this schema couldn't serve from an index, that would be a design bug — this appendix is the proof of coverage and doubles as the implementer's cookbook. `$n` are bind parameters; all queries implicitly carry the session's `"organizationId"`.
+Every query the active build order (Assets → Flows → generation loop) needs,
+written out. Dormant Element queries remain below only as historical reference.
+If an active base feature required a query this schema could not serve from an
+index, that would be a design bug. `$n` are bind parameters; all queries carry
+the session's `"organizationId"`.
 
 ### Assets (build step 1)
 
@@ -1016,7 +1154,7 @@ update "assets" set "purgedAt" = now(), "updatedAt" = now() where "id" = $1;
 --    (assetsPurgePendingIdx; idempotent trigger makes re-firing safe)
 ```
 
-### Elements (build step 2)
+### Deferred Element query examples (historical, not a build step)
 
 ```sql
 -- Element list with card preview (primary asset of the registry's preview role)
@@ -1045,10 +1183,7 @@ order by ea."referenceKind", ea."role", ea."sortOrder", a."id";
 -- Attach / set primary / reorder / detach: writes on "elementAssets"
 -- (partial unique index enforces one primary per role; app validates role against the registry)
 
--- "Where is this Element used?" (vision requirement): canvases ∪ runs
-select distinct "flowId" from "flowNodes"
-where "organizationId" = $1 and "elementId" = $2
-union
+-- Historical provenance only. Active flowNodes have no elementId column.
 select j."flowId"
 from "generationJobSources" s
 join "generationJobs" j

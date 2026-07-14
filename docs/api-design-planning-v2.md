@@ -1,12 +1,20 @@
 # TaleLabs — API Design v2
 
+> **Active MVP override (2026-07-14):** the product API used by the dashboard is
+> Assets + Flows. Standalone Element endpoints may remain dormant, but Elements
+> are excluded from navigation, global search, Flow graph schemas, Flow
+> reference hydration, run planning, and MVP acceptance. See
+> `assets-flows-mvp-contract.md`.
+
 Supersedes `api-design-planning.md` (deprecated). Companion to `db-design-planning-v2.md` — every endpoint here maps onto that schema and its contracts; nothing is invented API-side that the DB doc doesn't back.
 
-Scope: the base features in build order — **Assets → Folders → Elements → Flows
+Scope: the active base features in build order — **Assets → Folders → Flows
 (graph sync) → provider-independent mock engine → controlled provider
-integration**. M5 accepts node, downstream, and full-flow run modes against
-deterministic provider mocks. Deferred: Tools, Recipes, credits enforcement
-(`/runs/estimate`, `402`), realtime push, bulk operations, and collaboration.
+integration**. M5 accepts node, downstream, upstream, selection, and full-flow
+run modes against deterministic provider mocks. Deferred: Tools, Recipes,
+credits enforcement (`/runs/estimate`, `402`), bulk operations, collaboration,
+and Elements. Narrow Trigger.dev run-status realtime is part of M5; general
+collaboration/realtime editing is deferred.
 
 This is the **internal product API** consumed by the TaleLabs web app — not a public API. When a public surface ships, it gets its own versioned contract and auth scheme.
 
@@ -88,17 +96,19 @@ type ApiError = {
 
 ## Endpoint index
 
-| Area     | Endpoints                                                                                                                                                                                                              |
-| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Search   | `GET /search`                                                                                                                                                                                                          |
-| Uploads  | `POST /uploads`                                                                                                                                                                                                        |
+| Area     | Endpoints                                                                                                                                                                                                                                                                                                       |
+| -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Search   | `GET /search`                                                                                                                                                                                                                                                                                                   |
+| Uploads  | `POST /uploads`                                                                                                                                                                                                                                                                                                 |
 | Assets   | `GET /assets` · `POST /assets` · `POST /assets/move` · `GET /assets/:id` · `PATCH /assets/:id` · `DELETE /assets/:id` · `POST /assets/:id/restore` · `POST /assets/:id/purge` · `GET /assets/:id/usage` · `GET /assets/:id/download` · `PUT/DELETE /assets/:id/favorite` · `PUT/DELETE /assets/:id/tags/:tagId` |
-| Folders  | `GET /folders` · `POST /folders` · `PATCH /folders/:id` · `DELETE /folders/:id`                                                                                                                                        |
-| Tags     | `GET /tags` · `POST /tags` · `DELETE /tags/:id`                                                                                                                                                                    |
-| Elements | `GET /elements` · `POST /elements` · `GET /elements/:id` · `PATCH /elements/:id` · `DELETE /elements/:id` · `GET/POST /elements/:id/assets` · `PATCH/DELETE /elements/:id/assets/:assetId` · `GET /elements/:id/usage` |
-| Flows    | `GET /flows` · `POST /flows` · `GET /flows/:id` · `PATCH /flows/:id` · `DELETE /flows/:id` · `GET /flows/:id/graph` · `GET /flows/:id/references` · `POST /flows/:id/graph` · `GET /flows/:id/nodes/:nodeId/results`          |
-| Runs     | `POST /runs` · `GET /runs` · `GET /runs/:id` · `POST /runs/:id/cancel`                                                                                                                                                 |
-| Config   | `GET /config/generation`                                                                                                                                                                                               |
+| Folders  | `GET /folders` · `POST /folders` · `PATCH /folders/:id` · `DELETE /folders/:id`                                                                                                                                                                                                                                 |
+| Tags     | `GET /tags` · `POST /tags` · `DELETE /tags/:id`                                                                                                                                                                                                                                                                 |
+| Flows    | `GET /flows` · `POST /flows` · `GET /flows/:id` · `PATCH /flows/:id` · `DELETE /flows/:id` · `GET /flows/:id/graph` · `GET /flows/:id/references` · `POST /flows/:id/graph` · `GET /flows/:id/nodes/:nodeId/results`                                                                                            |
+| Runs     | `POST /flows/:id/run-plans` · `POST /runs` · `GET /runs` · `GET /runs/:id` · `POST /runs/:id/cancel` · `POST /runs/:id/retry` · `POST /runs/:id/realtime-token`                                                                                                                                                         |
+| Config   | `GET /config/generation`                                                                                                                                                                                                                                                                                        |
+
+Dormant Element endpoints are documented in their deferred section for
+preservation only. They are intentionally absent from this active MVP index.
 
 ---
 
@@ -187,6 +197,7 @@ type GenerationProvenance = {
 type JobSource = {
   sortOrder: number;
   sourceType: "text" | "element" | "asset" | "nodeOutput";
+  // Active M5 writes text/asset/nodeOutput. element is legacy provenance only.
   nodeId: string;
   elementId: string | null;
   assetId: string | null;
@@ -246,10 +257,9 @@ type Flow = {
 
 type FlowNode = {
   id: string; // client-generated cuid2
-  type: string; // registry key: 'text' | 'asset' | 'element' | 'imageGeneration' | ...
+  type: string; // active registry: text/asset/generation/control node types
   positionX: number;
   positionY: number;
-  elementId: string | null;
   assetId: string | null;
   data: Record<string, unknown>;
   schemaVersion: number;
@@ -263,19 +273,26 @@ type FlowEdge = {
   targetHandle: string | null;
 };
 
-type InputSelection =
-  | { mode: "auto" }
-  | { mode: "manual"; assetIds: string[] };
+type InputSelection = { mode: "auto" } | { mode: "manual"; assetIds: string[] };
 
 // Stored in generation-node data, keyed by the model input-slot ID. Edges remain
 // the sole source of connection topology; this stores only consumer-owned choice.
 type GenerationNodeData = {
+  modelContractVersion: string;
   modelId: string;
+  operationId: string; // derived compatibility/snapshot field, never a user mode
+  prompt?: string; // preserved inline draft for dedicated Image/Video nodes
   settings: Record<string, unknown>;
   inputSelections: Record<string, InputSelection>;
 };
 
-type RunMode = "node" | "downstream" | "all" | "tool"; // Tool remains deferred
+type RunMode =
+  | "node"
+  | "downstream"
+  | "upstream"
+  | "selection"
+  | "all"
+  | "tool"; // Tool remains deferred
 type RunStatus =
   | "pending"
   | "running"
@@ -350,16 +367,18 @@ Response `200`:
 ```ts
 {
   assets: {
-    id: string
-    name: string
-    type: AssetType
-    thumbnailUrl: string | null
-  }[]
+    id: string;
+    name: string;
+    type: AssetType;
+    thumbnailUrl: string | null;
+  }
+  [];
   folders: {
-    id: string
-    name: string
-    path: string
-  }[]
+    id: string;
+    name: string;
+    path: string;
+  }
+  [];
 }
 ```
 
@@ -414,6 +433,10 @@ Response `201`:
 ```
 
 ### `POST /assets` — register an uploaded object
+
+The Element-related request members below are retained compatibility fields for
+the dormant standalone Element API. Active Asset, Flow, M5, and M6 clients omit
+them; no run or graph behavior may depend on them.
 
 Request:
 
@@ -539,9 +562,10 @@ Requires the client to have shown explicit confirmation (the endpoint exists so 
 
 Because both paths take the same lock in the same order, the race has exactly two
 serializable outcomes: the run sees a purging asset and rejects, or the purge
-sees an active job and rejects. M5 multi-node admission must extend this guarantee
-to just-in-time downstream jobs through run-level input leases or copied static
-references before `downstream`/`all` can be accepted.
+sees an active job and rejects. M5 admission snapshots and locks every static
+Asset needed by the selected subgraph before any of the five modes is accepted;
+same-run dynamic outputs are protected by their producing jobs and canonical
+Asset completion transaction.
 
 Response: `202` → `Asset` (`lifecycle: 'purging'`). Already purging/purged → `200`, idempotent.
 
@@ -595,7 +619,11 @@ DELETE /folders/:id                      -> 204
 
 ---
 
-## Elements
+## Deferred Elements (not part of the active MVP)
+
+These endpoints document the dormant experiment and may remain implemented for
+future reconsideration. The dashboard, global search, Flow graph, run planner,
+M5 acceptance, and M6 provider integration must not depend on them.
 
 ### `GET /elements`
 
@@ -636,7 +664,9 @@ Response: `200 Element`.
 
 ### `DELETE /elements/:id` → `204`
 
-Kit links cascade; assets and the associated folder survive; flow nodes referencing it become visibly unresolved (`elementId: null`); job provenance keeps its snapshot.
+Kit links cascade; Assets and the associated folder survive. Active Flow nodes
+cannot reference Elements. Historical provenance rows, if any, retain their
+snapshot-compatible nullable Element identifier.
 
 ### Element assets — the kit subresource
 
@@ -701,9 +731,11 @@ type ElementUsage = {
 
 If a full paginated usage browser ever proves necessary, it becomes `GET /elements/:id/usage/flows` with the standard `ListResponse` — additive, not a reshape.
 
-### Server-only Element context contract
+### Server-only Element context contract (dormant)
 
-M3 also provides an internal `buildElementContext(elementId)` service for later Flow and execution stages. It is not a public endpoint and does not return browser presentation URLs:
+The dormant implementation retains an internal
+`buildElementContext(elementId)` service. It is not a public endpoint, is not
+called by M5/M6, and does not return browser presentation URLs:
 
 ```ts
 type BuiltElementContext = {
@@ -723,7 +755,12 @@ type BuiltElementContext = {
 };
 ```
 
-Resolution validates and sequentially upcasts stored Element identity/data, resolves same-organization master links in deterministic primary/role/order/id order, and excludes sources plus non-ready or non-readable Assets from executable candidates. The result contains stable IDs and relationship metadata only: never R2 storage keys and never signed URLs. M4's Element node carries the Element reference; M4.5 establishes master-only behavior; M5 calls this service while creating a run, applies model capability limits, and snapshots resolved identity text, considered master candidates/exclusions, relationship metadata used by selection, and exact chosen Asset IDs into `generationJobSources` and `generationJobInputs`.
+The retained service validates and sequentially upcasts stored Element
+identity/data, resolves same-organization master links in deterministic
+primary/role/order/ID order, and excludes sources plus non-ready or non-readable
+Assets. The result contains stable IDs and relationship metadata only: never R2
+storage keys and never signed URLs. No active Flow node carries this reference,
+and M5 admission resolves only direct Assets, Text, and eligible node outputs.
 
 The authoritative context, preview, budget, graph-validation, and hydration
 queries predicate the Element, relationship, and Asset joins by the active
@@ -733,7 +770,8 @@ missing. Context, readiness, and Element-link presentation revalidate stored
 role/metadata and fail closed; Flow hydration does not interpret or return
 relationship metadata in M4.5 and relies on the centralized validated write
 boundary while still enforcing organization, master-kind, and Asset-usability
-filters itself.
+filters itself. This paragraph describes the dormant implementation only; it is
+not an active Flow hydration contract.
 
 ---
 
@@ -776,39 +814,25 @@ Response `200`:
 ```ts
 {
   assets: FlowReferenceAsset[]
-  elements: FlowReferenceElement[]
-  elementAssets: {
-    elementId: string
-    assetId: string
-    role: string
-    sortOrder: number
-    isPrimary: boolean
-  }[]
 }
 ```
 
-This is the batched hydration contract for the Asset and Element nodes already
-present in the Flow graph. It is scoped to the active organization and returns
+This is the batched hydration contract for direct Asset nodes present in the
+Flow graph. It is scoped to the active organization and returns
 `404 not_found` both for a missing Flow and for a Flow owned by another
-organization. Direct Asset nodes and every usable **master** Asset linked to a
-referenced Element are returned once. Source relationships are absent from both
-`elementAssets` and the accompanying Asset set. Element links preserve role,
-primary-first ordering, `sortOrder`, and stable ID tie-breaking.
+organization. Every referenced canonical Asset is returned once.
 
 Asset records include their current lifecycle and processing state. Initial
 hydration returns metadata and signed thumbnails, but leaves original media URLs
 null. The editor resolves an original URL from the tenant-scoped Asset detail
 endpoint only when playback or another explicit media action needs it. Storage
-keys are never exposed. Responses are bounded to 5,000 unique Assets and 10,000
-Element-Asset links; exceeding either limit fails explicitly instead of returning
-a silent partial graph. Graph sync and every Element-link mutation that can add
-runtime references enforce this same final-state budget under one
-organization-scoped transaction lock, so a successfully saved Flow remains
-eligible for complete hydration. Source links do not count; approved masters are
-the only Element links admitted at this boundary. Because Element data, role membership, Asset metadata,
-thumbnails, and processing state can change independently of graph topology,
-clients invalidate the organization-scoped reference cache after relevant
-Element or Asset mutations. Mounted canvases refetch invalidated references
+keys are never exposed. Responses are bounded to 5,000 unique Assets; exceeding
+the limit fails explicitly instead of returning a silent partial graph. Graph
+sync enforces the same final-state budget under an organization-scoped
+transaction lock, so a successfully saved Flow remains eligible for complete
+hydration. Because Asset metadata, thumbnails, and processing state can change
+independently of graph topology, clients invalidate the organization-scoped
+reference cache after relevant Asset mutations. Mounted canvases refetch invalidated references
 immediately and retain periodic refresh only for thumbnail renewal and
 asynchronous processing transitions. A post-MVP scaling follow-up replaces the
 fixed ready-reference refresh with URL-expiration metadata and refreshes close to
@@ -833,19 +857,34 @@ One transaction: `update flows set revision = revision + 1 where id = $1 and rev
 **Limits, checked before final-state validation** (no request — or accumulation of requests — may buy unbounded memory or DB work):
 
 - per request: at most **500 mutations** (upserts + deletes combined), node `data` at most **32 KB** each, HTTP body capped at **2 MB** (enforced at the server, not just assumed from the platform)
-- per flow, enforced against the batch's _final state_: at most **2,000 nodes**, **5,000 edges**, **8 MB of node-`data` bytes**, **5,000 unique referenced Assets**, and **10,000 Element-Asset links**. The reference budget is shared with hydration and Element-link mutations. Aggregate node bytes are recomputed inside the sync transaction (`sum(octet_length("data"::text))`) with no counter column to drift. Node `data` is the only unbounded node field; nodes' fixed columns and edges are already bounded by the count caps. These limits bound `GET /graph`, complete reference hydration, and later `graphSnapshot` copies.
+- per flow, enforced against the batch's _final state_: at most **2,000 nodes**, **5,000 edges**, **8 MB of node-`data` bytes**, and **5,000 unique referenced Assets**. The reference budget is shared with hydration. Aggregate node bytes are recomputed inside the sync transaction (`sum(octet_length("data"::text))`) with no counter column to drift. Node `data` is the only unbounded node field; nodes' fixed columns and edges are already bounded by the count caps. These limits bound `GET /graph`, complete reference hydration, and later `graphSnapshot` copies.
 
 Exceeding any → `400 validation_error` naming the limit. A debounced canvas never approaches these; hitting them signals a client bug or abuse.
 
 Response `200 { revision: number }`.
 
-Validation (`400` unless noted): node/edge ids must be well-formed cuid2; node `type` must exist in the registry and `data` must pass its schema (server re-stamps `schemaVersion`); `elementId`/`assetId` must resolve in-org (`404` + field); edges must connect nodes of this flow (DB composite FK backs it); duplicate edge (same endpoints + handles) → `409 conflict`. There is **no whole-graph replacement endpoint** — replacement is expressible as upserts + deletes, and the batched form keeps writes proportional to what changed.
+Validation (`400` unless noted): node/edge ids must be well-formed cuid2; node `type` must exist in the active registry and `data` must pass its schema (server re-stamps `schemaVersion`); `assetId` must resolve in-org (`404` + field); edges must connect nodes of this flow (DB composite FK backs it); duplicate edge (same endpoints + handles) → `409 conflict`. There is **no whole-graph replacement endpoint** — replacement is expressible as upserts + deletes, and the batched form keeps writes proportional to what changed.
 
-**Connection semantics are registry-validated, not just referential.** The node registry declares, per node type, its handles (ids, the media/data types each accepts or emits, cardinality) and its payload requirements (an `element` node must carry `elementId`, an `asset` node `assetId`). Graph sync rejects — evaluated against the batch's _final_ state — edges into unknown handles, incompatible connections (an audio output into an image-only input), cardinality overflow, and type-payload violations. The boundary is deliberate: **incomplete is valid** (a half-built canvas with unconnected required inputs saves fine — that's normal editing), only _contradictory_ graphs are rejected; full executability is checked at run time, where the model's capabilities are known.
+**Connection semantics are registry-validated, not just referential.** The node registry declares, per node type, its handles (ids, the media/data types each accepts or emits, cardinality) and its payload requirements (an `asset` node must carry `assetId`). Graph sync rejects — evaluated against the batch's _final_ state — edges into unknown handles, incompatible connections (an audio output into an image-only input), cardinality overflow, and type-payload violations. The boundary is deliberate: **incomplete is valid** (a half-built canvas with unconnected required inputs saves fine — that's normal editing), only _contradictory_ graphs are rejected; full executability is checked at run time, where the model's capabilities are known.
 
-Element nodes expose one resolved-context handle and one typed collection handle per registered Asset role. A role handle represents an ordered master-only candidate set (`ImageSet`, `VideoSet`, or `AudioSet`), not one handle per Asset. Generation-node `inputSelections` is consumer-owned configuration: `auto` resolves primary-first then role order, while `manual` preserves ordered Asset IDs. The server derives candidates exclusively through incoming edges and master-filtered authoritative queries, and rejects a manual ID that is not a current, compatible candidate. Demoting a selected master therefore makes a saved manual selection stale instead of letting a source remain executable. Input-slot maxima apply across all connected sources combined. Stale, unavailable, incompatible, or overflowing manual selections remain visible validation errors and are never silently replaced or truncated.
+For Image, Video, and LLM generation, the server runs the matching shared adaptive
+resolver against the final graph, node settings, selected item counts, and
+inline prompt or instructions. It rejects invalid input combinations and a stored `operationId`
+that differs from the rederived operation. `operationId` is therefore a derived
+compatibility and snapshot field, not a user-selected API setting. Image schema
+version 6, Video schema version 3, and LLM schema version 1 add the preserved
+inline `prompt`; LLM also preserves inline `instructions`. A
+connected Text edge to the semantic `prompt` handle is authoritative and is
+never implicitly concatenated with it. An explicit Image contract upgrade
+atomically rewrites a compatible legacy `references` edge to
+`imageReferences`; historical contracts are not mutated.
 
-`auto` and `manual` are persistence terms, not exposed product modes. The dashboard presents `auto` as `Using Element defaults`; changing any candidate creates `manual` implicitly, and `Reset to Element defaults` writes `auto` again. An automatic selection may recompute when the model or candidate collection changes. A manual selection is preserved and becomes invalid when stale or over capacity. Candidate inspectors group Assets by source, preserve explicit Asset order, and use the same contract for singular slots such as `firstFrame` (`max: 1`).
+Direct Asset nodes and same-run upstream outputs supply ordered candidates to the
+consuming slot. Input-slot maxima apply across every connected source. The
+planner rejects stale, unavailable, incompatible, singular-slot overflow, and
+model-limit overflow; it never silently truncates or replaces inputs. Selection
+policy for an upstream collection is persisted on the consumer and resolved
+inside the immutable run plan, never as future Asset IDs in the draft graph.
 
 ### `GET /flows/:id/nodes/:nodeId/results` — node run history
 
@@ -856,10 +895,36 @@ Response: `200 ListResponse<RunJob & { runId: string }>` — newest first, outpu
 ## Runs
 
 The execution surface. One spine: every execution is a run. M5 accepts `node`,
-`downstream`, and `all` against the same durable mock-provider engine. `tool`
-remains unavailable until the versioned Tool product ships.
+`downstream`, `upstream`, `selection`, and `all` against the same durable
+mock-provider engine. `tool` remains unavailable until the versioned Tool
+product ships.
 
-### `POST /runs` — execute a node, downstream branch, or Flow
+### `POST /flows/:id/run-plans` - preflight a canvas command
+
+Request:
+
+```ts
+{
+  expectedFlowRevision: number;
+  command:
+    | { mode: "node" | "downstream" | "upstream"; targetNodeId: string }
+    | { mode: "selection"; selectedNodeIds: string[] }
+    | { mode: "all" };
+}
+```
+
+The dashboard flushes pending autosave before calling this endpoint. The server
+loads and validates that saved revision, then returns a canonical `planHash`,
+captured revision, selected/planned executable counts, work-item/job/output
+counts, and the inclusion reason for every executable node. It inserts nothing.
+The client may immediately admit an obvious one-node plan; it discloses scope
+before admission when dependency expansion or multiplicity is larger than the
+visible command.
+
+Preflight is advisory, never trusted input. `POST /runs` repeats planning and
+requires the same revision and, when supplied, the same plan hash.
+
+### `POST /runs` — execute a node, branch, selection, or Flow
 
 **Admission control comes before credits exist.** Idempotency prevents _duplicate_ runs, not _many_ runs — different keys create unlimited executions, and Trigger.dev concurrency only queues them; every admitted job eventually spends provider money.
 
@@ -885,26 +950,78 @@ Request:
 ```ts
 {
   flowId: string;
-  mode: "node" | "downstream" | "all";
-  targetNodeId?: string; // required for node/downstream; omitted for all
+  expectedFlowRevision: number;
+  expectedPlanHash?: string;
+  mode: "node" | "downstream" | "upstream" | "selection" | "all";
+  targetNodeId?: string; // required for node/downstream/upstream
+  selectedNodeIds?: string[]; // required only for selection; unique and bounded
 }
 ```
 
-There is deliberately **no prompt/model/settings in this body**: the node's draft config and its connected context (text nodes, asset nodes, element nodes, upstream outputs) are read server-side and frozen into the run's `graphSnapshot` and the job's provenance rows — the server is authoritative for what executes (vision: "generation must remain server-authoritative").
+Mode semantics are server-owned:
 
-Server sequence (one transaction + dispatch, per the DB doc's integration contract): capture the Flow revision and every participating Element revision → resolve upstream context and candidate collections via edges → call the server-only `buildElementContext` contract for connected Elements → admit only approved masters from Element roles → apply each consuming input's `auto` or `manual` selection policy using primary/order/relationship metadata and curated model limits → validate membership, compatibility, semantic-slot cardinality, and aggregate model limits (`422 unsupported_by_model` naming the offending setting/input) → compose `resolvedPrompt` → lock and validate exact Asset inputs → revalidate Flow and Element revisions → insert run + run-node + job + sources + exact inputs → commit → trigger the version-pinned generate task with ID-only payload. Provider-facing URLs or uploads are resolved after the immutable Asset IDs have been selected; raw Element sources, expiring signed URLs, and media bytes are never snapshot data.
+```txt
+node        target executable node only; resolve required static sources
+downstream  target plus executable descendants
+upstream    target plus executable ancestors required to reach it
+selection   selected executable nodes plus their minimum required executable
+            upstream dependency closure
+all         every executable node in the saved Flow
+```
+
+Text, Asset, and deterministic control nodes participate in source/dependency
+resolution but do not create provider jobs by themselves. `selection` rejects an
+empty selection or one containing no executable node and returns both the
+explicitly selected count and actual planned executable-node count so the client
+can disclose dependency-closure expansion.
+
+There is deliberately **no prompt/model/settings in this body**: node draft
+configuration and connected context (Text nodes, Asset nodes, and upstream
+outputs) are read server-side and frozen into the run's `graphSnapshot` and job
+provenance rows. The server is authoritative for what executes.
+
+Server sequence (admission transaction followed by durable dispatch): verify the
+expected Flow revision → select the mode-specific executable subgraph → resolve direct
+Asset candidates and static Text inputs through edges → topologically plan
+same-run upstream outputs and explicit iteration dimensions → apply deterministic
+consumer-slot selection and curated model limits → validate membership,
+compatibility, semantic-slot cardinality, cross-field constraints, and aggregate
+model limits (`422 unsupported_by_model` names the offending setting/input) →
+compose resolved prompts/instructions → lock exact existing Asset inputs in
+stable ID order → revalidate the Flow revision → insert run, run-node, run-item,
+source, exact-input, and just-in-time initial job records → commit → trigger the
+version-pinned orchestration or job task with ID-only payloads. Provider-facing
+URLs are resolved only inside the adapter boundary; expiring signed URLs and
+media bytes are never snapshot data.
 
 Run creation also **locks its selected input asset rows** (ordered by asset id) and requires every input to be **`lifecycle` live/archived AND `processingState: 'ready'`** — purging/purged inputs are rejected (the purge coordination contract under `POST /assets/:id/purge`), and `processing`/`failed` inputs are rejected with **`409 invalid_state`** naming the field (the request is well-formed; the asset is in an unusable state — the client can distinguish "wait for processing" from bad form data): an asset whose bytes haven't been verified or whose media is invalid must never reach a provider.
 
-**Snapshot consistency — `READ COMMITTED` + revision re-validation, deliberately not `REPEATABLE READ`.** RR has a trap here: the transaction's snapshot is taken by its _first statement_ — which is the advisory-lock call — _before_ the lock wait completes, so a queued transaction would evaluate the admission limits against a stale snapshot and the whole point of the lock evaporates. Under `READ COMMITTED`, every statement after the lock sees the latest committed state, which is exactly what admission needs. Coherence is then guaranteed by explicit revisions: read `flows.revision` and all participating `elements.revision` values before resolving, resolve, and **re-read every captured revision just before inserting**. Any mismatch rolls back and retries the complete operation. Element mutations increment their revision in the same transaction as identity/data/schema or Element-Asset role/order/primary/kind/metadata changes. Selected Asset rows are locked in stable ID order and checked from their locked state. The snapshot records captured revisions, so a run cannot mix graph revision 51 with Element context assembled across two different reference states.
+**Snapshot consistency — `READ COMMITTED` + Flow revision re-validation,
+deliberately not `REPEATABLE READ`.** RR has a trap here: the transaction's
+snapshot is taken by its first statement, the advisory-lock call, before a lock
+wait completes. Under `READ COMMITTED`, statements after the lock see current
+committed state. Coherence is guaranteed explicitly: read `flows.revision`,
+resolve and plan, lock selected existing Asset rows in stable ID order, then
+re-read `flows.revision` immediately before insertion. A mismatch rolls back and
+returns `409 flow_revision_changed`; the server never silently executes a newer
+graph than the user clicked. The client may flush, preflight, and submit a new
+explicit admission. A changed canonical plan similarly returns
+`409 run_plan_changed`. The immutable snapshot records the captured Flow
+revision, exact graph/configuration, selected model-contract versions, resolved
+candidate and selection decisions, topological plan, and exact static Asset IDs.
+Later Flow or Asset edits affect future runs only.
 
 Response: `202 FlowRun` with planned node/item counts and status `pending`.
 
 A Trigger dispatch failure _after_ commit still returns `202` with the persisted pending run — the reconciliation sweep redispatches it using the run's compatible executor deployment. Trigger payloads contain only `{ flowRunId, organizationId }` or `{ generationJobId, organizationId }`; workers load immutable snapshots and exact inputs from PostgreSQL. The application and Trigger tasks are deployed atomically and the resolved executor version is recorded on the run. **Provider failures are never synchronous HTTP errors**: generation happens inside Trigger.dev after this response, so failures surface as `errorCode`/`errorMessage` on the job and run via polling (there is deliberately no `502 provider_error` in this API).
 
-### `GET /runs/:id` — the polling endpoint
+### `GET /runs/:id` — authoritative run detail
 
-Response: `200 FlowRun` — render-complete: run status, per-node states, jobs, and **outputs embedded once succeeded**. The client polls this (Trigger.dev Realtime is an optional push upgrade later; the DB row remains the truth either way).
+Response: `200 FlowRun` — render-complete: run status, per-node states, jobs, and
+**outputs embedded once succeeded**. A narrowly scoped Trigger.dev Realtime read
+token wakes the client to invalidate/refetch this domain response. Bounded
+polling is fallback/recovery; Trigger.dev state is never rendered as product
+truth.
 
 ### `GET /runs`
 
@@ -920,10 +1037,40 @@ type FlowRunSummary = Omit<FlowRun, "nodes"> & {
 
 Cancellation is honest about asynchrony (the provider may finish anyway), and it targets the right Trigger run per mode:
 
-- **mode `'node'`**: there is no parent orchestration run — the server cancels the **child job's** `triggerRunId` and applies the guarded transitions to job, run-node, and run together.
-- **multi-node modes**: cancel the **parent** orchestration run _and_ any active children's runs, then the same guarded transitions; remaining pending run-nodes go `'canceled'`.
+- every M5 mode has a parent orchestration run; cancel it and any active child
+  tasks, then apply guarded job, item, node, and run transitions;
+- remaining pending items and nodes become `canceled`; provider completion that
+  wins the race remains an honest terminal success rather than being overwritten;
 - run still active → `202 FlowRun` (statuses reflect whatever the guarded writes won; keep polling)
 - already terminal → `409 invalid_state`
+
+### `POST /runs/:id/retry`
+
+Retry is a new immutable run, never a transition that reopens the source run.
+
+- require `Idempotency-Key` and scope both the source lookup and new run to the
+  active organization;
+- accept only terminal `failed`, `partial`, or `canceled` source runs;
+- derive work from the source run snapshot, not the current mutable Flow;
+- include failed/skipped/canceled work and its required dependency closure;
+- freeze every reused successful output and validate that each referenced Asset
+  is still tenant-owned and usable;
+- store `retryOfRunId`, a new snapshot/hash, and the current compatible executor
+  version before dispatching through the ordinary run path;
+- source run is never mutated → `202 FlowRun` for the newly admitted run;
+- an unsafe partial closure or unavailable compatible snapshot reader →
+  `409 retry_not_available`; the user may instead rerun the current Flow.
+
+If partial retry cannot preserve these rules in the first M5 increment, the
+endpoint performs a whole-snapshot retry. It must not mix source snapshot data
+with the current canvas.
+
+### `POST /runs/:id/realtime-token`
+
+Issue a short-lived Trigger.dev Realtime token authorized for exactly the
+tenant-owned parent run being viewed. The token is only a progress-notification
+channel: the dashboard refetches `GET /runs/:id` after relevant events and uses
+the PostgreSQL-backed response as authoritative state.
 
 ---
 
@@ -943,7 +1090,7 @@ POST   /tools/:id/versions/:version/runs   invoke concrete version
 
 The draft graph uses the ordinary Flow CRUD and graph-sync contract through the
 Tool's `draftFlowId`; there is no second graph editor or persistence model.
-Publishing applies the same Flow/Element/Asset revision-revalidated snapshot
+Publishing applies the same Flow/Asset revision-revalidated snapshot
 builder as run admission, validates declared typed input/output contracts, and
 inserts a monotonic immutable ToolVersion. It may atomically update the Tool's
 current-published-version pointer.
@@ -966,49 +1113,90 @@ The resolved public product contract the client renders from. TaleLabs owns this
 curated, code-versioned registry; live OpenRouter/provider discovery never drives
 the response directly. Discovery is used only by a reviewed manual/CI drift
 report. That report compares provider lifecycle, endpoint and parameter manifests,
-plus the reviewed public contract version, setting values/ranges, input limits,
-required-input rules, and applicable cross-field constraints. The endpoint is
+dated primary-source evidence and freshness, normalized completion/delivery/
+cancellation behavior, mock-pricing classification, plus the reviewed public
+contract version, output profiles, accepted-media/reference profiles, setting
+values/ranges, per-slot and total input limits, required/one-of input rules, and
+applicable cross-field constraints. Missing or stale evidence fails closed. The
+endpoint is
 `ETag`-cacheable and changes only on deployment.
+
+The initial Image catalog is a reviewed seven-model subset of a dated 39-model
+OpenRouter discovery capture. Public config exposes stable TaleLabs IDs,
+translation keys, semantic slots, safe setting intersections, and output
+profiles only. Native model IDs, provider tags, endpoint choice, pricing, and
+the wider discovered inventory remain server-only evidence.
 
 Response `200`:
 
 ```ts
 {
+  registryVersion: string
   models: {
+    contractVersion: string
     id: string // stable TaleLabs identity, for example 'talelabs/veo-3.1'
-    displayName: string
+    displayName: string // proper model name; UI copy uses labelKey
+    labelKey: string
     mediaType: MediaType
-    enabled: boolean
+    enabled: true // unavailable models are omitted; historical contracts resolve separately
     recommended: boolean
+    defaultOperationId: string
     capabilities: {
       operations: {
         id: string // 'textToVideo', 'imageToVideo', 'tts', 'soundEffect', ...
-        inputRoles: string[]
+        nodeType: GenerationNodeType // authoritative picker/validation intent
+        labelKey: string
+        descriptionKey: string
+        inputs: Record<string, { required?: true; oneOf?: string[] }>
+        inputSlotIds: string[]
+        settingIds: string[]
+        requiredSettingIds?: string[]
+        output: {
+          mediaType: MediaType
+          count: { default: number; min: number; max: number; settingId?: string }
+        }
+        referenceLimit: { maxItems: number; slotIds: string[] }
       }[]
       // registry-driven, never fixed booleans: a new provider capability (mask,
       // control image, source video, audio reference) is a new slot/setting
       // entry in the registry — never a new API field
       inputSlots: {
-        role: string // from the inputRoles vocabulary: 'reference', 'firstFrame', ...
-        label: string // presentation ships with the data — no frontend id->label mapping tables
-        descriptionKey?: string // localized by the client
+        role: string // from the inputRoles vocabulary: 'references', 'firstFrame', ...
+        labelKey: string
+        descriptionKey: string
         accepts: AssetType[]
+        valueTypes: FlowValueType[]
         min: number
         max: number
+        maxConnections: number
+        acceptedMedia?: {
+          mimeTypes: string[]
+          maxBytes?: number
+          durationSeconds?: { min: number; max: number }
+          framesPerSecond?: number[]
+          resolutions?: string[]
+          aspectRatios?: string[]
+        }
+        referenceProfile?: {
+          purposes: string[]
+          multipleSubjectSupport: 'supported' | 'unsupported' | 'unknown' | 'not-applicable'
+          contactSheetPolicy: 'never' | 'supported' | 'preferred' | 'not-applicable'
+          recommendedMaxItems?: number
+        }
       }[]
       settings: (SettingBase &
         (
-          | { kind: 'enum'; options: { value: string; label: string }[]; default?: string }
-          | { kind: 'number'; min: number; max: number; step?: number; unit?: string; default?: number }
-          | { kind: 'boolean'; default?: boolean }
+          | { kind: 'enum'; options: { value: string; labelKey: string }[]; default: string }
+          | { kind: 'number'; min: number; max: number; step: number; default: number }
+          | { kind: 'boolean'; default: boolean }
+          | { kind: 'string'; maxLength: number; default: string }
         ))[]
       constraints: GenerationConstraint[]
     }
   }[]
   elementTypes: {
     id: string // 'character', 'product'
-    label: string
-    previewRole: string
+    previewRole: string | null
     assetRoles: { id: string; accepts: AssetType[] }[]
     // the registries (schemas, roles, capabilities, handle specs) live in a SHARED
     // package (e.g. @talelabs/registry) imported by both API and web — one source
@@ -1024,19 +1212,20 @@ Response `200`:
 // frontend mapping tables; new metadata needs are registry additions, not API changes
 type SettingBase = {
   id: string
-  label: string
-  descriptionKey?: string // localized by the client
+  labelKey: string
+  descriptionKey?: string
   advanced?: boolean // collapsed behind "advanced" in the node UI
   visibleWhen?: GenerationCondition[] // shared declarative visibility predicates
 }
 
 type GenerationConstraint = {
   id: string
+  messageKey: string
   // Stable declarative predicates/actions interpreted by shared client/server
   // validation. Never executable code sent to the browser.
-  when: Record<string, unknown>
-  require?: Record<string, unknown>
-  forbid?: Record<string, unknown>
+  when: GenerationCondition[]
+  require?: GenerationCondition[]
+  forbid?: GenerationCondition[]
 }
 ```
 
@@ -1046,8 +1235,10 @@ otherwise invalid combination executable.
 
 Serving the vocabularies here keeps them single-sourced — the client never hardcodes a role list the server validates against.
 
-Provider model IDs, endpoint tags, adapter names/versions, credentials, fallback
-policy, internal costs, and emergency controls are deliberately absent. A
+Pinned native model IDs/endpoints, provider lifecycle and cancellation behavior,
+adapter/route versions, dated evidence and lifecycle freshness, credentials,
+fallback policy, mock pricing, negotiated costs, and emergency controls are
+deliberately absent. A
 server-only route registry resolves the tuple `(productModelId,
 modelContractVersion, operationId)` to a concrete provider route during run
 admission and snapshots that route/version. Historical contracts remain readable

@@ -3,28 +3,47 @@
 Before planning, editing, or implementing product work in this repository, read:
 
 ```txt
+docs/assets-flows-mvp-contract.md
 docs/talelabs-product-vision.md
 ```
 
-That document defines what TaleLabs is: a visual AI creative workspace built around three primary entities and one core loop:
+That document defines what TaleLabs is. The current product reset narrows the
+active product to an Asset foundation and a visual creation canvas:
 
 ```txt
-Assets -> Elements -> Flows -> Generated Assets -> Continued Iteration
+Assets -> Flows -> Generated Assets -> Continued Iteration
 ```
 
-Keep implementation aligned with that loop and its build order unless the user explicitly asks to expand scope:
+Keep implementation aligned with this active build order unless the user
+explicitly changes it:
 
 ```txt
 1. Assets
-2. Elements
-3. Flows
-4. Complete generation loop
-5. Billing and credits
+2. Canvas foundation
+3. Model-adaptive Video, Image, and Audio Generation nodes
+4. Deterministic mocked canvas behavior
+5. User-owned canvas and node UX approval (approved 2026-07-14)
+6. Provider-independent durable run engine with deterministic mock adapters
+7. User-owned run UX and end-to-end QA
+8. Real provider integration
 ```
+
+Elements are deferred and are not a prerequisite for the canvas, generation
+nodes, mocked output, or the first real provider loop. Existing Element code may
+remain dormant, but active product work must not expose it, depend on it, or
+expand it. The active Flow graph and reference APIs are Asset-only.
+
+The user approved the generation-node product design and M5 run-engine scope on
+2026-07-14. M5 may implement Trigger.dev orchestration, immutable run snapshots,
+generation-job persistence, deterministic mock adapters, iteration, canonical
+mock output Assets, and the approved run modes. Real OpenRouter/provider calls
+remain M6 scope. The curated, code-versioned model capability registry continues
+to drive node handles, settings, validation, planning, and snapshot contracts.
 
 Source-of-truth design documents:
 
 ```txt
+docs/assets-flows-mvp-contract.md = binding active MVP boundary
 docs/talelabs-product-vision.md   = product direction and scope
 docs/flow-nodes-planning.md       = Flow node, runtime-value, batching, execution, and Tool semantics
 docs/db-design-planning-v2.md     = database schema (PostgreSQL, Kysely, camelCase)
@@ -47,12 +66,14 @@ docs/db-design-planning.md
 docs/api-design-planning.md
 ```
 
-Execution rules that hold across all work:
+Execution rules for the active M5 milestone:
 
-1. Every execution is a `flowRuns` row — the `flowRuns`/`flowRunNodes` tables are part of the **initial migration**, with every job belonging to a run from day one. Only the multi-node orchestration modes (`downstream`/`all`) and their parent orchestrator task ship later; the first product experience runs one selected generation node (mode `node`).
+1. Every execution is a `flowRuns` row. M5 supports `node`, `downstream`,
+   `upstream`, `selection`, and `all`; `tool` remains a future compatibility
+   seam. Every provider/mock request belongs to a durable run item and job.
 2. Every successful generation output is persisted as a canonical Asset.
-3. Generation provenance is immutable — later edits to Flows, Elements, or Asset relationships never rewrite historical job inputs.
-4. Element and node type vocabularies live in code registries, not the database.
+3. Generation provenance is immutable — later edits to Flows or Assets never rewrite historical job inputs.
+4. Node and model vocabularies live in code registries, not the database.
 5. Costs (`creditCost`, `providerCostUsd`) are recorded on every generation job from day one; no balances or enforcement until the credit system ships.
 6. Credits and billing belong in account/header/billing UI, never the main creative navigation.
 7. Before changing Flow nodes, handles, planning, execution, iteration, caching,
@@ -60,8 +81,8 @@ Execution rules that hold across all work:
    between an inner typed collection consumed together and outer runtime items
    that represent execution multiplicity.
 8. Run admission creates an immutable, bounded `flowRuns.graphSnapshot` only
-   after revalidating the captured Flow and Element revisions and locking exact
-   Asset inputs. Trigger.dev receives tenant-scoped run/job IDs and loads the
+   after revalidating the captured Flow revision and locking exact Asset inputs.
+   Trigger.dev receives tenant-scoped run/job IDs and loads the
    snapshot from PostgreSQL; never execute from mutable Flow rows after admission.
 9. A Tool is mutable identity backed by an ordinary editable draft Flow. A
    ToolVersion is an immutable, monotonically numbered published snapshot. Tool

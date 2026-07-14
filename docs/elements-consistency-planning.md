@@ -1,5 +1,10 @@
 # TaleLabs — Elements As A Consistency System
 
+> **Deferred research:** Elements are not part of the active MVP. Do not use
+> this document to add Element navigation, Flow nodes, reference hydration,
+> execution inputs, or acceptance requirements. The binding boundary is
+> `assets-flows-mvp-contract.md`.
+
 **Purpose:** redefine Elements from "categorized Asset collections" into the product's answer to the #1 pain of AI media production: **consistency** — the same character, product, location, or brand identity surviving across generations. This document settles the data model, lifecycle, and Flow behavior after adversarial review; it is the source of truth for the Elements redesign.
 
 Companions: `db-design-planning-v2.md` (persistence, `elements.revision` guard), `flow-nodes-planning.md` (role handles, runtime values), `api-design-planning-v2.md`.
