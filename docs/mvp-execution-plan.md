@@ -545,6 +545,12 @@ Add spending limits, timeouts, cancellation semantics, provider error mapping,
 and observability before expanding model coverage. Keep provider credentials,
 native endpoints, fallback policy, and costs server-only.
 
+The observability implementation is deferred while M5 completes. Before beta,
+implement the baseline in `observability-planning.md`: `flowRunId` correlation,
+shared structured events, Trigger.dev telemetry and alerts, Sentry, and an
+internal PostgreSQL-backed Run Inspector. A centralized OpenTelemetry backend is
+not required until production volume demonstrates the need.
+
 ## M7 - Internal MVP Candidate
 
 The MVP candidate requires:
@@ -554,6 +560,7 @@ tenant-isolation audit
 upload and generation failure recovery
 idempotency and replay verification
 bounded query and graph behavior
+observability baseline and failure alerts
 staging deployment
 production build and contract checks
 user-owned end-to-end acceptance

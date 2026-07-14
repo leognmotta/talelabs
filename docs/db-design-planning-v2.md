@@ -43,7 +43,13 @@ Requires PostgreSQL 15+ (`unique nulls not distinct`, column-targeted `on delete
 
 Node/edge **ids are client-generated cuid2** (same `@paralleldrive/cuid2` lib runs in the browser) — React Flow creates nodes locally before any server round trip, and stable ids are the vision's prerequisite for future collaboration. The server validates format and uniqueness on write.
 
-**Trigger.dev (v4)** owns queueing, retries, concurrency, cancellation, and run observability on its platform — we do not rebuild any of that in Postgres. What the DB owns is the **domain job record** (`generationJobs`): tenancy, provenance, immutable input snapshots, and the resulting Asset. The integration contract:
+**Trigger.dev (v4)** owns queueing, retries, concurrency, cancellation, and
+worker execution telemetry on its platform. PostgreSQL does not copy its debug
+logs or traces. PostgreSQL does own the durable product-level run and job state:
+tenancy, provenance, immutable snapshots, costs, safe errors, and resulting
+Assets. A future append-only domain-event stream and internal Run Inspector may
+be built from that product state as defined in `observability-planning.md`; this
+is deferred production-readiness work, not M5 scope. The integration contract:
 
 ```txt
 1. API validates and plans the requested mode, then inserts the immutable run,
