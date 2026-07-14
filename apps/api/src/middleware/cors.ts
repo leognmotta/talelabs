@@ -46,6 +46,7 @@ export const corsMiddleware = cors({
   allowHeaders: [
     'Accept-Language',
     'Content-Type',
+    'Idempotency-Key',
     'X-TaleLabs-Organization-Id',
   ],
   allowMethods: (_origin, c) => {
