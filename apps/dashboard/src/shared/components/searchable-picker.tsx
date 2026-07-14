@@ -1,6 +1,5 @@
 import type { ReactElement, ReactNode } from 'react'
 
-import { IconChevronDown } from '@tabler/icons-react'
 import {
   Combobox,
   ComboboxCollection,
@@ -14,8 +13,14 @@ import {
   ComboboxSeparator,
   ComboboxTrigger,
 } from '@talelabs/ui/components/combobox'
+import {
+  ScrollOverflowAffordance,
+  useScrollOverflowAffordance,
+} from '@talelabs/ui/components/scroll-overflow-affordance'
 import { cn } from '@talelabs/ui/lib/utils'
 import { Fragment, useCallback, useLayoutEffect, useState } from 'react'
+
+const COMBOBOX_OPTION_SELECTOR = '[role="option"]'
 
 export interface SearchablePickerItem {
   content: ReactNode
@@ -67,46 +72,26 @@ export function SearchablePicker({
   onSelect: (id: string) => void
 }) {
   const [listElement, setListElement] = useState<HTMLDivElement | null>(null)
-  const [hasMoreAfter, setHasMoreAfter] = useState(false)
+  const {
+    hasMoreAfter,
+    scheduleOverflowUpdate,
+    updateOverflowState,
+  } = useScrollOverflowAffordance({
+    enabled: showOverflowAffordance,
+    endItemSelector: COMBOBOX_OPTION_SELECTOR,
+    scrollElement: listElement,
+  })
   const selectedItem = groups
     .flatMap(group => group.items)
     .find(item => item.id === selectedId) ?? null
 
-  const updateOverflowState = useCallback(() => {
-    if (!listElement)
-      return
-
-    const options = listElement.querySelectorAll<HTMLElement>('[role="option"]')
-    const lastOption = options.item(options.length - 1)
-
-    if (lastOption) {
-      const listBounds = listElement.getBoundingClientRect()
-      const lastOptionBounds = lastOption.getBoundingClientRect()
-      setHasMoreAfter(lastOptionBounds.bottom > listBounds.bottom + 1)
-      return
-    }
-
-    const scrollEnd = listElement.scrollHeight - listElement.clientHeight
-    setHasMoreAfter(listElement.scrollTop < scrollEnd - 1)
-  }, [listElement])
-
   const handleItemHighlighted = useCallback(() => {
-    requestAnimationFrame(updateOverflowState)
-  }, [updateOverflowState])
+    scheduleOverflowUpdate()
+  }, [scheduleOverflowUpdate])
 
   useLayoutEffect(() => {
-    if (!listElement || !showOverflowAffordance)
-      return
-
-    const initialMeasurement = requestAnimationFrame(updateOverflowState)
-    const resizeObserver = new ResizeObserver(updateOverflowState)
-    resizeObserver.observe(listElement)
-
-    return () => {
-      cancelAnimationFrame(initialMeasurement)
-      resizeObserver.disconnect()
-    }
-  }, [groups, listElement, showOverflowAffordance, updateOverflowState])
+    scheduleOverflowUpdate()
+  }, [groups, scheduleOverflowUpdate])
 
   return (
     <Combobox
@@ -181,14 +166,7 @@ export function SearchablePicker({
             )}
           </ComboboxList>
           {showOverflowAffordance && hasMoreAfter && (
-            <div className="
-              pointer-events-none absolute inset-x-0 bottom-0 flex h-10
-              items-end justify-center bg-linear-to-t from-popover
-              to-transparent pb-1 text-muted-foreground
-            "
-            >
-              <IconChevronDown aria-hidden className="size-4" />
-            </div>
+            <ScrollOverflowAffordance />
           )}
         </div>
       </ComboboxContent>

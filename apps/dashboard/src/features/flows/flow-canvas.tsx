@@ -6,17 +6,27 @@ import type {
   GenerationConfigResponse,
 } from '@talelabs/sdk'
 import type { Viewport } from '@xyflow/react'
-import type { CanvasEdge, CanvasNode } from './flow-canvas-types'
+import type {
+  KeyboardEvent as ReactKeyboardEvent,
+  PointerEvent as ReactPointerEvent,
+} from 'react'
+import type {
+  CanvasEdge,
+  CanvasNode,
+} from './flow-canvas-types'
 import {
+  IconArrowBackUp,
+  IconArrowForwardUp,
   IconCopy,
   IconFocusCentered,
-  IconHierarchy3,
   IconPlus,
   IconRefresh,
-  IconSelectAll,
   IconTrash,
 } from '@tabler/icons-react'
-import { getFlowNodeHandles, isFlowNodeType } from '@talelabs/flows'
+import {
+  getFlowNodeHandles,
+  isFlowNodeType,
+} from '@talelabs/flows'
 import { Badge } from '@talelabs/ui/components/badge'
 import { Button } from '@talelabs/ui/components/button'
 import {
@@ -25,14 +35,10 @@ import {
   ContextMenuGroup,
   ContextMenuItem,
   ContextMenuSeparator,
+  ContextMenuShortcut,
   ContextMenuTrigger,
 } from '@talelabs/ui/components/context-menu'
 import { Spinner } from '@talelabs/ui/components/spinner'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@talelabs/ui/components/tooltip'
 import {
   Background,
   BackgroundVariant,
@@ -50,14 +56,20 @@ import { useTranslation } from 'react-i18next'
 import { useBlocker } from 'react-router'
 import { toast } from 'sonner'
 import { SearchablePicker } from '../../shared/components/searchable-picker'
+import { ACCEPTED_ASSET_MEDIA } from '../assets/asset-upload-files'
 import { FlowAssetMetadataCard } from './flow-asset-metadata-card'
 import { FlowCanvasContext } from './flow-canvas-context'
 import { FlowCanvasDialogs } from './flow-canvas-dialogs'
+import { FlowCanvasEdge } from './flow-canvas-edge'
+import { FlowCanvasHeader } from './flow-canvas-header'
+import { FlowCanvasPaneContextMenu } from './flow-canvas-pane-context-menu'
+import { FlowCanvasSelectionContextMenu } from './flow-canvas-selection-context-menu'
 import {
   canvasNodeToGraphNode,
   toCanvasEdges,
   toCanvasNodes,
 } from './flow-canvas-serialization'
+import { getFlowCanvasShortcutLabels } from './flow-canvas-shortcuts'
 import {
   FLOW_NODE_PICKER_DEFINITIONS,
   FLOW_NODE_PICKER_GROUPS,
@@ -68,9 +80,13 @@ import { getCanvasGenerationModel } from './flow-generation-contract'
 import { FlowGenerationSettingsCard } from './flow-generation-settings-card'
 import { FlowMediaPreviewProvider } from './flow-media-preview-provider'
 import { FlowNodeConnectionsCard } from './flow-node-connections-card'
+import { FlowToolbarButton } from './flow-toolbar-button'
 import { useFlowAutosave } from './use-flow-autosave'
+import { useFlowCanvasAssetUpload } from './use-flow-canvas-asset-upload'
 import { useFlowCanvasController } from './use-flow-canvas-controller'
+import { useFlowCanvasHistory } from './use-flow-canvas-history'
 import { useFlowCanvasSelection } from './use-flow-canvas-selection'
+import { useFlowMockRunOrchestration } from './use-flow-mock-run-orchestration'
 import { useFlowReferenceData } from './use-flow-reference-data'
 import { useFlowViewportPersistence } from './use-flow-viewport-persistence'
 import '@xyflow/react/dist/style.css'
@@ -78,18 +94,25 @@ import '@xyflow/react/dist/style.css'
 const DEFAULT_EDGE_OPTIONS = {
   animated: false,
   style: { strokeWidth: 1.75 },
+  type: 'flow',
 }
+const FLOW_REACT_EDGE_TYPES = { flow: FlowCanvasEdge }
 const DELETE_KEY_CODE = ['Backspace', 'Delete']
 const REACT_FLOW_PRO_OPTIONS = { hideAttribution: true }
 const SNAP_GRID: [number, number] = [16, 16]
 const FLOW_VALUE_COLORS = {
   Asset: 'var(--flow-type-asset)',
   AudioSet: 'var(--flow-type-audio)',
-  ElementContext: 'var(--flow-type-context)',
+  ElementContext: 'var(--flow-type-element)',
   ImageSet: 'var(--flow-type-image)',
   Text: 'var(--flow-type-text)',
   VideoSet: 'var(--flow-type-video)',
 } as const satisfies Record<FlowValueType, string>
+
+function isEditableCanvasTarget(target: EventTarget | null) {
+  return target instanceof Element
+    && Boolean(target.closest('input, textarea, select, [contenteditable="true"]'))
+}
 
 function FlowCanvasInner({
   flow,
@@ -104,22 +127,20 @@ function FlowCanvasInner({
   organizationId: string
   references: FlowGraphReferences
 }) {
-  const { t } = useTranslation()
+  const { i18n, t } = useTranslation()
+  const shortcutLabels = getFlowCanvasShortcutLabels()
   const wrapperRef = useRef<HTMLDivElement>(null)
   const reactFlow = useReactFlow<CanvasNode, CanvasEdge>()
   const [nodes, setNodes] = useNodesState<CanvasNode>(toCanvasNodes(graph.nodes))
   const [edges, setEdges] = useEdgesState<CanvasEdge>(toCanvasEdges(graph.edges))
   const [assetPickerNodeId, setAssetPickerNodeId] = useState<null | string>(null)
-  const [elementPickerNodeId, setElementPickerNodeId] = useState<null | string>(null)
   const [editingImageCropNodeId, setEditingImageCropNodeId] = useState<null | string>(null)
   const [inspector, setInspector] = useState<null | { nodeId: string, slotId: string }>(null)
-  const referenceData = useFlowReferenceData(references)
   const nodesRef = useRef(nodes)
   const edgesRef = useRef(edges)
-  const referenceDataRef = useRef(referenceData)
+  const allowNavigationRef = useRef(false)
   nodesRef.current = nodes
   edgesRef.current = edges
-  referenceDataRef.current = referenceData
   const selection = useFlowCanvasSelection({
     edgesRef,
     nodesRef,
@@ -143,20 +164,75 @@ function FlowCanvasInner({
   } = selection
 
   const replaceGraph = useCallback((nextNodes: CanvasNode[], nextEdges: CanvasEdge[]) => {
+    nodesRef.current = nextNodes
+    edgesRef.current = nextEdges
     setNodes(nextNodes)
     setEdges(nextEdges)
-  }, [setEdges, setNodes])
+  }, [edgesRef, nodesRef, setEdges, setNodes])
+  const {
+    canRedo,
+    canUndo,
+    capture: captureHistory,
+    clear: clearHistory,
+    redo: redoHistory,
+    undo: undoHistory,
+  } = useFlowCanvasHistory({
+    clearSelection,
+    edgesRef,
+    nodesRef,
+    replaceGraph,
+  })
+  const replaceGraphFromServer = useCallback((
+    nextNodes: CanvasNode[],
+    nextEdges: CanvasEdge[],
+  ) => {
+    clearHistory()
+    replaceGraph(nextNodes, nextEdges)
+  }, [clearHistory, replaceGraph])
   const autosave = useFlowAutosave({
     edges,
     flowId: flow.id,
     initialGraph: graph,
     nodes,
     organizationId,
-    replaceGraph,
+    replaceGraph: replaceGraphFromServer,
   })
   const { markDirty, retry, saveNow, status } = autosave
+  const assetUploads = useFlowCanvasAssetUpload({
+    captureHistory,
+    flowId: flow.id,
+    markDirty,
+    nodes,
+    nodesRef,
+    organizationId,
+    reactFlow,
+    references,
+    setEdges,
+    setNodes,
+    setSelectedIds,
+    wrapperRef,
+  })
+  const referenceData = useFlowReferenceData(
+    references,
+    assetUploads.transientAssets,
+  )
+  const referenceDataRef = useRef(referenceData)
+  referenceDataRef.current = referenceData
+  const undo = useCallback(() => {
+    if (!undoHistory())
+      return
+    setEditingImageCropNodeId(null)
+    markDirty()
+  }, [markDirty, undoHistory])
+  const redo = useCallback(() => {
+    if (!redoHistory())
+      return
+    setEditingImageCropNodeId(null)
+    markDirty()
+  }, [markDirty, redoHistory])
   const blocker = useBlocker(({ currentLocation, nextLocation }) => (
-    autosave.dirty
+    !allowNavigationRef.current
+    && autosave.dirty
     && (
       currentLocation.pathname !== nextLocation.pathname
       || currentLocation.search !== nextLocation.search
@@ -185,6 +261,7 @@ function FlowCanvasInner({
   }, [blocker, saveNow])
 
   const controller = useFlowCanvasController({
+    captureHistory,
     clearSelection,
     edgesRef,
     markDirty,
@@ -207,6 +284,7 @@ function FlowCanvasInner({
     deleteSelection,
     duplicateNodes,
     getIncompatibleGenerationEdgeCount,
+    getIncompatibleGenerationEdges,
     getInputState,
     getNode,
     isValidConnection,
@@ -219,6 +297,66 @@ function FlowCanvasInner({
     updateNodeData,
     updateNodeReference,
   } = controller
+  const {
+    getExecutableInputCount,
+    getGenerationPreview,
+    getGenerationPreviewFingerprint,
+    runGenerationPreview,
+    runGenerationSelectionPreview,
+  } = useFlowMockRunOrchestration({
+    edges,
+    edgesRef,
+    locale: i18n.resolvedLanguage ?? i18n.language ?? 'en',
+    nodes,
+    nodesRef,
+    referenceData,
+    referenceDataRef,
+    t,
+  })
+  const openNodeOutputInspector = useCallback((nodeId: string) => {
+    setSelectedIds([nodeId])
+    requestAnimationFrame(() => {
+      document.getElementById(`flow-node-connections-${nodeId}`)?.focus()
+    })
+  }, [setSelectedIds])
+  const handleCanvasKeyDown = useCallback((
+    event: ReactKeyboardEvent<HTMLDivElement>,
+  ) => {
+    if (
+      (!event.metaKey && !event.ctrlKey)
+      || event.altKey
+      || isEditableCanvasTarget(event.target)
+    ) {
+      return
+    }
+
+    const key = event.key.toLowerCase()
+    if (key === 'd') {
+      if (selectedNodeIds.length === 0)
+        return
+      event.preventDefault()
+      duplicateNodes(selectedNodeIds)
+      return
+    }
+    if (key === 'z') {
+      event.preventDefault()
+      if (event.shiftKey)
+        redo()
+      else
+        undo()
+      return
+    }
+    if (key === 'y' && !event.shiftKey) {
+      event.preventDefault()
+      redo()
+    }
+  }, [duplicateNodes, redo, selectedNodeIds, undo])
+  const handleCanvasPointerDown = useCallback((
+    event: ReactPointerEvent<HTMLDivElement>,
+  ) => {
+    if (!isEditableCanvasTarget(event.target))
+      event.currentTarget.focus({ preventScroll: true })
+  }, [])
   const ariaLabelConfig = useMemo(() => ({
     'node.a11yDescription.default': t('flows.a11y.nodeDescription'),
   }), [t])
@@ -234,18 +372,43 @@ function FlowCanvasInner({
     persistViewport(viewport)
   }, [persistViewport])
   const handleNodeDragStop = useCallback(() => markDirty(), [markDirty])
+  const focusSelection = useCallback((nodeIds: string[], edgeIds: string[]) => {
+    const focusNodeIds = new Set(nodeIds)
+    const selectedEdgeIds = new Set(edgeIds)
+    for (const edge of edgesRef.current) {
+      if (!selectedEdgeIds.has(edge.id))
+        continue
+      focusNodeIds.add(edge.source)
+      focusNodeIds.add(edge.target)
+    }
+    const focusNodes = nodesRef.current.filter(node => focusNodeIds.has(node.id))
+    if (focusNodes.length === 0)
+      return
+    void reactFlow.fitView({
+      duration: 300,
+      nodes: focusNodes,
+      padding: 0.2,
+    })
+  }, [edgesRef, nodesRef, reactFlow])
   const contextValue = useMemo(() => ({
     deleteNodes,
     duplicateNodes,
     editingImageCropNodeId,
+    edges,
     generationConfig,
+    getAssetUpload: assetUploads.getUpload,
+    getExecutableInputCount,
+    getGenerationPreview,
+    getGenerationPreviewFingerprint,
     getIncompatibleGenerationEdgeCount,
+    getIncompatibleGenerationEdges,
     getInputState,
     getNode,
     openAssetPicker: setAssetPickerNodeId,
-    openElementPicker: setElementPickerNodeId,
     openInputInspector: (nodeId: string, slotId: string) => setInspector({ nodeId, slotId }),
+    openNodeOutputInspector,
     referenceData,
+    runGenerationPreview,
     setEditingImageCropNodeId,
     setInputSelection,
     updateNodeData,
@@ -255,11 +418,19 @@ function FlowCanvasInner({
     deleteNodes,
     duplicateNodes,
     editingImageCropNodeId,
+    edges,
     generationConfig,
+    assetUploads.getUpload,
+    getExecutableInputCount,
+    getGenerationPreview,
+    getGenerationPreviewFingerprint,
     getIncompatibleGenerationEdgeCount,
+    getIncompatibleGenerationEdges,
     getInputState,
     getNode,
+    openNodeOutputInspector,
     referenceData,
+    runGenerationPreview,
     setInputSelection,
     updateNodeData,
     updateNodeReference,
@@ -346,6 +517,7 @@ function FlowCanvasInner({
     return {
       ...edge,
       className: 'flow-edge',
+      type: 'flow',
       style: {
         ...edge.style,
         stroke: edge.selected
@@ -361,10 +533,33 @@ function FlowCanvasInner({
   return (
     <FlowCanvasContext value={contextValue}>
       <FlowMediaPreviewProvider>
+        <input
+          ref={assetUploads.fileInputRef}
+          accept={ACCEPTED_ASSET_MEDIA}
+          aria-label={t('assets.uploadFiles')}
+          className="sr-only"
+          multiple
+          tabIndex={-1}
+          type="file"
+          onChange={(event) => {
+            if (event.currentTarget.files?.length)
+              assetUploads.uploadFiles(event.currentTarget.files)
+            event.currentTarget.value = ''
+          }}
+        />
         <ContextMenu>
           <ContextMenuTrigger
-            className="relative size-full overflow-hidden bg-background"
-            render={<div ref={wrapperRef} />}
+            className="
+              relative size-full overflow-hidden bg-background outline-none
+            "
+            render={(
+              <div
+                ref={wrapperRef}
+                tabIndex={-1}
+                onKeyDown={handleCanvasKeyDown}
+                onPointerDownCapture={handleCanvasPointerDown}
+              />
+            )}
           >
             <ReactFlow
               aria-label={t('flows.a11y.canvas')}
@@ -372,6 +567,7 @@ function FlowCanvasInner({
               defaultEdgeOptions={DEFAULT_EDGE_OPTIONS}
               defaultViewport={defaultViewport}
               deleteKeyCode={DELETE_KEY_CODE}
+              edgeTypes={FLOW_REACT_EDGE_TYPES}
               edges={visibleEdges}
               fitView={graph.nodes.length === 0}
               isValidConnection={isValidConnection}
@@ -396,7 +592,7 @@ function FlowCanvasInner({
               onSelectionChange={handleSelectionChange}
               onSelectionContextMenu={handleSelectionContextMenu}
             >
-              <Background color="var(--flow-dot)" gap={20} size={1.1} variant={BackgroundVariant.Dots} />
+              <Background color="var(--flow-dot)" gap={20} size={1.4} variant={BackgroundVariant.Dots} />
               <Controls
                 position="bottom-left"
                 showInteractive={false}
@@ -411,6 +607,18 @@ function FlowCanvasInner({
                 position="bottom-right"
                 zoomable
               />
+              <Panel className="m-4!" position="top-left">
+                <FlowCanvasHeader
+                  canRedo={canRedo}
+                  canUndo={canUndo}
+                  flow={flow}
+                  onFlowDeleted={() => {
+                    allowNavigationRef.current = true
+                  }}
+                  onRedo={redo}
+                  onUndo={undo}
+                />
+              </Panel>
               {selectedNode && (
                 <Panel className="m-5!" position="top-right">
                   <div className="flex flex-col gap-3">
@@ -458,24 +666,43 @@ function FlowCanvasInner({
                     }}
                   />
                   <span aria-hidden className="mx-1 h-5 w-px bg-border/80" />
-                  <Tooltip>
-                    <TooltipTrigger render={<Button aria-label={t('flows.fitView')} size="icon-sm" variant="ghost" onClick={() => void reactFlow.fitView({ duration: 300, padding: 0.2 })} />}>
-                      <IconFocusCentered />
-                    </TooltipTrigger>
-                    <TooltipContent>{t('flows.fitView')}</TooltipContent>
-                  </Tooltip>
-                  <Tooltip>
-                    <TooltipTrigger render={<Button aria-label={t('flows.duplicateSelection')} disabled={selectedNodeIds.length === 0} size="icon-sm" variant="ghost" onClick={() => duplicateNodes(selectedNodeIds)} />}>
-                      <IconCopy />
-                    </TooltipTrigger>
-                    <TooltipContent>{t('flows.duplicateSelection')}</TooltipContent>
-                  </Tooltip>
-                  <Tooltip>
-                    <TooltipTrigger render={<Button aria-label={t('flows.deleteSelection')} disabled={!hasSelection} size="icon-sm" variant="ghost" onClick={deleteSelection} />}>
-                      <IconTrash />
-                    </TooltipTrigger>
-                    <TooltipContent>{t('flows.deleteSelection')}</TooltipContent>
-                  </Tooltip>
+                  <FlowToolbarButton
+                    disabled={!canUndo}
+                    icon={IconArrowBackUp}
+                    label={t('flows.undo')}
+                    shortcut={shortcutLabels.undo}
+                    onClick={undo}
+                  />
+                  <FlowToolbarButton
+                    disabled={!canRedo}
+                    icon={IconArrowForwardUp}
+                    label={t('flows.redo')}
+                    shortcut={shortcutLabels.redo}
+                    onClick={redo}
+                  />
+                  <span aria-hidden className="mx-1 h-5 w-px bg-border/80" />
+                  <FlowToolbarButton
+                    icon={IconFocusCentered}
+                    label={t('flows.fitView')}
+                    onClick={() => void reactFlow.fitView({
+                      duration: 300,
+                      padding: 0.2,
+                    })}
+                  />
+                  <FlowToolbarButton
+                    disabled={selectedNodeIds.length === 0}
+                    icon={IconCopy}
+                    label={t('flows.duplicateSelection')}
+                    shortcut={shortcutLabels.duplicate}
+                    onClick={() => duplicateNodes(selectedNodeIds)}
+                  />
+                  <FlowToolbarButton
+                    disabled={!hasSelection}
+                    icon={IconTrash}
+                    label={t('flows.deleteSelection')}
+                    shortcut={shortcutLabels.delete}
+                    onClick={deleteSelection}
+                  />
                   {status === 'conflict' && (
                     <>
                       <span aria-hidden className="mx-1 h-5 w-px bg-border/80" />
@@ -502,7 +729,12 @@ function FlowCanvasInner({
               </Panel>
             </ReactFlow>
           </ContextMenuTrigger>
-          <ContextMenuContent>
+          <ContextMenuContent
+            className={contextTarget.mode === 'pane'
+              ? 'max-h-[70vh] w-64'
+              : undefined}
+            showOverflowAffordance={contextTarget.mode === 'pane'}
+          >
             {contextTarget.mode === 'nodeActions'
               && contextTarget.nodeIds.length === 1
               ? (
@@ -513,6 +745,9 @@ function FlowCanvasInner({
                       >
                         <IconCopy />
                         {t('flows.duplicateNode')}
+                        <ContextMenuShortcut>
+                          {shortcutLabels.duplicate}
+                        </ContextMenuShortcut>
                       </ContextMenuItem>
                     </ContextMenuGroup>
                     <ContextMenuSeparator />
@@ -523,58 +758,58 @@ function FlowCanvasInner({
                       >
                         <IconTrash />
                         {t('flows.deleteNode')}
+                        <ContextMenuShortcut>
+                          {shortcutLabels.delete}
+                        </ContextMenuShortcut>
                       </ContextMenuItem>
                     </ContextMenuGroup>
                   </>
                 )
               : contextTarget.nodeIds.length > 0 || contextTarget.edgeIds.length > 0
                 ? (
-                    <>
-                      <ContextMenuGroup>
-                        <ContextMenuItem
-                          disabled={contextTarget.nodeIds.length < 2}
-                          onClick={() => autoFormatSelection(contextTarget.nodeIds)}
-                        >
-                          <IconHierarchy3 />
-                          {t('flows.autoFormat')}
-                        </ContextMenuItem>
-                        <ContextMenuItem
-                          disabled={contextTarget.nodeIds.length === 0}
-                          onClick={() => duplicateNodes(contextTarget.nodeIds)}
-                        >
-                          <IconCopy />
-                          {t('flows.duplicateSelection')}
-                        </ContextMenuItem>
-                      </ContextMenuGroup>
-                      <ContextMenuSeparator />
-                      <ContextMenuGroup>
-                        <ContextMenuItem
-                          variant="destructive"
-                          onClick={deleteSelection}
-                        >
-                          <IconTrash />
-                          {t('flows.deleteSelection')}
-                        </ContextMenuItem>
-                      </ContextMenuGroup>
-                    </>
+                    <FlowCanvasSelectionContextMenu
+                      canArrange={contextTarget.nodeIds.length >= 2}
+                      canDuplicate={contextTarget.nodeIds.length > 0}
+                      canFocus={contextTarget.nodeIds.length > 0
+                        || contextTarget.edgeIds.length > 0}
+                      canRun={contextTarget.nodeIds.some(nodeId => (
+                        getGenerationPreviewFingerprint(nodeId) !== null
+                        && getGenerationPreview(nodeId)?.status !== 'pending'
+                      ))}
+                      deleteShortcut={shortcutLabels.delete}
+                      duplicateShortcut={shortcutLabels.duplicate}
+                      onArrange={() => autoFormatSelection(contextTarget.nodeIds)}
+                      onDelete={deleteSelection}
+                      onDuplicate={() => duplicateNodes(contextTarget.nodeIds)}
+                      onFocus={() => focusSelection(
+                        contextTarget.nodeIds,
+                        contextTarget.edgeIds,
+                      )}
+                      onRun={() => void runGenerationSelectionPreview(
+                        contextTarget.nodeIds,
+                      )}
+                    />
                   )
                 : (
-                    <ContextMenuGroup>
-                      <ContextMenuItem onClick={selectAll}>
-                        <IconSelectAll />
-                        {t('flows.selectAll')}
-                      </ContextMenuItem>
-                      <ContextMenuItem onClick={() => void reactFlow.fitView({ duration: 300, padding: 0.2 })}>
-                        <IconFocusCentered />
-                        {t('flows.fitView')}
-                      </ContextMenuItem>
-                    </ContextMenuGroup>
+                    <FlowCanvasPaneContextMenu
+                      onAddNode={nodeType => addNode(
+                        nodeType,
+                        contextTarget.screenPosition ?? undefined,
+                      )}
+                      onFitView={() => void reactFlow.fitView({
+                        duration: 300,
+                        padding: 0.2,
+                      })}
+                      onSelectAll={selectAll}
+                      onUploadAssets={() => assetUploads.openFilePicker(
+                        contextTarget.screenPosition,
+                      )}
+                    />
                   )}
           </ContextMenuContent>
         </ContextMenu>
         <FlowCanvasDialogs
           assetPickerNodeId={assetPickerNodeId}
-          elementPickerNodeId={elementPickerNodeId}
           inputInspector={{
             inputState: inspectorState,
             open: inspector !== null,
@@ -594,7 +829,6 @@ function FlowCanvasInner({
             ? getNode(assetPickerNodeId)?.assetId ?? null
             : null}
           onAssetPickerOpenChange={open => !open && setAssetPickerNodeId(null)}
-          onElementPickerOpenChange={open => !open && setElementPickerNodeId(null)}
           onInputInspectorOpenChange={open => !open && setInspector(null)}
           onInputSelectionChange={(selection) => {
             if (inspector)
@@ -602,13 +836,8 @@ function FlowCanvasInner({
           }}
           onSelectAsset={(asset) => {
             if (assetPickerNodeId)
-              updateNodeReference(assetPickerNodeId, { assetId: asset.id, elementId: null })
+              updateNodeReference(assetPickerNodeId, { assetId: asset.id })
             setAssetPickerNodeId(null)
-          }}
-          onSelectElement={(element) => {
-            if (elementPickerNodeId)
-              updateNodeReference(elementPickerNodeId, { assetId: null, elementId: element.id })
-            setElementPickerNodeId(null)
           }}
         />
       </FlowMediaPreviewProvider>

@@ -7,7 +7,6 @@ export function canvasNodeToGraphNode(node: CanvasNode) {
   return {
     assetId: node.assetId,
     data: node.data,
-    elementId: node.elementId,
     id: node.id,
     positionX: node.position.x,
     positionY: node.position.y,
@@ -90,7 +89,6 @@ export function toCanvasNodes(nodes: FlowNode[]): CanvasNode[] {
     position: { x: node.positionX, y: node.positionY },
     data: node.data,
     assetId: node.assetId,
-    elementId: node.elementId,
     schemaVersion: node.schemaVersion,
   }))
 }
@@ -111,16 +109,24 @@ export function toPersistedGraph(
   nodes: CanvasNode[],
   edges: CanvasEdge[],
 ): PersistedCanvasGraph {
+  const persistedNodes = nodes.filter(node => !node.transient)
+  const persistedNodeIds = new Set(persistedNodes.map(node => node.id))
+
   return {
-    nodes: nodes.map(canvasNodeToGraphNode),
-    edges: edges.toSorted(compareFlowEdgesByPriority).map(edge => ({
-      createdAt: edge.data?.createdAt ?? '1970-01-01T00:00:00.000Z',
-      id: edge.id,
-      sourceNodeId: edge.source,
-      targetNodeId: edge.target,
-      sourceHandle: edge.sourceHandle ?? null,
-      targetHandle: edge.targetHandle ?? null,
-    })),
+    nodes: persistedNodes.map(canvasNodeToGraphNode),
+    edges: edges
+      .filter(edge => (
+        persistedNodeIds.has(edge.source) && persistedNodeIds.has(edge.target)
+      ))
+      .toSorted(compareFlowEdgesByPriority)
+      .map(edge => ({
+        createdAt: edge.data?.createdAt ?? '1970-01-01T00:00:00.000Z',
+        id: edge.id,
+        sourceNodeId: edge.source,
+        targetNodeId: edge.target,
+        sourceHandle: edge.sourceHandle ?? null,
+        targetHandle: edge.targetHandle ?? null,
+      })),
   }
 }
 

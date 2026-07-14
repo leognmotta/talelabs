@@ -18,9 +18,11 @@ import { useDeleteFlowMutation } from './flow.queries'
 
 export function DeleteFlowDialog({
   flow,
+  onDeleted,
   onOpenChange,
 }: {
   flow: Flow | null
+  onDeleted?: () => void
   onOpenChange: (open: boolean) => void
 }) {
   const { t } = useTranslation()
@@ -33,6 +35,7 @@ export function DeleteFlowDialog({
     try {
       await deleteFlow.mutateAsync({ id: flow.id, organizationId })
       onOpenChange(false)
+      onDeleted?.()
       toast.success(t('flows.deleted'))
     }
     catch (error) {

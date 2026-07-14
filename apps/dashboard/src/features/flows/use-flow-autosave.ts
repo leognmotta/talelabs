@@ -32,11 +32,10 @@ function graphReferencesChanged(
   const baselineNodes = new Map(baseline.nodes.map(node => [node.id, node]))
   return diff.deleteNodeIds.some((nodeId) => {
     const node = baselineNodes.get(nodeId)
-    return Boolean(node?.assetId || node?.elementId)
+    return Boolean(node?.assetId)
   }) || diff.upsertNodes.some((node) => {
     const previous = baselineNodes.get(node.id)
     return node.assetId !== previous?.assetId
-      || node.elementId !== previous?.elementId
   })
 }
 

@@ -16,6 +16,7 @@ export interface FlowCanvasContextTarget {
   edgeIds: string[]
   mode: 'nodeActions' | 'pane' | 'selection'
   nodeIds: string[]
+  screenPosition: null | { x: number, y: number }
 }
 
 export function useFlowCanvasSelection(input: {
@@ -38,6 +39,7 @@ export function useFlowCanvasSelection(input: {
     edgeIds: [],
     mode: 'pane',
     nodeIds: [],
+    screenPosition: null,
   })
 
   const clearSelection = useCallback(() => {
@@ -90,6 +92,7 @@ export function useFlowCanvasSelection(input: {
       edgeIds,
       mode: opensNodeActions ? 'nodeActions' : 'selection',
       nodeIds,
+      screenPosition: null,
     })
   }, [edgesRef, nodesRef, setEdges, setNodes, setSelectedIds])
   const handleNodeDoubleClick = useCallback<NodeMouseHandler<CanvasNode>>((event) => {
@@ -129,7 +132,12 @@ export function useFlowCanvasSelection(input: {
       })))
       setSelectedIds([], edgeIds)
     }
-    setContextTarget({ edgeIds, mode: 'selection', nodeIds })
+    setContextTarget({
+      edgeIds,
+      mode: 'selection',
+      nodeIds,
+      screenPosition: null,
+    })
   }, [edgesRef, nodesRef, setEdges, setNodes, setSelectedIds])
   const handleSelectionContextMenu = useCallback((
     _event: ReactMouseEvent<Element>,
@@ -139,18 +147,39 @@ export function useFlowCanvasSelection(input: {
       edgeIds: edgesRef.current.filter(edge => edge.selected).map(edge => edge.id),
       mode: 'selection',
       nodeIds: selectionNodes.map(node => node.id),
+      screenPosition: null,
     })
   }, [edgesRef])
-  const handlePaneContextMenu = useCallback(() => {
-    setContextTarget({ edgeIds: [], mode: 'pane', nodeIds: [] })
-  }, [])
+  const handlePaneContextMenu = useCallback((event: MouseEvent | ReactMouseEvent) => {
+    const nodeIds = nodesRef.current
+      .filter(node => node.selected)
+      .map(node => node.id)
+    const edgeIds = edgesRef.current
+      .filter(edge => edge.selected)
+      .map(edge => edge.id)
+    const hasSelection = nodeIds.length > 0 || edgeIds.length > 0
+
+    setContextTarget({
+      edgeIds,
+      mode: hasSelection ? 'selection' : 'pane',
+      nodeIds,
+      screenPosition: hasSelection
+        ? null
+        : { x: event.clientX, y: event.clientY },
+    })
+  }, [edgesRef, nodesRef])
   const selectAll = useCallback(() => {
     const nodeIds = nodesRef.current.map(node => node.id)
     const edgeIds = edgesRef.current.map(edge => edge.id)
     setNodes(current => current.map(node => ({ ...node, selected: true })))
     setEdges(current => current.map(edge => ({ ...edge, selected: true })))
     setSelectedIds(nodeIds, edgeIds)
-    setContextTarget({ edgeIds, mode: 'selection', nodeIds })
+    setContextTarget({
+      edgeIds,
+      mode: 'selection',
+      nodeIds,
+      screenPosition: null,
+    })
   }, [edgesRef, nodesRef, setEdges, setNodes, setSelectedIds])
 
   return {

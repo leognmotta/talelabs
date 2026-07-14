@@ -1,10 +1,8 @@
 import type { FlowGraphValidationContext, FlowNodeType } from '@talelabs/flows'
 import type {
   FlowEdge,
-  FlowElementAssetReference,
   FlowNode,
   FlowReferenceAsset,
-  FlowReferenceElement,
 } from '@talelabs/sdk'
 import type {
   Edge,
@@ -13,10 +11,19 @@ import type {
 
 export type CanvasNode = Node<Record<string, any>, FlowNodeType> & {
   assetId: null | string
-  elementId: null | string
   schemaVersion: number
+  transient?: {
+    kind: 'assetUpload'
+  }
 }
 export type CanvasEdge = Edge<{ createdAt: string }>
+
+export interface FlowCanvasAssetUpload {
+  asset: FlowReferenceAsset
+  previewUrl: string
+  progress: number
+  status: 'uploaded' | 'uploading'
+}
 
 export type FlowSaveStatus
   = | 'conflict'
@@ -27,12 +34,6 @@ export type FlowSaveStatus
 
 export interface FlowReferenceData extends FlowGraphValidationContext {
   assetsById: ReadonlyMap<string, FlowReferenceAsset>
-  elementKitsById: ReadonlyMap<string, FlowElementAssetLink[]>
-  elementsById: ReadonlyMap<string, FlowReferenceElement>
-}
-
-export type FlowElementAssetLink = FlowElementAssetReference & {
-  asset: FlowReferenceAsset
 }
 
 export interface FlowCandidate {
@@ -57,6 +58,44 @@ export interface FlowInputState {
   selectedAvailableCount: number
   unavailableAssetIds: string[]
 }
+
+export interface FlowGenerationPreviewDownload {
+  content: string
+  fileName: string
+  mimeType: string
+}
+
+export type FlowGenerationPreviewOutput
+  = | {
+    download: FlowGenerationPreviewDownload
+    kind: 'media'
+    mediaType: 'audio' | 'image' | 'video'
+    name: string
+    valueType: 'AudioSet' | 'ImageSet' | 'VideoSet'
+  }
+  | {
+    download: FlowGenerationPreviewDownload
+    kind: 'text'
+    name: string
+    text: string
+    valueType: 'Text'
+  }
+
+export type FlowGenerationPreview
+  = | {
+    fingerprint: string
+    status: 'pending'
+  }
+  | {
+    fingerprint: string
+    output: FlowGenerationPreviewOutput
+    status: 'succeeded'
+  }
+  | {
+    errorKey: string
+    fingerprint: string
+    status: 'error'
+  }
 
 export interface PersistedCanvasGraph {
   edges: FlowEdge[]
