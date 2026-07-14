@@ -5,6 +5,7 @@
 
 import type { Cuid2 } from "./Cuid2.ts";
 import type { FlowEdge } from "./FlowEdge.ts";
+import type { FlowLatestResult } from "./FlowLatestResult.ts";
 import type { FlowNode } from "./FlowNode.ts";
 
 export const activeRunsNodeStatusEnum = {
@@ -68,4 +69,8 @@ export type FlowGraphResponse = {
      */
     jobStatus: ActiveRunsJobStatusEnumKey | null;
   }[];
+  /**
+   * @type array
+   */
+  latestResults: FlowLatestResult[];
 };

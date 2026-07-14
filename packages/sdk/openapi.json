@@ -1922,13 +1922,20 @@
                 "jobStatus"
               ]
             }
+          },
+          "latestResults": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FlowLatestResult"
+            }
           }
         },
         "required": [
           "revision",
           "nodes",
           "edges",
-          "activeRuns"
+          "activeRuns",
+          "latestResults"
         ]
       },
       "FlowNode": {
@@ -2023,6 +2030,123 @@
           "targetNodeId",
           "sourceHandle",
           "targetHandle"
+        ]
+      },
+      "FlowLatestResult": {
+        "type": "object",
+        "properties": {
+          "nodeId": {
+            "$ref": "#/components/schemas/Cuid2"
+          },
+          "runId": {
+            "$ref": "#/components/schemas/Cuid2"
+          },
+          "runCreatedAt": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "jobs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FlowLatestResultJob"
+            }
+          }
+        },
+        "required": [
+          "nodeId",
+          "runId",
+          "runCreatedAt",
+          "jobs"
+        ]
+      },
+      "FlowLatestResultJob": {
+        "type": "object",
+        "properties": {
+          "jobId": {
+            "$ref": "#/components/schemas/Cuid2"
+          },
+          "itemKey": {
+            "type": "string"
+          },
+          "mediaType": {
+            "type": "string",
+            "enum": [
+              "text",
+              "image",
+              "video",
+              "audio"
+            ]
+          },
+          "textOutputs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FlowLatestResultTextOutput"
+            }
+          },
+          "assetOutputs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FlowLatestResultAssetOutput"
+            }
+          }
+        },
+        "required": [
+          "jobId",
+          "itemKey",
+          "mediaType",
+          "textOutputs",
+          "assetOutputs"
+        ]
+      },
+      "FlowLatestResultTextOutput": {
+        "type": "object",
+        "properties": {
+          "outputIndex": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "outputIndex",
+          "text"
+        ]
+      },
+      "FlowLatestResultAssetOutput": {
+        "type": "object",
+        "properties": {
+          "assetId": {
+            "$ref": "#/components/schemas/Cuid2"
+          },
+          "type": {
+            "$ref": "#/components/schemas/AssetType"
+          },
+          "mimeType": {
+            "type": "string"
+          },
+          "outputIndex": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "url": {
+            "type": "string",
+            "nullable": true,
+            "format": "uri"
+          },
+          "thumbnailUrl": {
+            "type": "string",
+            "nullable": true,
+            "format": "uri"
+          }
+        },
+        "required": [
+          "assetId",
+          "type",
+          "mimeType",
+          "outputIndex",
+          "url",
+          "thumbnailUrl"
         ]
       },
       "FlowGraphReferences": {

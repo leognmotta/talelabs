@@ -7,6 +7,7 @@ import * as z from "zod";
 import type { FlowGraphResponse } from "../types/FlowGraphResponse.ts";
 import { cuid2Schema } from "./cuid2Schema.ts";
 import { flowEdgeSchema } from "./flowEdgeSchema.ts";
+import { flowLatestResultSchema } from "./flowLatestResultSchema.ts";
 import { flowNodeSchema } from "./flowNodeSchema.ts";
 
 export const flowGraphResponseSchema = z.object({
@@ -39,4 +40,7 @@ export const flowGraphResponseSchema = z.object({
       ),
     }),
   ),
+  get latestResults() {
+    return z.array(flowLatestResultSchema);
+  },
 }) as unknown as z.ZodType<FlowGraphResponse>;
