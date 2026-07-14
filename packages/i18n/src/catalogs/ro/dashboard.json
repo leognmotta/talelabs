@@ -70,6 +70,7 @@
     "duplicateSelection": "Duplică selecția",
     "deleteSelection": "Șterge selecția",
     "runSelection": "Rulează selecția",
+    "runAll": "Run all",
     "undo": "Anulează",
     "redo": "Refă",
     "fitView": "Încadrează vizualizarea",
@@ -493,6 +494,9 @@
       "automatic_other": "{{count}} / {{available}} selectate · Valorile Elementului",
       "connections_one": "{{count}} conexiune",
       "connections_other": "{{count}} de conexiuni"
+    },
+    "runStatus": {
+      "failed": "Run failed"
     },
     "saveStatus": {
       "saved": "Salvat",

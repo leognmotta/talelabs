@@ -70,6 +70,7 @@
     "duplicateSelection": "Duplica selezione",
     "deleteSelection": "Elimina selezione",
     "runSelection": "Esegui selezione",
+    "runAll": "Run all",
     "undo": "Annulla",
     "redo": "Ripeti",
     "fitView": "Adatta vista",
@@ -493,6 +494,9 @@
       "automatic_other": "{{count}} / {{available}} selezionati · Valori dell’Elemento",
       "connections_one": "{{count}} collegamento",
       "connections_other": "{{count}} collegamenti"
+    },
+    "runStatus": {
+      "failed": "Run failed"
     },
     "saveStatus": {
       "saved": "Salvato",

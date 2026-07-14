@@ -70,6 +70,7 @@
     "duplicateSelection": "Selectie dupliceren",
     "deleteSelection": "Selectie verwijderen",
     "runSelection": "Selectie uitvoeren",
+    "runAll": "Run all",
     "undo": "Ongedaan maken",
     "redo": "Opnieuw",
     "fitView": "Weergave passend maken",
@@ -493,6 +494,9 @@
       "automatic_other": "{{count}} / {{available}} geselecteerd · Element-standaard",
       "connections_one": "{{count}} verbinding",
       "connections_other": "{{count}} verbindingen"
+    },
+    "runStatus": {
+      "failed": "Run failed"
     },
     "saveStatus": {
       "saved": "Opgeslagen",

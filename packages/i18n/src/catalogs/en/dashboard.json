@@ -70,6 +70,7 @@
     "duplicateSelection": "Duplicate selection",
     "deleteSelection": "Delete selection",
     "runSelection": "Run selection",
+    "runAll": "Run all",
     "undo": "Undo",
     "redo": "Redo",
     "fitView": "Fit view",
@@ -493,6 +494,9 @@
       "automatic_other": "{{count}} / {{available}} selected · Element defaults",
       "connections_one": "{{count}} connection",
       "connections_other": "{{count}} connections"
+    },
+    "runStatus": {
+      "failed": "Run failed"
     },
     "saveStatus": {
       "saved": "Saved",

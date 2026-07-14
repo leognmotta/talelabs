@@ -70,6 +70,7 @@
     "duplicateSelection": "Duplicar selección",
     "deleteSelection": "Eliminar selección",
     "runSelection": "Ejecutar selección",
+    "runAll": "Run all",
     "undo": "Deshacer",
     "redo": "Rehacer",
     "fitView": "Ajustar vista",
@@ -493,6 +494,9 @@
       "automatic_other": "{{count}} / {{available}} seleccionadas · Valores del Elemento",
       "connections_one": "{{count}} conexión",
       "connections_other": "{{count}} conexiones"
+    },
+    "runStatus": {
+      "failed": "Run failed"
     },
     "saveStatus": {
       "saved": "Guardado",
