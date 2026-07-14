@@ -12,14 +12,16 @@
   },
   "iconLibrary": "tabler",
   "rtl": false,
-  "aliases": {
-    "components": "@/components",
-    "hooks": "@/hooks",
-    "lib": "@/lib",
-    "utils": "@talelabs/ui/lib/utils",
-    "ui": "@talelabs/ui/components"
-  },
   "menuColor": "default",
   "menuAccent": "subtle",
-  "registries": {}
+  "aliases": {
+    "components": "@/components",
+    "utils": "@talelabs/ui/lib/utils",
+    "ui": "@talelabs/ui/components",
+    "lib": "@/lib",
+    "hooks": "@/hooks"
+  },
+  "registries": {
+    "@magicui": "https://magicui.design/r/{name}"
+  }
 }
