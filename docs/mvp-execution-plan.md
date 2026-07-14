@@ -119,7 +119,7 @@ explicit user decision after exercising the product.
 | M2: Assets | Complete | Private media is durable, processed, searchable, organized, and reusable. |
 | M3: Canvas foundation | Implemented, refining | Flows persist and reopen with typed manual graph editing. |
 | M4: Canvas product reset | Complete, user approved | Every approved creative node is model-adaptive and its canvas UX is accepted. |
-| M5: Provider-independent run engine | Active - implementation not started | Durable runs execute real canvas inputs through deterministic mock adapters and persist canonical output Assets. |
+| M5: Provider-independent run engine | Active - implementation and review in progress | Durable runs execute real canvas inputs through deterministic mock adapters and persist canonical output Assets. |
 | M6: Provider integration | Pending | One real provider path creates a canonical Asset end to end. |
 | M7: MVP candidate | Pending | Reliability, tenancy, staging, and user acceptance gates pass. |
 
@@ -306,11 +306,12 @@ provider result boundary is mocked. The mock engine must use the same admission,
 planning, persistence, orchestration, ingestion, status, and provenance path
 that M6 provider adapters will use.
 
-**Current implementation status (2026-07-14): not started.** The existing Run
-button invokes an ephemeral browser-only M4 preview. It does not create a
-`flowRuns` row, call a run API, dispatch Trigger.dev, persist a generation job,
-produce a canonical output Asset, or expose durable queued/running/completed
-state. That preview is useful for validating node UX but is not M5 acceptance.
+**Current implementation status (2026-07-14): implementation and review in
+progress.** Durable run admission, immutable snapshots, Trigger.dev
+orchestration, deterministic mock generation, canonical output Assets, status
+hydration, cancellation, reconciliation, and first dashboard bindings exist and
+are under correction review. M5 is not accepted until the remaining review
+findings and user-owned run QA are complete.
 
 Implement M5 through these reviewable checkpoints, in order:
 
