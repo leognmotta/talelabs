@@ -137,7 +137,7 @@ The approved execution commands are:
 Run node       = execute only one target executable node
 Run from here  = execute the target and its executable descendants
 Run till here  = execute the target and its executable ancestors
-Run selection  = execute selected nodes plus their required upstream closure
+Run selection  = execute selected executable nodes only, reusing prior upstream outputs
 Run all        = execute every executable node in the Flow
 ```
 

@@ -182,15 +182,17 @@ Static Text and Asset nodes participate as immutable sources without jobs.
 
 ### `selection` - Run selection
 
-Execute selected executable nodes plus the minimum required executable upstream
-closure.
+Execute selected executable nodes only. Required upstream executable values are
+resolved from pinned/latest prior outputs; unselected executable ancestors are
+not silently added to the run.
 
 - Ignore selected edges for execution semantics.
 - Reject an empty selection or one containing no executable node.
-- Return selected count, planned count, and inclusion reasons so dependency
-  expansion is visible before admission.
+- Return selected count, planned count, and inclusion reasons.
+- Missing prior upstream outputs reject preflight/admission instead of
+  regenerating ancestors.
 - The browser uses React Flow selection hooks for UX only. The API recomputes
-  the closure from the saved revision.
+  the selected executable set from the saved revision.
 
 ### `all` - Run all
 
@@ -282,7 +284,7 @@ The snapshot is bounded, versioned, insert-only JSONB. It freezes:
 
 - snapshot and canonical-serializer versions;
 - saved Flow ID and revision;
-- requested command, target/selection, expanded closure, and inclusion reasons;
+- requested command, target/selection, planned executable set, and inclusion reasons;
 - normalized executable nodes and deterministic edge/source order;
 - model IDs, contract versions/hashes, derived operations, and settings;
 - topological levels and control-node/item-expansion rules;
@@ -804,7 +806,7 @@ Gate:
 
 - fresh migration and upgrade-from-current both succeed;
 - same input produces the same plan/hash;
-- disconnected `all`, dependency-expanded selection, cycles, missing prior
+- disconnected `all`, selected-only selection, cycles, missing prior
   outputs, and safety-limit failures are deterministic.
 
 ### M5.2 - Preflight and immutable admission

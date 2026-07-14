@@ -1085,16 +1085,16 @@ resolution but do not create provider jobs by themselves:
 node        Run node       target executable node only; resolve required sources
 downstream  Run from here  target plus executable descendants
 upstream    Run till here  target plus executable ancestors needed to reach it
-selection   Run selection  selected executable nodes plus their minimum required
-                           executable upstream dependency closure
+selection   Run selection  selected executable nodes only; resolve unselected
+                           executable ancestors from prior outputs
 all         Run all        every executable node in the saved Flow
 ```
 
-`Run selection` must preview the actual planned executable-node count before
-admission whenever its dependency closure adds nodes that were not selected.
+`Run selection` must not regenerate unselected ancestors. Missing required prior
+outputs reject preflight/admission instead of silently adding dependency jobs.
 Selected edges and non-executable nodes alone do not make the command available.
-The node toolbar owns `node`, `downstream`, and `upstream`; the main canvas action
-bar owns `all`; the selection context menu owns `selection`.
+The node toolbar owns `node`, `downstream`, and `upstream`; the main canvas
+action bar owns `all`; the selection context menu owns `selection`.
 
 Planning stages:
 

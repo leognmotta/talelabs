@@ -714,7 +714,7 @@ All execution remains explicit and manual:
 Run node       = only the target node
 Run from here  = target plus descendants
 Run till here  = target plus ancestors
-Run selection  = selected nodes plus required upstream closure
+Run selection  = selected executable nodes only, reusing prior upstream outputs
 Run all        = every executable node
 ```
 
