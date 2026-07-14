@@ -69,7 +69,11 @@
     "deleteNode": "Usuń węzeł",
     "duplicateSelection": "Duplikuj zaznaczenie",
     "deleteSelection": "Usuń zaznaczenie",
+    "runSelection": "Uruchom zaznaczenie",
+    "undo": "Cofnij",
+    "redo": "Ponów",
     "fitView": "Dopasuj widok",
+    "focusSelection": "Wyśrodkuj zaznaczenie",
     "autoFormat": "Rozmieść automatycznie",
     "selectAll": "Zaznacz wszystko",
     "connectionRejected": "Tych złączy nie można połączyć.",
@@ -88,7 +92,13 @@
       "unlock": "Odblokuj węzeł",
       "fullscreen": "Wyświetl na pełnym ekranie",
       "fullscreenFailed": "Nie udało się otworzyć widoku pełnoekranowego.",
-      "crop": "Przytnij obraz"
+      "crop": "Przytnij obraz",
+      "run": "Uruchom",
+      "runOptions": "Opcje uruchamiania",
+      "runFromHere": "Uruchom od tego miejsca",
+      "runFromHereDescription": "Uruchamia ten węzeł i kolejne węzły.",
+      "runTillHere": "Uruchom do tego miejsca",
+      "runTillHereDescription": "Uruchamia ten węzeł i wszystkie węzły do niego prowadzące."
     },
     "cropEditor": {
       "label": "Edytor przycinania obrazu",
@@ -105,9 +115,10 @@
     "modelPicker": {
       "searchLabel": "Szukaj modeli",
       "searchPlaceholder": "Szukaj modeli...",
-      "noResults": "Nie znaleziono modeli"
+      "noResults": "Nie znaleziono modeli",
+      "recommended": "Polecany"
     },
-    "textContent": "Treść tekstu",
+    "textContent": "Treść promptu",
     "textPlaceholder": "Opisz scenę, kierunek lub pomysł kreatywny...",
     "characterCount": "{{count}} / 16 000",
     "chooseAsset": "Wybierz Asset",
@@ -119,27 +130,40 @@
     "assetCount_one": "{{count}} Asset",
     "assetCount_other": "{{count}} Assets",
     "nodes": {
-      "text": "Tekst",
+      "text": "Prompt",
       "asset": "Asset",
       "element": "Element",
       "imageGeneration": "Generowanie obrazu",
+      "llm": "LLM",
       "videoGeneration": "Generowanie wideo",
-      "audioGeneration": "Generowanie dźwięku"
+      "audioGeneration": "Generowanie dźwięku",
+      "musicGeneration": "Generowanie muzyki",
+      "soundEffectGeneration": "Generowanie efektów dźwiękowych",
+      "speechGeneration": "Generowanie mowy",
+      "voiceChanger": "Zmiana głosu",
+      "voiceIsolation": "Izolowanie głosu"
     },
     "nodePicker": {
       "searchPlaceholder": "Szukaj węzłów",
       "noResults": "Nie znaleziono węzłów",
       "groups": {
         "inputs": "Dane wejściowe",
-        "generation": "Generowanie"
+        "generation": "Generowanie",
+        "transform": "Przekształcanie"
       },
       "descriptions": {
-        "text": "Twórz prompty i tekst wielokrotnego użytku.",
+        "text": "Napisz prompt do ponownego użycia.",
         "asset": "Dodaj obrazy, filmy, dźwięk lub dokumenty.",
         "element": "Dodaj kontekst kreatywny wielokrotnego użytku.",
         "imageGeneration": "Skonfiguruj etap generowania obrazu.",
+        "llm": "Przekształcaj tekst i analizuj obrazy za pomocą LLM.",
         "videoGeneration": "Skonfiguruj krok generowania wideo.",
-        "audioGeneration": "Skonfiguruj krok generowania dźwięku."
+        "audioGeneration": "Skonfiguruj krok generowania dźwięku.",
+        "musicGeneration": "Utwórz piosenkę, ścieżkę dźwiękową, sygnał lub podkład.",
+        "soundEffectGeneration": "Utwórz Foley, uderzenia, przejścia, tekstury lub atmosferę.",
+        "speechGeneration": "Zamień scenariusz w naturalną mowę.",
+        "voiceChanger": "Zachowaj wykonanie, zmieniając głos mówiącej osoby.",
+        "voiceIsolation": "Oczyść mowę z zaszumionego audio lub wideo."
       }
     },
     "outputs": {
@@ -159,15 +183,67 @@
       "output": "Wyjście: {{output}}"
     },
     "models": {
+      "nanoBanana2Lite": "Nano Banana 2 Lite",
+      "nanoBanana2": "Nano Banana 2",
+      "nanoBananaPro": "Nano Banana Pro",
       "gptImage15": "GPT Image 1.5",
+      "gptImage2": "GPT Image 2",
+      "gemini31FlashLite": "Gemini 3.1 Flash Lite",
+      "claudeSonnet46": "Claude Sonnet 4.6",
+      "gpt54": "GPT-5.4",
+      "gemini31Pro": "Gemini 3.1 Pro",
+      "deepseekV32": "DeepSeek V3.2",
+      "mistralLarge3": "Mistral Large 3",
+      "seedream45": "Seedream 4.5",
+      "flux2Pro": "FLUX.2 Pro",
+      "recraft41": "Recraft 4.1",
       "veo31": "Veo 3.1",
+      "veo31Lite": "Veo 3.1 Lite",
+      "grokImagineVideo": "Grok Imagine Video",
+      "seedance20": "Seedance 2.0",
       "ltx23Pro": "LTX 2.3 Pro",
       "elevenMultilingualV2": "Eleven Multilingual v2",
-      "elevenSoundEffectsV2": "Eleven Sound Effects v2"
+      "elevenSoundEffectsV2": "Eleven Sound Effects v2",
+      "elevenMusicV2": "Eleven Music v2",
+      "elevenVoiceChanger": "Eleven Voice Changer",
+      "elevenVoiceIsolator": "Eleven Voice Isolator",
+      "gpt4oMiniTts": "GPT-4o mini TTS",
+      "stableAudio25": "Stable Audio 2.5"
+    },
+    "modelDescriptions": {
+      "nanoBanana2Lite": "Szybkie, ekonomiczne generowanie i edycja obrazów na dużą skalę.",
+      "nanoBanana2": "Wszechstronne tworzenie obrazów 4K z czytelnym tekstem i spójnymi referencjami.",
+      "nanoBananaPro": "Precyzyjne profesjonalne materiały do złożonych instrukcji i pracy zgodnej z marką.",
+      "gptImage15": "Niezawodne generowanie i edycja obrazów z obsługą materiałów referencyjnych.",
+      "gptImage2": "Wysokiej jakości generowanie i edycja obrazów z dużą wiernością referencjom.",
+      "gemini31FlashLite": "Szybkie i ekonomiczne rozumienie tekstu i obrazów do codziennej pracy twórczej.",
+      "claudeSonnet46": "Precyzyjne pisanie i analiza wizualna dla złożonych wytycznych kreatywnych.",
+      "gpt54": "Dokładne wykonywanie instrukcji przy tworzeniu dopracowanych tekstów i analizie obrazów.",
+      "gemini31Pro": "Zaawansowane rozumowanie multimodalne do wymagających analiz kreatywnych.",
+      "deepseekV32": "Sprawne przekształcanie tekstu i uporządkowane pisanie kreatywne.",
+      "mistralLarge3": "Wszechstronne pisanie wielojęzyczne i rozumienie obrazów bez sterowania rozumowaniem.",
+      "seedream45": "Wierna edycja wielu obrazów z rozbudowaną kontrolą typografii i układu.",
+      "flux2Pro": "Fotorealistyczna edycja na skalę produkcyjną z precyzyjną kontrolą wielu referencji.",
+      "recraft41": "Dopracowany design, fotorealizm i ilustracje tworzone z krótkich promptów.",
+      "veo31": "Filmowe wideo wysokiej jakości z natywnym dźwiękiem i zaawansowaną kontrolą przez referencje.",
+      "veo31Lite": "Szybsze generowanie Veo do codziennych promptów i animacji na podstawie klatek.",
+      "grokImagineVideo": "Szybkie tworzenie wideo z promptów, klatek początkowych i obrazów referencyjnych.",
+      "seedance20": "Reżyserska kontrola z użyciem referencji obrazu, wideo i dźwięku.",
+      "ltx23Pro": "Wyraźne wideo 1080p z ruchem precyzyjnie sterowanym przez dźwięk referencyjny.",
+      "elevenMultilingualV2": "Naturalna, spójna mowa do długich treści w 29 językach.",
+      "elevenSoundEffectsV2": "Filmowe efekty, foley, tła dźwiękowe i płynne pętle audio.",
+      "elevenMusicV2": "Naturalna muzyka z instrukcji, z elastycznym czasem i kontrolą instrumentalną.",
+      "elevenVoiceChanger": "Transformacja głosu z zachowaniem oryginalnego wykonania.",
+      "elevenVoiceIsolator": "Ukierunkowane oczyszczanie mowy w zaszumionych nagraniach.",
+      "gpt4oMiniTts": "Ekspresyjna mowa z kontrolą głosu, tempa i wykonania.",
+      "stableAudio25": "Dłuższa muzyka i projektowanie dźwięku z kontrolą czasu, ziarna i zgodności z instrukcją."
     },
     "inputs": {
       "prompt": "Prompt",
       "promptDescription": "Instrukcje tekstowe do generowania.",
+      "instructions": "Instrukcje",
+      "instructionsDescription": "Opcjonalne wytyczne systemowe dla odpowiedzi.",
+      "llmImageReferencesDescription": "Do ośmiu obrazów analizowanych razem w jednym uruchomieniu.",
       "context": "Kontekst Elementu",
       "contextDescription": "Wielokrotnego użytku wskazówki Elementu.",
       "references": "Materiały referencyjne",
@@ -176,11 +252,26 @@
       "firstFrameDescription": "Obraz używany jako pierwsza klatka wideo.",
       "lastFrame": "Ostatnia klatka",
       "lastFrameDescription": "Obraz używany jako ostatnia klatka wideo.",
+      "imageReferences": "Obrazy referencyjne",
+      "imageReferencesDescription": "Obrazy używane jako wskazówki wizualne.",
+      "videoReferences": "Wideo referencyjne",
+      "videoReferencesDescription": "Wideo używane jako wskazówki ruchu.",
+      "audioReferences": "Dźwięk referencyjny",
+      "audioReferencesDescription": "Dźwięk używany jako wskazówka rytmu lub ruchu.",
       "referenceAudio": "Dźwięk referencyjny",
-      "referenceAudioDescription": "Dźwięk jako odniesienie dla głosu lub ruchu."
+      "referenceAudioDescription": "Dźwięk jako odniesienie dla głosu lub ruchu.",
+      "referenceVideo": "Wideo referencyjne",
+      "referenceVideoDescription": "Wideo używane jako odniesienie dla ruchu lub przedłużenia.",
+      "script": "Scenariusz",
+      "scriptDescription": "Tekst wypowiadany jako narracja lub dialog.",
+      "lyrics": "Tekst utworu",
+      "lyricsDescription": "Opcjonalny tekst utworu tylko dla obsługiwanych modeli muzycznych.",
+      "sourceMedia": "Media źródłowe",
+      "sourceMediaDescription": "Jeden element audio lub wideo z oryginalnym wykonaniem."
     },
     "settings": {
       "label": "Ustawienia",
+      "advanced": "Ustawienia zaawansowane",
       "aspectRatio": "Proporcje",
       "aspectRatios": {
         "square": "Kwadrat",
@@ -192,12 +283,46 @@
       },
       "outputCount": "Wyniki",
       "quality": "Jakość",
+      "background": "Tło",
+      "backgrounds": {
+        "auto": "Automatyczne",
+        "opaque": "Nieprzezroczyste"
+      },
+      "outputFormat": "Format wyjściowy",
+      "outputFormats": {
+        "png": "PNG",
+        "jpeg": "JPEG",
+        "mp3": "MP3",
+        "wav": "WAV"
+      },
       "resolution": "Rozdzielczość",
       "duration": "Czas trwania",
+      "generateAudio": "Generuj dźwięk",
       "stability": "Stabilność",
       "voiceId": "Identyfikator głosu",
       "loop": "Zapętlenie",
       "promptInfluence": "Wpływ promptu",
+      "responseLength": "Długość odpowiedzi",
+      "responseLengthDescription": "Docelowa maksymalna długość; model może odpowiedzieć krócej.",
+      "responseLengths": {
+        "auto": "Automatyczna",
+        "short": "Krótka",
+        "medium": "Średnia",
+        "long": "Długa"
+      },
+      "reasoning": "Rozumowanie",
+      "reasoningDescription": "Wybierz, ile rozumowania może użyć model.",
+      "reasoningMandatoryDescription": "Ten model zawsze rozumuje; wybierz poziom wysiłku.",
+      "reasoningModes": {
+        "off": "Wyłączone",
+        "auto": "Automatyczne",
+        "minimal": "Minimalne",
+        "low": "Niskie",
+        "medium": "Średnie",
+        "high": "Wysokie",
+        "max": "Maksymalne",
+        "xhigh": "Bardzo wysokie"
+      },
       "qualities": {
         "auto": "Automatyczna",
         "low": "Niska",
@@ -205,16 +330,158 @@
         "high": "Wysoka"
       },
       "durations": {
+        "seconds1": "1 sekunda",
+        "seconds3": "3 sekundy",
         "seconds4": "4 sekund",
         "seconds6": "6 sekund",
         "seconds8": "8 sekund",
-        "seconds10": "10 sekund"
+        "seconds10": "10 sekund",
+        "seconds12": "12 sekund",
+        "seconds15": "15 sekund"
       },
       "resolutions": {
+        "512": "512 px",
+        "1k": "1K",
+        "2k": "2K",
+        "480p": "480p",
         "720p": "720p",
         "1080p": "1080p",
         "1440p": "1440p",
         "4k": "4K"
+      },
+      "durationMode": "Tryb czasu trwania",
+      "durationModes": {
+        "auto": "Automatyczny",
+        "custom": "Niestandardowy"
+      },
+      "voice": "Głos",
+      "speed": "Szybkość",
+      "delivery": "Sposób wykonania",
+      "instrumental": "Instrumentalny",
+      "removeBackgroundNoise": "Usuń szum tła",
+      "voices": {
+        "elevenAntoni": "Antoni",
+        "elevenDomi": "Domi",
+        "elevenJosh": "Josh",
+        "elevenRachel": "Rachel",
+        "openaiCedar": "Cedar",
+        "openaiCoral": "Coral",
+        "openaiMarin": "Marin",
+        "openaiVerse": "Verse"
+      },
+      "seed": "Ziarno"
+    },
+    "image": {
+      "inputs": {
+        "railLabel": "Dane wejściowe generowania obrazów",
+        "limitReached": "Osiągnięto limit modelu wynoszący {{count}} obrazów.",
+        "connectionLimitReached": "To wejście osiągnęło limit połączeń.",
+        "selectedCount": "Wybrano {{count}} z {{maximum}}",
+        "inspect": "Sprawdź {{input}}"
+      },
+      "prompt": {
+        "label": "Prompt obrazu",
+        "placeholder": "Opisz temat, kompozycję, światło i styl...",
+        "externalAuthoritative": "Używany jest połączony tekst. Wewnętrzna wersja robocza zostaje zachowana."
+      },
+      "preview": {
+        "label": "Podgląd obrazu oczekującego na wygenerowanie",
+        "outputCount_one": "Jeden obraz wyjściowy",
+        "outputCount_other": "{{count}} obrazu wyjściowego"
+      },
+      "readiness": {
+        "ready": "Gotowe do wygenerowania",
+        "incomplete": "Dodaj prompt",
+        "invalid": "Popraw nieprawidłową konfigurację",
+        "unsupportedCombination": "Ten model nie obsługuje tej kombinacji danych wejściowych."
+      },
+      "modelChange": {
+        "reconciled_one": "Zresetowano jedno niezgodne wejście lub ustawienie.",
+        "reconciled_other": "Zresetowano {{count}} niezgodnego wejścia lub ustawienia."
+      }
+    },
+    "video": {
+      "inputs": {
+        "railLabel": "Wejścia generowania wideo",
+        "limitReached": "To wejście osiągnęło limit modelu.",
+        "disconnectReferences": "Odłącz materiały referencyjne, aby użyć klatek.",
+        "disconnectFrames": "Odłącz klatki, aby użyć materiałów referencyjnych.",
+        "disconnectIncompatible": "Najpierw odłącz niezgodne wejście.",
+        "connectedCount_one": "{{count}} połączenie",
+        "connectedCount_other": "{{count}} połączenia"
+      },
+      "prompt": {
+        "label": "Prompt wideo",
+        "placeholder": "Opisz ruch, kamerę i atmosferę...",
+        "externalAuthoritative": "Zostanie użyty połączony tekst. Wewnętrzna wersja robocza pozostaje zachowana."
+      },
+      "preview": {
+        "label": "Podgląd wideo oczekuje na wygenerowanie"
+      },
+      "readiness": {
+        "ready": "Gotowe do generowania",
+        "incomplete": "Dodaj wymagane wejścia",
+        "invalid": "Rozwiąż konflikt wejść",
+        "frameReferenceConflict": "Nie można jednocześnie używać klatek i materiałów referencyjnych.",
+        "ambiguous": "Połączone wejścia nie wyznaczają jednego trybu wideo.",
+        "unsupportedCombination": "Ten model nie obsługuje tej kombinacji wejść."
+      }
+    },
+    "llm": {
+      "category": "Modele językowe",
+      "inputs": {
+        "railLabel": "Wejścia LLM",
+        "imageLimitReached": "Osiągnięto limit {{maximum}} obrazów.",
+        "connectionLimitReached": "To wejście ma już jedyne dozwolone połączenie.",
+        "selectedImages": "Wybrano {{count}} z {{maximum}} obrazów",
+        "connectedCount_one": "{{count}} połączenie",
+        "connectedCount_other": "{{count}} połączeń",
+        "inspectImages": "Sprawdź obrazy referencyjne"
+      },
+      "prompt": {
+        "label": "Prompt",
+        "placeholder": "Poproś o tekst, analizę, pomysły lub przekształcenie do ponownego użycia...",
+        "externalAuthoritative": "Używany jest połączony tekst. Wewnętrzny szkic zostaje zachowany."
+      },
+      "instructions": {
+        "label": "Instrukcje systemowe",
+        "placeholder": "Określ rolę, ton, ograniczenia lub format odpowiedzi...",
+        "description": "Opcjonalne wytyczne stosowane niezależnie od promptu.",
+        "externalAuthoritative": "Używane są połączone instrukcje. Wewnętrzny szkic zostaje zachowany."
+      },
+      "preview": {
+        "mockBadge": "Symulowany podgląd",
+        "empty": "Uruchom ten węzeł, aby utworzyć deterministyczny podgląd tekstu.",
+        "pending": "Tworzenie podglądu...",
+        "stale": "Wejścia się zmieniły. Uruchom ponownie, aby odświeżyć wynik.",
+        "error": "Nie udało się utworzyć symulowanego podglądu.",
+        "openFull": "Otwórz pełny wynik tekstowy w inspektorze",
+        "copy": "Kopiuj pełny wynik",
+        "copySuccess": "Tekst skopiowany",
+        "copyFailed": "Nie udało się skopiować tekstu",
+        "fullResult": "Pełny wynik"
+      },
+      "readiness": {
+        "ready": "Gotowe do uruchomienia",
+        "incomplete": "Dodaj prompt",
+        "invalid": "Napraw nieprawidłową konfigurację",
+        "unsupportedCombination": "Ten model nie obsługuje połączonych wejść."
+      },
+      "summary": {
+        "title": "Wejścia i wyjście"
+      },
+      "modelChange": {
+        "title": "Zmienić model LLM?",
+        "description": "Zmiana na {{model}} wymaga następujących zmian:",
+        "removeConnection": "Usuń połączenie z {{source}} do {{input}}.",
+        "resetReasoning": "Zresetuj rozumowanie z {{from}} na {{to}}.",
+        "notApplicable": "Niedostępne",
+        "confirm": "Zastosuj zmiany"
+      },
+      "mock": {
+        "output_one": "Symulowana odpowiedź dla „{{prompt}}” z {{count}} obrazem.",
+        "output_other": "Symulowana odpowiedź dla „{{prompt}}” z {{count}} obrazami.",
+        "instructionsApplied": "Zastosowane instrukcje: {{instructions}}"
       }
     },
     "inputStates": {
@@ -291,10 +558,22 @@
       "imageToVideoDescription": "Animuj pierwszą klatkę w wideo.",
       "audioToVideo": "Dźwięk na wideo",
       "audioToVideoDescription": "Generuj ruch wideo z dźwięku i opcjonalnej klatki.",
+      "extendVideo": "Przedłuż wideo",
+      "extendVideoDescription": "Kontynuuj istniejące wideo z opcjonalnymi instrukcjami.",
       "textToSpeech": "Tekst na mowę",
       "textToSpeechDescription": "Twórz mowę z tekstu z opcjonalnym głosem referencyjnym.",
       "textToSoundEffect": "Tekst na efekt dźwiękowy",
-      "textToSoundEffectDescription": "Twórz efekt dźwiękowy z opisu tekstowego."
+      "textToSoundEffectDescription": "Twórz efekt dźwiękowy z opisu tekstowego.",
+      "textToText": "Tekst na tekst",
+      "textToTextDescription": "Przekształć jedną wartość tekstową w inny tekst do ponownego użycia.",
+      "visionToText": "Obrazy na tekst",
+      "visionToTextDescription": "Analizuj obrazy razem z promptem tekstowym.",
+      "textToMusic": "Tekst na muzykę",
+      "textToMusicDescription": "Utwórz muzykę na podstawie kreatywnej instrukcji tekstowej.",
+      "changeVoice": "Zmień głos",
+      "changeVoiceDescription": "Zachowaj wykonanie, zmieniając głos.",
+      "isolateVoice": "Izoluj głos",
+      "isolateVoiceDescription": "Usuń szum tła i zwróć oczyszczoną mowę."
     },
     "constraints": {
       "lastFrameRequiresFirstFrame": "Połącz pierwszą klatkę przed użyciem ostatniej.",
@@ -304,6 +583,45 @@
     },
     "nodeMedia": {
       "play": "Odtwórz {{name}}"
+    },
+    "audio": {
+      "category": "Modele audio",
+      "inputs": {
+        "railLabel": "Wejścia węzła audio",
+        "limitReached": "To wejście osiągnęło limit modelu.",
+        "selectedCount": "Wybrano {{count}} element multimedialny",
+        "inspect": "Sprawdź {{input}}",
+        "connectedMedia": "Połączone media"
+      },
+      "prompt": {
+        "externalAuthoritative": "Używany jest połączony tekst. Wersja robocza w polu zostaje zachowana."
+      },
+      "lyrics": {
+        "externalAuthoritative": "Używany jest połączony tekst utworu. Wersja robocza w polu zostaje zachowana."
+      },
+      "preview": {
+        "label": "Podgląd audio oczekuje na generowanie"
+      },
+      "readiness": {
+        "ready": "Gotowe do generowania",
+        "incomplete": "Dodaj wymagane wejścia",
+        "invalid": "Popraw nieprawidłową konfigurację",
+        "unsupportedCombination": "Ten model nie obsługuje tej kombinacji wejść."
+      },
+      "speech": {
+        "scriptLabel": "Scenariusz",
+        "scriptPlaceholder": "Napisz narrację lub dialog..."
+      },
+      "music": {
+        "promptLabel": "Instrukcja muzyczna",
+        "promptPlaceholder": "Opisz gatunek, nastrój, strukturę, instrumenty i energię...",
+        "lyricsLabel": "Tekst utworu",
+        "lyricsPlaceholder": "Napisz zwrotki, refren lub wskazówki wokalne..."
+      },
+      "soundEffect": {
+        "promptLabel": "Opis dźwięku",
+        "promptPlaceholder": "Opisz efekt, Foley, uderzenie, teksturę lub atmosferę..."
+      }
     }
   },
   "assets": {

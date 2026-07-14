@@ -5,25 +5,36 @@ import { FlowNodeToolbar } from '../flow-node-toolbar'
 export function FlowNodeShell({
   children,
   className,
+  contentClassName,
   footer,
   headerAction,
   icon: Icon,
+  generationReadiness,
   nodeId,
   selected,
   title,
+  titleMeta,
 }: {
   children: ReactNode
   className?: string
+  contentClassName?: string
   footer?: ReactNode
+  generationReadiness?: 'incomplete' | 'invalid' | 'ready'
   headerAction?: ReactNode
   icon: ComponentType<{ className?: string }>
   nodeId: string
   selected: boolean
   title: string
+  titleMeta?: string
 }) {
+  const fullTitle = titleMeta ? `${title} · ${titleMeta}` : title
+
   return (
     <>
-      <FlowNodeToolbar nodeId={nodeId} />
+      <FlowNodeToolbar
+        generationReadiness={generationReadiness}
+        nodeId={nodeId}
+      />
       <div
         data-flow-node-shell
         data-selected={selected}
@@ -47,14 +58,32 @@ export function FlowNodeShell({
         >
           <Icon className="size-3.5 shrink-0 text-muted-foreground" />
           <span
-            className="min-w-0 flex-1 truncate text-[13px] font-semibold"
-            title={title}
+            className="min-w-0 flex-1 truncate text-[13px]"
+            title={fullTitle}
           >
-            {title}
+            <span className="font-semibold">{title}</span>
+            {titleMeta
+              ? (
+                  <span className="font-normal text-muted-foreground">
+                    <span aria-hidden> · </span>
+                    {titleMeta}
+                  </span>
+                )
+              : null}
           </span>
           {headerAction}
         </div>
-        <div className="flex flex-col gap-2.5 p-3">{children}</div>
+        <div
+          className={cn(
+            'flex flex-col gap-2.5 p-3',
+            !footer && 'overflow-hidden rounded-b-[calc(var(--radius-xl)-1px)]',
+            contentClassName,
+          )}
+          data-flow-node-content
+          data-terminal={!footer || undefined}
+        >
+          {children}
+        </div>
         {footer
           ? (
               <div className="relative border-t border-border/70 px-3 py-2">

@@ -69,7 +69,11 @@
     "deleteNode": "Knoop verwijderen",
     "duplicateSelection": "Selectie dupliceren",
     "deleteSelection": "Selectie verwijderen",
+    "runSelection": "Selectie uitvoeren",
+    "undo": "Ongedaan maken",
+    "redo": "Opnieuw",
     "fitView": "Weergave passend maken",
+    "focusSelection": "Selectie centreren",
     "autoFormat": "Automatisch rangschikken",
     "selectAll": "Alles selecteren",
     "connectionRejected": "Deze aansluitingen kunnen niet worden verbonden.",
@@ -88,7 +92,13 @@
       "unlock": "Knooppunt ontgrendelen",
       "fullscreen": "Op volledig scherm weergeven",
       "fullscreenFailed": "Volledig scherm kon niet worden geopend.",
-      "crop": "Afbeelding bijsnijden"
+      "crop": "Afbeelding bijsnijden",
+      "run": "Uitvoeren",
+      "runOptions": "Uitvoeropties",
+      "runFromHere": "Vanaf hier uitvoeren",
+      "runFromHereDescription": "Voert dit knooppunt en de daaropvolgende knooppunten uit.",
+      "runTillHere": "Tot hier uitvoeren",
+      "runTillHereDescription": "Voert dit knooppunt en alle knooppunten die ernaartoe leiden uit."
     },
     "cropEditor": {
       "label": "Editor voor afbeeldingsuitsnede",
@@ -105,9 +115,10 @@
     "modelPicker": {
       "searchLabel": "Modellen zoeken",
       "searchPlaceholder": "Modellen zoeken...",
-      "noResults": "Geen modellen gevonden"
+      "noResults": "Geen modellen gevonden",
+      "recommended": "Aanbevolen"
     },
-    "textContent": "Tekstinhoud",
+    "textContent": "Promptinhoud",
     "textPlaceholder": "Beschrijf de scène, regie of het creatieve idee...",
     "characterCount": "{{count}} / 16.000",
     "chooseAsset": "Asset kiezen",
@@ -119,27 +130,40 @@
     "assetCount_one": "{{count}} Asset",
     "assetCount_other": "{{count}} Assets",
     "nodes": {
-      "text": "Tekst",
+      "text": "Prompt",
       "asset": "Asset",
       "element": "Element",
       "imageGeneration": "Afbeeldingen genereren",
+      "llm": "LLM",
       "videoGeneration": "Video genereren",
-      "audioGeneration": "Audio genereren"
+      "audioGeneration": "Audio genereren",
+      "musicGeneration": "Muziek genereren",
+      "soundEffectGeneration": "Geluidseffect genereren",
+      "speechGeneration": "Spraak genereren",
+      "voiceChanger": "Stem wijzigen",
+      "voiceIsolation": "Stem isoleren"
     },
     "nodePicker": {
       "searchPlaceholder": "Knopen zoeken",
       "noResults": "Geen knopen gevonden",
       "groups": {
         "inputs": "Invoer",
-        "generation": "Generatie"
+        "generation": "Generatie",
+        "transform": "Transformeren"
       },
       "descriptions": {
-        "text": "Schrijf prompts en herbruikbare tekst.",
+        "text": "Schrijf een herbruikbare prompt.",
         "asset": "Voeg afbeeldingen, video, audio of documenten toe.",
         "element": "Voeg herbruikbare creatieve context toe.",
         "imageGeneration": "Configureer een stap voor afbeeldingsgeneratie.",
+        "llm": "Transformeer tekst en analyseer afbeeldingen met een LLM.",
         "videoGeneration": "Configureer een stap voor videogeneratie.",
-        "audioGeneration": "Configureer een stap voor audiogeneratie."
+        "audioGeneration": "Configureer een stap voor audiogeneratie.",
+        "musicGeneration": "Maak een nummer, soundtrack, jingle of muzikale achtergrond.",
+        "soundEffectGeneration": "Maak Foley, impacts, overgangen, texturen of sfeer.",
+        "speechGeneration": "Zet een script om in natuurlijke spraak.",
+        "voiceChanger": "Behoud de uitvoering terwijl je de stem wijzigt.",
+        "voiceIsolation": "Maak gesproken stem schoon uit rumoerige audio of video."
       }
     },
     "outputs": {
@@ -159,15 +183,67 @@
       "output": "Uitgang voor {{output}}"
     },
     "models": {
+      "nanoBanana2Lite": "Nano Banana 2 Lite",
+      "nanoBanana2": "Nano Banana 2",
+      "nanoBananaPro": "Nano Banana Pro",
       "gptImage15": "GPT Image 1.5",
+      "gptImage2": "GPT Image 2",
+      "gemini31FlashLite": "Gemini 3.1 Flash Lite",
+      "claudeSonnet46": "Claude Sonnet 4.6",
+      "gpt54": "GPT-5.4",
+      "gemini31Pro": "Gemini 3.1 Pro",
+      "deepseekV32": "DeepSeek V3.2",
+      "mistralLarge3": "Mistral Large 3",
+      "seedream45": "Seedream 4.5",
+      "flux2Pro": "FLUX.2 Pro",
+      "recraft41": "Recraft 4.1",
       "veo31": "Veo 3.1",
+      "veo31Lite": "Veo 3.1 Lite",
+      "grokImagineVideo": "Grok Imagine Video",
+      "seedance20": "Seedance 2.0",
       "ltx23Pro": "LTX 2.3 Pro",
       "elevenMultilingualV2": "Eleven Multilingual v2",
-      "elevenSoundEffectsV2": "Eleven Sound Effects v2"
+      "elevenSoundEffectsV2": "Eleven Sound Effects v2",
+      "elevenMusicV2": "Eleven Music v2",
+      "elevenVoiceChanger": "Eleven Voice Changer",
+      "elevenVoiceIsolator": "Eleven Voice Isolator",
+      "gpt4oMiniTts": "GPT-4o mini TTS",
+      "stableAudio25": "Stable Audio 2.5"
+    },
+    "modelDescriptions": {
+      "nanoBanana2Lite": "Snelle, voordelige beeldgeneratie en -bewerking voor werk op grote schaal.",
+      "nanoBanana2": "Veelzijdige 4K-beeldcreatie met betrouwbare tekst en consistente referenties.",
+      "nanoBananaPro": "Nauwkeurige professionele beelden voor complexe instructies en merkconsistent werk.",
+      "gptImage15": "Betrouwbare beeldgeneratie en -bewerking met ondersteuning voor referenties.",
+      "gptImage2": "Hoogwaardige beeldgeneratie en -bewerking met sterke referentiegetrouwheid.",
+      "gemini31FlashLite": "Snel en voordelig begrip van tekst en afbeeldingen voor dagelijks creatief werk.",
+      "claudeSonnet46": "Genuanceerd schrijven en visuele analyse voor complexe creatieve richtlijnen.",
+      "gpt54": "Sterke opvolging van instructies voor verzorgde tekst en beeldanalyse.",
+      "gemini31Pro": "Geavanceerd multimodaal redeneren voor veeleisende creatieve analyse.",
+      "deepseekV32": "Efficiënte teksttransformatie en gestructureerd creatief schrijven.",
+      "mistralLarge3": "Veelzijdig meertalig schrijven en beeldbegrip zonder redeneerinstellingen.",
+      "seedream45": "Getrouwe bewerking van meerdere beelden met sterke controle over typografie en lay-out.",
+      "flux2Pro": "Fotorealistische bewerking op productieschaal met nauwkeurige controle over meerdere referenties.",
+      "recraft41": "Verfijnd ontwerp, fotorealisme en illustratie vanuit beknopte prompts.",
+      "veo31": "Filmische video van hoge kwaliteit met native audio en geavanceerde referentiesturing.",
+      "veo31Lite": "Snellere Veo-generatie voor alledaagse prompts en animatie op basis van frames.",
+      "grokImagineVideo": "Snel video’s maken vanuit prompts, startframes en beeldreferenties.",
+      "seedance20": "Controle als een regisseur met beeld-, video- en audioreferenties.",
+      "ltx23Pro": "Scherpe 1080p-video met beweging die nauwkeurig door referentie-audio wordt gestuurd.",
+      "elevenMultilingualV2": "Natuurlijke, consistente spraak voor lange content in 29 talen.",
+      "elevenSoundEffectsV2": "Filmische effecten, foley, omgevingsgeluid en naadloze audioloops.",
+      "elevenMusicV2": "Natuurlijke muziek uit instructies met flexibele duur en instrumentale controle.",
+      "elevenVoiceChanger": "Stemtransformatie met behoud van de oorspronkelijke uitvoering.",
+      "elevenVoiceIsolator": "Gerichte opschoning van gesproken stem in rumoerige opnamen.",
+      "gpt4oMiniTts": "Expressieve spraak met controle over stem, tempo en uitvoering.",
+      "stableAudio25": "Langere muziek en sounddesign met controle over duur, seed en prompttrouw."
     },
     "inputs": {
       "prompt": "Prompt",
       "promptDescription": "Tekstinstructies voor de generatie.",
+      "instructions": "Instructies",
+      "instructionsDescription": "Optionele systeemrichtlijnen voor het antwoord.",
+      "llmImageReferencesDescription": "Maximaal acht afbeeldingen samen geanalyseerd in één uitvoering.",
       "context": "Element-context",
       "contextDescription": "Herbruikbare richtlijnen van het Element.",
       "references": "Referenties",
@@ -176,11 +252,26 @@
       "firstFrameDescription": "Afbeelding als eerste videoframe.",
       "lastFrame": "Laatste frame",
       "lastFrameDescription": "Afbeelding als laatste videoframe.",
+      "imageReferences": "Afbeeldingsreferenties",
+      "imageReferencesDescription": "Afbeeldingen als visuele leidraad.",
+      "videoReferences": "Videoreferenties",
+      "videoReferencesDescription": "Video's als leidraad voor beweging.",
+      "audioReferences": "Audioreferenties",
+      "audioReferencesDescription": "Audio als leidraad voor timing of beweging.",
       "referenceAudio": "Referentieaudio",
-      "referenceAudioDescription": "Audio als stem- of bewegingsreferentie."
+      "referenceAudioDescription": "Audio als stem- of bewegingsreferentie.",
+      "referenceVideo": "Referentievideo",
+      "referenceVideoDescription": "Video als referentie voor beweging of verlenging.",
+      "script": "Script",
+      "scriptDescription": "Tekst die als vertelling of dialoog wordt uitgesproken.",
+      "lyrics": "Songtekst",
+      "lyricsDescription": "Optionele songtekst, alleen voor ondersteunde muziekmodellen.",
+      "sourceMedia": "Bronmedia",
+      "sourceMediaDescription": "Eén audio- of video-item met de oorspronkelijke uitvoering."
     },
     "settings": {
       "label": "Instellingen",
+      "advanced": "Geavanceerde instellingen",
       "aspectRatio": "Beeldverhouding",
       "aspectRatios": {
         "square": "Vierkant",
@@ -192,12 +283,46 @@
       },
       "outputCount": "Uitvoer",
       "quality": "Kwaliteit",
+      "background": "Achtergrond",
+      "backgrounds": {
+        "auto": "Automatisch",
+        "opaque": "Dekkend"
+      },
+      "outputFormat": "Uitvoerformaat",
+      "outputFormats": {
+        "png": "PNG",
+        "jpeg": "JPEG",
+        "mp3": "MP3",
+        "wav": "WAV"
+      },
       "resolution": "Resolutie",
       "duration": "Duur",
+      "generateAudio": "Audio genereren",
       "stability": "Stabiliteit",
       "voiceId": "Stem-ID",
       "loop": "Herhalen",
       "promptInfluence": "Promptinvloed",
+      "responseLength": "Antwoordlengte",
+      "responseLengthDescription": "Een beoogde maximale lengte; het model kan eerder antwoorden.",
+      "responseLengths": {
+        "auto": "Automatisch",
+        "short": "Kort",
+        "medium": "Gemiddeld",
+        "long": "Lang"
+      },
+      "reasoning": "Redeneren",
+      "reasoningDescription": "Kies hoeveel redenering het model mag gebruiken.",
+      "reasoningMandatoryDescription": "Dit model redeneert altijd; kies het inspanningsniveau.",
+      "reasoningModes": {
+        "off": "Uit",
+        "auto": "Automatisch",
+        "minimal": "Minimaal",
+        "low": "Laag",
+        "medium": "Gemiddeld",
+        "high": "Hoog",
+        "max": "Maximaal",
+        "xhigh": "Extra hoog"
+      },
       "qualities": {
         "auto": "Automatisch",
         "low": "Laag",
@@ -205,16 +330,158 @@
         "high": "Hoog"
       },
       "durations": {
+        "seconds1": "1 seconde",
+        "seconds3": "3 seconden",
         "seconds4": "4 seconden",
         "seconds6": "6 seconden",
         "seconds8": "8 seconden",
-        "seconds10": "10 seconden"
+        "seconds10": "10 seconden",
+        "seconds12": "12 seconden",
+        "seconds15": "15 seconden"
       },
       "resolutions": {
+        "512": "512 px",
+        "1k": "1K",
+        "2k": "2K",
+        "480p": "480p",
         "720p": "720p",
         "1080p": "1080p",
         "1440p": "1440p",
         "4k": "4K"
+      },
+      "durationMode": "Duurmodus",
+      "durationModes": {
+        "auto": "Automatisch",
+        "custom": "Aangepast"
+      },
+      "voice": "Stem",
+      "speed": "Snelheid",
+      "delivery": "Uitvoering",
+      "instrumental": "Instrumentaal",
+      "removeBackgroundNoise": "Achtergrondruis verwijderen",
+      "voices": {
+        "elevenAntoni": "Antoni",
+        "elevenDomi": "Domi",
+        "elevenJosh": "Josh",
+        "elevenRachel": "Rachel",
+        "openaiCedar": "Cedar",
+        "openaiCoral": "Coral",
+        "openaiMarin": "Marin",
+        "openaiVerse": "Verse"
+      },
+      "seed": "Seed"
+    },
+    "image": {
+      "inputs": {
+        "railLabel": "Invoer voor afbeeldingsgeneratie",
+        "limitReached": "De modellimiet van {{count}} afbeeldingen is bereikt.",
+        "connectionLimitReached": "Deze invoer heeft de verbindingslimiet bereikt.",
+        "selectedCount": "{{count}} van {{maximum}} geselecteerd",
+        "inspect": "{{input}} bekijken"
+      },
+      "prompt": {
+        "label": "Afbeeldingsprompt",
+        "placeholder": "Beschrijf onderwerp, compositie, licht en stijl...",
+        "externalAuthoritative": "De gekoppelde tekst wordt gebruikt. Je interne concept blijft bewaard."
+      },
+      "preview": {
+        "label": "Afbeeldingsvoorbeeld wacht op generatie",
+        "outputCount_one": "Eén uitvoerafbeelding",
+        "outputCount_other": "{{count}} uitvoerafbeeldingen"
+      },
+      "readiness": {
+        "ready": "Klaar om te genereren",
+        "incomplete": "Voeg een prompt toe",
+        "invalid": "Herstel de ongeldige configuratie",
+        "unsupportedCombination": "Dit model ondersteunt deze combinatie van invoer niet."
+      },
+      "modelChange": {
+        "reconciled_one": "Eén incompatibele invoer of instelling is hersteld.",
+        "reconciled_other": "{{count}} incompatibele invoeren of instellingen zijn hersteld."
+      }
+    },
+    "video": {
+      "inputs": {
+        "railLabel": "Invoer voor videogeneratie",
+        "limitReached": "Deze invoer heeft de modellimiet bereikt.",
+        "disconnectReferences": "Koppel referenties los om frames te gebruiken.",
+        "disconnectFrames": "Koppel frames los om referenties te gebruiken.",
+        "disconnectIncompatible": "Koppel eerst een onverenigbare invoer los.",
+        "connectedCount_one": "{{count}} verbinding",
+        "connectedCount_other": "{{count}} verbindingen"
+      },
+      "prompt": {
+        "label": "Videoprompt",
+        "placeholder": "Beschrijf de beweging, camera en sfeer...",
+        "externalAuthoritative": "De verbonden tekst wordt gebruikt. Je interne concept blijft bewaard."
+      },
+      "preview": {
+        "label": "Videovoorbeeld wacht op generatie"
+      },
+      "readiness": {
+        "ready": "Klaar om te genereren",
+        "incomplete": "Voeg de vereiste invoer toe",
+        "invalid": "Los het invoerconflict op",
+        "frameReferenceConflict": "Frames en referenties kunnen niet samen worden gebruikt.",
+        "ambiguous": "De verbonden invoer bepaalt niet één videomodus.",
+        "unsupportedCombination": "Dit model ondersteunt deze invoercombinatie niet."
+      }
+    },
+    "llm": {
+      "category": "Taalmodellen",
+      "inputs": {
+        "railLabel": "LLM-invoer",
+        "imageLimitReached": "De limiet van {{maximum}} afbeeldingen is bereikt.",
+        "connectionLimitReached": "Deze invoer heeft al de enige toegestane verbinding.",
+        "selectedImages": "{{count}} van {{maximum}} afbeeldingen geselecteerd",
+        "connectedCount_one": "{{count}} verbinding",
+        "connectedCount_other": "{{count}} verbindingen",
+        "inspectImages": "Afbeeldingsreferenties bekijken"
+      },
+      "prompt": {
+        "label": "Prompt",
+        "placeholder": "Vraag om tekst, analyse, ideeën of een herbruikbare transformatie...",
+        "externalAuthoritative": "De verbonden tekst wordt gebruikt. Je interne concept blijft bewaard."
+      },
+      "instructions": {
+        "label": "Systeeminstructies",
+        "placeholder": "Definieer rol, toon, beperkingen of antwoordindeling...",
+        "description": "Optionele richtlijnen die los van de prompt gelden.",
+        "externalAuthoritative": "De verbonden instructies worden gebruikt. Je interne concept blijft bewaard."
+      },
+      "preview": {
+        "mockBadge": "Gesimuleerd voorbeeld",
+        "empty": "Voer dit knooppunt uit voor een deterministisch tekstvoorbeeld.",
+        "pending": "Voorbeeld maken...",
+        "stale": "De invoer is gewijzigd. Voer opnieuw uit om dit resultaat bij te werken.",
+        "error": "Het gesimuleerde voorbeeld kon niet worden gemaakt.",
+        "openFull": "Open het volledige tekstresultaat in het infovenster",
+        "copy": "Volledig resultaat kopiëren",
+        "copySuccess": "Tekst gekopieerd",
+        "copyFailed": "Tekst kon niet worden gekopieerd",
+        "fullResult": "Volledig resultaat"
+      },
+      "readiness": {
+        "ready": "Klaar om uit te voeren",
+        "incomplete": "Voeg een prompt toe",
+        "invalid": "Los de ongeldige configuratie op",
+        "unsupportedCombination": "Dit model ondersteunt de verbonden invoer niet."
+      },
+      "summary": {
+        "title": "Invoer en uitvoer"
+      },
+      "modelChange": {
+        "title": "Van LLM-model wisselen?",
+        "description": "Wisselen naar {{model}} vereist deze wijzigingen:",
+        "removeConnection": "Verwijder de verbinding van {{source}} naar {{input}}.",
+        "resetReasoning": "Stel redeneren opnieuw in van {{from}} naar {{to}}.",
+        "notApplicable": "Niet beschikbaar",
+        "confirm": "Wijzigingen toepassen"
+      },
+      "mock": {
+        "output_one": "Gesimuleerd antwoord voor ‘{{prompt}}’ met {{count}} afbeelding.",
+        "output_other": "Gesimuleerd antwoord voor ‘{{prompt}}’ met {{count}} afbeeldingen.",
+        "instructionsApplied": "Toegepaste instructies: {{instructions}}"
       }
     },
     "inputStates": {
@@ -291,10 +558,22 @@
       "imageToVideoDescription": "Animeer een eerste frame tot een video.",
       "audioToVideo": "Audio naar video",
       "audioToVideoDescription": "Genereer videobeweging op basis van audio en een optioneel frame.",
+      "extendVideo": "Video verlengen",
+      "extendVideoDescription": "Verleng een bestaande video aan de hand van optionele instructies.",
       "textToSpeech": "Tekst naar spraak",
       "textToSpeechDescription": "Maak gesproken audio van tekst met een optionele stemreferentie.",
       "textToSoundEffect": "Tekst naar geluidseffect",
-      "textToSoundEffectDescription": "Maak een geluidseffect op basis van een beschrijving."
+      "textToSoundEffectDescription": "Maak een geluidseffect op basis van een beschrijving.",
+      "textToText": "Tekst naar tekst",
+      "textToTextDescription": "Transformeer één tekstwaarde naar andere herbruikbare tekst.",
+      "visionToText": "Afbeeldingen naar tekst",
+      "visionToTextDescription": "Analyseer afbeeldingen samen met een tekstprompt.",
+      "textToMusic": "Tekst naar muziek",
+      "textToMusicDescription": "Maak muziek vanuit een creatieve tekstinstructie.",
+      "changeVoice": "Stem wijzigen",
+      "changeVoiceDescription": "Behoud de uitvoering terwijl je de stem wijzigt.",
+      "isolateVoice": "Stem isoleren",
+      "isolateVoiceDescription": "Verwijder achtergrondruis en lever schone gesproken audio."
     },
     "constraints": {
       "lastFrameRequiresFirstFrame": "Verbind een eerste frame voordat je het laatste gebruikt.",
@@ -304,6 +583,45 @@
     },
     "nodeMedia": {
       "play": "{{name}} afspelen"
+    },
+    "audio": {
+      "category": "Audiomodellen",
+      "inputs": {
+        "railLabel": "Invoer van audioknooppunt",
+        "limitReached": "Deze invoer heeft de modellimiet bereikt.",
+        "selectedCount": "{{count}} media-item geselecteerd",
+        "inspect": "{{input}} inspecteren",
+        "connectedMedia": "Verbonden media"
+      },
+      "prompt": {
+        "externalAuthoritative": "De verbonden tekst wordt gebruikt. Je inlineconcept blijft bewaard."
+      },
+      "lyrics": {
+        "externalAuthoritative": "De verbonden songtekst wordt gebruikt. Je inlineconcept blijft bewaard."
+      },
+      "preview": {
+        "label": "Audiovoorbeeld wacht op generatie"
+      },
+      "readiness": {
+        "ready": "Klaar om te genereren",
+        "incomplete": "Voeg de vereiste invoer toe",
+        "invalid": "Los de ongeldige configuratie op",
+        "unsupportedCombination": "Dit model ondersteunt deze invoercombinatie niet."
+      },
+      "speech": {
+        "scriptLabel": "Script",
+        "scriptPlaceholder": "Schrijf de vertelling of dialoog..."
+      },
+      "music": {
+        "promptLabel": "Muziekinstructie",
+        "promptPlaceholder": "Beschrijf genre, sfeer, structuur, instrumenten en energie...",
+        "lyricsLabel": "Songtekst",
+        "lyricsPlaceholder": "Schrijf coupletten, refrein of zangaanwijzingen..."
+      },
+      "soundEffect": {
+        "promptLabel": "Geluidsbeschrijving",
+        "promptPlaceholder": "Beschrijf het effect, Foley, impact, textuur of sfeer..."
+      }
     }
   },
   "assets": {

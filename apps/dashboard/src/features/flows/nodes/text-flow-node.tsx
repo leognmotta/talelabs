@@ -6,7 +6,7 @@ import { Textarea } from '@talelabs/ui/components/textarea'
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFlowCanvas } from '../flow-canvas-context'
-import { FlowHandle } from './flow-handle'
+import { FlowNodeOutputFooter } from './flow-node-output-footer'
 import { FlowNodeShell } from './flow-node-shell'
 
 export const TextFlowNode = memo(({
@@ -21,26 +21,20 @@ export const TextFlowNode = memo(({
     <FlowNodeShell
       className="w-90"
       footer={(
-        <div className="
-          relative flex w-full items-center justify-between gap-3 text-[11px]
-          text-muted-foreground
-        "
+        <FlowNodeOutputFooter
+          ariaLabel={t('flows.handles.output', {
+            output: t('flows.inputs.prompt'),
+          })}
+          handleId="text"
+          label={t('flows.inputs.prompt')}
+          valueType="Text"
         >
           <span>
             {t('flows.characterCount', {
               count: typeof data.text === 'string' ? data.text.length : 0,
             })}
           </span>
-          <div className="relative flex items-center gap-2">
-            <span>{t('flows.outputs.text')}</span>
-            <FlowHandle
-              ariaLabel={t('flows.handles.textOutput')}
-              id="text"
-              side="output"
-              valueType="Text"
-            />
-          </div>
-        </div>
+        </FlowNodeOutputFooter>
       )}
       icon={IconTextCaption}
       nodeId={id}

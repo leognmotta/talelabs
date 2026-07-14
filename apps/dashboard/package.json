@@ -15,6 +15,7 @@
     "@atlaskit/pragmatic-drag-and-drop-live-region": "^2.0.0",
     "@dagrejs/dagre": "^3.0.0",
     "@hookform/resolvers": "^5.4.0",
+    "@lobehub/icons-static-svg": "^1.91.0",
     "@paralleldrive/cuid2": "^3.3.0",
     "@tabler/icons-react": "^3.44.0",
     "@talelabs/assets": "*",

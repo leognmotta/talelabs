@@ -12,6 +12,7 @@ import {
 } from '@talelabs/ui/components/sheet'
 import { cn } from '@talelabs/ui/lib/utils'
 import { useTranslation } from 'react-i18next'
+import { FlowActionTooltip } from './flow-action-tooltip'
 
 export function FlowInputInspector({
   inputState,
@@ -149,13 +150,18 @@ export function FlowInputInspector({
               )}
         </div>
         <SheetFooter>
-          <Button
+          <FlowActionTooltip
             disabled={inputState?.mode === 'auto'}
-            variant="outline"
-            onClick={() => onSelectionChange({ mode: 'auto' })}
+            label={t('flows.inputInspector.useAutomatic')}
           >
-            {t('flows.inputInspector.useAutomatic')}
-          </Button>
+            <Button
+              disabled={inputState?.mode === 'auto'}
+              variant="outline"
+              onClick={() => onSelectionChange({ mode: 'auto' })}
+            >
+              {t('flows.inputInspector.useAutomatic')}
+            </Button>
+          </FlowActionTooltip>
         </SheetFooter>
       </SheetContent>
     </Sheet>

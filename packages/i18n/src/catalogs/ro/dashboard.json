@@ -69,7 +69,11 @@
     "deleteNode": "Șterge nodul",
     "duplicateSelection": "Duplică selecția",
     "deleteSelection": "Șterge selecția",
+    "runSelection": "Rulează selecția",
+    "undo": "Anulează",
+    "redo": "Refă",
     "fitView": "Încadrează vizualizarea",
+    "focusSelection": "Focalizează selecția",
     "autoFormat": "Aranjează automat",
     "selectAll": "Selectează tot",
     "connectionRejected": "Acești conectori nu pot fi legați.",
@@ -88,7 +92,13 @@
       "unlock": "Deblochează nodul",
       "fullscreen": "Afișează pe ecran complet",
       "fullscreenFailed": "Vizualizarea pe ecran complet nu a putut fi deschisă.",
-      "crop": "Decupează imaginea"
+      "crop": "Decupează imaginea",
+      "run": "Rulează",
+      "runOptions": "Opțiuni de rulare",
+      "runFromHere": "Rulează de aici",
+      "runFromHereDescription": "Rulează acest nod și nodurile următoare.",
+      "runTillHere": "Rulează până aici",
+      "runTillHereDescription": "Rulează acest nod și toate nodurile care duc la el."
     },
     "cropEditor": {
       "label": "Editor de decupare a imaginii",
@@ -105,9 +115,10 @@
     "modelPicker": {
       "searchLabel": "Caută modele",
       "searchPlaceholder": "Caută modele...",
-      "noResults": "Nu s-au găsit modele"
+      "noResults": "Nu s-au găsit modele",
+      "recommended": "Recomandat"
     },
-    "textContent": "Conținut text",
+    "textContent": "Conținutul promptului",
     "textPlaceholder": "Descrie scena, regia sau ideea creativă...",
     "characterCount": "{{count}} / 16.000",
     "chooseAsset": "Alege Asset",
@@ -119,27 +130,40 @@
     "assetCount_one": "{{count}} Asset",
     "assetCount_other": "{{count}} de Assets",
     "nodes": {
-      "text": "Text",
+      "text": "Prompt",
       "asset": "Asset",
       "element": "Element",
       "imageGeneration": "Generare imagini",
+      "llm": "LLM",
       "videoGeneration": "Generare video",
-      "audioGeneration": "Generare audio"
+      "audioGeneration": "Generare audio",
+      "musicGeneration": "Generare muzică",
+      "soundEffectGeneration": "Generare efecte sonore",
+      "speechGeneration": "Generare voce",
+      "voiceChanger": "Schimbare voce",
+      "voiceIsolation": "Izolare voce"
     },
     "nodePicker": {
       "searchPlaceholder": "Caută noduri",
       "noResults": "Nu s-au găsit noduri",
       "groups": {
         "inputs": "Intrări",
-        "generation": "Generare"
+        "generation": "Generare",
+        "transform": "Transformare"
       },
       "descriptions": {
-        "text": "Scrie prompturi și text reutilizabil.",
+        "text": "Scrie un prompt reutilizabil.",
         "asset": "Adaugă imagini, videoclipuri, audio sau documente.",
         "element": "Adaugă context creativ reutilizabil.",
         "imageGeneration": "Configurează un pas de generare a imaginilor.",
+        "llm": "Transformă text și analizează imagini cu un LLM.",
         "videoGeneration": "Configurează un pas de generare video.",
-        "audioGeneration": "Configurează un pas de generare audio."
+        "audioGeneration": "Configurează un pas de generare audio.",
+        "musicGeneration": "Creează o melodie, coloană sonoră, jingle sau fundal muzical.",
+        "soundEffectGeneration": "Creează Foley, impacturi, tranziții, texturi sau ambianțe.",
+        "speechGeneration": "Transformă un scenariu în vorbire naturală.",
+        "voiceChanger": "Păstrează interpretarea în timp ce schimbi vocea.",
+        "voiceIsolation": "Curăță vocea vorbită din audio sau video cu zgomot."
       }
     },
     "outputs": {
@@ -159,15 +183,67 @@
       "output": "Ieșire {{output}}"
     },
     "models": {
+      "nanoBanana2Lite": "Nano Banana 2 Lite",
+      "nanoBanana2": "Nano Banana 2",
+      "nanoBananaPro": "Nano Banana Pro",
       "gptImage15": "GPT Image 1.5",
+      "gptImage2": "GPT Image 2",
+      "gemini31FlashLite": "Gemini 3.1 Flash Lite",
+      "claudeSonnet46": "Claude Sonnet 4.6",
+      "gpt54": "GPT-5.4",
+      "gemini31Pro": "Gemini 3.1 Pro",
+      "deepseekV32": "DeepSeek V3.2",
+      "mistralLarge3": "Mistral Large 3",
+      "seedream45": "Seedream 4.5",
+      "flux2Pro": "FLUX.2 Pro",
+      "recraft41": "Recraft 4.1",
       "veo31": "Veo 3.1",
+      "veo31Lite": "Veo 3.1 Lite",
+      "grokImagineVideo": "Grok Imagine Video",
+      "seedance20": "Seedance 2.0",
       "ltx23Pro": "LTX 2.3 Pro",
       "elevenMultilingualV2": "Eleven Multilingual v2",
-      "elevenSoundEffectsV2": "Eleven Sound Effects v2"
+      "elevenSoundEffectsV2": "Eleven Sound Effects v2",
+      "elevenMusicV2": "Eleven Music v2",
+      "elevenVoiceChanger": "Eleven Voice Changer",
+      "elevenVoiceIsolator": "Eleven Voice Isolator",
+      "gpt4oMiniTts": "GPT-4o mini TTS",
+      "stableAudio25": "Stable Audio 2.5"
+    },
+    "modelDescriptions": {
+      "nanoBanana2Lite": "Generare și editare rapidă și economică a imaginilor pentru volume mari.",
+      "nanoBanana2": "Creare versatilă de imagini 4K, cu text fiabil și consecvență între mai multe referințe.",
+      "nanoBananaPro": "Materiale vizuale profesionale și precise pentru instrucțiuni complexe și proiecte conforme cu marca.",
+      "gptImage15": "Generare și editare fiabilă a imaginilor, cu suport pentru referințe.",
+      "gptImage2": "Generare și editare de imagini de înaltă calitate, cu fidelitate mare față de referințe.",
+      "gemini31FlashLite": "Înțelegere rapidă și economică a textului și imaginilor pentru activitatea creativă zilnică.",
+      "claudeSonnet46": "Scriere nuanțată și analiză vizuală pentru îndrumări creative complexe.",
+      "gpt54": "Respectare excelentă a instrucțiunilor pentru text finisat și analiză de imagini.",
+      "gemini31Pro": "Raționament multimodal avansat pentru analize creative dificile.",
+      "deepseekV32": "Transformare eficientă doar a textului și scriere creativă structurată.",
+      "mistralLarge3": "Scriere multilingvă versatilă și înțelegerea imaginilor fără controale de raționament.",
+      "seedream45": "Editare fidelă a mai multor imagini, cu control avansat asupra tipografiei și compoziției.",
+      "flux2Pro": "Editare fotorealistă la scară de producție, cu control precis asupra mai multor referințe.",
+      "recraft41": "Design, fotorealism și ilustrație rafinate pornind de la prompturi concise.",
+      "veo31": "Videoclipuri cinematografice de înaltă fidelitate, cu sunet nativ și control avansat prin referințe.",
+      "veo31Lite": "Generare Veo mai rapidă pentru prompturi uzuale și animații bazate pe cadre.",
+      "grokImagineVideo": "Creare rapidă de videoclipuri din prompturi, cadre inițiale și imagini de referință.",
+      "seedance20": "Control în stil regizoral cu referințe de imagine, video și audio.",
+      "ltx23Pro": "Videoclipuri clare la 1080p, cu mișcare ghidată precis de sunetul de referință.",
+      "elevenMultilingualV2": "Vorbire naturală și consecventă pentru conținut de durată, în 29 de limbi.",
+      "elevenSoundEffectsV2": "Efecte cinematografice, foley, ambianțe și bucle audio continue.",
+      "elevenMusicV2": "Muzică naturală din instrucțiuni, cu durată flexibilă și control instrumental.",
+      "elevenVoiceChanger": "Transformare vocală care păstrează interpretarea originală.",
+      "elevenVoiceIsolator": "Curățare concentrată a vocii vorbite din înregistrări cu zgomot.",
+      "gpt4oMiniTts": "Vorbire expresivă cu control asupra vocii, ritmului și interpretării.",
+      "stableAudio25": "Muzică de durată și design sonor cu control pentru durată, sămânță și respectarea instrucțiunii."
     },
     "inputs": {
       "prompt": "Prompt",
       "promptDescription": "Instrucțiuni text pentru generare.",
+      "instructions": "Instrucțiuni",
+      "instructionsDescription": "Îndrumare de sistem opțională pentru răspuns.",
+      "llmImageReferencesDescription": "Până la opt imagini analizate împreună într-o rulare.",
       "context": "Contextul Elementului",
       "contextDescription": "Indicații reutilizabile ale Elementului.",
       "references": "Referințe",
@@ -176,11 +252,26 @@
       "firstFrameDescription": "Imagine folosită ca primul cadru al videoclipului.",
       "lastFrame": "Ultimul cadru",
       "lastFrameDescription": "Imagine folosită ca ultimul cadru al videoclipului.",
+      "imageReferences": "Referințe de imagine",
+      "imageReferencesDescription": "Imagini folosite ca ghid vizual.",
+      "videoReferences": "Referințe video",
+      "videoReferencesDescription": "Videoclipuri folosite ca ghid pentru mișcare.",
+      "audioReferences": "Referințe audio",
+      "audioReferencesDescription": "Audio folosit ca ghid pentru ritm sau mișcare.",
       "referenceAudio": "Audio de referință",
-      "referenceAudioDescription": "Audio folosit ca referință pentru voce sau mișcare."
+      "referenceAudioDescription": "Audio folosit ca referință pentru voce sau mișcare.",
+      "referenceVideo": "Videoclip de referință",
+      "referenceVideoDescription": "Videoclip folosit ca referință pentru mișcare sau extindere.",
+      "script": "Scenariu",
+      "scriptDescription": "Text rostit ca narațiune sau dialog.",
+      "lyrics": "Versuri",
+      "lyricsDescription": "Versuri opționale, doar pentru modelele muzicale compatibile.",
+      "sourceMedia": "Media sursă",
+      "sourceMediaDescription": "Un element audio sau video cu interpretarea originală."
     },
     "settings": {
       "label": "Setări",
+      "advanced": "Setări avansate",
       "aspectRatio": "Raport de aspect",
       "aspectRatios": {
         "square": "Pătrat",
@@ -192,12 +283,46 @@
       },
       "outputCount": "Rezultate",
       "quality": "Calitate",
+      "background": "Fundal",
+      "backgrounds": {
+        "auto": "Automat",
+        "opaque": "Opac"
+      },
+      "outputFormat": "Format de ieșire",
+      "outputFormats": {
+        "png": "PNG",
+        "jpeg": "JPEG",
+        "mp3": "MP3",
+        "wav": "WAV"
+      },
       "resolution": "Rezoluție",
       "duration": "Durată",
+      "generateAudio": "Generează audio",
       "stability": "Stabilitate",
       "voiceId": "ID voce",
       "loop": "Buclă",
       "promptInfluence": "Influența promptului",
+      "responseLength": "Lungimea răspunsului",
+      "responseLengthDescription": "O lungime maximă dorită; modelul poate răspunde mai scurt.",
+      "responseLengths": {
+        "auto": "Automată",
+        "short": "Scurtă",
+        "medium": "Medie",
+        "long": "Lungă"
+      },
+      "reasoning": "Raționament",
+      "reasoningDescription": "Alege cât raționament poate folosi modelul.",
+      "reasoningMandatoryDescription": "Acest model folosește întotdeauna raționament; alege nivelul de efort.",
+      "reasoningModes": {
+        "off": "Dezactivat",
+        "auto": "Automat",
+        "minimal": "Minim",
+        "low": "Scăzut",
+        "medium": "Mediu",
+        "high": "Ridicat",
+        "max": "Maxim",
+        "xhigh": "Foarte ridicat"
+      },
       "qualities": {
         "auto": "Automată",
         "low": "Scăzută",
@@ -205,16 +330,158 @@
         "high": "Ridicată"
       },
       "durations": {
+        "seconds1": "1 secundă",
+        "seconds3": "3 secunde",
         "seconds4": "4 secunde",
         "seconds6": "6 secunde",
         "seconds8": "8 secunde",
-        "seconds10": "10 secunde"
+        "seconds10": "10 secunde",
+        "seconds12": "12 secunde",
+        "seconds15": "15 secunde"
       },
       "resolutions": {
+        "512": "512 px",
+        "1k": "1K",
+        "2k": "2K",
+        "480p": "480p",
         "720p": "720p",
         "1080p": "1080p",
         "1440p": "1440p",
         "4k": "4K"
+      },
+      "durationMode": "Mod durată",
+      "durationModes": {
+        "auto": "Automată",
+        "custom": "Personalizată"
+      },
+      "voice": "Voce",
+      "speed": "Viteză",
+      "delivery": "Interpretare",
+      "instrumental": "Instrumental",
+      "removeBackgroundNoise": "Elimină zgomotul de fundal",
+      "voices": {
+        "elevenAntoni": "Antoni",
+        "elevenDomi": "Domi",
+        "elevenJosh": "Josh",
+        "elevenRachel": "Rachel",
+        "openaiCedar": "Cedar",
+        "openaiCoral": "Coral",
+        "openaiMarin": "Marin",
+        "openaiVerse": "Verse"
+      },
+      "seed": "Sămânță"
+    },
+    "image": {
+      "inputs": {
+        "railLabel": "Intrări pentru generarea imaginilor",
+        "limitReached": "A fost atinsă limita modelului de {{count}} imagini.",
+        "connectionLimitReached": "Această intrare a atins limita de conexiuni.",
+        "selectedCount": "{{count}} din {{maximum}} selectate",
+        "inspect": "Inspectează {{input}}"
+      },
+      "prompt": {
+        "label": "Prompt pentru imagine",
+        "placeholder": "Descrie subiectul, compoziția, lumina și stilul...",
+        "externalAuthoritative": "Este folosit textul conectat. Schița internă este păstrată."
+      },
+      "preview": {
+        "label": "Previzualizarea imaginii așteaptă generarea",
+        "outputCount_one": "O imagine de ieșire",
+        "outputCount_other": "{{count}} de imagini de ieșire"
+      },
+      "readiness": {
+        "ready": "Gata de generare",
+        "incomplete": "Adaugă un prompt",
+        "invalid": "Corectează configurația nevalidă",
+        "unsupportedCombination": "Acest model nu acceptă această combinație de intrări."
+      },
+      "modelChange": {
+        "reconciled_one": "O intrare sau setare incompatibilă a fost resetată.",
+        "reconciled_other": "{{count}} de intrări sau setări incompatibile au fost resetate."
+      }
+    },
+    "video": {
+      "inputs": {
+        "railLabel": "Intrări pentru generarea video",
+        "limitReached": "Această intrare a atins limita modelului.",
+        "disconnectReferences": "Deconectează referințele pentru a folosi cadre.",
+        "disconnectFrames": "Deconectează cadrele pentru a folosi referințe.",
+        "disconnectIncompatible": "Deconectează mai întâi o intrare incompatibilă.",
+        "connectedCount_one": "{{count}} conexiune",
+        "connectedCount_other": "{{count}} conexiuni"
+      },
+      "prompt": {
+        "label": "Prompt video",
+        "placeholder": "Descrie mișcarea, camera și atmosfera...",
+        "externalAuthoritative": "Se va folosi textul conectat. Schița internă rămâne păstrată."
+      },
+      "preview": {
+        "label": "Previzualizarea video așteaptă generarea"
+      },
+      "readiness": {
+        "ready": "Pregătit pentru generare",
+        "incomplete": "Adaugă intrările obligatorii",
+        "invalid": "Rezolvă conflictul dintre intrări",
+        "frameReferenceConflict": "Cadrele și referințele nu pot fi folosite împreună.",
+        "ambiguous": "Intrările conectate nu definesc un singur mod video.",
+        "unsupportedCombination": "Acest model nu acceptă această combinație de intrări."
+      }
+    },
+    "llm": {
+      "category": "Modele lingvistice",
+      "inputs": {
+        "railLabel": "Intrări LLM",
+        "imageLimitReached": "A fost atinsă limita de {{maximum}} imagini.",
+        "connectionLimitReached": "Această intrare are deja singura conexiune permisă.",
+        "selectedImages": "{{count}} din {{maximum}} imagini selectate",
+        "connectedCount_one": "{{count}} conexiune",
+        "connectedCount_other": "{{count}} conexiuni",
+        "inspectImages": "Inspectează referințele de imagine"
+      },
+      "prompt": {
+        "label": "Prompt",
+        "placeholder": "Solicită text, analiză, idei sau o transformare reutilizabilă...",
+        "externalAuthoritative": "Este folosit textul conectat. Schița internă este păstrată."
+      },
+      "instructions": {
+        "label": "Instrucțiuni de sistem",
+        "placeholder": "Definește rolul, tonul, restricțiile sau formatul răspunsului...",
+        "description": "Îndrumare opțională aplicată separat de prompt.",
+        "externalAuthoritative": "Sunt folosite instrucțiunile conectate. Schița internă este păstrată."
+      },
+      "preview": {
+        "mockBadge": "Previzualizare simulată",
+        "empty": "Rulează acest nod pentru a crea o previzualizare text deterministă.",
+        "pending": "Se creează previzualizarea...",
+        "stale": "Intrările s-au schimbat. Rulează din nou pentru a actualiza rezultatul.",
+        "error": "Previzualizarea simulată nu a putut fi creată.",
+        "openFull": "Deschide rezultatul text complet în inspector",
+        "copy": "Copiază rezultatul complet",
+        "copySuccess": "Text copiat",
+        "copyFailed": "Textul nu a putut fi copiat",
+        "fullResult": "Rezultat complet"
+      },
+      "readiness": {
+        "ready": "Pregătit pentru rulare",
+        "incomplete": "Adaugă un prompt",
+        "invalid": "Rezolvă configurația nevalidă",
+        "unsupportedCombination": "Acest model nu acceptă intrările conectate."
+      },
+      "summary": {
+        "title": "Intrări și ieșire"
+      },
+      "modelChange": {
+        "title": "Schimbi modelul LLM?",
+        "description": "Schimbarea la {{model}} necesită aceste modificări:",
+        "removeConnection": "Elimină conexiunea de la {{source}} la {{input}}.",
+        "resetReasoning": "Resetează raționamentul de la {{from}} la {{to}}.",
+        "notApplicable": "Indisponibil",
+        "confirm": "Aplică modificările"
+      },
+      "mock": {
+        "output_one": "Răspuns simulat pentru „{{prompt}}” folosind {{count}} imagine.",
+        "output_other": "Răspuns simulat pentru „{{prompt}}” folosind {{count}} imagini.",
+        "instructionsApplied": "Instrucțiuni aplicate: {{instructions}}"
       }
     },
     "inputStates": {
@@ -291,10 +558,22 @@
       "imageToVideoDescription": "Animează un prim cadru într-un videoclip.",
       "audioToVideo": "Audio în video",
       "audioToVideoDescription": "Generează mișcare video din audio și un cadru opțional.",
+      "extendVideo": "Extinde videoclipul",
+      "extendVideoDescription": "Continuă un videoclip existent cu instrucțiuni opționale.",
       "textToSpeech": "Text în vorbire",
       "textToSpeechDescription": "Creează audio vorbit din text cu o referință vocală opțională.",
       "textToSoundEffect": "Text în efect sonor",
-      "textToSoundEffectDescription": "Creează un efect sonor dintr-o descriere."
+      "textToSoundEffectDescription": "Creează un efect sonor dintr-o descriere.",
+      "textToText": "Text în text",
+      "textToTextDescription": "Transformă o valoare text într-un alt text reutilizabil.",
+      "visionToText": "Imagini în text",
+      "visionToTextDescription": "Analizează imagini împreună cu un prompt text.",
+      "textToMusic": "Text în muzică",
+      "textToMusicDescription": "Creează muzică dintr-o direcție creativă în text.",
+      "changeVoice": "Schimbă vocea",
+      "changeVoiceDescription": "Păstrează interpretarea în timp ce schimbi vocea.",
+      "isolateVoice": "Izolează vocea",
+      "isolateVoiceDescription": "Elimină zgomotul de fundal și returnează voce vorbită curată."
     },
     "constraints": {
       "lastFrameRequiresFirstFrame": "Conectează un prim cadru înainte de ultimul.",
@@ -304,6 +583,45 @@
     },
     "nodeMedia": {
       "play": "Redă {{name}}"
+    },
+    "audio": {
+      "category": "Modele audio",
+      "inputs": {
+        "railLabel": "Intrările nodului audio",
+        "limitReached": "Această intrare a atins limita modelului.",
+        "selectedCount": "{{count}} element media selectat",
+        "inspect": "Inspectează {{input}}",
+        "connectedMedia": "Media conectată"
+      },
+      "prompt": {
+        "externalAuthoritative": "Este folosit textul conectat. Schița din câmp este păstrată."
+      },
+      "lyrics": {
+        "externalAuthoritative": "Sunt folosite versurile conectate. Schița din câmp este păstrată."
+      },
+      "preview": {
+        "label": "Previzualizare audio în așteptarea generării"
+      },
+      "readiness": {
+        "ready": "Pregătit pentru generare",
+        "incomplete": "Adaugă intrările obligatorii",
+        "invalid": "Rezolvă configurația nevalidă",
+        "unsupportedCombination": "Acest model nu acceptă această combinație de intrări."
+      },
+      "speech": {
+        "scriptLabel": "Scenariu",
+        "scriptPlaceholder": "Scrie narațiunea sau dialogul..."
+      },
+      "music": {
+        "promptLabel": "Instrucțiune muzicală",
+        "promptPlaceholder": "Descrie genul, atmosfera, structura, instrumentele și energia...",
+        "lyricsLabel": "Versuri",
+        "lyricsPlaceholder": "Scrie strofe, refren sau indicații vocale..."
+      },
+      "soundEffect": {
+        "promptLabel": "Descrierea sunetului",
+        "promptPlaceholder": "Descrie efectul, Foley, impactul, textura sau ambianța..."
+      }
     }
   },
   "assets": {

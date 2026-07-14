@@ -8,16 +8,13 @@ import {
   getActiveGenerationSettings,
   getGenerationModel,
   getGenerationOperation,
+  isCurrentGenerationModelContract,
 } from '@talelabs/flows'
-import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import {
-  useFlowCanvas,
-} from './flow-canvas-context'
+import { useFlowCanvas } from './flow-canvas-context'
 import { getCanvasGenerationModel } from './flow-generation-contract'
 
-interface PendingChange {
-  kind: 'model' | 'operation'
+interface ConfigurationChange {
   modelContractVersion: string
   modelId: string
   operationId: string
@@ -34,54 +31,61 @@ function nodeMediaType(node: CanvasNode) {
 export function useFlowGenerationSettings(node: CanvasNode) {
   const { t } = useTranslation()
   const canvas = useFlowCanvas()
-  const [pendingChange, setPendingChange] = useState<PendingChange | null>(null)
   const mediaType = nodeMediaType(node)
   const mediaModels = canvas.generationConfig.models.filter(
     model => model.mediaType === mediaType,
   )
-  const enabledModels = mediaModels.filter(model => model.enabled)
+  const availableModels = mediaModels.filter(model => model.enabled)
   const model = getCanvasGenerationModel(node)
-  const savedConfigModel = mediaModels.find(item => item.id === node.data.modelId)
-  const selectableModels = savedConfigModel && !savedConfigModel.enabled
-    ? [savedConfigModel, ...enabledModels]
-    : enabledModels
-  const modelOptions = selectableModels.map(item => ({
+  const savedConfigModel = mediaModels.find(
+    item => item.id === node.data.modelId,
+  )
+  const modelOptions = availableModels.map(item => ({
+    capabilities: item.capabilities.operations.map(operation =>
+      t(operation.labelKey),
+    ),
     category: {
       id: item.mediaType,
       label: t(`assets.types.${item.mediaType}`),
     },
-    disabled: !item.enabled,
+    description: t(item.presentation.descriptionKey),
     id: item.id,
     label: t(item.labelKey),
-    provider: {
-      id: item.provider.id,
-      name: item.provider.displayName,
-    },
-    status: item.enabled ? undefined : t('flows.modelUnavailable'),
+    logoId: item.presentation.logoId,
+    recommended: item.recommended,
   }))
   const operation = model
-    ? getGenerationOperation(model, node.data.operationId)
-    ?? getGenerationOperation(model, model.defaultOperationId)
+    ? (getGenerationOperation(model, node.data.operationId)
+      ?? getGenerationOperation(model, model.defaultOperationId))
     : undefined
   const connectedSlotIds = new Set(
     model?.inputSlots
-      .filter(slot => (canvas.getInputState(node.id, slot.id)?.connectionCount ?? 0) > 0)
+      .filter(
+        slot =>
+          (canvas.getInputState(node.id, slot.id)?.connectionCount ?? 0) > 0,
+      )
       .map(slot => slot.id) ?? [],
   )
-  const contractEvaluation = model && operation
-    ? evaluateGenerationContract({
-        connectionCounts: Object.fromEntries([...connectedSlotIds].map(id => [id, 1])),
-        model,
-        operationId: operation.id,
-        settings: node.data.settings ?? {},
-      })
-    : undefined
-  const visibleSettingIds = new Set(contractEvaluation?.visibleSettingIds ?? [])
-  const activeSettings = model && operation
-    ? getActiveGenerationSettings(model, operation.id).filter(setting => (
-        visibleSettingIds.has(setting.id)
-      ))
-    : []
+  const contractEvaluation
+    = model && operation
+      ? evaluateGenerationContract({
+          connectionCounts: Object.fromEntries(
+            [...connectedSlotIds].map(id => [id, 1]),
+          ),
+          model,
+          operationId: operation.id,
+          settings: node.data.settings ?? {},
+        })
+      : undefined
+  const visibleSettingIds = new Set(
+    contractEvaluation?.visibleSettingIds ?? [],
+  )
+  const activeSettings
+    = model && operation
+      ? getActiveGenerationSettings(model, operation.id).filter(setting =>
+          visibleSettingIds.has(setting.id),
+        )
+      : []
 
   function targetInputContracts(
     targetModel: GenerationModelDefinition,
@@ -108,21 +112,24 @@ export function useFlowGenerationSettings(node: CanvasNode) {
       }))
   }
 
-  function applyConfiguration(change: PendingChange) {
+  function applyConfiguration(change: ConfigurationChange) {
     const nextModel = getGenerationModel(
       change.modelId,
       change.modelContractVersion,
     )
     if (!nextModel)
       return
-    const modelChanged = nextModel.id !== model?.id
-      || change.modelContractVersion !== node.data.modelContractVersion
-    const configuredSettings = Object.fromEntries(nextModel.settings.map(setting => [
-      setting.id,
-      modelChanged
-        ? setting.default
-        : node.data.settings?.[setting.id] ?? setting.default,
-    ]))
+    const modelChanged
+      = nextModel.id !== model?.id
+        || change.modelContractVersion !== node.data.modelContractVersion
+    const configuredSettings = Object.fromEntries(
+      nextModel.settings.map(setting => [
+        setting.id,
+        modelChanged
+          ? setting.default
+          : (node.data.settings?.[setting.id] ?? setting.default),
+      ]),
+    )
     const settings = applyGenerationSettingRequirements({
       connectedSlotIds,
       model: nextModel,
@@ -137,50 +144,32 @@ export function useFlowGenerationSettings(node: CanvasNode) {
       operationId: change.operationId,
       settings,
     })
-    setPendingChange(null)
-  }
-
-  function requestConfiguration(change: PendingChange) {
-    const targetModel = getGenerationModel(
-      change.modelId,
-      change.modelContractVersion,
-    )
-    if (!targetModel)
-      return
-    const incompatibleCount = canvas.getIncompatibleGenerationEdgeCount(
-      node.id,
-      targetInputContracts(targetModel, change.operationId),
-    )
-    if (incompatibleCount > 0) {
-      setPendingChange(change)
-      return
-    }
-    applyConfiguration(change)
   }
 
   function updateModel(modelId: string) {
-    const nextConfigModel = enabledModels.find(item => item.id === modelId)
+    const nextConfigModel = availableModels.find(item => item.id === modelId)
     if (
       !nextConfigModel
-      || (
-        nextConfigModel.id === model?.id
-        && nextConfigModel.contractVersion === node.data.modelContractVersion
-      )
+      || (nextConfigModel.id === model?.id
+        && nextConfigModel.contractVersion === node.data.modelContractVersion)
     ) {
       return
     }
-    requestConfiguration({
-      kind: 'model',
+    applyConfiguration({
       modelContractVersion: nextConfigModel.contractVersion,
       modelId,
       operationId: nextConfigModel.defaultOperationId,
     })
   }
 
-  const upgradeConfigModel = savedConfigModel
-    && savedConfigModel.contractVersion !== node.data.modelContractVersion
-    ? savedConfigModel
-    : undefined
+  const upgradeConfigModel
+    = savedConfigModel
+      && !isCurrentGenerationModelContract(
+        savedConfigModel.id,
+        node.data.modelContractVersion,
+      )
+      ? savedConfigModel
+      : undefined
 
   function upgradeModelContract() {
     if (!upgradeConfigModel)
@@ -191,22 +180,21 @@ export function useFlowGenerationSettings(node: CanvasNode) {
     )
     if (!nextModel)
       return
-    requestConfiguration({
-      kind: 'model',
+    applyConfiguration({
       modelContractVersion: upgradeConfigModel.contractVersion,
       modelId: upgradeConfigModel.id,
-      operationId: operation
+      operationId:
+        operation
         && nextModel.operations.some(item => item.id === operation.id)
-        ? operation.id
-        : nextModel.defaultOperationId,
+          ? operation.id
+          : nextModel.defaultOperationId,
     })
   }
 
   function updateOperation(operationId: string) {
     if (!model || operationId === operation?.id)
       return
-    requestConfiguration({
-      kind: 'operation',
+    applyConfiguration({
       modelContractVersion: node.data.modelContractVersion,
       modelId: model.id,
       operationId,
@@ -225,30 +213,12 @@ export function useFlowGenerationSettings(node: CanvasNode) {
     canvas.updateNodeData(node.id, current => ({ ...current, settings }))
   }
 
-  const pendingModel = pendingChange
-    ? getGenerationModel(
-        pendingChange.modelId,
-        pendingChange.modelContractVersion,
-      )
-    : undefined
-  const incompatibleConnectionCount = pendingModel && pendingChange
-    ? canvas.getIncompatibleGenerationEdgeCount(
-        node.id,
-        targetInputContracts(pendingModel, pendingChange.operationId),
-      )
-    : 0
-
   return {
     activeSettings,
     canUpgradeModelContract: Boolean(upgradeConfigModel),
-    cancelConfigurationChange: () => setPendingChange(null),
-    confirmConfigurationChange: () => pendingChange && applyConfiguration(pendingChange),
-    incompatibleConnectionCount,
     model,
     modelOptions,
     operation,
-    pendingChange,
-    pendingModel,
     updateModel,
     updateOperation,
     updateSetting,

@@ -1,112 +1,28 @@
-import type { FlowImageCrop } from '@talelabs/flows'
-import type { FlowReferenceAsset } from '@talelabs/sdk'
 import type { NodeProps } from '@xyflow/react'
 /* eslint-disable better-tailwindcss/no-unknown-classes -- React Flow uses these interaction classes as behavior hooks. */
 import type { CanvasNode } from '../flow-canvas-types'
 import { IconPlayerPlay } from '@tabler/icons-react'
 import { assetTypeToValueType } from '@talelabs/flows'
 import { Button } from '@talelabs/ui/components/button'
-import { Separator } from '@talelabs/ui/components/separator'
+import { Spinner } from '@talelabs/ui/components/spinner'
 import { cn } from '@talelabs/ui/lib/utils'
-import { NodeToolbar, Position } from '@xyflow/react'
 import { memo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AssetIcon } from '../../../shared/domain-icons'
 import { AssetMediaPreview } from '../../assets/asset-media-preview'
 import { useAssetDetailQuery } from '../../assets/asset.queries'
+import { FlowActionTooltip } from '../flow-action-tooltip'
 import { useFlowCanvas } from '../flow-canvas-context'
 import { useFlowMediaPreview } from '../flow-media-preview-context'
-import {
-  FULL_IMAGE_CROP,
-  imageCropAspectRatio,
-  imageNodeDisplayAspectRatio,
-  isFullImageCrop,
-  readImageCrop,
-} from '../image-crop'
-import { CroppedImagePreview, ImageCropEditor } from '../image-crop-editor'
-import { FlowHandle } from './flow-handle'
+import { readImageCrop } from '../image-crop'
+import { CroppedImagePreview } from '../image-crop-editor'
+import { AssetImageCropMode } from './asset-image-crop-mode'
+import { aspectRatioFromDimensions } from './flow-node-aspect-ratio'
+import { FlowNodeOutputFooter } from './flow-node-output-footer'
+import { FlowNodePreviewStage } from './flow-node-preview-stage'
+import { FlowNodeSelectionStage } from './flow-node-selection-stage'
 import { FlowNodeShell } from './flow-node-shell'
-
-function AssetImageCropMode({
-  asset,
-  nodeId,
-  savedCrop,
-  src,
-}: {
-  asset: FlowReferenceAsset
-  nodeId: string
-  savedCrop: FlowImageCrop | null
-  src: string
-}) {
-  const { t } = useTranslation()
-  const canvas = useFlowCanvas()
-  const [draftCrop, setDraftCrop] = useState<FlowImageCrop>(
-    savedCrop ?? FULL_IMAGE_CROP,
-  )
-  const editorAspectRatio = imageNodeDisplayAspectRatio(
-    imageCropAspectRatio(
-      savedCrop ?? FULL_IMAGE_CROP,
-      asset.width,
-      asset.height,
-    ),
-  )
-
-  function applyCrop() {
-    canvas.updateNodeData(nodeId, (current) => {
-      if (!isFullImageCrop(draftCrop))
-        return { ...current, crop: draftCrop }
-      const { crop: _crop, ...withoutCrop } = current
-      return withoutCrop
-    })
-    canvas.setEditingImageCropNodeId(null)
-  }
-
-  return (
-    <>
-      <NodeToolbar
-        className="
-          nodrag nopan flex items-center gap-1 rounded-xl border
-          border-border/90 bg-card/96 p-1 shadow-xl backdrop-blur-sm
-        "
-        isVisible
-        nodeId={nodeId}
-        offset={10}
-        position={Position.Bottom}
-      >
-        <Button
-          disabled={isFullImageCrop(draftCrop)}
-          size="sm"
-          type="button"
-          variant="ghost"
-          onClick={() => setDraftCrop(FULL_IMAGE_CROP)}
-        >
-          {t('flows.cropEditor.reset')}
-        </Button>
-        <Separator className="mx-0.5 h-5! self-center!" orientation="vertical" />
-        <Button
-          size="sm"
-          type="button"
-          variant="ghost"
-          onClick={() => canvas.setEditingImageCropNodeId(null)}
-        >
-          {t('common.cancel')}
-        </Button>
-        <Button size="sm" type="button" onClick={applyCrop}>
-          {t('flows.cropEditor.apply')}
-        </Button>
-      </NodeToolbar>
-      <ImageCropEditor
-        alt={asset.name}
-        crop={draftCrop}
-        frameAspectRatio={editorAspectRatio}
-        sourceHeight={asset.height}
-        sourceWidth={asset.width}
-        src={src}
-        onCropChange={setDraftCrop}
-      />
-    </>
-  )
-}
+import { FlowNodeUploadProgress } from './flow-node-upload-progress'
 
 export const AssetFlowNode = memo(({
   data,
@@ -116,53 +32,81 @@ export const AssetFlowNode = memo(({
   const { t } = useTranslation()
   const canvas = useFlowCanvas()
   const mediaPreview = useFlowMediaPreview()
+  const [measuredMedia, setMeasuredMedia] = useState<{
+    aspectRatio: number
+    assetId: string
+  } | null>(null)
+  const [videoPlaybackStarted, setVideoPlaybackStarted] = useState(false)
   const assetId = canvas.getNode(id)?.assetId
-  const asset = assetId ? canvas.referenceData.assetsById.get(assetId) : undefined
+  const assetUpload = canvas.getAssetUpload(id)
+  const referenceAsset = assetId
+    ? canvas.referenceData.assetsById.get(assetId)
+    : undefined
+  const asset = assetUpload?.asset ?? referenceAsset
+  const displayAsset = assetUpload && asset
+    ? {
+        ...asset,
+        processingState: 'ready' as const,
+        thumbnailUrl: asset.type === 'image'
+          ? assetUpload.previewUrl
+          : asset.thumbnailUrl,
+        url: assetUpload.previewUrl,
+      }
+    : asset
   const valueType = assetTypeToValueType(asset?.type ?? 'document')
   const isPlayable = asset?.type === 'video' || asset?.type === 'audio'
   const previewActive = mediaPreview.activeNodeId === id
+  const videoPlaybackLoading = asset?.type === 'video'
+    && previewActive
+    && !videoPlaybackStarted
+  const playbackActionLabel = videoPlaybackLoading
+    ? t('common.loading')
+    : t('flows.nodeMedia.play', { name: asset?.name ?? '' })
   const playbackAssetQuery = useAssetDetailQuery(
-    assetId ?? null,
-    Boolean(isPlayable && previewActive),
+    assetUpload ? null : assetId ?? null,
+    Boolean(!assetUpload && isPlayable && previewActive),
   )
-  const playbackAsset = playbackAssetQuery.data ?? asset
-  const imageSource = asset?.type === 'image'
-    ? asset.thumbnailUrl ?? asset.url
+  const playbackAsset = assetUpload
+    ? displayAsset
+    : playbackAssetQuery.data ?? asset
+  const imageSource = displayAsset?.type === 'image'
+    ? displayAsset.thumbnailUrl ?? displayAsset.url
     : null
   const editingCrop = canvas.editingImageCropNodeId === id
   const savedCrop = readImageCrop(data.crop)
-  const imageContentAspectRatio = asset?.type === 'image'
-    ? savedCrop
-      ? imageCropAspectRatio(savedCrop, asset.width, asset.height)
-      : asset.width && asset.height
-        ? asset.width / asset.height
-        : 4 / 3
-    : 4 / 3
-  const imageAspectRatio = imageNodeDisplayAspectRatio(
-    imageContentAspectRatio,
-  )
+  const declaredSourceAspectRatio = asset
+    && (asset.type === 'image' || asset.type === 'video')
+    ? aspectRatioFromDimensions(asset.width, asset.height)
+    : null
+  const sourceAspectRatio = asset && measuredMedia?.assetId === asset.id
+    ? measuredMedia.aspectRatio
+    : declaredSourceAspectRatio
+  const previewAspectRatio = asset?.type === 'image'
+    && savedCrop
+    && sourceAspectRatio
+    ? sourceAspectRatio * savedCrop.width / savedCrop.height
+    : sourceAspectRatio ?? undefined
+
+  function recordMediaAspectRatio(aspectRatio: number) {
+    if (!asset || !Number.isFinite(aspectRatio) || aspectRatio <= 0)
+      return
+    setMeasuredMedia({ aspectRatio, assetId: asset.id })
+  }
 
   return (
     <FlowNodeShell
-      className="w-90"
+      className="w-96"
+      contentClassName="gap-0 p-0"
       footer={asset
         ? (
-            <div className="
-              relative flex w-full items-center justify-between gap-3
-              text-[11px] text-muted-foreground
-            "
+            <FlowNodeOutputFooter
+              ariaLabel={t('flows.handles.assetOutput')}
+              handleId="asset"
+              label={t('flows.outputs.asset')}
+              valueType={valueType}
             >
               <span>{t(`assets.types.${asset.type}`)}</span>
-              <div className="relative flex items-center gap-2">
-                <span>{t('flows.outputs.asset')}</span>
-                <FlowHandle
-                  ariaLabel={t('flows.handles.assetOutput')}
-                  id="asset"
-                  side="output"
-                  valueType={valueType}
-                />
-              </div>
-            </div>
+            </FlowNodeOutputFooter>
           )
         : undefined}
       icon={AssetIcon}
@@ -180,99 +124,124 @@ export const AssetFlowNode = memo(({
                 src={imageSource}
               />
             )
-          : isPlayable
-            ? (
-                <div
-                  className={cn(
-                    `
-                      relative flex aspect-4/3 items-center justify-center
-                      overflow-hidden rounded-lg border border-border/70
-                      bg-background
-                    `,
-                    previewActive && 'nodrag nopan nowheel',
-                  )}
-                  id={`flow-node-media-${id}`}
-                >
-                  <div className={cn(
-                    'flex size-full items-center justify-center',
-                    !previewActive && 'pointer-events-none',
-                  )}
-                  >
-                    <AssetMediaPreview
-                      asset={playbackAsset!}
-                      className={previewActive ? 'nodrag nopan nowheel' : undefined}
-                      mode={previewActive && playbackAsset?.url
-                        ? 'player'
-                        : 'thumbnail'}
-                    />
-                  </div>
-                  {!previewActive && (
-                    <Button
-                      aria-label={t('flows.nodeMedia.play', { name: asset.name })}
-                      className="
-                        nodrag nopan absolute top-1/2 left-1/2 -translate-1/2
-                        rounded-full shadow-lg
-                      "
-                      size="icon"
-                      title={t('flows.nodeMedia.play', { name: asset.name })}
-                      type="button"
-                      variant="secondary"
-                      onClick={(event) => {
-                        event.stopPropagation()
-                        mediaPreview.activateNode(id)
-                      }}
-                    >
-                      <IconPlayerPlay aria-hidden />
-                    </Button>
-                  )}
-                </div>
-              )
-            : (
-                <div
-                  className="
-                    relative flex items-center justify-center overflow-hidden
-                    rounded-lg border border-border/70 bg-background
-                  "
-                  id={`flow-node-media-${id}`}
-                  style={{ aspectRatio: imageAspectRatio }}
-                >
-                  {savedCrop && imageSource
-                    ? (
-                        <div className="pointer-events-none size-full">
-                          <CroppedImagePreview
-                            alt={asset.name}
-                            crop={savedCrop}
-                            sourceHeight={asset.height}
-                            sourceWidth={asset.width}
-                            src={imageSource}
+          : (
+              <FlowNodePreviewStage
+                aspectRatio={previewAspectRatio}
+                valueType={valueType}
+              >
+                {isPlayable
+                  ? (
+                      <div
+                        className={cn(
+                          `
+                            absolute inset-0 flex items-center justify-center
+                            overflow-hidden
+                          `,
+                          previewActive && 'nodrag nopan nowheel',
+                        )}
+                        id={`flow-node-media-${id}`}
+                      >
+                        <div className={cn(
+                          'flex size-full items-center justify-center',
+                          !previewActive && 'pointer-events-none',
+                          videoPlaybackLoading && 'opacity-0',
+                        )}
+                        >
+                          <AssetMediaPreview
+                            asset={playbackAsset!}
+                            className={cn(
+                              'object-cover',
+                              previewActive && 'nodrag nopan nowheel',
+                            )}
+                            mode={previewActive && playbackAsset?.url
+                              ? 'player'
+                              : 'thumbnail'}
+                            onAspectRatioChange={recordMediaAspectRatio}
+                            videoAutoPlay={asset.type === 'video' && previewActive}
+                            videoPreviewActive={Boolean(assetUpload)}
+                            onVideoPlaybackError={() =>
+                              setVideoPlaybackStarted(true)}
+                            onVideoPlaying={() => setVideoPlaybackStarted(true)}
                           />
                         </div>
-                      )
-                    : (
-                        <div className="pointer-events-none size-full">
-                          <AssetMediaPreview asset={asset} />
-                        </div>
-                      )}
-                </div>
-              )
+                        {(!previewActive || videoPlaybackLoading) && (
+                          <FlowActionTooltip
+                            className="
+                              nodrag nopan absolute top-1/2 left-1/2
+                              -translate-1/2 rounded-full
+                            "
+                            disabled={videoPlaybackLoading}
+                            label={playbackActionLabel}
+                          >
+                            <Button
+                              aria-label={playbackActionLabel}
+                              className="
+                                rounded-full shadow-lg
+                                disabled:opacity-100
+                              "
+                              disabled={videoPlaybackLoading}
+                              size="icon"
+                              type="button"
+                              variant="secondary"
+                              onClick={(event) => {
+                                event.stopPropagation()
+                                setVideoPlaybackStarted(false)
+                                mediaPreview.activateNode(id)
+                              }}
+                            >
+                              {videoPlaybackLoading
+                                ? <Spinner aria-label={t('common.loading')} />
+                                : <IconPlayerPlay aria-hidden />}
+                            </Button>
+                          </FlowActionTooltip>
+                        )}
+                      </div>
+                    )
+                  : (
+                      <div
+                        className="
+                          pointer-events-none absolute inset-0 flex items-center
+                          justify-center overflow-hidden
+                        "
+                        id={`flow-node-media-${id}`}
+                      >
+                        {savedCrop && imageSource
+                          ? (
+                              <CroppedImagePreview
+                                alt={asset.name}
+                                crop={savedCrop}
+                                frameAspectRatio={previewAspectRatio ?? 1}
+                                onSourceAspectRatioChange={recordMediaAspectRatio}
+                                sourceHeight={asset.height}
+                                sourceWidth={asset.width}
+                                src={imageSource}
+                              />
+                            )
+                          : (
+                              <AssetMediaPreview
+                                asset={displayAsset!}
+                                className="object-cover"
+                                onAspectRatioChange={recordMediaAspectRatio}
+                              />
+                            )}
+                      </div>
+                    )}
+                {assetUpload?.status === 'uploading' && (
+                  <FlowNodeUploadProgress
+                    name={asset.name}
+                    progress={assetUpload.progress}
+                  />
+                )}
+              </FlowNodePreviewStage>
+            )
         : (
-            <button
-              className="
-                nodrag nopan flex min-h-40 flex-col items-center justify-center
-                gap-2 rounded-lg border border-dashed bg-muted/15 p-4
-                text-center outline-none
-                hover:bg-muted/30
-                focus-visible:ring-2 focus-visible:ring-ring
-              "
-              type="button"
-              onClick={() => canvas.openAssetPicker(id)}
-            >
-              <AssetIcon className="size-7 text-muted-foreground" />
-              <span className="text-sm font-medium">{t('flows.chooseAsset')}</span>
-              <span className="text-xs text-muted-foreground">
-                {t('flows.chooseAssetDescription')}
-              </span>
-            </button>
+            <FlowNodeSelectionStage
+              description={t('flows.chooseAssetDescription')}
+              icon={AssetIcon}
+              label={t('flows.chooseAsset')}
+              valueType="Asset"
+              onSelect={() => canvas.openAssetPicker(id)}
+            />
           )}
     </FlowNodeShell>
   )

@@ -8,7 +8,6 @@ import { useTranslation } from 'react-i18next'
 import {
   getContainedMediaSize,
   imageCropAspectRatio,
-  imageNodeDisplayAspectRatio,
   roundImageCrop,
 } from './image-crop'
 
@@ -44,12 +43,16 @@ function clamp(value: number, minimum: number, maximum: number) {
 export function CroppedImagePreview({
   alt,
   crop,
+  frameAspectRatio,
+  onSourceAspectRatioChange,
   sourceHeight,
   sourceWidth,
   src,
 }: {
   alt: string
   crop: FlowImageCrop
+  frameAspectRatio: number
+  onSourceAspectRatioChange?: (aspectRatio: number) => void
   sourceHeight: null | number
   sourceWidth: null | number
   src: string
@@ -59,8 +62,6 @@ export function CroppedImagePreview({
     sourceWidth,
     sourceHeight,
   )
-  const frameAspectRatio = imageNodeDisplayAspectRatio(contentAspectRatio)
-
   return (
     <div className="flex size-full items-center justify-center bg-background">
       <div
@@ -79,6 +80,11 @@ export function CroppedImagePreview({
             width: `${100 / crop.width}%`,
           }}
           width={sourceWidth ?? undefined}
+          onLoad={(event) => {
+            const { naturalHeight, naturalWidth } = event.currentTarget
+            if (naturalWidth > 0 && naturalHeight > 0)
+              onSourceAspectRatioChange?.(naturalWidth / naturalHeight)
+          }}
         />
       </div>
     </div>
