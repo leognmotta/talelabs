@@ -1172,12 +1172,15 @@ Trigger.dev owns durable execution, retries, waiting, concurrency, and
 orchestration. PostgreSQL owns product-domain state, immutable provenance,
 idempotency, costs, and canonical Asset relationships.
 
-Production dispatch also pins executor code. Trigger.dev deployments are
-versioned; the API and Trigger tasks must be deployed atomically and the resolved
-executor deployment version recorded for the domain run. Parent orchestration
-and awaited child tasks remain on a compatible deployment version. Snapshot
-readers retain deterministic upcasters for every supported `snapshotVersion`, so
-queued or retried old runs remain executable after application deployments.
+Production dispatch keeps executor compatibility separate from deployment
+identity. `executorVersion` is a code-owned snapshot/runtime contract. Trigger
+selects and locks the current deployment when the run is accepted; the parent or
+reconciler discovers that actual version at runtime and records it once as
+`triggerDeploymentVersion`. Awaited child tasks remain on the parent deployment.
+Snapshot readers retain deterministic upcasters for every supported
+`snapshotVersion`, so queued or retried old runs remain executable after
+application deployments without a manually maintained version environment
+variable.
 
 Task payloads stay intentionally small:
 

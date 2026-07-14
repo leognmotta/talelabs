@@ -990,7 +990,9 @@ model limits (`422 unsupported_by_model` names the offending setting/input) →
 compose resolved prompts/instructions → lock exact existing Asset inputs in
 stable ID order → revalidate the Flow revision → insert run, run-node, run-item,
 source, exact-input, and just-in-time initial job records → commit → trigger the
-version-pinned orchestration or job task with ID-only payloads. Provider-facing
+orchestration task with ID-only payloads and no application-managed deployment
+version override. Trigger locks the accepted run to its current deployment; the
+parent or reconciliation records that runtime identity. Provider-facing
 URLs are resolved only inside the adapter boundary; expiring signed URLs and
 media bytes are never snapshot data.
 

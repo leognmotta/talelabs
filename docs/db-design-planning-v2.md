@@ -820,11 +820,13 @@ create table "flowRuns" (
   "snapshotHash" text not null,
         -- SHA-256 of canonical snapshot serialization; audit/integrity/dedup seam
   "executorVersion" text not null,
-        -- Trigger.dev deployment/application release selected at admission;
-        -- local development uses an explicit dev version, never an implicit null
+        -- code-owned TaleLabs snapshot/runtime compatibility contract
   "idempotencyKey" text not null,       -- required API header on every run request
   "requestHash" text not null,          -- detects same-key/different-body misuse
   "triggerRunId" text,                  -- parent orchestration task run (every M5 mode)
+  "triggerDeploymentVersion" text,
+        -- actual Trigger deployment discovered after acceptance; nullable until
+        -- the parent starts or reconciliation retrieves the Trigger run, then immutable
   "retryOfRunId" text,                  -- new immutable run derived from a terminal run
   "creditCost" integer,                 -- aggregate of child job costs, denormalized at completion
   "errorCode" text,
@@ -1041,7 +1043,10 @@ measurements justify it.
 3. One admission transaction inserts `flowRuns`, `flowRunNodes`, expanded
    `flowRunNodeItems`, initial `generationJobs`, `generationJobSources`, and exact
    `generationJobInputs` after Flow-revision and Asset-row validation.
-4. After commit: trigger the version-pinned task with ID-only payload `{ generationJobId, organizationId }` and domain-derived idempotency key; store `"triggerRunId"` (reconciliation sweep covers a crash in between)
+4. After commit: trigger with an ID-only payload and domain-derived idempotency
+   key; store `"triggerRunId"`, then let the parent or reconciliation persist the
+   actual Trigger deployment version discovered at runtime (the sweep covers a
+   crash in between)
 5. In M5 the task calls a deterministic local mock adapter; M6 replaces that
    boundary with provider submit/poll or immediate execution. Successful media
    goes through R2 and canonical Asset ingestion; text goes to durable text

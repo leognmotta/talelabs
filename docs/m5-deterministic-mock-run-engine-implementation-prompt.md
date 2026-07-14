@@ -227,8 +227,9 @@ Reconcile at least these facts:
 
 - Extend FlowRunMode/check constraints with `upstream` and `selection` while
   retaining `node`, `downstream`, `all`, and deferred historical `tool`.
-- Add immutable `snapshotHash` and `executorVersion` to flowRuns with a safe
-  migration/backfill strategy.
+- Add immutable `snapshotHash` and code-owned `executorVersion` to flowRuns with
+  a safe migration/backfill strategy. Trigger deployment identity is separate
+  runtime metadata, not an executor contract or environment-managed value.
 - Treat `targetNodeId` as required for node/downstream/upstream.
 - Store selection request IDs and exact frozen prior-output requirements in the
   immutable graph snapshot rather than mutable graph rows.

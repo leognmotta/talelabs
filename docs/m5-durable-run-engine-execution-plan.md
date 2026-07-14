@@ -291,7 +291,7 @@ The snapshot is bounded, versioned, insert-only JSONB. It freezes:
 - exact static Asset IDs and exact prior-run job/output IDs;
 - considered candidates, exclusions, selected inputs, and payload order;
 - resolved text/prompt/instructions where known at admission;
-- planner version, adapter contract version, and executor deployment version;
+- planner version, adapter contract version, and code-owned executor contract version;
 - planned upper bounds for items, jobs, outputs, and snapshot bytes.
 
 The snapshot never contains:
@@ -315,7 +315,9 @@ that reconciles the implemented baseline with the M5 design.
 
 - add `upstream` and `selection` to the mode constraint;
 - require `targetNodeId` for `node`, `downstream`, and `upstream`;
-- add immutable `snapshotHash` and `executorVersion`;
+- add immutable `snapshotHash` and code-owned `executorVersion`;
+- add nullable, write-once `triggerDeploymentVersion`, discovered from the
+  accepted Trigger run rather than supplied through application configuration;
 - keep one parent `triggerRunId` for every mode;
 - remove the old undispatched-index exclusion for `node`;
 - keep organization-scoped API idempotency uniqueness;
@@ -416,14 +418,17 @@ table is unnecessary for M5.
 
 - dispatch after commit with payload `{ flowRunId, organizationId }`;
 - use an explicit global Trigger idempotency key derived from `flowRunId`;
-- dispatch the run's recorded compatible Trigger deployment version;
+- let Trigger select and lock its current deployment; do not require an
+  application-managed deployment-version environment variable;
 - record the returned Trigger run ID using a guarded compare-and-set.
 
 ### Parent startup claim
 
-The parent obtains its own Trigger run ID from Trigger context and attempts the
-same guarded claim. This closes a crash after Trigger accepted the task but
-before the API stored the handle.
+The parent obtains its own Trigger run ID and actual deployment version from
+Trigger context and attempts the same guarded claim. The claim stores
+`triggerDeploymentVersion` once when available. Reconciliation may fill the same
+nullable field from `runs.retrieve()` if the worker never starts. This closes a
+crash after Trigger accepted the task but before the API stored the handle.
 
 - no existing claim: store this parent ID and continue;
 - same claim: continue idempotently;
@@ -437,7 +442,8 @@ submissions.
 
 Add one Trigger scheduled reconciliation task:
 
-- pending + no `triggerRunId`: dispatch with the same global key/version;
+- pending + no `triggerRunId`: dispatch against Trigger's current deployment
+  with the same global idempotency key;
 - domain-active + Trigger terminal: repair the domain state from persisted job
   rows and safe Trigger status;
 - domain-canceled + Trigger active: reissue cancellation;
@@ -832,7 +838,7 @@ Gate:
 Deliver:
 
 - parent and child `schemaTask`s;
-- version-pinned two-writer dispatch claim;
+- runtime deployment discovery and guarded two-writer dispatch claim;
 - bounded queues/batches and per-org concurrency;
 - just-in-time downstream items/jobs;
 - scheduled reconciliation;
