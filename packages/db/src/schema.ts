@@ -43,7 +43,13 @@ export type AssetType = 'audio' | 'document' | 'image' | 'video'
 export type AssetSource = 'generation' | 'upload'
 export type AssetProcessingState = 'failed' | 'processing' | 'ready'
 export type ElementReferenceKind = 'master' | 'source'
-export type FlowRunMode = 'all' | 'downstream' | 'node' | 'tool'
+export type FlowRunMode
+  = | 'all'
+    | 'downstream'
+    | 'node'
+    | 'selection'
+    | 'tool'
+    | 'upstream'
 export type FlowRunStatus
   = | 'canceled'
     | 'failed'
@@ -54,11 +60,12 @@ export type FlowRunStatus
 export type FlowRunNodeStatus
   = | 'canceled'
     | 'failed'
+    | 'partial'
     | 'pending'
     | 'running'
     | 'skipped'
     | 'succeeded'
-export type GenerationJobMediaType = 'audio' | 'image' | 'video'
+export type GenerationJobMediaType = 'audio' | 'image' | 'text' | 'video'
 export type GenerationJobStatus
   = | 'canceled'
     | 'failed'
@@ -166,6 +173,7 @@ export interface FlowTable {
   organizationId: string
   createdBy: string | null
   name: string
+  assetFolderId: string | null
   viewport: GeneratedJsonColumn
   revision: GeneratedBigIntColumn
   createdAt: GeneratedTimestamp
@@ -182,10 +190,14 @@ export interface FlowRunTable {
   status: Generated<FlowRunStatus>
   graphSnapshot: GeneratedJsonColumn
   snapshotVersion: Generated<number>
+  snapshotHash: string
+  executorVersion: string
   idempotencyKey: string
   requestHash: string
   triggerRunId: string | null
+  retryOfRunId: string | null
   creditCost: number | null
+  providerCostUsd: NullableNumericColumn
   errorCode: string | null
   errorMessage: string | null
   createdAt: GeneratedTimestamp
@@ -200,10 +212,17 @@ export interface GenerationJobTable {
   flowRunId: string
   flowId: string | null
   nodeId: string
+  itemKey: string
+  requestIndex: Generated<number>
   mediaType: GenerationJobMediaType
   status: Generated<GenerationJobStatus>
   provider: string
   model: string
+  operation: string
+  providerModel: string
+  modelRegistryVersion: string
+  providerRouteVersion: string
+  adapterVersion: string
   settings: GeneratedJsonColumn
   resolvedPrompt: string | null
   idempotencyKey: string
@@ -225,9 +244,28 @@ export interface FlowRunNodeTable {
   flowRunId: string
   nodeId: string
   status: Generated<FlowRunNodeStatus>
-  jobId: string | null
   createdAt: GeneratedTimestamp
   updatedAt: GeneratedTimestamp
+}
+
+export interface FlowRunNodeItemTable {
+  organizationId: string
+  flowRunId: string
+  nodeId: string
+  itemKey: string
+  sortOrder: number
+  dimensions: GeneratedJsonColumn
+  lineage: GeneratedJsonColumn
+  status: Generated<FlowRunNodeStatus>
+  createdAt: GeneratedTimestamp
+  updatedAt: GeneratedTimestamp
+}
+
+export interface GenerationJobTextOutputTable {
+  organizationId: string
+  jobId: string
+  outputIndex: number
+  text: string
 }
 
 export interface AssetTable {
@@ -364,12 +402,14 @@ export interface Database {
   elements: ElementTable
   flowEdges: FlowEdgeTable
   flowNodes: FlowNodeTable
+  flowRunNodeItems: FlowRunNodeItemTable
   flowRunNodes: FlowRunNodeTable
   flowRuns: FlowRunTable
   flows: FlowTable
   folders: FolderTable
   generationJobInputs: GenerationJobInputTable
   generationJobSources: GenerationJobSourceTable
+  generationJobTextOutputs: GenerationJobTextOutputTable
   generationJobs: GenerationJobTable
   invitation: InvitationTable
   member: MemberTable
