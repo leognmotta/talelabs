@@ -964,16 +964,16 @@ Mode semantics are server-owned:
 node        target executable node only; resolve required static sources
 downstream  target plus executable descendants
 upstream    target plus executable ancestors required to reach it
-selection   selected executable nodes plus their minimum required executable
-            upstream dependency closure
+selection   selected executable nodes only; unselected executable ancestors
+            resolve from compatible prior successful outputs
 all         every executable node in the saved Flow
 ```
 
 Text, Asset, and deterministic control nodes participate in source/dependency
 resolution but do not create provider jobs by themselves. `selection` rejects an
-empty selection or one containing no executable node and returns both the
-explicitly selected count and actual planned executable-node count so the client
-can disclose dependency-closure expansion.
+empty selection or one containing no executable node. Missing compatible prior
+outputs for unselected executable ancestors reject admission instead of silently
+adding paid work.
 
 There is deliberately **no prompt/model/settings in this body**: node draft
 configuration and connected context (Text nodes, Asset nodes, and upstream

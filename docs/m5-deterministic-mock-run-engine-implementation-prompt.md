@@ -150,12 +150,12 @@ Implement exactly five user-visible M5 modes:
    - Execute the target and executable ancestors required to reach it.
 
 4. `selection` / Run selection
-   - Start from selected executable nodes.
-   - Add their minimum required executable upstream dependency closure.
+   - Execute selected executable nodes only.
+   - Resolve unselected executable ancestors from compatible pinned/latest
+     successful outputs; reject missing prerequisites instead of regenerating.
    - Ignore selected edges for execution semantics.
    - Reject an empty selection or a selection with no executable node.
-   - Return/show both selected executable count and actual planned executable
-     count so hidden dependency expansion is disclosed before admission.
+   - Return/show selected executable count and plan multiplicity before admission.
    - The React Flow integration uses `onSelectionContextMenu`; selected edges
      are ignored and selected node IDs are revalidated on the server.
 
@@ -230,8 +230,8 @@ Reconcile at least these facts:
 - Add immutable `snapshotHash` and `executorVersion` to flowRuns with a safe
   migration/backfill strategy.
 - Treat `targetNodeId` as required for node/downstream/upstream.
-- Store selection request IDs and expanded dependency closure in the immutable
-  graph snapshot rather than mutable graph rows.
+- Store selection request IDs and exact frozen prior-output requirements in the
+  immutable graph snapshot rather than mutable graph rows.
 - Remove the one-job-per-node assumption represented by `flowRunNodes.jobId`.
 - Keep `flowRunNodes` as node-level summary state.
 - Add `flowRunNodeItems` keyed by flowRunId + nodeId + deterministic itemKey,
@@ -312,7 +312,7 @@ Create one application/domain service for run admission:
 - Persist one bounded immutable snapshot containing:
   - snapshot schema version and hash
   - captured Flow revision
-  - requested mode, target/selection, and expanded closure
+  - requested mode, target/selection, and exact planned execution set
   - exact node configs and deterministic edge order
   - planner/executor version
   - stable TaleLabs model IDs and model-contract versions/hashes
@@ -439,7 +439,7 @@ current visual design:
 - Right-click Run selection for selected executable nodes.
 - Every action flushes Flow autosave and runs the saved revision; commands never
   submit unsaved browser graph JSON.
-- Pre-admission summary for selection closure and any multiplicative plan.
+- Pre-admission summary for command scope and any multiplicative plan.
 - queued, running, succeeded, partial, failed, canceled, and skipped states.
 - Item/output progress where iteration or multiple outputs exist.
 - Node result previews/history derived from runs/jobs/Assets/text outputs, never
@@ -470,7 +470,7 @@ Verify at minimum:
 
 - Fresh database migration and upgrade from current migration state.
 - All five subgraph-selection semantics on branching DAGs.
-- Selection dependency closure is disclosed and deterministic.
+- Selection remains selected-only and freezes deterministic prior outputs.
 - Cycle and invalid-slot/model combinations fail before run insertion.
 - Same idempotency key/body replays; different body conflicts.
 - Pending autosave is flushed before admission; concurrent Flow edits return a

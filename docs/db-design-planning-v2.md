@@ -812,7 +812,8 @@ create table "flowRuns" (
         -- static context — Flow or Asset edits during an active run cannot
         -- change what executes. Only dynamic upstream OUTPUT asset ids resolve
         -- later, and they resolve inside this snapshot's graph. Selection-mode
-        -- snapshots include requested node ids and the expanded dependency closure.
+        -- snapshots include the exact requested executable node ids and frozen
+        -- prior-output requirements for every unselected executable ancestor.
   "snapshotVersion" smallint not null default 1,
         -- structure version of graphSnapshot itself (node payloads carry their own
         -- schemaVersion); future executors can deterministically read old runs
@@ -932,8 +933,9 @@ Execution semantics:
 
 - **Five M5 modes:** `node` targets one executable node; `downstream` adds its
   executable descendants; `upstream` adds executable ancestors needed to reach
-  the target; `selection` includes selected executable nodes plus their minimum
-  required executable upstream closure; `all` includes every executable node.
+  the target; `selection` includes only selected executable nodes and resolves
+  unselected ancestors from compatible prior outputs; `all` includes every
+  executable node.
   Source/control nodes may be captured without receiving jobs.
 - **Node mode uses the same item model:** it may expand into several work items
   or request shards, so it never assumes one job per node.
@@ -947,8 +949,9 @@ Execution semantics:
   item states aggregate into the node summary, and node summaries aggregate into
   the run. Partial success is preserved at item, node, and run levels.
 - **Snapshot at creation:** topological order, full node configurations, edges,
-  selected model contracts, mode request, expanded selection closure, static
-  source candidates, and deterministic planning decisions are frozen into
+  selected model contracts, mode request, exact selected execution set, frozen
+  prior-output requirements, static source candidates, and deterministic
+  planning decisions are frozen into
   `"graphSnapshot"`. Assembly uses `READ COMMITTED` with `flows.revision`
   re-validation. Selected existing Asset rows are locked in stable ID order and
   revalidated as ready and not purging. Planning rejects executable cycles before

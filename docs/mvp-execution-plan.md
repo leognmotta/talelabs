@@ -361,9 +361,10 @@ Mode semantics:
 - `downstream`: execute the target and all reachable executable descendants.
   Dependencies before the target are not rerun and must resolve as above.
 - `upstream`: execute the target and its complete executable ancestor closure.
-- `selection`: execute the selected executable nodes and the minimum executable
-  ancestor closure required to produce their inputs. The UI must show the actual
-  planned count; it must not imply that only visibly selected nodes execute.
+- `selection`: execute only the selected executable nodes. Unselected executable
+  ancestors are never regenerated; their inputs resolve from a compatible
+  pinned/latest successful result or admission fails with
+  `missing_upstream_output`.
 - `all`: execute every executable node in the Flow in deterministic topological
   order. Disconnected executable branches are included.
 

@@ -165,7 +165,11 @@ User clicks Run node
 -> the Flow node receives the resulting Asset reference
 ```
 
-Do not use Trigger.dev as evidence that TaleLabs needs a run-all Flow engine. In the first product loop, every generation node is executed manually and independently. Trigger.dev provides durability for that one execution; it does not change the manual Flow product model.
+Trigger.dev durably executes the five explicit user-owned commands: Run node,
+Run from here, Run till here, Run selection, and Run all. Connecting nodes never
+starts execution. Run selection executes only the chosen executable nodes and
+reuses compatible prior upstream results, avoiding unexpected regeneration and
+spend.
 
 Short deterministic operations remain in the TaleLabs API, including graph persistence, connection validation, input previews, cost estimates, signed-upload creation, and ordinary Asset updates.
 

@@ -1,6 +1,6 @@
 # M5 Durable Run Engine Execution Plan
 
-**Status:** proposed architecture, implementation not started.
+**Status:** active implementation and correction review; user run QA pending.
 
 **Updated:** 2026-07-14.
 
