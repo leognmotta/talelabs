@@ -5,8 +5,12 @@
 
 import * as z from "zod";
 import type { RunRealtimeToken } from "../types/RunRealtimeToken.ts";
+import { timestampSchema } from "./timestampSchema.ts";
 
 export const runRealtimeTokenSchema = z.object({
   triggerRunId: z.string(),
   publicAccessToken: z.string(),
+  get expiresAt() {
+    return timestampSchema;
+  },
 }) as unknown as z.ZodType<RunRealtimeToken>;

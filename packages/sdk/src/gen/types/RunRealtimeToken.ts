@@ -3,6 +3,8 @@
  * Do not edit manually.
  */
 
+import type { Timestamp } from "./Timestamp.ts";
+
 export type RunRealtimeToken = {
   /**
    * @type string
@@ -12,4 +14,8 @@ export type RunRealtimeToken = {
    * @type string
    */
   publicAccessToken: string;
+  /**
+   * @type string, date-time
+   */
+  expiresAt: Timestamp;
 };
