@@ -49,6 +49,7 @@ export * from "./postFlowsIdRunPlans.ts";
 export * from "./postFolders.ts";
 export * from "./postRuns.ts";
 export * from "./postRunsIdCancel.ts";
+export * from "./postRunsIdRealtimeToken.ts";
 export * from "./postRunsReconcile.ts";
 export * from "./postTags.ts";
 export * from "./postUploads.ts";

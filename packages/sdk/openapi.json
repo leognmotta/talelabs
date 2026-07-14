@@ -929,6 +929,9 @@
           "elementId": {
             "$ref": "#/components/schemas/Cuid2"
           },
+          "flowId": {
+            "$ref": "#/components/schemas/Cuid2"
+          },
           "role": {
             "type": "string",
             "minLength": 1,
@@ -3055,6 +3058,21 @@
         "required": [
           "mode",
           "expectedFlowRevision"
+        ]
+      },
+      "RunRealtimeToken": {
+        "type": "object",
+        "properties": {
+          "triggerRunId": {
+            "type": "string"
+          },
+          "publicAccessToken": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "triggerRunId",
+          "publicAccessToken"
         ]
       },
       "GenerationConfigResponse": {
@@ -9588,6 +9606,105 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/FlowRun"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Active organization required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Resource state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Organization request rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/runs/{id}/realtime-token": {
+      "post": {
+        "tags": [
+          "Runs"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "$ref": "#/components/schemas/Cuid2"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Run-scoped Trigger.dev realtime token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunRealtimeToken"
                 }
               }
             }

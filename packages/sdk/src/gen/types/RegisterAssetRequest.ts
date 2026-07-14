@@ -31,6 +31,11 @@ export type RegisterAssetRequest = {
    */
   elementId?: Cuid2;
   /**
+   * @pattern ^[a-z][0-9a-z]+$
+   * @type string | undefined
+   */
+  flowId?: Cuid2;
+  /**
    * @minLength 1
    * @maxLength 64
    * @type string | undefined
