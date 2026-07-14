@@ -96,6 +96,7 @@
       "crop": "Decupează imaginea",
       "run": "Rulează",
       "runOptions": "Opțiuni de rulare",
+      "retryEntireRun": "Reîncearcă întreaga rulare",
       "runFromHere": "Rulează de aici",
       "runFromHereDescription": "Rulează acest nod și nodurile următoare.",
       "runTillHere": "Rulează până aici",

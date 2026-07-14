@@ -96,6 +96,7 @@
       "crop": "Bild zuschneiden",
       "run": "Ausführen",
       "runOptions": "Ausführungsoptionen",
+      "retryEntireRun": "Gesamten Lauf wiederholen",
       "runFromHere": "Ab hier ausführen",
       "runFromHereDescription": "Führt diesen Knoten und alle nachfolgenden Knoten aus.",
       "runTillHere": "Bis hier ausführen",

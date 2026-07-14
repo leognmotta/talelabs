@@ -96,6 +96,7 @@
       "crop": "Afbeelding bijsnijden",
       "run": "Uitvoeren",
       "runOptions": "Uitvoeropties",
+      "retryEntireRun": "Volledige uitvoering opnieuw proberen",
       "runFromHere": "Vanaf hier uitvoeren",
       "runFromHereDescription": "Voert dit knooppunt en de daaropvolgende knooppunten uit.",
       "runTillHere": "Tot hier uitvoeren",

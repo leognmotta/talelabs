@@ -96,6 +96,7 @@
       "crop": "Ritaglia immagine",
       "run": "Esegui",
       "runOptions": "Opzioni di esecuzione",
+      "retryEntireRun": "Riprova l’intera esecuzione",
       "runFromHere": "Esegui da qui",
       "runFromHereDescription": "Esegue questo nodo e i nodi successivi.",
       "runTillHere": "Esegui fino a qui",

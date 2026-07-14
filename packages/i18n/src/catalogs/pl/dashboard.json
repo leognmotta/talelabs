@@ -96,6 +96,7 @@
       "crop": "Przytnij obraz",
       "run": "Uruchom",
       "runOptions": "Opcje uruchamiania",
+      "retryEntireRun": "Ponów cały przebieg",
       "runFromHere": "Uruchom od tego miejsca",
       "runFromHereDescription": "Uruchamia ten węzeł i kolejne węzły.",
       "runTillHere": "Uruchom do tego miejsca",

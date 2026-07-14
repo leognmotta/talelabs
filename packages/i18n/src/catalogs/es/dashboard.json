@@ -96,6 +96,7 @@
       "crop": "Recortar imagen",
       "run": "Ejecutar",
       "runOptions": "Opciones de ejecución",
+      "retryEntireRun": "Reintentar toda la ejecución",
       "runFromHere": "Ejecutar desde aquí",
       "runFromHereDescription": "Ejecuta este nodo y los nodos posteriores.",
       "runTillHere": "Ejecutar hasta aquí",

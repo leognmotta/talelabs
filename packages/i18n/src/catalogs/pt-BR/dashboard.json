@@ -96,6 +96,7 @@
       "crop": "Recortar imagem",
       "run": "Executar",
       "runOptions": "Opções de execução",
+      "retryEntireRun": "Repetir a execução inteira",
       "runFromHere": "Executar a partir daqui",
       "runFromHereDescription": "Executa este nó e os nós seguintes.",
       "runTillHere": "Executar até aqui",

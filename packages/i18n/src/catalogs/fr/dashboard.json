@@ -96,6 +96,7 @@
       "crop": "Recadrer l’image",
       "run": "Exécuter",
       "runOptions": "Options d’exécution",
+      "retryEntireRun": "Relancer toute l’exécution",
       "runFromHere": "Exécuter à partir d’ici",
       "runFromHereDescription": "Exécute ce nœud et les nœuds suivants.",
       "runTillHere": "Exécuter jusqu’ici",

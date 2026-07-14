@@ -96,6 +96,7 @@
       "crop": "Crop image",
       "run": "Run",
       "runOptions": "Run options",
+      "retryEntireRun": "Retry entire run",
       "runFromHere": "Run from here",
       "runFromHereDescription": "Runs this node and subsequent nodes.",
       "runTillHere": "Run till here",
