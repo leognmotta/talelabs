@@ -182,7 +182,7 @@ function ComboboxItem({
           py-2 pr-8 pl-3 text-sm font-medium outline-hidden select-none
           data-highlighted:bg-accent data-highlighted:text-accent-foreground
           not-data-[variant=destructive]:data-highlighted:**:text-accent-foreground
-          data-disabled:pointer-events-none data-disabled:opacity-50
+          data-disabled:cursor-not-allowed data-disabled:opacity-50
           [&_svg]:pointer-events-none [&_svg]:shrink-0
           [&_svg:not([class*='size-'])]:size-4
         `,

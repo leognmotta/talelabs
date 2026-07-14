@@ -36,7 +36,7 @@ function NativeSelect({
           placeholder:text-muted-foreground
           focus-visible:border-ring focus-visible:ring-3
           focus-visible:ring-ring/30
-          disabled:pointer-events-none disabled:cursor-not-allowed
+          disabled:cursor-not-allowed
           aria-invalid:border-destructive aria-invalid:ring-3
           aria-invalid:ring-destructive/20
           data-[size=sm]:h-8

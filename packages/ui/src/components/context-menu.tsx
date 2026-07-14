@@ -3,8 +3,18 @@
 import { ContextMenu as ContextMenuPrimitive } from '@base-ui/react/context-menu'
 import { IconCheck, IconChevronRight } from '@tabler/icons-react'
 
+import {
+  ScrollOverflowAffordance,
+  useScrollOverflowAffordance,
+} from '@talelabs/ui/components/scroll-overflow-affordance'
 import { cn } from '@talelabs/ui/lib/utils'
 import * as React from 'react'
+
+const CONTEXT_MENU_ITEM_SELECTOR = [
+  '[role="menuitem"]',
+  '[role="menuitemcheckbox"]',
+  '[role="menuitemradio"]',
+].join(',')
 
 function ContextMenu({ ...props }: ContextMenuPrimitive.Root.Props) {
   return <ContextMenuPrimitive.Root data-slot="context-menu" {...props} />
@@ -33,6 +43,10 @@ function ContextMenuContent({
   className,
   align = 'start',
   alignOffset = 4,
+  children,
+  onKeyDown,
+  onScroll,
+  showOverflowAffordance = false,
   side = 'right',
   sideOffset = 0,
   ...props
@@ -40,7 +54,24 @@ function ContextMenuContent({
   & Pick<
     ContextMenuPrimitive.Positioner.Props,
     'align' | 'alignOffset' | 'side' | 'sideOffset'
-  >) {
+  > & {
+    showOverflowAffordance?: boolean
+  }) {
+  const [popupElement, setPopupElement] = React.useState<HTMLDivElement | null>(null)
+  const {
+    hasMoreAfter,
+    scheduleOverflowUpdate,
+    updateOverflowState,
+  } = useScrollOverflowAffordance({
+    enabled: showOverflowAffordance,
+    endItemSelector: CONTEXT_MENU_ITEM_SELECTOR,
+    scrollElement: popupElement,
+  })
+
+  React.useLayoutEffect(() => {
+    scheduleOverflowUpdate()
+  }, [children, scheduleOverflowUpdate])
+
   return (
     <ContextMenuPrimitive.Portal>
       <ContextMenuPrimitive.Positioner
@@ -52,24 +83,42 @@ function ContextMenuContent({
       >
         <ContextMenuPrimitive.Popup
           data-slot="context-menu-content"
-          className={cn(`
-            z-50 max-h-(--available-height) min-w-48 origin-(--transform-origin)
-            overflow-x-hidden overflow-y-auto rounded-3xl bg-popover p-1.5
-            text-popover-foreground shadow-lg ring-1 ring-foreground/5
-            duration-100 outline-none
-            data-[side=bottom]:slide-in-from-top-2
-            data-[side=inline-end]:slide-in-from-left-2
-            data-[side=inline-start]:slide-in-from-right-2
-            data-[side=left]:slide-in-from-right-2
-            data-[side=right]:slide-in-from-left-2
-            data-[side=top]:slide-in-from-bottom-2
-            dark:ring-foreground/10
-            data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95
-            data-closed:animate-out data-closed:fade-out-0
-            data-closed:zoom-out-95
-          `, className)}
+          className={cn(
+            `
+              z-50 max-h-(--available-height) min-w-48
+              origin-(--transform-origin) overflow-x-hidden overflow-y-auto
+              rounded-3xl bg-popover p-1.5 text-popover-foreground shadow-lg
+              ring-1 ring-foreground/5 duration-100 outline-none
+              data-[side=bottom]:slide-in-from-top-2
+              data-[side=inline-end]:slide-in-from-left-2
+              data-[side=inline-start]:slide-in-from-right-2
+              data-[side=left]:slide-in-from-right-2
+              data-[side=right]:slide-in-from-left-2
+              data-[side=top]:slide-in-from-bottom-2
+              dark:ring-foreground/10
+              data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95
+              data-closed:animate-out data-closed:fade-out-0
+              data-closed:zoom-out-95
+            `,
+            showOverflowAffordance && 'no-scrollbar',
+            className,
+          )}
+          ref={setPopupElement}
+          onKeyDown={(event) => {
+            onKeyDown?.(event)
+            scheduleOverflowUpdate()
+          }}
+          onScroll={(event) => {
+            onScroll?.(event)
+            updateOverflowState()
+          }}
           {...props}
-        />
+        >
+          {children}
+        </ContextMenuPrimitive.Popup>
+        {showOverflowAffordance && hasMoreAfter && (
+          <ScrollOverflowAffordance />
+        )}
       </ContextMenuPrimitive.Positioner>
     </ContextMenuPrimitive.Portal>
   )
@@ -129,7 +178,7 @@ function ContextMenuItem({
           data-[variant=destructive]:focus:bg-destructive/10
           data-[variant=destructive]:focus:text-destructive
           dark:data-[variant=destructive]:focus:bg-destructive/20
-          data-disabled:pointer-events-none data-disabled:opacity-50
+          data-disabled:cursor-not-allowed data-disabled:opacity-50
           [&_svg]:pointer-events-none [&_svg]:shrink-0
           [&_svg:not([class*='size-'])]:size-4
           focus:*:[svg]:text-accent-foreground
@@ -212,7 +261,7 @@ function ContextMenuCheckboxItem({
           pr-8 pl-3 text-sm font-medium outline-hidden select-none
           focus:bg-accent focus:text-accent-foreground
           data-inset:pl-9.5
-          data-disabled:pointer-events-none data-disabled:opacity-50
+          data-disabled:cursor-not-allowed data-disabled:opacity-50
           [&_svg]:pointer-events-none [&_svg]:shrink-0
           [&_svg:not([class*='size-'])]:size-4
         `,
@@ -260,7 +309,7 @@ function ContextMenuRadioItem({
           pr-8 pl-3 text-sm font-medium outline-hidden select-none
           focus:bg-accent focus:text-accent-foreground
           data-inset:pl-9.5
-          data-disabled:pointer-events-none data-disabled:opacity-50
+          data-disabled:cursor-not-allowed data-disabled:opacity-50
           [&_svg]:pointer-events-none [&_svg]:shrink-0
           [&_svg:not([class*='size-'])]:size-4
         `,
