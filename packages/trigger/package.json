@@ -17,7 +17,9 @@
     "predev": "node scripts/assert-dev-env.mjs --worker"
   },
   "dependencies": {
+    "@paralleldrive/cuid2": "^3.3.0",
     "@talelabs/db": "*",
+    "@talelabs/flows": "*",
     "@talelabs/storage": "*",
     "@trigger.dev/sdk": "4.5.3",
     "dotenv": "^17.2.3",

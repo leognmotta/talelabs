@@ -14,9 +14,11 @@
     "check-types": "tsc --noEmit",
     "dev:build": "tsc --watch --preserveWatchOutput",
     "generation:check": "tsx scripts/check-generation-registry.ts",
+    "run:check": "tsx scripts/check-run-planner.ts",
     "lint": "eslint ."
   },
   "dependencies": {
+    "@noble/hashes": "^2.2.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
