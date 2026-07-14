@@ -16,8 +16,7 @@
     "STRIPE_SECRET_KEY",
     "TEST_POSTGRES_URL",
     "TRIGGER_PROJECT_REF",
-    "TRIGGER_SECRET_KEY",
-    "TRIGGER_DEPLOYMENT_VERSION"
+    "TRIGGER_SECRET_KEY"
   ],
   "tasks": {
     "build": {

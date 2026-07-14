@@ -107,6 +107,31 @@ Execution rules for the active M5 milestone:
     lists. If routing across multiple provider endpoints, expose only their safe
     capability intersection unless the route is pinned to a concrete endpoint.
 
+## Environment variable rules
+
+Environment variables are reserved for sensitive values. Agents must not add a
+new environment variable for ordinary application or deployment configuration
+without the user's explicit approval.
+
+1. Environment variables are appropriate for secrets and sensitive credentials,
+   including API keys, access tokens, passwords, private keys, signing secrets,
+   and private connection strings.
+2. Keep non-sensitive values in typed runtime code configuration. This includes
+   versions, feature flags, limits, timeouts, public URLs, bucket names, model
+   identifiers, queue names, deployment identifiers, and capability metadata.
+3. Prefer code-owned constants, typed configuration modules, and versioned
+   registries so non-sensitive behavior is reviewable, searchable, and deployed
+   with the code that consumes it.
+4. Never introduce an environment variable merely to avoid designing a runtime
+   configuration or versioning contract. Automatically discovered runtime
+   metadata should be persisted or resolved by code instead of becoming a
+   manually maintained environment variable.
+5. Existing non-sensitive environment variables are not precedent for adding
+   more. Do not expand their use. Refactor them only when the current task calls
+   for it, without silently changing deployment behavior.
+6. If a platform genuinely requires a new non-sensitive environment variable,
+   stop and obtain explicit user approval before adding it.
+
 ## Acceptance review rules
 
 Automated tests are not an MVP acceptance requirement. Do not block a task or
