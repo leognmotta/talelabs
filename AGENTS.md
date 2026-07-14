@@ -49,6 +49,7 @@ docs/flow-nodes-planning.md       = Flow node, runtime-value, batching, executio
 docs/db-design-planning-v2.md     = database schema (PostgreSQL, Kysely, camelCase)
 docs/api-design-planning-v2.md    = API contract for the base features
 docs/mvp-execution-plan.md        = phased MVP implementation order and acceptance gates
+docs/observability-planning.md     = deferred production observability and Run Inspector contract
 docs/credits-planning.md          = credit system planning (Phase 2 — do not implement)
 docs/feature-research/            = researched future capabilities; one self-contained file per feature
 ```
