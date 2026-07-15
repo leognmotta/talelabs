@@ -447,6 +447,9 @@ Add one Trigger scheduled reconciliation task:
 - domain-active + Trigger terminal: repair the domain state from persisted job
   rows and safe Trigger status;
 - domain-canceled + Trigger active: reissue cancellation;
+- domain-canceled + Trigger terminal or definitively missing: persist a durable
+  cancellation-reconciled acknowledgment so the run leaves future repair
+  batches while retaining its Trigger run ID for history and diagnostics;
 - stale running jobs: reconcile from their domain/output state;
 - never start a second product run from mutable Flow data.
 
@@ -601,7 +604,9 @@ messages. Raw internal errors remain in server observability only.
    items/nodes/jobs canceled;
 3. commit the durable domain decision;
 4. call `runs.cancel(triggerRunId)` outside the transaction;
-5. reconciliation retries the Trigger cancellation when needed.
+5. reconciliation retries the Trigger cancellation when needed and durably
+   retires the run from cancellation repair after Trigger is terminal or
+   definitively missing.
 
 Trigger cancellation propagates to child runs, but every worker also checks the
 domain run state before mock execution, R2 copy, Asset insertion, and terminal

@@ -831,6 +831,11 @@ create table "flowRuns" (
   "creditCost" integer,                 -- aggregate of child job costs, denormalized at completion
   "errorCode" text,
   "errorMessage" text,
+  "lastReconciledAt" timestamptz,
+        -- fair rotation cursor for active/canceled Trigger repair
+  "cancellationReconciledAt" timestamptz,
+        -- set only after canceled Trigger work is terminal/missing, or when no
+        -- Trigger parent was ever dispatched; preserves triggerRunId for audit
   "createdAt" timestamptz not null default now(),
   "startedAt" timestamptz,
   "completedAt" timestamptz,
@@ -854,6 +859,10 @@ create index "flowRunsOrgActiveIdx" on "flowRuns" ("organizationId")
 create unique index "flowRunsIdempotencyIdx" on "flowRuns" ("organizationId", "idempotencyKey");
 create unique index "flowRunsTriggerRunIdx" on "flowRuns" ("triggerRunId") where "triggerRunId" is not null;
 create index "flowRunsRetryOfIdx" on "flowRuns" ("retryOfRunId") where "retryOfRunId" is not null;
+create index "flowRunsReconciliationIdx"
+  on "flowRuns" ("lastReconciledAt" asc nulls first, "createdAt", "id")
+  where "status" in ('pending', 'running')
+     or ("status" = 'canceled' and "cancellationReconciledAt" is null);
 ```
 
 Per-node and per-item execution state are **rows, not mutated jsonb**.
