@@ -30,6 +30,7 @@ import { useTranslation } from 'react-i18next'
 import { Outlet, useMatch } from 'react-router'
 import { AssetViewerDialog } from '../features/assets/asset-viewer-dialog'
 import { useAssetViewerUrlState } from '../features/assets/use-asset-viewer-url-state'
+import { FlowRunRealtimeSubscriptions } from '../features/flows/flow-run-realtime-subscriptions'
 import { OrganizationScopeProvider } from '../features/organizations/organization-scope'
 import { SettingsDialog } from '../features/settings/settings-dialog'
 import { useSettingsTabState } from '../features/settings/settings-state'
@@ -312,6 +313,9 @@ export function DashboardLayout({
       <OrganizationScopeProvider organizationId={activeOrganizationId}>
         <UploadProvider>
           <TooltipProvider>
+            {activeOrganizationId && (
+              <FlowRunRealtimeSubscriptions organizationId={activeOrganizationId} />
+            )}
             <main className="
               flex h-svh min-h-0 flex-col overflow-hidden bg-background
               text-foreground
@@ -330,6 +334,9 @@ export function DashboardLayout({
     <OrganizationScopeProvider organizationId={activeOrganizationId}>
       <UploadProvider>
         <TooltipProvider>
+          {activeOrganizationId && (
+            <FlowRunRealtimeSubscriptions organizationId={activeOrganizationId} />
+          )}
           <SidebarProvider
             className="h-svh min-h-0 overflow-hidden"
             open={isSidebarOpen}
