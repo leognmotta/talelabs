@@ -108,7 +108,7 @@ export function SearchablePicker({
         ? handleItemHighlighted
         : undefined}
       onValueChange={(item) => {
-        if (item)
+        if (item && item.id !== selectedId)
           onSelect(item.id)
       }}
     >
