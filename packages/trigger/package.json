@@ -14,6 +14,8 @@
     "check-types": "tsc --noEmit",
     "dev": "trigger dev --config ../../trigger.config.ts --env-file ../../.env --skip-rules-install",
     "dev:build": "tsc --watch --preserveWatchOutput",
+    "fixtures:seed": "tsx scripts/seed-mock-generation-fixtures.ts",
+    "fixtures:verify": "tsx scripts/verify-mock-generation-fixtures.ts",
     "predev": "node scripts/assert-dev-env.mjs --worker"
   },
   "dependencies": {
@@ -28,6 +30,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.15.3",
+    "tsx": "^4.20.6",
     "typescript": "5.9.2"
   }
 }
