@@ -2,12 +2,23 @@ import type { AssetType, FolderTable } from '@talelabs/db'
 import type { Selectable } from 'kysely'
 
 import { createId } from '@paralleldrive/cuid2'
-import { db, sql } from '@talelabs/db'
+import {
+  availableFolderName,
+  db,
+  lockFolderStructure,
+  MAX_FOLDER_DEPTH,
+  MAX_FOLDERS_PER_ORGANIZATION,
+  sql,
+} from '@talelabs/db'
 
-export const MAX_FOLDER_DEPTH = 32
-export const MAX_FOLDERS_PER_ORGANIZATION = 500
 export const MAX_FOLDER_THUMBNAILS = 4
 export const ELEMENTS_ROOT_SYSTEM_ROLE = 'elements_root'
+
+export {
+  lockFolderStructure,
+  MAX_FOLDER_DEPTH,
+  MAX_FOLDERS_PER_ORGANIZATION,
+}
 
 export type FolderContentRow = Selectable<FolderTable> & {
   itemCount: number
@@ -21,30 +32,6 @@ export interface FolderThumbnailRow {
   storageKey: string
   thumbnailKey: null | string
   type: AssetType
-}
-
-export async function lockFolderStructure(
-  executor: typeof db,
-  organizationId: string,
-) {
-  await sql`
-    select pg_advisory_xact_lock(
-      hashtextextended(${`talelabs:folders:${organizationId}`}, 0)
-    )
-  `.execute(executor)
-}
-
-function availableFolderName(baseName: string, occupiedNames: string[]) {
-  const occupied = new Set(occupiedNames.map(name => name.toLowerCase()))
-  if (!occupied.has(baseName.toLowerCase()))
-    return baseName
-
-  for (let suffix = 2; ; suffix += 1) {
-    const suffixText = ` ${suffix}`
-    const candidate = `${baseName.slice(0, 255 - suffixText.length)}${suffixText}`
-    if (!occupied.has(candidate.toLowerCase()))
-      return candidate
-  }
 }
 
 async function countFolders(executor: typeof db, organizationId: string) {
@@ -393,10 +380,16 @@ export async function deleteFolderRow(organizationId: string, id: string) {
     if (folderIds.length === 0)
       return undefined
 
-    // The FK actions clear both Element and Asset folder references. Lock the
-    // affected rows explicitly in the shared folder -> Element -> Asset order
-    // so a link mutation cannot hold an Element while waiting on an Asset that
-    // the folder delete locked before its FK action reaches that Element.
+    // The FK actions clear Flow/Element associations and Asset locations. Lock
+    // affected rows explicitly in the shared folder -> Flow/Element -> Asset
+    // order used by output materialization and link mutations.
+    await trx.selectFrom('flows')
+      .select('id')
+      .where('organizationId', '=', organizationId)
+      .where('assetFolderId', 'in', folderIds)
+      .orderBy('id')
+      .forUpdate()
+      .execute()
     await trx.selectFrom('elements')
       .select('id')
       .where('organizationId', '=', organizationId)

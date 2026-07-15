@@ -9,7 +9,8 @@ import type {
 import type { Selectable, Transaction } from 'kysely'
 import type { PageCursor } from '../pagination/cursor.js'
 
-import { db, sql } from '@talelabs/db'
+import { availableFolderName, db, sql } from '@talelabs/db'
+import { lockFolderStructure } from './folders.data.js'
 
 export type FlowRecord = Selectable<FlowTable>
 export type FlowNodeRecord = Selectable<FlowNodeTable>
@@ -107,16 +108,60 @@ export function updateFlowRow(input: {
   organizationId: string
   viewport?: { x: number, y: number, zoom: number }
 }) {
-  return db.updateTable('flows')
-    .set({
-      ...(input.name !== undefined ? { name: input.name } : {}),
-      ...(input.viewport !== undefined ? { viewport: input.viewport } : {}),
-      updatedAt: new Date(),
-    })
-    .where('organizationId', '=', input.organizationId)
-    .where('id', '=', input.id)
-    .returningAll()
-    .executeTakeFirst()
+  return db.transaction().execute(async (trx) => {
+    if (input.name !== undefined)
+      await lockFolderStructure(trx, input.organizationId)
+
+    const current = await trx.selectFrom('flows')
+      .select(['assetFolderId', 'id'])
+      .where('organizationId', '=', input.organizationId)
+      .where('id', '=', input.id)
+      .forUpdate()
+      .executeTakeFirst()
+    if (!current)
+      return undefined
+
+    if (input.name !== undefined && current.assetFolderId) {
+      const folder = await trx.selectFrom('folders')
+        .select(['id', 'parentId'])
+        .where('organizationId', '=', input.organizationId)
+        .where('id', '=', current.assetFolderId)
+        .forUpdate()
+        .executeTakeFirst()
+      if (folder) {
+        let siblingQuery = trx.selectFrom('folders')
+          .select('name')
+          .where('organizationId', '=', input.organizationId)
+          .where('id', '!=', folder.id)
+        siblingQuery = folder.parentId
+          ? siblingQuery.where('parentId', '=', folder.parentId)
+          : siblingQuery.where('parentId', 'is', null)
+        const siblings = await siblingQuery.execute()
+        await trx.updateTable('folders')
+          .set({
+            name: availableFolderName(
+              input.name,
+              siblings.map(sibling => sibling.name),
+            ),
+            updatedAt: new Date(),
+          })
+          .where('organizationId', '=', input.organizationId)
+          .where('id', '=', current.assetFolderId)
+          .execute()
+      }
+    }
+
+    return trx.updateTable('flows')
+      .set({
+        ...(input.name !== undefined ? { name: input.name } : {}),
+        ...(input.viewport !== undefined ? { viewport: input.viewport } : {}),
+        updatedAt: new Date(),
+      })
+      .where('organizationId', '=', input.organizationId)
+      .where('id', '=', input.id)
+      .returningAll()
+      .executeTakeFirst()
+  })
 }
 
 export function deleteFlowRow(organizationId: string, id: string) {
@@ -158,14 +203,19 @@ export async function getFlowGraphRows(
       .innerJoin('flowRuns as run', join => join
         .onRef('run.id', '=', 'node.flowRunId')
         .onRef('run.organizationId', '=', 'node.organizationId'))
-      .leftJoin('generationJobs as job', join => join
-        .onRef('job.id', '=', 'node.jobId')
-        .onRef('job.organizationId', '=', 'node.organizationId'))
-      .select([
+      .select(eb => [
         'run.id as runId',
         'node.nodeId',
         'node.status as nodeStatus',
-        'job.status as jobStatus',
+        eb.selectFrom('generationJobs as job')
+          .select('job.status')
+          .whereRef('job.flowRunId', '=', 'node.flowRunId')
+          .whereRef('job.nodeId', '=', 'node.nodeId')
+          .whereRef('job.organizationId', '=', 'node.organizationId')
+          .orderBy('job.createdAt', 'desc')
+          .orderBy('job.id', 'desc')
+          .limit(1)
+          .as('jobStatus'),
       ])
       .where('run.organizationId', '=', organizationId)
       .where('run.flowId', '=', flowId)
