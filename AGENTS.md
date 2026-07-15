@@ -95,10 +95,13 @@ Execution rules for the active M5 milestone:
     `TODO(provider-integration)` as specified by `docs/mvp-execution-plan.md`.
     Graph planning, snapshots, runs, jobs, Trigger.dev state, provenance, output
     ingestion, and canonical Assets must remain production-shaped.
-11. TaleLabs owns a curated, code-versioned generation-model registry. Never
-    build production UI or server validation directly from live OpenRouter or
-    provider discovery responses. Discovery APIs are inputs to an explicit
-    review/drift-check process; registry changes ship through normal deployment.
+11. TaleLabs owns a curated, code-versioned generation-model registry. The
+    TypeScript model registry and server-only TypeScript provider routes are the
+    only maintained configuration sources. Never add checked-in provider
+    discovery snapshots, dated inventory JSON, or runtime configuration derived
+    from live OpenRouter/provider responses. Research provider documentation
+    when changing the registry, then encode the reviewed decision in TypeScript
+    and ship it through normal deployment.
 12. Persist stable TaleLabs model IDs in Flows and snapshots. Keep public model
     capabilities separate from server-only provider routes, credentials,
     fallbacks, and cost policy. A provider or endpoint change must not rewrite a

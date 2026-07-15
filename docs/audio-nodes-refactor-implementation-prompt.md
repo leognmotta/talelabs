@@ -79,7 +79,6 @@ packages/flows/src/generation-models/
 packages/flows/src/video-generation-resolver.ts
 packages/flows/src/image-generation-resolver.ts
 
-apps/api/config/generation-discovery-baseline.json
 apps/api/src/routes/config/generation-provider-routes.ts
 
 apps/dashboard/src/features/flows/flow-dashboard-node-registry.ts
@@ -1111,7 +1110,7 @@ The task is complete only when:
 - no real provider request, credit spend, or second execution engine was added;
 - registry history, graph persistence, tenant isolation, autosave, undo/redo,
   duplication, deletion, keyboard behavior, and dynamic handles still work;
-- SDK generation, registry/drift checks, type checks, i18n validation, lint,
+- SDK generation, registry/route checks, type checks, i18n validation, lint,
   production build, and `git diff --check` pass.
 
 UI and end-to-end product QA belong to the user. The final implementation

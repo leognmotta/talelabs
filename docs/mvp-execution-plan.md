@@ -580,7 +580,6 @@ npm run check-types
 npm run i18n:check
 npm run lint
 npm run generation:check -w @talelabs/flows
-npm run generation:check-drift -w api
 npm run build
 git diff --check
 ```

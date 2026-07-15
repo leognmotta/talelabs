@@ -52,7 +52,6 @@ packages/flows/src/generation-evaluator.ts
 packages/flows/src/node-registry.ts
 packages/flows/src/handles.ts
 packages/flows/src/graph-validation.ts
-apps/api/config/generation-discovery-baseline.json
 apps/api/src/routes/config/generation-provider-routes.ts
 apps/dashboard/src/features/flows/nodes/generation-flow-node.tsx
 apps/dashboard/src/features/flows/flow-dashboard-node-registry.ts
@@ -266,8 +265,9 @@ Never reinterpret an edge as a different semantic input merely to preserve it.
 ## Curated Capability Registry
 
 Do not drive production UI directly from OpenRouter discovery. TaleLabs owns a
-reviewed, code-versioned model registry. Discovery is evidence for a reviewed
-registry release and a drift check.
+reviewed, code-versioned TypeScript model registry and server-only TypeScript
+provider routes. Provider discovery may inform research but is not preserved as
+checked-in configuration.
 
 At implementation time, fetch the current read-only catalog:
 
@@ -480,7 +480,7 @@ Do not:
 
 ## Implementation Order
 
-1. Capture the current OpenRouter video discovery snapshot and review evidence.
+1. Review the current OpenRouter video catalog and official model documentation.
 2. Extend the curated model/operation contracts conservatively.
 3. Implement the pure adaptive resolver and registry validation rules.
 4. Add/migrate the current Video Generation node schema if required.

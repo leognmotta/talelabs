@@ -67,7 +67,6 @@ packages/flows/src/video-generation-resolver.ts
 packages/flows/src/node-registry.ts
 packages/flows/src/handles.ts
 packages/flows/src/graph-validation.ts
-apps/api/config/generation-discovery-baseline.json
 apps/api/src/routes/config/config.routes.ts
 apps/api/src/routes/config/config.schemas.ts
 apps/api/src/routes/config/generation-provider-routes.ts

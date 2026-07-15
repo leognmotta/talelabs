@@ -69,7 +69,6 @@ packages/flows/src/generation-registry-history.ts
 packages/flows/src/generation-registry.ts
 packages/flows/src/generation-evaluator.ts
 packages/flows/src/generation-models/
-apps/api/config/generation-discovery-baseline.json
 apps/api/src/routes/config/config.routes.ts
 apps/api/src/routes/config/config.schemas.ts
 apps/dashboard/src/features/flows/flow-dashboard-node-registry.ts

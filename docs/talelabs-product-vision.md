@@ -853,11 +853,13 @@ seed
 other verified model capabilities
 ```
 
-Provider metadata can inform the interface, but TaleLabs owns a curated,
-code-versioned model registry for enabled models, labels, defaults, operations,
-typed slots, cross-field constraints, pricing behavior, and feature flags. Live
-OpenRouter/provider discovery responses never directly control production UI or
-validation; they feed an explicit review and drift-check process.
+Provider documentation informs reviewed implementation decisions, but TaleLabs
+owns a curated, code-versioned TypeScript model registry for enabled models,
+labels, defaults, operations, typed slots, cross-field constraints, pricing
+behavior, and feature flags. Server-only provider routes are also maintained in
+TypeScript. TaleLabs does not maintain provider discovery snapshots or dated
+inventory JSON, and live provider responses never control production UI or
+validation.
 
 Flows persist stable TaleLabs model identities. Public capabilities are shared
 between the API and dashboard, while provider model IDs, endpoint pinning,

@@ -50,9 +50,9 @@ or verified model benchmarks. Clearly distinguish provider claims, observed
 community reports, and TaleLabs recommendations.
 
 Provider capabilities change quickly. Every feature file must show its last
-research date. Runtime behavior must ultimately come from TaleLabs' reviewed,
-code-versioned registries, never directly from a research document or live
-provider discovery response.
+research date. Runtime behavior must come from TaleLabs' reviewed, code-versioned
+TypeScript registries, never directly from a research document, checked-in
+provider snapshot, inventory JSON, or live provider response.
 
 ## Current Research
 

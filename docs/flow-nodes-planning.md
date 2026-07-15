@@ -479,14 +479,15 @@ TaleLabs defines an honest provider-independent control and its validation.
 
 One request emits one `PortValue` item whose `ImageSet` contains one Asset. The
 typed collection remains stable for downstream compatibility and does not create
-an outer runtime item. The initial seven-model catalog is a reviewed subset of
-the 39-model discovery snapshot. It has no Element input, provider route, or
-live provider dependency on the canvas.
+an outer runtime item. The initial seven-model catalog is a deliberately curated
+product selection. It has no Element input, provider route, or live provider
+dependency on the canvas.
 
-TaleLabs owns the production model catalog in versioned code. OpenRouter and
-direct-provider discovery endpoints are research and drift-detection inputs, not
-runtime sources of truth for the canvas. A remote catalog change must never add,
-remove, or alter a production control without review and deployment.
+TaleLabs owns the production model catalog and private provider routes in
+versioned TypeScript. Provider documentation is reviewed when those registries
+change; TaleLabs does not maintain provider discovery snapshots or inventory
+JSON. A remote catalog change must never add, remove, or alter a production
+control without review and deployment.
 
 Every persisted model reference uses a stable TaleLabs identity:
 
@@ -1545,7 +1546,7 @@ M6  Controlled provider integration
     replace only normalized adapter boundaries
     first approved image, video, and audio adapters
     pinned endpoint or safe capability-intersection routing
-    registry drift checks and provider lifecycle parity
+    TypeScript registry/route validation and provider lifecycle parity
     provider parity, spend controls, controlled smoke checks
 
 M7  Internal MVP candidate

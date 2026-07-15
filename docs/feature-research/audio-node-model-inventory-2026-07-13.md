@@ -49,9 +49,8 @@ outside this contract.
 
 The read-only query
 `GET https://openrouter.ai/api/v1/models?output_modalities=speech` returned nine
-speech-output models on 2026-07-13. The full exact list is preserved in
-`apps/api/config/openrouter-audio-inventory-2026-07-13.json` and checked by the
-generation drift script.
+speech-output models on 2026-07-13. This was research input only; TaleLabs does
+not preserve provider discovery payloads as runtime or validation configuration.
 
 All nine remain inventory-only. OpenRouter documents a dedicated
 `/api/v1/audio/speech` endpoint, whereas generic audio input/output uses the chat
@@ -91,15 +90,15 @@ creation experiences, and NVIDIA Maxine remain research candidates. They are
 not enabled because their reviewed evidence was unnecessary for the deliberately
 small first catalog or did not yet justify an additional safe contract.
 
-## Review and drift policy
+## Review policy
 
 The current private audio routes are pinned to route version `2026-07-13.9` and
-contract version `2026-07-13.8`. The reviewed baseline stores operation-level
-public contracts, provider lifecycle, native route mappings, zero mock pricing,
-evidence URLs, and review dates. `npm run generation:check-drift --workspace=api`
-compares that baseline with the code-versioned registry without making network
-or generation requests.
+contract version `2026-07-13.8`. Public capabilities and private provider routes
+are maintained only in their respective TypeScript registries. The server-only
+provider-route registry validates its model and operation coverage when the API
+configuration is loaded, without making network or generation requests.
 
-Any future model or capability change requires new dated evidence, a new
-immutable registry version, private route review, deterministic scenarios, and
-normal deployment. Live discovery must never become production configuration.
+Any future model or capability change requires primary-source research, a new
+immutable registry version when creative capabilities change, private route
+review, deterministic scenarios, and normal deployment. Live discovery and
+checked-in discovery payloads must never become production configuration.

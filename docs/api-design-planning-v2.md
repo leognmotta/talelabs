@@ -1128,22 +1128,19 @@ upgrade.
 ### `GET /config/generation`
 
 The resolved public product contract the client renders from. TaleLabs owns this
-curated, code-versioned registry; live OpenRouter/provider discovery never drives
-the response directly. Discovery is used only by a reviewed manual/CI drift
-report. That report compares provider lifecycle, endpoint and parameter manifests,
-dated primary-source evidence and freshness, normalized completion/delivery/
-cancellation behavior, mock-pricing classification, plus the reviewed public
-contract version, output profiles, accepted-media/reference profiles, setting
-values/ranges, per-slot and total input limits, required/one-of input rules, and
-applicable cross-field constraints. Missing or stale evidence fails closed. The
-endpoint is
+curated, code-versioned TypeScript registry; live OpenRouter/provider discovery
+never drives the response directly. Private provider routes are maintained in a
+server-only TypeScript registry and validated structurally against the public
+model contracts. Provider research is encoded directly into those two reviewed
+code registries; TaleLabs does not maintain discovery snapshots or inventory
+JSON. The endpoint is
 `ETag`-cacheable and changes only on deployment.
 
-The initial Image catalog is a reviewed seven-model subset of a dated 39-model
-OpenRouter discovery capture. Public config exposes stable TaleLabs IDs,
-translation keys, semantic slots, safe setting intersections, and output
-profiles only. Native model IDs, provider tags, endpoint choice, pricing, and
-the wider discovered inventory remain server-only evidence.
+The initial Image catalog is a deliberately curated seven-model selection.
+Public config exposes stable TaleLabs IDs, translation keys, semantic slots,
+safe setting intersections, and output profiles only. Native model IDs,
+provider tags, endpoint choice, and pricing remain in the server-only
+TypeScript provider-route registry.
 
 Response `200`:
 
