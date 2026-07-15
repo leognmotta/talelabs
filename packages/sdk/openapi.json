@@ -929,9 +929,6 @@
           "elementId": {
             "$ref": "#/components/schemas/Cuid2"
           },
-          "flowId": {
-            "$ref": "#/components/schemas/Cuid2"
-          },
           "role": {
             "type": "string",
             "minLength": 1,
