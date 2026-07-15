@@ -195,11 +195,14 @@ export interface FlowRunTable {
   idempotencyKey: string
   requestHash: string
   triggerRunId: string | null
+  triggerDeploymentVersion: string | null
   retryOfRunId: string | null
   creditCost: number | null
   providerCostUsd: NullableNumericColumn
   errorCode: string | null
   errorMessage: string | null
+  lastReconciledAt: NullableTimestamp
+  cancellationReconciledAt: NullableTimestamp
   createdAt: GeneratedTimestamp
   startedAt: NullableTimestamp
   completedAt: NullableTimestamp
@@ -227,6 +230,7 @@ export interface GenerationJobTable {
   resolvedPrompt: string | null
   idempotencyKey: string
   requestHash: string
+  requestPayload: JsonValue
   triggerRunId: string | null
   providerSubmittedAt: NullableTimestamp
   providerJobId: string | null
@@ -234,6 +238,7 @@ export interface GenerationJobTable {
   providerCostUsd: NullableNumericColumn
   errorCode: string | null
   errorMessage: string | null
+  lastReconciledAt: NullableTimestamp
   createdAt: GeneratedTimestamp
   startedAt: NullableTimestamp
   completedAt: NullableTimestamp
