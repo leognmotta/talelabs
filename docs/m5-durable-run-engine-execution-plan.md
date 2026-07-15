@@ -865,6 +865,8 @@ Deliver:
 - deterministic text/image/video/audio mocks;
 - R2 copy to unique output keys;
 - canonical Asset ingestion and text outputs;
+- generated media output placement in the stable `Flow/<Flow name>` folder,
+  without changing ordinary upload destinations;
 - exact output/input lineage and zero cost recording.
 
 Gate:

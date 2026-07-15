@@ -177,6 +177,11 @@ Short deterministic operations remain in the TaleLabs API, including graph persi
 
 Assets are the canonical media records in TaleLabs. Every uploaded file and every successful generation output becomes an Asset.
 
+Successful image, video, and audio node outputs are organized automatically in
+the Asset library under `Flow/<Flow name>`. This is an output-materialization
+rule only: ordinary uploads remain in the folder chosen by the user, including
+uploads initiated from the Flow canvas.
+
 Assets are the first and most important implementation foundation. The asset experience should feel like a lightweight, media-aware drive rather than a social gallery.
 
 Initial asset types should support:

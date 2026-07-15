@@ -458,6 +458,11 @@ Order of operations: verify grant signature + expiry → `HEAD` the object, conf
 
 When `elementId` is present, the Element's stored `assetFolderId` is authoritative and the request's `folderId` is only a client hint. The transaction places the newly uploaded Asset in that folder; if the association was cleared because the folder was deleted, it provisions a new collision-safe child under the workspace's internally identified Elements root and updates the Element first. Linking an existing Asset through the Element reference endpoint never moves or copies that Asset.
 
+Flow identity is deliberately absent from upload registration. Uploading from a
+canvas does not imply a folder move: ordinary uploads use the explicit
+`folderId` supplied by the user. Only successful generated media outputs are
+placed automatically under `Flow/<Flow name>` by the durable worker.
+
 The dashboard's global Zustand upload queue uses the atomic path for fresh
 Element uploads: it sends `elementId`, `role`, order, and primary intent in this
 `POST /assets` request and relies on the server's `master`/`{}` defaults. The

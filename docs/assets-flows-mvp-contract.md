@@ -102,6 +102,9 @@ they do not choose provider operation IDs.
 Assets are the only reusable media source in the MVP.
 
 - Uploaded and generated media use the same canonical Asset record.
+- Generated image, video, and audio outputs are automatically organized under
+  `Flow/<Flow name>`. Ordinary uploads keep the folder explicitly chosen by the
+  user and are never moved merely because they were uploaded from the canvas.
 - Asset nodes store one canonical Asset ID, never a signed URL or file copy.
 - Signed URLs are short-lived presentation data and are never persisted in a
   Flow.
