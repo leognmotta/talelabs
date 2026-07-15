@@ -3,6 +3,7 @@ import type { GenerationModelLogoId } from '@talelabs/flows'
 import { Badge } from '@talelabs/ui/components/badge'
 import { Button } from '@talelabs/ui/components/button'
 import { cn } from '@talelabs/ui/lib/utils'
+import { useMemo } from 'react'
 import { SearchablePicker } from '../../shared/components/searchable-picker'
 import { ModelLogo } from './model-logo'
 /* eslint-disable better-tailwindcss/no-unknown-classes -- React Flow uses these interaction classes as behavior hooks. */
@@ -45,59 +46,64 @@ export function ModelPicker({
   value: string
   onValueChange: (value: string) => void
 }) {
-  const selectedOption = options.find(option => option.id === value) ?? null
+  const selectedOption = useMemo(
+    () => options.find(option => option.id === value) ?? null,
+    [options, value],
+  )
   const triggerLabel = selectedOption?.label ?? selectedLabel
-  const groupedOptions = new Map<string, ModelPickerOption[]>()
-  for (const option of options) {
-    const group = groupedOptions.get(option.category.id) ?? []
-    group.push(option)
-    groupedOptions.set(option.category.id, group)
-  }
-  const groups = [...groupedOptions.entries()].map(([categoryId, items]) => ({
-    id: categoryId,
-    items: items.map(option => ({
-      content: (
-        <div className="flex min-w-0 flex-1 items-start gap-3 py-0.5">
-          {showLogos && <ModelLogo logoId={option.logoId} />}
-          <div className="min-w-0 flex-1">
-            <div className="flex min-w-0 items-center gap-2">
-              <span className="truncate font-medium">{option.label}</span>
-              {option.recommended && (
-                <Badge
-                  className="h-4 px-1.5 text-[10px] font-medium"
-                  variant="secondary"
-                >
-                  {recommendedLabel}
-                </Badge>
-              )}
-            </div>
-            <p className="
-              mt-0.5 line-clamp-2 text-xs font-normal text-muted-foreground
-            "
-            >
-              {option.description}
-            </p>
-            {option.capabilities.length > 0 && (
+  const groups = useMemo(() => {
+    const groupedOptions = new Map<string, ModelPickerOption[]>()
+    for (const option of options) {
+      const group = groupedOptions.get(option.category.id) ?? []
+      group.push(option)
+      groupedOptions.set(option.category.id, group)
+    }
+    return [...groupedOptions.entries()].map(([categoryId, items]) => ({
+      id: categoryId,
+      items: items.map(option => ({
+        content: (
+          <div className="flex min-w-0 flex-1 items-start gap-3 py-0.5">
+            {showLogos && <ModelLogo logoId={option.logoId} />}
+            <div className="min-w-0 flex-1">
+              <div className="flex min-w-0 items-center gap-2">
+                <span className="truncate font-medium">{option.label}</span>
+                {option.recommended && (
+                  <Badge
+                    className="h-4 px-1.5 text-[10px] font-medium"
+                    variant="secondary"
+                  >
+                    {recommendedLabel}
+                  </Badge>
+                )}
+              </div>
               <p className="
-                mt-1 truncate text-[11px] font-normal text-muted-foreground/75
+                mt-0.5 line-clamp-2 text-xs font-normal text-muted-foreground
               "
               >
-                {option.capabilities.slice(0, 3).join(' · ')}
+                {option.description}
               </p>
-            )}
+              {option.capabilities.length > 0 && (
+                <p className="
+                  mt-1 truncate text-[11px] font-normal text-muted-foreground/75
+                "
+                >
+                  {option.capabilities.slice(0, 3).join(' · ')}
+                </p>
+              )}
+            </div>
           </div>
-        </div>
-      ),
-      id: option.id,
-      searchValue: [
-        option.label,
-        option.category.label,
-        option.description,
-        ...option.capabilities,
-      ].join(' '),
-    })),
-    label: items[0]?.category.label ?? categoryId,
-  }))
+        ),
+        id: option.id,
+        searchValue: [
+          option.label,
+          option.category.label,
+          option.description,
+          ...option.capabilities,
+        ].join(' '),
+      })),
+      label: items[0]?.category.label ?? categoryId,
+    }))
+  }, [options, recommendedLabel, showLogos])
 
   return (
     <SearchablePicker
