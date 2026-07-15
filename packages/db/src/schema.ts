@@ -41,6 +41,7 @@ type NullableNumericColumn = ColumnType<
 
 export type AssetType = 'audio' | 'document' | 'image' | 'video'
 export type AssetSource = 'generation' | 'upload'
+export type AssetVisibility = 'private' | 'public'
 export type AssetProcessingState = 'failed' | 'processing' | 'ready'
 export type ElementReferenceKind = 'master' | 'source'
 export type FlowRunMode
@@ -280,6 +281,7 @@ export interface AssetTable {
   name: string
   type: AssetType
   source: AssetSource
+  visibility: Generated<AssetVisibility>
   storageKey: string
   thumbnailKey: string | null
   mimeType: string

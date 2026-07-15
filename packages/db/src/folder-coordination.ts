@@ -1,6 +1,5 @@
-import type { Database } from './schema.js'
-
 import type { Kysely, Transaction } from 'kysely'
+import type { Database } from './schema.js'
 
 import { sql } from 'kysely'
 
