@@ -7,6 +7,7 @@ import type { AssetLifecycle } from "./AssetLifecycle.ts";
 import type { AssetProcessingState } from "./AssetProcessingState.ts";
 import type { AssetSource } from "./AssetSource.ts";
 import type { AssetType } from "./AssetType.ts";
+import type { AssetVisibility } from "./AssetVisibility.ts";
 import type { Cuid2 } from "./Cuid2.ts";
 import type { Timestamp } from "./Timestamp.ts";
 
@@ -28,6 +29,10 @@ export type FlowReferenceAsset = {
    * @type string
    */
   source: AssetSource;
+  /**
+   * @type string
+   */
+  visibility: AssetVisibility;
   /**
    * @type string
    */

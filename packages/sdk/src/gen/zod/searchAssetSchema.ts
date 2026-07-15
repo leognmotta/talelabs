@@ -6,6 +6,7 @@
 import * as z from "zod";
 import type { SearchAsset } from "../types/SearchAsset.ts";
 import { assetTypeSchema } from "./assetTypeSchema.ts";
+import { assetVisibilitySchema } from "./assetVisibilitySchema.ts";
 import { cuid2Schema } from "./cuid2Schema.ts";
 
 export const searchAssetSchema = z.object({
@@ -15,6 +16,9 @@ export const searchAssetSchema = z.object({
   name: z.string(),
   get type() {
     return assetTypeSchema;
+  },
+  get visibility() {
+    return assetVisibilitySchema;
   },
   thumbnailUrl: z.nullable(z.url()),
 }) as unknown as z.ZodType<SearchAsset>;

@@ -6,11 +6,15 @@
 import * as z from "zod";
 import type { FlowLatestResultAssetOutput } from "../types/FlowLatestResultAssetOutput.ts";
 import { assetTypeSchema } from "./assetTypeSchema.ts";
+import { assetVisibilitySchema } from "./assetVisibilitySchema.ts";
 import { cuid2Schema } from "./cuid2Schema.ts";
 
 export const flowLatestResultAssetOutputSchema = z.object({
   get assetId() {
     return cuid2Schema;
+  },
+  get visibility() {
+    return assetVisibilitySchema;
   },
   get type() {
     return assetTypeSchema;

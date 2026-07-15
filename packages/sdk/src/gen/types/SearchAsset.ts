@@ -4,6 +4,7 @@
  */
 
 import type { AssetType } from "./AssetType.ts";
+import type { AssetVisibility } from "./AssetVisibility.ts";
 import type { Cuid2 } from "./Cuid2.ts";
 
 export type SearchAsset = {
@@ -20,6 +21,10 @@ export type SearchAsset = {
    * @type string
    */
   type: AssetType;
+  /**
+   * @type string
+   */
+  visibility: AssetVisibility;
   /**
    * @type string, uri
    */

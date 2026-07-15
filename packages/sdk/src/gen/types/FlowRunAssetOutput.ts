@@ -3,6 +3,7 @@
  * Do not edit manually.
  */
 
+import type { AssetVisibility } from "./AssetVisibility.ts";
 import type { Cuid2 } from "./Cuid2.ts";
 
 export const flowRunAssetOutputTypeEnum = {
@@ -21,6 +22,10 @@ export type FlowRunAssetOutput = {
    * @type string
    */
   assetId: Cuid2;
+  /**
+   * @type string
+   */
+  visibility: AssetVisibility;
   /**
    * @pattern ^[a-z][0-9a-z]+$
    * @type string

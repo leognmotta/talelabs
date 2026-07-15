@@ -772,6 +772,9 @@
           "source": {
             "$ref": "#/components/schemas/AssetSource"
           },
+          "visibility": {
+            "$ref": "#/components/schemas/AssetVisibility"
+          },
           "mimeType": {
             "type": "string"
           },
@@ -860,6 +863,7 @@
           "name",
           "type",
           "source",
+          "visibility",
           "mimeType",
           "sizeBytes",
           "width",
@@ -878,6 +882,13 @@
           "createdBy",
           "createdAt",
           "updatedAt"
+        ]
+      },
+      "AssetVisibility": {
+        "type": "string",
+        "enum": [
+          "private",
+          "public"
         ]
       },
       "Tag": {
@@ -2119,6 +2130,9 @@
           "assetId": {
             "$ref": "#/components/schemas/Cuid2"
           },
+          "visibility": {
+            "$ref": "#/components/schemas/AssetVisibility"
+          },
           "type": {
             "$ref": "#/components/schemas/AssetType"
           },
@@ -2142,6 +2156,7 @@
         },
         "required": [
           "assetId",
+          "visibility",
           "type",
           "mimeType",
           "outputIndex",
@@ -2178,6 +2193,9 @@
           },
           "source": {
             "$ref": "#/components/schemas/AssetSource"
+          },
+          "visibility": {
+            "$ref": "#/components/schemas/AssetVisibility"
           },
           "mimeType": {
             "type": "string"
@@ -2237,6 +2255,7 @@
           "name",
           "type",
           "source",
+          "visibility",
           "mimeType",
           "sizeBytes",
           "width",
@@ -2917,6 +2936,9 @@
           "assetId": {
             "$ref": "#/components/schemas/Cuid2"
           },
+          "visibility": {
+            "$ref": "#/components/schemas/AssetVisibility"
+          },
           "jobId": {
             "$ref": "#/components/schemas/Cuid2"
           },
@@ -2949,6 +2971,7 @@
         },
         "required": [
           "assetId",
+          "visibility",
           "jobId",
           "mimeType",
           "outputIndex",
@@ -4918,6 +4941,9 @@
           "type": {
             "$ref": "#/components/schemas/AssetType"
           },
+          "visibility": {
+            "$ref": "#/components/schemas/AssetVisibility"
+          },
           "thumbnailUrl": {
             "type": "string",
             "nullable": true,
@@ -4928,6 +4954,7 @@
           "id",
           "name",
           "type",
+          "visibility",
           "thumbnailUrl"
         ]
       },

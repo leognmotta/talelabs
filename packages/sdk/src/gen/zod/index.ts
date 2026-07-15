@@ -10,6 +10,7 @@ export * from "./assetSourceSchema.ts";
 export * from "./assetTypeSchema.ts";
 export * from "./assetUsageListResponseSchema.ts";
 export * from "./assetUsageSchema.ts";
+export * from "./assetVisibilitySchema.ts";
 export * from "./createElementAssetRequestSchema.ts";
 export * from "./createElementRequestSchema.ts";
 export * from "./createFlowRequestSchema.ts";

@@ -4,6 +4,7 @@
  */
 
 import type { AssetType } from "./AssetType.ts";
+import type { AssetVisibility } from "./AssetVisibility.ts";
 import type { Cuid2 } from "./Cuid2.ts";
 
 export type FlowLatestResultAssetOutput = {
@@ -12,6 +13,10 @@ export type FlowLatestResultAssetOutput = {
    * @type string
    */
   assetId: Cuid2;
+  /**
+   * @type string
+   */
+  visibility: AssetVisibility;
   /**
    * @type string
    */

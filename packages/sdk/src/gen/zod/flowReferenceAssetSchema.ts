@@ -9,6 +9,7 @@ import { assetLifecycleSchema } from "./assetLifecycleSchema.ts";
 import { assetProcessingStateSchema } from "./assetProcessingStateSchema.ts";
 import { assetSourceSchema } from "./assetSourceSchema.ts";
 import { assetTypeSchema } from "./assetTypeSchema.ts";
+import { assetVisibilitySchema } from "./assetVisibilitySchema.ts";
 import { cuid2Schema } from "./cuid2Schema.ts";
 import { timestampSchema } from "./timestampSchema.ts";
 
@@ -22,6 +23,9 @@ export const flowReferenceAssetSchema = z.object({
   },
   get source() {
     return assetSourceSchema;
+  },
+  get visibility() {
+    return assetVisibilitySchema;
   },
   mimeType: z.string(),
   sizeBytes: z.nullable(z.int().min(0)),

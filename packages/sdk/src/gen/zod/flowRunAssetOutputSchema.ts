@@ -5,11 +5,15 @@
 
 import * as z from "zod";
 import type { FlowRunAssetOutput } from "../types/FlowRunAssetOutput.ts";
+import { assetVisibilitySchema } from "./assetVisibilitySchema.ts";
 import { cuid2Schema } from "./cuid2Schema.ts";
 
 export const flowRunAssetOutputSchema = z.object({
   get assetId() {
     return cuid2Schema;
+  },
+  get visibility() {
+    return assetVisibilitySchema;
   },
   get jobId() {
     return cuid2Schema;
