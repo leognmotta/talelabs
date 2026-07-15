@@ -131,13 +131,13 @@ The database, API foundation, and Asset system are implemented. Preserve these
 behaviors while changing the canvas:
 
 ```txt
-private R2 storage
+private R2 storage for uploads and reference Assets
 direct and resumable uploads
 durable media processing
 thumbnails and metadata
 folders, search, tags, and favorites
 asset lifecycle and purge
-signed private delivery
+visibility-aware signed delivery
 organization isolation
 global upload progress
 ```
@@ -394,7 +394,7 @@ Mutable Flow rows must never be execution truth after admission. Snapshot JSON
 contains no credentials, signed URLs, storage keys, provider bytes, or Element
 context.
 
-### E-052 - Multiplicity And Iteration
+### E-052 - Multiplicity Foundation
 
 Preserve the distinction between:
 
@@ -403,19 +403,15 @@ inner collection  = ImageSet, VideoSet, AudioSet, or Text consumed together
 outer items       = explicit repeated executions with dimensions and lineage
 ```
 
-Support multiple outputs, request sharding, deterministic `itemKey`, and these
-explicit control nodes:
-
-```txt
-Iterator / Map
-Collect
-Zip
-Prompt Iterator
-```
+Support multiple outputs, request sharding, deterministic `itemKey`, dimensions,
+and lineage without exposing iteration control nodes. A generation node returning
+multiple files produces one typed collection consumed together.
 
 No ordinary collection edge may multiply downstream spending implicitly.
 Planning must expose item counts, request counts, and expected output counts
-before admission and enforce bounded expansion limits.
+before admission and enforce bounded limits. Iterator/Map, Collect, Zip, Prompt
+Iterator, and output-dependent dynamic expansion are deferred until real product
+usage demonstrates the need.
 
 ### E-053 - Trigger.dev Orchestration
 
@@ -437,10 +433,12 @@ Implement normalized deterministic adapters for text, image, video, and audio.
 Equivalent immutable request snapshots produce equivalent mock results. Mock
 adapters make no external AI request and record zero provider/credit cost.
 
-All generated media mocks must traverse the real private-storage and ingestion
-pipeline and become canonical generation Assets with output order and immutable
-provenance. Text results remain durable run/job outputs under the documented
-text-output contract; do not create fake media Assets for text.
+All generated media mocks must traverse the canonical visibility-aware storage
+and ingestion pipeline and become `public` generation Assets with output order
+and immutable provenance. Uploads and reference Assets remain `private`. Text
+results remain durable run/job outputs under the documented text-output
+contract; do not create fake media Assets for text. This is a temporary
+pre-billing policy: billing later chooses visibility from the funding source.
 
 Mock media comes from a small, versioned private fixture catalog seeded once per
 environment. A run never downloads stock media. The adapter deterministically
@@ -511,7 +509,7 @@ cycle and graph-limit rejection
 revision race rollback
 idempotent replay and conflicting request hashes
 stable snapshots and hashes
-multiple outputs versus iteration items
+multiple outputs remain collection-valued without implicit iteration
 partial failure and skipped descendants
 cancellation and retry races
 dispatch reconciliation
@@ -538,7 +536,7 @@ one generation node
 -> dispatch durable work
 -> call one normalized provider adapter
 -> reconcile status and retries
--> ingest output into private storage
+-> ingest output through the canonical visibility-aware storage policy
 -> create canonical Asset
 -> show the result on the node
 ```

@@ -31,7 +31,7 @@ boundaries:
 React Flow   = editing, selection, command capture, and visualization
 PostgreSQL   = authoritative run ledger and immutable execution snapshot
 Trigger.dev  = durable orchestration, waits, retries, queues, and cancellation
-R2           = private fixture bytes and canonical generated media bytes
+R2           = visibility-routed canonical generated media bytes
 ```
 
 The browser submits intent, IDs, and a saved Flow revision. It never submits an
@@ -96,7 +96,7 @@ M5 includes:
 - `node`, `downstream`, `upstream`, `selection`, and `all` commands;
 - immutable snapshots and deterministic hashes;
 - item and request-shard execution;
-- explicit iteration and multiple outputs;
+- bounded multiple outputs without implicit iteration;
 - durable run/node/item/job states;
 - deterministic text, image, video, and audio mocks;
 - canonical media output Assets and text output rows;
@@ -494,7 +494,7 @@ Use awaited child APIs so child tasks remain version-locked to the parent.
 Deploy the application and Trigger tasks atomically; persist that exact executor
 version on admission and use it for reconciliation dispatch.
 
-## 12. Runtime Values, Items, And Iteration
+## 12. Runtime Values, Items, And Future Iteration Seam
 
 Preserve two different dimensions:
 
@@ -504,21 +504,14 @@ outer item  = one explicit repeated execution with dimensions and lineage
 ```
 
 A generation node returning four images creates one `ImageSet` runtime value
-unless an Iterator/Map explicitly expands it. Do not infer fan-out from array
-length or number of connected Assets.
+and must not fan out from array length or the number of connected Assets. M5
+preserves typed item, dimension, and lineage contracts so explicit iteration can
+be added later without redesigning persisted runs, but it does not expose or
+execute Iterator/Map, Collect, Zip, or Prompt Iterator nodes.
 
-M5 control nodes:
-
-- Iterator/Map: one input collection to N outer items;
-- Collect: compatible N outer items to one collection value;
-- Zip: pair dimensions by deterministic index/key, rejecting incompatible
-  cardinality unless the node contract defines a policy;
-- Prompt Iterator: explicit prompt/text variants to N outer items.
-
-The planner computes bounded structural upper limits. Admission materializes
-known items. The parent materializes output-dependent items just in time after
-upstream completion. Every resulting job and Asset points back to exact input
-item keys.
+The planner computes bounded structural upper limits and admission materializes
+known items. Every resulting job and Asset points back to exact input item keys.
+Output-dependent dynamic item expansion remains deferred.
 
 ## 13. Deterministic Mock Adapter
 
@@ -718,10 +711,10 @@ Also implement:
 - conservative PostgreSQL pool sizing for Trigger worker processes.
 
 The current `@talelabs/db` pool uses the `pg` default. Trigger child tasks run in
-separate processes, so unbounded fan-out can multiply connection pools. Add a
-small code default plus deployment override for worker pool size, instantiate
-one pool per worker process, and use the pooled Neon connection endpoint. Do not
-create a pool per item/job function call.
+separate processes, so unbounded fan-out can multiply connection pools. Keep
+conservative limits in typed code configuration, instantiate one pool per worker
+process, and use the pooled Neon connection endpoint. Do not create a pool per
+item/job function call.
 
 ## 20. Security And Tenant Isolation
 
@@ -730,8 +723,11 @@ create a pool per item/job function call.
   query verifies the pair.
 - Every Asset/prior-output lookup is organization scoped before existence is
   disclosed.
-- All generated media remains in the private bucket and is returned through
-  authorized short-lived signed delivery.
+- Asset visibility is a durable write-time fact. Under the temporary pre-billing
+  policy, generated media uses the public bucket while uploads remain private;
+  presentation, ingestion, search, and purge resolve storage from that value.
+- Public-bucket outputs currently use the same short-lived signed presentation
+  path until a verified public delivery origin is configured.
 - Realtime tokens are server-issued, short-lived, read-only, and scoped to exact
   Trigger run IDs.
 - Provider route IDs, storage keys, and raw errors stay server-only.
@@ -811,7 +807,7 @@ Deliver:
 - command selection and deterministic topological planner;
 - runtime value/item/lineage types;
 - shared safety limits;
-- pure scenarios covering all five commands and explicit iteration.
+- pure scenarios covering all five commands and multiple-output boundaries.
 
 Gate:
 
@@ -921,7 +917,7 @@ deterministic plan/snapshot hashing
 revision and idempotency races
 tenant isolation
 dispatch crash recovery
-bounded iteration and multiple outputs
+bounded multiple outputs without implicit iteration
 partial failure and skipped descendants
 cancellation/completion races
 snapshot-preserving retry
@@ -957,7 +953,7 @@ M5 is engineering-complete only when:
 3. PostgreSQL reconstructs complete state after refresh or Trigger reconnect.
 4. Mock image/video/audio outputs become canonical reusable Assets.
 5. LLM output is durable text with exact lineage.
-6. Iteration and multiple outputs are explicit, bounded, and visible.
+6. Multiple outputs are explicit, bounded, and visible without implicit iteration.
 7. Cancellation, partial failure, retry, and dispatch recovery are honest.
 8. No provider request, credential read, or non-zero mock cost occurs.
 9. Elements are absent from the active execution path.

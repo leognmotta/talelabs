@@ -1536,7 +1536,7 @@ M5  Provider-independent engine
     deterministic image, video, audio, and text provider mocks
     versioned private media fixtures copied to unique canonical output keys
     multiple outputs and request sharding
-    Iterator/Map, Collect, Zip, Prompt Iterator
+    typed item, dimension, and lineage seams for future iteration
     Trigger.dev durability, retries, cancellation, partial failure
     immutable provenance and canonical output Assets
     node result history
@@ -1559,9 +1559,11 @@ Later productization milestone
     API and MCP execution
 ```
 
-Iteration is an authorized M5 engine concern, not M4 scope. Tools remain a
-committed architectural direction for later productization. The engine must
-leave its documented Tool/versioning seams without building that product surface.
+Explicit iteration nodes are deferred until real workflow usage demonstrates the
+need. M5 preserves only the typed runtime seams required to add them later. Tools
+remain a committed architectural direction for later productization. The engine
+must leave its documented Tool/versioning seams without building that product
+surface.
 
 ---
 
@@ -1570,7 +1572,8 @@ leave its documented Tool/versioning seams without building that product surface
 1. Every successful generated file becomes a canonical Asset.
 2. Graph topology and draft configuration never contain generated result truth.
 3. Typed media collections and batch execution items remain distinct.
-4. Iteration is explicit and cost-visible.
+4. Ordinary collection edges never create implicit iteration or hidden spend;
+   future iteration must be explicit and cost-visible if it ships.
 5. Provider limits are enforced by consuming model slots after source resolution.
 6. Every provider call has its own durable job, retry boundary, and cost record.
 7. Every runtime item has stable identity and lineage.

@@ -44,7 +44,11 @@ This is the **internal product API** consumed by the TaleLabs web app — not a 
 - Ids are cuid2 strings. Server-generated except **flow node/edge ids, which the client generates** (canvas creates them before any round trip); the server validates format and uniqueness.
 - Timestamps: ISO 8601 UTC strings.
 - PATCH semantics: absent field = unchanged; explicit `null` = clear.
-- **Media access is exclusively server-issued signed URLs** (`url`, `thumbnailUrl`). All storage is private; URLs are short-lived and opaque — render, never persist, re-fetch when needed. Storage keys never leave the server.
+- **Media access is exclusively server-issued URLs** (`url`, `thumbnailUrl`).
+  Private Assets use short-lived signed URLs. Public Assets currently use the
+  same signed-download mechanism against the public bucket until a verified
+  public R2/custom-domain origin exists in typed code. Render URLs, never
+  persist them; storage keys and bucket names never leave the server.
 
 ### Lists & pagination
 
@@ -130,6 +134,7 @@ type Folder = {
 type MediaType = "image" | "video" | "audio";
 type AssetType = MediaType | "document";
 type AssetSource = "upload" | "generation";
+type AssetVisibility = "private" | "public";
 type AssetLifecycle = "live" | "archived" | "purging" | "purged"; // derived from the timestamp trio
 
 type Tag = {
@@ -145,6 +150,7 @@ type Asset = {
   name: string;
   type: AssetType;
   source: AssetSource;
+  visibility: AssetVisibility;
   mimeType: string;
   sizeBytes: number | null;
   width: number | null;
@@ -370,6 +376,7 @@ Response `200`:
     id: string;
     name: string;
     type: AssetType;
+    visibility: AssetVisibility;
     thumbnailUrl: string | null;
   }
   [];
@@ -391,7 +398,8 @@ limit as the other product routes; it has no route-specific limiter.
 
 ## Uploads
 
-Two-step presigned flow; the API never proxies bytes. Always the private bucket.
+Two-step presigned flow; the API never proxies bytes. Uploads always create
+`visibility: "private"` Assets in the private bucket.
 
 ### `POST /uploads`
 
@@ -582,7 +590,10 @@ Response: `200 ListResponse<{ jobId: string; runId: string; role: string; create
 
 ### `GET /assets/:id/download`
 
-Response: `200 { url: string }` — signed URL with attachment disposition. Purging/purged → `404`.
+Response: `200 { url: string }` — URL with attachment disposition, resolved
+from the persisted Asset visibility. The current implementation signs both
+private- and public-bucket downloads until a verified public delivery origin is
+configured in typed code. Purging/purged → `404`.
 
 ### Favorites and tags
 

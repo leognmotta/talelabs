@@ -66,8 +66,9 @@ is deferred production-readiness work, not M5 scope. The integration contract:
    flowRunId:nodeId:itemKey:requestIndex. In M5 those jobs call local mock
    adapters only. M6 introduces provider submission/polling behind the same
    adapter contract and retains the write-ahead uncertainty rules.
-5. Mock and future provider media uploads use deterministic keys
-   (generations/{jobId}/{outputIndex}), so a
+5. Mock and future provider media uploads use deterministic Asset-owned keys
+   selected by the persisted Asset visibility. Current public generation keys
+   use `generated/{assetId}/original`, so a
    retried upload overwrites its own partial object instead of orphaning a new one
 6. Completion is one transaction, and ORDER MATTERS — a constraint violation
    aborts a Postgres transaction (no reads allowed without rollback/savepoint),
@@ -90,9 +91,10 @@ is deferred production-readiness work, not M5 scope. The integration contract:
 8. Reconciliation sweeps: (a) redispatch status = 'pending' AND triggerRunId IS NULL
    AND createdAt < now() - interval '1 minute' — safe because domain-derived
    idempotency makes redispatch a no-op if the original trigger landed (running jobs never need
-   this sweep thanks to step 3); (b) delete storage objects under generations/{jobId}/
-   for terminally failed/canceled jobs — cleans orphans from crashes between upload
-   and commit.
+   this sweep thanks to step 3); (b) recompute the deterministic output Asset ID
+   and visibility-owned exact object key for terminally failed/canceled jobs and
+   delete it only when no canonical Asset row owns it — cleans orphans from
+   crashes between upload and commit without bucket listing.
 9. Run-status UI: poll our API, or subscribe via Trigger.dev Realtime with a
    public access token — either way the DB row is the domain truth
 ```
@@ -339,6 +341,8 @@ create table "assets" (
   "name" text not null,
   "type" text not null check ("type" in ('image', 'video', 'audio', 'document')),
   "source" text not null check ("source" in ('upload', 'generation')),
+  "visibility" text not null default 'private'
+               check ("visibility" in ('private', 'public')),
 
   "storageKey" text not null unique,  -- R2 object key; never exposed to clients.
                                       -- unique: two rows must never share one object,
@@ -415,13 +419,27 @@ Notes:
 
 - **Two-tier deletion, and rows are never hard-deleted.** Archive sets `"deletedAt"` (reversible). Permanent deletion — the vision's explicit-confirmation action — is a **durable purge task with honest ordering**: mark `"purgeRequestedAt"` (also archiving if still live, so the library's partial indexes already exclude it), the task deletes the R2 objects with retries, and `"purgedAt"` is set **only after storage deletion succeeds** — the database never claims destruction that hasn't happened. The result is a tombstone row. Purge gets the same crash-window protection as job dispatch: initial dispatch and reconciliation use the same explicitly global Trigger.dev idempotency key derived from `assetId`; the sweep re-triggers any asset stuck in `"purgeRequestedAt" is not null and "purgedAt" is null` (served by `"assetsPurgePendingIdx"`), and **restore is guarded** — un-archiving requires `"purgeRequestedAt" is null`, so a user can never restore an asset whose storage is being destroyed. **Purge also coordinates with active generations** through row locks with fixed ordering (asset row first, always): purge locks the asset and rejects if `generationJobInputs` references it from a `pending`/`running` job; run creation locks its selected input assets (ordered by id) and rejects purging/purged ones — the race serializes to exactly one of two clean rejections. Multi-node runs, which create downstream jobs later, will need run-level input leases or copied static references — a seam for that phase, deliberately not built now. This is what reconciles "permanent deletion" with "immutable generation provenance": the media is genuinely gone, but `generationJobInputs`, `elementAssets`, and `flowNodes` references stay intact and render as a tombstone placeholder instead of silently vanishing from history. Because rows persist, no cascade ever erases provenance; `generationJobInputs."assetId"` deliberately has **no** `on delete cascade`, so an accidental hard `DELETE` fails loudly on the FK instead of quietly rewriting job history.
 - `"generationJobId"` on the asset (not `outputAssetId` on the job): one run can produce multiple outputs; uploads have `null`. Full provenance (model, settings, resolved prompt, inputs, elements) is one join away — never duplicated onto the asset. The `check` makes the link mandatory for `source = 'generation'` — a generated asset without its job is a contract violation, not a nullable edge case.
-- `"outputIndex"` + the unique `("generationJobId", "outputIndex")` index give generated outputs a stable identity: provider ordering survives, and a retried completion transaction upserts the same rows instead of duplicating them. Storage keys derive from the same identity (`generations/{jobId}/{outputIndex}`), which is what makes upload retries overwrite-safe and orphan cleanup a prefix listing.
+- `"visibility"` is a write-time policy snapshot, never inferred later from
+  `source`. Existing rows and uploads remain `private`; the current temporary
+  generation policy explicitly writes `public` for new image/video/audio
+  outputs. PostgreSQL stores no bucket name. Billing later chooses visibility
+  from the funding source without rewriting historical Assets.
+- `"outputIndex"` + the unique `("generationJobId", "outputIndex")` index give
+  generated outputs a stable identity: provider ordering survives, and a
+  retried completion transaction upserts the same rows instead of duplicating
+  them. The worker derives one opaque deterministic Asset ID from that identity;
+  current public storage keys are `generated/{assetId}/original` and
+  `generated/{assetId}/thumbnail.jpg`. Retries therefore address the same exact
+  objects without exposing organization, user, prompt, or provider data.
 - `"storageKey"` is globally unique. If an asset-duplicate feature ever ships, it must copy the object, not share the key.
 - `"uploadId"` keeps the replay-safe presigned-upload flow: signed stateless grant (binds org, user, object key, mime, size, **sha-256 checksum**, expiry); registering the same grant twice returns the existing asset via the unique index. Two guards make the object immutable-in-practice: the presigned PUT signs `If-None-Match: *` (create-only — a still-valid URL can never overwrite), and the checksum binds content to the grant, verified at registration. Exact checksum header depends on an R2 spike — full-object SHA-256 support on PUT is uncertain there; `Content-MD5`/ETag is the documented fallback (API doc, Uploads). Upload object keys are deterministic per grant (`uploads/{grantId}`), so abandoned uploads (PUT completed, never registered) are sweepable: delete `uploads/` objects older than the grant TTL with no matching `"uploadId"` row — the storage-side twin of the generation-orphan sweep.
 - Search uses `pg_trgm` GIN indexes over `lower("name")` for live Asset and Folder
   substring matching. Every search query still carries `"organizationId"`; the
   trigram index accelerates candidate lookup without weakening tenant scope.
-- v1's `visibility` and `featured_at` are gone. Tags and favorites organize the private library only; they never make an Asset public. All delivery is signed-URL private for now; see [Future-proofing](#future-proofing) for the public-delivery seam.
+- Visibility does not imply featuring. `public` means the object is eligible for
+  public delivery and possible future showcase consideration; gallery approval,
+  moderation, and featuring require a separate future contract. Tags and
+  favorites do not change visibility.
 
 #### Asset favorites and tags
 
@@ -1125,7 +1143,9 @@ Seams that exist without speculative tables:
 - **Tools:** reuse the `flowRuns` orchestration model (section 11) over an immutable internal graph snapshot — a tool run spans providers and media types, so it is an orchestration record, never a `generationJobs` row; jobs stay single-provider, single-model execution units.
 - **Collaboration:** stable client-generated node/edge ids and per-row graph writes are the prerequisites, already in place; the flow `"revision"` CAS is the single-writer serialization point a sync layer would replace. Presence is ephemeral (never in Postgres); durable state is these tables.
 - **Billing/credits:** `"creditCost"` and `"providerCostUsd"` are already recorded per execution — the calibration dataset accumulates from launch. The ledger, balances, and reservation lifecycle attach to `generationJobs."id"` / `flowRuns."id"` later; full analysis in `credits-planning.md`.
-- **Public delivery / showcase:** if a public bucket returns, `assets` gains a `"visibility"` column (write-time snapshot, as designed in v1) — additive.
+- **Public delivery / showcase:** `assets.visibility` is the durable storage
+  policy snapshot. A future showcase adds a separate moderation/feature
+  decision and must never list every public Asset automatically.
 - **Projects:** deliberately dropped with the new vision. Flows are the creative
   documents; folders, tags, and favorites organize the Asset library without
   another ownership layer.

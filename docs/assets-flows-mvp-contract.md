@@ -105,6 +105,13 @@ Assets are the only reusable media source in the MVP.
 - Generated image, video, and audio outputs are automatically organized under
   `Flow/<Flow name>`. Ordinary uploads keep the folder explicitly chosen by the
   user and are never moved merely because they were uploaded from the canvas.
+- Asset visibility is a durable write-time fact. Ordinary uploads and reference
+  Assets are `private`; under the temporary pre-billing policy, newly generated
+  image, video, and audio outputs are `public`. Existing Assets are not
+  reclassified or published.
+- Public storage only makes an output eligible for future public delivery or
+  showcase consideration. Featuring, moderation, and gallery approval remain a
+  separate future decision; no public output is automatically showcased.
 - Asset nodes store one canonical Asset ID, never a signed URL or file copy.
 - Signed URLs are short-lived presentation data and are never persisted in a
   Flow.
@@ -154,7 +161,7 @@ do not create jobs. Connecting nodes never starts execution automatically.
 ### Phase 1 - Asset foundation
 
 Keep the existing media-aware Asset library stable: upload, background
-processing, folders, search, tags, favorites, private delivery, detail view,
+processing, folders, search, tags, favorites, visibility-aware delivery, detail view,
 drag/drop organization, and global upload progress.
 
 ### Phase 2 - Canvas and node UX (approved)
@@ -174,8 +181,10 @@ temporary provider boundary must remain explicit:
 
 Build the production-shaped run spine with immutable snapshots, deterministic
 planning, Trigger.dev orchestration, mock provider adapters, canonical output
-Assets, multiple outputs, explicit iteration, status/history, retry, and
-cancellation. Real provider calls and provider charges are forbidden.
+Assets, multiple outputs, status/history, retry, and cancellation. Preserve the
+typed runtime-item seam for future iteration, but do not add Iterator/Map,
+Collect, Zip, or Prompt Iterator nodes during the MVP. Real provider calls and
+provider charges are forbidden.
 
 ### Phase 4 - User run QA
 
@@ -191,7 +200,7 @@ admit one generation node
 -> snapshot its reachable inputs
 -> dispatch durable work
 -> normalize provider status and output
--> ingest output into private storage
+-> ingest output through the canonical visibility-aware storage policy
 -> create canonical Asset
 -> expose result on the node
 ```

@@ -182,6 +182,19 @@ the Asset library under `Flow/<Flow name>`. This is an output-materialization
 rule only: ordinary uploads remain in the folder chosen by the user, including
 uploads initiated from the Flow canvas.
 
+Asset visibility is captured durably when the Asset is created. Direct uploads
+and reference Assets remain private. Until billing can identify the funding
+source, every newly generated image, video, and audio output uses the temporary
+public-storage policy; existing Assets are never backfilled or published. The
+future billing decision replaces that temporary policy by choosing visibility
+from the funding source, without changing the canonical Asset lifecycle.
+
+Public storage and showcase featuring are different contracts. A public Asset
+may later be considered for a showcase, but it is not automatically featured,
+moderated, or approved for a landing-page gallery. Before M6 release, free and
+promotional generation must have clear localized disclosure that its outputs
+may be public. The disclosure UX itself is not part of this storage task.
+
 Assets are the first and most important implementation foundation. The asset experience should feel like a lightweight, media-aware drive rather than a social gallery.
 
 Initial asset types should support:
@@ -694,9 +707,9 @@ Voice Isolation node
 ```
 
 All dedicated generation-node surfaces and their model capability rules are built
-before external provider integration. Utility/control nodes remain limited to
-the explicit iteration set authorized by the execution plan; other transformation
-nodes should still come from demonstrated needs rather than speculative completeness.
+before external provider integration. Utility and control nodes should come from
+demonstrated needs rather than speculative completeness. Explicit iteration nodes
+remain deferred until real workflow usage demonstrates that need.
 
 The first Flow version should support:
 
@@ -742,9 +755,10 @@ external integrations
 general-purpose automation
 ```
 
-The engine milestone may add bounded Iterator/Map, Collect, Zip, and Prompt
-Iterator semantics. Arbitrary scripting, hidden batch matrices, triggers, and
-general-purpose automation remain deferred.
+The engine milestone preserves typed items, dimensions, and lineage as a future
+iteration seam, but does not add Iterator/Map, Collect, Zip, or Prompt Iterator
+nodes. Arbitrary scripting, hidden batch matrices, triggers, and general-purpose
+automation remain deferred.
 
 ### Simple Flows
 
