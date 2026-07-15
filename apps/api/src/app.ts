@@ -19,6 +19,7 @@ import { registerFlowRoutes } from './routes/flows/flows.routes.js'
 import { registerFolderRoutes } from './routes/folders/folders.routes.js'
 import { registerOrganizationRoutes } from './routes/organizations/organizations.routes.js'
 import { registerProductRoutes } from './routes/product.routes.js'
+import { registerRunRoutes } from './routes/runs/runs.routes.js'
 import { registerSearchRoutes } from './routes/search/search.routes.js'
 import { registerSystemRoutes } from './routes/system/system.routes.js'
 import { registerTagRoutes } from './routes/tags/tags.routes.js'
@@ -29,6 +30,7 @@ const defaultProductRouteRegistrars = [
   registerAssetRoutes,
   registerElementRoutes,
   registerFlowRoutes,
+  registerRunRoutes,
   registerConfigRoutes,
   registerFolderRoutes,
   registerTagRoutes,
