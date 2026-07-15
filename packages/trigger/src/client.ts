@@ -2,11 +2,13 @@ import type { TriggerTaskId, TriggerTaskMap } from './task-contracts.js'
 
 import process from 'node:process'
 import {
+  auth,
   batch,
   idempotencyKeys,
   logger,
   metadata,
   queue,
+  runs,
   schedules,
   schemaTask,
   tags,
@@ -18,11 +20,13 @@ import {
 import './env.js'
 
 export {
+  auth,
   batch,
   idempotencyKeys,
   logger,
   metadata,
   queue,
+  runs,
   schedules,
   schemaTask,
   tags,
@@ -31,8 +35,8 @@ export {
   wait,
 }
 
-export const TRIGGER_SECRET_KEY_ENV = 'TRIGGER_SECRET_KEY'
 export const TRIGGER_PROJECT_REF_ENV = 'TRIGGER_PROJECT_REF'
+export const TRIGGER_SECRET_KEY_ENV = 'TRIGGER_SECRET_KEY'
 
 export type TriggerEnv = Partial<
   Record<
@@ -44,7 +48,34 @@ export type TriggerEnv = Partial<
 
 export type TriggerTaskOptions = Parameters<typeof tasks.trigger>[2]
 export type TriggerBatchOptions = Parameters<typeof tasks.batchTrigger>[2]
+export {
+  aggregateFlowRunState,
+  aggregateGenerationJobState,
+  claimFlowRunTriggerParent,
+  claimUndispatchedFlowRuns,
+  reconcileFlowRunStates,
+} from './flow-run-state.js'
+export {
+  safeRunFailureForResponse,
+  toSafeRunFailure,
+} from './run-failure.js'
+export type {
+  SafeRunFailure,
+  SafeRunFailureBoundary,
+  SafeRunFailureCode,
+} from './run-failure.js'
 export type { TriggerTaskId, TriggerTaskMap } from './task-contracts.js'
+
+export function flowRunTaskOptions(
+  organizationId: string,
+  options: TriggerTaskOptions = {},
+): TriggerTaskOptions {
+  return {
+    ...options,
+    concurrencyKey: organizationId,
+    queue: 'flow-runs',
+  }
+}
 
 function requireEnvValue(
   env: TriggerEnv,
@@ -90,3 +121,7 @@ export async function batchTriggerTask<TTask extends TriggerTaskId>(
 ) {
   return tasks.batchTrigger(id, items, options)
 }
+
+export {
+  FLOW_RUN_EXECUTOR_CONTRACT_VERSION,
+} from './task-contracts.js'
