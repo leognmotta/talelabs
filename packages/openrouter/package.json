@@ -14,7 +14,8 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
-    "@openrouter/sdk": "^0.13.36"
+    "@openrouter/sdk": "^0.13.36",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/node": "^22.15.3",
