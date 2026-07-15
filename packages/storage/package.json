@@ -12,6 +12,7 @@
   "scripts": {
     "build": "tsc",
     "check-types": "tsc --noEmit",
+    "policy:check": "tsx scripts/check-asset-storage-policy.ts",
     "dev:build": "tsc --watch --preserveWatchOutput"
   },
   "dependencies": {
@@ -21,6 +22,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.15.3",
+    "tsx": "^4.20.6",
     "typescript": "5.9.2"
   }
 }
