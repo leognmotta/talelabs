@@ -78,6 +78,7 @@ const FlowRunNodeStatusSchema = z.enum([
   'pending',
   'running',
   'succeeded',
+  'partial',
   'failed',
   'skipped',
   'canceled',
@@ -90,6 +91,35 @@ const GenerationJobStatusSchema = z.enum([
   'failed',
   'canceled',
 ])
+
+const FlowLatestResultAssetOutputSchema = z.object({
+  assetId: Cuid2Schema,
+  type: AssetTypeSchema,
+  mimeType: z.string(),
+  outputIndex: z.number().int().nonnegative(),
+  url: z.url().nullable(),
+  thumbnailUrl: z.url().nullable(),
+}).openapi('FlowLatestResultAssetOutput')
+
+const FlowLatestResultTextOutputSchema = z.object({
+  outputIndex: z.number().int().nonnegative(),
+  text: z.string(),
+}).openapi('FlowLatestResultTextOutput')
+
+const FlowLatestResultJobSchema = z.object({
+  jobId: Cuid2Schema,
+  itemKey: z.string(),
+  mediaType: z.enum(['text', 'image', 'video', 'audio']),
+  textOutputs: z.array(FlowLatestResultTextOutputSchema),
+  assetOutputs: z.array(FlowLatestResultAssetOutputSchema),
+}).openapi('FlowLatestResultJob')
+
+const FlowLatestResultSchema = z.object({
+  nodeId: Cuid2Schema,
+  runId: Cuid2Schema,
+  runCreatedAt: TimestampSchema,
+  jobs: z.array(FlowLatestResultJobSchema),
+}).openapi('FlowLatestResult')
 
 export const FlowReferenceAssetSchema = z.object({
   id: Cuid2Schema,
@@ -124,6 +154,7 @@ export const FlowGraphResponseSchema = z.object({
     nodeStatus: FlowRunNodeStatusSchema,
     jobStatus: GenerationJobStatusSchema.nullable(),
   })),
+  latestResults: z.array(FlowLatestResultSchema),
 }).openapi('FlowGraphResponse')
 
 function hasDuplicates(values: readonly string[]) {
@@ -178,3 +209,53 @@ export const FlowGraphSyncRequestSchema = z.object({
 export const FlowGraphSyncResponseSchema = z.object({
   revision: z.number().int().nonnegative(),
 }).openapi('FlowGraphSyncResponse')
+
+const FlowRunModeSchema = z.enum([
+  'node',
+  'downstream',
+  'upstream',
+  'selection',
+  'all',
+])
+
+export const FlowRunPlanRequestSchema = z.object({
+  command: z.discriminatedUnion('mode', [
+    z.object({
+      expectedFlowRevision: z.number().int().nonnegative(),
+      mode: z.literal('node'),
+      targetNodeId: Cuid2Schema,
+    }),
+    z.object({
+      expectedFlowRevision: z.number().int().nonnegative(),
+      mode: z.literal('downstream'),
+      targetNodeId: Cuid2Schema,
+    }),
+    z.object({
+      expectedFlowRevision: z.number().int().nonnegative(),
+      mode: z.literal('upstream'),
+      targetNodeId: Cuid2Schema,
+    }),
+    z.object({
+      expectedFlowRevision: z.number().int().nonnegative(),
+      mode: z.literal('selection'),
+      selectedNodeIds: z.array(Cuid2Schema).min(1).max(100),
+    }),
+    z.object({
+      expectedFlowRevision: z.number().int().nonnegative(),
+      mode: z.literal('all'),
+    }),
+  ]),
+}).openapi('FlowRunPlanRequest')
+
+export const FlowRunPlanResponseSchema = z.object({
+  flowId: Cuid2Schema,
+  flowRevision: z.number().int().nonnegative(),
+  planHash: z.string(),
+  expectedOutputCount: z.number().int().nonnegative(),
+  plannedExecutableCount: z.number().int().nonnegative(),
+  plannedItemCount: z.number().int().nonnegative(),
+  plannedJobCount: z.number().int().nonnegative(),
+  requestedExecutableCount: z.number().int().nonnegative(),
+  topologicalDepth: z.number().int().nonnegative(),
+  mode: FlowRunModeSchema.optional(),
+}).openapi('FlowRunPlanResponse')

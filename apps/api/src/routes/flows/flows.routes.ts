@@ -16,6 +16,7 @@ import {
   syncFlowGraph,
   updateFlow,
 } from '../../services/flows.service.js'
+import { preflightFlowRun } from '../../services/runs.service.js'
 import { commonErrorResponses } from '../product.responses.js'
 import {
   CreateFlowRequestSchema,
@@ -26,6 +27,8 @@ import {
   FlowListQuerySchema,
   FlowListResponseSchema,
   FlowParamsSchema,
+  FlowRunPlanRequestSchema,
+  FlowRunPlanResponseSchema,
   FlowSchema,
   UpdateFlowRequestSchema,
 } from './flows.schemas.js'
@@ -124,6 +127,20 @@ const syncGraphRoute = createRoute({
   },
 })
 
+const preflightRunRoute = createRoute({
+  method: 'post',
+  path: '/flows/{id}/run-plans',
+  tags: ['Runs'],
+  request: {
+    params: FlowParamsSchema,
+    body: { required: true, content: { 'application/json': { schema: FlowRunPlanRequestSchema } } },
+  },
+  responses: {
+    200: { description: 'Run plan preview', content: { 'application/json': { schema: FlowRunPlanResponseSchema } } },
+    ...commonErrorResponses,
+  },
+})
+
 export function registerFlowRoutes(app: OpenAPIHono<ApiEnv>) {
   app.use('/flows/:id/graph', bodyLimit({
     maxSize: FLOW_GRAPH_LIMITS.requestBodyBytes,
@@ -191,6 +208,14 @@ export function registerFlowRoutes(app: OpenAPIHono<ApiEnv>) {
   app.openapi(syncGraphRoute, async (c) => {
     return c.json(await syncFlowGraph({
       ...c.req.valid('json'),
+      flowId: c.req.valid('param').id,
+      organizationId: c.var.organizationId,
+    }), 200)
+  })
+
+  app.openapi(preflightRunRoute, async (c) => {
+    return c.json(await preflightFlowRun({
+      command: c.req.valid('json').command,
       flowId: c.req.valid('param').id,
       organizationId: c.var.organizationId,
     }), 200)
