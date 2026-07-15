@@ -6,6 +6,7 @@ import {
   AssetProcessingStateSchema,
   AssetSourceSchema,
   AssetTypeSchema,
+  AssetVisibilitySchema,
   createListResponseSchema,
   Cuid2Schema,
   CursorSchema,
@@ -94,6 +95,7 @@ const GenerationJobStatusSchema = z.enum([
 
 const FlowLatestResultAssetOutputSchema = z.object({
   assetId: Cuid2Schema,
+  visibility: AssetVisibilitySchema,
   type: AssetTypeSchema,
   mimeType: z.string(),
   outputIndex: z.number().int().nonnegative(),
@@ -126,6 +128,7 @@ export const FlowReferenceAssetSchema = z.object({
   name: z.string(),
   type: AssetTypeSchema,
   source: AssetSourceSchema,
+  visibility: AssetVisibilitySchema,
   mimeType: z.string(),
   sizeBytes: z.number().int().nonnegative().nullable(),
   width: z.number().int().positive().nullable(),
