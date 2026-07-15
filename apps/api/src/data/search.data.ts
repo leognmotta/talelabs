@@ -1,4 +1,4 @@
-import type { AssetType, Database } from '@talelabs/db'
+import type { AssetType, AssetVisibility, Database } from '@talelabs/db'
 import type { Transaction } from 'kysely'
 
 import { db, sql } from '@talelabs/db'
@@ -10,6 +10,7 @@ export interface AssetSearchRow {
   name: string
   thumbnailKey: null | string
   type: AssetType
+  visibility: AssetVisibility
 }
 
 export interface FolderSearchRow {
@@ -35,7 +36,8 @@ async function searchAssetRows(
       asset."id",
       asset."name",
       asset."thumbnailKey",
-      asset."type"
+      asset."type",
+      asset."visibility"
     from "assets" asset
     where asset."organizationId" = ${input.organizationId}
       and asset."deletedAt" is null

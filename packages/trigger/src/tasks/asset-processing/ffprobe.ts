@@ -1,6 +1,7 @@
 import { execFile } from 'node:child_process'
-import process from 'node:process'
 import { promisify } from 'node:util'
+
+import { FFPROBE_BINARY } from '../../media-binaries.js'
 
 const execFileAsync = promisify(execFile)
 
@@ -28,8 +29,7 @@ export interface FfprobeOutput {
 }
 
 export async function ffprobe(path: string) {
-  const binary = process.env.FFPROBE_PATH ?? 'ffprobe'
-  const { stdout } = await execFileAsync(binary, [
+  const { stdout } = await execFileAsync(FFPROBE_BINARY, [
     '-v',
     'error',
     '-show_format',

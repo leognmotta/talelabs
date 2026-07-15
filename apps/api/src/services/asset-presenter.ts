@@ -2,7 +2,7 @@ import type { AssetRecord } from '../data/assets.data.js'
 
 import {
   createDownloadUrl,
-  TALELABS_PRIVATE_BUCKET,
+  getAssetBucket,
 } from '@talelabs/storage'
 
 function toIso(value: Date | null) {
@@ -57,13 +57,13 @@ const emptyPresentationMetadata: AssetPresentationMetadata = {
 
 export function createAssetThumbnailUrl(asset: Pick<
   AssetRecord,
-  'mimeType' | 'storageKey' | 'thumbnailKey' | 'type'
+  'mimeType' | 'storageKey' | 'thumbnailKey' | 'type' | 'visibility'
 >) {
   if (asset.type !== 'image' && !asset.thumbnailKey)
     return Promise.resolve(null)
 
   return createDownloadUrl({
-    bucket: TALELABS_PRIVATE_BUCKET,
+    bucket: getAssetBucket(asset.visibility),
     key: asset.thumbnailKey ?? asset.storageKey,
     responseContentType: asset.thumbnailKey ? 'image/jpeg' : asset.mimeType,
   })
@@ -81,7 +81,7 @@ export async function presentAsset(
         options.includeOriginalUrl === false
           ? Promise.resolve(null)
           : createDownloadUrl({
-              bucket: TALELABS_PRIVATE_BUCKET,
+              bucket: getAssetBucket(asset.visibility),
               key: asset.storageKey,
               responseContentType: asset.mimeType,
             }),
@@ -94,6 +94,7 @@ export async function presentAsset(
     name: asset.name,
     type: asset.type,
     source: asset.source,
+    visibility: asset.visibility,
     mimeType: asset.mimeType,
     sizeBytes: asset.sizeBytes === null ? null : Number(asset.sizeBytes),
     width: asset.width,

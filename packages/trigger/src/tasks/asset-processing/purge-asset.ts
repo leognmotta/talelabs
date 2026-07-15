@@ -2,14 +2,14 @@ import type { AssetTaskPayload } from './asset-task.js'
 
 import { db } from '@talelabs/db'
 import {
-  buildThumbnailObjectKey,
+  buildAssetThumbnailKey,
   deleteObject,
-  TALELABS_PRIVATE_BUCKET,
+  getAssetBucket,
 } from '@talelabs/storage'
 
 export async function purgeAsset(payload: AssetTaskPayload) {
   const asset = await db.selectFrom('assets')
-    .select(['storageKey', 'purgeRequestedAt', 'purgedAt'])
+    .select(['storageKey', 'visibility', 'purgeRequestedAt', 'purgedAt'])
     .where('organizationId', '=', payload.organizationId)
     .where('id', '=', payload.assetId)
     .executeTakeFirst()
@@ -17,10 +17,15 @@ export async function purgeAsset(payload: AssetTaskPayload) {
   if (!asset?.purgeRequestedAt || asset.purgedAt)
     return { state: 'skipped' as const }
 
-  await deleteObject({ bucket: TALELABS_PRIVATE_BUCKET, key: asset.storageKey })
+  const bucket = getAssetBucket(asset.visibility)
+  await deleteObject({ bucket, key: asset.storageKey })
   await deleteObject({
-    bucket: TALELABS_PRIVATE_BUCKET,
-    key: buildThumbnailObjectKey(payload.organizationId, payload.assetId),
+    bucket,
+    key: buildAssetThumbnailKey({
+      assetId: payload.assetId,
+      organizationId: payload.organizationId,
+      visibility: asset.visibility,
+    }),
   })
 
   await db.updateTable('assets')

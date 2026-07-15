@@ -1,4 +1,4 @@
-import type { AssetType, FolderTable } from '@talelabs/db'
+import type { AssetType, AssetVisibility, FolderTable } from '@talelabs/db'
 import type { Selectable } from 'kysely'
 
 import { createId } from '@paralleldrive/cuid2'
@@ -32,6 +32,7 @@ export interface FolderThumbnailRow {
   storageKey: string
   thumbnailKey: null | string
   type: AssetType
+  visibility: AssetVisibility
 }
 
 async function countFolders(executor: typeof db, organizationId: string) {
@@ -223,6 +224,7 @@ export async function listFolderThumbnailRows(
         asset."storageKey",
         asset."thumbnailKey",
         asset."type",
+        asset."visibility",
         row_number() over (
           partition by asset."folderId"
           order by asset."createdAt" desc, asset."id" desc
@@ -243,7 +245,8 @@ export async function listFolderThumbnailRows(
       "mimeType",
       "storageKey",
       "thumbnailKey",
-      "type"
+      "type",
+      "visibility"
     from ranked_assets
     where preview_rank <= ${MAX_FOLDER_THUMBNAILS}
     order by "folderId", preview_rank

@@ -1,4 +1,6 @@
-import { createDownloadUrl, TALELABS_PRIVATE_BUCKET } from '@talelabs/storage'
+import type { AssetVisibility } from '@talelabs/storage'
+
+import { createDownloadUrl, getAssetBucket } from '@talelabs/storage'
 
 import { searchWorkspaceRows } from '../data/search.data.js'
 
@@ -6,12 +8,15 @@ export type WorkspaceSearchType = 'asset' | 'folder'
 
 const MAX_RESULTS_PER_TYPE = 10
 
-function createSearchThumbnailUrl(thumbnailKey: null | string) {
+function createSearchThumbnailUrl(
+  thumbnailKey: null | string,
+  visibility: AssetVisibility,
+) {
   if (!thumbnailKey)
     return Promise.resolve(null)
 
   return createDownloadUrl({
-    bucket: TALELABS_PRIVATE_BUCKET,
+    bucket: getAssetBucket(visibility),
     key: thumbnailKey,
     responseContentType: 'image/jpeg',
   })
@@ -38,7 +43,11 @@ export async function searchWorkspace(input: {
       id: asset.id,
       name: asset.name,
       type: asset.type,
-      thumbnailUrl: await createSearchThumbnailUrl(asset.thumbnailKey),
+      visibility: asset.visibility,
+      thumbnailUrl: await createSearchThumbnailUrl(
+        asset.thumbnailKey,
+        asset.visibility,
+      ),
     })))
     return { assets, folders: result.folders }
   }

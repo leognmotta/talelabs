@@ -1,21 +1,36 @@
-import type { AssetTaskPayload } from './asset-task.js'
+import type { JsonObject, JsonValue } from '@talelabs/db'
 
+import type { AssetTaskPayload } from './asset-task.js'
 import { Readable } from 'node:stream'
+
 import { pipeline } from 'node:stream/promises'
 
 import { db } from '@talelabs/db'
 import {
-  buildThumbnailObjectKey,
+  buildAssetThumbnailKey,
   deleteObject,
+  getAssetBucket,
   getObject,
   putObject,
-  TALELABS_PRIVATE_BUCKET,
 } from '@talelabs/storage'
 
 import { getMediaProcessor } from './processor-registry.js'
 
-async function downloadToFile(key: string, path: string) {
-  const object = await getObject({ bucket: TALELABS_PRIVATE_BUCKET, key })
+function isJsonObject(value: JsonValue | null): value is JsonObject {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function mergeAssetMetadata(
+  existing: JsonValue | null,
+  processed: JsonValue,
+): JsonValue {
+  if (!isJsonObject(existing) || !isJsonObject(processed))
+    return processed
+  return { ...existing, ...processed }
+}
+
+async function downloadToFile(bucket: string, key: string, path: string) {
+  const object = await getObject({ bucket, key })
   if (!object.Body)
     throw new Error('Stored media has no body.')
 
@@ -48,18 +63,20 @@ export async function ingestAsset(
     return { state: 'skipped' as const }
   }
 
-  const thumbnailKey = buildThumbnailObjectKey(
-    payload.organizationId,
-    payload.assetId,
-  )
+  const bucket = getAssetBucket(asset.visibility)
+  const thumbnailKey = buildAssetThumbnailKey({
+    assetId: payload.assetId,
+    organizationId: payload.organizationId,
+    visibility: asset.visibility,
+  })
 
-  await downloadToFile(asset.storageKey, input.sourcePath)
+  await downloadToFile(bucket, asset.storageKey, input.sourcePath)
   const result = await getMediaProcessor(asset.type).process(input)
 
   if (result.thumbnail) {
     await putObject({
       body: result.thumbnail,
-      bucket: TALELABS_PRIVATE_BUCKET,
+      bucket,
       contentType: 'image/jpeg',
       key: thumbnailKey,
     })
@@ -69,7 +86,7 @@ export async function ingestAsset(
     .set({
       durationSeconds: result.durationSeconds,
       height: result.height,
-      metadata: result.metadata,
+      metadata: mergeAssetMetadata(asset.metadata, result.metadata),
       processingError: null,
       processingState: 'ready',
       thumbnailKey: result.thumbnail ? thumbnailKey : null,
@@ -93,12 +110,20 @@ export async function ingestAsset(
   const purgeWon = Boolean(current?.purgeRequestedAt || current?.purgedAt)
 
   if (purgeWon && result.thumbnail)
-    await deleteObject({ bucket: TALELABS_PRIVATE_BUCKET, key: thumbnailKey })
+    await deleteObject({ bucket, key: thumbnailKey })
 
   return { state: purgeWon ? 'purge_won' as const : 'superseded' as const }
 }
 
 export async function markAssetProcessingFailed(payload: AssetTaskPayload) {
+  const asset = await db.selectFrom('assets')
+    .select(['id', 'visibility'])
+    .where('organizationId', '=', payload.organizationId)
+    .where('id', '=', payload.assetId)
+    .executeTakeFirst()
+  if (!asset)
+    return
+
   const update = await db.updateTable('assets')
     .set({
       processingError: 'This media file could not be processed.',
@@ -112,9 +137,14 @@ export async function markAssetProcessingFailed(payload: AssetTaskPayload) {
     .executeTakeFirst()
 
   if (update.numUpdatedRows > 0n) {
+    const bucket = getAssetBucket(asset.visibility)
     await deleteObject({
-      bucket: TALELABS_PRIVATE_BUCKET,
-      key: buildThumbnailObjectKey(payload.organizationId, payload.assetId),
+      bucket,
+      key: buildAssetThumbnailKey({
+        assetId: payload.assetId,
+        organizationId: payload.organizationId,
+        visibility: asset.visibility,
+      }),
     })
   }
 }

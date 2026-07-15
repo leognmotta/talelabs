@@ -297,6 +297,7 @@ export async function insertUploadedAsset(input: {
         ...assetInput,
         folderId,
         source: 'upload',
+        visibility: 'private',
         processingState: 'processing',
       })
       .returningAll()

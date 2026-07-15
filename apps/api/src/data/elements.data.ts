@@ -193,13 +193,15 @@ export function listElementPreviewAssets(input: {
     storageKey: string
     thumbnailKey: null | string
     type: 'audio' | 'document' | 'image' | 'video'
+    visibility: 'private' | 'public'
   }>`
     select distinct on (e."id")
       e."id" as "elementId",
       a."mimeType",
       a."storageKey",
       a."thumbnailKey",
-      a."type"
+      a."type",
+      a."visibility"
     from "elements" e
     join "elementAssets" ea
       on ea."organizationId" = e."organizationId"
@@ -248,6 +250,7 @@ export function listElementAssetRows(input: {
       'asset.name',
       'asset.type',
       'asset.source',
+      'asset.visibility',
       'asset.storageKey',
       'asset.thumbnailKey',
       'asset.mimeType',

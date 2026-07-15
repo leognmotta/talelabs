@@ -7,8 +7,8 @@ import { getAssetUploadPolicy } from '@talelabs/assets'
 import {
   buildUploadObjectKey,
   createUploadUrl,
+  getAssetBucket,
   headObject,
-  TALELABS_PRIVATE_BUCKET,
 } from '@talelabs/storage'
 import { idempotencyKeys, triggerTask } from '@talelabs/trigger'
 
@@ -53,7 +53,7 @@ export async function createUpload(input: {
     userId: input.userId,
   }, getUploadRegistrationGrantTtlSeconds(input.sizeBytes))
   const uploadUrl = await createUploadUrl({
-    bucket: TALELABS_PRIVATE_BUCKET,
+    bucket: getAssetBucket('private'),
     key,
     contentMd5: input.checksum.value,
     contentLength: input.sizeBytes,
@@ -137,7 +137,7 @@ export async function registerUploadedAsset(input: {
 
   let object
   try {
-    object = await headObject({ bucket: TALELABS_PRIVATE_BUCKET, key: grant.key })
+    object = await headObject({ bucket: getAssetBucket('private'), key: grant.key })
   }
   catch {
     throw new HttpError(400, 'validation_error', 'The uploaded object could not be verified.', [{

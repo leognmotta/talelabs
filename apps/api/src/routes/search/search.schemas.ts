@@ -1,6 +1,10 @@
 import { z } from '@hono/zod-openapi'
 
-import { AssetTypeSchema, Cuid2Schema } from '../../schemas/common.js'
+import {
+  AssetTypeSchema,
+  AssetVisibilitySchema,
+  Cuid2Schema,
+} from '../../schemas/common.js'
 
 export const SearchTypeSchema = z.enum(['asset', 'folder']).openapi('SearchType')
 
@@ -14,6 +18,7 @@ export const SearchAssetSchema = z.object({
   id: Cuid2Schema,
   name: z.string(),
   type: AssetTypeSchema,
+  visibility: AssetVisibilitySchema,
   thumbnailUrl: z.url().nullable(),
 }).openapi('SearchAsset')
 

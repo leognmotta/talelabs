@@ -48,10 +48,7 @@ if (!secretKey?.startsWith('tr_dev_'))
   problems.push('TRIGGER_SECRET_KEY must use the project\'s tr_dev_ key, not a production key.')
 
 if (process.argv.includes('--worker')) {
-  const binaries = [
-    process.env.FFMPEG_PATH ?? 'ffmpeg',
-    process.env.FFPROBE_PATH ?? 'ffprobe',
-  ]
+  const binaries = ['ffmpeg', 'ffprobe']
 
   for (const binary of binaries) {
     if (spawnSync(binary, ['-version'], { stdio: 'ignore' }).status !== 0)

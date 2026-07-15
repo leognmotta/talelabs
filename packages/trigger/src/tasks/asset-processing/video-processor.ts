@@ -4,9 +4,9 @@ import type { MediaProcessor } from './media-processor.js'
 import { execFile } from 'node:child_process'
 import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import process from 'node:process'
 import { promisify } from 'node:util'
 
+import { FFMPEG_BINARY } from '../../media-binaries.js'
 import { ffprobe, safeNumber } from './ffprobe.js'
 import { InvalidMediaError } from './media-processor.js'
 
@@ -38,9 +38,7 @@ export const videoProcessor: MediaProcessor = {
     const rotationDegrees = getVideoRotation(video)
     const swapsDimensions = rotationDegrees === 90 || rotationDegrees === 270
     const posterPath = join(directory, 'poster.jpg')
-    const binary = process.env.FFMPEG_PATH ?? 'ffmpeg'
-
-    await execFileAsync(binary, [
+    await execFileAsync(FFMPEG_BINARY, [
       '-y',
       '-ss',
       '0',

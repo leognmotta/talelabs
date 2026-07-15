@@ -68,6 +68,11 @@ export const AssetSourceSchema = z.enum([
   'generation',
 ]).openapi('AssetSource')
 
+export const AssetVisibilitySchema = z.enum([
+  'private',
+  'public',
+]).openapi('AssetVisibility')
+
 export const AssetLifecycleSchema = z.enum([
   'live',
   'archived',

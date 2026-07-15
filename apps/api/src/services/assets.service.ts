@@ -5,7 +5,7 @@ import {
   isElementType,
   upcastElementData,
 } from '@talelabs/elements'
-import { createDownloadUrl, TALELABS_PRIVATE_BUCKET } from '@talelabs/storage'
+import { createDownloadUrl, getAssetBucket } from '@talelabs/storage'
 import { idempotencyKeys, triggerTask } from '@talelabs/trigger'
 
 import {
@@ -369,7 +369,7 @@ export async function getAssetDownload(organizationId: string, id: string) {
 
   const filename = encodeURIComponent(asset.name).replaceAll('%20', ' ')
   const url = await createDownloadUrl({
-    bucket: TALELABS_PRIVATE_BUCKET,
+    bucket: getAssetBucket(asset.visibility),
     key: asset.storageKey,
     responseContentDisposition: `attachment; filename*=UTF-8''${filename}`,
     responseContentType: asset.mimeType,
