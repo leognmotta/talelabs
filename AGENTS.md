@@ -35,8 +35,9 @@ expand it. The active Flow graph and reference APIs are Asset-only.
 
 The user approved the generation-node product design and M5 run-engine scope on
 2026-07-14. M5 may implement Trigger.dev orchestration, immutable run snapshots,
-generation-job persistence, deterministic mock adapters, iteration, canonical
-mock output Assets, and the approved run modes. Real OpenRouter/provider calls
+generation-job persistence, deterministic mock adapters, multiple outputs,
+canonical mock output Assets, and the approved run modes. Explicit iteration
+nodes are deferred until real product usage demonstrates the need. Real OpenRouter/provider calls
 remain M6 scope. The curated, code-versioned model capability registry continues
 to drive node handles, settings, validation, planning, and snapshot contracts.
 

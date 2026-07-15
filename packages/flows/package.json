@@ -14,6 +14,7 @@
     "check-types": "tsc --noEmit",
     "dev:build": "tsc --watch --preserveWatchOutput",
     "generation:check": "tsx scripts/check-generation-registry.ts",
+    "provider-output:check": "tsx scripts/check-generation-provider-outputs.ts",
     "run:check": "tsx scripts/check-run-planner.ts",
     "lint": "eslint ."
   },
