@@ -12,6 +12,7 @@ import {
   getAdaptiveGenerationInlineValues,
   resolveAdaptiveGenerationState,
 } from './adaptive-generation-resolver.js'
+import { compareFlowEdgesByPriority } from './edge-ordering.js'
 import { evaluateGenerationContract } from './generation-evaluator.js'
 import {
   getActiveGenerationInputSlots,
@@ -109,10 +110,12 @@ function validateGenerationSelections(
   edges: readonly FlowGraphEdge[],
   context: FlowGraphValidationContext,
   issues: FlowGraphIssue[],
-  strictSelections: boolean,
+  requiredNodeIds: ReadonlySet<string> | null,
 ) {
   for (const node of nodesById.values()) {
     if (!isGenerationNodeType(node.type))
+      continue
+    if (requiredNodeIds && !requiredNodeIds.has(node.id))
       continue
 
     const modelId
@@ -168,7 +171,7 @@ function validateGenerationSelections(
         }
       }
 
-      if (!strictSelections)
+      if (!requiredNodeIds?.has(node.id))
         continue
 
       const validSelectedCount = selection.assetIds.filter(assetId =>
@@ -201,10 +204,12 @@ function validateGenerationConstraints(
   edges: readonly FlowGraphEdge[],
   context: FlowGraphValidationContext,
   issues: FlowGraphIssue[],
-  requireComplete: boolean,
+  requiredNodeIds: ReadonlySet<string> | null,
 ) {
   for (const node of nodesById.values()) {
     if (!isGenerationNodeType(node.type))
+      continue
+    if (requiredNodeIds && !requiredNodeIds.has(node.id))
       continue
     const model = getGenerationModel(
       String(node.data.modelId ?? ''),
@@ -212,6 +217,7 @@ function validateGenerationConstraints(
     )
     if (!model)
       continue
+    const requireComplete = requiredNodeIds?.has(node.id) ?? false
 
     const connectionCounts: Record<string, number> = {}
     for (const edge of edges) {
@@ -232,11 +238,7 @@ function validateGenerationConstraints(
     for (const slot of model.inputSlots) {
       const candidates = new Set<string>()
       let opaqueRuntimeItems = 0
-      for (const edge of edges.toSorted(
-        (left, right) =>
-          left.createdAt.localeCompare(right.createdAt)
-          || left.id.localeCompare(right.id),
-      )) {
+      for (const edge of edges.toSorted(compareFlowEdgesByPriority)) {
         if (edge.targetNodeId !== node.id || edge.targetHandle !== slot.id)
           continue
         const sourceNode = nodesById.get(edge.sourceNodeId)
@@ -321,7 +323,7 @@ function validateGenerationConstraints(
 
 function validateGraph(
   input: ValidateGraphInput,
-  requireComplete: boolean,
+  requiredNodeIds: ReadonlySet<string> | null,
 ): FlowGraphValidationResult {
   const issues: FlowGraphIssue[] = []
 
@@ -449,7 +451,7 @@ function validateGraph(
           { maximum: handle.maxConnections },
         )
       }
-      if (requireComplete && count < handle.minConnections) {
+      if (requiredNodeIds?.has(node.id) && count < handle.minConnections) {
         issue(
           issues,
           'required_connection_missing',
@@ -465,14 +467,14 @@ function validateGraph(
     input.edges,
     input.context,
     issues,
-    requireComplete,
+    requiredNodeIds,
   )
   validateGenerationConstraints(
     nodesById,
     input.edges,
     input.context,
     issues,
-    requireComplete,
+    requiredNodeIds,
   )
 
   return { issues, nodes, valid: issues.length === 0 }
@@ -480,10 +482,15 @@ function validateGraph(
 
 /** Validates a persistable canvas draft. Missing optional/required inputs are allowed. */
 export function validateFlowGraphDraft(input: ValidateGraphInput) {
-  return validateGraph(input, false)
+  return validateGraph(input, null)
 }
 
-/** Reserved for M5 run planning, where every required input must be connected. */
-export function validateExecutableFlowGraph(input: ValidateGraphInput) {
-  return validateGraph(input, true)
+/** Validates required inputs only for the executable nodes selected by a run. */
+export function validateExecutableFlowGraph(
+  input: ValidateGraphInput,
+  executableNodeIds: ReadonlySet<string> = new Set(
+    input.nodes.map(node => node.id),
+  ),
+) {
+  return validateGraph(input, executableNodeIds)
 }

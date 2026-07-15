@@ -1,10 +1,14 @@
 import type {
   GenerationOutputType,
-  GenerationSelectedProviderInput,
   GenerationSettingValue,
 } from './generation-registry-types.js'
 
-export type GenerationProviderDelivery = 'bytes' | 'stream' | 'text' | 'url'
+export type GenerationProviderDelivery
+  = | 'bytes'
+    | 'storage'
+    | 'stream'
+    | 'text'
+    | 'url'
 export type GenerationProviderCompletion = 'poll' | 'response' | 'webhook'
 export type GenerationProviderCancellation
   = | 'best-effort'
@@ -39,16 +43,63 @@ export type GenerationProviderLifecycle
   = | AsyncGenerationProviderLifecycle
     | ImmediateGenerationProviderLifecycle
 
+export interface NormalizedGenerationTextPart {
+  edgeId: null | string
+  itemKey: null | string
+  order: number
+  source: 'connected' | 'inline'
+  sourceNodeId: null | string
+  text: string
+}
+
+/**
+ * One semantic text field as seen by a provider adapter. Connected text is
+ * authoritative while the inline draft remains frozen for provenance.
+ */
+export interface NormalizedGenerationTextSlot {
+  parts: readonly NormalizedGenerationTextPart[]
+  resolvedText: string
+  slotId: string
+  source: 'connected' | 'inline'
+}
+
+export interface NormalizedGenerationMediaAsset {
+  assetId: string
+  mediaType: 'audio' | 'document' | 'image' | 'video'
+  order: number
+}
+
+export interface NormalizedGenerationInputItem {
+  assets: readonly NormalizedGenerationMediaAsset[]
+  dimensions: Readonly<Record<string, string>>
+  itemKey: string
+  text: null | string
+}
+
+/** Exact edge, slot, item, and Asset ordering presented to the adapter. */
+export interface NormalizedGenerationOrderedInput {
+  edgeId: string
+  items: readonly NormalizedGenerationInputItem[]
+  order: number
+  sourceHandleId: string
+  sourceNodeId: string
+  targetSlotId: string
+}
+
 export interface NormalizedGenerationRequest {
-  context?: string
-  inputs: readonly GenerationSelectedProviderInput[]
+  adapterRequestVersion: 1
+  itemKey: string
   modelContractVersion: string
+  nodeId: string
   operationId: string
+  orderedInputs: readonly NormalizedGenerationOrderedInput[]
   outputCount: number
   productModelId: string
-  prompt?: string
   requestId: string
+  requestIndex: number
+  requestPayloadHash: string
   settings: Readonly<Record<string, GenerationSettingValue>>
+  textSlots: readonly NormalizedGenerationTextSlot[]
 }
 
 export type NormalizedGenerationMediaPayload
@@ -68,6 +119,12 @@ export type NormalizedGenerationMediaPayload
     mimeType: string
   }
   | {
+    bucket: string
+    delivery: 'storage'
+    key: string
+    mimeType: string
+  }
+  | {
     delivery: 'url'
     expiresAt?: string
     mimeType: string
@@ -76,6 +133,7 @@ export type NormalizedGenerationMediaPayload
 
 export interface NormalizedGenerationOutput {
   mediaType: GenerationOutputType
+  metadata?: Readonly<Record<string, boolean | number | string>>
   outputIndex: number
   payload: NormalizedGenerationMediaPayload
 }

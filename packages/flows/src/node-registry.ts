@@ -301,6 +301,13 @@ const ImageGenerationNodeDataSchemaV6
   = ImageGenerationNodeDataSchemaV6Base.superRefine((data, context) => {
     refineGenerationNodeData(data, context, 'image')
   })
+const ImageGenerationNodeDataSchemaV7Base = ImageGenerationNodeDataSchemaV6Base.extend({
+  crop: FlowImageCropSchema.optional(),
+})
+const ImageGenerationNodeDataSchemaV7
+  = ImageGenerationNodeDataSchemaV7Base.superRefine((data, context) => {
+    refineGenerationNodeData(data, context, 'image')
+  })
 const VideoGenerationNodeDataSchemaV1
   = GenerationNodeDataSchemaV4Base.superRefine((data, context) => {
     refineGenerationNodeData(
@@ -484,7 +491,7 @@ export const FLOW_NODE_TYPE_REGISTRY = Object.freeze({
     staticHandles: audioGenerationOutputHandles,
   },
   imageGeneration: {
-    currentVersion: 6,
+    currentVersion: 7,
     id: 'imageGeneration',
     migrations: {
       1: migrateImageGenerationNodeDataV1,
@@ -496,6 +503,7 @@ export const FLOW_NODE_TYPE_REGISTRY = Object.freeze({
         ...GenerationNodeDataSchemaBase.parse(data),
         prompt: '',
       }),
+      6: (data: unknown) => ImageGenerationNodeDataSchemaV6.parse(data),
     },
     reference: 'none',
     schemas: {
@@ -505,6 +513,7 @@ export const FLOW_NODE_TYPE_REGISTRY = Object.freeze({
       4: ImageGenerationNodeDataSchemaV4,
       5: ImageGenerationNodeDataSchemaV5,
       6: ImageGenerationNodeDataSchemaV6,
+      7: ImageGenerationNodeDataSchemaV7,
     },
     staticHandles: imageGenerationOutputHandles,
   },

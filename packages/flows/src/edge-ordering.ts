@@ -1,3 +1,5 @@
+import { compareStableStrings } from './stable-order.js'
+
 interface OrderedFlowEdge {
   createdAt?: Date | string
   data?: { createdAt?: string }
@@ -15,8 +17,8 @@ export function compareFlowEdgesByPriority(
   const rightCreatedAt = right.createdAt instanceof Date
     ? right.createdAt.toISOString()
     : right.createdAt ?? right.data?.createdAt ?? ''
-  const chronological = leftCreatedAt.localeCompare(rightCreatedAt)
+  const chronological = compareStableStrings(leftCreatedAt, rightCreatedAt)
   if (chronological !== 0)
     return chronological
-  return left.id.localeCompare(right.id)
+  return compareStableStrings(left.id, right.id)
 }
