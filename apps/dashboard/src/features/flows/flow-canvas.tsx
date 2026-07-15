@@ -19,6 +19,7 @@ import {
   IconArrowForwardUp,
   IconCopy,
   IconFocusCentered,
+  IconPlayerPlay,
   IconPlus,
   IconRefresh,
   IconTrash,
@@ -256,7 +257,7 @@ function FlowCanvasInner({
     setSavingBeforeLeave(true)
     const saved = await saveNow()
     setSavingBeforeLeave(false)
-    if (saved && blocker.state === 'blocked')
+    if (saved !== null && blocker.state === 'blocked')
       blocker.proceed()
   }, [blocker, saveNow])
 
@@ -301,16 +302,24 @@ function FlowCanvasInner({
     getExecutableInputCount,
     getGenerationPreview,
     getGenerationPreviewFingerprint,
+    isRunAllRunning,
+    retryGenerationRun,
+    runAll,
     runGenerationPreview,
     runGenerationSelectionPreview,
   } = useFlowMockRunOrchestration({
     edges,
     edgesRef,
+    flowId: flow.id,
+    initialActiveRunIds: graph.activeRuns.map(run => run.runId),
+    initialLatestResults: graph.latestResults,
     locale: i18n.resolvedLanguage ?? i18n.language ?? 'en',
     nodes,
     nodesRef,
+    organizationId,
     referenceData,
     referenceDataRef,
+    saveNow,
     t,
   })
   const openNodeOutputInspector = useCallback((nodeId: string) => {
@@ -408,6 +417,9 @@ function FlowCanvasInner({
     openInputInspector: (nodeId: string, slotId: string) => setInspector({ nodeId, slotId }),
     openNodeOutputInspector,
     referenceData,
+    isRunAllRunning,
+    retryGenerationRun,
+    runAll,
     runGenerationPreview,
     setEditingImageCropNodeId,
     setInputSelection,
@@ -430,6 +442,9 @@ function FlowCanvasInner({
     getNode,
     openNodeOutputInspector,
     referenceData,
+    isRunAllRunning,
+    retryGenerationRun,
+    runAll,
     runGenerationPreview,
     setInputSelection,
     updateNodeData,
@@ -443,6 +458,12 @@ function FlowCanvasInner({
   const inspectorSlot = inspectorModel?.inputSlots.find(slot => slot.id === inspector?.slotId)
   const inspectorState = inspector ? getInputState(inspector.nodeId, inspector.slotId) : null
   const hasSelection = selectedNodeIds.length > 0 || selectedEdgeIds.length > 0
+  const getCanRunNode = useCallback((nodeId: string) => {
+    const previewStatus = getGenerationPreview(nodeId)?.status
+    return getGenerationPreviewFingerprint(nodeId) !== null
+      && previewStatus !== 'pending'
+      && previewStatus !== 'queued'
+  }, [getGenerationPreview, getGenerationPreviewFingerprint])
   const selectedNode = useMemo(() => {
     if (selectedNodeIds.length !== 1)
       return undefined
@@ -703,6 +724,14 @@ function FlowCanvasInner({
                     shortcut={shortcutLabels.delete}
                     onClick={deleteSelection}
                   />
+                  <span aria-hidden className="mx-1 h-5 w-px bg-border/80" />
+                  <FlowToolbarButton
+                    disabled={isRunAllRunning}
+                    icon={IconPlayerPlay}
+                    label={t('flows.runAll')}
+                    loading={isRunAllRunning}
+                    onClick={() => void runAll()}
+                  />
                   {status === 'conflict' && (
                     <>
                       <span aria-hidden className="mx-1 h-5 w-px bg-border/80" />
@@ -772,10 +801,10 @@ function FlowCanvasInner({
                       canDuplicate={contextTarget.nodeIds.length > 0}
                       canFocus={contextTarget.nodeIds.length > 0
                         || contextTarget.edgeIds.length > 0}
-                      canRun={contextTarget.nodeIds.some(nodeId => (
-                        getGenerationPreviewFingerprint(nodeId) !== null
-                        && getGenerationPreview(nodeId)?.status !== 'pending'
-                      ))}
+                      canRun={contextTarget.nodeIds.some(getCanRunNode)}
+                      canRunNode={contextTarget.nodeIds.length === 1
+                        ? getCanRunNode(contextTarget.nodeIds[0]!)
+                        : false}
                       deleteShortcut={shortcutLabels.delete}
                       duplicateShortcut={shortcutLabels.duplicate}
                       onArrange={() => autoFormatSelection(contextTarget.nodeIds)}
@@ -788,6 +817,15 @@ function FlowCanvasInner({
                       onRun={() => void runGenerationSelectionPreview(
                         contextTarget.nodeIds,
                       )}
+                      onRunFromHere={contextTarget.nodeIds.length === 1
+                        ? () => void runGenerationPreview(contextTarget.nodeIds[0]!, 'fromHere')
+                        : undefined}
+                      onRunNode={contextTarget.nodeIds.length === 1
+                        ? () => void runGenerationPreview(contextTarget.nodeIds[0]!)
+                        : undefined}
+                      onRunTillHere={contextTarget.nodeIds.length === 1
+                        ? () => void runGenerationPreview(contextTarget.nodeIds[0]!, 'tillHere')
+                        : undefined}
                     />
                   )
                 : (

@@ -5,6 +5,7 @@ import { IconMicrophone } from '@tabler/icons-react'
 import { useNodeConnections } from '@xyflow/react'
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useFlowCanvas } from '../../../flow-canvas-context'
 import { FlowNodeShell } from '../../flow-node-shell'
 import { GenerationNodeFrame } from '../../generation-node-frame'
 import { GenerationNodePreviewArea } from '../../generation-node-preview-area'
@@ -20,11 +21,19 @@ export const SpeechGenerationFlowNode = memo(({
   type,
 }: NodeProps<CanvasNode>) => {
   const { t } = useTranslation()
+  const canvas = useFlowCanvas()
   const incomingConnections = useNodeConnections({ handleType: 'target', id })
   const speech = useSpeechGenerationNode({
     incomingConnections,
     node: { data, id, type },
   })
+  const preview = canvas.getGenerationPreview(id)
+  const audioPreviewUrl = preview
+    && 'output' in preview
+    && preview.output?.kind === 'media'
+    && preview.output.mediaType === 'audio'
+    ? preview.output.download.content
+    : undefined
 
   if (!speech.model || !speech.resolution) {
     return (
@@ -76,6 +85,8 @@ export const SpeechGenerationFlowNode = memo(({
     >
       <GenerationNodePreviewArea>
         <AudioPreview
+          pending={preview?.status === 'pending'}
+          previewUrl={audioPreviewUrl}
           readinessMessageKey={readinessMessageKey}
           resolution={speech.resolution}
         />

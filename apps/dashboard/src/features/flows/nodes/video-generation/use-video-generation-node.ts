@@ -185,6 +185,7 @@ export function useVideoGenerationNode(input: {
     activeSettings,
     canUpgradeModelContract,
     externalPromptConnected: (connectionCounts.prompt ?? 0) > 0,
+    hasRunnablePlan: Boolean(canvas.getGenerationPreviewFingerprint(input.node.id)),
     inputState,
     model,
     modelOptions,

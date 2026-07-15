@@ -5,6 +5,7 @@ import { IconVideo } from '@tabler/icons-react'
 import { useNodeConnections } from '@xyflow/react'
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useFlowCanvas } from '../../flow-canvas-context'
 import { FlowNodeShell } from '../flow-node-shell'
 import { GenerationNodeFrame } from '../generation-node-frame'
 import { GenerationNodePreviewArea } from '../generation-node-preview-area'
@@ -21,6 +22,7 @@ export const VideoGenerationFlowNode = memo(({
   type,
 }: NodeProps<CanvasNode>) => {
   const { t } = useTranslation()
+  const canvas = useFlowCanvas()
   const incomingConnections = useNodeConnections({ handleType: 'target', id })
   const node = { data, id, type }
   const video = useVideoGenerationNode({ incomingConnections, node })
@@ -39,8 +41,13 @@ export const VideoGenerationFlowNode = memo(({
     )
   }
 
-  const readinessMessageKey = video.resolution.issues.find(issue => issue.messageKey)?.messageKey
-    ?? `flows.video.readiness.${video.resolution.readiness}`
+  const effectiveReadiness = video.resolution.readiness === 'ready' || video.hasRunnablePlan
+    ? 'ready'
+    : video.resolution.readiness
+  const readinessMessageKey = effectiveReadiness === 'ready'
+    ? 'flows.video.readiness.ready'
+    : video.resolution.issues.find(issue => issue.messageKey)?.messageKey
+      ?? `flows.video.readiness.${effectiveReadiness}`
   const promptSlot = video.model.inputSlots.find(slot => slot.id === 'prompt')
   const promptAvailability = promptSlot
     ? video.resolution.inputAvailability[promptSlot.id]
@@ -56,6 +63,13 @@ export const VideoGenerationFlowNode = memo(({
     : undefined
 
   const outputLabel = t('flows.outputs.videos')
+  const preview = canvas.getGenerationPreview(id)
+  const previewUrl = preview
+    && 'output' in preview
+    && preview.output?.kind === 'media'
+    && preview.output.mediaType === 'video'
+    ? preview.output.download.content
+    : undefined
 
   return (
     <GenerationNodeFrame
@@ -66,7 +80,7 @@ export const VideoGenerationFlowNode = memo(({
       outputHandleId="videos"
       outputLabel={outputLabel}
       outputValueType="VideoSet"
-      readiness={video.resolution.readiness}
+      readiness={effectiveReadiness}
       resolvedOperationId={video.resolution.resolvedOperationId}
       selected={selected}
       title={t('flows.nodes.videoGeneration')}
@@ -79,8 +93,10 @@ export const VideoGenerationFlowNode = memo(({
           slots={video.model.inputSlots}
         />
         <VideoGenerationPreview
+          pending={preview?.status === 'pending'}
+          previewUrl={previewUrl}
           readinessMessageKey={readinessMessageKey}
-          resolution={video.resolution}
+          resolution={{ ...video.resolution, readiness: effectiveReadiness }}
         />
       </GenerationNodePreviewArea>
       <GenerationNodePromptSection>

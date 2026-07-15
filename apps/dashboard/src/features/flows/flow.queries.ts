@@ -2,6 +2,7 @@ import type {
   Flow,
   FlowGraphSyncRequest,
   FlowListResponse,
+  FlowRun,
   GetFlowsQueryParams,
 } from '@talelabs/sdk'
 import type { InfiniteData, QueryClient } from '@tanstack/react-query'
@@ -14,6 +15,8 @@ import {
   getFlowsId,
   getFlowsIdGraph,
   getFlowsIdReferences,
+  getRuns,
+  getRunsId,
   patchFlowsId,
   postFlows,
   postFlowsIdGraph,
@@ -21,6 +24,7 @@ import {
 import {
   useInfiniteQuery,
   useMutation,
+  useQueries,
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query'
@@ -34,6 +38,11 @@ import { useActiveOrganizationId } from '../organizations/organization-scope-con
 import { flowQueryKeys } from './flow-query-keys'
 
 const FLOW_PAGE_SIZE = 40
+const RUN_FALLBACK_REFRESH_INTERVAL_MS = 60_000
+
+export function isActiveFlowRunStatus(status: FlowRun['status']) {
+  return status === 'pending' || status === 'running'
+}
 
 function hasOrganizationScopeCache(
   queryClient: QueryClient,
@@ -184,6 +193,90 @@ export function useGenerationConfigQuery() {
     enabled: Boolean(organizationId),
     staleTime: Number.POSITIVE_INFINITY,
   })
+}
+
+export function useFlowRunDetailQuery(runId: null | string) {
+  const organizationId = useActiveOrganizationId()
+  return useQuery({
+    queryKey: flowQueryKeys.run(organizationId, runId),
+    queryFn: ({ signal }) => getRunsId(
+      { id: runId! },
+      {
+        headers: getOrganizationRequestHeaders(organizationId!),
+        signal,
+      },
+    ),
+    enabled: Boolean(organizationId && runId),
+    refetchInterval: query => query.state.data
+      && isActiveFlowRunStatus(query.state.data.status)
+      ? RUN_FALLBACK_REFRESH_INTERVAL_MS
+      : false,
+    refetchOnReconnect: true,
+    refetchOnWindowFocus: true,
+    staleTime: 0,
+  })
+}
+
+export function useFlowRunDetailQueries(runIds: readonly string[]) {
+  const organizationId = useActiveOrganizationId()
+  return useQueries({
+    queries: stableRunIds(runIds).map(runId => ({
+      queryKey: flowQueryKeys.run(organizationId, runId),
+      queryFn: ({ signal }: { signal: AbortSignal }) => getRunsId(
+        { id: runId },
+        {
+          headers: getOrganizationRequestHeaders(organizationId!),
+          signal,
+        },
+      ),
+      enabled: Boolean(organizationId),
+      refetchInterval: (query: { state: { data?: FlowRun } }) => query.state.data
+        && isActiveFlowRunStatus(query.state.data.status)
+        ? RUN_FALLBACK_REFRESH_INTERVAL_MS
+        : false,
+      refetchOnReconnect: true,
+      refetchOnWindowFocus: true,
+      staleTime: 0,
+    })),
+  })
+}
+
+export function useActiveFlowRunsQuery() {
+  const organizationId = useActiveOrganizationId()
+  return useQuery({
+    queryKey: flowQueryKeys.activeRuns(organizationId),
+    queryFn: async ({ signal }) => {
+      const [pending, running] = await Promise.all([
+        getRuns(
+          { params: { limit: 100, status: 'pending' } },
+          {
+            headers: getOrganizationRequestHeaders(organizationId!),
+            signal,
+          },
+        ),
+        getRuns(
+          { params: { limit: 100, status: 'running' } },
+          {
+            headers: getOrganizationRequestHeaders(organizationId!),
+            signal,
+          },
+        ),
+      ])
+      return stableRunIds([
+        ...pending.data.map(run => run.id),
+        ...running.data.map(run => run.id),
+      ])
+    },
+    enabled: Boolean(organizationId),
+    refetchInterval: RUN_FALLBACK_REFRESH_INTERVAL_MS,
+    refetchOnReconnect: true,
+    refetchOnWindowFocus: true,
+    staleTime: 0,
+  })
+}
+
+function stableRunIds(runIds: readonly string[]) {
+  return [...new Set(runIds)].toSorted()
 }
 
 export function saveFlowGraph(input: {

@@ -1,5 +1,8 @@
 import type { ComponentType, ReactNode } from 'react'
+
+import { BorderBeam } from '@talelabs/ui/components/border-beam'
 import { cn } from '@talelabs/ui/lib/utils'
+import { useFlowCanvas } from '../flow-canvas-context'
 import { FlowNodeToolbar } from '../flow-node-toolbar'
 
 export function FlowNodeShell({
@@ -28,6 +31,7 @@ export function FlowNodeShell({
   titleMeta?: string
 }) {
   const fullTitle = titleMeta ? `${title} · ${titleMeta}` : title
+  const running = useFlowCanvas().getGenerationPreview(nodeId)?.status === 'pending'
 
   return (
     <>
@@ -37,15 +41,25 @@ export function FlowNodeShell({
       />
       <div
         data-flow-node-shell
+        data-running={running}
         data-selected={selected}
         className={cn(
           `
-            w-80 overflow-visible rounded-xl border border-border/90 bg-card
+            relative w-80 overflow-visible rounded-xl border bg-card
             text-card-foreground shadow-[0_12px_32px_rgb(0_0_0/0.22)]
             transition-[border-color,box-shadow]
-            data-[selected=true]:border-primary/80
-            data-[selected=true]:shadow-[0_0_0_1px_var(--primary),0_16px_40px_rgb(0_0_0/0.3)]
           `,
+          running
+            ? `
+              border-transparent
+              shadow-[0_0_30px_color-mix(in_oklab,var(--flow-type-video)_38%,transparent),0_16px_42px_rgb(0_0_0/0.32)]
+            `
+            : selected
+              ? `
+                border-primary/80
+                shadow-[0_0_0_1px_var(--primary),0_16px_40px_rgb(0_0_0/0.3)]
+              `
+              : 'border-border/90',
           className,
         )}
       >
@@ -89,6 +103,36 @@ export function FlowNodeShell({
               <div className="relative border-t border-border/70 px-3 py-2">
                 {footer}
               </div>
+            )
+          : null}
+        {running
+          ? (
+              <>
+                <BorderBeam
+                  borderWidth={2.5}
+                  className="
+                    from-transparent via-(--flow-type-image)
+                    to-(--flow-type-video)
+                  "
+                  colorFrom="var(--flow-type-image)"
+                  colorTo="var(--flow-type-video)"
+                  duration={3.4}
+                  size={360}
+                />
+                <BorderBeam
+                  borderWidth={2}
+                  className="
+                    from-transparent via-(--flow-type-audio) to-(--primary)
+                    opacity-75
+                  "
+                  colorFrom="var(--flow-type-audio)"
+                  colorTo="var(--primary)"
+                  delay={1.7}
+                  duration={3.4}
+                  reverse
+                  size={260}
+                />
+              </>
             )
           : null}
       </div>

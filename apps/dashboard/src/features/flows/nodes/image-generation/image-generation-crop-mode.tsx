@@ -1,24 +1,21 @@
 import type { FlowImageCrop } from '@talelabs/flows'
-import type { FlowReferenceAsset } from '@talelabs/sdk'
 
-import { useState } from 'react'
-import { useFlowCanvas } from '../flow-canvas-context'
+import { useEffect, useState } from 'react'
+import { useFlowCanvas } from '../../flow-canvas-context'
 import {
   FULL_IMAGE_CROP,
   imageCropAspectRatio,
   imageNodeDisplayAspectRatio,
   isFullImageCrop,
-} from '../image-crop'
-import { ImageCropEditor } from '../image-crop-editor'
-import { ImageCropToolbar } from '../image-crop-toolbar'
+} from '../../image-crop'
+import { ImageCropEditor } from '../../image-crop-editor'
+import { ImageCropToolbar } from '../../image-crop-toolbar'
 
-export function AssetImageCropMode({
-  asset,
+export function ImageGenerationCropMode({
   nodeId,
   savedCrop,
   src,
 }: {
-  asset: FlowReferenceAsset
   nodeId: string
   savedCrop: FlowImageCrop | null
   src: string
@@ -27,11 +24,29 @@ export function AssetImageCropMode({
   const [draftCrop, setDraftCrop] = useState<FlowImageCrop>(
     savedCrop ?? FULL_IMAGE_CROP,
   )
+  const [sourceSize, setSourceSize] = useState<{
+    height: number
+    width: number
+  } | null>(null)
+
+  useEffect(() => {
+    const image = new Image()
+    image.onload = () => {
+      if (image.naturalWidth > 0 && image.naturalHeight > 0) {
+        setSourceSize({
+          height: image.naturalHeight,
+          width: image.naturalWidth,
+        })
+      }
+    }
+    image.src = src
+  }, [src])
+
   const editorAspectRatio = imageNodeDisplayAspectRatio(
     imageCropAspectRatio(
       savedCrop ?? FULL_IMAGE_CROP,
-      asset.width,
-      asset.height,
+      sourceSize?.width ?? null,
+      sourceSize?.height ?? null,
     ),
   )
 
@@ -55,11 +70,11 @@ export function AssetImageCropMode({
         onReset={() => setDraftCrop(FULL_IMAGE_CROP)}
       />
       <ImageCropEditor
-        alt={asset.name}
+        alt=""
         crop={draftCrop}
         frameAspectRatio={editorAspectRatio}
-        sourceHeight={asset.height}
-        sourceWidth={asset.width}
+        sourceHeight={sourceSize?.height ?? null}
+        sourceWidth={sourceSize?.width ?? null}
         src={src}
         onCropChange={setDraftCrop}
       />

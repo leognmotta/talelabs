@@ -55,10 +55,13 @@ export interface FlowCanvasContextValue {
   openInputInspector: (nodeId: string, slotId: string) => void
   openNodeOutputInspector: (nodeId: string) => void
   referenceData: FlowReferenceData
+  isRunAllRunning: boolean
   runGenerationPreview: (
     nodeId: string,
     scope?: FlowGenerationPreviewScope,
   ) => Promise<void>
+  retryGenerationRun: (nodeId: string) => Promise<void>
+  runAll: () => Promise<void>
   setInputSelection: (
     nodeId: string,
     slotId: string,

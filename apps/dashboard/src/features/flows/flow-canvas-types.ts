@@ -81,19 +81,44 @@ export type FlowGenerationPreviewOutput
     valueType: 'Text'
   }
 
+export interface FlowGenerationPreviewResultOutput {
+  output: FlowGenerationPreviewOutput
+  outputIndex: number
+}
+
+export interface FlowGenerationPreviewResultSet {
+  itemKey: string
+  jobId: string
+  outputs: FlowGenerationPreviewResultOutput[]
+}
+
 export type FlowGenerationPreview
   = | {
     fingerprint: string
-    status: 'pending'
+    output?: FlowGenerationPreviewOutput
+    resultSets?: FlowGenerationPreviewResultSet[]
+    retrySource?: never
+    status: 'pending' | 'queued'
   }
   | {
     fingerprint: string
     output: FlowGenerationPreviewOutput
+    resultSets?: FlowGenerationPreviewResultSet[]
+    /** Whole-snapshot product retry source when this node completed only partially. */
+    retrySource?: {
+      runId: string
+      status: 'canceled' | 'failed' | 'partial'
+    }
     status: 'succeeded'
   }
   | {
     errorKey: string
     fingerprint: string
+    /** Whole-snapshot product retry source; absent while the owning run is active. */
+    retrySource?: {
+      runId: string
+      status: 'canceled' | 'failed' | 'partial'
+    }
     status: 'error'
   }
 

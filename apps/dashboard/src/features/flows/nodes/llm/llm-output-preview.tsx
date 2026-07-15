@@ -27,8 +27,9 @@ export function LlmOutputPreview({
     && preview.status === 'succeeded'
     && preview.fingerprint !== currentFingerprint,
   )
-  const output = preview?.status === 'succeeded'
-    && preview.output.kind === 'text'
+  const output = preview
+    && 'output' in preview
+    && preview.output?.kind === 'text'
     ? preview.output.text
     : null
   const stateLabel = preview?.status === 'pending'

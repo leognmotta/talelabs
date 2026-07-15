@@ -151,6 +151,8 @@ export function createFlowMockRuntimePlanner(
     const preview = input.previews[nodeId]
     if (preview?.status !== 'succeeded')
       return null
+    if (preview.resultSets?.length)
+      return preview.output
     const request = createRequest(nodeId, visiting)
     if (
       !request

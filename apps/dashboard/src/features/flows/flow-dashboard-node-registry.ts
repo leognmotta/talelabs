@@ -46,7 +46,7 @@ export interface FlowDashboardNodeDefinition {
   type: FlowNodeType
 }
 
-export type FlowGenerationToolbarAction = 'copyOutput' | 'download'
+export type FlowGenerationToolbarAction = 'copyOutput' | 'crop' | 'download'
 
 export type FlowNodePickerGroup = 'generation' | 'inputs' | 'transform'
 
@@ -98,7 +98,7 @@ export const FLOW_DASHBOARD_NODE_REGISTRY = {
     descriptionKey: 'flows.nodePicker.descriptions.imageGeneration',
     icon: IconPhotoSpark,
     generationToolbar: {
-      actions: ['download'],
+      actions: ['crop', 'download'],
     },
     generationSettings: ImageGenerationSettingsCard,
     inspector: 'generationSettings',

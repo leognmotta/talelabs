@@ -48,4 +48,25 @@ export const flowQueryKeys = {
     ...flowScope(organizationId),
     'generation-config',
   ] as const,
+  runs: (organizationId: null | string, flowId: null | string) => [
+    ...flowScope(organizationId),
+    'runs',
+    flowId,
+  ] as const,
+  activeRuns: (organizationId: null | string) => [
+    ...flowScope(organizationId),
+    'runs',
+    'active',
+  ] as const,
+  run: (organizationId: null | string, runId: null | string) => [
+    ...flowScope(organizationId),
+    'run',
+    runId,
+  ] as const,
+  runRealtimeToken: (organizationId: null | string, runId: null | string) => [
+    ...flowScope(organizationId),
+    'run',
+    runId,
+    'realtime-token',
+  ] as const,
 }

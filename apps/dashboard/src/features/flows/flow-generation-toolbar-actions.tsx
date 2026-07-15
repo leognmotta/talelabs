@@ -4,8 +4,10 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@talelabs/ui/components/dropdown-menu'
+import { Spinner } from '@talelabs/ui/components/spinner'
 import { useTranslation } from 'react-i18next'
 import { FlowActionTooltip } from './flow-action-tooltip'
 import { useFlowCanvas } from './flow-canvas-context'
@@ -21,29 +23,39 @@ export function FlowGenerationToolbarActions({
   const canvas = useFlowCanvas()
   const label = t('flows.nodeToolbar.run')
   const optionsLabel = t('flows.nodeToolbar.runOptions')
-  const running = canvas.getGenerationPreview(nodeId)?.status === 'pending'
-  const disabled = !canRun || running
+  const preview = canvas.getGenerationPreview(nodeId)
+  const previewStatus = preview?.status
+  const retryAvailable = Boolean(preview?.retrySource)
+  const running = previewStatus === 'pending'
+  const queued = previewStatus === 'queued'
+  const hasRunnablePlan = Boolean(canvas.getGenerationPreviewFingerprint(nodeId))
+  const runDisabled = (!canRun && !hasRunnablePlan) || running || queued
+  const optionsDisabled = runDisabled && !retryAvailable
 
   return (
     <div className="flex items-stretch" data-flow-run-actions>
-      <FlowActionTooltip disabled={disabled} label={label}>
+      <FlowActionTooltip disabled={runDisabled} label={label}>
         <Button
+          aria-busy={running}
           className="rounded-r-none border-r-primary-foreground/20"
-          disabled={disabled}
+          disabled={runDisabled}
           size="sm"
           type="button"
           onClick={() => void canvas.runGenerationPreview(nodeId)}
         >
+          {running && <Spinner aria-hidden="true" className="size-3.5" />}
           {label}
         </Button>
       </FlowActionTooltip>
       <DropdownMenu>
         <FlowActionTooltip label={optionsLabel}>
           <DropdownMenuTrigger
+            disabled={optionsDisabled}
             render={(
               <Button
                 aria-label={optionsLabel}
                 className="rounded-l-none border-l-0"
+                disabled={optionsDisabled}
                 size="icon-sm"
                 type="button"
               >
@@ -57,9 +69,23 @@ export function FlowGenerationToolbarActions({
           className="w-64"
           sideOffset={8}
         >
+          {retryAvailable
+            ? (
+                <>
+                  <DropdownMenuItem
+                    className="items-start py-3"
+                    onClick={() => void canvas.retryGenerationRun(nodeId)}
+                  >
+                    {t('flows.nodeToolbar.retryEntireRun')}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                </>
+              )
+            : null}
           <DropdownMenuItem
             className="items-start py-3"
-            disabled
+            disabled={runDisabled}
+            onClick={() => void canvas.runGenerationPreview(nodeId, 'fromHere')}
           >
             <span className="flex flex-col gap-0.5">
               <span>{t('flows.nodeToolbar.runFromHere')}</span>
@@ -70,7 +96,8 @@ export function FlowGenerationToolbarActions({
           </DropdownMenuItem>
           <DropdownMenuItem
             className="items-start py-3"
-            disabled
+            disabled={runDisabled}
+            onClick={() => void canvas.runGenerationPreview(nodeId, 'tillHere')}
           >
             <span className="flex flex-col gap-0.5">
               <span>{t('flows.nodeToolbar.runTillHere')}</span>

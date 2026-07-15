@@ -18,6 +18,7 @@ export function FlowCanvasSelectionContextMenu({
   canDuplicate,
   canFocus,
   canRun,
+  canRunNode,
   deleteShortcut,
   duplicateShortcut,
   onArrange,
@@ -25,11 +26,15 @@ export function FlowCanvasSelectionContextMenu({
   onDuplicate,
   onFocus,
   onRun,
+  onRunFromHere,
+  onRunNode,
+  onRunTillHere,
 }: {
   canArrange: boolean
   canDuplicate: boolean
   canFocus: boolean
   canRun: boolean
+  canRunNode?: boolean
   deleteShortcut: string
   duplicateShortcut: string
   onArrange: () => void
@@ -37,12 +42,34 @@ export function FlowCanvasSelectionContextMenu({
   onDuplicate: () => void
   onFocus: () => void
   onRun: () => void
+  onRunFromHere?: () => void
+  onRunNode?: () => void
+  onRunTillHere?: () => void
 }) {
   const { t } = useTranslation()
+  const hasNodeRunActions = Boolean(onRunNode && onRunFromHere && onRunTillHere)
 
   return (
     <>
       <ContextMenuGroup>
+        {hasNodeRunActions
+          ? (
+              <>
+                <ContextMenuItem disabled={!canRunNode} onClick={onRunNode}>
+                  <IconPlayerPlay />
+                  {t('flows.nodeToolbar.run')}
+                </ContextMenuItem>
+                <ContextMenuItem disabled={!canRunNode} onClick={onRunFromHere}>
+                  <IconPlayerPlay />
+                  {t('flows.nodeToolbar.runFromHere')}
+                </ContextMenuItem>
+                <ContextMenuItem disabled={!canRunNode} onClick={onRunTillHere}>
+                  <IconPlayerPlay />
+                  {t('flows.nodeToolbar.runTillHere')}
+                </ContextMenuItem>
+              </>
+            )
+          : null}
         <ContextMenuItem disabled={!canRun} onClick={onRun}>
           <IconPlayerPlay />
           {t('flows.runSelection')}

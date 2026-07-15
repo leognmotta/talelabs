@@ -6,10 +6,13 @@ import { normalizeImageGenerationInputSlotId } from '@talelabs/flows'
 import { useNodeConnections } from '@xyflow/react'
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useFlowCanvas } from '../../flow-canvas-context'
+import { readImageCrop } from '../../image-crop'
 import { FlowNodeShell } from '../flow-node-shell'
 import { GenerationNodeFrame } from '../generation-node-frame'
 import { GenerationNodePreviewArea } from '../generation-node-preview-area'
 import { GenerationNodePromptSection } from '../generation-node-prompt-section'
+import { ImageGenerationCropMode } from './image-generation-crop-mode'
 import { ImageGenerationInputRail } from './image-generation-input-rail'
 import { ImageGenerationPreview } from './image-generation-preview'
 import { ImageGenerationPrompt } from './image-generation-prompt'
@@ -18,6 +21,7 @@ import { useImageGenerationNode } from './use-image-generation-node'
 export const ImageGenerationFlowNode = memo(
   ({ data, id, selected, type }: NodeProps<CanvasNode>) => {
     const { t } = useTranslation()
+    const canvas = useFlowCanvas()
     const incomingConnections = useNodeConnections({
       handleType: 'target',
       id,
@@ -62,6 +66,14 @@ export const ImageGenerationFlowNode = memo(
         : undefined
 
     const outputLabel = t('flows.outputs.images')
+    const preview = canvas.getGenerationPreview(id)
+    const previewUrl = preview
+      && 'output' in preview
+      && preview.output?.kind === 'media'
+      ? preview.output.download.content
+      : undefined
+    const editingCrop = canvas.editingImageCropNodeId === id
+    const savedCrop = readImageCrop(data.crop)
 
     return (
       <GenerationNodeFrame
@@ -84,11 +96,24 @@ export const ImageGenerationFlowNode = memo(
             resolution={image.resolution}
             slots={image.semanticSlots}
           />
-          <ImageGenerationPreview
-            aspectRatio={image.resolution.normalizedSettings.aspectRatio}
-            readinessMessageKey={readinessMessageKey}
-            resolution={image.resolution}
-          />
+          {editingCrop && previewUrl
+            ? (
+                <ImageGenerationCropMode
+                  nodeId={id}
+                  savedCrop={savedCrop}
+                  src={previewUrl}
+                />
+              )
+            : (
+                <ImageGenerationPreview
+                  aspectRatio={image.resolution.normalizedSettings.aspectRatio}
+                  pending={preview?.status === 'pending'}
+                  previewUrl={previewUrl}
+                  readinessMessageKey={readinessMessageKey}
+                  resolution={image.resolution}
+                  savedCrop={savedCrop}
+                />
+              )}
         </GenerationNodePreviewArea>
         <GenerationNodePromptSection>
           <ImageGenerationPrompt

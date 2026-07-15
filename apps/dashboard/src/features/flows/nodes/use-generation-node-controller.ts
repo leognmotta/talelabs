@@ -84,6 +84,11 @@ export function useGenerationNodeController(input: {
   const scopedNodeType = input.scope.kind === 'nodeType'
     ? input.scope.nodeType
     : null
+  const scopedMediaType = input.scope.kind === 'mediaType'
+    ? input.scope.mediaType
+    : null
+  const scopeCategoryId = input.scope.categoryId
+  const scopeCategoryLabelKey = input.scope.categoryLabelKey
   const slots = useMemo(() => {
     if (!model)
       return []
@@ -107,38 +112,41 @@ export function useGenerationNodeController(input: {
     updateNodeInternals,
   ])
 
-  const configModels = canvas.generationConfig.models.filter((config) => {
-    if (!config.enabled)
-      return false
-    if (input.scope.kind === 'mediaType')
-      return config.mediaType === input.scope.mediaType
-    const nodeType = input.scope.nodeType
-    return config.capabilities.operations.some(
-      operation => operation.nodeType === nodeType,
-    )
-  })
-  const modelOptions = configModels.map((config) => {
-    const operations = input.scope.kind === 'nodeType'
-      ? config.capabilities.operations.filter((operation) => {
-          const nodeType = input.scope.kind === 'nodeType'
-            ? input.scope.nodeType
-            : undefined
-          return operation.nodeType === nodeType
-        })
-      : config.capabilities.operations
-    return {
-      capabilities: operations.map(operation => t(operation.labelKey)),
-      category: {
-        id: input.scope.categoryId,
-        label: t(input.scope.categoryLabelKey),
-      },
-      description: t(config.presentation.descriptionKey),
-      id: config.id,
-      label: t(config.labelKey),
-      logoId: config.presentation.logoId,
-      recommended: config.recommended,
-    }
-  })
+  const configModels = useMemo(
+    () => canvas.generationConfig.models.filter((config) => {
+      if (!config.enabled)
+        return false
+      if (scopedMediaType)
+        return config.mediaType === scopedMediaType
+      const nodeType = scopedNodeType
+      return config.capabilities.operations.some(
+        operation => operation.nodeType === nodeType,
+      )
+    }),
+    [canvas.generationConfig.models, scopedMediaType, scopedNodeType],
+  )
+  const modelOptions = useMemo(
+    () => configModels.map((config) => {
+      const operations = scopedNodeType
+        ? config.capabilities.operations.filter((operation) => {
+            return operation.nodeType === scopedNodeType
+          })
+        : config.capabilities.operations
+      return {
+        capabilities: operations.map(operation => t(operation.labelKey)),
+        category: {
+          id: scopeCategoryId,
+          label: t(scopeCategoryLabelKey),
+        },
+        description: t(config.presentation.descriptionKey),
+        id: config.id,
+        label: t(config.labelKey),
+        logoId: config.presentation.logoId,
+        recommended: config.recommended,
+      }
+    }),
+    [configModels, scopeCategoryId, scopeCategoryLabelKey, scopedNodeType, t],
+  )
   const currentConfigModel = configModels.find(config => config.id === model?.id)
   const canUpgradeModelContract = Boolean(
     currentConfigModel

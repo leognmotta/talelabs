@@ -129,6 +129,7 @@ export function useFlowAutosave(input: {
             nodes: committedGraph.nodes,
             edges: committedGraph.edges,
             activeRuns: current?.activeRuns ?? [],
+            latestResults: current?.latestResults ?? [],
           }),
         )
         if (refreshReferences) {
@@ -205,16 +206,49 @@ export function useFlowAutosave(input: {
     t,
   ])
 
-  const saveNow = useCallback(async () => {
+  const reconcileWithServer = useCallback(async () => {
+    const server = await getFlowsIdGraph(
+      { id: flowId },
+      { headers: getOrganizationRequestHeaders(organizationId) },
+    )
+    const serverGraph = {
+      nodes: server.nodes,
+      edges: server.edges,
+    }
+    baselineRef.current = serverGraph
+    revisionRef.current = server.revision
+    commitDirty(hasFlowGraphMutations(
+      createFlowGraphDiff(serverGraph, currentRef.current),
+    ))
+    queryClient.setQueryData(
+      flowQueryKeys.graph(organizationId, flowId),
+      server,
+    )
+  }, [commitDirty, flowId, organizationId, queryClient])
+
+  const saveNow = useCallback(async (options?: {
+    reconcileWithServer?: boolean
+  }) => {
     clearTimer()
+    if (options?.reconcileWithServer) {
+      if (savePromiseRef.current)
+        await savePromiseRef.current
+      try {
+        await reconcileWithServer()
+      }
+      catch {
+        commitStatus('error')
+        return null
+      }
+    }
     if (!savePromiseRef.current) {
       savePromiseRef.current = performSave().finally(() => {
         savePromiseRef.current = null
       })
     }
     await savePromiseRef.current
-    return !dirtyRef.current
-  }, [clearTimer, performSave])
+    return dirtyRef.current ? null : revisionRef.current
+  }, [clearTimer, commitStatus, performSave, reconcileWithServer])
 
   const markDirty = useCallback(() => {
     commitDirty(true)
