@@ -384,6 +384,10 @@ export type GenerationConfigResponse = {
     /**
      * @type boolean
      */
+    executionAvailable: boolean;
+    /**
+     * @type boolean
+     */
     recommended: boolean;
     /**
      * @type object

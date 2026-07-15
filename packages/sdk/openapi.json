@@ -3150,6 +3150,9 @@
                 "enabled": {
                   "type": "boolean"
                 },
+                "executionAvailable": {
+                  "type": "boolean"
+                },
                 "recommended": {
                   "type": "boolean"
                 },
@@ -4733,6 +4736,7 @@
                 "labelKey",
                 "mediaType",
                 "enabled",
+                "executionAvailable",
                 "recommended",
                 "presentation",
                 "defaultOperationId",

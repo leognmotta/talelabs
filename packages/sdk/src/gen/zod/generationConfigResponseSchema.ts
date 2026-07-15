@@ -17,6 +17,7 @@ export const generationConfigResponseSchema = z.object({
       labelKey: z.string(),
       mediaType: z.enum(["audio", "image", "text", "video"]),
       enabled: z.boolean(),
+      executionAvailable: z.boolean(),
       recommended: z.boolean(),
       presentation: z.object({
         descriptionKey: z.string(),
