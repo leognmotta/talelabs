@@ -100,6 +100,29 @@ export async function retryRun(input: {
         'Only failed, partial, or canceled runs can be retried.',
       )
     }
+    const unsettledProviderJob = await trx.selectFrom('generationJobs')
+      .select(['id', 'providerSettlementStatus'])
+      .where('organizationId', '=', input.organizationId)
+      .where('flowRunId', '=', input.runId)
+      .where('providerSettlementStatus', 'in', ['pending', 'unknown'])
+      .executeTakeFirst()
+    const incompleteProviderCheckpoint = await trx
+      .selectFrom('generationProviderOutputs as output')
+      .innerJoin('generationJobs as job', join => join
+        .onRef('job.id', '=', 'output.jobId')
+        .onRef('job.organizationId', '=', 'output.organizationId'))
+      .select('output.outputIndex')
+      .where('job.organizationId', '=', input.organizationId)
+      .where('job.flowRunId', '=', input.runId)
+      .where('output.status', '=', 'staging')
+      .executeTakeFirst()
+    if (unsettledProviderJob || incompleteProviderCheckpoint) {
+      throw new HttpError(
+        409,
+        'provider_settlement_incomplete',
+        'This run cannot be retried until submitted provider work is financially settled.',
+      )
+    }
 
     let sourceSnapshot
     try {

@@ -28,18 +28,14 @@ import { insertRunExecutionRows } from '../../data/run-persistence.data.js'
 import { HttpError, TenantResourceNotFoundError } from '../../middleware/error.js'
 import { commandFromAdmissionBody } from './contracts.js'
 import { dispatchFlowRun } from './dispatch.service.js'
+import { generationExecutionContracts } from './generation-execution-contracts.js'
 import {
   assetReferencesFromValue,
   collectPlanPreExistingAssetIds,
   jsonb,
 } from './helpers.js'
 import { logRunEngine } from './logging.js'
-import {
-  executionContracts,
-  loadFlowRunPlan,
-  MOCK_ADAPTER_VERSION,
-  MOCK_PROVIDER,
-} from './planning.service.js'
+import { loadFlowRunPlan } from './planning.service.js'
 import { getRunDetail } from './read.service.js'
 
 export async function admitFlowRun(input: {
@@ -89,7 +85,7 @@ export async function admitFlowRun(input: {
     )
   }
 
-  const contracts = executionContracts(plan)
+  const contracts = generationExecutionContracts(plan)
   const contractsByNode = new Map(contracts.map(contract => [contract.nodeId, contract]))
   const artifact = createFlowRunSnapshotArtifact({
     adapterContractVersion: 'normalized-generation-v1',
@@ -262,7 +258,7 @@ export async function admitFlowRun(input: {
         for (const shard of item.requestShards) {
           const jobId = createId()
           jobRows.push({
-            adapterVersion: MOCK_ADAPTER_VERSION,
+            adapterVersion: executionContract.adapterVersion,
             createdBy,
             flowId: input.body.flowId,
             flowRunId: runId,
@@ -275,7 +271,10 @@ export async function admitFlowRun(input: {
             nodeId: node.nodeId,
             operation: node.operationId,
             organizationId: input.organizationId,
-            provider: MOCK_PROVIDER,
+            provider: executionContract.provider!,
+            providerEndpoint: executionContract.providerEndpoint!,
+            providerEndpointTag: executionContract.providerEndpointTag!,
+            providerLifecycle: executionContract.providerLifecycle as unknown as JsonValue,
             providerModel: executionContract.providerModel,
             providerRouteVersion: executionContract.providerRouteVersion,
             requestHash: shard.jobHash,

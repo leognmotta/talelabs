@@ -91,7 +91,7 @@ export function UploadIndicator() {
           {failedCount > 0 && activeCount === 0
             ? <IconAlertCircle className="text-destructive" />
             : completedCount > 0 && activeCount === 0
-              ? <IconCheck className="text-emerald-500" />
+              ? <IconCheck className="text-success" />
               : <IconCloudUpload />}
           {count > 0 && (
             <Badge className="absolute -top-1 -right-1 min-w-4 px-1 text-[10px]" variant={failedCount && !activeCount ? 'destructive' : 'default'}>

@@ -24,7 +24,7 @@ export function LlmInputRail({
       data-llm-input-rail
     >
       {slots.flatMap((slot) => {
-        if (slot.id === 'prompt')
+        if (slot.id === 'instructions' || slot.id === 'prompt')
           return []
         const availability = resolution.inputAvailability[slot.id]
         return !availability || availability.state === 'unsupported'

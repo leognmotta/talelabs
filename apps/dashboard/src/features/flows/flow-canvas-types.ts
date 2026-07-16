@@ -67,6 +67,7 @@ export interface FlowGenerationPreviewDownload {
 
 export type FlowGenerationPreviewOutput
   = | {
+    assetId?: FlowReferenceAsset['id']
     download: FlowGenerationPreviewDownload
     kind: 'media'
     mediaType: 'audio' | 'image' | 'video'
@@ -112,8 +113,10 @@ export type FlowGenerationPreview
     status: 'succeeded'
   }
   | {
-    errorKey: string
     fingerprint: string
+    /** The last successful result remains mounted when a later attempt fails. */
+    output?: FlowGenerationPreviewOutput
+    resultSets?: FlowGenerationPreviewResultSet[]
     /** Whole-snapshot product retry source; absent while the owning run is active. */
     retrySource?: {
       runId: string

@@ -156,9 +156,15 @@ balance and enforcement remain deferred.
 OpenRouter speech responses expose `X-Generation-Id` while returning raw audio
 bytes. After the audio result is durably checkpointed, the speech adapter uses
 that ID for a bounded, best-effort generation-metadata lookup and persists the
-reported cost. A retry resumes the checkpoint and repeats only metadata
-reconciliation, never speech submission; cost remains null only when OpenRouter
-still does not provide it.
+reported cost. Output success never waits for accounting. Successful OpenRouter
+jobs that retain a generation ID but no cost enter a separate durable
+reconciliation queue. The scheduled sweep fairly claims a small batch, retries
+at 5-minute, 30-minute, and 4-hour intervals, and stops after 12 metadata
+requests over approximately one day. A recovered cost updates the provider
+result checkpoint and job in one transaction, then recomputes the Flow-run
+aggregate even when the run is already terminal. Retries never resubmit paid
+generation work; cost remains null only after OpenRouter still cannot provide it
+within that bounded accounting window.
 
 ## Verification and paid acceptance
 
@@ -188,6 +194,8 @@ provider generation requests.
 - [OpenRouter video generation](https://openrouter.ai/docs/guides/overview/multimodal/video-generation)
 - [OpenRouter text-to-speech](https://openrouter.ai/docs/guides/overview/multimodal/tts)
 - [OpenRouter provider selection](https://openrouter.ai/docs/guides/routing/provider-selection)
+- [OpenRouter generation metadata](https://openrouter.ai/docs/api/api-reference/generations/get-generation)
+- [OpenRouter usage accounting](https://openrouter.ai/docs/cookbook/administration/usage-accounting)
 - [OpenRouter API reference](https://openrouter.ai/docs/api/reference/overview)
 
 Live discovery responses are research evidence only. Production behavior is

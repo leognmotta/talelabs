@@ -5,6 +5,11 @@ import { FlowNodePortIcon } from './flow-node-port-icon'
 export function FlowNodePortThumbnail({ item }: { item: PortPreviewItem }) {
   const source = item.asset?.thumbnailUrl
     ?? (item.asset?.type === 'image' ? item.asset.url : null)
+    ?? (
+      item.mediaType === 'image' || item.mimeType?.startsWith('image/')
+        ? item.previewUrl
+        : null
+    )
 
   return (
     <span className="

@@ -258,6 +258,8 @@ export interface GenerationJobTable {
   providerSettlementStatus: Generated<GenerationProviderSettlementStatus>
   creditCost: number | null
   providerCostUsd: NullableNumericColumn
+  providerCostReconciliationAttempts: Generated<number>
+  providerCostReconciliationAttemptedAt: NullableTimestamp
   errorCode: string | null
   errorMessage: string | null
   lastReconciledAt: NullableTimestamp

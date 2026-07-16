@@ -85,8 +85,8 @@ export function SettingsDialog({
           "
           >
             <div className="mb-5 flex items-center gap-3 pr-10">
-              <Avatar className="size-9 rounded-xl">
-                <AvatarFallback className="rounded-xl">{initials}</AvatarFallback>
+              <Avatar className="size-9">
+                <AvatarFallback>{initials}</AvatarFallback>
               </Avatar>
               <div className="min-w-0">
                 <p className="truncate text-sm font-medium">{name}</p>

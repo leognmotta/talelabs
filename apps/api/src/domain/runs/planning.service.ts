@@ -1,75 +1,17 @@
-import type {
-  FlowRunPlanV1,
-  FlowRunSnapshotExecutionContract,
-  GenerationModelContractVersion,
-  GenerationModelId,
-} from '@talelabs/flows'
-
 import type { CommandRequest } from './contracts.js'
 import { db } from '@talelabs/db'
 
 import {
-  GENERATION_REGISTRY_VERSION,
   planFlowRun,
 } from '@talelabs/flows'
 import { listPriorOutputs } from '../../data/flow-run-planning.data.js'
 import { getFlowGraphRows, listFlowGraphReferenceRows } from '../../data/flows.data.js'
 import { HttpError, TenantResourceNotFoundError } from '../../middleware/error.js'
-import { getGenerationProviderRoute } from '../../routes/config/generation-provider-routes.js'
 import { getFlowGraph } from '../../services/flows.service.js'
 import { toFlowRunCommand } from './contracts.js'
 import { summaryFromPlan } from './helpers.js'
 import { logRunEngine } from './logging.js'
-
-export const MOCK_PROVIDER = 'talelabs-mock'
-export const MOCK_ADAPTER_VERSION = 'mock-adapter-v1'
-
-function validationError(issues: readonly {
-  code: string
-  field: string
-  params?: Record<string, boolean | number | string>
-}[]) {
-  return new HttpError(
-    422,
-    'run_plan_invalid',
-    'The Flow run could not be planned.',
-    issues.map(issue => ({
-      code: issue.code,
-      field: issue.field,
-      message: issue.code,
-      params: issue.params,
-    })),
-  )
-}
-
-export function executionContracts(
-  plan: FlowRunPlanV1,
-): FlowRunSnapshotExecutionContract[] {
-  return plan.executionNodes.map((node) => {
-    const route = getGenerationProviderRoute({
-      modelContractVersion: node.modelContractVersion as GenerationModelContractVersion,
-      operationId: node.operationId,
-      productModelId: node.modelId as GenerationModelId,
-    })
-    if (!route) {
-      throw validationError([{
-        code: 'generation_provider_route_unavailable',
-        field: `nodes.${node.nodeId}.modelId`,
-      }])
-    }
-    return {
-      adapterVersion: MOCK_ADAPTER_VERSION,
-      modelContractVersion: node.modelContractVersion,
-      modelId: node.modelId,
-      modelRegistryVersion: GENERATION_REGISTRY_VERSION,
-      nodeId: node.nodeId,
-      operationId: node.operationId,
-      provider: MOCK_PROVIDER,
-      providerModel: route.providerRoute.nativeModelId,
-      providerRouteVersion: route.routeVersion,
-    }
-  })
-}
+import { flowRunPlanValidationError } from './planning-error.js'
 
 export async function loadFlowRunPlan(input: {
   command: CommandRequest
@@ -125,7 +67,7 @@ export async function loadFlowRunPlan(input: {
       mode: input.command.mode,
       organizationId: input.organizationId,
     })
-    throw validationError(result.issues)
+    throw flowRunPlanValidationError(result.issues)
   }
 
   logRunEngine('info', 'flow_run.plan.succeeded', {

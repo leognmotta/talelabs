@@ -32,13 +32,14 @@ export function LlmOutputPreview({
     && preview.output?.kind === 'text'
     ? preview.output.text
     : null
+  const showPreviewState = Boolean(
+    preview && (preview.status !== 'error' || output),
+  )
   const stateLabel = preview?.status === 'pending'
     ? t('flows.llm.preview.pending')
-    : preview?.status === 'error'
-      ? t(preview.errorKey)
-      : stale
-        ? t('flows.llm.preview.stale')
-        : output ?? ''
+    : stale
+      ? t('flows.llm.preview.stale')
+      : output ?? ''
   const readinessMessage = t(readinessMessageKey)
   const copyOutputText = useCopyOutputText(output)
 
@@ -50,7 +51,7 @@ export function LlmOutputPreview({
         focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset
       "
       data-llm-output-preview
-      data-preview-state={stale ? 'stale' : preview?.status ?? 'empty'}
+      data-preview-state={stale ? 'stale' : (preview?.status ?? 'empty')}
       readiness={readiness}
       readinessMessage={readinessMessage}
       role="button"
@@ -83,7 +84,7 @@ export function LlmOutputPreview({
           <IconCopy />
         </Button>
       )}
-      {preview
+      {showPreviewState
         ? (
             <div
               className={cn(
@@ -99,11 +100,7 @@ export function LlmOutputPreview({
                   `,
                   output && 'pr-7',
                   !output && 'text-muted-foreground',
-                  stale && `
-                    text-amber-700
-                    dark:text-amber-300
-                  `,
-                  preview.status === 'error' && 'text-destructive',
+                  stale && `text-warning`,
                 )}
               >
                 {stateLabel}

@@ -1,5 +1,5 @@
 import type { Asset } from '@talelabs/sdk'
-import type { FlowInputState, FlowSaveStatus } from './flow-canvas-types'
+import type { FlowSaveStatus } from './flow-canvas-types'
 
 import {
   AlertDialog,
@@ -14,36 +14,25 @@ import {
 import { Spinner } from '@talelabs/ui/components/spinner'
 import { useTranslation } from 'react-i18next'
 import { AssetLibraryDialog } from '../assets/asset-library-dialog'
-import { FlowInputInspector } from './flow-input-inspector'
+
+export interface FlowCanvasNavigationDialogState {
+  blocked: boolean
+  onCancel: () => void
+  onSave: () => void
+  saving: boolean
+  status: FlowSaveStatus
+}
 
 export function FlowCanvasDialogs({
   assetPickerNodeId,
-  inputInspector,
   navigation,
   onAssetPickerOpenChange,
-  onInputInspectorOpenChange,
-  onInputSelectionChange,
   onSelectAsset,
   selectedAssetId,
 }: {
   assetPickerNodeId: null | string
-  inputInspector: {
-    inputState: FlowInputState | null
-    open: boolean
-    title: string
-  }
-  navigation: {
-    blocked: boolean
-    onCancel: () => void
-    onSave: () => void
-    saving: boolean
-    status: FlowSaveStatus
-  }
+  navigation: FlowCanvasNavigationDialogState
   onAssetPickerOpenChange: (open: boolean) => void
-  onInputInspectorOpenChange: (open: boolean) => void
-  onInputSelectionChange: (
-    selection: { mode: 'auto' } | { assetIds: string[], mode: 'manual' },
-  ) => void
   onSelectAsset: (asset: Asset) => void
   selectedAssetId: null | string
 }) {
@@ -85,13 +74,6 @@ export function FlowCanvasDialogs({
         selectedAssetIds={selectedAssetId ? [selectedAssetId] : []}
         onOpenChange={onAssetPickerOpenChange}
         onSelect={onSelectAsset}
-      />
-      <FlowInputInspector
-        inputState={inputInspector.inputState}
-        open={inputInspector.open}
-        title={inputInspector.title}
-        onOpenChange={onInputInspectorOpenChange}
-        onSelectionChange={onInputSelectionChange}
       />
     </>
   )

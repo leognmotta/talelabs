@@ -5,22 +5,26 @@ import type { CanvasEdge, FlowGenerationPreview } from './flow-canvas-types'
 
 import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react'
+import { toast } from 'sonner'
 
+import { areGenerationPreviewsEqual } from './flow-generation-preview-comparison'
+import {
+  generationPreviewHistory,
+  initialPreviewsFromLatestResults,
+  preserveMountedMediaOutputs,
+} from './flow-generation-preview-history'
 import { flowQueryKeys } from './flow-query-keys'
+import { activeRunNodeIdsFromRun } from './flow-run-active-selection'
 import { activeRunIdsReducer, stableRunIds } from './flow-run-active-state'
 import {
-  activeRunNodeIdsFromRun,
-  areGenerationPreviewsEqual,
-  initialPreviewsFromLatestResults,
-  isActiveRunStatus,
-  isRetryableRunStatus,
-  preserveMountedMediaOutputs,
   previewFromOutputJobs,
 } from './flow-run-preview-projection'
+import { isActiveRunStatus, isRetryableRunStatus } from './flow-run-status'
 import { useFlowRunDetailQueries } from './flow.queries'
 
 export function useFlowRunObservation(input: {
   edgesRef: RefObject<CanvasEdge[]>
+  flowId: string
   initialActiveRunIds: readonly string[]
   initialLatestResults: readonly FlowLatestResult[]
   organizationId: string
@@ -28,6 +32,7 @@ export function useFlowRunObservation(input: {
 }) {
   const {
     edgesRef,
+    flowId,
     initialActiveRunIds,
     initialLatestResults,
     organizationId,
@@ -57,6 +62,8 @@ export function useFlowRunObservation(input: {
   const queryClient = useQueryClient()
   const runDetailQueries = useFlowRunDetailQueries(activeRunIds)
   const terminalRunIdsRef = useRef(new Set<string>())
+  const refreshedTerminalRunIdsRef = useRef(new Set<string>())
+  const notifiedTerminalFailureRunIdsRef = useRef(new Set<string>())
 
   const updatePreview = useCallback((
     nodeId: string,
@@ -78,8 +85,7 @@ export function useFlowRunObservation(input: {
     const current = previewsRef.current[nodeId]
     updatePreview(nodeId, {
       fingerprint,
-      ...(current?.status === 'succeeded' ? { output: current.output } : {}),
-      ...(current && 'resultSets' in current ? { resultSets: current.resultSets } : {}),
+      ...generationPreviewHistory(current),
       status,
     })
   }, [updatePreview])
@@ -95,6 +101,33 @@ export function useFlowRunObservation(input: {
         runId: run.id,
         type: terminal ? 'remove' : 'add',
       })
+    }
+
+    const failedJob = run.nodes
+      .flatMap(node => node.jobs)
+      .find(job => job.status === 'failed')
+    const terminalFailure = terminal && (
+      run.status === 'failed'
+      || run.status === 'partial'
+      || Boolean(failedJob)
+    )
+    if (
+      terminalFailure
+      && !notifiedTerminalFailureRunIdsRef.current.has(run.id)
+    ) {
+      notifiedTerminalFailureRunIdsRef.current.add(run.id)
+      const errorCode = failedJob?.errorCode ?? run.errorCode
+      const fallbackMessage = failedJob?.errorMessage
+        ?? run.errorMessage
+        ?? t('flows.runStatus.failed')
+      const message = errorCode?.startsWith('provider_')
+        ? fallbackMessage
+        : errorCode
+          ? t(`errors.${errorCode}` as 'errors.internal_error', {
+              defaultValue: fallbackMessage,
+            })
+          : fallbackMessage
+      toast.error(message, { id: `flow-run-failure-${run.id}` })
     }
 
     const activeNodeIds = activeRunNodeIdsFromRun({
@@ -125,9 +158,10 @@ export function useFlowRunObservation(input: {
           )
         }
         else if (['failed', 'canceled', 'skipped'].includes(node.status)) {
+          const current = previewsRef.current[node.nodeId]
           updatePreview(node.nodeId, {
-            errorKey: 'flows.runStatus.failed',
             fingerprint,
+            ...generationPreviewHistory(current),
             ...(terminal && isRetryableRunStatus(run.status)
               ? { retrySource: { runId: run.id, status: run.status } }
               : {}),
@@ -136,26 +170,46 @@ export function useFlowRunObservation(input: {
         }
         continue
       }
-      updatePreview(
-        node.nodeId,
-        preserveMountedMediaOutputs(
-          previewsRef.current[node.nodeId],
-          terminal
-          && node.status !== 'succeeded'
-          && isRetryableRunStatus(run.status)
-            ? {
-                ...preview,
-                retrySource: { runId: run.id, status: run.status },
-              }
-            : preview,
-        ),
+      const mountedPreview = preserveMountedMediaOutputs(
+        previewsRef.current[node.nodeId],
+        preview,
       )
+      updatePreview(node.nodeId, terminal && node.status !== 'succeeded'
+        ? {
+            ...mountedPreview,
+            ...(isRetryableRunStatus(run.status)
+              ? { retrySource: { runId: run.id, status: run.status } }
+              : {}),
+            status: 'error',
+          }
+        : mountedPreview)
     }
     if (terminal) {
       dispatchActiveRunIds({ runId: run.id, type: 'remove' })
       terminalRunIdsRef.current.delete(run.id)
+      if (!refreshedTerminalRunIdsRef.current.has(run.id)) {
+        refreshedTerminalRunIdsRef.current.add(run.id)
+        void Promise.all([
+          queryClient.invalidateQueries({
+            exact: true,
+            queryKey: flowQueryKeys.graph(organizationId, flowId),
+          }),
+          queryClient.invalidateQueries({
+            exact: true,
+            queryKey: flowQueryKeys.references(organizationId, flowId),
+          }),
+        ])
+      }
     }
-  }, [edgesRef, t, updatePreview, updateRunStatePreview])
+  }, [
+    edgesRef,
+    flowId,
+    organizationId,
+    queryClient,
+    t,
+    updatePreview,
+    updateRunStatePreview,
+  ])
 
   const observeRun = useCallback((run: FlowRun) => {
     updateFromRun(run)

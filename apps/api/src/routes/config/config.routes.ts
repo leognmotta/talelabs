@@ -1,22 +1,22 @@
 import type { OpenAPIHono } from '@hono/zod-openapi'
-import type {
-  FlowValueType,
-  GenerationConditionDefinition,
-} from '@talelabs/flows'
 import type { ApiEnv } from '../../types.js'
 
 import { createRoute } from '@hono/zod-openapi'
 import {
-  FLOW_NODE_TYPES,
   GENERATION_MODEL_CONTRACT_VERSION,
   GENERATION_MODELS,
   GENERATION_REGISTRY_VERSION,
-  getGenerationModelPresentation,
+  SELECTABLE_FLOW_NODE_TYPES,
   valueTypeToAssetTypes,
 } from '@talelabs/flows'
 
 import { commonErrorResponses } from '../product.responses.js'
 import { GenerationConfigResponseSchema } from './config.schemas.js'
+import {
+  serializeActiveFlowValueTypes,
+  serializeGenerationCondition,
+  serializeGenerationModelPresentation,
+} from './generation-config-serialization.js'
 import './generation-provider-routes.js'
 
 const getGenerationConfigRoute = createRoute({
@@ -34,41 +34,6 @@ const getGenerationConfigRoute = createRoute({
   },
 })
 
-function serializeCondition(condition: GenerationConditionDefinition) {
-  if (condition.field === 'operation')
-    return { ...condition }
-  if (condition.field === 'slot')
-    return { ...condition }
-  if (condition.operator === 'equals')
-    return { ...condition }
-  return { ...condition, values: [...condition.values] }
-}
-
-function serializePresentation(model: (typeof GENERATION_MODELS)[number]) {
-  const presentation = getGenerationModelPresentation(model.id)
-  if (!presentation) {
-    throw new Error(
-      `Current generation model ${model.id} is missing presentation metadata`,
-    )
-  }
-  return { ...presentation }
-}
-
-type ActiveFlowValueType = Exclude<FlowValueType, 'ElementContext'>
-
-function serializeActiveValueTypes(
-  valueTypes: readonly FlowValueType[],
-): ActiveFlowValueType[] {
-  return valueTypes.map((valueType) => {
-    if (valueType === 'ElementContext') {
-      throw new Error(
-        'Current generation models cannot expose deferred Element context inputs',
-      )
-    }
-    return valueType
-  })
-}
-
 const generationConfig = {
   registryVersion: GENERATION_REGISTRY_VERSION,
   models: GENERATION_MODELS.map(model => ({
@@ -79,7 +44,7 @@ const generationConfig = {
     mediaType: model.mediaType,
     enabled: model.enabled,
     recommended: model.recommended,
-    presentation: serializePresentation(model),
+    presentation: serializeGenerationModelPresentation(model),
     defaultOperationId: model.defaultOperationId,
     capabilities: {
       ...(model.llm
@@ -149,7 +114,7 @@ const generationConfig = {
         }
       }),
       inputSlots: model.inputSlots.map((slot) => {
-        const valueTypes = serializeActiveValueTypes(slot.accepts)
+        const valueTypes = serializeActiveFlowValueTypes(slot.accepts)
         return {
           role: slot.id,
           labelKey: slot.labelKey,
@@ -214,7 +179,11 @@ const generationConfig = {
             ? { advanced: true }
             : {}),
           ...(setting.visibleWhen
-            ? { visibleWhen: setting.visibleWhen.map(serializeCondition) }
+            ? {
+                visibleWhen: setting.visibleWhen.map(
+                  serializeGenerationCondition,
+                ),
+              }
             : {}),
         }
         if (setting.kind === 'enum') {
@@ -256,18 +225,22 @@ const generationConfig = {
         const { forbid, require, ...base } = constraint
         return {
           ...base,
-          when: constraint.when.map(serializeCondition),
+          when: constraint.when.map(serializeGenerationCondition),
           ...(constraint.require
-            ? { require: constraint.require.map(serializeCondition) }
+            ? {
+                require: constraint.require.map(serializeGenerationCondition),
+              }
             : {}),
           ...(constraint.forbid
-            ? { forbid: constraint.forbid.map(serializeCondition) }
+            ? {
+                forbid: constraint.forbid.map(serializeGenerationCondition),
+              }
             : {}),
         }
       }),
     },
   })),
-  nodeTypes: [...FLOW_NODE_TYPES],
+  nodeTypes: [...SELECTABLE_FLOW_NODE_TYPES],
   inputRoles: [
     ...new Set(
       GENERATION_MODELS.flatMap(model =>

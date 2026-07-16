@@ -55,6 +55,7 @@ export function AdaptiveGenerationSettingsCard({
       selectedModelLabel={t(model.labelKey)}
       showModelPicker={showModelPicker}
       title={t(presentation.titleKey)}
+      unavailableLabel={t('flows.modelPicker.unavailable')}
       upgradeLabel={t('flows.modelChange.update')}
       value={model.id}
       onModelChange={onModelChange}

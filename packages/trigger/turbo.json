@@ -4,6 +4,8 @@
     "dev": {
       "with": [
         "@talelabs/db#dev:build",
+        "@talelabs/flows#dev:build",
+        "@talelabs/openrouter#dev:build",
         "@talelabs/storage#dev:build"
       ]
     }

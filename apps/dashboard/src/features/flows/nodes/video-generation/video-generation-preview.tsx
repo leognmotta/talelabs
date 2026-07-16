@@ -61,8 +61,6 @@ export function VideoGenerationPreview({
           <Spinner aria-label={t('common.loading')} />
         </div>
       )}
-
-      {/* TODO(provider-integration): Keep this production-shaped preview bound to mocked output ingestion until canvas UX approval. */}
     </GenerationPreviewStage>
   )
 }

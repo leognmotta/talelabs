@@ -7,7 +7,7 @@ import {
 
 import {
   MOCK_GENERATION_FIXTURES,
-} from '../src/providers/mock-fixture-catalog.js'
+} from '../src/generation/adapters/mock/fixture-catalog.js'
 import { MOCK_FIXTURE_SOURCE_BYTES } from './mock-fixture-sources.js'
 
 function checksum(bytes: Uint8Array) {

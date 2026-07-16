@@ -36,6 +36,28 @@ const RELEASED_CONTRACT_HASHES = {
     'bcab0a1654923cd5f4949e064eab7218f3799df5db254c7f25d312638577fdc2',
   '2026-07-13.8':
     'b84ae225c8819c9eeb61035d6c7ec372f09253ca8154b9995876bcfcf90a9bf1',
+  '2026-07-15.9':
+    '715e873bd4a3f689cc755dd4606d5115d8b489b01b768fa69fc91527e46b5c99',
+  '2026-07-15.10':
+    '8c1860b29ff8232aaf660b96be67d5802797d8a54754dd5a65e6d3353dbbc449',
+  '2026-07-15.11':
+    'bc5b9ad381e5e2831b49b02809b64f68a06593fc2205163e22f783634d4b1047',
+  '2026-07-15.12':
+    '1c16a0f332f62ba2ce52498ae8fe964623d2b563396fb75885460a1241075c43',
+  '2026-07-15.13':
+    'cd466c85a72dccca73fa44487a73531af8d5103fc72c9a01fd0d3a08a1933abc',
+  '2026-07-15.14':
+    'bad61d3f506df8223c4e36609e6307691f8e6f670eb72179bb587bbb2522b510',
+  '2026-07-15.15':
+    '3acb2b4df57af3ae607aae559c3f3cd276b09ad847d66e110b6931f69c3af024',
+  '2026-07-15.16':
+    '103cc625a7266632115fdc744deb0c3ef8a5acfa9b09c5508f2da97076a6034f',
+  '2026-07-15.17':
+    '7285c430510e40a3b75d21c990f7ce9dcba8f8f68e9d9bdcdc19e6fb0d2c3b8f',
+  '2026-07-15.18':
+    'efa1c30e806bed596c4e6f4e75ab24697d38c832b39d43dba7fb4dc4e25a7cf8',
+  '2026-07-15.19':
+    '332feed943f9bcfc5397f13163d1afa4c536d5bd2f8a95632ea381c26404aba0',
 } as const
 
 function isDeeplyFrozen(value: unknown): boolean {
@@ -83,6 +105,7 @@ if (
   !areGenerationModelContractsEquivalent(
     'talelabs/seedance-2.0',
     '2026-07-13.7',
+    '2026-07-15.11',
   )
 ) {
   errors.push(
@@ -92,15 +115,168 @@ if (
 if (
   areGenerationModelContractsEquivalent(
     'talelabs/seedream-4.5',
-    '2026-07-13.6',
+    '2026-07-15.13',
+    '2026-07-15.14',
   )
+) {
+  errors.push(
+    'Seedream output-size safety changes must require a Flow-node update',
+  )
+}
+if (
+  areGenerationModelContractsEquivalent(
+    'talelabs/seedance-2.0',
+    '2026-07-15.11',
+    '2026-07-15.12',
+  )
+) {
+  errors.push(
+    'Seedance reference-limit changes must require a Flow-node update',
+  )
+}
+if (
+  areGenerationModelContractsEquivalent('talelabs/seedream-4.5', '2026-07-13.6')
 ) {
   errors.push(
     'creative capability changes must continue to require a Flow-node update',
   )
 }
+if (
+  !areGenerationModelContractsEquivalent(
+    'talelabs/seedream-4.5',
+    '2026-07-15.12',
+    '2026-07-15.13',
+  )
+) {
+  errors.push(
+    'execution availability changes must not require a Flow-node update',
+  )
+}
 
 const gptImage2 = GENERATION_MODEL_REGISTRY['talelabs/gpt-image-2']
+const seedance20 = GENERATION_MODEL_REGISTRY['talelabs/seedance-2.0']
+const seedream45 = GENERATION_MODEL_REGISTRY['talelabs/seedream-4.5']
+const nanoBananaPro = GENERATION_MODEL_REGISTRY['talelabs/nano-banana-pro']
+const recraft41 = GENERATION_MODEL_REGISTRY['talelabs/recraft-4.1']
+const veo31Current = GENERATION_MODEL_REGISTRY['talelabs/veo-3.1']
+const grokVideo = GENERATION_MODEL_REGISTRY['talelabs/grok-imagine-video']
+const seedreamAspectRatio = seedream45.settings.find(
+  setting => setting.id === 'aspectRatio',
+)
+const seedreamResolution = seedream45.settings.find(
+  setting => setting.id === 'resolution',
+)
+if (
+  seedreamAspectRatio?.kind !== 'enum'
+  || seedreamAspectRatio.options.some(option => option.value === 'auto')
+  || seedreamResolution?.kind !== 'enum'
+  || seedreamResolution.default !== '2K'
+  || JSON.stringify(seedreamResolution.options.map(option => option.value))
+  !== JSON.stringify(['2K', '4K'])
+) {
+  errors.push(
+    'Seedream current settings must expose only provider-valid output sizes',
+  )
+}
+const seedanceSlotLimits = Object.fromEntries(
+  seedance20.inputSlots.map(slot => [slot.id, slot.maxItems]),
+)
+const seedanceReferenceOperation = seedance20.operations.find(
+  operation => operation.id === 'referencesToVideo',
+)
+if (
+  seedanceSlotLimits.imageReferences !== 9
+  || seedanceSlotLimits.videoReferences !== 3
+  || seedanceSlotLimits.audioReferences !== 3
+  || seedanceReferenceOperation?.referenceLimit?.maxItems !== 15
+) {
+  errors.push(
+    'Seedance current reference limits must match reviewed provider limits',
+  )
+}
+const reviewedEnumValues = Object.fromEntries([
+  nanoBananaPro,
+  veo31Current,
+  grokVideo,
+  seedance20,
+].map(model => [
+  model.id,
+  Object.fromEntries(model.settings
+    .filter(setting => setting.kind === 'enum')
+    .map(setting => [setting.id, setting.options.map(option => option.value)])),
+]))
+const nanoBananaProResolutions = JSON.stringify(
+  reviewedEnumValues['talelabs/nano-banana-pro']?.resolution,
+)
+const veo31Resolutions = JSON.stringify(
+  reviewedEnumValues['talelabs/veo-3.1']?.resolution,
+)
+const seedance20Resolutions = JSON.stringify(
+  reviewedEnumValues['talelabs/seedance-2.0']?.resolution,
+)
+const grokAspectRatios = JSON.stringify(
+  reviewedEnumValues['talelabs/grok-imagine-video']?.aspectRatio,
+)
+const grokDurations = JSON.stringify(
+  reviewedEnumValues['talelabs/grok-imagine-video']?.durationSeconds,
+)
+if (nanoBananaProResolutions !== JSON.stringify(['1K', '2K', '4K'])) {
+  errors.push('Nano Banana Pro must expose its reviewed 4K output tier')
+}
+if (veo31Resolutions !== JSON.stringify(['720p', '1080p', '4K'])) {
+  errors.push('Veo 3.1 must use the reviewed OpenRouter resolution values')
+}
+if (seedance20Resolutions !== JSON.stringify(['480p', '720p', '1080p', '4K'])) {
+  errors.push('Seedance 2.0 must use the reviewed OpenRouter resolution values')
+}
+const reviewedGrokAspectRatios = JSON.stringify([
+  '16:9',
+  '9:16',
+  '1:1',
+  '4:3',
+  '3:4',
+  '3:2',
+  '2:3',
+])
+const reviewedGrokDurations = JSON.stringify([
+  '1',
+  '2',
+  '3',
+  '4',
+  '5',
+  '6',
+  '7',
+  '8',
+  '9',
+  '10',
+  '11',
+  '12',
+  '13',
+  '14',
+  '15',
+])
+if (
+  grokAspectRatios !== reviewedGrokAspectRatios
+  || grokDurations !== reviewedGrokDurations
+) {
+  errors.push('Grok Imagine Video must expose its reviewed ratios and durations')
+}
+const recraftImageToImage = recraft41.operations.find(
+  operation => operation.id === 'imageToImage',
+)
+if (
+  recraftImageToImage?.referenceLimit?.maxItems !== 1
+  || recraft41.inputSlots.find(slot => slot.id === 'imageReferences')?.maxItems
+  !== 1
+) {
+  errors.push('Recraft 4.1 must expose its reviewed single-reference operation')
+}
+if (Object.values(GENERATION_MODEL_REGISTRY).some(model =>
+  Object.hasOwn(model, 'executionAvailable'))) {
+  errors.push(
+    'active catalog membership must replace field-based execution availability',
+  )
+}
 const downgradedRegistry: Record<string, GenerationModelDefinition> = {
   ...GENERATION_MODEL_REGISTRY,
   [gptImage2.id]: {
@@ -128,6 +304,34 @@ if (!unavailableModel) {
   errors.push(
     'GPT Image 1.5 must remain resolvable from its historical contract',
   )
+}
+for (const removedModelId of [
+  'talelabs/ltx-2.3-pro',
+  'talelabs/gpt-4o-mini-tts',
+  'talelabs/eleven-multilingual-v2',
+]) {
+  if (removedModelId in GENERATION_MODEL_REGISTRY) {
+    errors.push(`${removedModelId} must not exist in the current catalog`)
+  }
+  if (!(removedModelId in GENERATION_MODEL_CONTRACTS['2026-07-15.14'])) {
+    errors.push(`${removedModelId} must remain historically resolvable`)
+  }
+}
+for (const model of Object.values(GENERATION_MODEL_REGISTRY)) {
+  if (model.mediaType !== 'text')
+    continue
+  if (
+    model.inputSlots.some(slot => slot.id === 'instructions')
+    || model.operations.some(operation =>
+      operation.inputSlotIds.includes('instructions'))
+  ) {
+    errors.push(`${model.id}: current LLM contract exposes instructions input`)
+  }
+}
+const historicalGpt55
+  = GENERATION_MODEL_CONTRACTS['2026-07-15.18']['talelabs/gpt-5.5']
+if (!historicalGpt55.inputSlots.some(slot => slot.id === 'instructions')) {
+  errors.push('historical LLM instructions connector contract changed')
 }
 const unavailableRegistry: Record<string, GenerationModelDefinition> = {
   ...GENERATION_MODEL_REGISTRY,

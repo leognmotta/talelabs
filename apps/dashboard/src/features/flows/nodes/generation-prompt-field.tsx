@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react'
-/* eslint-disable better-tailwindcss/no-unknown-classes -- React Flow uses these interaction classes as behavior hooks. */
 
-import { Textarea } from '@talelabs/ui/components/textarea'
+import { FlowNodeTextarea } from './flow-node-textarea'
 
 export function GenerationPromptField({
   children,
@@ -25,7 +24,7 @@ export function GenerationPromptField({
   const textareaId = `${helpId}-input`
 
   return (
-    <div className="nodrag nopan flex flex-col gap-1.5">
+    <div className="flex flex-col gap-1.5">
       <label
         className="text-[11px] font-medium text-muted-foreground"
         htmlFor={textareaId}
@@ -33,10 +32,10 @@ export function GenerationPromptField({
         {label}
       </label>
       <div className="relative">
-        <Textarea
+        <FlowNodeTextarea
           aria-describedby={externalPromptConnected ? helpId : undefined}
           className="
-            nowheel min-h-20 rounded-lg border-border/65 bg-background/78 p-2.5
+            min-h-20 rounded-lg border-border/65 bg-background/78 p-2.5
             text-xs/relaxed
           "
           disabled={externalPromptConnected}

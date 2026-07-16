@@ -10,11 +10,14 @@
     }
   },
   "scripts": {
-    "build": "tsc",
-    "check-types": "tsc --noEmit"
+    "build": "tsc && node dist/routes/verify.js",
+    "check-types": "tsc --noEmit",
+    "dev:build": "tsc --watch --preserveWatchOutput",
+    "routes:check": "tsc && node dist/routes/verify.js"
   },
   "dependencies": {
     "@openrouter/sdk": "^0.13.36",
+    "@talelabs/flows": "*",
     "zod": "^4.4.3"
   },
   "devDependencies": {

@@ -15,11 +15,10 @@ import { toast } from 'sonner'
 
 import { getApiErrorMessage } from '../../shared/lib/api-error'
 import { getOrganizationRequestHeaders } from '../../shared/lib/organization-request'
+import { generationPreviewHistory } from './flow-generation-preview-history'
 import { createFlowMockRuntimePlanner } from './flow-mock-runtime-planner'
-import {
-  activePreviewNodeIdsFromClosure,
-  isActiveRunStatus,
-} from './flow-run-preview-projection'
+import { activePreviewNodeIdsFromClosure } from './flow-run-active-selection'
+import { isActiveRunStatus } from './flow-run-status'
 import { useFlowRunAdmission } from './use-flow-run-admission'
 import { useFlowRunObservation } from './use-flow-run-observation'
 
@@ -56,6 +55,7 @@ export function useFlowMockRunOrchestration(input: {
   } = input
   const observation = useFlowRunObservation({
     edgesRef,
+    flowId,
     initialActiveRunIds,
     initialLatestResults,
     organizationId,
@@ -125,13 +125,14 @@ export function useFlowMockRunOrchestration(input: {
   const markPreviewScopeFailed = useCallback((nodeIds: readonly string[]) => {
     const currentPlanner = createCurrentPlanner()
     for (const nodeId of nodeIds) {
+      const current = previewsRef.current[nodeId]
       updatePreview(nodeId, {
-        errorKey: 'flows.runStatus.failed',
         fingerprint: currentPlanner.getFingerprint(nodeId) ?? nodeId,
+        ...generationPreviewHistory(current),
         status: 'error',
       })
     }
-  }, [createCurrentPlanner, updatePreview])
+  }, [createCurrentPlanner, previewsRef, updatePreview])
 
   const retryGenerationRun = useCallback(async (nodeId: string) => {
     const previous = previewsRef.current[nodeId]

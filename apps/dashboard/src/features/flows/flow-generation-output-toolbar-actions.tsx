@@ -1,8 +1,8 @@
-import type { ReactNode } from 'react'
 import type { FlowGenerationToolbarAction } from './flow-dashboard-node-registry'
 
 import { IconCrop } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
+import { useAssetDownload } from '../assets/use-asset-download'
 import { downloadFile } from './download-file'
 import { useFlowCanvas } from './flow-canvas-context'
 import { FlowCopyOutputToolbarAction } from './flow-copy-output-toolbar-action'
@@ -18,44 +18,52 @@ export function FlowGenerationOutputToolbarActions({
 }) {
   const { t } = useTranslation()
   const canvas = useFlowCanvas()
+  const downloadAsset = useAssetDownload()
   const preview = canvas.getGenerationPreview(nodeId)
-  const output = preview?.status === 'succeeded' ? preview.output : null
+  const output = preview && 'output' in preview ? preview.output ?? null : null
+  const outputAssetId = output?.kind === 'media' ? output.assetId : undefined
   const outputText = output?.kind === 'text' ? output.text : null
   const canCropOutput = Boolean(
     output?.kind === 'media'
     && output.mediaType === 'image'
     && output.download.content,
   )
-  const downloadOutput = output
-    ? () => downloadFile(output.download)
-    : undefined
-  const renderAction = {
-    copyOutput: () => (
-      <FlowCopyOutputToolbarAction
-        key="copyOutput"
-        outputText={outputText}
+  const downloadOutput = output?.kind === 'media'
+    ? outputAssetId
+      ? () => void downloadAsset(outputAssetId)
+      : undefined
+    : output
+      ? () => downloadFile(output.download)
+      : undefined
+  return actions.map((action) => {
+    if (action === 'copyOutput') {
+      return (
+        <FlowCopyOutputToolbarAction
+          key={action}
+          outputText={outputText}
+        />
+      )
+    }
+    if (action === 'download') {
+      return (
+        <FlowDownloadToolbarAction
+          key={action}
+          onDownload={downloadOutput}
+        />
+      )
+    }
+    if (!canCropOutput)
+      return null
+    return (
+      <FlowToolbarButton
+        key={action}
+        icon={IconCrop}
+        label={t('flows.nodeToolbar.crop')}
+        pressed={canvas.editingImageCropNodeId === nodeId}
+        onClick={() => canvas.setEditingImageCropNodeId(
+          canvas.editingImageCropNodeId === nodeId ? null : nodeId,
+        )}
       />
-    ),
-    download: () => (
-      <FlowDownloadToolbarAction
-        key="download"
-        onDownload={downloadOutput}
-      />
-    ),
-    crop: () => canCropOutput
-      ? (
-          <FlowToolbarButton
-            key="crop"
-            icon={IconCrop}
-            label={t('flows.nodeToolbar.crop')}
-            pressed={canvas.editingImageCropNodeId === nodeId}
-            onClick={() => canvas.setEditingImageCropNodeId(
-              canvas.editingImageCropNodeId === nodeId ? null : nodeId,
-            )}
-          />
-        )
-      : null,
-  } satisfies Record<FlowGenerationToolbarAction, () => ReactNode>
-
-  return actions.map(action => renderAction[action]())
+    )
+  })
 }

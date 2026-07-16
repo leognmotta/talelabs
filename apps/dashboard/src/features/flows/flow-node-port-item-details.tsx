@@ -5,7 +5,7 @@ import { Badge } from '@talelabs/ui/components/badge'
 import { HoverCardContent } from '@talelabs/ui/components/hover-card'
 import { useTranslation } from 'react-i18next'
 import { formatDuration } from '../assets/asset-formatters'
-import { AssetMediaPreview } from '../assets/asset-media-preview'
+import { FlowNodePortMediaPreview } from './flow-node-port-media-preview'
 import { FlowNodePortMetadataRow } from './flow-node-port-metadata-row'
 import { valueTypeLabel } from './flow-node-port-preview'
 
@@ -53,16 +53,10 @@ export function FlowNodePortItemDetails({
           </p>
           <Badge variant="secondary">{valueTypeLabel(item.valueType, t)}</Badge>
         </div>
-        {item.asset && (
-          <div className="
-            flex aspect-video items-center justify-center overflow-hidden
-            rounded-lg border border-border/70 bg-background
-          "
-          >
-            <AssetMediaPreview asset={item.asset} />
-          </div>
+        {(item.asset || item.previewUrl) && (
+          <FlowNodePortMediaPreview item={item} />
         )}
-        {item.text && (
+        {item.text !== undefined && (
           <p className="
             max-h-32 overflow-auto rounded-lg border border-border/70
             bg-muted/35 p-3 text-xs/relaxed whitespace-pre-wrap

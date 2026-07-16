@@ -1,5 +1,8 @@
 import { z } from '@hono/zod-openapi'
-import { FLOW_NODE_TYPES, GENERATION_NODE_TYPES } from '@talelabs/flows'
+import {
+  GENERATION_NODE_TYPES,
+  SELECTABLE_FLOW_NODE_TYPES,
+} from '@talelabs/flows'
 
 import { AssetTypeSchema } from '../../schemas/common.js'
 
@@ -156,6 +159,7 @@ export const GenerationConfigResponseSchema = z
         presentation: z.object({
           descriptionKey: z.string(),
           logoId: z.enum([
+            'alibaba',
             'bytedance',
             'claude',
             'deepseek',
@@ -163,14 +167,20 @@ export const GenerationConfigResponseSchema = z
             'flux',
             'gemini',
             'google',
+            'kling',
             'lightricks',
             'llm',
+            'microsoft',
+            'minimax',
             'mistral',
+            'moonshot',
             'nanobanana',
             'openai',
+            'qwen',
             'recraft',
             'stability',
             'xai',
+            'zai',
           ]),
         }),
         defaultOperationId: z.string(),
@@ -238,7 +248,7 @@ export const GenerationConfigResponseSchema = z
         }),
       }),
     ),
-    nodeTypes: z.array(z.enum(FLOW_NODE_TYPES)),
+    nodeTypes: z.array(z.enum(SELECTABLE_FLOW_NODE_TYPES)),
     inputRoles: z.array(z.string()),
   })
   .openapi('GenerationConfigResponse')

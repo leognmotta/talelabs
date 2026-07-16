@@ -42,7 +42,7 @@ export const LlmFlowNode = memo(({
   const readinessMessageKey = llm.resolution.issues.find(
     issue => issue.messageKey,
   )?.messageKey ?? `flows.llm.readiness.${llm.resolution.readiness}`
-  const promptSlot = llm.model.inputSlots.find(slot => slot.id === 'prompt')
+  const promptSlot = llm.inputSlots.find(slot => slot.id === 'prompt')
   const promptAvailability = promptSlot
     ? llm.resolution.inputAvailability[promptSlot.id]
     : undefined
@@ -77,7 +77,7 @@ export const LlmFlowNode = memo(({
           ariaLabel={t('flows.llm.inputs.railLabel')}
           inputState={llm.inputState}
           resolution={llm.resolution}
-          slots={llm.model.inputSlots}
+          slots={llm.inputSlots}
         />
         <LlmOutputPreview
           currentFingerprint={llm.previewFingerprint}

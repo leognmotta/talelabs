@@ -284,7 +284,10 @@ create table "generationJobs" (
 
   "creditCost" integer,             -- credits this execution cost, recorded from day one (no balance
                                     -- enforcement yet); pricing rules in credits-planning.md
-  "providerCostUsd" numeric(12, 6), -- actual provider spend when returned; null means unknown
+  "providerCostUsd" numeric(20, 10),-- actual provider spend when returned; null means unknown
+  "providerCostReconciliationAttempts" smallint not null default 0
+    check ("providerCostReconciliationAttempts" between 0 and 12),
+  "providerCostReconciliationAttemptedAt" timestamptz,
 
   "errorCode" text,                 -- stable failure class: 'content_policy', 'provider_timeout', ...
   "errorMessage" text,              -- allowlisted safe copy; raw provider payloads are discarded
@@ -320,6 +323,15 @@ create unique index "generationJobsTriggerRunIdx"
   on "generationJobs" ("triggerRunId") where "triggerRunId" is not null;
 create unique index "generationJobsProviderJobIdx"
   on "generationJobs" ("provider", "providerJobId") where "providerJobId" is not null;
+create index "generationJobsProviderCostReconciliationIdx"
+  on "generationJobs"
+    ("providerCostReconciliationAttemptedAt", "createdAt", "id")
+  include ("organizationId")
+  where "status" = 'succeeded'
+    and "provider" = 'openrouter'
+    and "providerGenerationId" is not null
+    and "providerCostUsd" is null
+    and "providerCostReconciliationAttempts" < 12;
 ```
 
 Notes:
@@ -331,7 +343,13 @@ Notes:
   authoritative when present, the server rederives the concrete operation, and
   the chosen prompt plus raw sources are frozen into the immutable snapshot and
   `"resolvedPrompt"`. Inline and connected prompts are never silently concatenated.
-- **No retry/attempt/queue columns.** Trigger.dev owns retries, concurrency, and queueing; duplicating its state machine in Postgres would drift. `"status"` is the _domain_ outcome, written under the guarded-update rule (see the integration contract, including the atomic completion-vs-cancel transaction).
+- **No execution retry/attempt/queue columns.** Trigger.dev owns execution
+  retries, concurrency, and queueing; duplicating its state machine in Postgres
+  would drift. The provider-cost reconciliation counter is different: it is a
+  bounded accounting/audit fact for already-successful jobs and never changes
+  their output status or reopens provider execution. `"status"` is the _domain_
+  outcome, written under the guarded-update rule (see the integration contract,
+  including the atomic completion-vs-cancel transaction).
 - **No `cancelRequestedAt`.** User cancellation is represented by the terminal
   Flow-run status. Provider financial ownership is separate and durable through
   `providerSettlementStatus`; Trigger cancellation is never evidence that
@@ -339,7 +357,17 @@ Notes:
 - `"mediaType"` includes text, image, video, and audio. Successful media outputs
   become Assets; successful text outputs use the dedicated durable text-output
   relation described with the run tables.
-- **Costs are recorded before billing exists.** `"creditCost"` and `"providerCostUsd"` are execution-time facts that cannot be faithfully reconstructed later (provider pricing changes, settings-dependent pricing). Recording them from the first shipped generation produces the real usage dataset the credit system will be calibrated against — the ledger and enforcement attach later (see `credits-planning.md`), the measurements start now.
+- **Costs are recorded before billing exists.** `"creditCost"` and
+  `"providerCostUsd"` are execution-time facts that cannot be faithfully
+  reconstructed later (provider pricing changes, settings-dependent pricing).
+  A successful OpenRouter job with a generation ID and null cost is claimed by
+  the small partial index above. Bounded metadata reconciliation atomically
+  fills both the provider-result checkpoint and job, then recomputes the
+  terminal run aggregate without coupling output success to accounting.
+  Recording these facts from the first shipped generation produces the real
+  usage dataset the credit system will be calibrated against — the ledger and
+  enforcement attach later (see `credits-planning.md`), the measurements start
+  now.
 - **`"flowRunId"` is `not null`.** Even a node command creates a run and may
   expand to multiple items or shards. There are no standalone jobs to reconcile
   with the workflow path later.
@@ -348,6 +376,9 @@ Notes:
 
 `generationProviderResults` is the tenant-scoped checkpoint header keyed by
 `jobId`; it stores expected output count plus provider generation/cost facts.
+Post-checkpoint provider-fact writes keep this header and the owning job in one
+transaction. Eventual accounting reconciliation uses the same invariant and
+updates the terminal Flow aggregate in that transaction.
 `generationProviderOutputs` stores one ordered output descriptor per result.
 Text is stored directly. Media is staged at the deterministic public generated
 output location and recorded as a storage descriptor with

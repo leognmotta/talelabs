@@ -70,8 +70,8 @@ export function NavUser({
               />
             )}
           >
-            <Avatar className="size-8 rounded-lg">
-              <AvatarFallback className="rounded-lg">{initials}</AvatarFallback>
+            <Avatar className="size-8">
+              <AvatarFallback>{initials}</AvatarFallback>
             </Avatar>
             <div className="grid flex-1 text-left text-sm/tight">
               <span className="truncate font-medium">{user.name}</span>
@@ -91,8 +91,8 @@ export function NavUser({
                   flex items-center gap-2 px-1 py-1.5 text-left text-sm
                 "
                 >
-                  <Avatar className="size-8 rounded-lg">
-                    <AvatarFallback className="rounded-lg">{initials}</AvatarFallback>
+                  <Avatar className="size-8">
+                    <AvatarFallback>{initials}</AvatarFallback>
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm/tight">
                     <span className="truncate font-medium">{user.name}</span>

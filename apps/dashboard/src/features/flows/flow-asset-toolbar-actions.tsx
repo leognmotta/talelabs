@@ -1,17 +1,14 @@
 import { IconArrowsMaximize, IconCrop, IconDownload } from '@tabler/icons-react'
-import { getAssetsIdDownload } from '@talelabs/sdk'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
-import { getApiErrorMessage } from '../../shared/lib/api-error'
-import { getOrganizationRequestHeaders } from '../../shared/lib/organization-request'
-import { useActiveOrganizationId } from '../organizations/organization-scope-context'
+import { useAssetDownload } from '../assets/use-asset-download'
 import { useFlowCanvas } from './flow-canvas-context'
 import { FlowToolbarButton } from './flow-toolbar-button'
 
 export function FlowAssetToolbarActions({ nodeId }: { nodeId: string }) {
   const { t } = useTranslation()
   const canvas = useFlowCanvas()
-  const organizationId = useActiveOrganizationId()
+  const downloadAsset = useAssetDownload()
   const node = canvas.getNode(nodeId)
   const asset = node?.assetId
     ? canvas.referenceData.assetsById.get(node.assetId)
@@ -23,24 +20,8 @@ export function FlowAssetToolbarActions({ nodeId }: { nodeId: string }) {
     asset?.type === 'image' && (asset.thumbnailUrl || asset.url),
   )
 
-  if (!canUseMediaTools)
+  if (!asset || !canUseMediaTools)
     return null
-
-  async function downloadAsset() {
-    if (!asset || !organizationId)
-      return
-    try {
-      const result = await getAssetsIdDownload(
-        { id: asset.id },
-        { headers: getOrganizationRequestHeaders(organizationId) },
-      )
-      window.location.assign(result.url)
-      toast.success(t('assets.downloadStarted'))
-    }
-    catch (error) {
-      toast.error(getApiErrorMessage(error, 'assets.actionFailed'))
-    }
-  }
 
   async function viewFullscreen() {
     const frame = document.getElementById(`flow-node-media-${nodeId}`)
@@ -69,7 +50,7 @@ export function FlowAssetToolbarActions({ nodeId }: { nodeId: string }) {
       <FlowToolbarButton
         icon={IconDownload}
         label={t('assets.download')}
-        onClick={() => void downloadAsset()}
+        onClick={() => void downloadAsset(asset.id)}
       />
       <FlowToolbarButton
         icon={IconArrowsMaximize}

@@ -52,7 +52,6 @@ export interface FlowCanvasContextValue {
   getGenerationPreviewFingerprint: (nodeId: string) => null | string
   getNode: (nodeId: string) => CanvasNode | undefined
   openAssetPicker: (nodeId: string) => void
-  openInputInspector: (nodeId: string, slotId: string) => void
   openNodeOutputInspector: (nodeId: string) => void
   referenceData: FlowReferenceData
   isRunAllRunning: boolean
@@ -62,11 +61,6 @@ export interface FlowCanvasContextValue {
   ) => Promise<void>
   retryGenerationRun: (nodeId: string) => Promise<void>
   runAll: () => Promise<void>
-  setInputSelection: (
-    nodeId: string,
-    slotId: string,
-    selection: { mode: 'auto' } | { assetIds: string[], mode: 'manual' },
-  ) => void
   setEditingImageCropNodeId: (nodeId: null | string) => void
   updateNodeData: (
     nodeId: string,

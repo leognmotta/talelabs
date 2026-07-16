@@ -125,8 +125,6 @@ export function ImageGenerationPreview({
           <Spinner aria-label={t('common.loading')} />
         </div>
       )}
-
-      {/* TODO(provider-integration): Bind this production-shaped surface to mocked output ingestion only after canvas behavior approval. */}
     </GenerationPreviewStage>
   )
 }

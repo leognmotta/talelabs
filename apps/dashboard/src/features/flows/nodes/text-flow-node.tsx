@@ -1,13 +1,12 @@
 import type { NodeProps } from '@xyflow/react'
 import type { CanvasNode } from '../flow-canvas-types'
-/* eslint-disable better-tailwindcss/no-unknown-classes -- React Flow uses these interaction classes as behavior hooks. */
 import { IconTextCaption } from '@tabler/icons-react'
-import { Textarea } from '@talelabs/ui/components/textarea'
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFlowCanvas } from '../flow-canvas-context'
 import { FlowNodeOutputFooter } from './flow-node-output-footer'
 import { FlowNodeShell } from './flow-node-shell'
+import { FlowNodeTextarea } from './flow-node-textarea'
 
 export const TextFlowNode = memo(({
   data,
@@ -41,11 +40,11 @@ export const TextFlowNode = memo(({
       selected={selected}
       title={t('flows.nodes.text')}
     >
-      <Textarea
+      <FlowNodeTextarea
         aria-label={t('flows.textContent')}
         className="
-          nodrag nopan nowheel min-h-36 resize-none rounded-md border-0
-          bg-transparent p-0 text-xs/relaxed shadow-none
+          min-h-36 resize-none rounded-md border-0 bg-transparent p-0
+          text-xs/relaxed shadow-none
           focus-visible:border-transparent focus-visible:ring-0
           dark:bg-transparent
         "

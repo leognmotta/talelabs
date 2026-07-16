@@ -25,6 +25,7 @@ export function GenerationSettingsCard({
   selectedModelLabel,
   showModelPicker = true,
   title,
+  unavailableLabel,
   upgradeLabel,
   value,
   onModelChange,
@@ -44,6 +45,7 @@ export function GenerationSettingsCard({
   selectedModelLabel: string
   showModelPicker?: boolean
   title: string
+  unavailableLabel: string
   upgradeLabel: string
   value: string
 }) {
@@ -66,6 +68,7 @@ export function GenerationSettingsCard({
               searchAriaLabel={searchAriaLabel}
               searchPlaceholder={searchPlaceholder}
               selectedLabel={selectedModelLabel}
+              unavailableLabel={unavailableLabel}
               value={value}
               onValueChange={onModelChange}
             />

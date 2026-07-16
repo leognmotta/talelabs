@@ -4,11 +4,7 @@ import type { PortPreviewItem } from './flow-node-port-preview'
 /* eslint-disable better-tailwindcss/no-unknown-classes -- React Flow uses these interaction classes as behavior hooks. */
 
 import { IconLogin2, IconLogout2 } from '@tabler/icons-react'
-import {
-  getFlowNodeHandles,
-  getGenerationMediaTypeForNode,
-  isGenerationNodeType,
-} from '@talelabs/flows'
+import { getFlowNodeHandles } from '@talelabs/flows'
 import {
   Card,
   CardContent,
@@ -18,12 +14,10 @@ import {
 import { useTranslation } from 'react-i18next'
 import { useFlowCanvas } from './flow-canvas-context'
 import { canvasNodeToGraphNode } from './flow-canvas-serialization'
+import { inputPortPreviewItems } from './flow-node-port-input-items'
 import { FlowNodePortItemRow } from './flow-node-port-item-row'
-import {
-  flowNodeHandleLabel,
-  inputPortPreviewItems,
-  outputPortPreviewItems,
-} from './flow-node-port-preview'
+import { outputPortPreviewItems } from './flow-node-port-output-items'
+import { flowNodeHandleLabel } from './flow-node-port-preview'
 
 interface PortPreviewGroup {
   handle: FlowHandleDefinition
@@ -44,8 +38,6 @@ export function FlowNodeConnectionsCard({
     canvasNodeToGraphNode(node),
     canvas.referenceData,
   )
-  const opensInputSelectionSheet = !isGenerationNodeType(node.type)
-    || getGenerationMediaTypeForNode(node.type) !== 'audio'
   const inputGroups: PortPreviewGroup[] = handles
     .filter(handle => handle.direction === 'input')
     .map((handle) => {
@@ -102,10 +94,6 @@ export function FlowNodeConnectionsCard({
                   item={item}
                   key={`${group.handle.id}:${item.id}`}
                   label={group.label}
-                  onActivate={opensInputSelectionSheet
-                    && canvas.getInputState(node.id, group.handle.id)
-                    ? () => canvas.openInputInspector(node.id, group.handle.id)
-                    : undefined}
                 />
               )))}
             </section>
@@ -117,7 +105,7 @@ export function FlowNodeConnectionsCard({
                 text-muted-foreground
               "
               >
-                <IconLogout2 aria-hidden className="size-4 text-emerald-400" />
+                <IconLogout2 aria-hidden className="size-4 text-success" />
                 <span>{t('flows.connectionInspector.outputs')}</span>
               </h3>
               {outputGroups.flatMap(group => group.items.map(item => (

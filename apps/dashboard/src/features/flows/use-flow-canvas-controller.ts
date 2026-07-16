@@ -196,22 +196,6 @@ export function useFlowCanvasController(input: {
     },
     [captureHistory, markDirty, setEditingImageCropNodeId, setNodes],
   )
-  const setInputSelection = useCallback(
-    (
-      nodeId: string,
-      slotId: string,
-      selection: { mode: 'auto' } | { assetIds: string[], mode: 'manual' },
-    ) =>
-      updateNodeData(nodeId, current => ({
-        ...current,
-        inputSelections: {
-          ...current.inputSelections,
-          [slotId]: selection,
-        },
-      })),
-    [updateNodeData],
-  )
-
   const deleteNodes = useCallback(
     (nodeIds: string[]) => {
       const ids = new Set(nodeIds)
@@ -548,7 +532,6 @@ export function useFlowCanvasController(input: {
     onEdgesChange,
     onNodesChange,
     onReconnect,
-    setInputSelection,
     updateGenerationConfiguration,
     updateNodeData,
     updateNodeReference,

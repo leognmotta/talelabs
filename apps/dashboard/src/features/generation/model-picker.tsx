@@ -15,6 +15,7 @@ export interface ModelPickerOption {
     label: string
   }
   description: string
+  disabled: boolean
   id: string
   label: string
   logoId: GenerationModelLogoId
@@ -31,6 +32,7 @@ export function ModelPicker({
   selectedLabel,
   showLogos = true,
   triggerClassName,
+  unavailableLabel,
   value,
   onValueChange,
 }: {
@@ -43,6 +45,7 @@ export function ModelPicker({
   selectedLabel?: string
   showLogos?: boolean
   triggerClassName?: string
+  unavailableLabel: string
   value: string
   onValueChange: (value: string) => void
 }) {
@@ -67,12 +70,20 @@ export function ModelPicker({
             <div className="min-w-0 flex-1">
               <div className="flex min-w-0 items-center gap-2">
                 <span className="truncate font-medium">{option.label}</span>
-                {option.recommended && (
+                {option.recommended && !option.disabled && (
                   <Badge
                     className="h-4 px-1.5 text-[10px] font-medium"
                     variant="secondary"
                   >
                     {recommendedLabel}
+                  </Badge>
+                )}
+                {option.disabled && (
+                  <Badge
+                    className="h-4 px-1.5 text-[10px] font-medium"
+                    variant="outline"
+                  >
+                    {unavailableLabel}
                   </Badge>
                 )}
               </div>
@@ -94,16 +105,18 @@ export function ModelPicker({
           </div>
         ),
         id: option.id,
+        disabled: option.disabled,
         searchValue: [
           option.label,
           option.category.label,
           option.description,
+          ...(option.disabled ? [unavailableLabel] : []),
           ...option.capabilities,
         ].join(' '),
       })),
       label: items[0]?.category.label ?? categoryId,
     }))
-  }, [options, recommendedLabel, showLogos])
+  }, [options, recommendedLabel, showLogos, unavailableLabel])
 
   return (
     <SearchablePicker
@@ -144,6 +157,11 @@ export function ModelPicker({
           <span className="min-w-0 flex-1 truncate text-left">
             {triggerLabel}
           </span>
+          {selectedOption?.disabled && (
+            <Badge className="h-4 px-1.5 text-[10px]" variant="outline">
+              {unavailableLabel}
+            </Badge>
+          )}
         </>
       )}
       onSelect={onValueChange}

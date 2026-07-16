@@ -148,7 +148,7 @@ export function OrganizationSettings({
         >
           <div className="flex items-center gap-4">
             <Avatar className="size-14 rounded-2xl">
-              <AvatarFallback className="rounded-2xl">{initials}</AvatarFallback>
+              <AvatarFallback>{initials}</AvatarFallback>
             </Avatar>
             <div className="min-w-0">
               <p className="truncate text-sm font-medium">{activeOrganization.name}</p>

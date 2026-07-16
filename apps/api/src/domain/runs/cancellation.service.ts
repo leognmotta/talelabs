@@ -10,7 +10,7 @@ export async function cancelRun(input: {
   runId: string
 }) {
   const now = new Date()
-  const triggerRunId = await db.transaction().execute(async (trx) => {
+  const cancellation = await db.transaction().execute(async (trx) => {
     const run = await trx.selectFrom('flowRuns')
       .select(['id', 'status', 'triggerRunId'])
       .where('organizationId', '=', input.organizationId)
@@ -22,11 +22,25 @@ export async function cancelRun(input: {
     if (!['pending', 'running'].includes(run.status))
       throw new HttpError(409, 'invalid_state', 'Only active runs can be canceled.')
     await trx.updateTable('generationJobs')
-      .set({ completedAt: now, status: 'canceled' })
+      .set({
+        completedAt: now,
+        providerSettlementResolvedAt: null,
+        providerSettlementStatus: 'not_required',
+        status: 'canceled',
+      })
       .where('organizationId', '=', input.organizationId)
       .where('flowRunId', '=', input.runId)
       .where('status', 'in', ['pending', 'running'])
+      .where('providerSubmittedAt', 'is', null)
       .execute()
+    const submitted = await trx.selectFrom('generationJobs')
+      .select(eb => eb.fn.countAll<number>().as('count'))
+      .where('organizationId', '=', input.organizationId)
+      .where('flowRunId', '=', input.runId)
+      .where('status', 'in', ['pending', 'running'])
+      .where('providerSubmittedAt', 'is not', null)
+      .executeTakeFirst()
+    const submittedJobCount = Number(submitted?.count ?? 0)
     await trx.updateTable('flowRunNodeItems')
       .set({ status: 'canceled', updatedAt: now })
       .where('organizationId', '=', input.organizationId)
@@ -41,18 +55,19 @@ export async function cancelRun(input: {
       .execute()
     await trx.updateTable('flowRuns')
       .set({
-        cancellationReconciledAt: run.triggerRunId ? null : now,
+        cancellationReconciledAt:
+          run.triggerRunId || submittedJobCount > 0 ? null : now,
         completedAt: now,
         status: 'canceled',
       })
       .where('organizationId', '=', input.organizationId)
       .where('id', '=', input.runId)
       .execute()
-    return run.triggerRunId
+    return { submittedJobCount, triggerRunId: run.triggerRunId }
   })
-  if (triggerRunId) {
+  if (cancellation.triggerRunId && cancellation.submittedJobCount === 0) {
     try {
-      await triggerRuns.cancel(triggerRunId)
+      await triggerRuns.cancel(cancellation.triggerRunId)
     }
     catch (error) {
       const failure = toSafeRunFailure(error)
@@ -60,7 +75,7 @@ export async function cancelRun(input: {
         internalError: failure.internal,
         organizationId: input.organizationId,
         runId: input.runId,
-        triggerRunId,
+        triggerRunId: cancellation.triggerRunId,
       })
     }
   }

@@ -19,6 +19,7 @@ import { registerFlowRoutes } from './routes/flows/flows.routes.js'
 import { registerFolderRoutes } from './routes/folders/folders.routes.js'
 import { registerOrganizationRoutes } from './routes/organizations/organizations.routes.js'
 import { registerProductRoutes } from './routes/product.routes.js'
+import { registerOpenRouterVideoCallbackRoutes } from './routes/provider-callbacks/openrouter-video-callback.routes.js'
 import { registerRunRoutes } from './routes/runs/runs.routes.js'
 import { registerSearchRoutes } from './routes/search/search.routes.js'
 import { registerSystemRoutes } from './routes/system/system.routes.js'
@@ -119,6 +120,8 @@ export function createApiApp(options: CreateApiAppOptions = {}) {
   app.on(['GET', 'POST'], '/api/auth/*', (c) => {
     return auth.handler(c.req.raw)
   })
+
+  registerOpenRouterVideoCallbackRoutes(app)
 
   app.use('/me', authMiddleware, requireAuthMiddleware)
   app.use('/me/*', authMiddleware, requireAuthMiddleware)

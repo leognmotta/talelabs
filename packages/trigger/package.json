@@ -16,6 +16,7 @@
     "dev:build": "tsc --watch --preserveWatchOutput",
     "fixtures:seed": "tsx scripts/seed-mock-generation-fixtures.ts",
     "fixtures:verify": "tsx scripts/verify-mock-generation-fixtures.ts",
+    "provider-results:verify": "tsx scripts/verify-provider-output-recovery.ts",
     "providers:verify": "tsx scripts/verify-openrouter-provider-adapters.ts",
     "predev": "node scripts/assert-dev-env.mjs --worker"
   },

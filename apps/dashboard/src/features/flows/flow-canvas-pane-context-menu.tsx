@@ -19,11 +19,13 @@ import {
 } from './flow-dashboard-node-registry'
 
 export function FlowCanvasPaneContextMenu({
+  canAddNodeType,
   onAddNode,
   onFitView,
   onSelectAll,
   onUploadAssets,
 }: {
+  canAddNodeType: (nodeType: FlowNodeType) => boolean
   onAddNode: (nodeType: FlowNodeType) => void
   onFitView: () => void
   onSelectAll: () => void
@@ -50,13 +52,20 @@ export function FlowCanvasPaneContextMenu({
               <ContextMenuLabel inset>{t(group.labelKey)}</ContextMenuLabel>
               {definitions.map((definition) => {
                 const Icon = definition.icon
+                const available = canAddNodeType(definition.type)
                 return (
                   <ContextMenuItem
+                    disabled={!available}
                     key={definition.type}
                     onClick={() => onAddNode(definition.type)}
                   >
                     <Icon />
                     {t(definition.labelKey)}
+                    {!available && (
+                      <span className="ml-auto text-xs text-muted-foreground">
+                        {t('flows.modelPicker.unavailable')}
+                      </span>
+                    )}
                   </ContextMenuItem>
                 )
               })}

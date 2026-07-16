@@ -28,6 +28,7 @@ export function StandardGenerationSettingsCard({
       searchPlaceholder={t('flows.modelPicker.searchPlaceholder')}
       selectedModelLabel={t(settings.model.labelKey)}
       title={t(presentation.titleKey)}
+      unavailableLabel={t('flows.modelPicker.unavailable')}
       upgradeLabel={t('flows.modelChange.update')}
       value={settings.model.id}
       onModelChange={settings.updateModel}

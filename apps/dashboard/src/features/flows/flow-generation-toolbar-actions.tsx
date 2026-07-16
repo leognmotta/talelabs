@@ -29,7 +29,9 @@ export function FlowGenerationToolbarActions({
   const running = previewStatus === 'pending'
   const queued = previewStatus === 'queued'
   const hasRunnablePlan = Boolean(canvas.getGenerationPreviewFingerprint(nodeId))
-  const runDisabled = (!canRun && !hasRunnablePlan) || running || queued
+  const runDisabled = (!canRun && !hasRunnablePlan)
+    || running
+    || queued
   const optionsDisabled = runDisabled && !retryAvailable
 
   return (

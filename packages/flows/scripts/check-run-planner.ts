@@ -1,154 +1,21 @@
-import type {
-  FlowGraphEdge,
-  FlowGraphNode,
-  FlowNodeType,
-  FlowRunPlannerInput,
-  FlowRunPlanningResult,
-  FlowRunSnapshotV1,
-  PriorNodeOutputDescriptor,
-  RuntimeAssetCollectionValue,
-} from '../src/index.js'
+import type { RuntimeAssetCollectionValue } from '../src/index.js'
 
 import {
-  CANONICAL_SERIALIZER_VERSION,
   collectRuntimeAssetItems,
-  createFlowRunSnapshotArtifact,
   createIteratorItems,
   createRuntimeItem,
-  FLOW_RUN_PLANNER_VERSION,
-  FLOW_RUN_SNAPSHOT_VERSION,
-  FlowRunSnapshotReadError,
-  getDefaultNodeData,
-  getFlowNodeTypeDefinition,
-  hashFlowRunRequest,
-  hashFlowRunSnapshot,
   materializeGenerationProviderRequest,
   planFlowRun,
-  readFlowRunSnapshotArtifact,
 } from '../src/index.js'
-
-const errors: string[] = []
-
-function expect(condition: unknown, message: string) {
-  if (!condition)
-    errors.push(message)
-}
-
-function expectSuccess(result: FlowRunPlanningResult, scenario: string) {
-  if (!result.ok) {
-    errors.push(
-      `${scenario}: expected success, received ${result.issues.map(issue => issue.code).join(', ')}`,
-    )
-    return undefined
-  }
-  return result.plan
-}
-
-function expectFailure(
-  result: FlowRunPlanningResult,
-  code: string,
-  scenario: string,
-) {
-  if (result.ok) {
-    errors.push(`${scenario}: expected ${code}, received success`)
-    return
-  }
-  if (!result.issues.some(issue => issue.code === code)) {
-    errors.push(
-      `${scenario}: expected ${code}, received ${result.issues.map(issue => issue.code).join(', ')}`,
-    )
-  }
-}
-
-function generationNode(
-  id: string,
-  type: Extract<FlowNodeType, 'imageGeneration' | 'llm'> = 'llm',
-  data: Record<string, unknown> = {},
-  position = 0,
-): FlowGraphNode {
-  const definition = getFlowNodeTypeDefinition(type)
-  return {
-    assetId: null,
-    data: { ...getDefaultNodeData(type), prompt: `prompt:${id}`, ...data },
-    id,
-    positionX: position,
-    positionY: -position,
-    schemaVersion: definition.currentVersion,
-    type,
-  }
-}
-
-function sourceNode(
-  id: string,
-  type: 'asset' | 'text',
-  assetId: null | string,
-): FlowGraphNode {
-  const definition = getFlowNodeTypeDefinition(type)
-  return {
-    assetId,
-    data: type === 'text'
-      ? { ...getDefaultNodeData(type), text: `text:${id}` }
-      : getDefaultNodeData(type),
-    id,
-    positionX: 0,
-    positionY: 0,
-    schemaVersion: definition.currentVersion,
-    type,
-  }
-}
-
-function edge(
-  id: string,
-  sourceNodeId: string,
-  targetNodeId: string,
-  sourceHandle = 'text',
-  targetHandle = 'prompt',
-): FlowGraphEdge {
-  return {
-    createdAt: `2026-07-14T00:00:${id.padStart(2, '0')}Z`,
-    id: `edge-${id}`,
-    sourceHandle,
-    sourceNodeId,
-    targetHandle,
-    targetNodeId,
-  }
-}
-
-function plannerInput(input: Omit<FlowRunPlannerInput, 'context'>): FlowRunPlannerInput {
-  return { ...input, context: { assetTypesById: {} } }
-}
-
-function priorTextOutput(
-  nodeId: string,
-  itemInputs: readonly {
-    dimensions?: Readonly<Record<string, string>>
-    key: string
-    outputIndex: number
-    text: string
-  }[] = [{ key: 'prior-text-0', outputIndex: 0, text: 'prior text' }],
-): PriorNodeOutputDescriptor {
-  const generationJobId = `job-${nodeId}`
-  return {
-    completedAt: '2026-07-14T12:00:00.000Z',
-    generationJobId,
-    items: itemInputs.map(item => createRuntimeItem({
-      dimensions: item.dimensions,
-      key: item.key,
-      nodeId,
-      value: {
-        kind: 'text',
-        origin: {
-          generationJobId,
-          outputIndex: item.outputIndex,
-          source: 'priorOutput',
-        },
-        text: item.text,
-      },
-    })),
-    nodeId,
-    outputHandleId: 'text',
-  }
-}
+import {
+  runPlannerErrors as errors,
+  expectRunPlanner as expect,
+  expectRunPlannerFailure as expectFailure,
+  expectRunPlannerSuccess as expectSuccess,
+} from './run-planner-assertions.js'
+import { edge, generationNode, sourceNode } from './run-planner-graph-fixtures.js'
+import { plannerInput, priorTextOutput } from './run-planner-input-fixtures.js'
+import { verifyRunPlannerSnapshotScenarios } from './run-planner-snapshot-scenarios.js'
 
 const chainNodes = [
   generationNode('node-a', 'llm', {}, 100),
@@ -283,62 +150,88 @@ expect(
   'job hash must include resolved inline prompt text',
 )
 
-const promptSlotPlan = expectSuccess(planFlowRun(plannerInput({
+const firstFrameSlotPlan = expectSuccess(planFlowRun({
   command: { mode: 'node', targetNodeId: 'slot-target' },
+  context: {
+    assetTypesById: {
+      'asset-first': 'image',
+      'asset-last': 'image',
+    },
+  },
   flow: {
-    edges: [edge('01', 'slot-text', 'slot-target', 'text', 'prompt')],
-    id: 'flow-job-hash-prompt-slot',
+    edges: [
+      edge('01', 'slot-first', 'slot-target', 'asset', 'firstFrame'),
+      edge('02', 'slot-last', 'slot-target', 'asset', 'lastFrame'),
+    ],
+    id: 'flow-job-hash-first-frame-slot',
     nodes: [
-      sourceNode('slot-text', 'text', null),
-      generationNode('slot-target', 'llm', { prompt: 'base prompt' }),
+      sourceNode('slot-first', 'asset', 'asset-first'),
+      sourceNode('slot-last', 'asset', 'asset-last'),
+      generationNode('slot-target', 'videoGeneration', {
+        operationId: 'firstLastFrameToVideo',
+        prompt: 'base prompt',
+      }),
     ],
     revision: 1,
   },
-})), 'job hash prompt slot')
-const instructionsSlotPlan = expectSuccess(planFlowRun(plannerInput({
+}), 'job hash first-frame slot')
+const swappedFrameSlotPlan = expectSuccess(planFlowRun({
   command: { mode: 'node', targetNodeId: 'slot-target' },
+  context: {
+    assetTypesById: {
+      'asset-first': 'image',
+      'asset-last': 'image',
+    },
+  },
   flow: {
-    edges: [edge('01', 'slot-text', 'slot-target', 'text', 'instructions')],
-    id: 'flow-job-hash-instructions-slot',
+    edges: [
+      edge('01', 'slot-first', 'slot-target', 'asset', 'lastFrame'),
+      edge('02', 'slot-last', 'slot-target', 'asset', 'firstFrame'),
+    ],
+    id: 'flow-job-hash-swapped-frame-slots',
     nodes: [
-      sourceNode('slot-text', 'text', null),
-      generationNode('slot-target', 'llm', { prompt: 'base prompt' }),
+      sourceNode('slot-first', 'asset', 'asset-first'),
+      sourceNode('slot-last', 'asset', 'asset-last'),
+      generationNode('slot-target', 'videoGeneration', {
+        operationId: 'firstLastFrameToVideo',
+        prompt: 'base prompt',
+      }),
     ],
     revision: 1,
   },
-})), 'job hash instructions slot')
+}), 'job hash swapped frame slots')
 expect(
-  promptSlotPlan?.executionNodes[0]?.workItems[0]?.requestShards[0]?.jobHash
-  !== instructionsSlotPlan?.executionNodes[0]?.workItems[0]?.requestShards[0]?.jobHash,
+  firstFrameSlotPlan?.executionNodes[0]?.workItems[0]?.requestShards[0]?.jobHash
+  !== swappedFrameSlotPlan?.executionNodes[0]?.workItems[0]?.requestShards[0]?.jobHash,
   'job hash must include target-slot routing',
 )
-if (promptSlotPlan && instructionsSlotPlan) {
-  const promptShard = promptSlotPlan.executionNodes[0]!.workItems[0]!.requestShards[0]!
-  const instructionsShard = instructionsSlotPlan.executionNodes[0]!.workItems[0]!.requestShards[0]!
-  const promptRequest = materializeGenerationProviderRequest({
-    requestId: 'job-prompt',
-    requestPayload: promptShard.requestPayload,
+if (firstFrameSlotPlan && swappedFrameSlotPlan) {
+  const firstFrameShard
+    = firstFrameSlotPlan.executionNodes[0]!.workItems[0]!.requestShards[0]!
+  const swappedFrameShard
+    = swappedFrameSlotPlan.executionNodes[0]!.workItems[0]!.requestShards[0]!
+  const firstFrameRequest = materializeGenerationProviderRequest({
+    requestId: 'job-first-frame',
+    requestPayload: firstFrameShard.requestPayload,
   })
-  const instructionsRequest = materializeGenerationProviderRequest({
-    requestId: 'job-instructions',
-    requestPayload: instructionsShard.requestPayload,
+  const swappedFrameRequest = materializeGenerationProviderRequest({
+    requestId: 'job-swapped-frame',
+    requestPayload: swappedFrameShard.requestPayload,
   })
   expect(
-    promptRequest.textSlots.some(slot => slot.slotId === 'prompt'
-      && slot.source === 'connected'
-      && slot.resolvedText === 'text:slot-text'),
-    'adapter request must preserve connected prompt semantics',
+    firstFrameRequest.orderedInputs.find(input => input.sourceNodeId === 'slot-first')
+      ?.targetSlotId === 'firstFrame',
+    'adapter request must preserve first-frame routing',
   )
   expect(
-    instructionsRequest.textSlots.some(slot => slot.slotId === 'instructions'
-      && slot.source === 'connected'
-      && slot.resolvedText === 'text:slot-text'),
-    'adapter request must keep instructions distinct from prompt',
+    swappedFrameRequest.orderedInputs.find(input => input.sourceNodeId === 'slot-first')
+      ?.targetSlotId === 'lastFrame',
+    'adapter request must preserve swapped last-frame routing',
   )
   expect(
-    promptRequest.orderedInputs[0]?.targetSlotId === 'prompt'
-    && instructionsRequest.orderedInputs[0]?.targetSlotId === 'instructions',
-    'adapter request must preserve exact target-slot routing',
+    firstFrameRequest.operationId === swappedFrameRequest.operationId
+    && firstFrameRequest.operationId === 'firstLastFrameToVideo',
+    'slot-sensitive hashes must use the same supported operation',
   )
 }
 
@@ -600,139 +493,7 @@ expectFailure(planFlowRun(plannerInput({
   }])],
 })), 'run_item_dimension_limit', 'item-dimension limit')
 
-const unorderedHashA = hashFlowRunRequest({
-  map: new Map([['b', 2], ['a', 1]]),
-  set: new Set(['second', 'first']),
-})
-const unorderedHashB = hashFlowRunRequest({
-  map: new Map([['a', 1], ['b', 2]]),
-  set: new Set(['first', 'second']),
-})
-expect(unorderedHashA === unorderedHashB, 'unordered Map/Set insertion order must not change canonical hashes')
-expect(
-  hashFlowRunRequest({ ordered: ['first', 'second'] })
-  !== hashFlowRunRequest({ ordered: ['second', 'first'] }),
-  'semantically ordered array order must remain hash-significant',
-)
-expect(
-  hashFlowRunRequest({ value: 1 }) !== hashFlowRunSnapshot({ value: 1 }),
-  'request and snapshot hashes must be domain-separated',
-)
-
-if (allPlan) {
-  const snapshot: FlowRunSnapshotV1<typeof allPlan> = {
-    adapterContractVersion: 'm5-normalized-adapter-v1',
-    canonicalSerializerVersion: CANONICAL_SERIALIZER_VERSION,
-    executionContracts: allPlan.executionNodes.map(node => ({
-      adapterVersion: 'mock-v1',
-      modelContractVersion: node.modelContractVersion,
-      modelId: node.modelId,
-      modelRegistryVersion: '2026-07-13.8',
-      nodeId: node.nodeId,
-      operationId: node.operationId,
-      providerModel: 'mock',
-      providerRouteVersion: 'mock-v1',
-    })),
-    executorVersion: 'scenario-v1',
-    plan: allPlan,
-    plannerVersion: FLOW_RUN_PLANNER_VERSION,
-    snapshotVersion: FLOW_RUN_SNAPSHOT_VERSION,
-  }
-  const firstArtifact = createFlowRunSnapshotArtifact(snapshot)
-  const secondArtifact = createFlowRunSnapshotArtifact(snapshot)
-  expect(firstArtifact.hash === secondArtifact.hash, 'the same versioned snapshot must always produce the same integrity hash')
-  const persistedSnapshot = {
-    executorVersion: snapshot.executorVersion,
-    expectedExecutorVersion: snapshot.executorVersion,
-    graphSnapshot: firstArtifact.snapshot,
-    snapshotHash: firstArtifact.hash,
-    snapshotVersion: snapshot.snapshotVersion,
-  }
-  expect(
-    readFlowRunSnapshotArtifact(persistedSnapshot).hash === firstArtifact.hash,
-    'the shared snapshot reader must accept a compatible integrity-checked artifact',
-  )
-  const structurallyInvalidArtifact = createFlowRunSnapshotArtifact({
-    ...snapshot,
-    plan: {
-      ...allPlan,
-      executionNodes: allPlan.executionNodes.map((node, index) => index === 0
-        ? { ...node, workItems: 'invalid' }
-        : node),
-    },
-  })
-  try {
-    readFlowRunSnapshotArtifact({
-      ...persistedSnapshot,
-      graphSnapshot: structurallyInvalidArtifact.snapshot,
-      snapshotHash: structurallyInvalidArtifact.hash,
-    })
-    errors.push('snapshot reader must reject invalid nested execution contracts')
-  }
-  catch (error) {
-    expect(
-      error instanceof FlowRunSnapshotReadError
-      && error.code === 'snapshot_invalid',
-      'nested snapshot validation must return stable snapshot_invalid',
-    )
-  }
-  for (const scenario of [
-    {
-      code: 'snapshot_hash_mismatch',
-      input: { ...persistedSnapshot, snapshotHash: 'tampered' },
-    },
-    {
-      code: 'snapshot_executor_incompatible',
-      input: { ...persistedSnapshot, expectedExecutorVersion: 'next-executor' },
-    },
-    {
-      code: 'snapshot_version_unsupported',
-      input: { ...persistedSnapshot, snapshotVersion: 0 },
-    },
-  ] as const) {
-    try {
-      readFlowRunSnapshotArtifact(scenario.input)
-      errors.push(`snapshot reader must reject ${scenario.code}`)
-    }
-    catch (error) {
-      expect(
-        error instanceof FlowRunSnapshotReadError
-        && error.code === scenario.code,
-        `snapshot reader must return stable ${scenario.code}`,
-      )
-    }
-  }
-  try {
-    createFlowRunSnapshotArtifact({
-      ...snapshot,
-      plan: { storageKey: 'forbidden' },
-    })
-    errors.push('snapshot contract must reject storage keys')
-  }
-  catch (error) {
-    expect(String(error).includes('snapshot_forbidden_field'), 'snapshot forbidden-field rejection must be machine-readable')
-  }
-  try {
-    createFlowRunSnapshotArtifact({
-      ...snapshot,
-      plan: { nested: { r2StorageKey: 'forbidden' } },
-    })
-    errors.push('snapshot contract must reject nested storage-key variants')
-  }
-  catch (error) {
-    expect(String(error).includes('snapshot_forbidden_field'), 'nested forbidden fields must use the stable snapshot error')
-  }
-  try {
-    createFlowRunSnapshotArtifact({
-      ...snapshot,
-      plan: new Map([['node', 'not-json']]),
-    })
-    errors.push('snapshot contract must reject non-JSON collections')
-  }
-  catch (error) {
-    expect(String(error).includes('snapshot_non_json_value'), 'non-JSON snapshot values must use the stable snapshot error')
-  }
-}
+verifyRunPlannerSnapshotScenarios(allPlan)
 
 if (errors.length > 0)
   throw new Error(`Invalid M5.1 run planner scenarios:\n${errors.join('\n')}`)

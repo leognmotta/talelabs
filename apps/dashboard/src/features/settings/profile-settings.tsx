@@ -79,8 +79,8 @@ export function ProfileSettings({
         onSubmit={form.handleSubmit(handleSubmit)}
       >
         <div className="flex items-center gap-4">
-          <Avatar className="size-14 rounded-2xl">
-            <AvatarFallback className="rounded-2xl">{initials}</AvatarFallback>
+          <Avatar className="size-14">
+            <AvatarFallback>{initials}</AvatarFallback>
           </Avatar>
           <div className="min-w-0">
             <p className="truncate text-sm font-medium">{name}</p>

@@ -1,24 +1,21 @@
-import type { GenerationModelDefinition } from '@talelabs/flows'
-import type { GenerationInputContract } from './flow-canvas-context'
-
 import type { CanvasNode } from './flow-canvas-types'
+import type {
+  FlowGenerationConfigurationChange,
+} from './flow-generation-configuration'
 import {
-  applyGenerationSettingRequirements,
   evaluateGenerationContract,
   getActiveGenerationSettings,
-  getGenerationModel,
   getGenerationOperation,
   isCurrentGenerationModelContract,
 } from '@talelabs/flows'
 import { useTranslation } from 'react-i18next'
 import { useFlowCanvas } from './flow-canvas-context'
+import {
+  applyFlowGenerationConfiguration,
+} from './flow-generation-configuration'
 import { getCanvasGenerationModel } from './flow-generation-contract'
-
-interface ConfigurationChange {
-  modelContractVersion: string
-  modelId: string
-  operationId: string
-}
+import { createFlowGenerationModelActions } from './flow-generation-model-actions'
+import { createFlowGenerationOperationActions } from './flow-generation-operation-actions'
 
 function nodeMediaType(node: CanvasNode) {
   if (node.type === 'audioGeneration')
@@ -49,6 +46,7 @@ export function useFlowGenerationSettings(node: CanvasNode) {
       label: t(`assets.types.${item.mediaType}`),
     },
     description: t(item.presentation.descriptionKey),
+    disabled: false,
     id: item.id,
     label: t(item.labelKey),
     logoId: item.presentation.logoId,
@@ -87,81 +85,6 @@ export function useFlowGenerationSettings(node: CanvasNode) {
         )
       : []
 
-  function targetInputContracts(
-    targetModel: GenerationModelDefinition,
-    operationId: string,
-  ): GenerationInputContract[] {
-    const operation = targetModel.operations.find(
-      item => item.id === operationId,
-    )
-    const activeIds = new Set(operation?.inputSlotIds ?? [])
-    const exclusiveGroups = new Map<string, string>()
-    for (const [groupId, contract] of Object.entries(operation?.inputs ?? {})) {
-      for (const slotId of contract.oneOf ?? [])
-        exclusiveGroups.set(slotId, groupId)
-    }
-    return targetModel.inputSlots
-      .filter(slot => activeIds.has(slot.id))
-      .map(slot => ({
-        ...(exclusiveGroups.has(slot.id)
-          ? { exclusiveGroup: exclusiveGroups.get(slot.id)! }
-          : {}),
-        id: slot.id,
-        maxConnections: slot.maxConnections,
-        valueTypes: slot.accepts,
-      }))
-  }
-
-  function applyConfiguration(change: ConfigurationChange) {
-    const nextModel = getGenerationModel(
-      change.modelId,
-      change.modelContractVersion,
-    )
-    if (!nextModel)
-      return
-    const modelChanged
-      = nextModel.id !== model?.id
-        || change.modelContractVersion !== node.data.modelContractVersion
-    const configuredSettings = Object.fromEntries(
-      nextModel.settings.map(setting => [
-        setting.id,
-        modelChanged
-          ? setting.default
-          : (node.data.settings?.[setting.id] ?? setting.default),
-      ]),
-    )
-    const settings = applyGenerationSettingRequirements({
-      connectedSlotIds,
-      model: nextModel,
-      operationId: change.operationId,
-      settings: configuredSettings,
-    })
-    canvas.updateGenerationConfiguration(node.id, {
-      activeInputContracts: targetInputContracts(nextModel, change.operationId),
-      inputSlotIds: nextModel.inputSlots.map(slot => slot.id),
-      modelContractVersion: change.modelContractVersion,
-      modelId: nextModel.id,
-      operationId: change.operationId,
-      settings,
-    })
-  }
-
-  function updateModel(modelId: string) {
-    const nextConfigModel = availableModels.find(item => item.id === modelId)
-    if (
-      !nextConfigModel
-      || (nextConfigModel.id === model?.id
-        && nextConfigModel.contractVersion === node.data.modelContractVersion)
-    ) {
-      return
-    }
-    applyConfiguration({
-      modelContractVersion: nextConfigModel.contractVersion,
-      modelId,
-      operationId: nextConfigModel.defaultOperationId,
-    })
-  }
-
   const upgradeConfigModel
     = savedConfigModel
       && !isCurrentGenerationModelContract(
@@ -171,47 +94,30 @@ export function useFlowGenerationSettings(node: CanvasNode) {
       ? savedConfigModel
       : undefined
 
-  function upgradeModelContract() {
-    if (!upgradeConfigModel)
-      return
-    const nextModel = getGenerationModel(
-      upgradeConfigModel.id,
-      upgradeConfigModel.contractVersion,
-    )
-    if (!nextModel)
-      return
-    applyConfiguration({
-      modelContractVersion: upgradeConfigModel.contractVersion,
-      modelId: upgradeConfigModel.id,
-      operationId:
-        operation
-        && nextModel.operations.some(item => item.id === operation.id)
-          ? operation.id
-          : nextModel.defaultOperationId,
-    })
-  }
-
-  function updateOperation(operationId: string) {
-    if (!model || operationId === operation?.id)
-      return
-    applyConfiguration({
-      modelContractVersion: node.data.modelContractVersion,
-      modelId: model.id,
-      operationId,
-    })
-  }
-
-  function updateSetting(settingId: string, value: boolean | number | string) {
-    if (!model || !operation)
-      return
-    const settings = applyGenerationSettingRequirements({
+  const applyConfiguration = (change: FlowGenerationConfigurationChange) =>
+    applyFlowGenerationConfiguration({
+      canvas,
+      change,
       connectedSlotIds,
-      model,
-      operationId: operation.id,
-      settings: { ...node.data.settings, [settingId]: value },
+      currentModel: model,
+      node,
     })
-    canvas.updateNodeData(node.id, current => ({ ...current, settings }))
-  }
+  const { updateModel, upgradeModelContract } = createFlowGenerationModelActions({
+    applyConfiguration,
+    availableModels,
+    currentContractVersion: node.data.modelContractVersion,
+    currentModel: model,
+    operation,
+    upgradeConfigModel,
+  })
+  const { updateOperation, updateSetting } = createFlowGenerationOperationActions({
+    applyConfiguration,
+    canvas,
+    connectedSlotIds,
+    model,
+    node,
+    operation,
+  })
 
   return {
     activeSettings,
