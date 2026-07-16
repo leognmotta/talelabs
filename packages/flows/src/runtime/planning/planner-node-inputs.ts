@@ -1,3 +1,5 @@
+/** Canonical provider-neutral request payload assembly for planned jobs. */
+
 import type { FlowGraphNode } from '../../graph/types.js'
 import type {
   PlannedJobRequestPayload,
@@ -34,10 +36,13 @@ function normalizedInputSelections(node: FlowGraphNode) {
 
 /** Canonical, provider-independent request identity used for job hashing. */
 export function createPlannedJobRequestPayload(input: {
+  catalogRevision: string
+  catalogVersion: number
   inputs: readonly PlannedRunInput[]
   itemKey: string
   modelContractVersion: string
   modelId: string
+  modelRevision: number
   node: FlowGraphNode
   operationId: string
   outputCount: number
@@ -45,6 +50,8 @@ export function createPlannedJobRequestPayload(input: {
   settings: Readonly<Record<string, boolean | number | string>>
 }): PlannedJobRequestPayload {
   return Object.freeze({
+    catalogRevision: input.catalogRevision,
+    catalogVersion: input.catalogVersion,
     inline: normalizedInlineText(input.node),
     inputSelections: normalizedInputSelections(input.node),
     inputs: Object.freeze(input.inputs.map(plannedInput => Object.freeze({
@@ -57,11 +64,12 @@ export function createPlannedJobRequestPayload(input: {
     itemKey: input.itemKey,
     modelContractVersion: input.modelContractVersion,
     modelId: input.modelId,
+    modelRevision: input.modelRevision,
     nodeId: input.node.id,
     operationId: input.operationId,
     outputCount: input.outputCount,
     requestIndex: input.requestIndex,
-    requestPayloadVersion: 1 as const,
+    requestPayloadVersion: 3 as const,
     settings: input.settings,
   })
 }

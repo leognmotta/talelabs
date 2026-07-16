@@ -1,6 +1,9 @@
+/** Fail-closed reader for versioned immutable Flow run snapshot artifacts. */
+
 import type {
+  FlowRunExecutionMode,
+  FlowRunSnapshot,
   FlowRunSnapshotArtifact,
-  FlowRunSnapshotV1,
   ReadableFlowRunPlanSnapshot,
 } from './contracts.js'
 
@@ -22,6 +25,15 @@ function isPlainRecord(value: unknown): value is Record<string, unknown> {
     return false
   const prototype = Object.getPrototypeOf(value)
   return prototype === Object.prototype || prototype === null
+}
+
+/** Reads the run-level provider mode while preserving historical snapshots. */
+export function readFlowRunExecutionMode(value: unknown): FlowRunExecutionMode {
+  if (value === undefined || value === 'live')
+    return 'live'
+  if (value === 'debug')
+    return 'debug'
+  throw new FlowRunSnapshotReadError('snapshot_invalid')
 }
 
 /**
@@ -51,23 +63,37 @@ export function readFlowRunSnapshotArtifact(input: {
   if (
     input.graphSnapshot.canonicalSerializerVersion
     !== CANONICAL_SERIALIZER_VERSION
+    || typeof input.graphSnapshot.catalogRevision !== 'string'
     || input.graphSnapshot.plannerVersion !== FLOW_RUN_PLANNER_VERSION
     || typeof input.graphSnapshot.adapterContractVersion !== 'string'
     || !Array.isArray(input.graphSnapshot.executionContracts)
   ) {
     throw new FlowRunSnapshotReadError('snapshot_invalid')
   }
+  readFlowRunExecutionMode(input.graphSnapshot.executionMode)
 
   const executionContracts = z.array(executionContractSchema)
     .safeParse(input.graphSnapshot.executionContracts)
   const plan = readablePlanSchema.safeParse(input.graphSnapshot.plan)
   if (!executionContracts.success || !plan.success)
     throw new FlowRunSnapshotReadError('snapshot_invalid')
+  const catalogRevision = input.graphSnapshot.catalogRevision
+  if (
+    !/^sha256:[0-9a-f]{64}$/.test(catalogRevision as string)
+    || executionContracts.data.some(
+      contract => contract.catalogRevision !== catalogRevision,
+    )
+    || plan.data.executionNodes.some(
+      node => node.catalogRevision !== catalogRevision,
+    )
+  ) {
+    throw new FlowRunSnapshotReadError('snapshot_invalid')
+  }
 
   let artifact: FlowRunSnapshotArtifact<object>
   try {
     artifact = createFlowRunSnapshotArtifact(
-      input.graphSnapshot as unknown as FlowRunSnapshotV1<object>,
+      input.graphSnapshot as unknown as FlowRunSnapshot<object>,
     )
   }
   catch {

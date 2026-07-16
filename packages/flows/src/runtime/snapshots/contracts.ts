@@ -1,8 +1,12 @@
+/** Versioned immutable Flow run snapshot and execution-contract shapes. */
+
+import type { CatalogProviderBinding } from '@talelabs/models-catalog'
 import type { GenerationProviderLifecycle } from '../../generation/contracts/provider.js'
 import type {
-  FlowRunPlanV1,
+  FlowRunPlan,
 } from '../planning/planner-contracts.js'
 
+import { CatalogProviderBindingSchema } from '@talelabs/models-catalog'
 import { z } from 'zod'
 
 import { canonicalByteLength } from '../serialization/canonical-hash.js'
@@ -17,53 +21,71 @@ export * from './artifact-reader.js'
 export * from './execution-contract-reader.js'
 export * from './job-request-reader.js'
 
-export const FLOW_RUN_PLAN_VERSION = 1 as const
-export const FLOW_RUN_PLANNER_VERSION = 'm5.1.1' as const
-export const FLOW_RUN_SNAPSHOT_VERSION = 1 as const
+/** Current serialized plan shape version accepted by admission and workers. */
+export const FLOW_RUN_PLAN_VERSION = 3 as const
+/** Deterministic planner implementation version captured in every snapshot. */
+export const FLOW_RUN_PLANNER_VERSION = 'catalog-runtime.2' as const
+/** Current immutable snapshot envelope version. */
+export const FLOW_RUN_SNAPSHOT_VERSION = 3 as const
 
+/** Selects whether an admitted run may cross a paid provider boundary. */
+export type FlowRunExecutionMode = 'debug' | 'live'
+
+/** Private provider execution facts frozen for one planned node. */
 export interface FlowRunSnapshotExecutionContract {
   adapterVersion: string
+  catalogRevision: string
+  catalogVersion: number
   modelContractVersion: string
   modelId: string
-  modelRegistryVersion: string
+  modelRevision: number
   nodeId: string
   operationId: string
-  /** Added after initial M5 snapshots; absent historical snapshots stay readable. */
-  provider?: string
-  /** Server-only endpoint identity; absent historical mocks remain readable. */
-  providerEndpoint?: string
-  /** Exact reviewed provider endpoint slug; absent historical snapshots stay readable. */
-  providerEndpointTag?: string
-  /** Provider lifecycle facts; historical mock snapshots remain readable without them. */
-  providerLifecycle?: GenerationProviderLifecycle
+  /** Provider implementation selected during admission. */
+  provider: string
+  /** Server-only endpoint identity captured during admission. */
+  providerEndpoint: string
+  /** Exact reviewed provider endpoint slug captured during admission. */
+  providerEndpointTag: string
+  /** Provider lifecycle facts executed by the worker. */
+  providerLifecycle: GenerationProviderLifecycle
   providerModel: string
+  providerBinding: CatalogProviderBinding
   providerRouteVersion: string
 }
 
-export interface FlowRunSnapshotV1<Plan extends object = object> {
+/** Versioned immutable snapshot envelope consumed by durable workers. */
+export interface FlowRunSnapshot<Plan extends object = object> {
   adapterContractVersion: string
   canonicalSerializerVersion: typeof CANONICAL_SERIALIZER_VERSION
+  catalogRevision: string
   executionContracts: readonly FlowRunSnapshotExecutionContract[]
+  /** Missing only on historical snapshots, where it is interpreted as live. */
+  executionMode?: FlowRunExecutionMode
   executorVersion: string
   plan: Plan
   plannerVersion: typeof FLOW_RUN_PLANNER_VERSION
   snapshotVersion: typeof FLOW_RUN_SNAPSHOT_VERSION
 }
 
+/** Canonically sized and hashed snapshot artifact persisted at admission. */
 export interface FlowRunSnapshotArtifact<Plan extends object> {
   bytes: number
   hash: string
-  snapshot: FlowRunSnapshotV1<Plan>
+  snapshot: FlowRunSnapshot<Plan>
 }
 
-export type ReadableFlowRunPlanSnapshot = FlowRunPlanV1 & { planHash: string }
+/** Planner output shape after strict snapshot parsing and hash verification. */
+export type ReadableFlowRunPlanSnapshot = FlowRunPlan & { planHash: string }
 
+/** Stable failure codes emitted while reading immutable snapshot artifacts. */
 export type FlowRunSnapshotReadErrorCode
   = | 'snapshot_executor_incompatible'
     | 'snapshot_hash_mismatch'
     | 'snapshot_invalid'
     | 'snapshot_version_unsupported'
 
+/** Typed fail-closed snapshot reading failure. */
 export class FlowRunSnapshotReadError extends TypeError {
   readonly code: FlowRunSnapshotReadErrorCode
 
@@ -76,7 +98,7 @@ export class FlowRunSnapshotReadError extends TypeError {
 
 /** Builds and hashes an allowlisted, versioned snapshot envelope. */
 export function createFlowRunSnapshotArtifact<Plan extends object>(
-  snapshot: FlowRunSnapshotV1<Plan>,
+  snapshot: FlowRunSnapshot<Plan>,
 ): FlowRunSnapshotArtifact<Plan> {
   if (snapshot.snapshotVersion !== FLOW_RUN_SNAPSHOT_VERSION)
     throw new TypeError('unsupported_snapshot_version')
@@ -84,6 +106,8 @@ export function createFlowRunSnapshotArtifact<Plan extends object>(
     throw new TypeError('unsupported_canonical_serializer_version')
   if (snapshot.plannerVersion !== FLOW_RUN_PLANNER_VERSION)
     throw new TypeError('unsupported_planner_version')
+  if (!/^sha256:[0-9a-f]{64}$/.test(snapshot.catalogRevision))
+    throw new TypeError('invalid_catalog_revision')
   assertSafeSnapshotValue(snapshot)
   const bytes = canonicalByteLength(snapshot)
   const hash = hashFlowRunSnapshot(snapshot)
@@ -163,27 +187,32 @@ const plannedInputSchema = z.object({
   sourceNodeId: z.string(),
   targetHandleId: z.string(),
 }).strict()
+/** Strict runtime schema for one persisted provider-neutral job payload. */
 export const requestPayloadSchema = z.object({
+  catalogRevision: z.string().regex(/^sha256:[0-9a-f]{64}$/),
+  catalogVersion: positiveInteger,
   inline: stringMap,
   inputSelections: z.record(z.string(), z.array(z.string())),
   inputs: z.array(plannedInputSchema),
   itemKey: z.string(),
   modelContractVersion: z.string(),
   modelId: z.string(),
+  modelRevision: positiveInteger,
   nodeId: z.string(),
   operationId: z.string(),
-  provider: z.string().optional(),
   outputCount: positiveInteger,
   requestIndex: nonnegativeInteger,
-  requestPayloadVersion: z.literal(1),
+  requestPayloadVersion: z.literal(3),
   settings: settingMap,
 }).strict()
 
+/** Stable failure codes emitted while reading planned job requests. */
 export type FlowRunJobRequestReadErrorCode
   = | 'job_request_hash_mismatch'
     | 'job_request_invalid'
     | 'job_request_too_large'
 
+/** Typed fail-closed planned-job request reading failure. */
 export class FlowRunJobRequestReadError extends TypeError {
   readonly code: FlowRunJobRequestReadErrorCode
 
@@ -218,6 +247,7 @@ const normalizedCommandSchema = z.discriminatedUnion('mode', [
     selectedNodeIds: z.array(z.string()),
   }).strict(),
 ])
+/** Strict runtime schema for current immutable planner output. */
 export const readablePlanSchema = z.object({
   capturedEdges: z.array(z.object({
     id: z.string(),
@@ -236,10 +266,13 @@ export const readablePlanSchema = z.object({
   }).strict()),
   command: normalizedCommandSchema,
   executionNodes: z.array(z.object({
+    catalogRevision: z.string().regex(/^sha256:[0-9a-f]{64}$/),
+    catalogVersion: positiveInteger,
     inclusionReason: z.enum(['dependency', 'descendant', 'selected', 'target']),
     level: nonnegativeInteger,
     modelContractVersion: z.string(),
     modelId: z.string(),
+    modelRevision: positiveInteger,
     nodeId: z.string(),
     nodeType: z.string(),
     operationId: z.string(),
@@ -279,16 +312,19 @@ export const readablePlanSchema = z.object({
   topologicalLevels: z.array(z.array(z.string())),
 }).strict()
 
+/** Strict runtime schema for private execution facts captured at admission. */
 export const executionContractSchema = z.object({
   adapterVersion: z.string(),
+  catalogRevision: z.string().regex(/^sha256:[0-9a-f]{64}$/),
+  catalogVersion: positiveInteger,
   modelContractVersion: z.string(),
   modelId: z.string(),
-  modelRegistryVersion: z.string(),
+  modelRevision: positiveInteger,
   nodeId: z.string(),
   operationId: z.string(),
-  provider: z.string().optional(),
-  providerEndpoint: z.string().optional(),
-  providerEndpointTag: z.string().min(1).optional(),
+  provider: z.string(),
+  providerEndpoint: z.string(),
+  providerEndpointTag: z.string().min(1),
   providerLifecycle: z.discriminatedUnion('submission', [
     z.object({
       cancellation: z.enum(['best-effort', 'supported', 'unsupported']),
@@ -313,7 +349,8 @@ export const executionContractSchema = z.object({
       ),
       submission: z.literal('asynchronous'),
     }).strict(),
-  ]).optional(),
+  ]),
   providerModel: z.string(),
+  providerBinding: CatalogProviderBindingSchema,
   providerRouteVersion: z.string(),
 }).strict()

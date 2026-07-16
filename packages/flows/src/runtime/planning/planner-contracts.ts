@@ -1,3 +1,5 @@
+/** Typed inputs, stage results, work items, and immutable output plan contracts. */
+
 import type {
   FlowGraphEdge,
   FlowGraphNode,
@@ -23,6 +25,12 @@ import type {
   NormalizedFlowRunCommand,
 } from './run-command.js'
 
+/** Result contract shared by the planner's typed intermediate stages. */
+export type FlowRunPlanningStageResult<T>
+  = | { issues: readonly FlowRunPlanningIssue[], ok: false }
+    | { ok: true, value: T }
+
+/** Mutable Flow revision, command, and locked prior outputs presented to planning. */
 export interface FlowRunPlannerInput {
   command: FlowRunCommand
   context: FlowGraphValidationContext
@@ -37,12 +45,14 @@ export interface FlowRunPlannerInput {
   priorOutputs?: readonly PriorNodeOutputDescriptor[]
 }
 
+/** Exact pre-existing Asset prerequisite captured by admission. */
 export interface PlannedStaticAssetPrerequisite {
   assetId: string
   mediaType: string
   nodeId: string
 }
 
+/** Exact successful prior job output required by a partial run. */
 export interface PlannedPriorOutputRequirement {
   completedAt: string
   generationJobId: string
@@ -51,6 +61,7 @@ export interface PlannedPriorOutputRequirement {
   outputHandleId: string
 }
 
+/** One ordered runtime input bound to a target slot for a work item. */
 export interface PlannedRunInput {
   edgeId: string
   items: readonly FlowItem<FlowRuntimeValue>[]
@@ -59,6 +70,7 @@ export interface PlannedRunInput {
   targetHandleId: string
 }
 
+/** Canonical request-payload projection of one planned runtime input. */
 export interface PlannedJobRequestInput {
   edgeId: string
   items: readonly FlowItem<FlowRuntimeValue>[]
@@ -67,27 +79,33 @@ export interface PlannedJobRequestInput {
   targetHandleId: string
 }
 
+/** Immutable provider-neutral job identity persisted before dispatch. */
 export interface PlannedJobRequestPayload {
+  catalogRevision: string
+  catalogVersion: number
   inline: Readonly<Record<string, string>>
   inputSelections: Readonly<Record<string, readonly string[]>>
   inputs: readonly PlannedJobRequestInput[]
   itemKey: string
   modelContractVersion: string
   modelId: string
+  modelRevision: number
   nodeId: string
   operationId: string
   outputCount: number
   requestIndex: number
-  requestPayloadVersion: 1
+  requestPayloadVersion: 3
   settings: Readonly<Record<string, boolean | number | string>>
 }
 
+/** One deterministically hashed provider request belonging to a work item. */
 export interface PlannedRequestShard {
   jobHash: string
   requestPayload: PlannedJobRequestPayload
   requestIndex: number
 }
 
+/** One runtime coordinate and its provider request shards. */
 export interface PlannedNodeWorkItem {
   dimensions: RuntimeDimensions
   expectedOutputCount: number
@@ -98,11 +116,15 @@ export interface PlannedNodeWorkItem {
   sortOrder: number
 }
 
+/** One selected executable node with topological position and expanded work. */
 export interface PlannedExecutionNode {
+  catalogRevision: string
+  catalogVersion: number
   inclusionReason: FlowRunInclusionReason
   level: number
   modelContractVersion: string
   modelId: string
+  modelRevision: number
   nodeId: string
   nodeType: FlowNodeType
   operationId: string
@@ -112,7 +134,8 @@ export interface PlannedExecutionNode {
   workItems: readonly PlannedNodeWorkItem[]
 }
 
-export interface FlowRunPlanV1 {
+/** Complete bounded immutable execution plan captured in a run snapshot. */
+export interface FlowRunPlan {
   capturedEdges: readonly {
     id: string
     order: number
@@ -150,6 +173,7 @@ export interface FlowRunPlanV1 {
   topologicalLevels: readonly (readonly string[])[]
 }
 
+/** Success or stable issue result returned by the public planner. */
 export type FlowRunPlanningResult
   = | { issues: readonly FlowRunPlanningIssue[], ok: false }
-    | { ok: true, plan: FlowRunPlanV1 & { planHash: string } }
+    | { ok: true, plan: FlowRunPlan & { planHash: string } }

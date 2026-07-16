@@ -1,3 +1,5 @@
+/** Materialization of immutable planned inputs into normalized provider requests. */
+
 import type {
   NormalizedGenerationRequest,
 } from '../../generation/contracts/provider.js'
@@ -16,7 +18,9 @@ export function materializeGenerationProviderRequest(input: {
   requestPayload: PlannedJobRequestPayload
 }): NormalizedGenerationRequest {
   return Object.freeze({
-    adapterRequestVersion: 1 as const,
+    adapterRequestVersion: 3 as const,
+    catalogRevision: input.requestPayload.catalogRevision,
+    catalogVersion: input.requestPayload.catalogVersion,
     itemKey: input.requestPayload.itemKey,
     modelContractVersion: input.requestPayload.modelContractVersion,
     nodeId: input.requestPayload.nodeId,
@@ -33,6 +37,7 @@ export function materializeGenerationProviderRequest(input: {
     )),
     outputCount: input.requestPayload.outputCount,
     productModelId: input.requestPayload.modelId,
+    modelRevision: input.requestPayload.modelRevision,
     requestId: input.requestId,
     requestIndex: input.requestPayload.requestIndex,
     requestPayloadHash: hashFlowRunJob(input.requestPayload),

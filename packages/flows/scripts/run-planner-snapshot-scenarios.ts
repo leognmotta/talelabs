@@ -1,11 +1,19 @@
-import type { FlowRunPlanV1, FlowRunSnapshotV1 } from '../src/index.js'
+/** Deterministic planner and immutable snapshot compatibility scenarios. */
 
+import type {
+  FlowRunPlan,
+  FlowRunSnapshot,
+  GenerationProviderLifecycle,
+} from '../src/index.js'
+
+import { getCatalogProviderBinding } from '@talelabs/models-catalog'
 import {
   CANONICAL_SERIALIZER_VERSION,
   createFlowRunSnapshotArtifact,
   FLOW_RUN_PLANNER_VERSION,
   FLOW_RUN_SNAPSHOT_VERSION,
   FlowRunSnapshotReadError,
+  GENERATION_CATALOG_REVISION,
   hashFlowRunRequest,
   hashFlowRunSnapshot,
   readFlowRunSnapshotArtifact,
@@ -15,8 +23,9 @@ import {
   runPlannerErrors,
 } from './run-planner-assertions.js'
 
+/** Verifies deterministic hashing and strict snapshot compatibility behavior. */
 export function verifyRunPlannerSnapshotScenarios(
-  allPlan: FlowRunPlanV1 | undefined,
+  allPlan: FlowRunPlan | undefined,
 ) {
   const unorderedHashA = hashFlowRunRequest({
     map: new Map([['b', 2], ['a', 1]]),
@@ -42,19 +51,33 @@ export function verifyRunPlannerSnapshotScenarios(
 
   if (!allPlan)
     return
-  const snapshot: FlowRunSnapshotV1<FlowRunPlanV1> = {
+  const snapshot: FlowRunSnapshot<FlowRunPlan> = {
     adapterContractVersion: 'm5-normalized-adapter-v1',
     canonicalSerializerVersion: CANONICAL_SERIALIZER_VERSION,
-    executionContracts: allPlan.executionNodes.map(node => ({
-      adapterVersion: 'mock-v1',
-      modelContractVersion: node.modelContractVersion,
-      modelId: node.modelId,
-      modelRegistryVersion: '2026-07-13.8',
-      nodeId: node.nodeId,
-      operationId: node.operationId,
-      providerModel: 'mock',
-      providerRouteVersion: 'mock-v1',
-    })),
+    catalogRevision: GENERATION_CATALOG_REVISION,
+    executionContracts: allPlan.executionNodes.map((node) => {
+      const binding = getCatalogProviderBinding(node.modelId, node.operationId)
+      if (!binding)
+        throw new Error(`scenario_binding_missing:${node.modelId}:${node.operationId}`)
+      return {
+        adapterVersion: binding.adapterVersion,
+        catalogRevision: node.catalogRevision,
+        catalogVersion: node.catalogVersion,
+        modelContractVersion: node.modelContractVersion,
+        modelId: node.modelId,
+        modelRevision: node.modelRevision,
+        nodeId: node.nodeId,
+        operationId: node.operationId,
+        provider: binding.provider,
+        providerBinding: binding,
+        providerEndpoint: binding.endpoint,
+        providerEndpointTag: binding.providerTag,
+        providerLifecycle: binding.lifecycle as GenerationProviderLifecycle,
+        providerModel: binding.nativeModelId,
+        providerRouteVersion: binding.routeVersion,
+      }
+    }),
+    executionMode: 'debug',
     executorVersion: 'scenario-v1',
     plan: allPlan,
     plannerVersion: FLOW_RUN_PLANNER_VERSION,
@@ -76,6 +99,11 @@ export function verifyRunPlannerSnapshotScenarios(
   expect(
     readFlowRunSnapshotArtifact(persistedSnapshot).hash === firstArtifact.hash,
     'the shared snapshot reader must accept a compatible integrity-checked artifact',
+  )
+  expect(
+    readFlowRunSnapshotArtifact(persistedSnapshot).snapshot.executionMode
+    === 'debug',
+    'the shared snapshot reader must preserve the admitted debug execution mode',
   )
   const structurallyInvalidArtifact = createFlowRunSnapshotArtifact({
     ...snapshot,
