@@ -1,7 +1,10 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@import "@fontsource-variable/host-grotesk";
 @import "@fontsource-variable/inter";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/500.css";
 
 @source "../**/*.{ts,tsx}";
 @source "../../../apps/dashboard/src/**/*.{ts,tsx}";
@@ -19,8 +22,13 @@
 }
 
 @theme inline {
-  --font-heading: var(--font-sans);
-  --font-sans: "Inter Variable", sans-serif;
+  --font-heading:
+    "Host Grotesk Variable", "Inter Variable", ui-sans-serif, sans-serif;
+  --font-mono:
+    "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    monospace;
+  --font-sans:
+    "Host Grotesk Variable", "Inter Variable", ui-sans-serif, sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -35,9 +43,19 @@
   --color-chart-2: var(--chart-2);
   --color-chart-1: var(--chart-1);
   --color-ring: var(--ring);
+  --color-link: var(--link);
   --color-input: var(--input);
   --color-border: var(--border);
+  --color-destructive-foreground: var(--destructive-foreground);
   --color-destructive: var(--destructive);
+  --color-info-foreground: var(--info-foreground);
+  --color-info: var(--info);
+  --color-success-foreground: var(--success-foreground);
+  --color-success: var(--success);
+  --color-surface-foreground: var(--surface-foreground);
+  --color-surface: var(--surface);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-warning: var(--warning);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
@@ -52,93 +70,194 @@
   --color-card: var(--card);
   --color-foreground: var(--foreground);
   --color-background: var(--background);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: var(--radius);
+  --radius-2xl: var(--radius);
+  --radius-3xl: var(--radius);
+  --radius-4xl: var(--radius);
+  --shadow-2xs: 0 1px var(--shadow-color);
+  --shadow-xs: 0 1px 2px var(--shadow-color);
+  --shadow-sm: 0 1px 2px var(--shadow-color);
+  --shadow-md:
+    0 1px 2px var(--shadow-color), 0 10px 24px var(--shadow-color-soft);
+  --shadow-lg:
+    0 1px 2px var(--shadow-color), 0 16px 40px var(--shadow-color-soft);
+  --shadow-xl:
+    0 2px 4px var(--shadow-color), 0 24px 56px var(--shadow-color-soft);
 }
 
 :root {
-  --flow-dot: oklch(0.44 0.018 264 / 44%);
-  --flow-edge-selected: oklch(0.72 0.16 264);
+  --brand-dawn-dark: #614c65;
+  --brand-dawn: #be99c7;
+  --brand-dawn-light: #f5c7ff;
+  --brand-dune-dark: #555240;
+  --brand-dune: #c7c099;
+  --brand-dune-light: #fdf5c6;
+  --brand-flora-dark: #54604c;
+  --brand-flora: #aac799;
+  --brand-flora-light: #dcffc7;
+  --brand-glacier-dark: #5a7472;
+  --brand-glacier: #99c7c4;
+  --brand-glacier-light: #c8fffb;
+  --brand-gold: var(--brand-dune);
+  --brand-gold-light: var(--brand-dune-light);
+  --brand-gold-soft: #ece5bd;
+  --brand-terra-dark: #5a4545;
+  --brand-terra: #c79999;
+  --brand-terra-light: #ffc7c8;
+  --brand-twilight-dark: #53536a;
+  --brand-twilight: #9999c7;
+  --brand-twilight-light: #c7c7ff;
+  --brand-urban: #bdbdbd;
+  --shadow-color: rgb(10 10 10 / 10%);
+  --shadow-color-soft: rgb(10 10 10 / 6%);
+  --flow-dot: rgb(23 23 19 / 18%);
+  --flow-edge-selected: var(--primary);
   --flow-node-surface: var(--card);
-  --flow-type-asset: oklch(0.7 0.035 264);
-  --flow-type-audio: oklch(0.74 0.16 70);
-  --flow-type-element: oklch(0.72 0.17 345);
-  --flow-type-image: oklch(0.68 0.19 300);
-  --flow-type-text: oklch(0.76 0.105 170);
-  --flow-type-video: oklch(0.68 0.17 255);
-  --background: oklch(0.975 0.004 264);
-  --foreground: oklch(0.16 0.012 264);
-  --card: oklch(0.995 0.002 264);
-  --card-foreground: oklch(0.16 0.012 264);
-  --popover: oklch(0.995 0.002 264);
-  --popover-foreground: oklch(0.16 0.012 264);
-  --primary: oklch(0.56 0.22 264);
-  --primary-foreground: oklch(0.985 0.004 264);
-  --secondary: oklch(0.935 0.008 264);
-  --secondary-foreground: oklch(0.22 0.014 264);
-  --muted: oklch(0.94 0.006 264);
-  --muted-foreground: oklch(0.48 0.014 264);
-  --accent: oklch(0.925 0.018 264);
-  --accent-foreground: oklch(0.2 0.02 264);
-  --destructive: oklch(0.58 0.22 25);
-  --border: oklch(0.87 0.01 264);
-  --input: oklch(0.83 0.012 264);
-  --ring: oklch(0.56 0.22 264);
-  --chart-1: oklch(0.62 0.22 264);
-  --chart-2: oklch(0.68 0.16 252);
-  --chart-3: oklch(0.54 0.18 276);
-  --chart-4: oklch(0.74 0.12 240);
-  --chart-5: oklch(0.46 0.14 288);
-  --radius: 0.5rem;
-  --sidebar: oklch(0.95 0.007 264);
-  --sidebar-foreground: oklch(0.16 0.012 264);
-  --sidebar-primary: oklch(0.56 0.22 264);
-  --sidebar-primary-foreground: oklch(0.985 0.004 264);
-  --sidebar-accent: oklch(0.91 0.018 264);
-  --sidebar-accent-foreground: oklch(0.2 0.02 264);
-  --sidebar-border: oklch(0.85 0.012 264);
-  --sidebar-ring: oklch(0.56 0.22 264);
+  --flow-type-asset: var(--brand-dune-dark);
+  --flow-type-audio: var(--brand-flora-dark);
+  --flow-type-element: var(--brand-dawn-dark);
+  --flow-type-image: var(--brand-terra-dark);
+  --flow-type-text: var(--brand-glacier-dark);
+  --flow-type-video: var(--brand-twilight-dark);
+  --flow-preview-asset: var(--brand-dune-light);
+  --flow-preview-audio: var(--brand-flora-light);
+  --flow-preview-element: var(--brand-dawn-light);
+  --flow-preview-image: var(--brand-terra-light);
+  --flow-preview-text: var(--brand-glacier-light);
+  --flow-preview-video: var(--brand-twilight-light);
+  --flow-preview-surface: color-mix(in oklab, var(--card) 88%, var(--surface));
+  --flow-preview-glow-mix: 54%;
+  --flow-preview-glow-fade: 62%;
+  --flow-preview-border-mix: 22%;
+  --flow-handle-background-mix: 44%;
+  --flow-handle-foreground-mix: 45%;
+  --flow-handle-ring-mix: 58%;
+  --flow-handle-connected-background-mix: 62%;
+  --flow-handle-connected-ring-mix: 72%;
+  --flow-handle-shadow: rgb(23 23 19 / 14%);
+  --flow-handle-connected-shadow: rgb(23 23 19 / 18%);
+  --background: #fafafa;
+  --foreground: #171713;
+  --card: #fdfdfc;
+  --card-foreground: #171713;
+  --popover: #fdfdfc;
+  --popover-foreground: #171713;
+  --surface: #f2f2f0;
+  --surface-foreground: #171713;
+  --primary: var(--brand-gold);
+  --primary-foreground: #353327;
+  --link: var(--brand-dune-dark);
+  --secondary: #eeeeec;
+  --secondary-foreground: #2f2f2a;
+  --muted: #f1f1ef;
+  --muted-foreground: #5e5e59;
+  --accent: var(--brand-gold-soft);
+  --accent-foreground: #24241f;
+  --destructive: #dc2626;
+  --destructive-foreground: #fffdf4;
+  --success: var(--brand-flora-dark);
+  --success-foreground: #fffdf4;
+  --warning: #bb4d00;
+  --warning-foreground: #fffdf4;
+  --info: var(--brand-glacier-dark);
+  --info-foreground: #fffdf4;
+  --border: #d9d9d5;
+  --input: #e3e3e0;
+  --ring: #5f5f59;
+  --chart-1: var(--brand-dune-dark);
+  --chart-2: var(--brand-glacier-dark);
+  --chart-3: var(--brand-flora-dark);
+  --chart-4: var(--brand-terra-dark);
+  --chart-5: var(--brand-twilight-dark);
+  --radius: 0.625rem;
+  --sidebar: #f3f3f1;
+  --sidebar-foreground: #171713;
+  --sidebar-primary: var(--brand-gold);
+  --sidebar-primary-foreground: #353327;
+  --sidebar-accent: #e9e9e6;
+  --sidebar-accent-foreground: #2f2f2a;
+  --sidebar-border: #d6d6d2;
+  --sidebar-ring: #5f5f59;
+  color-scheme: light;
 }
 
 .dark {
-  --flow-dot: oklch(0.82 0.018 264 / 34%);
-  --flow-edge-selected: oklch(0.75 0.15 264);
-  --background: oklch(0.105 0.008 264);
-  --foreground: oklch(0.95 0.006 264);
-  --card: oklch(0.155 0.01 264);
-  --card-foreground: oklch(0.95 0.006 264);
-  --popover: oklch(0.175 0.012 264);
-  --popover-foreground: oklch(0.95 0.006 264);
-  --primary: oklch(0.57 0.23 264);
-  --primary-foreground: oklch(0.985 0.004 264);
-  --secondary: oklch(0.2 0.012 264);
-  --secondary-foreground: oklch(0.92 0.008 264);
-  --muted: oklch(0.185 0.01 264);
-  --muted-foreground: oklch(0.65 0.014 264);
-  --accent: oklch(0.215 0.018 264);
-  --accent-foreground: oklch(0.95 0.006 264);
-  --destructive: oklch(0.65 0.2 25);
-  --border: oklch(0.88 0.01 264 / 12%);
-  --input: oklch(0.88 0.01 264 / 18%);
-  --ring: oklch(0.57 0.23 264);
-  --chart-1: oklch(0.68 0.2 264);
-  --chart-2: oklch(0.74 0.15 252);
-  --chart-3: oklch(0.61 0.18 276);
-  --chart-4: oklch(0.8 0.11 240);
-  --chart-5: oklch(0.53 0.15 288);
-  --sidebar: oklch(0.125 0.009 264);
-  --sidebar-foreground: oklch(0.92 0.008 264);
-  --sidebar-primary: oklch(0.57 0.23 264);
-  --sidebar-primary-foreground: oklch(0.985 0.004 264);
-  --sidebar-accent: oklch(0.19 0.014 264);
-  --sidebar-accent-foreground: oklch(0.95 0.006 264);
-  --sidebar-border: oklch(0.88 0.01 264 / 10%);
-  --sidebar-ring: oklch(0.57 0.23 264);
+  --shadow-color: rgb(0 0 0 / 35%);
+  --shadow-color-soft: rgb(0 0 0 / 28%);
+  --flow-dot: rgb(199 192 153 / 24%);
+  --flow-edge-selected: var(--brand-gold);
+  --flow-type-asset: var(--brand-dune);
+  --flow-type-audio: var(--brand-flora);
+  --flow-type-element: var(--brand-dawn);
+  --flow-type-image: var(--brand-terra);
+  --flow-type-text: var(--brand-glacier);
+  --flow-type-video: var(--brand-twilight);
+  --flow-preview-asset: var(--flow-type-asset);
+  --flow-preview-audio: var(--flow-type-audio);
+  --flow-preview-element: var(--flow-type-element);
+  --flow-preview-image: var(--flow-type-image);
+  --flow-preview-text: var(--flow-type-text);
+  --flow-preview-video: var(--flow-type-video);
+  --flow-preview-surface: color-mix(
+    in oklab,
+    var(--muted) 68%,
+    var(--background)
+  );
+  --flow-preview-glow-mix: 26%;
+  --flow-preview-glow-fade: 68%;
+  --flow-preview-border-mix: 18%;
+  --flow-handle-background-mix: 28%;
+  --flow-handle-foreground-mix: 82%;
+  --flow-handle-ring-mix: 28%;
+  --flow-handle-connected-background-mix: 42%;
+  --flow-handle-connected-ring-mix: 45%;
+  --flow-handle-shadow: rgb(0 0 0 / 22%);
+  --flow-handle-connected-shadow: rgb(0 0 0 / 25%);
+  --background: #080806;
+  --foreground: #f8f8f5;
+  --card: #11110f;
+  --card-foreground: #f8f8f5;
+  --popover: #151511;
+  --popover-foreground: #f8f8f5;
+  --surface: #0d0d0b;
+  --surface-foreground: #f8f8f5;
+  --primary: var(--brand-gold);
+  --primary-foreground: #0a0a08;
+  --link: var(--brand-gold);
+  --secondary: #1a1a17;
+  --secondary-foreground: #f0efe8;
+  --muted: #181815;
+  --muted-foreground: #aaa99f;
+  --accent: #26251f;
+  --accent-foreground: #f8f8f5;
+  --destructive: #ff6467;
+  --destructive-foreground: #280909;
+  --success: var(--brand-flora);
+  --success-foreground: #10150d;
+  --warning: #ffd230;
+  --warning-foreground: #1f1700;
+  --info: var(--brand-glacier);
+  --info-foreground: #0d1716;
+  --border: #2a2a2a;
+  --input: #30302b;
+  --ring: var(--brand-gold);
+  --chart-1: var(--brand-gold);
+  --chart-2: var(--brand-glacier);
+  --chart-3: var(--brand-flora);
+  --chart-4: var(--brand-terra);
+  --chart-5: var(--brand-twilight);
+  --sidebar: #0d0d0b;
+  --sidebar-foreground: #f0efe8;
+  --sidebar-primary: var(--brand-gold);
+  --sidebar-primary-foreground: #0a0a08;
+  --sidebar-accent: #1b1b17;
+  --sidebar-accent-foreground: #f8f8f5;
+  --sidebar-border: #252521;
+  --sidebar-ring: var(--brand-gold);
+  color-scheme: dark;
 }
 
 @layer base {
@@ -149,7 +268,21 @@
   body {
     @apply bg-background text-foreground;
     -webkit-font-smoothing: antialiased;
+    font-feature-settings: "ss01", "cv01", "cv02", "cv03";
+    letter-spacing: -0.006em;
     text-rendering: optimizeLegibility;
+  }
+
+  code,
+  kbd,
+  pre,
+  samp {
+    font-family: var(--font-mono);
+  }
+
+  ::selection {
+    color: var(--primary-foreground);
+    background: var(--primary);
   }
 
   button:not(:disabled),
@@ -164,21 +297,40 @@
 
 @layer components {
   [data-flow-card-grid] {
-    background-image: radial-gradient(
-      circle,
-      color-mix(in oklab, var(--border) 90%, transparent) 1px,
-      transparent 1px
-    );
-    background-size: 16px 16px;
+    background-image:
+      linear-gradient(
+        color-mix(in oklab, var(--border) 72%, transparent) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        90deg,
+        color-mix(in oklab, var(--border) 72%, transparent) 1px,
+        transparent 1px
+      );
+    background-position: -1px -1px;
+    background-size: 32px 32px;
   }
 
   .react-flow {
     --xy-background-color: var(--background);
-    --xy-edge-stroke: color-mix(in oklab, var(--primary) 72%, var(--muted-foreground));
+    --xy-edge-stroke: color-mix(
+      in oklab,
+      var(--primary) 72%,
+      var(--muted-foreground)
+    );
     --xy-edge-stroke-selected: var(--primary);
-    --xy-selection-background-color: color-mix(in oklab, var(--primary) 12%, transparent);
-    --xy-selection-border: 1px solid color-mix(in oklab, var(--primary) 55%, transparent);
-    --xy-controls-button-background-color: color-mix(in oklab, var(--card) 94%, transparent);
+    --xy-selection-background-color: color-mix(
+      in oklab,
+      var(--primary) 12%,
+      transparent
+    );
+    --xy-selection-border: 1px solid
+      color-mix(in oklab, var(--primary) 55%, transparent);
+    --xy-controls-button-background-color: color-mix(
+      in oklab,
+      var(--card) 94%,
+      transparent
+    );
     --xy-controls-button-background-color-hover: var(--accent);
     --xy-controls-button-color: var(--foreground);
     --xy-controls-button-border-color: var(--border);
@@ -220,7 +372,7 @@
     overflow: hidden;
     border: 1px solid var(--border);
     border-radius: calc(var(--radius) * 1.25);
-    box-shadow: 0 10px 28px color-mix(in oklab, black 18%, transparent);
+    box-shadow: var(--shadow-md);
   }
 
   .react-flow__controls-button {
@@ -229,61 +381,95 @@
   }
 
   .flow-edge path {
-    transition: stroke 140ms ease, stroke-width 140ms ease;
+    transition:
+      stroke 140ms ease,
+      stroke-width 140ms ease;
   }
 
-  [data-flow-handle],
+  [data-flow-handle] {
+    --flow-value-color: var(--brand-dune);
+  }
+
   [data-flow-node-preview-stage] {
-    --flow-value-color: var(--flow-type-asset);
+    --flow-value-color: var(--flow-preview-asset);
   }
 
   [data-flow-handle] {
     --flow-handle-color: var(--flow-value-color);
-    color: color-mix(in oklab, var(--flow-handle-color) 82%, var(--foreground));
+    color: color-mix(
+      in oklab,
+      var(--flow-handle-color) var(--flow-handle-foreground-mix),
+      var(--foreground)
+    );
     background: color-mix(
       in oklab,
-      var(--flow-handle-color) 28%,
+      var(--flow-handle-color) var(--flow-handle-background-mix),
       var(--flow-node-surface)
     ) !important;
     box-shadow:
-      0 0 0 1px color-mix(in oklab, var(--flow-handle-color) 28%, transparent),
-      0 5px 14px color-mix(in oklab, black 22%, transparent);
+      0 0 0 1px
+        color-mix(
+          in oklab,
+          var(--flow-handle-color) var(--flow-handle-ring-mix),
+          transparent
+        ),
+      0 5px 14px var(--flow-handle-shadow);
   }
 
-  [data-flow-handle][data-value-type="Text"],
+  [data-flow-handle][data-value-type="Text"] {
+    --flow-value-color: var(--brand-glacier);
+  }
+
   [data-flow-node-preview-stage][data-value-type="Text"] {
-    --flow-value-color: var(--flow-type-text);
+    --flow-value-color: var(--flow-preview-text);
   }
 
-  [data-flow-handle][data-value-type="ElementContext"],
+  [data-flow-handle][data-value-type="ElementContext"] {
+    --flow-value-color: var(--brand-dawn);
+  }
+
   [data-flow-node-preview-stage][data-value-type="ElementContext"] {
-    --flow-value-color: var(--flow-type-element);
+    --flow-value-color: var(--flow-preview-element);
   }
 
-  [data-flow-handle][data-value-type="ImageSet"],
+  [data-flow-handle][data-value-type="ImageSet"] {
+    --flow-value-color: var(--brand-terra);
+  }
+
   [data-flow-node-preview-stage][data-value-type="ImageSet"] {
-    --flow-value-color: var(--flow-type-image);
+    --flow-value-color: var(--flow-preview-image);
   }
 
-  [data-flow-handle][data-value-type="VideoSet"],
+  [data-flow-handle][data-value-type="VideoSet"] {
+    --flow-value-color: var(--brand-twilight);
+  }
+
   [data-flow-node-preview-stage][data-value-type="VideoSet"] {
-    --flow-value-color: var(--flow-type-video);
+    --flow-value-color: var(--flow-preview-video);
   }
 
-  [data-flow-handle][data-value-type="AudioSet"],
+  [data-flow-handle][data-value-type="AudioSet"] {
+    --flow-value-color: var(--brand-flora);
+  }
+
   [data-flow-node-preview-stage][data-value-type="AudioSet"] {
-    --flow-value-color: var(--flow-type-audio);
+    --flow-value-color: var(--flow-preview-audio);
   }
 
   [data-flow-handle][data-connected="true"] {
     background: color-mix(
       in oklab,
-      var(--flow-handle-color) 42%,
+      var(--flow-handle-color) var(--flow-handle-connected-background-mix),
       var(--flow-node-surface)
     ) !important;
     box-shadow:
-      0 0 0 1px color-mix(in oklab, var(--flow-handle-color) 45%, transparent),
-      0 6px 16px color-mix(in oklab, black 25%, transparent);
+      0 0 0 1px
+        color-mix(
+          in oklab,
+          var(--flow-handle-color) var(--flow-handle-connected-ring-mix),
+          transparent
+        ),
+      0 6px 16px var(--flow-handle-connected-shadow);
   }
 
   [data-flow-output-preview] {
@@ -303,17 +489,23 @@
         transparent 75%,
         color-mix(in oklab, var(--muted) 48%, transparent) 75%
       );
-    background-position: 0 0, 9px 9px;
+    background-position:
+      0 0,
+      9px 9px;
     background-size: 18px 18px;
   }
 
   [data-flow-node-preview-stage] {
-    background-color: color-mix(in oklab, var(--muted) 68%, var(--background));
+    background-color: var(--flow-preview-surface);
     background-image:
       radial-gradient(
         circle at 50% 18%,
-        color-mix(in oklab, var(--flow-value-color) 26%, var(--card)),
-        transparent 68%
+        color-mix(
+          in oklab,
+          var(--flow-value-color) var(--flow-preview-glow-mix),
+          var(--card)
+        ),
+        transparent var(--flow-preview-glow-fade)
       ),
       linear-gradient(
         color-mix(in oklab, var(--foreground) 4%, transparent) 1px,
@@ -324,9 +516,16 @@
         color-mix(in oklab, var(--foreground) 4%, transparent) 1px,
         transparent 1px
       );
-    background-size: auto, 32px 32px, 32px 32px;
+    background-size:
+      auto,
+      32px 32px,
+      32px 32px;
     box-shadow: inset 0 0 0 1px
-      color-mix(in oklab, var(--flow-value-color) 18%, var(--border));
+      color-mix(
+        in oklab,
+        var(--flow-value-color) var(--flow-preview-border-mix),
+        var(--border)
+      );
   }
 
   [data-flow-save-status="error"],

@@ -49,7 +49,7 @@ const badgeVariants = cva(
             dark:hover:bg-muted/50
           `,
         link: `
-          text-primary underline-offset-4
+          text-link underline-offset-4
           hover:underline
         `,
       },

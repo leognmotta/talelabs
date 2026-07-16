@@ -57,7 +57,7 @@ const buttonVariants = cva(
             dark:focus-visible:ring-destructive/40
           `,
         link: `
-          text-primary underline-offset-4
+          text-link underline-offset-4
           hover:underline
         `,
       },
