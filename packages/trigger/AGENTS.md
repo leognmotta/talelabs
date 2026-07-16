@@ -24,8 +24,9 @@ task entrypoints, feature boundaries, execution path, and dependency direction.
   retries/schedule, and lifecycle wiring only.
 - Put substantial behavior in the owning `assets`, `flow-runs`, or `generation`
   feature. Do not recreate a flat `providers` or `tasks/flow-runs` helper dump.
-- Organize OpenRouter adapters by shared protocol (`image`, `video`, `speech`,
-  and `chat`), never one adapter per model.
+- Keep Trigger's provider registry provider-level and thin. OpenRouter image,
+  video, speech, and chat wire protocols belong in `@talelabs/openrouter`, never
+  in Trigger and never one adapter per model.
 - Prefer direct internal imports over barrel files so ownership and dependency
   direction remain visible.
 - Preserve the stable task IDs documented in `README.md`. Renaming files must
@@ -41,9 +42,10 @@ task entrypoints, feature boundaries, execution path, and dependency direction.
 - Keep every tenant-owned query scoped by `organizationId`.
 - Preserve immutable snapshots, durable submission and result checkpoints,
   cancellation, retries, provider facts and costs, and canonical output Assets.
-- Model capabilities belong in `@talelabs/flows`; private routes and request
-  profiles belong in `@talelabs/openrouter`. Do not put model catalogs in this
-  package.
+- Model capabilities and private bindings belong in
+  `@talelabs/models-catalog`; OpenRouter request translation belongs in
+  `@talelabs/openrouter`. Trigger executes the complete binding captured in the
+  immutable snapshot and must not re-resolve current catalog state.
 - Provider verification must inject fake HTTP. Never make a paid provider
   request as part of automated verification.
 

@@ -35,7 +35,7 @@ Read these files in order for the shortest path through the runtime:
    validates the snapshot contract, materializes inputs, runs the provider, and
    finalizes outputs.
 6. [`src/generation/adapters/registry.ts`](src/generation/adapters/registry.ts) —
-   resolves an immutable provider route to one compatible shared adapter.
+   dispatches the captured binding to one provider package.
 7. [`src/generation/adapters/lifecycle/runner.ts`](src/generation/adapters/lifecycle/runner.ts)
    — submit, checkpoint, resume, poll, and reconcile provider facts.
 8. [`src/flow-runs/execution/outputs/finalizer.ts`](src/flow-runs/execution/outputs/finalizer.ts)
@@ -63,15 +63,10 @@ src/
 │   ├── persistence/          Claims and terminal state transitions
 │   ├── reconciliation/       Recovery of undispatched or stale work
 │   └── observability/        Safe structured runtime logging
-├── generation/               Provider-independent generation boundary
+├── generation/               Durable provider lifecycle boundary
 │   ├── inputs/               Tenant-scoped Asset resolution for providers
-│   └── adapters/             Contracts, lifecycle, mock, and OpenRouter
-│       └── openrouter/        Shared protocol families and common HTTP semantics
-│           ├── image/
-│           ├── video/
-│           ├── speech/
-│           ├── chat/
-│           └── shared/
+│   └── adapters/             Provider registry, lifecycle, mock fixtures
+│       └── openrouter/video/  Durable callback URL and wake coordination only
 └── shared/                   Cross-feature failures and binary helpers
 ```
 
@@ -119,21 +114,13 @@ Provider results are normalized before output persistence. Paid submissions and
 immediate results use durable boundaries so retries resume instead of charging
 again.
 
-## Provider adapter map
+## Provider boundary
 
-The adapter architecture is protocol-first, not model-first:
-
-- `openrouter/image` handles models using OpenRouter's image API.
-- `openrouter/video` handles asynchronous video submission, callback wakeups,
-  polling recovery, and streamed output staging.
-- `openrouter/speech` handles speech requests and generation-cost metadata.
-- `openrouter/chat` handles text/LLM requests.
-- `openrouter/shared` contains only behavior genuinely shared across those four
-  protocol families.
-
-Model capabilities live in `@talelabs/flows`; private OpenRouter routes and
-typed request profiles live in `@talelabs/openrouter`. The Trigger package owns
-the normalized protocol behavior shared by those models.
+The registry maps a provider name to its package. It passes the normalized
+request, exact snapshot binding, and tenant-aware Asset resolver to
+`@talelabs/openrouter`; Trigger never constructs OpenRouter request fields.
+Trigger retains submit/checkpoint/resume/poll orchestration, callback wakeups,
+output validation, cost reconciliation, and canonical Asset ingestion.
 
 ## Where to make a change
 
@@ -146,8 +133,8 @@ the normalized protocol behavior shared by those models.
 | Change retry-safe provider recovery | `src/flow-runs/execution/provider-results/` and `generation/adapters/lifecycle/` |
 | Change eventual provider accounting | `src/flow-runs/reconciliation/provider-accounting.ts` and `flow-runs/persistence/accounting-queries.ts` |
 | Change canonical output persistence | `src/flow-runs/execution/outputs/` |
-| Add a model using an existing protocol | `@talelabs/flows` registry and `@talelabs/openrouter` routes, not a new Trigger adapter |
-| Add a genuinely new provider protocol | `src/generation/adapters/<provider-or-protocol>/` and the adapter registry |
+| Add a model using an existing protocol | Matching `packages/models-catalog/models/<media>.json` file only |
+| Add a genuinely new provider | Provider package plus `src/generation/adapters/registry.ts` |
 | Change API-side dispatch | `src/platform/dispatch.ts` and `src/index.ts` |
 
 ## Verification
@@ -162,5 +149,5 @@ npm run provider-results:verify -w @talelabs/trigger
 npm run trigger:deploy:check
 ```
 
-The provider verification command exercises production routes with fake HTTP;
+The provider verification command exercises production catalog bindings with fake HTTP;
 it does not make paid provider requests.

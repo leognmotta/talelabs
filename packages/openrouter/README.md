@@ -1,89 +1,76 @@
 # `@talelabs/openrouter`
 
-This package is TaleLabs' server-side OpenRouter boundary. It owns the private mapping from stable TaleLabs model operations to concrete OpenRouter models/endpoints, the shared HTTP transport, the small SDK wrapper, and webhook signature verification.
+This server-only package translates normalized TaleLabs generation requests into
+OpenRouter's four supported wire protocols. It owns HTTP transport, response
+normalization, provider errors, accounting lookup, and webhook signatures.
 
-It does not own the public model catalog or the Trigger.dev generation lifecycle. The public catalog lives in `@talelabs/flows`; reusable execution adapters live in `@talelabs/trigger`.
+It does not own the model inventory, Flow planning, PostgreSQL, Trigger tasks,
+or durable run state. Model capabilities and immutable provider bindings live in
+`@talelabs/models-catalog`; Trigger passes the binding captured at admission.
 
 ## Start here
 
-Read the package in this order:
+1. [`src/adapter.ts`](src/adapter.ts) — provider-level protocol dispatch.
+2. [`src/protocols/image.ts`](src/protocols/image.ts) — immediate image facade.
+3. [`src/protocols/video/index.ts`](src/protocols/video/index.ts) — asynchronous video protocol facade.
+4. [`src/protocols/speech.ts`](src/protocols/speech.ts) — immediate speech facade.
+5. [`src/protocols/chat.ts`](src/protocols/chat.ts) — immediate text/chat facade.
+6. [`src/transport/client.ts`](src/transport/client.ts) — bounded HTTP boundary.
+7. [`src/errors.ts`](src/errors.ts) — stable provider error mapping.
+8. [`src/webhooks/signature.ts`](src/webhooks/signature.ts) — callback signature verification.
 
-1. [`src/index.ts`](src/index.ts) — public exports.
-2. [`src/routes/index.ts`](src/routes/index.ts) — route API and startup validation.
-3. [`src/routes/catalog.ts`](src/routes/catalog.ts) — catalog lookup entry point.
-4. [`src/routes/contracts.ts`](src/routes/contracts.ts) — private route and request-profile types.
-5. [`src/routes/current/routes.ts`](src/routes/current/routes.ts) — assembled current route registry.
-6. [`src/routes/current/`](src/routes/current/) — current image, video, speech, and chat routes.
-7. [`src/transport/client.ts`](src/transport/client.ts) and [`src/transport/requests/execute.ts`](src/transport/requests/execute.ts) — HTTP execution path.
-8. [`src/sdk/client.ts`](src/sdk/client.ts) — official SDK-backed convenience client.
-9. [`src/webhooks/signature.ts`](src/webhooks/signature.ts) — OpenRouter callback verification primitives.
+## Execution path
+
+```text
+normalized request + immutable catalog binding
+  -> adapter.ts protocol dispatch
+  -> protocol facade
+  -> protocol-owned preparation and execution modules
+  -> bounded transport
+  -> normalized provider result + metadata
+```
+
+Models sharing a protocol share its adapter. Captured request profiles carry the
+small model-specific shaping policy; there are no model route builders or
+historical route catalogs in this package. An admitted retry never looks up
+current catalog state.
 
 ## Package map
 
 ```text
 src/
-├── routes/
-│   ├── builders/           Typed route constructors
-│   ├── current/            Current executable route registry by protocol
-│   ├── history/            Immutable prior route/status contracts
-│   ├── major/              Curated major-model route declarations
-│   ├── validation/         Identity, protocol, and coverage invariants
-│   ├── catalog.ts          Private route lookup
-│   ├── contracts.ts        Route and request-profile types
-│   ├── index.ts            Route API and startup gate
-│   └── verify.ts           Executable route coverage check
-├── sdk/                    Official OpenRouter SDK wrapper and public SDK types
-├── transport/
-│   ├── requests/           JSON, byte, and streaming request execution
-│   └── responses/          Bounded response parsing and provider errors
+├── adapter.ts              Provider-level protocol dispatcher
+├── protocols/
+│   ├── image.ts            Image protocol facade
+│   ├── image/              Image preparation and immediate execution
+│   ├── speech.ts           Speech protocol facade
+│   ├── speech/             Speech preparation, execution, and accounting
+│   ├── chat.ts             Chat protocol facade
+│   ├── chat/               Chat preparation and immediate execution
+│   ├── immediate-adapter.ts Shared immediate submission plumbing
+│   └── video/              Video facade, submission, polling, and media concerns
+├── transport/              Bounded JSON, byte, and stream HTTP execution
+├── sdk/                    Official SDK convenience boundary
 └── webhooks/               Callback signature verification
 ```
 
-## How routing fits together
-
-```mermaid
-flowchart LR
-  A["TaleLabs model and operation"] --> B["Private route catalog"]
-  B --> C["OpenRouter model ID"]
-  B --> D["Endpoint and protocol"]
-  B --> E["Typed request profile"]
-  C --> F["Shared Trigger.dev protocol adapter"]
-  D --> F
-  E --> F
-  F --> G["OpenRouter HTTP transport"]
-```
-
-The registry maps an exact TaleLabs model contract and operation to one private route. Models sharing the same OpenRouter protocol share the same execution adapter; a request profile carries only the settings that vary between models.
-
-## Current, major, and historical routes
-
-- `routes/current/` assembles every route executable by the active TaleLabs catalog.
-- `routes/major/` keeps large curated model families readable instead of making the active assembly file enormous.
-- `routes/history/` preserves route facts needed by immutable snapshots created by earlier deployments.
-- `routes/validation/` proves coverage and adapter compatibility before runtime.
-
-`@talelabs/flows` remains the public source of model capability truth. This package adds server-only provider facts without leaking endpoints, credentials, fallbacks, or routing policy into public contracts.
-
 ## Where to make a change
 
-| Change | Primary location | Follow through |
-| --- | --- | --- |
-| Add an active provider route | `src/routes/current/` or `routes/major/` | route assembly, validation, fake-HTTP provider scenarios |
-| Change a request profile | `src/routes/contracts.ts` and the relevant builder/declaration | matching shared Trigger.dev adapter |
-| Change route lookup | `src/routes/catalog.ts` | startup coverage and snapshot compatibility |
-| Change HTTP behavior | `src/transport/` | response bounds, provider errors, adapter verification |
-| Change SDK convenience methods | `src/sdk/` | public exports and server consumers |
-| Change callback authentication | `src/webhooks/` | API callback handler and callback scenarios |
-| Preserve an old route | `src/routes/history/` | immutable snapshot resolver |
+| Change | Primary location |
+| --- | --- |
+| Add a model using an existing protocol | Matching `packages/models-catalog/models/<media>.json` file only |
+| Change one reviewed binding/profile | Matching media catalog, incrementing its model revision |
+| Change image/video/speech/chat wire behavior | Matching protocol module |
+| Change HTTP bounds or transport errors | `src/transport/` and `src/errors.ts` |
+| Change callback authentication | `src/webhooks/` and API callback verification |
 
 ## Verification
 
-From the repository root:
-
 ```bash
 npm run check-types -w @talelabs/openrouter
-npm run routes:check -w @talelabs/openrouter
 npm run build -w @talelabs/openrouter
+npm run providers:verify -w @talelabs/trigger
 ```
 
-Provider adapter verification belongs to `@talelabs/trigger` and must inject fake HTTP rather than making paid requests.
+Provider verification iterates production catalog bindings with fake HTTP. It
+never makes a paid provider request.
