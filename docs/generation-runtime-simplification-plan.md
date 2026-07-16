@@ -127,7 +127,8 @@ Only four concepts are required.
 
 What the user selects and what the canvas is allowed to expose:
 
-- stable TaleLabs model ID;
+- stable canonical model ID using `vendor/model`, normally matching the model's
+  established upstream identity;
 - label and description translation keys;
 - media/node family;
 - supported operations;
@@ -225,7 +226,7 @@ Keep the schema readable rather than maximally normalized:
   "catalogVersion": 1,
   "models": [
     {
-      "id": "talelabs/seedance-2.0",
+      "id": "bytedance/seedance-2.0",
       "revision": 1,
       "status": "active",
       "labelKey": "generation.models.seedance20.label",
@@ -278,7 +279,42 @@ Keep the schema readable rather than maximally normalized:
 The exact migrated values must come mechanically from the current reviewed
 registry. This example defines shape, not final provider facts.
 
-### 5.3 Constraint vocabulary
+### 5.3 Canonical model identity
+
+Do not prefix model IDs with `talelabs/`. TaleLabs does not gain a useful
+abstraction from renaming `bytedance/seedance-2.0` to
+`talelabs/seedance-2.0`.
+
+Use the canonical `vendor/model` identity in the catalog, mutable Flow drafts,
+and new immutable snapshots:
+
+```txt
+bytedance/seedance-2.0
+google/gemini-3.1-flash-image
+openai/gpt-image-2
+```
+
+Model identity and execution routing remain separate concepts. A binding may
+initially execute `bytedance/seedance-2.0` through OpenRouter and later execute
+the same canonical model through a direct ByteDance integration with a
+different provider-native identifier. Changing the provider binding must not
+change the model selected by the user.
+
+The current database and stored snapshots are development-only and will be
+reset before production. Therefore this refactor must perform a hard rename:
+
+- update current and copied development registries directly;
+- update fixtures, scenarios, defaults, presentations, and routes directly;
+- reset the development database after cutover;
+- do not add a database migration for model IDs;
+- do not add `talelabs/*` aliases, fallback resolution, or compatibility code;
+- do not preserve pre-production snapshot contracts solely for these IDs.
+
+After the production reset, canonical IDs and admitted immutable snapshots are
+stable contracts. Future renames or model replacements must preserve production
+data through an explicit compatibility decision.
+
+### 5.4 Constraint vocabulary
 
 Use a small fixed vocabulary:
 
@@ -296,7 +332,7 @@ cannot fit this vocabulary, the catalog may reference one named validator such
 as `seedanceReferenceMode`. Named validators are exceptions and must remain
 short, tested, and co-located by node family.
 
-### 5.4 Validation
+### 5.5 Validation
 
 Parse the JSON with a runtime schema during:
 
@@ -321,7 +357,7 @@ TypeScript's JSON-module support supplies structural inference, but runtime
 schema parsing remains necessary because JSON content is external data from the
 compiler's perspective.
 
-### 5.5 Provider discovery
+### 5.6 Provider discovery
 
 OpenRouter discovery APIs are research tools, not production configuration.
 They can be used manually or by a read-only verification command when reviewing
@@ -501,7 +537,7 @@ Forbidden directions:
 
 New run snapshots must contain the complete resolved execution binding:
 
-- TaleLabs model ID and model revision;
+- canonical `vendor/model` ID and model revision;
 - operation and normalized settings;
 - provider and protocol;
 - native model and endpoint;
@@ -513,24 +549,17 @@ New run snapshots must contain the complete resolved execution binding:
 The worker validates and executes this snapshot. It does not query a historical
 catalog to rediscover the route.
 
-### 8.2 Existing runs
+### 8.2 Pre-production reset
 
-Do not delete current historical resolution until stored runs are understood.
+There are no production Flows or runs to preserve during this refactor. Delete
+the development-only `talelabs/*` identity and historical route duplication
+instead of carrying a legacy resolver into production. Reset the development
+database once the canonical catalog and execution path are ready.
 
-Move only the compatibility code required by already persisted snapshot formats
-behind an explicit boundary:
-
-```txt
-legacy/resolve-legacy-provider-route.ts
-```
-
-Rules:
-
-- only old snapshot versions may call it;
-- new admission never writes the legacy format;
-- the bridge is read-only;
-- retries preserve the original immutable binding;
-- removal requires evidence that no supported/retryable run depends on it.
+This exception applies only before the first production database. After launch,
+retries must always preserve the original immutable binding and supported
+snapshot formats must not be deleted without an explicit migration or
+compatibility plan.
 
 ### 8.3 Versioning model
 
@@ -568,7 +597,6 @@ Adding one model must not create a new historical copy of every other model.
 - OpenRouter request/response logic currently under Trigger -> OpenRouter
   protocol modules;
 - catalog public projection -> generation-catalog;
-- old snapshot route lookup -> one isolated legacy bridge;
 - oversized Flow planning logic -> named pipeline responsibilities.
 
 ### Delete after cutover
@@ -579,10 +607,8 @@ Adding one model must not create a new historical copy of every other model.
 - model-specific adapters;
 - provider-specific request shaping in Trigger;
 - temporary old-vs-new parity scripts;
-- obsolete compatibility code after its supported retention window;
+- pre-production compatibility code and `talelabs/*` aliases;
 - stale docs describing TypeScript registries as the maintained model source.
-
-Do not delete historical compatibility merely to improve line-count metrics.
 
 ## 10. Incremental Execution Plan
 
@@ -592,7 +618,8 @@ Goal: establish a trustworthy baseline before structural changes.
 
 1. Inventory every currently selectable model, operation, setting, provider
    route, lifecycle, and adapter.
-2. Inventory snapshot versions and count persisted runs by version/status.
+2. Confirm that all persisted runs are development-only and record the database
+   reset requirement.
 3. Capture representative normalized requests/results with fake HTTP for:
    image, video, speech, chat, webhook completion, and polling recovery.
 4. Preserve scenarios for all five run modes.
@@ -639,7 +666,7 @@ Goal: prevent new work from depending on historical route catalogs.
 2. Store the full binding in the immutable snapshot/job contract.
 3. Validate snapshots at admission and worker start.
 4. New workers execute the captured binding directly.
-5. Old snapshots continue through the isolated legacy bridge.
+5. Development-only old snapshots are discarded in the planned database reset.
 
 Exit gate: changing or retiring the current catalog cannot alter an admitted
 run, and new retries do not query historical route copies.
@@ -692,11 +719,12 @@ Goal: finish the refactor rather than leave two architectures.
 
 1. Remove temporary parity code.
 2. Remove unused current/major/history registries and routes.
-3. Retain only the legacy snapshot bridge still required by persisted data.
+3. Remove development-only legacy route and model-ID compatibility code.
 4. Update package READMEs and dependency diagrams.
 5. Update root/package `AGENTS.md` rules.
 6. Update active product/runtime/API/database/execution docs.
-7. Record when and how the legacy bridge can be deleted.
+7. Reset the development database and verify new Flows persist canonical model
+   IDs and self-contained snapshots.
 
 Exit gate: one maintained catalog and one execution path exist for all new work.
 
@@ -717,13 +745,13 @@ No adapter, route-builder, Trigger, or Flow file should change.
 2. Increment that model's revision.
 3. Run checks.
 
-Existing snapshots keep their captured contract.
+Production snapshots created after the reset keep their captured contract.
 
 ### Retire a model
 
-Set `status` to `retired`. Do not delete the record while drafts or supported
-historical behavior still reference it. New nodes cannot select it; admitted
-runs remain executable from snapshots.
+After production launch, set `status` to `retired`. Do not delete the record
+while drafts or supported historical behavior still reference it. New nodes
+cannot select it; admitted runs remain executable from snapshots.
 
 ### Add a direct provider later
 
@@ -828,7 +856,7 @@ This refactor does not include:
 | Risk | Control |
 | --- | --- |
 | Big-bang rewrite breaks working runs | Incremental parallel catalog and strangler cutover |
-| Old runs cannot retry | Read-only legacy snapshot resolver until measured retirement |
+| Pre-production data shapes leak into production | Hard canonical-ID cutover followed by a deliberate development database reset |
 | JSON becomes an untyped dumping ground | Small schema, runtime validation, fixed constraint vocabulary |
 | Public API leaks provider policy | Explicit sanitized projection with fail-closed check |
 | New abstraction recreates complexity | No framework/DSL/DI; require demonstrated repetition |
