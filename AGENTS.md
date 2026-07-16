@@ -95,10 +95,12 @@ Execution rules for the active M5 milestone:
     `TODO(provider-integration)` as specified by `docs/mvp-execution-plan.md`.
     Graph planning, snapshots, runs, jobs, Trigger.dev state, provenance, output
     ingestion, and canonical Assets must remain production-shaped.
-11. TaleLabs owns one curated, checked-in generation catalog at
-    `packages/models-catalog/models.json`. It is the only maintained source for
-    current model capabilities, presentation metadata, defaults, and private
-    provider bindings. Never add parallel TypeScript route/model registries,
+11. TaleLabs owns one curated, checked-in generation catalog in
+    `packages/models-catalog`. `catalog.json` and the explicit
+    `models/<media>.json` records assemble into one validated runtime catalog.
+    This package is the only maintained source for current model capabilities,
+    presentation metadata, defaults, and private provider bindings. Never add
+    parallel TypeScript route/model registries,
     provider-discovery snapshots, dated inventories, or runtime configuration
     derived from live provider responses. Research provider documentation, then
     encode the reviewed decision in that catalog and ship it normally.
