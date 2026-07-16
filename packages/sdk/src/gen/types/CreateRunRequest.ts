@@ -5,6 +5,14 @@
 
 import type { Cuid2 } from "./Cuid2.ts";
 
+export const createRunRequestExecutionModeEnum = {
+  live: "live",
+  debug: "debug",
+} as const;
+
+export type CreateRunRequestExecutionModeEnumKey =
+  (typeof createRunRequestExecutionModeEnum)[keyof typeof createRunRequestExecutionModeEnum];
+
 export const createRunRequestModeEnum = {
   node: "node",
   downstream: "downstream",
@@ -17,6 +25,11 @@ export type CreateRunRequestModeEnumKey =
   (typeof createRunRequestModeEnum)[keyof typeof createRunRequestModeEnum];
 
 export type CreateRunRequest = {
+  /**
+   * @default "live"
+   * @type string | undefined
+   */
+  executionMode?: CreateRunRequestExecutionModeEnumKey;
   /**
    * @pattern ^[0-9a-f]{64}$
    * @type string | undefined

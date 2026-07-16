@@ -7,6 +7,14 @@ import type { Cuid2 } from "./Cuid2.ts";
 import type { FlowRunNodeState } from "./FlowRunNodeState.ts";
 import type { Timestamp } from "./Timestamp.ts";
 
+export const flowRunExecutionModeEnum = {
+  live: "live",
+  debug: "debug",
+} as const;
+
+export type FlowRunExecutionModeEnumKey =
+  (typeof flowRunExecutionModeEnum)[keyof typeof flowRunExecutionModeEnum];
+
 export const flowRunModeEnum = {
   node: "node",
   downstream: "downstream",
@@ -36,6 +44,10 @@ export type FlowRun = {
    * @type string
    */
   id: Cuid2;
+  /**
+   * @type string
+   */
+  executionMode: FlowRunExecutionModeEnumKey;
   /**
    * @minLength 2
    * @maxLength 32

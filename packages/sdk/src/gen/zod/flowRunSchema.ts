@@ -13,6 +13,7 @@ export const flowRunSchema = z.object({
   get id() {
     return cuid2Schema;
   },
+  executionMode: z.enum(["live", "debug"]),
   flowId: z.nullable(
     z
       .string()

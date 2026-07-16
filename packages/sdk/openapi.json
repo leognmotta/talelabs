@@ -2535,6 +2535,13 @@
           "id": {
             "$ref": "#/components/schemas/Cuid2"
           },
+          "executionMode": {
+            "type": "string",
+            "enum": [
+              "live",
+              "debug"
+            ]
+          },
           "flowId": {
             "type": "string",
             "nullable": true,
@@ -2634,6 +2641,7 @@
         },
         "required": [
           "id",
+          "executionMode",
           "flowId",
           "mode",
           "targetNodeId",
@@ -2654,6 +2662,13 @@
         "properties": {
           "id": {
             "$ref": "#/components/schemas/Cuid2"
+          },
+          "executionMode": {
+            "type": "string",
+            "enum": [
+              "live",
+              "debug"
+            ]
           },
           "flowId": {
             "type": "string",
@@ -2753,6 +2768,7 @@
         },
         "required": [
           "id",
+          "executionMode",
           "flowId",
           "mode",
           "targetNodeId",
@@ -3003,6 +3019,14 @@
       "CreateRunRequest": {
         "type": "object",
         "properties": {
+          "executionMode": {
+            "type": "string",
+            "enum": [
+              "live",
+              "debug"
+            ],
+            "default": "live"
+          },
           "expectedPlanHash": {
             "type": "string",
             "pattern": "^[0-9a-f]{64}$"
@@ -3045,6 +3069,14 @@
       "CreateFlowRunRequest": {
         "type": "object",
         "properties": {
+          "executionMode": {
+            "type": "string",
+            "enum": [
+              "live",
+              "debug"
+            ],
+            "default": "live"
+          },
           "expectedPlanHash": {
             "type": "string",
             "pattern": "^[0-9a-f]{64}$"

@@ -8,6 +8,7 @@ import type { CreateRunRequest } from "../types/CreateRunRequest.ts";
 import { cuid2Schema } from "./cuid2Schema.ts";
 
 export const createRunRequestSchema = z.object({
+  executionMode: z.optional(z.enum(["live", "debug"]).default("live")),
   expectedPlanHash: z.optional(z.string().regex(/^[0-9a-f]{64}$/)),
   get flowId() {
     return cuid2Schema;
