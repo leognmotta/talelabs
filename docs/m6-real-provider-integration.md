@@ -14,7 +14,9 @@ presentation remain provider-independent.
 inventory. It assembles `catalog.json` and the explicit `models/<media>.json`
 records into one validated catalog. `@talelabs/flows` consumes its provider-neutral projection;
 admission captures a complete binding and the OpenRouter implementation inside
-`@talelabs/providers` executes it through the package registry.
+`@talelabs/providers/server` executes it through the managed registry. Reusable
+protocol translation remains browser-compatible under
+`@talelabs/providers/core`; this does not enable browser-local execution.
 Do not copy the current inventory into this document.
 
 Current availability has one definition:

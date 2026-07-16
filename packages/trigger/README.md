@@ -116,11 +116,13 @@ again.
 
 ## Provider boundary
 
-The registry maps a provider name to its package. It passes the normalized
-request, exact snapshot binding, and tenant-aware Asset resolver to
-`@talelabs/openrouter`; Trigger never constructs OpenRouter request fields.
-Trigger retains submit/checkpoint/resume/poll orchestration, callback wakeups,
-output validation, cost reconciliation, and canonical Asset ingestion.
+Trigger validates the captured route, resolves a runtime-only credential, and
+passes the exact snapshot binding plus tenant-aware Asset resolver to the
+registry in `@talelabs/providers/server`. The provider package dispatches by
+`binding.provider`; Trigger never imports an implementation module or constructs
+OpenRouter request fields. Trigger retains submit/checkpoint/resume/poll
+orchestration, callback wakeups, output validation, cost reconciliation, and
+canonical Asset ingestion.
 
 ## Where to make a change
 
@@ -134,7 +136,7 @@ output validation, cost reconciliation, and canonical Asset ingestion.
 | Change eventual provider accounting | `src/flow-runs/reconciliation/provider-accounting.ts` and `flow-runs/persistence/accounting-queries.ts` |
 | Change canonical output persistence | `src/flow-runs/execution/outputs/` |
 | Add a model using an existing protocol | Matching `packages/models-catalog/models/<media>.json` file only |
-| Add a genuinely new provider | Provider package plus `src/generation/adapters/registry.ts` |
+| Add a genuinely new provider | Provider-specific catalog schema, implementation directory, package registry entry, and catalog bindings |
 | Change API-side dispatch | `src/platform/dispatch.ts` and `src/index.ts` |
 
 ## Verification

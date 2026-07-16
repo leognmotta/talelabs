@@ -511,6 +511,13 @@ Fail when:
 - a retired model is accidentally selectable;
 - public projection contains private binding or provider policy.
 
+Generic validation owns model, operation, slot, setting, default, binding
+coverage, priority, and capability consistency. A provider-discriminated
+validator then checks its own endpoints, protocols, request profiles, adapter
+versions, reference calculations, and lifecycle policy. Adding a direct
+provider extends that isolated schema/validator boundary instead of adding its
+rules to generic catalog validation.
+
 TypeScript's JSON-module support supplies structural inference, but runtime
 schema parsing remains necessary because JSON content is external data from the
 compiler's perspective.
@@ -583,14 +590,22 @@ Split by actual responsibility, not by arbitrary file size or numbered parts.
 
 ### 6.3 `packages/providers`
 
-Owns the provider registry and provider-specific transport and protocol
-translation. OpenRouter is the only registered implementation today:
+Owns browser-compatible provider protocols plus explicit browser and server
+composition boundaries. OpenRouter is the only registered implementation today:
 
 ```txt
 packages/providers/src/
   contracts.ts
-  registry.ts
+  core.ts
+  browser.ts
+  server.ts
+  server/
+    contracts.ts
+    credentials.ts
+    registry.ts
   openrouter/
+    core.ts
+    server.ts
     adapter.ts
     protocols/
       immediate-adapter.ts
@@ -620,11 +635,18 @@ packages/providers/src/
         types.ts
     transport/
     client/
+    server/
     webhooks/
     errors.ts
     types.ts
   index.ts
 ```
+
+The package root and `/core` expose only universal browser-safe behavior.
+`/browser` is an explicit safe boundary that currently adds no BYOK product
+behavior. `/server` owns managed binding dispatch, environment-backed credential
+resolution, SDK utilities, accounting, and webhook verification. API and
+Trigger import `/server` explicitly; dashboard code must never do so.
 
 Each protocol module accepts:
 
@@ -702,15 +724,18 @@ flowchart LR
   Flows --> Catalog
   Trigger["trigger"] --> Flows
   Trigger --> Catalog
-  Trigger --> Providers["providers registry"]
-  Providers --> Flows
+  Trigger --> ProviderServer["providers/server registry"]
+  ProviderServer --> ProviderCore["providers/core protocols"]
+  ProviderCore --> Flows
   Trigger --> DB["PostgreSQL / R2"]
 ```
 
-The providers package may depend on provider-neutral normalized execution
-contracts in Flows. Keep each provider implementation in its own directory;
-do not create one package per provider merely to make the diagram more
-theoretically pure.
+The universal provider core may depend on provider-neutral normalized execution
+contracts in Flows. Node-specific composition is reachable only through
+`@talelabs/providers/server`; package root, `/core`, and `/browser` are verified
+as browser bundles. Keep each provider implementation in its own directory; do
+not create one package per provider merely to make the diagram more theoretically
+pure.
 
 Forbidden directions:
 
@@ -718,6 +743,7 @@ Forbidden directions:
 - Providers importing Trigger or database code;
 - catalog importing Flow planning or provider clients;
 - dashboard importing private catalog bindings;
+- dashboard importing `@talelabs/providers/server`;
 - Trigger reconstructing model capabilities already captured in the snapshot.
 
 ## 8. Historical Compatibility Without Permanent Duplication

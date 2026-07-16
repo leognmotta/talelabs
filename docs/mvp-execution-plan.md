@@ -560,10 +560,11 @@ responses, timeouts, explicit cancellation semantics, provider error mapping,
 write-ahead submission safety, exact endpoint pinning, and actual-or-unknown
 cost capture before any model becomes active. Keep credentials and the catalog's
 private binding, evidence, routing, and cost fields server-only.
-All provider implementations live in `@talelabs/providers`; Trigger invokes its
-small registry with the immutable captured binding and a non-serializable
-runtime credential resolver. The current platform OpenRouter key remains a
-worker-composition fallback and is never copied into durable state.
+Reusable provider protocols live in `@talelabs/providers/core`; Trigger invokes
+the managed registry from `@talelabs/providers/server` with the immutable
+captured binding and an optional non-serializable runtime credential. The
+server entry point resolves the current platform OpenRouter key as fallback and
+never copies it into durable state.
 `docs/m6-real-provider-integration.md` is the binding provider-boundary and
 paid-smoke checklist; it intentionally does not duplicate the model inventory.
 

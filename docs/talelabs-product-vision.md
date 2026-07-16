@@ -887,12 +887,21 @@ poll/webhook, and audio may return or stream raw bytes. Trigger.dev owns durable
 polling, reconciliation, retries, cancellation, and ingestion without creating a
 separate execution engine per media type.
 
-All external provider implementations live behind the small server-only
-registry in `@talelabs/providers`. The registry dispatches the exact private
-binding captured at admission, while provider-specific credentials are injected
-only as non-serializable runtime resolvers by server or worker composition.
-Credentials never enter model bindings, snapshots, jobs, task payloads, logs, or
-public configuration.
+External provider protocol behavior lives in the browser-compatible
+`@talelabs/providers/core`, while managed execution uses the small private
+registry in `@talelabs/providers/server`. The server registry dispatches the
+exact binding captured at admission and resolves provider credentials only as
+non-serializable runtime services. Credentials never enter model bindings,
+snapshots, jobs, task payloads, logs, or public configuration. The explicit
+`/browser` entry point preserves a future browser-local BYOK seam without
+implementing browser credential storage, private routing delivery, or local run
+durability now.
+
+Local BYOK, managed platform execution, and future managed BYOK follow the
+trust-boundary contract in `docs/provider-execution-modes.md`. In particular,
+Trigger.dev must never receive a user-owned provider credential in managed BYOK;
+a future thin TaleLabs Provider Gateway performs only credential-bearing
+provider operations while Trigger.dev continues to own durable orchestration.
 
 ### Multi-Source Generation
 

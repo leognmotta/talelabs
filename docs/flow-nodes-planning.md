@@ -650,10 +650,13 @@ upcasted node type and schema.
 The provider boundary uses one lifecycle contract without pretending every
 provider completes synchronously.
 
-The server-only `@talelabs/providers` package owns one explicit registry and one
-cohesive directory per provider. Trigger dispatches immutable snapshot bindings
-through that registry and injects runtime-only credential resolvers; it does not
-import provider implementations or reconstruct request payloads itself.
+`@talelabs/providers/core` owns browser-compatible protocol translation, while
+`@talelabs/providers/server` owns the managed registry, credential resolution,
+accounting, and webhook cryptography. Trigger dispatches immutable snapshot
+bindings through the server registry and may inject a runtime-only credential;
+it does not import provider implementation modules or reconstruct request
+payloads itself. The `/browser` boundary is compatibility infrastructure for a
+future browser-local BYOK product, not an implemented execution mode.
 
 The normalized contract is:
 
