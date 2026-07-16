@@ -1,8 +1,14 @@
+/** Kysely table, JSON, enum, and database contracts for TaleLabs persistence. */
+
 import type { ColumnType, Generated } from 'kysely'
 
+/** Scalar values accepted by PostgreSQL JSON columns. */
 export type JsonPrimitive = boolean | null | number | string
+/** Recursive values accepted by PostgreSQL JSON columns. */
 export type JsonValue = JsonArray | JsonObject | JsonPrimitive
+/** Recursive JSON array contract. */
 export interface JsonArray extends Array<JsonValue> {}
+/** Recursive JSON object contract. */
 export interface JsonObject {
   [key: string]: JsonValue | undefined
 }
@@ -39,11 +45,17 @@ type NullableNumericColumn = ColumnType<
   number | string | null
 >
 
+/** Canonical Asset media families. */
 export type AssetType = 'audio' | 'document' | 'image' | 'video'
+/** Canonical Asset creation sources. */
 export type AssetSource = 'generation' | 'upload'
+/** Canonical Asset visibility policy. */
 export type AssetVisibility = 'private' | 'public'
+/** Canonical Asset processing lifecycle. */
 export type AssetProcessingState = 'failed' | 'processing' | 'ready'
+/** Legacy Element-to-Asset relationship kinds. */
 export type ElementReferenceKind = 'master' | 'source'
+/** Supported Flow graph-selection run modes. */
 export type FlowRunMode
   = | 'all'
     | 'downstream'
@@ -51,6 +63,7 @@ export type FlowRunMode
     | 'selection'
     | 'tool'
     | 'upstream'
+/** Durable Flow run lifecycle states. */
 export type FlowRunStatus
   = | 'canceled'
     | 'failed'
@@ -58,6 +71,7 @@ export type FlowRunStatus
     | 'pending'
     | 'running'
     | 'succeeded'
+/** Durable per-node Flow run lifecycle states. */
 export type FlowRunNodeStatus
   = | 'canceled'
     | 'failed'
@@ -66,29 +80,36 @@ export type FlowRunNodeStatus
     | 'running'
     | 'skipped'
     | 'succeeded'
+/** Media families emitted by generation jobs. */
 export type GenerationJobMediaType = 'audio' | 'image' | 'text' | 'video'
+/** Durable generation-job lifecycle states. */
 export type GenerationJobStatus
   = | 'canceled'
     | 'failed'
     | 'pending'
     | 'running'
     | 'succeeded'
+/** Durable provider-output ingestion states. */
 export type GenerationProviderOutputStatus = 'discarded' | 'ready' | 'staging'
+/** Durable provider settlement states. */
 export type GenerationProviderSettlementStatus
   = | 'not_required'
     | 'pending'
     | 'settled'
     | 'unknown'
+/** Terminal provider callback completion states. */
 export type GenerationProviderCompletionStatus
   = | 'cancelled'
     | 'completed'
     | 'expired'
     | 'failed'
+/** Immutable generation input source categories. */
 export type GenerationJobSourceType
   = | 'asset'
     | 'element'
     | 'nodeOutput'
     | 'text'
+/** Better Auth user table contract. */
 export interface UserTable {
   id: string
   name: string
@@ -104,6 +125,7 @@ export interface UserTable {
   updatedAt: GeneratedTimestamp
 }
 
+/** Better Auth session table contract. */
 export interface SessionTable {
   id: string
   expiresAt: Timestamp
@@ -117,6 +139,7 @@ export interface SessionTable {
   impersonatedBy: string | null
 }
 
+/** Better Auth linked-account table contract. */
 export interface AccountTable {
   id: string
   accountId: string
@@ -133,6 +156,7 @@ export interface AccountTable {
   updatedAt: Timestamp
 }
 
+/** Better Auth verification-token table contract. */
 export interface VerificationTable {
   id: string
   identifier: string
@@ -142,6 +166,7 @@ export interface VerificationTable {
   updatedAt: GeneratedTimestamp
 }
 
+/** Better Auth organization table contract. */
 export interface OrganizationTable {
   id: string
   name: string
@@ -151,6 +176,7 @@ export interface OrganizationTable {
   metadata: string | null
 }
 
+/** Better Auth organization membership table contract. */
 export interface MemberTable {
   id: string
   organizationId: string
@@ -159,6 +185,7 @@ export interface MemberTable {
   createdAt: Timestamp
 }
 
+/** Better Auth organization invitation table contract. */
 export interface InvitationTable {
   id: string
   organizationId: string
@@ -170,6 +197,7 @@ export interface InvitationTable {
   inviterId: string
 }
 
+/** Asset and Flow folder table contract. */
 export interface FolderTable {
   id: string
   organizationId: string
@@ -180,6 +208,7 @@ export interface FolderTable {
   updatedAt: GeneratedTimestamp
 }
 
+/** Editable Flow identity and viewport table contract. */
 export interface FlowTable {
   id: string
   organizationId: string
@@ -192,6 +221,7 @@ export interface FlowTable {
   updatedAt: GeneratedTimestamp
 }
 
+/** Durable immutable Flow run table contract. */
 export interface FlowRunTable {
   id: string
   organizationId: string
@@ -220,6 +250,7 @@ export interface FlowRunTable {
   completedAt: NullableTimestamp
 }
 
+/** Durable generation-job provenance and execution table contract. */
 export interface GenerationJobTable {
   id: string
   organizationId: string
@@ -235,7 +266,7 @@ export interface GenerationJobTable {
   model: string
   operation: string
   providerModel: string
-  modelRegistryVersion: string
+  catalogRevision: string
   providerRouteVersion: string
   adapterVersion: string
   settings: GeneratedJsonColumn
@@ -268,6 +299,7 @@ export interface GenerationJobTable {
   completedAt: NullableTimestamp
 }
 
+/** Immutable normalized provider-result checkpoint table contract. */
 export interface GenerationProviderResultTable {
   organizationId: string
   jobId: string
@@ -277,6 +309,7 @@ export interface GenerationProviderResultTable {
   createdAt: GeneratedTimestamp
 }
 
+/** Durable provider-output ingestion checkpoint table contract. */
 export interface GenerationProviderOutputTable {
   organizationId: string
   jobId: string
@@ -293,6 +326,7 @@ export interface GenerationProviderOutputTable {
   updatedAt: GeneratedTimestamp
 }
 
+/** Durable per-node Flow run summary table contract. */
 export interface FlowRunNodeTable {
   organizationId: string
   flowRunId: string
@@ -302,6 +336,7 @@ export interface FlowRunNodeTable {
   updatedAt: GeneratedTimestamp
 }
 
+/** Durable materialized Flow runtime-item table contract. */
 export interface FlowRunNodeItemTable {
   organizationId: string
   flowRunId: string
@@ -315,6 +350,7 @@ export interface FlowRunNodeItemTable {
   updatedAt: GeneratedTimestamp
 }
 
+/** Persisted generation text-output table contract. */
 export interface GenerationJobTextOutputTable {
   organizationId: string
   jobId: string
@@ -322,6 +358,7 @@ export interface GenerationJobTextOutputTable {
   text: string
 }
 
+/** Canonical Asset table contract. */
 export interface AssetTable {
   id: string
   organizationId: string
@@ -351,6 +388,7 @@ export interface AssetTable {
   purgedAt: NullableTimestamp
 }
 
+/** User-owned Asset favorite relationship table contract. */
 export interface AssetFavoriteTable {
   organizationId: string
   userId: string
@@ -358,6 +396,7 @@ export interface AssetFavoriteTable {
   createdAt: GeneratedTimestamp
 }
 
+/** Organization-scoped Asset tag table contract. */
 export interface TagTable {
   id: string
   organizationId: string
@@ -368,6 +407,7 @@ export interface TagTable {
   updatedAt: GeneratedTimestamp
 }
 
+/** Asset-to-tag relationship table contract. */
 export interface AssetTagTable {
   organizationId: string
   assetId: string
@@ -376,6 +416,7 @@ export interface AssetTagTable {
   createdAt: GeneratedTimestamp
 }
 
+/** Dormant Element table contract retained for compatibility. */
 export interface ElementTable {
   id: string
   organizationId: string
@@ -390,6 +431,7 @@ export interface ElementTable {
   updatedAt: GeneratedTimestamp
 }
 
+/** Dormant Element-to-Asset relationship table contract. */
 export interface ElementAssetTable {
   organizationId: string
   elementId: string
@@ -402,6 +444,7 @@ export interface ElementAssetTable {
   createdAt: GeneratedTimestamp
 }
 
+/** Persisted editable Flow node table contract. */
 export interface FlowNodeTable {
   id: string
   organizationId: string
@@ -416,6 +459,7 @@ export interface FlowNodeTable {
   updatedAt: GeneratedTimestamp
 }
 
+/** Persisted editable Flow edge table contract. */
 export interface FlowEdgeTable {
   id: string
   flowId: string
@@ -426,6 +470,7 @@ export interface FlowEdgeTable {
   createdAt: GeneratedTimestamp
 }
 
+/** Immutable generation source-lineage table contract. */
 export interface GenerationJobSourceTable {
   id: string
   organizationId: string
@@ -439,6 +484,7 @@ export interface GenerationJobSourceTable {
   snapshot: GeneratedJsonColumn
 }
 
+/** Immutable exact generation Asset-input table contract. */
 export interface GenerationJobInputTable {
   organizationId: string
   jobId: string
@@ -448,6 +494,7 @@ export interface GenerationJobInputTable {
   sortOrder: number
 }
 
+/** Complete Kysely database map for TaleLabs PostgreSQL tables. */
 export interface Database {
   account: AccountTable
   assetFavorites: AssetFavoriteTable
