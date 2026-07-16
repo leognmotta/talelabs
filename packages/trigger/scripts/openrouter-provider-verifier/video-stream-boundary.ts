@@ -2,7 +2,7 @@
 
 import assert from 'node:assert/strict'
 
-import { validatedOpenRouterVideoStream } from '@talelabs/openrouter'
+import { validatedOpenRouterVideoStream } from '@talelabs/providers/server'
 
 /** Proves streamed video bytes are rejected at the configured hard ceiling. */
 export async function verifyVideoStreamBoundary() {

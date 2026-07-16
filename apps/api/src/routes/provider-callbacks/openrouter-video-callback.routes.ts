@@ -1,8 +1,10 @@
+/** Signed OpenRouter video callback route and durable wake-up boundary. */
+
 import type { OpenAPIHono } from '@hono/zod-openapi'
 
 import type { ApiEnv } from '../../types.js'
 import process from 'node:process'
-import { verifyOpenRouterWebhookSignature } from '@talelabs/openrouter'
+import { verifyOpenRouterWebhookSignature } from '@talelabs/providers/server'
 import { recordOpenRouterVideoCompletion } from '@talelabs/trigger'
 import { bodyLimit } from 'hono/body-limit'
 

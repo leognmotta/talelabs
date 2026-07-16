@@ -1,7 +1,10 @@
+/** Verifies OpenRouter webhook signature acceptance and rejection offline. */
+
 import assert from 'node:assert/strict'
 import { createHmac } from 'node:crypto'
-import { verifyOpenRouterWebhookSignature } from '@talelabs/openrouter'
+import { verifyOpenRouterWebhookSignature } from '@talelabs/providers/server'
 
+/** Verifies valid, altered, and stale OpenRouter webhook signatures. */
 export function verifyWebhookSignatureBoundary() {
   const body = new TextEncoder().encode('{"status":"completed"}')
   const secret = 'verification-secret'

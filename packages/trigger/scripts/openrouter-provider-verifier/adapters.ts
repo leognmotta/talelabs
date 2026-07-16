@@ -4,7 +4,7 @@ import type { fakeProvider } from './fake-provider.js'
 import type { CatalogRouteFixture } from './routes.js'
 
 import assert from 'node:assert/strict'
-import { createOpenRouterProviderAdapter } from '@talelabs/openrouter'
+import { createOpenRouterProviderAdapter } from '@talelabs/providers/server'
 import { imageInput, resolvedAsset } from './requests.js'
 
 /** Creates the production OpenRouter adapter wired to one fake transport. */

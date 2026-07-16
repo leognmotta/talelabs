@@ -1,5 +1,8 @@
-import { createOpenRouterHttpClient } from '@talelabs/openrouter'
+/** Deterministic fake OpenRouter HTTP service used by provider verification. */
 
+import { createOpenRouterHttpClient } from '@talelabs/providers/server'
+
+/** Creates a deterministic fake HTTP client and captured request-body list. */
 export function fakeProvider() {
   const bodies: Array<Record<string, unknown>> = []
   let submissions = 0
@@ -74,7 +77,10 @@ export function fakeProvider() {
   return {
     bodies,
     client: createOpenRouterHttpClient({
-      apiKey: 'verification-key',
+      credential: {
+        provider: 'openrouter',
+        resolveApiKey: () => 'verification-key',
+      },
       fetch,
     }),
   }

@@ -1,3 +1,7 @@
+/**
+ * Server resolution of tenant-owned Assets into short-lived provider inputs.
+ */
+
 import type { NormalizedGenerationMediaAsset } from '@talelabs/flows'
 
 import { db } from '@talelabs/db'
@@ -10,13 +14,21 @@ import {
 import { GenerationProviderError } from '../adapters/errors.js'
 import { GENERATION_PROVIDER_INPUT_URL_EXPIRES_IN_SECONDS } from '../adapters/execution-limits.js'
 
+/** Provider-ready metadata resolved from one authorized canonical Asset. */
 export interface ResolvedGenerationAsset {
+  /** Canonical organization-owned Asset identifier. */
   assetId: string
+  /** Media duration in seconds when available. */
   durationSeconds: number | null
+  /** Pixel height when available. */
   height: number | null
+  /** Validated provider-facing MIME type. */
   mimeType: string
-  signedReadUrl: string
+  /** Short-lived signed URL readable by the managed provider. */
+  providerUrl: string
+  /** Object size in bytes when available. */
   sizeBytes: number | null
+  /** Pixel width when available. */
   width: number | null
 }
 
@@ -68,7 +80,7 @@ export function createGenerationAssetResolver(organizationId: string) {
         asset.durationSeconds === null ? null : Number(asset.durationSeconds),
       height: asset.height,
       mimeType: asset.mimeType,
-      signedReadUrl: await createDownloadUrl({
+      providerUrl: await createDownloadUrl({
         bucket,
         expiresIn: GENERATION_PROVIDER_INPUT_URL_EXPIRES_IN_SECONDS,
         key: asset.storageKey,

@@ -6,6 +6,7 @@ import type {
   GenerationProviderLifecycle,
 } from '@talelabs/flows'
 import type { CatalogProviderBinding } from '@talelabs/models-catalog'
+import type { ProviderRuntimeCredential } from '@talelabs/providers/server'
 
 import type {
   PinnedGenerationProviderRoute,
@@ -16,9 +17,8 @@ import {
   generationProviderLifecyclesEqual,
 } from '@talelabs/flows'
 import {
-  createOpenRouterProviderAdapter,
-  OPENROUTER_PROVIDER,
-} from '@talelabs/openrouter'
+  createProviderAdapter,
+} from '@talelabs/providers/server'
 import { createGenerationAssetResolver } from '../inputs/asset-resolver.js'
 import { createDeterministicMockAdapter } from './mock/adapter.js'
 
@@ -41,8 +41,14 @@ export function resolveGenerationProviderAdapter(input: {
   providerModel: string
   providerRouteVersion: string
   providerBinding: CatalogProviderBinding
+  runtimeCredential?: ProviderRuntimeCredential
 }): ResolvedGenerationProviderAdapter {
-  const { executionMode, organizationId, ...pinnedRoute } = input
+  const {
+    executionMode,
+    organizationId,
+    runtimeCredential,
+    ...pinnedRoute
+  } = input
   const route = Object.freeze(pinnedRoute) satisfies Readonly<
     PinnedGenerationProviderRoute
   >
@@ -74,27 +80,21 @@ export function resolveGenerationProviderAdapter(input: {
       route,
     }
   }
-  if (route.provider === OPENROUTER_PROVIDER) {
-    const resolveAsset = createGenerationAssetResolver(organizationId)
-    const adapter = createOpenRouterProviderAdapter({
-      binding,
-      resolveAsset,
-    })
-    if (
-      !adapter
-      || !generationProviderLifecyclesEqual(
-        route.providerLifecycle,
-        adapter.lifecycle,
-      )
-    ) {
-      throw new Error('generation_provider_route_invalid')
-    }
-    return {
-      adapter,
-      requiresDurableSubmissionBoundary:
-        binding.requiresDurableSubmissionBoundary,
-      route,
-    }
+  const registered = createProviderAdapter({
+    binding,
+    credential: runtimeCredential,
+    resolveAsset: createGenerationAssetResolver(organizationId),
+  })
+  if (!generationProviderLifecyclesEqual(
+    route.providerLifecycle,
+    registered.adapter.lifecycle,
+  )) {
+    throw new Error('generation_provider_route_invalid')
   }
-  throw new Error('generation_provider_adapter_unavailable')
+  return {
+    adapter: registered.adapter,
+    requiresDurableSubmissionBoundary:
+      registered.requiresDurableSubmissionBoundary,
+    route,
+  }
 }

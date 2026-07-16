@@ -1,8 +1,10 @@
+/** Verifies bounded malformed and rate-limited OpenRouter HTTP responses. */
+
 import assert from 'node:assert/strict'
 import {
   createOpenRouterHttpClient,
   OpenRouterHttpError,
-} from '@talelabs/openrouter'
+} from '@talelabs/providers/server'
 import { z } from 'zod'
 
 async function malformedFetch() {
@@ -20,10 +22,14 @@ async function rateLimitedFetch() {
   })
 }
 
+/** Verifies malformed and rate-limited responses without external network I/O. */
 export async function verifyHttpBoundary() {
   const schema = z.object({ ok: z.literal(true) })
   const malformed = createOpenRouterHttpClient({
-    apiKey: 'verification-key',
+    credential: {
+      provider: 'openrouter',
+      resolveApiKey: () => 'verification-key',
+    },
     fetch: malformedFetch,
   })
   await assert.rejects(
@@ -36,7 +42,10 @@ export async function verifyHttpBoundary() {
       && error.code === 'malformed_response',
   )
   const rateLimited = createOpenRouterHttpClient({
-    apiKey: 'verification-key',
+    credential: {
+      provider: 'openrouter',
+      resolveApiKey: () => 'verification-key',
+    },
     fetch: rateLimitedFetch,
   })
   await assert.rejects(

@@ -25,7 +25,7 @@
     "@talelabs/db": "*",
     "@talelabs/flows": "*",
     "@talelabs/models-catalog": "*",
-    "@talelabs/openrouter": "*",
+    "@talelabs/providers": "*",
     "@talelabs/storage": "*",
     "@trigger.dev/sdk": "4.5.3",
     "dotenv": "^17.2.3",

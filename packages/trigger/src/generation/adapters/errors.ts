@@ -8,5 +8,5 @@ export {
   generationProviderError,
   sanitizeProviderPublicMessage,
   throwProviderResponseInvalid,
-} from '@talelabs/openrouter'
-export type { GenerationProviderErrorCode } from '@talelabs/openrouter'
+} from '@talelabs/providers/server'
+export type { GenerationProviderErrorCode } from '@talelabs/providers/server'

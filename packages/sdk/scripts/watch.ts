@@ -1,3 +1,5 @@
+/** Watches API and provider builds and regenerates the public SDK safely. */
+
 import { spawn } from 'node:child_process'
 import { watch } from 'node:fs'
 import { dirname, resolve } from 'node:path'
@@ -6,7 +8,7 @@ import { fileURLToPath } from 'node:url'
 
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const apiSource = resolve(packageRoot, '../../apps/api/src')
-const openRouterBuild = resolve(packageRoot, '../openrouter/dist')
+const providersBuild = resolve(packageRoot, '../providers/dist')
 const sdkConfig = resolve(packageRoot, 'kubb.config.ts')
 
 let isGenerating = false
@@ -70,7 +72,7 @@ await generate()
 
 const watchers = [
   watch(apiSource, { recursive: true }, scheduleGenerate),
-  watch(openRouterBuild, { recursive: true }, scheduleGenerate),
+  watch(providersBuild, { recursive: true }, scheduleGenerate),
   watch(sdkConfig, scheduleGenerate),
 ]
 

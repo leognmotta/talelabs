@@ -80,7 +80,7 @@ export function resolvedAsset(asset: NormalizedGenerationMediaAsset) {
       : asset.mediaType === 'video'
         ? 'video/mp4'
         : 'audio/mpeg',
-    signedReadUrl: `https://signed.invalid/${asset.assetId}`,
+    providerUrl: `https://signed.invalid/${asset.assetId}`,
     sizeBytes: 1_024 * 1_024,
     width: asset.mediaType === 'audio' ? null : 1_024,
   })

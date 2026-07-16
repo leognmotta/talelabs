@@ -1,5 +1,7 @@
+/** Fair bounded claims for generation jobs missing eventual provider costs. */
+
 import { db, sql } from '@talelabs/db'
-import { OPENROUTER_PROVIDER } from '@talelabs/openrouter'
+import { OPENROUTER_PROVIDER } from '@talelabs/providers/server'
 
 const PROVIDER_ACCOUNTING_FAST_RETRY_MS = 5 * 60 * 1_000
 const PROVIDER_ACCOUNTING_MEDIUM_RETRY_MS = 30 * 60 * 1_000

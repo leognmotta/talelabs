@@ -1,13 +1,17 @@
 /** Post-success reconciliation for eventually consistent OpenRouter costs. */
 
-import type { createOpenRouterHttpClient } from '@talelabs/openrouter'
+import type {
+  OpenRouterHttpClient,
+  OpenRouterRuntimeCredential,
+} from '@talelabs/providers/server'
 
 import { db } from '@talelabs/db'
 import {
   createOpenRouterHttpClient as createClient,
   lookupOpenRouterGenerationCost,
+  resolveProviderRuntimeCredential,
   safeProviderCost,
-} from '@talelabs/openrouter'
+} from '@talelabs/providers/server'
 import { claimMissingOpenRouterProviderCosts } from '../persistence/accounting-queries.js'
 import { recomputeFlowRunProviderCost } from '../persistence/costs.js'
 
@@ -61,10 +65,11 @@ async function persistReconciledProviderCost(input: {
 
 /** Recovers eventual accounting facts without reopening or delaying output success. */
 export async function reconcileOpenRouterProviderCosts(input: {
-  client?: ReturnType<typeof createOpenRouterHttpClient>
+  client?: OpenRouterHttpClient
   limit?: number
   metadataTimeoutMs?: number
   organizationId?: string
+  runtimeCredential?: OpenRouterRuntimeCredential
 }) {
   const candidates = await claimMissingOpenRouterProviderCosts({
     limit: input.limit ?? 10,
@@ -80,7 +85,12 @@ export async function reconcileOpenRouterProviderCosts(input: {
     let cost = checkpointCost
     if (cost === undefined) {
       try {
-        client ??= createClient()
+        client ??= createClient({
+          credential: resolveProviderRuntimeCredential(
+            'openrouter',
+            input.runtimeCredential,
+          ),
+        })
         cost = await lookupOpenRouterGenerationCost({
           client,
           delaysMs: ACCOUNTING_METADATA_DELAYS_MS,

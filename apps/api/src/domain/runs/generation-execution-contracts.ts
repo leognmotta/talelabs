@@ -9,7 +9,6 @@
 import type {
   FlowRunPlan,
   FlowRunSnapshotExecutionContract,
-  GenerationProviderLifecycle,
 } from '@talelabs/flows'
 
 import {
@@ -57,7 +56,7 @@ export function generationExecutionContracts(
       providerBinding: binding,
       providerEndpoint: binding.endpoint,
       providerEndpointTag: binding.providerTag,
-      providerLifecycle: binding.lifecycle as GenerationProviderLifecycle,
+      providerLifecycle: binding.lifecycle,
       providerModel: binding.nativeModelId,
       providerRouteVersion: binding.routeVersion,
     }

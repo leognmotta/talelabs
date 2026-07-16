@@ -110,6 +110,10 @@ export function verifyProductionResolver() {
       ...pinned,
       executionMode: 'live',
       organizationId: 'organization-verification',
+      runtimeCredential: {
+        provider: 'openrouter',
+        resolveApiKey: () => 'verification-key',
+      },
     })
     assert.equal(resolved.route.providerRouteVersion, route.binding.routeVersion)
     assert.equal(

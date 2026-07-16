@@ -1,0 +1,42 @@
+{
+  "name": "@talelabs/providers",
+  "type": "module",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./browser": {
+      "types": "./dist/browser.d.ts",
+      "default": "./dist/browser.js"
+    },
+    "./core": {
+      "types": "./dist/core.d.ts",
+      "default": "./dist/core.js"
+    },
+    "./server": {
+      "types": "./dist/server.d.ts",
+      "default": "./dist/server.js"
+    }
+  },
+  "scripts": {
+    "browser:check": "npm run build && tsc -p tsconfig.browser.json",
+    "build": "tsc && node scripts/check-browser-bundle.mjs",
+    "check-types": "tsc --noEmit && tsc -p tsconfig.browser.json",
+    "dev:build": "tsc --watch --preserveWatchOutput"
+  },
+  "dependencies": {
+    "@openrouter/sdk": "^0.13.36",
+    "@talelabs/flows": "*",
+    "@talelabs/models-catalog": "*",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.3",
+    "esbuild": "^0.28.1",
+    "tsx": "^4.20.6",
+    "typescript": "5.9.2"
+  }
+}

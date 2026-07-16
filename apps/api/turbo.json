@@ -11,7 +11,7 @@
         "@talelabs/flows#dev:build",
         "@talelabs/i18n#dev:build",
         "@talelabs/models-catalog#dev:build",
-        "@talelabs/openrouter#dev:build",
+        "@talelabs/providers#dev:build",
         "@talelabs/storage#dev:build",
         "@talelabs/trigger#dev:build"
       ]
