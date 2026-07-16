@@ -1,3 +1,5 @@
+/** Bounded parsing of untrusted OpenRouter error response bodies. */
+
 import { z } from 'zod'
 
 import { readBoundedOpenRouterBytes } from './body.js'
@@ -7,8 +9,8 @@ const errorResponseSchema = z.object({
     code: z.union([z.number(), z.string()]).optional(),
     message: z.string().optional(),
     metadata: z.record(z.string(), z.unknown()).optional(),
-  }).passthrough(),
-}).passthrough()
+  }).loose(),
+}).loose()
 
 /** Extracts only bounded diagnostic fields from an untrusted error body. */
 export async function readOpenRouterProviderError(response: Response) {
