@@ -32,6 +32,8 @@ export const ACCEPTED_ASSET_MEDIA_TYPES = Object.freeze(
   Object.keys(ASSET_UPLOAD_POLICIES) as AssetUploadMimeType[],
 )
 
+export { ensureAssetFileExtension } from './asset-file-extension.js'
+
 export function getAssetUploadPolicy(mimeType: string) {
   const normalizedMimeType = mimeType.toLowerCase() as AssetUploadMimeType
   return ASSET_UPLOAD_POLICIES[normalizedMimeType] as
