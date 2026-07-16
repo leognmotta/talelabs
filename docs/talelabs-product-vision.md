@@ -887,6 +887,13 @@ poll/webhook, and audio may return or stream raw bytes. Trigger.dev owns durable
 polling, reconciliation, retries, cancellation, and ingestion without creating a
 separate execution engine per media type.
 
+All external provider implementations live behind the small server-only
+registry in `@talelabs/providers`. The registry dispatches the exact private
+binding captured at admission, while provider-specific credentials are injected
+only as non-serializable runtime resolvers by server or worker composition.
+Credentials never enter model bindings, snapshots, jobs, task payloads, logs, or
+public configuration.
+
 ### Multi-Source Generation
 
 Generation nodes must support several connected sources without introducing an

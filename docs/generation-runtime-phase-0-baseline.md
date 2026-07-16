@@ -10,8 +10,8 @@ parity implementation described below has now been removed.
 | --- | ---: | ---: |
 | `packages/flows/src/generation` | 72 | 9,422 |
 | `packages/flows/src/runtime` | 39 | 2,786 |
-| `packages/openrouter/src/routes` | 19 | 1,593 |
-| `packages/openrouter/src/transport` | 10 | 516 |
+| Former OpenRouter route implementation (now `packages/providers/src/openrouter/`) | 19 | 1,593 |
+| Former OpenRouter transport implementation (now `packages/providers/src/openrouter/transport/`) | 10 | 516 |
 | `packages/trigger/src/generation` | 43 | 2,589 |
 | `packages/trigger/src/flow-runs` | 40 | 3,655 |
 | **Total** | **223** | **20,561** |

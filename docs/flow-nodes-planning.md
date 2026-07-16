@@ -648,7 +648,14 @@ are never guessed into a new intent. The next ordinary graph save persists the
 upcasted node type and schema.
 
 The provider boundary uses one lifecycle contract without pretending every
-provider completes synchronously:
+provider completes synchronously.
+
+The server-only `@talelabs/providers` package owns one explicit registry and one
+cohesive directory per provider. Trigger dispatches immutable snapshot bindings
+through that registry and injects runtime-only credential resolvers; it does not
+import provider implementations or reconstruct request payloads itself.
+
+The normalized contract is:
 
 ```ts
 type NormalizedGenerationSubmission =

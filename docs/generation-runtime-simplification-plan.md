@@ -2,7 +2,7 @@
 
 Status: Implemented (2026-07-16)
 Research date: 2026-07-16
-Scope: `packages/flows`, `packages/openrouter`, `packages/trigger`, and the model catalog consumed by the API/dashboard
+Scope: `packages/flows`, `packages/providers`, `packages/trigger`, and the model catalog consumed by the API/dashboard
 
 ## 1. Decision
 
@@ -11,7 +11,7 @@ Refactor the generation system around one deliberately plain mental model:
 ```txt
 models catalog       what TaleLabs offers and where it runs
 flows                what the graph means and what must execute
-openrouter           how OpenRouter protocols are called
+providers            how registered provider protocols are called
 trigger              when durable work executes
 PostgreSQL snapshot  the exact immutable facts used by a run
 ```
@@ -43,8 +43,8 @@ Current measured surface:
 | --- | ---: | ---: |
 | `packages/flows/src/generation` | 72 | 9,422 |
 | `packages/flows/src/runtime` | 37 | 2,786 |
-| `packages/openrouter/src/routes` | 19 | 1,593 |
-| `packages/openrouter/src/transport` | 10 | 516 |
+| `packages/providers/src/openrouter/routes` | 19 | 1,593 |
+| `packages/providers/src/openrouter/transport` | 10 | 516 |
 | `packages/trigger/src/generation` | 43 | 2,589 |
 | `packages/trigger/src/flow-runs` | 40 | 3,655 |
 | **Total** | **221** | **20,561** |
@@ -581,44 +581,48 @@ packages/flows/src/
 
 Split by actual responsibility, not by arbitrary file size or numbered parts.
 
-### 6.3 `packages/openrouter`
+### 6.3 `packages/providers`
 
-Owns only OpenRouter transport and protocol translation:
+Owns the provider registry and provider-specific transport and protocol
+translation. OpenRouter is the only registered implementation today:
 
 ```txt
-packages/openrouter/src/
-  adapter.ts
-  protocols/
-    immediate-adapter.ts
-    image.ts
-    image/
-      prepare.ts
-      execute.ts
-    speech.ts
-    speech/
-      prepare.ts
-      execute.ts
-      accounting.ts
-    chat.ts
-    chat/
-      prepare.ts
-      execute.ts
-    video/
-      index.ts
-      prepare.ts
-      execute.ts
-      poll.ts
-      inputs.ts
-      media.ts
-      references.ts
-      response.ts
-      settings.ts
-      types.ts
-  transport/
-  sdk/
-  webhooks/
-  errors.ts
-  types.ts
+packages/providers/src/
+  contracts.ts
+  registry.ts
+  openrouter/
+    adapter.ts
+    protocols/
+      immediate-adapter.ts
+      image.ts
+      image/
+        prepare.ts
+        execute.ts
+      speech.ts
+      speech/
+        prepare.ts
+        execute.ts
+        accounting.ts
+      chat.ts
+      chat/
+        prepare.ts
+        execute.ts
+      video/
+        index.ts
+        prepare.ts
+        execute.ts
+        poll.ts
+        inputs.ts
+        media.ts
+        references.ts
+        response.ts
+        settings.ts
+        types.ts
+    transport/
+    client/
+    webhooks/
+    errors.ts
+    types.ts
   index.ts
 ```
 
@@ -698,19 +702,20 @@ flowchart LR
   Flows --> Catalog
   Trigger["trigger"] --> Flows
   Trigger --> Catalog
-  Trigger --> OpenRouter["openrouter"]
-  OpenRouter --> Flows
+  Trigger --> Providers["providers registry"]
+  Providers --> Flows
   Trigger --> DB["PostgreSQL / R2"]
 ```
 
-The OpenRouter package may depend on provider-neutral normalized execution
-contracts in Flows. Do not create another package merely to make the diagram
-more theoretically pure.
+The providers package may depend on provider-neutral normalized execution
+contracts in Flows. Keep each provider implementation in its own directory;
+do not create one package per provider merely to make the diagram more
+theoretically pure.
 
 Forbidden directions:
 
 - Flows importing OpenRouter;
-- OpenRouter importing Trigger or database code;
+- Providers importing Trigger or database code;
 - catalog importing Flow planning or provider clients;
 - dashboard importing private catalog bindings;
 - Trigger reconstructing model capabilities already captured in the snapshot.
@@ -885,7 +890,8 @@ Goal: leave Trigger responsible for durability, not provider translation.
 
 1. Keep task entrypoints thin.
 2. Replace OpenRouter-specific adapter trees with one provider registry call.
-3. Pass normalized request and immutable binding to `packages/openrouter`.
+3. Pass normalized request and immutable binding to the registry in
+   `packages/providers`.
 4. Preserve waitpoints, wake-up, fallback polling, cancellation, and recovery.
 5. Preserve output validation, cost capture/reconciliation, and Asset ingestion.
 6. Keep task payloads ID-only.
