@@ -1,21 +1,38 @@
+/**
+ * TaleLabs Better Auth configuration and organization access services.
+ *
+ * @packageDocumentation
+ */
+
 import { randomUUID } from 'node:crypto'
 import { db } from '@talelabs/db'
 import { sendUserInvitationEmail } from '@talelabs/email'
 import { validateEmailConfiguration } from '@talelabs/email/config'
 import { betterAuth } from 'better-auth'
 import { admin, organization } from 'better-auth/plugins'
+import { defaultRoles as adminDefaultRoles } from 'better-auth/plugins/admin/access'
+import { defaultRoles as organizationDefaultRoles } from 'better-auth/plugins/organization/access'
 import {
-  defaultRoles as adminDefaultRoles,
-} from 'better-auth/plugins/admin/access'
-import {
-  defaultRoles as organizationDefaultRoles,
-} from 'better-auth/plugins/organization/access'
+  isSystemAdminRole,
+  SYSTEM_ADMIN_ROLE,
+  SYSTEM_ADMIN_ROLES,
+  SYSTEM_SUPER_ADMIN_ROLE,
+} from './system-admin-roles.js'
+
+export {
+  isSystemAdminRole,
+  SYSTEM_ADMIN_ROLE,
+  SYSTEM_ADMIN_ROLES,
+  SYSTEM_SUPER_ADMIN_ROLE,
+} from './system-admin-roles.js'
 
 validateEmailConfiguration()
 
+/** Cookie key used to restore the user's last active organization. */
 export const LAST_ORGANIZATION_COOKIE = 'talelabs_last_organization_id'
-export const SYSTEM_ADMIN_ROLE = 'system_admin'
+/** Organization role allowed to manage settings, members, and invitations. */
 export const ORGANIZATION_ADMIN_ROLE = 'admin'
+/** Default organization membership role. */
 export const ORGANIZATION_MEMBER_ROLE = 'member'
 
 const trustedOrigins = [
@@ -29,6 +46,7 @@ const trustedOrigins = [
 const googleClientId = process.env.GOOGLE_CLIENT_ID
 const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET
 
+/** Configured TaleLabs Better Auth server instance. */
 export const auth = betterAuth({
   appName: 'TaleLabs',
   database: {
@@ -57,10 +75,11 @@ export const auth = betterAuth({
   trustedOrigins,
   plugins: [
     admin({
-      adminRoles: [SYSTEM_ADMIN_ROLE],
+      adminRoles: [...SYSTEM_ADMIN_ROLES],
       defaultRole: 'user',
       roles: {
         [SYSTEM_ADMIN_ROLE]: adminDefaultRoles.admin,
+        [SYSTEM_SUPER_ADMIN_ROLE]: adminDefaultRoles.admin,
         user: adminDefaultRoles.user,
       },
     }),
@@ -131,19 +150,8 @@ function parseCookie(cookieHeader: string | null, name: string) {
   return null
 }
 
-function roleParts(role: string | null | undefined) {
-  return (role ?? '')
-    .split(',')
-    .map(part => part.trim())
-    .filter(Boolean)
-}
-
-export function isSystemAdminRole(role: string | null | undefined) {
-  return roleParts(role).includes(SYSTEM_ADMIN_ROLE)
-}
-
 function isOrganizationAdminRole(role: string | null | undefined) {
-  const roles = roleParts(role)
+  const roles = (role ?? '').split(',').map(part => part.trim())
 
   return roles.includes(ORGANIZATION_ADMIN_ROLE) || roles.includes('owner')
 }
@@ -279,6 +287,7 @@ async function requireSession(headers: Headers) {
   } as const
 }
 
+/** Resolves an authenticated session with a valid active organization. */
 export async function requireOrganizationSession(headers: Headers) {
   const sessionResult = await requireSession(headers)
 
@@ -306,6 +315,7 @@ export async function requireOrganizationSession(headers: Headers) {
   } as const
 }
 
+/** Lists organizations accessible through membership or system administration. */
 export async function listAccessibleOrganizations(headers: Headers) {
   const sessionResult = await requireSession(headers)
 
@@ -357,6 +367,7 @@ export async function listAccessibleOrganizations(headers: Headers) {
   } as const
 }
 
+/** Activates an organization after membership or system-admin authorization. */
 export async function activateOrganizationSession(headers: Headers, organizationId: string) {
   const sessionResult = await requireSession(headers)
 
@@ -396,6 +407,7 @@ export async function activateOrganizationSession(headers: Headers, organization
   } as const
 }
 
+/** Lists pending and historical invitations for an authorized organization. */
 export async function listOrganizationInvitations(headers: Headers, organizationId: string) {
   const accessResult = await requireInvitationAccess(headers, organizationId)
 
@@ -432,6 +444,7 @@ export async function listOrganizationInvitations(headers: Headers, organization
   } as const
 }
 
+/** Lists members for an organization the caller may administer. */
 export async function listOrganizationMembers(headers: Headers, organizationId: string) {
   const accessResult = await requireInvitationAccess(headers, organizationId)
 
@@ -468,6 +481,7 @@ export async function listOrganizationMembers(headers: Headers, organizationId: 
   } as const
 }
 
+/** Updates organization identity metadata after administrative authorization. */
 export async function updateOrganizationMetadata(
   headers: Headers,
   input: {
@@ -536,6 +550,7 @@ export async function updateOrganizationMetadata(
   } as const
 }
 
+/** Revokes a pending organization invitation. */
 export async function revokeOrganizationInvitation(
   headers: Headers,
   input: {
@@ -622,6 +637,7 @@ async function requireInvitationAccess(headers: Headers, organizationId: string)
   } as const
 }
 
+/** Creates or resends an authorized organization invitation. */
 export async function createOrganizationInvitation(
   headers: Headers,
   input: {
@@ -749,4 +765,5 @@ export async function createOrganizationInvitation(
   } as const
 }
 
+/** Session shape inferred from the configured TaleLabs auth instance. */
 export type AuthSession = typeof auth.$Infer.Session
