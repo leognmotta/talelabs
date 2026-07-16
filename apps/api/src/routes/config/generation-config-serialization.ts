@@ -1,13 +1,13 @@
+/** Fail-closed serialization from generation contracts to public API values. */
+
 import type {
   FlowValueType,
-  GENERATION_MODELS,
   GenerationConditionDefinition,
 } from '@talelabs/flows'
 
-import { getGenerationModelPresentation } from '@talelabs/flows'
-
 type ActiveFlowValueType = Exclude<FlowValueType, 'ElementContext'>
 
+/** Serializes one provider-neutral catalog condition without private facts. */
 export function serializeGenerationCondition(
   condition: GenerationConditionDefinition,
 ) {
@@ -20,18 +20,7 @@ export function serializeGenerationCondition(
   return { ...condition, values: [...condition.values] }
 }
 
-export function serializeGenerationModelPresentation(
-  model: (typeof GENERATION_MODELS)[number],
-) {
-  const presentation = getGenerationModelPresentation(model.id)
-  if (!presentation) {
-    throw new Error(
-      `Current generation model ${model.id} is missing presentation metadata`,
-    )
-  }
-  return { ...presentation }
-}
-
+/** Rejects deferred value types before public generation serialization. */
 export function serializeActiveFlowValueTypes(
   valueTypes: readonly FlowValueType[],
 ): ActiveFlowValueType[] {

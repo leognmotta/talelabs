@@ -1,18 +1,23 @@
+/** Active-organization resolution and request-scoped access context. */
+
 import type { ApiEnv } from '../types.js'
 
-import { requireOrganizationSession } from '@talelabs/auth'
+import { isSystemAdminRole, requireOrganizationSession } from '@talelabs/auth'
 import { createMiddleware } from 'hono/factory'
 import { HttpError, UnauthenticatedError } from './error.js'
 
+/** Organization and authenticated-user context resolved for an API request. */
 export interface OrganizationSessionResolution {
   activeOrganizationId: string
   session: {
     user: {
       id: string
+      role?: string | null
     }
   }
 }
 
+/** Resolves the active organization session from inbound request headers. */
 export type OrganizationSessionResolver = (
   headers: Headers,
 ) => Promise<
@@ -23,6 +28,7 @@ export type OrganizationSessionResolver = (
 const defaultOrganizationSessionResolver: OrganizationSessionResolver
   = async headers => requireOrganizationSession(headers)
 
+/** Creates middleware that publishes tenant and system-role request context. */
 export function createOrganizationMiddleware(
   resolveOrganizationSession: OrganizationSessionResolver
     = defaultOrganizationSessionResolver,
@@ -54,6 +60,7 @@ export function createOrganizationMiddleware(
     }
 
     c.set('organizationId', result.activeOrganizationId)
+    c.set('isSystemAdmin', isSystemAdminRole(result.session.user.role))
     c.set('userId', result.session.user.id)
 
     await next()

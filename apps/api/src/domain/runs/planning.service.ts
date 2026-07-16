@@ -1,3 +1,5 @@
+/** Tenant-scoped Flow run planning and preflight orchestration. */
+
 import type { CommandRequest } from './contracts.js'
 import { db } from '@talelabs/db'
 
@@ -9,10 +11,11 @@ import { getFlowGraphRows, listFlowGraphReferenceRows } from '../../data/flows.d
 import { HttpError, TenantResourceNotFoundError } from '../../middleware/error.js'
 import { getFlowGraph } from '../../services/flows.service.js'
 import { toFlowRunCommand } from './contracts.js'
-import { summaryFromPlan } from './helpers.js'
 import { logRunEngine } from './logging.js'
+import { summaryFromPlan } from './plan-summary.js'
 import { flowRunPlanValidationError } from './planning-error.js'
 
+/** Loads and validates an immutable plan from one saved Flow revision. */
 export async function loadFlowRunPlan(input: {
   command: CommandRequest
   flowId: string
@@ -82,6 +85,7 @@ export async function loadFlowRunPlan(input: {
   return result.plan
 }
 
+/** Returns a bounded planning summary without admitting a durable run. */
 export async function preflightFlowRun(input: {
   command: CommandRequest
   flowId: string

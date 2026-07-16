@@ -1,3 +1,5 @@
+/** OpenAPI response schemas for provider-neutral generation configuration. */
+
 import { z } from '@hono/zod-openapi'
 import {
   GENERATION_NODE_TYPES,
@@ -144,9 +146,10 @@ const GenerationConstraintSchema = z.object({
   forbid: z.array(GenerationConditionSchema).optional(),
 })
 
+/** Public fail-closed schema for the generation configuration response. */
 export const GenerationConfigResponseSchema = z
   .object({
-    registryVersion: z.string(),
+    catalogRevision: z.string().regex(/^sha256:[0-9a-f]{64}$/),
     models: z.array(
       z.object({
         contractVersion: z.string(),
@@ -156,6 +159,7 @@ export const GenerationConfigResponseSchema = z
         mediaType: GenerationOutputTypeSchema,
         enabled: z.boolean(),
         recommended: z.boolean(),
+        revision: z.number().int().positive(),
         presentation: z.object({
           descriptionKey: z.string(),
           logoId: z.enum([

@@ -1,3 +1,5 @@
+/** Bounded relational row cloning for immutable Flow run retries. */
+
 import type { Database, Transaction } from '@talelabs/db'
 
 import { createId } from '@paralleldrive/cuid2'
@@ -101,7 +103,7 @@ export async function cloneRunExecutionRowsForRetry(input: {
       itemKey: job.itemKey,
       mediaType: job.mediaType,
       model: job.model,
-      modelRegistryVersion: job.modelRegistryVersion,
+      catalogRevision: job.catalogRevision,
       nodeId: job.nodeId,
       operation: job.operation,
       organizationId: input.organizationId,

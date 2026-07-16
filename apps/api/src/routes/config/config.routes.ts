@@ -1,23 +1,23 @@
+/** Public generation configuration route backed by the sanitized model catalog. */
+
 import type { OpenAPIHono } from '@hono/zod-openapi'
 import type { ApiEnv } from '../../types.js'
 
 import { createRoute } from '@hono/zod-openapi'
 import {
+  GENERATION_CATALOG_REVISION,
   GENERATION_MODEL_CONTRACT_VERSION,
-  GENERATION_MODELS,
-  GENERATION_REGISTRY_VERSION,
   SELECTABLE_FLOW_NODE_TYPES,
   valueTypeToAssetTypes,
 } from '@talelabs/flows'
+import { SELECTABLE_CATALOG_MODELS } from '@talelabs/models-catalog'
 
 import { commonErrorResponses } from '../product.responses.js'
 import { GenerationConfigResponseSchema } from './config.schemas.js'
 import {
   serializeActiveFlowValueTypes,
   serializeGenerationCondition,
-  serializeGenerationModelPresentation,
 } from './generation-config-serialization.js'
-import './generation-provider-routes.js'
 
 const getGenerationConfigRoute = createRoute({
   method: 'get',
@@ -35,16 +35,17 @@ const getGenerationConfigRoute = createRoute({
 })
 
 const generationConfig = {
-  registryVersion: GENERATION_REGISTRY_VERSION,
-  models: GENERATION_MODELS.map(model => ({
+  catalogRevision: GENERATION_CATALOG_REVISION,
+  models: SELECTABLE_CATALOG_MODELS.map(model => ({
     contractVersion: GENERATION_MODEL_CONTRACT_VERSION,
     id: model.id,
     displayName: model.displayName,
     labelKey: model.labelKey,
     mediaType: model.mediaType,
-    enabled: model.enabled,
+    enabled: model.status === 'active',
     recommended: model.recommended,
-    presentation: serializeGenerationModelPresentation(model),
+    revision: model.revision,
+    presentation: { ...model.presentation },
     defaultOperationId: model.defaultOperationId,
     capabilities: {
       ...(model.llm
@@ -243,17 +244,18 @@ const generationConfig = {
   nodeTypes: [...SELECTABLE_FLOW_NODE_TYPES],
   inputRoles: [
     ...new Set(
-      GENERATION_MODELS.flatMap(model =>
+      SELECTABLE_CATALOG_MODELS.flatMap(model =>
         model.inputSlots.map(slot => slot.id),
       ),
     ),
   ],
 }
 
+/** Registers the provider-neutral generation configuration endpoint. */
 export function registerConfigRoutes(app: OpenAPIHono<ApiEnv>) {
   app.openapi(getGenerationConfigRoute, (c) => {
     c.header('Cache-Control', 'private, max-age=300')
-    c.header('ETag', `"generation-config-${GENERATION_REGISTRY_VERSION}"`)
+    c.header('ETag', `"generation-config-${GENERATION_CATALOG_REVISION}"`)
     return c.json(generationConfig, 200)
   })
 }

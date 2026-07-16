@@ -1,3 +1,5 @@
+/** Tenant-scoped Flow run detail and history response projection. */
+
 import { db } from '@talelabs/db'
 
 import { HttpError, TenantResourceNotFoundError } from '../../middleware/error.js'
@@ -7,8 +9,11 @@ import {
   resolvePagination,
 } from '../../pagination/pagination.js'
 import { presentAsset } from '../../services/asset-presenter.js'
-import { extractPlanSummary, safeFailureFields } from './helpers.js'
+import { executionModeFromSnapshot } from './execution-mode.js'
+import { extractPlanSummary } from './plan-summary.js'
+import { safeFailureFields } from './response-safety.js'
 
+/** Reads one tenant-scoped run with its durable nodes, jobs, and outputs. */
 export async function getRunDetail(organizationId: string, runId: string) {
   const run = await db.selectFrom('flowRuns')
     .selectAll()
@@ -57,6 +62,7 @@ export async function getRunDetail(organizationId: string, runId: string) {
 
   return {
     id: run.id,
+    executionMode: executionModeFromSnapshot(run.graphSnapshot),
     flowId: run.flowId,
     mode: run.mode as 'all' | 'downstream' | 'node' | 'selection' | 'upstream',
     targetNodeId: run.targetNodeId,
@@ -109,6 +115,7 @@ export async function getRunDetail(organizationId: string, runId: string) {
   }
 }
 
+/** Lists tenant-scoped run summaries using stable cursor pagination. */
 export async function listRuns(input: {
   cursor?: string
   flowId?: string
@@ -183,6 +190,7 @@ export async function listRuns(input: {
   return {
     data: page.pageRows.map(run => ({
       id: run.id,
+      executionMode: executionModeFromSnapshot(run.graphSnapshot),
       flowId: run.flowId,
       mode: run.mode as 'all' | 'downstream' | 'node' | 'selection' | 'upstream',
       targetNodeId: run.targetNodeId,

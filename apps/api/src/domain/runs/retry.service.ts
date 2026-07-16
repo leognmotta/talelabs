@@ -1,3 +1,5 @@
+/** Immutable Flow run retry admission and execution-row cloning. */
+
 import type { JsonValue } from '@talelabs/db'
 
 import { createId } from '@paralleldrive/cuid2'
@@ -16,12 +18,19 @@ import { localUserIdOrNull } from '../../data/flow-run-planning.data.js'
 import { cloneRunExecutionRowsForRetry } from '../../data/run-retry.data.js'
 import { HttpError, TenantResourceNotFoundError } from '../../middleware/error.js'
 import { dispatchFlowRun } from './dispatch.service.js'
+import {
+  assertFlowRunExecutionModeAuthorized,
+  executionModeFromSnapshot,
+} from './execution-mode.js'
 import { logRunEngine } from './logging.js'
 import { getRunDetail } from './read.service.js'
 
+/** Admits a durable retry while preserving or explicitly replacing execution mode. */
 export async function retryRun(input: {
+  executionMode?: 'debug' | 'live'
   expectedRunStatus?: 'canceled' | 'failed' | 'partial' | 'pending' | 'running' | 'succeeded'
   idempotencyKey: string | null
+  isSystemAdmin: boolean
   organizationId: string
   runId: string
   userId: string
@@ -29,6 +38,7 @@ export async function retryRun(input: {
   if (!input.idempotencyKey)
     throw new HttpError(400, 'idempotency_key_required', 'Idempotency-Key is required.')
   const requestHash = hashFlowRunRequest({
+    executionMode: input.executionMode ?? null,
     expectedRunStatus: input.expectedRunStatus ?? null,
     organizationId: input.organizationId,
     requestType: 'flow-run-retry',
@@ -85,6 +95,9 @@ export async function retryRun(input: {
       .executeTakeFirst()
     if (!original)
       throw new TenantResourceNotFoundError()
+    const executionMode = input.executionMode
+      ?? executionModeFromSnapshot(original.graphSnapshot)
+    assertFlowRunExecutionModeAuthorized(executionMode, input.isSystemAdmin)
     flowId = original.flowId
     if (input.expectedRunStatus && original.status !== input.expectedRunStatus) {
       throw new HttpError(
@@ -151,6 +164,7 @@ export async function retryRun(input: {
     }
     const retrySnapshot = createFlowRunSnapshotArtifact({
       ...sourceSnapshot.snapshot,
+      executionMode,
       executorVersion: FLOW_RUN_EXECUTOR_CONTRACT_VERSION,
     })
 

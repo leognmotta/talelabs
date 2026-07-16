@@ -1,3 +1,5 @@
+/** Transactional Flow run admission, immutable snapshot persistence, and dispatch. */
+
 import type {
   FlowRunNodeItemTable,
   FlowRunNodeTable,
@@ -16,8 +18,8 @@ import {
   createFlowRunSnapshotArtifact,
   FLOW_RUN_LIMITS,
   FLOW_RUN_SNAPSHOT_VERSION,
+  GENERATION_CATALOG_REVISION,
   GENERATION_MODEL_REGISTRY,
-  GENERATION_REGISTRY_VERSION,
   hashFlowRunRequest,
 } from '@talelabs/flows'
 
@@ -26,20 +28,22 @@ import { acquireFlowRunAdmissionLocks } from '../../data/flow-run-admission.data
 import { localUserIdOrNull } from '../../data/flow-run-planning.data.js'
 import { insertRunExecutionRows } from '../../data/run-persistence.data.js'
 import { HttpError, TenantResourceNotFoundError } from '../../middleware/error.js'
-import { commandFromAdmissionBody } from './contracts.js'
-import { dispatchFlowRun } from './dispatch.service.js'
-import { generationExecutionContracts } from './generation-execution-contracts.js'
 import {
   assetReferencesFromValue,
   collectPlanPreExistingAssetIds,
-  jsonb,
-} from './helpers.js'
+} from './asset-prerequisites.js'
+import { commandFromAdmissionBody } from './contracts.js'
+import { dispatchFlowRun } from './dispatch.service.js'
+import { generationExecutionContracts } from './generation-execution-contracts.js'
+import { jsonb } from './jsonb.js'
 import { logRunEngine } from './logging.js'
 import { loadFlowRunPlan } from './planning.service.js'
 import { getRunDetail } from './read.service.js'
 
+/** Admits and persists one tenant-scoped immutable Flow run transactionally. */
 export async function admitFlowRun(input: {
   body: {
+    executionMode?: 'debug' | 'live'
     expectedFlowRevision: number
     expectedPlanHash?: string
     flowId: string
@@ -51,10 +55,11 @@ export async function admitFlowRun(input: {
   organizationId: string
   userId: string
 }) {
+  const executionMode = input.body.executionMode ?? 'live'
   if (!input.idempotencyKey)
     throw new HttpError(400, 'idempotency_key_required', 'Idempotency-Key is required.')
 
-  const requestHash = hashFlowRunRequest(input.body)
+  const requestHash = hashFlowRunRequest({ ...input.body, executionMode })
   const existing = await db.selectFrom('flowRuns')
     .select(['id', 'requestHash'])
     .where('organizationId', '=', input.organizationId)
@@ -88,9 +93,11 @@ export async function admitFlowRun(input: {
   const contracts = generationExecutionContracts(plan)
   const contractsByNode = new Map(contracts.map(contract => [contract.nodeId, contract]))
   const artifact = createFlowRunSnapshotArtifact({
-    adapterContractVersion: 'normalized-generation-v1',
+    adapterContractVersion: 'normalized-generation-v3',
     canonicalSerializerVersion: CANONICAL_SERIALIZER_VERSION,
+    catalogRevision: GENERATION_CATALOG_REVISION,
     executionContracts: contracts,
+    executionMode,
     executorVersion: FLOW_RUN_EXECUTOR_CONTRACT_VERSION,
     plan,
     plannerVersion: plan.plannerVersion,
@@ -267,13 +274,13 @@ export async function admitFlowRun(input: {
             itemKey: item.itemKey,
             mediaType: (model?.mediaType ?? 'image') as any,
             model: node.modelId,
-            modelRegistryVersion: GENERATION_REGISTRY_VERSION,
+            catalogRevision: GENERATION_CATALOG_REVISION,
             nodeId: node.nodeId,
             operation: node.operationId,
             organizationId: input.organizationId,
-            provider: executionContract.provider!,
-            providerEndpoint: executionContract.providerEndpoint!,
-            providerEndpointTag: executionContract.providerEndpointTag!,
+            provider: executionContract.provider,
+            providerEndpoint: executionContract.providerEndpoint,
+            providerEndpointTag: executionContract.providerEndpointTag,
             providerLifecycle: executionContract.providerLifecycle as unknown as JsonValue,
             providerModel: executionContract.providerModel,
             providerRouteVersion: executionContract.providerRouteVersion,

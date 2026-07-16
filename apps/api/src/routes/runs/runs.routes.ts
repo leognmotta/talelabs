@@ -1,8 +1,11 @@
+/** Hono/OpenAPI route bindings for the durable Flow run lifecycle. */
+
 import type { OpenAPIHono } from '@hono/zod-openapi'
 import type { ApiEnv } from '../../types.js'
 
 import { createRoute, z } from '@hono/zod-openapi'
 
+import { assertFlowRunExecutionModeAuthorized } from '../../domain/runs/execution-mode.js'
 import {
   admitFlowRun,
   cancelRun,
@@ -126,6 +129,7 @@ const reconcileRunsRoute = createRoute({
   },
 })
 
+/** Registers tenant-scoped durable Flow run endpoints. */
 export function registerRunRoutes(app: OpenAPIHono<ApiEnv>) {
   app.openapi(listRunsRoute, async (c) => {
     return c.json(await listRuns({
@@ -135,8 +139,10 @@ export function registerRunRoutes(app: OpenAPIHono<ApiEnv>) {
   })
 
   app.openapi(createRunRoute, async (c) => {
+    const body = c.req.valid('json')
+    assertFlowRunExecutionModeAuthorized(body.executionMode, c.var.isSystemAdmin)
     return c.json(await admitFlowRun({
-      body: c.req.valid('json'),
+      body,
       idempotencyKey: c.req.header('Idempotency-Key') ?? null,
       organizationId: c.var.organizationId,
       userId: c.var.userId,
@@ -144,9 +150,11 @@ export function registerRunRoutes(app: OpenAPIHono<ApiEnv>) {
   })
 
   app.openapi(createFlowRunRoute, async (c) => {
+    const body = c.req.valid('json')
+    assertFlowRunExecutionModeAuthorized(body.executionMode, c.var.isSystemAdmin)
     return c.json(await admitFlowRun({
       body: {
-        ...c.req.valid('json'),
+        ...body,
         flowId: c.req.valid('param').flowId,
       },
       idempotencyKey: c.req.header('Idempotency-Key') ?? null,
@@ -170,9 +178,18 @@ export function registerRunRoutes(app: OpenAPIHono<ApiEnv>) {
   })
 
   app.openapi(retryRunRoute, async (c) => {
+    const body = c.req.valid('json')
+    if (body?.executionMode) {
+      assertFlowRunExecutionModeAuthorized(
+        body.executionMode,
+        c.var.isSystemAdmin,
+      )
+    }
     return c.json(await retryRun({
-      expectedRunStatus: c.req.valid('json')?.expectedRunStatus,
+      executionMode: body?.executionMode,
+      expectedRunStatus: body?.expectedRunStatus,
       idempotencyKey: c.req.header('Idempotency-Key') ?? null,
+      isSystemAdmin: c.var.isSystemAdmin,
       organizationId: c.var.organizationId,
       runId: c.req.valid('param').id,
       userId: c.var.userId,

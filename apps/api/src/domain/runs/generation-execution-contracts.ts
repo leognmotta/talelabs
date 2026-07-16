@@ -1,42 +1,65 @@
+/**
+ * Admission-time resolution of immutable generation execution bindings.
+ *
+ * New workers execute the captured provider binding directly and never query
+ * mutable current catalog state during retries.
+ *
+ */
+
 import type {
-  FlowRunPlanV1,
+  FlowRunPlan,
   FlowRunSnapshotExecutionContract,
-  GenerationModelContractVersion,
-  GenerationModelId,
+  GenerationProviderLifecycle,
 } from '@talelabs/flows'
 
-import { GENERATION_REGISTRY_VERSION } from '@talelabs/flows'
-import { getGenerationProviderRoute } from '../../routes/config/generation-provider-routes.js'
+import {
+  getCatalogModel,
+  getCatalogProviderBinding,
+  MODEL_CATALOG,
+} from '@talelabs/models-catalog'
 import { flowRunPlanValidationError } from './planning-error.js'
 
+/**
+ * Resolves one exact private binding for every planned executable node.
+ *
+ * @param plan - Provider-neutral plan produced from the locked Flow revision.
+ * @returns Self-contained execution contracts ready for snapshot persistence.
+ * @throws When a model revision or operation cannot resolve exactly.
+ */
 export function generationExecutionContracts(
-  plan: FlowRunPlanV1,
+  plan: FlowRunPlan,
 ): FlowRunSnapshotExecutionContract[] {
   return plan.executionNodes.map((node) => {
-    const route = getGenerationProviderRoute({
-      modelContractVersion: node.modelContractVersion as GenerationModelContractVersion,
-      operationId: node.operationId,
-      productModelId: node.modelId as GenerationModelId,
-    })
-    if (!route) {
+    const model = getCatalogModel(node.modelId)
+    const binding = getCatalogProviderBinding(node.modelId, node.operationId)
+    if (
+      !model
+      || !binding
+      || node.catalogRevision !== MODEL_CATALOG.catalogRevision
+      || node.catalogVersion !== MODEL_CATALOG.catalogVersion
+      || node.modelRevision !== model.revision
+    ) {
       throw flowRunPlanValidationError([{
         code: 'generation_provider_route_unavailable',
         field: `nodes.${node.nodeId}.modelId`,
       }])
     }
     return {
-      adapterVersion: route.adapterVersion,
+      adapterVersion: binding.adapterVersion,
+      catalogRevision: node.catalogRevision,
+      catalogVersion: node.catalogVersion,
       modelContractVersion: node.modelContractVersion,
       modelId: node.modelId,
-      modelRegistryVersion: GENERATION_REGISTRY_VERSION,
+      modelRevision: node.modelRevision,
       nodeId: node.nodeId,
       operationId: node.operationId,
-      provider: route.providerRoute.provider,
-      providerEndpoint: route.providerRoute.endpoint,
-      providerEndpointTag: route.providerRoute.providerTag,
-      providerLifecycle: route.lifecycle,
-      providerModel: route.providerRoute.nativeModelId,
-      providerRouteVersion: route.routeVersion,
+      provider: binding.provider,
+      providerBinding: binding,
+      providerEndpoint: binding.endpoint,
+      providerEndpointTag: binding.providerTag,
+      providerLifecycle: binding.lifecycle as GenerationProviderLifecycle,
+      providerModel: binding.nativeModelId,
+      providerRouteVersion: binding.routeVersion,
     }
   })
 }
