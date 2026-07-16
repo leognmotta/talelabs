@@ -20,6 +20,7 @@
     "check-types": "turbo run check-types",
     "test": "turbo run test",
     "test:integration": "npm run test:integration -w api",
+    "tsdoc:check": "node scripts/check-tsdoc-coverage.mjs",
     "trigger:deploy:check": "trigger deploy --env prod --dry-run --config trigger.config.ts",
     "trigger:deploy:prod": "trigger deploy --env prod --config trigger.config.ts",
     "trigger:dev": "turbo run dev --filter=@talelabs/trigger"

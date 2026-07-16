@@ -95,17 +95,18 @@ Execution rules for the active M5 milestone:
     `TODO(provider-integration)` as specified by `docs/mvp-execution-plan.md`.
     Graph planning, snapshots, runs, jobs, Trigger.dev state, provenance, output
     ingestion, and canonical Assets must remain production-shaped.
-11. TaleLabs owns a curated, code-versioned generation-model registry. The
-    TypeScript model registry and server-only TypeScript provider routes are the
-    only maintained configuration sources. Never add checked-in provider
-    discovery snapshots, dated inventory JSON, or runtime configuration derived
-    from live OpenRouter/provider responses. Research provider documentation
-    when changing the registry, then encode the reviewed decision in TypeScript
-    and ship it through normal deployment.
-12. Persist stable TaleLabs model IDs in Flows and snapshots. Keep public model
-    capabilities separate from server-only provider routes, credentials,
-    fallbacks, and cost policy. A provider or endpoint change must not rewrite a
-    Flow's creative contract.
+11. TaleLabs owns one curated, checked-in generation catalog at
+    `packages/models-catalog/models.json`. It is the only maintained source for
+    current model capabilities, presentation metadata, defaults, and private
+    provider bindings. Never add parallel TypeScript route/model registries,
+    provider-discovery snapshots, dated inventories, or runtime configuration
+    derived from live provider responses. Research provider documentation, then
+    encode the reviewed decision in that catalog and ship it normally.
+12. Persist canonical `vendor/model` creative IDs in Flows and snapshots. The
+    API exposes only the catalog's sanitized public projection; credentials,
+    bindings, fallbacks, evidence, and cost policy remain server-only. Admission
+    captures the complete resolved binding so provider changes never rewrite a
+    Flow's creative identity or an admitted run.
 13. Model capabilities include operation modes, typed slots, settings, and
     cross-field constraints. Do not reduce them to independent input/setting
     lists. If routing across multiple provider endpoints, expose only their safe
