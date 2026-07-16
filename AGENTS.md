@@ -111,6 +111,29 @@ Execution rules for the active M5 milestone:
     lists. If routing across multiple provider endpoints, expose only their safe
     capability intersection unless the route is pinned to a concrete endpoint.
 
+## Code structure rules
+
+These limits apply to every authored source file. Generated SDK artifacts,
+lockfiles, and machine-generated catalogs are not refactoring targets.
+
+1. An authored source file must not exceed 600 physical lines. Split the file
+   before it crosses this limit, using domain ownership and single
+   responsibility as the boundary rather than arbitrary numbered fragments.
+2. An authored source file must not define more than three functions. Function
+   declarations, assigned function expressions, React components, hooks, and
+   class or object methods all count toward this limit.
+3. Small callbacks written directly inside operations such as `map`, `filter`,
+   or event props do not count as standalone functions, but must not be used to
+   hide substantial logic or bypass the three-function limit.
+4. Do not satisfy these limits by creating thin wrapper files, numbered file
+   fragments, giant classes, oversized anonymous callbacks, or generic helpers
+   with unrelated responsibilities. Each extracted module must have a clear,
+   cohesive owner and a narrow public API.
+5. Before adding code to a file near either limit, extract an existing
+   responsibility first. Reviews must report violations and reject new work
+   that increases an existing violation without an explicit user-approved
+   remediation plan.
+
 ## Environment variable rules
 
 Environment variables are reserved for sensitive values. Agents must not add a
