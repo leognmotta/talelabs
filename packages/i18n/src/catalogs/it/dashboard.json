@@ -71,6 +71,12 @@
     "deleteSelection": "Elimina selezione",
     "runSelection": "Esegui selezione",
     "runAll": "Run all",
+    "debugMode": {
+      "active": "Modalità debug",
+      "disable": "Disattiva modalità debug",
+      "enable": "Attiva modalità debug",
+      "mockOutputsOnly": "Solo output simulati"
+    },
     "undo": "Annulla",
     "redo": "Ripeti",
     "fitView": "Adatta vista",
@@ -1373,6 +1379,7 @@
   },
   "errors": {
     "active_organization_required": "Seleziona o crea un'organizzazione per continuare.",
+    "debug_mode_forbidden": "La modalità debug richiede l'accesso di amministratore di sistema.",
     "organization_context_changed": "Lo spazio di lavoro è cambiato. Riprova l’azione.",
     "conflict": "Questo cambiamento è in conflitto con lo stato attuale. Aggiorna e riprova.",
     "email_delivery_failed": "Non è stato possibile recapitare l'e-mail. Riprova più tardi.",

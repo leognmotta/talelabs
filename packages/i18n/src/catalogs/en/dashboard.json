@@ -71,6 +71,12 @@
     "deleteSelection": "Delete selection",
     "runSelection": "Run selection",
     "runAll": "Run all",
+    "debugMode": {
+      "active": "Debug mode",
+      "disable": "Disable debug mode",
+      "enable": "Enable debug mode",
+      "mockOutputsOnly": "Mock outputs only"
+    },
     "undo": "Undo",
     "redo": "Redo",
     "fitView": "Fit view",
@@ -1373,6 +1379,7 @@
   },
   "errors": {
     "active_organization_required": "Select or create an organization to continue.",
+    "debug_mode_forbidden": "Debug mode requires system administrator access.",
     "organization_context_changed": "The workspace changed. Try the action again.",
     "conflict": "That change conflicts with the current state. Refresh and try again.",
     "email_delivery_failed": "The email could not be delivered. Try again later.",

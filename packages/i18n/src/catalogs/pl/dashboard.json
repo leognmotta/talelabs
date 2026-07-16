@@ -71,6 +71,12 @@
     "deleteSelection": "Usuń zaznaczenie",
     "runSelection": "Uruchom zaznaczenie",
     "runAll": "Run all",
+    "debugMode": {
+      "active": "Tryb debugowania",
+      "disable": "Wyłącz tryb debugowania",
+      "enable": "Włącz tryb debugowania",
+      "mockOutputsOnly": "Tylko symulowane wyniki"
+    },
     "undo": "Cofnij",
     "redo": "Ponów",
     "fitView": "Dopasuj widok",
@@ -1373,6 +1379,7 @@
   },
   "errors": {
     "active_organization_required": "Aby kontynuować, wybierz lub utwórz organizację.",
+    "debug_mode_forbidden": "Tryb debugowania wymaga uprawnień administratora systemu.",
     "organization_context_changed": "Obszar roboczy został zmieniony. Spróbuj wykonać tę czynność ponownie.",
     "conflict": "Zmiana ta jest sprzeczna ze stanem obecnym. Odśwież i spróbuj ponownie.",
     "email_delivery_failed": "Nie udało się dostarczyć wiadomości e-mail. Spróbuj ponownie później.",

@@ -71,6 +71,12 @@
     "deleteSelection": "Supprimer la sélection",
     "runSelection": "Exécuter la sélection",
     "runAll": "Run all",
+    "debugMode": {
+      "active": "Mode débogage",
+      "disable": "Désactiver le mode débogage",
+      "enable": "Activer le mode débogage",
+      "mockOutputsOnly": "Sorties simulées uniquement"
+    },
     "undo": "Annuler",
     "redo": "Rétablir",
     "fitView": "Ajuster la vue",
@@ -1373,6 +1379,7 @@
   },
   "errors": {
     "active_organization_required": "Sélectionnez ou créez une organisation pour continuer.",
+    "debug_mode_forbidden": "Le mode débogage nécessite un accès administrateur système.",
     "organization_context_changed": "L’espace de travail a changé. Réessayez l’action.",
     "conflict": "Ce changement entre en conflit avec l’état actuel. Actualisez et réessayez.",
     "email_delivery_failed": "L'e-mail n'a pas pu être livré. Réessayez plus tard.",

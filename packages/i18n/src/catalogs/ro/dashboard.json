@@ -71,6 +71,12 @@
     "deleteSelection": "Șterge selecția",
     "runSelection": "Rulează selecția",
     "runAll": "Run all",
+    "debugMode": {
+      "active": "Mod de depanare",
+      "disable": "Dezactivează modul de depanare",
+      "enable": "Activează modul de depanare",
+      "mockOutputsOnly": "Numai rezultate simulate"
+    },
     "undo": "Anulează",
     "redo": "Refă",
     "fitView": "Încadrează vizualizarea",
@@ -1373,6 +1379,7 @@
   },
   "errors": {
     "active_organization_required": "Selectați sau creați o organizație pentru a continua.",
+    "debug_mode_forbidden": "Modul de depanare necesită acces de administrator de sistem.",
     "organization_context_changed": "Spațiul de lucru s-a schimbat. Încercați din nou acțiunea.",
     "conflict": "Această schimbare intră în conflict cu starea actuală. Actualizați și încercați din nou.",
     "email_delivery_failed": "E-mailul nu a putut fi livrat. Încercați din nou mai târziu.",

@@ -71,6 +71,12 @@
     "deleteSelection": "Excluir seleção",
     "runSelection": "Executar seleção",
     "runAll": "Run all",
+    "debugMode": {
+      "active": "Modo de depuração",
+      "disable": "Desativar modo de depuração",
+      "enable": "Ativar modo de depuração",
+      "mockOutputsOnly": "Somente saídas simuladas"
+    },
     "undo": "Desfazer",
     "redo": "Refazer",
     "fitView": "Ajustar visualização",
@@ -1373,6 +1379,7 @@
   },
   "errors": {
     "active_organization_required": "Selecione ou crie uma organização para continuar.",
+    "debug_mode_forbidden": "O modo de depuração exige acesso de administrador do sistema.",
     "organization_context_changed": "O espaço de trabalho mudou. Tente realizar a ação novamente.",
     "conflict": "Essa mudança entra em conflito com o estado atual. Atualize e tente novamente.",
     "email_delivery_failed": "O e-mail não pôde ser entregue. Tente novamente mais tarde.",

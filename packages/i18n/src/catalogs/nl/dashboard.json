@@ -71,6 +71,12 @@
     "deleteSelection": "Selectie verwijderen",
     "runSelection": "Selectie uitvoeren",
     "runAll": "Run all",
+    "debugMode": {
+      "active": "Debugmodus",
+      "disable": "Debugmodus uitschakelen",
+      "enable": "Debugmodus inschakelen",
+      "mockOutputsOnly": "Alleen gesimuleerde uitvoer"
+    },
     "undo": "Ongedaan maken",
     "redo": "Opnieuw",
     "fitView": "Weergave passend maken",
@@ -1373,6 +1379,7 @@
   },
   "errors": {
     "active_organization_required": "Selecteer of maak een organisatie om door te gaan.",
+    "debug_mode_forbidden": "De debugmodus vereist toegang als systeembeheerder.",
     "organization_context_changed": "De werkruimte is gewijzigd. Probeer de actie opnieuw.",
     "conflict": "Die verandering is in strijd met de huidige staat. Vernieuw en probeer het opnieuw.",
     "email_delivery_failed": "De e-mail kon niet worden afgeleverd. Probeer het later opnieuw.",
