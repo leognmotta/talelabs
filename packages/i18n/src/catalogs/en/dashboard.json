@@ -118,7 +118,8 @@
       "searchLabel": "Search models",
       "searchPlaceholder": "Search models...",
       "noResults": "No matching models",
-      "recommended": "Recommended"
+      "recommended": "Recommended",
+      "unavailable": "Unavailable"
     },
     "textContent": "Prompt content",
     "textPlaceholder": "Describe the scene, direction, or creative idea...",
@@ -185,6 +186,31 @@
       "output": "{{output}} output"
     },
     "models": {
+      "gpt54Image2": "GPT-5.4 Image 2",
+      "maiImage25": "MAI Image 2.5",
+      "grokImagineImageQuality": "Grok Imagine Image Quality",
+      "flux2Max": "FLUX.2 Max",
+      "recraft41Pro": "Recraft 4.1 Pro",
+      "gpt55": "GPT-5.5",
+      "gpt56Sol": "GPT-5.6 SOL",
+      "claudeOpus48": "Claude Opus 4.8",
+      "claudeSonnet5": "Claude Sonnet 5",
+      "gemini35Flash": "Gemini 3.5 Flash",
+      "grok45": "Grok 4.5",
+      "deepseekV4Pro": "DeepSeek V4 Pro",
+      "glm52": "GLM-5.2",
+      "qwen37Plus": "Qwen3.7 Plus",
+      "kimiK25": "Kimi K2.5",
+      "kling30Pro": "Kling 3.0 Pro",
+      "kling30Standard": "Kling 3.0 Standard",
+      "klingVideoO1": "Kling Video O1",
+      "wan27": "Wan 2.7",
+      "wan26": "Wan 2.6",
+      "hailuo23": "Hailuo 2.3",
+      "sora2Pro": "Sora 2 Pro",
+      "veo31Fast": "Veo 3.1 Fast",
+      "seedance20Fast": "Seedance 2.0 Fast",
+      "happyhorse11": "HappyHorse 1.1",
       "nanoBanana2Lite": "Nano Banana 2 Lite",
       "nanoBanana2": "Nano Banana 2",
       "nanoBananaPro": "Nano Banana Pro",
@@ -210,9 +236,15 @@
       "elevenVoiceChanger": "Eleven Voice Changer",
       "elevenVoiceIsolator": "Eleven Voice Isolator",
       "gpt4oMiniTts": "GPT-4o mini TTS",
+      "gemini31FlashTtsPreview": "Gemini 3.1 Flash TTS Preview",
       "stableAudio25": "Stable Audio 2.5"
     },
     "modelDescriptions": {
+      "majorVisionLlm": "Frontier reasoning for complex writing, analysis, and image understanding.",
+      "majorTextLlm": "Long-context reasoning for complex text and multilingual creative work.",
+      "nativeAudioFrameVideo": "Video generation with native audio and first- or last-frame control.",
+      "frameVideo": "Video generation from a prompt or starting frame.",
+      "textAudioVideo": "Text-to-video generation with native audio.",
       "nanoBanana2Lite": "Fast, cost-efficient image generation and editing for high-volume work.",
       "nanoBanana2": "Versatile 4K image creation with reliable text and multi-reference consistency.",
       "nanoBananaPro": "Precise professional visuals for complex instructions and brand-consistent work.",
@@ -238,6 +270,7 @@
       "elevenVoiceChanger": "Performance-preserving speech-to-speech voice transformation.",
       "elevenVoiceIsolator": "Focused spoken-voice cleanup for noisy recordings.",
       "gpt4oMiniTts": "Expressive speech with voice, pace, and delivery direction.",
+      "gemini31FlashTtsPreview": "Natural speech generation through Gemini with a selectable voice.",
       "stableAudio25": "Long-form music and sound design with duration, seed, and prompt-adherence controls."
     },
     "inputs": {
@@ -332,13 +365,22 @@
         "high": "High"
       },
       "durations": {
+        "seconds2": "2 seconds",
+        "seconds16": "16 seconds",
+        "seconds20": "20 seconds",
         "seconds1": "1 second",
         "seconds3": "3 seconds",
         "seconds4": "4 seconds",
+        "seconds5": "5 seconds",
         "seconds6": "6 seconds",
+        "seconds7": "7 seconds",
         "seconds8": "8 seconds",
+        "seconds9": "9 seconds",
         "seconds10": "10 seconds",
+        "seconds11": "11 seconds",
         "seconds12": "12 seconds",
+        "seconds13": "13 seconds",
+        "seconds14": "14 seconds",
         "seconds15": "15 seconds"
       },
       "resolutions": {
@@ -369,7 +411,8 @@
         "openaiCedar": "Cedar",
         "openaiCoral": "Coral",
         "openaiMarin": "Marin",
-        "openaiVerse": "Verse"
+        "openaiVerse": "Verse",
+        "geminiAlloy": "Alloy"
       },
       "seed": "Seed"
     },
@@ -497,7 +540,7 @@
       "connections_other": "{{count}} connections"
     },
     "runStatus": {
-      "failed": "Run failed"
+      "failed": "Generation failed"
     },
     "saveStatus": {
       "saved": "Saved",
@@ -525,15 +568,6 @@
       "searchPlaceholder": "Search Elements...",
       "noResults": "No Elements found",
       "noResultsDescription": "Try another search term or create an Element first."
-    },
-    "inputInspector": {
-      "title": "Select {{input}}",
-      "description": "Choose up to {{maximum}} of {{available}} available Assets, or keep the Element defaults.",
-      "primary": "Primary",
-      "noCandidates": "Connect an Asset or Element role to make references available.",
-      "unavailable": "Unavailable reference",
-      "unavailableDescription": "This saved reference is no longer available. Remove it or reset to Element defaults.",
-      "useAutomatic": "Reset to Element defaults"
     },
     "a11y": {
       "canvas": "Flow graph editor",
@@ -1352,6 +1386,15 @@
     "element_source_primary_invalid": "This reference cannot be used as the Element thumbnail.",
     "element_asset_role_not_found": "Choose an Asset role available for this Element.",
     "internal_error": "Something went wrong. Try again.",
+    "generation_provider_route_unavailable": "This generation model or mode is not available to run yet.",
+    "provider_authentication": "The generation provider could not be authenticated.",
+    "provider_insufficient_balance": "The generation provider account has insufficient balance.",
+    "provider_rate_limited": "The generation provider is busy. Try again shortly.",
+    "provider_timeout": "The generation provider took too long to respond.",
+    "provider_response_invalid": "The generation provider returned an invalid response.",
+    "provider_rejected": "The generation provider rejected this request.",
+    "provider_unavailable": "The generation provider is temporarily unavailable.",
+    "provider_submission_uncertain": "The generation submission could not be safely retried.",
     "not_found": "The requested item could not be found.",
     "organization_access_required": "You do not have access to this organization.",
     "organization_admin_required": "Organization administrator access is required.",

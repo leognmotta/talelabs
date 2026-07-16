@@ -118,7 +118,8 @@
       "searchLabel": "Modelle suchen",
       "searchPlaceholder": "Modelle suchen...",
       "noResults": "Keine Modelle gefunden",
-      "recommended": "Empfohlen"
+      "recommended": "Empfohlen",
+      "unavailable": "Nicht verfügbar"
     },
     "textContent": "Prompt-Inhalt",
     "textPlaceholder": "Beschreibe die Szene, Regie oder kreative Idee...",
@@ -185,6 +186,31 @@
       "output": "Ausgabe: {{output}}"
     },
     "models": {
+      "gpt54Image2": "GPT-5.4 Image 2",
+      "maiImage25": "MAI Image 2.5",
+      "grokImagineImageQuality": "Grok Imagine Image Quality",
+      "flux2Max": "FLUX.2 Max",
+      "recraft41Pro": "Recraft 4.1 Pro",
+      "gpt55": "GPT-5.5",
+      "gpt56Sol": "GPT-5.6 SOL",
+      "claudeOpus48": "Claude Opus 4.8",
+      "claudeSonnet5": "Claude Sonnet 5",
+      "gemini35Flash": "Gemini 3.5 Flash",
+      "grok45": "Grok 4.5",
+      "deepseekV4Pro": "DeepSeek V4 Pro",
+      "glm52": "GLM-5.2",
+      "qwen37Plus": "Qwen3.7 Plus",
+      "kimiK25": "Kimi K2.5",
+      "kling30Pro": "Kling 3.0 Pro",
+      "kling30Standard": "Kling 3.0 Standard",
+      "klingVideoO1": "Kling Video O1",
+      "wan27": "Wan 2.7",
+      "wan26": "Wan 2.6",
+      "hailuo23": "Hailuo 2.3",
+      "sora2Pro": "Sora 2 Pro",
+      "veo31Fast": "Veo 3.1 Fast",
+      "seedance20Fast": "Seedance 2.0 Fast",
+      "happyhorse11": "HappyHorse 1.1",
       "nanoBanana2Lite": "Nano Banana 2 Lite",
       "nanoBanana2": "Nano Banana 2",
       "nanoBananaPro": "Nano Banana Pro",
@@ -210,9 +236,15 @@
       "elevenVoiceChanger": "Eleven Voice Changer",
       "elevenVoiceIsolator": "Eleven Voice Isolator",
       "gpt4oMiniTts": "GPT-4o mini TTS",
+      "gemini31FlashTtsPreview": "Gemini 3.1 Flash TTS Preview",
       "stableAudio25": "Stable Audio 2.5"
     },
     "modelDescriptions": {
+      "majorVisionLlm": "Modernstes Schlussfolgern für komplexes Schreiben, Analysen und Bildverständnis.",
+      "majorTextLlm": "Langkontext-Schlussfolgern für komplexe Texte und mehrsprachige Kreativarbeit.",
+      "nativeAudioFrameVideo": "Videogenerierung mit nativem Audio und Steuerung über Start- oder Endbild.",
+      "frameVideo": "Videogenerierung aus einem Prompt oder Startbild.",
+      "textAudioVideo": "Text-zu-Video-Generierung mit nativem Audio.",
       "nanoBanana2Lite": "Schnelle, kosteneffiziente Bilderstellung und -bearbeitung für große Mengen.",
       "nanoBanana2": "Vielseitige 4K-Bilderstellung mit zuverlässigem Text und konsistenten Referenzen.",
       "nanoBananaPro": "Präzise professionelle Visuals für komplexe Anweisungen und markentreue Arbeiten.",
@@ -238,6 +270,7 @@
       "elevenVoiceChanger": "Stimmtransformation unter Beibehaltung der ursprünglichen Darbietung.",
       "elevenVoiceIsolator": "Gezielte Bereinigung gesprochener Sprache in verrauschten Aufnahmen.",
       "gpt4oMiniTts": "Ausdrucksstarke Sprache mit Steuerung von Stimme, Tempo und Darbietung.",
+      "gemini31FlashTtsPreview": "Natürliche Spracherzeugung mit Gemini und auswählbarer Stimme.",
       "stableAudio25": "Längere Musik und Sounddesign mit Dauer-, Seed- und Prompttreue-Steuerung."
     },
     "inputs": {
@@ -332,13 +365,22 @@
         "high": "Hoch"
       },
       "durations": {
+        "seconds2": "2 Sekunden",
+        "seconds16": "16 Sekunden",
+        "seconds20": "20 Sekunden",
         "seconds1": "1 Sekunde",
         "seconds3": "3 Sekunden",
         "seconds4": "4 Sekunden",
+        "seconds5": "5 Sekunden",
         "seconds6": "6 Sekunden",
+        "seconds7": "7 Sekunden",
         "seconds8": "8 Sekunden",
+        "seconds9": "9 Sekunden",
         "seconds10": "10 Sekunden",
+        "seconds11": "11 Sekunden",
         "seconds12": "12 Sekunden",
+        "seconds13": "13 Sekunden",
+        "seconds14": "14 Sekunden",
         "seconds15": "15 Sekunden"
       },
       "resolutions": {
@@ -369,7 +411,8 @@
         "openaiCedar": "Cedar",
         "openaiCoral": "Coral",
         "openaiMarin": "Marin",
-        "openaiVerse": "Verse"
+        "openaiVerse": "Verse",
+        "geminiAlloy": "Alloy"
       },
       "seed": "Seed"
     },
@@ -497,7 +540,7 @@
       "connections_other": "{{count}} Verbindungen"
     },
     "runStatus": {
-      "failed": "Run failed"
+      "failed": "Generierung fehlgeschlagen"
     },
     "saveStatus": {
       "saved": "Gespeichert",
@@ -525,15 +568,6 @@
       "searchPlaceholder": "Elemente durchsuchen...",
       "noResults": "Keine Elemente gefunden",
       "noResultsDescription": "Versuche einen anderen Suchbegriff oder erstelle zuerst ein Element."
-    },
-    "inputInspector": {
-      "title": "{{input}} auswählen",
-      "description": "Wähle bis zu {{maximum}} der {{available}} verfügbaren Assets oder behalte die Element-Vorgaben.",
-      "primary": "Primär",
-      "noCandidates": "Verbinde ein Asset oder eine Element-Rolle, um Referenzen verfügbar zu machen.",
-      "unavailable": "Nicht verfügbare Referenz",
-      "unavailableDescription": "Diese gespeicherte Referenz ist nicht mehr verfügbar. Entferne sie oder setze die Element-Standards zurück.",
-      "useAutomatic": "Element-Vorgaben wiederherstellen"
     },
     "a11y": {
       "canvas": "Workflow-Graph-Editor",
@@ -1352,6 +1386,15 @@
     "element_source_primary_invalid": "Diese Referenz kann nicht als Miniaturbild des Elements verwendet werden.",
     "element_asset_role_not_found": "Wähle eine für dieses Element verfügbare Dateirolle.",
     "internal_error": "Etwas ist schiefgelaufen. Versuche es erneut.",
+    "generation_provider_route_unavailable": "Dieses Generierungsmodell oder dieser Modus kann noch nicht ausgeführt werden.",
+    "provider_authentication": "Der Generierungsanbieter konnte nicht authentifiziert werden.",
+    "provider_insufficient_balance": "Das Konto des Generierungsanbieters verfügt nicht über genügend Guthaben.",
+    "provider_rate_limited": "Der Generierungsanbieter ist ausgelastet. Versuche es gleich noch einmal.",
+    "provider_timeout": "Der Generierungsanbieter hat zu lange für eine Antwort gebraucht.",
+    "provider_response_invalid": "Der Generierungsanbieter hat eine ungültige Antwort zurückgegeben.",
+    "provider_rejected": "Der Generierungsanbieter hat diese Anfrage abgelehnt.",
+    "provider_unavailable": "Der Generierungsanbieter ist vorübergehend nicht verfügbar.",
+    "provider_submission_uncertain": "Die Generierung konnte nicht sicher erneut übermittelt werden.",
     "not_found": "Das angeforderte Element wurde nicht gefunden.",
     "organization_access_required": "Du hast keinen Zugriff auf diese Organisation.",
     "organization_admin_required": "Es ist Administratorzugriff für die Organisation erforderlich.",

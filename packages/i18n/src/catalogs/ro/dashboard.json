@@ -118,7 +118,8 @@
       "searchLabel": "Caută modele",
       "searchPlaceholder": "Caută modele...",
       "noResults": "Nu s-au găsit modele",
-      "recommended": "Recomandat"
+      "recommended": "Recomandat",
+      "unavailable": "Indisponibil"
     },
     "textContent": "Conținutul promptului",
     "textPlaceholder": "Descrie scena, regia sau ideea creativă...",
@@ -185,6 +186,31 @@
       "output": "Ieșire {{output}}"
     },
     "models": {
+      "gpt54Image2": "GPT-5.4 Image 2",
+      "maiImage25": "MAI Image 2.5",
+      "grokImagineImageQuality": "Grok Imagine Image Quality",
+      "flux2Max": "FLUX.2 Max",
+      "recraft41Pro": "Recraft 4.1 Pro",
+      "gpt55": "GPT-5.5",
+      "gpt56Sol": "GPT-5.6 SOL",
+      "claudeOpus48": "Claude Opus 4.8",
+      "claudeSonnet5": "Claude Sonnet 5",
+      "gemini35Flash": "Gemini 3.5 Flash",
+      "grok45": "Grok 4.5",
+      "deepseekV4Pro": "DeepSeek V4 Pro",
+      "glm52": "GLM-5.2",
+      "qwen37Plus": "Qwen3.7 Plus",
+      "kimiK25": "Kimi K2.5",
+      "kling30Pro": "Kling 3.0 Pro",
+      "kling30Standard": "Kling 3.0 Standard",
+      "klingVideoO1": "Kling Video O1",
+      "wan27": "Wan 2.7",
+      "wan26": "Wan 2.6",
+      "hailuo23": "Hailuo 2.3",
+      "sora2Pro": "Sora 2 Pro",
+      "veo31Fast": "Veo 3.1 Fast",
+      "seedance20Fast": "Seedance 2.0 Fast",
+      "happyhorse11": "HappyHorse 1.1",
       "nanoBanana2Lite": "Nano Banana 2 Lite",
       "nanoBanana2": "Nano Banana 2",
       "nanoBananaPro": "Nano Banana Pro",
@@ -210,9 +236,15 @@
       "elevenVoiceChanger": "Eleven Voice Changer",
       "elevenVoiceIsolator": "Eleven Voice Isolator",
       "gpt4oMiniTts": "GPT-4o mini TTS",
+      "gemini31FlashTtsPreview": "Gemini 3.1 Flash TTS Preview",
       "stableAudio25": "Stable Audio 2.5"
     },
     "modelDescriptions": {
+      "majorVisionLlm": "Raționament avansat pentru scriere complexă, analiză și înțelegerea imaginilor.",
+      "majorTextLlm": "Raționament cu context extins pentru texte complexe și creație multilingvă.",
+      "nativeAudioFrameVideo": "Generare video cu sunet nativ și controlul cadrului inițial sau final.",
+      "frameVideo": "Generare video dintr-un prompt sau cadru inițial.",
+      "textAudioVideo": "Generare video din text cu sunet nativ.",
       "nanoBanana2Lite": "Generare și editare rapidă și economică a imaginilor pentru volume mari.",
       "nanoBanana2": "Creare versatilă de imagini 4K, cu text fiabil și consecvență între mai multe referințe.",
       "nanoBananaPro": "Materiale vizuale profesionale și precise pentru instrucțiuni complexe și proiecte conforme cu marca.",
@@ -238,6 +270,7 @@
       "elevenVoiceChanger": "Transformare vocală care păstrează interpretarea originală.",
       "elevenVoiceIsolator": "Curățare concentrată a vocii vorbite din înregistrări cu zgomot.",
       "gpt4oMiniTts": "Vorbire expresivă cu control asupra vocii, ritmului și interpretării.",
+      "gemini31FlashTtsPreview": "Generare naturală a vorbirii cu Gemini și o voce selectabilă.",
       "stableAudio25": "Muzică de durată și design sonor cu control pentru durată, sămânță și respectarea instrucțiunii."
     },
     "inputs": {
@@ -332,13 +365,22 @@
         "high": "Ridicată"
       },
       "durations": {
+        "seconds2": "2 secunde",
+        "seconds16": "16 secunde",
+        "seconds20": "20 secunde",
         "seconds1": "1 secundă",
         "seconds3": "3 secunde",
         "seconds4": "4 secunde",
+        "seconds5": "5 secunde",
         "seconds6": "6 secunde",
+        "seconds7": "7 secunde",
         "seconds8": "8 secunde",
+        "seconds9": "9 secunde",
         "seconds10": "10 secunde",
+        "seconds11": "11 secunde",
         "seconds12": "12 secunde",
+        "seconds13": "13 secunde",
+        "seconds14": "14 secunde",
         "seconds15": "15 secunde"
       },
       "resolutions": {
@@ -369,7 +411,8 @@
         "openaiCedar": "Cedar",
         "openaiCoral": "Coral",
         "openaiMarin": "Marin",
-        "openaiVerse": "Verse"
+        "openaiVerse": "Verse",
+        "geminiAlloy": "Alloy"
       },
       "seed": "Sămânță"
     },
@@ -497,7 +540,7 @@
       "connections_other": "{{count}} de conexiuni"
     },
     "runStatus": {
-      "failed": "Run failed"
+      "failed": "Generarea a eșuat"
     },
     "saveStatus": {
       "saved": "Salvat",
@@ -525,15 +568,6 @@
       "searchPlaceholder": "Caută Elemente...",
       "noResults": "Nu s-au găsit Elemente",
       "noResultsDescription": "Încearcă alt termen sau creează mai întâi un Element."
-    },
-    "inputInspector": {
-      "title": "Selectează {{input}}",
-      "description": "Alege până la {{maximum}} dintre cele {{available}} Assets disponibile sau păstrează valorile Elementului.",
-      "primary": "Principal",
-      "noCandidates": "Conectează un Asset sau un rol de Element pentru a face disponibile referințele.",
-      "unavailable": "Referință indisponibilă",
-      "unavailableDescription": "Această referință salvată nu mai este disponibilă. Elimin-o sau restabilește valorile implicite ale Elementului.",
-      "useAutomatic": "Restabilește valorile Elementului"
     },
     "a11y": {
       "canvas": "Editor de graf pentru flux",
@@ -1352,6 +1386,15 @@
     "element_source_primary_invalid": "Această referință nu poate fi folosită ca miniatură a Elementului.",
     "element_asset_role_not_found": "Alegeți un rol de fișier disponibil pentru acest Element.",
     "internal_error": "Ceva nu a funcționat. Încercați din nou.",
+    "generation_provider_route_unavailable": "Acest model sau mod de generare nu este încă disponibil pentru rulare.",
+    "provider_authentication": "Furnizorul de generare nu a putut fi autentificat.",
+    "provider_insufficient_balance": "Contul furnizorului de generare nu are sold suficient.",
+    "provider_rate_limited": "Furnizorul de generare este ocupat. Încercați din nou în scurt timp.",
+    "provider_timeout": "Furnizorul de generare a răspuns prea târziu.",
+    "provider_response_invalid": "Furnizorul de generare a returnat un răspuns nevalid.",
+    "provider_rejected": "Furnizorul de generare a respins această solicitare.",
+    "provider_unavailable": "Furnizorul de generare este indisponibil temporar.",
+    "provider_submission_uncertain": "Trimiterea generării nu a putut fi reîncercată în siguranță.",
     "not_found": "Elementul solicitat nu a fost găsit.",
     "organization_access_required": "Nu aveți acces la această organizație.",
     "organization_admin_required": "Este necesar accesul administratorului organizației.",

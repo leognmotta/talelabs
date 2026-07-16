@@ -118,7 +118,8 @@
       "searchLabel": "Modellen zoeken",
       "searchPlaceholder": "Modellen zoeken...",
       "noResults": "Geen modellen gevonden",
-      "recommended": "Aanbevolen"
+      "recommended": "Aanbevolen",
+      "unavailable": "Niet beschikbaar"
     },
     "textContent": "Promptinhoud",
     "textPlaceholder": "Beschrijf de scène, regie of het creatieve idee...",
@@ -185,6 +186,31 @@
       "output": "Uitgang voor {{output}}"
     },
     "models": {
+      "gpt54Image2": "GPT-5.4 Image 2",
+      "maiImage25": "MAI Image 2.5",
+      "grokImagineImageQuality": "Grok Imagine Image Quality",
+      "flux2Max": "FLUX.2 Max",
+      "recraft41Pro": "Recraft 4.1 Pro",
+      "gpt55": "GPT-5.5",
+      "gpt56Sol": "GPT-5.6 SOL",
+      "claudeOpus48": "Claude Opus 4.8",
+      "claudeSonnet5": "Claude Sonnet 5",
+      "gemini35Flash": "Gemini 3.5 Flash",
+      "grok45": "Grok 4.5",
+      "deepseekV4Pro": "DeepSeek V4 Pro",
+      "glm52": "GLM-5.2",
+      "qwen37Plus": "Qwen3.7 Plus",
+      "kimiK25": "Kimi K2.5",
+      "kling30Pro": "Kling 3.0 Pro",
+      "kling30Standard": "Kling 3.0 Standard",
+      "klingVideoO1": "Kling Video O1",
+      "wan27": "Wan 2.7",
+      "wan26": "Wan 2.6",
+      "hailuo23": "Hailuo 2.3",
+      "sora2Pro": "Sora 2 Pro",
+      "veo31Fast": "Veo 3.1 Fast",
+      "seedance20Fast": "Seedance 2.0 Fast",
+      "happyhorse11": "HappyHorse 1.1",
       "nanoBanana2Lite": "Nano Banana 2 Lite",
       "nanoBanana2": "Nano Banana 2",
       "nanoBananaPro": "Nano Banana Pro",
@@ -210,9 +236,15 @@
       "elevenVoiceChanger": "Eleven Voice Changer",
       "elevenVoiceIsolator": "Eleven Voice Isolator",
       "gpt4oMiniTts": "GPT-4o mini TTS",
+      "gemini31FlashTtsPreview": "Gemini 3.1 Flash TTS Preview",
       "stableAudio25": "Stable Audio 2.5"
     },
     "modelDescriptions": {
+      "majorVisionLlm": "Geavanceerd redeneren voor complexe teksten, analyses en beeldbegrip.",
+      "majorTextLlm": "Redeneren met lange context voor complexe tekst en meertalig creatief werk.",
+      "nativeAudioFrameVideo": "Videogeneratie met ingebouwde audio en sturing via het eerste of laatste frame.",
+      "frameVideo": "Videogeneratie vanuit een prompt of startframe.",
+      "textAudioVideo": "Tekst-naar-video met ingebouwde audio.",
       "nanoBanana2Lite": "Snelle, voordelige beeldgeneratie en -bewerking voor werk op grote schaal.",
       "nanoBanana2": "Veelzijdige 4K-beeldcreatie met betrouwbare tekst en consistente referenties.",
       "nanoBananaPro": "Nauwkeurige professionele beelden voor complexe instructies en merkconsistent werk.",
@@ -238,6 +270,7 @@
       "elevenVoiceChanger": "Stemtransformatie met behoud van de oorspronkelijke uitvoering.",
       "elevenVoiceIsolator": "Gerichte opschoning van gesproken stem in rumoerige opnamen.",
       "gpt4oMiniTts": "Expressieve spraak met controle over stem, tempo en uitvoering.",
+      "gemini31FlashTtsPreview": "Natuurlijke spraakgeneratie met Gemini en een selecteerbare stem.",
       "stableAudio25": "Langere muziek en sounddesign met controle over duur, seed en prompttrouw."
     },
     "inputs": {
@@ -332,13 +365,22 @@
         "high": "Hoog"
       },
       "durations": {
+        "seconds2": "2 seconden",
+        "seconds16": "16 seconden",
+        "seconds20": "20 seconden",
         "seconds1": "1 seconde",
         "seconds3": "3 seconden",
         "seconds4": "4 seconden",
+        "seconds5": "5 seconden",
         "seconds6": "6 seconden",
+        "seconds7": "7 seconden",
         "seconds8": "8 seconden",
+        "seconds9": "9 seconden",
         "seconds10": "10 seconden",
+        "seconds11": "11 seconden",
         "seconds12": "12 seconden",
+        "seconds13": "13 seconden",
+        "seconds14": "14 seconden",
         "seconds15": "15 seconden"
       },
       "resolutions": {
@@ -369,7 +411,8 @@
         "openaiCedar": "Cedar",
         "openaiCoral": "Coral",
         "openaiMarin": "Marin",
-        "openaiVerse": "Verse"
+        "openaiVerse": "Verse",
+        "geminiAlloy": "Alloy"
       },
       "seed": "Seed"
     },
@@ -497,7 +540,7 @@
       "connections_other": "{{count}} verbindingen"
     },
     "runStatus": {
-      "failed": "Run failed"
+      "failed": "Generatie mislukt"
     },
     "saveStatus": {
       "saved": "Opgeslagen",
@@ -525,15 +568,6 @@
       "searchPlaceholder": "Elementen zoeken...",
       "noResults": "Geen Elementen gevonden",
       "noResultsDescription": "Probeer een andere zoekterm of maak eerst een Element."
-    },
-    "inputInspector": {
-      "title": "{{input}} selecteren",
-      "description": "Kies maximaal {{maximum}} van de {{available}} beschikbare Assets of behoud de Element-standaard.",
-      "primary": "Primair",
-      "noCandidates": "Verbind een Asset of Element-rol om referenties beschikbaar te maken.",
-      "unavailable": "Niet-beschikbare referentie",
-      "unavailableDescription": "Deze opgeslagen referentie is niet meer beschikbaar. Verwijder deze of herstel de standaardwaarden van het Element.",
-      "useAutomatic": "Element-standaard herstellen"
     },
     "a11y": {
       "canvas": "Workflowgraaf-editor",
@@ -1352,6 +1386,15 @@
     "element_source_primary_invalid": "Deze referentie kan niet als miniatuur van het Element worden gebruikt.",
     "element_asset_role_not_found": "Kies een bestandsrol die beschikbaar is voor dit Element.",
     "internal_error": "Er is iets misgegaan. Probeer het opnieuw.",
+    "generation_provider_route_unavailable": "Dit generatiemodel of deze modus kan nog niet worden uitgevoerd.",
+    "provider_authentication": "De generatieprovider kon niet worden geverifieerd.",
+    "provider_insufficient_balance": "Het account van de generatieprovider heeft onvoldoende saldo.",
+    "provider_rate_limited": "De generatieprovider is bezet. Probeer het zo opnieuw.",
+    "provider_timeout": "De generatieprovider deed er te lang over om te reageren.",
+    "provider_response_invalid": "De generatieprovider heeft een ongeldig antwoord teruggestuurd.",
+    "provider_rejected": "De generatieprovider heeft deze aanvraag geweigerd.",
+    "provider_unavailable": "De generatieprovider is tijdelijk niet beschikbaar.",
+    "provider_submission_uncertain": "De generatie kon niet veilig opnieuw worden ingediend.",
     "not_found": "Het gevraagde item is niet gevonden.",
     "organization_access_required": "Je hebt geen toegang tot deze organisatie.",
     "organization_admin_required": "Toegang tot organisatiebeheerder is vereist.",
