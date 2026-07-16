@@ -3157,8 +3157,9 @@
       "GenerationConfigResponse": {
         "type": "object",
         "properties": {
-          "registryVersion": {
-            "type": "string"
+          "catalogRevision": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
           },
           "models": {
             "type": "array",
@@ -4814,7 +4815,7 @@
           }
         },
         "required": [
-          "registryVersion",
+          "catalogRevision",
           "models",
           "nodeTypes",
           "inputRoles"

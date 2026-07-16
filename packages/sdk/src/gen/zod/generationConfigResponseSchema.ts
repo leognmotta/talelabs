@@ -8,7 +8,7 @@ import type { GenerationConfigResponse } from "../types/GenerationConfigResponse
 import { assetTypeSchema } from "./assetTypeSchema.ts";
 
 export const generationConfigResponseSchema = z.object({
-  registryVersion: z.string(),
+  catalogRevision: z.string().regex(/^sha256:[0-9a-f]{64}$/),
   models: z.array(
     z.object({
       contractVersion: z.string(),

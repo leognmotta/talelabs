@@ -352,9 +352,10 @@ export type GenerationConfigResponseNodeTypesEnumKey =
 
 export type GenerationConfigResponse = {
   /**
+   * @pattern ^sha256:[0-9a-f]{64}$
    * @type string
    */
-  registryVersion: string;
+  catalogRevision: string;
   /**
    * @type array
    */
