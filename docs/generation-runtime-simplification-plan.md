@@ -183,7 +183,7 @@ catalog state after admission.
 Create one intentionally small package:
 
 ```txt
-packages/generation-catalog/
+packages/models-catalog/
   models.json
   package.json
   src/
@@ -368,7 +368,7 @@ The reviewed decision is encoded in JSON and ships with the application.
 
 ## 6. Target Package Responsibilities
 
-### 6.1 `packages/generation-catalog`
+### 6.1 `packages/models-catalog`
 
 Owns:
 
@@ -509,7 +509,7 @@ and recovery state machine.
 ```mermaid
 flowchart LR
   Dashboard["Dashboard"] --> API["API public catalog"]
-  API --> Catalog["generation-catalog"]
+  API --> Catalog["models-catalog"]
   API --> Flows["flows"]
   Flows --> Catalog
   Trigger["trigger"] --> Flows
@@ -596,7 +596,7 @@ Adding one model must not create a new historical copy of every other model.
 - current private routes -> each model's `bindings`;
 - OpenRouter request/response logic currently under Trigger -> OpenRouter
   protocol modules;
-- catalog public projection -> generation-catalog;
+- catalog public projection -> models-catalog;
 - oversized Flow planning logic -> named pipeline responsibilities.
 
 ### Delete after cutover
@@ -633,7 +633,7 @@ old implementation's internal shape.
 
 Goal: create one validated model source without switching runtime behavior.
 
-1. Add `packages/generation-catalog`.
+1. Add `packages/models-catalog`.
 2. Translate current active models and bindings mechanically into `models.json`.
 3. Add runtime schema parsing and uniqueness/coverage checks.
 4. Add public/private projection checks.
