@@ -1,7 +1,11 @@
+/**
+ * Provider-neutral Flow graph, generation, planning, and snapshot contracts.
+ *
+ * @packageDocumentation
+ */
+
 import {
-  GENERATION_MODEL_CONTRACT_VERSION,
-  GENERATION_MODEL_CONTRACTS,
-  validateGenerationRegistry,
+  GENERATION_MODEL_REGISTRY,
   validateHardenedGenerationRegistry,
 } from './generation/registry/index.js'
 import { validateGenerationCapabilityScenarios } from './generation/scenarios/capabilities.js'
@@ -39,12 +43,7 @@ export * from './runtime/index.js'
 
 const startupErrors = [
   ...validateFlowNodeRegistry(),
-  ...Object.entries(GENERATION_MODEL_CONTRACTS).flatMap(([version, registry]) =>
-    (version === GENERATION_MODEL_CONTRACT_VERSION
-      ? validateHardenedGenerationRegistry(registry)
-      : validateGenerationRegistry(registry)
-    ).map(error => `${version}: ${error}`),
-  ),
+  ...validateHardenedGenerationRegistry(GENERATION_MODEL_REGISTRY),
   ...validateGenerationCapabilityScenarios(),
 ]
 

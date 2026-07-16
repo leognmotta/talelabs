@@ -1,15 +1,23 @@
+/**
+ * Provider-neutral lifecycle, request, result, and adapter contracts shared by
+ * durable orchestration and provider packages.
+ */
+
 import type {
   GenerationOutputType,
   GenerationSettingValue,
 } from '../registry/types.js'
 
+/** Supported output delivery mechanisms at the normalized adapter boundary. */
 export type GenerationProviderDelivery
   = | 'bytes'
     | 'storage'
     | 'stream'
     | 'text'
     | 'url'
+/** Supported provider completion notification mechanisms. */
 export type GenerationProviderCompletion = 'poll' | 'response' | 'webhook'
+/** Cancellation behavior promised by one immutable provider binding. */
 export type GenerationProviderCancellation
   = | 'best-effort'
     | 'supported'
@@ -20,18 +28,21 @@ interface GenerationProviderLifecycleBase {
   deliveries: readonly [GenerationProviderDelivery, ...GenerationProviderDelivery[]]
 }
 
+/** Valid completion combinations for asynchronous provider submissions. */
 export type GenerationProviderAsyncCompletions
   = | readonly ['poll']
     | readonly ['poll', 'webhook']
     | readonly ['webhook']
     | readonly ['webhook', 'poll']
 
+/** Lifecycle contract for a provider call completed by its initial response. */
 export type ImmediateGenerationProviderLifecycle
   = GenerationProviderLifecycleBase & {
     completions: readonly ['response']
     submission: 'immediate'
   }
 
+/** Lifecycle contract for a durably submitted asynchronous provider job. */
 export type AsyncGenerationProviderLifecycle
   = GenerationProviderLifecycleBase & {
     completions: GenerationProviderAsyncCompletions
@@ -81,6 +92,7 @@ export function generationProviderLifecyclesEqual(
     && lifecycleValuesEqual(expected.deliveries, candidate.deliveries)
 }
 
+/** One ordered inline or connected text fragment retained for provenance. */
 export interface NormalizedGenerationTextPart {
   edgeId: null | string
   itemKey: null | string
@@ -101,12 +113,14 @@ export interface NormalizedGenerationTextSlot {
   source: 'connected' | 'inline'
 }
 
+/** One ordered, tenant-validated Asset reference passed to a provider adapter. */
 export interface NormalizedGenerationMediaAsset {
   assetId: string
   mediaType: 'audio' | 'document' | 'image' | 'video'
   order: number
 }
 
+/** One materialized runtime item with its dimensions, text, and Assets. */
 export interface NormalizedGenerationInputItem {
   assets: readonly NormalizedGenerationMediaAsset[]
   dimensions: Readonly<Record<string, string>>
@@ -124,8 +138,11 @@ export interface NormalizedGenerationOrderedInput {
   targetSlotId: string
 }
 
+/** Immutable provider-neutral request derived from one admitted job payload. */
 export interface NormalizedGenerationRequest {
-  adapterRequestVersion: 1
+  adapterRequestVersion: 3
+  catalogRevision: string
+  catalogVersion: number
   itemKey: string
   modelContractVersion: string
   nodeId: string
@@ -133,6 +150,7 @@ export interface NormalizedGenerationRequest {
   orderedInputs: readonly NormalizedGenerationOrderedInput[]
   outputCount: number
   productModelId: string
+  modelRevision: number
   requestId: string
   requestIndex: number
   requestPayloadHash: string
@@ -140,6 +158,7 @@ export interface NormalizedGenerationRequest {
   textSlots: readonly NormalizedGenerationTextSlot[]
 }
 
+/** Valid normalized output deliveries returned by provider implementations. */
 export type NormalizedGenerationMediaPayload
   = | {
     bytes: Uint8Array
@@ -169,6 +188,7 @@ export type NormalizedGenerationMediaPayload
     url: string
   }
 
+/** One deterministically indexed provider output awaiting Asset finalization. */
 export interface NormalizedGenerationOutput {
   mediaType: GenerationOutputType
   metadata?: Readonly<Record<string, boolean | number | string>>
@@ -187,6 +207,7 @@ export interface NormalizedGenerationSubmissionContext {
   callbackUrl?: string
 }
 
+/** Initial provider result before durable orchestration continues or completes. */
 export type NormalizedGenerationSubmission
   = | {
     facts?: NormalizedGenerationProviderFacts
@@ -200,6 +221,7 @@ export type NormalizedGenerationSubmission
     status: 'submitted'
   }
 
+/** Normalized terminal or pending result from poll or webhook completion. */
 export type NormalizedGenerationCompletionResult
   = | {
     facts?: NormalizedGenerationProviderFacts
@@ -219,6 +241,7 @@ export type NormalizedGenerationCompletionResult
     status: 'failed'
   }
 
+/** Result contract returned by one provider polling attempt. */
 export type NormalizedGenerationPollResult = NormalizedGenerationCompletionResult
 
 /** Terminal, signature-verified output of a provider-specific webhook parser. */
@@ -228,11 +251,13 @@ export interface NormalizedGenerationWebhookCompletion {
   result: Exclude<NormalizedGenerationCompletionResult, { status: 'pending' }>
 }
 
+/** Raw signature-bearing webhook input passed to a provider normalizer. */
 export interface NormalizedGenerationWebhookRequest {
   body: Uint8Array
   headers: Readonly<Record<string, string>>
 }
 
+/** Provider cancellation acknowledgement and terminality. */
 export interface NormalizedGenerationCancellationResult {
   accepted: boolean
   final: boolean
@@ -336,6 +361,7 @@ export type NormalizedGenerationProviderAdapter
     reconcileFacts?: GenerationFactsReconciler
   }
 
+/** Validates lifecycle combinations before they are admitted or executed. */
 export function validateGenerationProviderLifecycle(
   lifecycle: GenerationProviderLifecycle,
 ) {

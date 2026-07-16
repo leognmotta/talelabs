@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@noble/hashes": "^2.2.0",
+    "@talelabs/models-catalog": "*",
     "zod": "^4.4.3"
   },
   "devDependencies": {

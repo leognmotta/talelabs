@@ -1,3 +1,5 @@
+/** Executable graph and cross-field contract capability scenarios. */
+
 import type {
   GenerationModelDefinition,
   GenerationSettingValue,
@@ -9,10 +11,7 @@ import {
   getDefaultNodeData,
   getFlowNodeTypeDefinition,
 } from '../../nodes/registry/index.js'
-import {
-  GENERATION_MODEL_CONTRACTS,
-  GENERATION_MODEL_REGISTRY,
-} from '../registry/index.js'
+import { GENERATION_MODEL_REGISTRY } from '../registry/index.js'
 import { evaluateGenerationContract } from '../resolution/evaluator.js'
 
 interface CapabilityScenario {
@@ -34,11 +33,9 @@ function defaultSettings(model: GenerationModelDefinition) {
   )
 }
 
-const gptImage2 = GENERATION_MODEL_REGISTRY['talelabs/gpt-image-2']
-const historicalCurrentRegistry = GENERATION_MODEL_CONTRACTS['2026-07-15.14']
-const veo31 = historicalCurrentRegistry['talelabs/veo-3.1']
-const ltx23Pro = historicalCurrentRegistry['talelabs/ltx-2.3-pro']
-const seedance20 = GENERATION_MODEL_REGISTRY['talelabs/seedance-2.0']
+const gptImage2 = GENERATION_MODEL_REGISTRY['openai/gpt-image-2']
+const veo31 = GENERATION_MODEL_REGISTRY['google/veo-3.1']
+const seedance20 = GENERATION_MODEL_REGISTRY['bytedance/seedance-2.0']
 
 const CAPABILITY_SCENARIOS: readonly CapabilityScenario[] = [
   {
@@ -73,38 +70,6 @@ const CAPABILITY_SCENARIOS: readonly CapabilityScenario[] = [
       settings: defaultSettings(veo31),
     },
     name: 'first and last frame',
-  },
-  {
-    input: {
-      connectionCounts: { videoReferences: 1 },
-      model: veo31,
-      operationId: 'extendVideo',
-      requireComplete: true,
-      settings: defaultSettings(veo31),
-    },
-    name: 'reference video',
-  },
-  {
-    input: {
-      connectionCounts: { audioReferences: 1 },
-      model: ltx23Pro,
-      operationId: 'audioToVideo',
-      requireComplete: true,
-      settings: defaultSettings(ltx23Pro),
-    },
-    name: 'reference audio',
-  },
-  {
-    expectedIssueCodes: ['generation_constraint', 'generation_setting_invalid'],
-    input: {
-      connectionCounts: { imageReferences: 1, prompt: 1 },
-      itemCounts: { imageReferences: 2, prompt: 1 },
-      model: veo31,
-      operationId: 'referencesToVideo',
-      requireComplete: true,
-      settings: { ...defaultSettings(veo31), durationSeconds: '6' },
-    },
-    name: 'invalid setting combination',
   },
   {
     input: {
@@ -166,6 +131,7 @@ const CAPABILITY_SCENARIOS: readonly CapabilityScenario[] = [
   },
 ]
 
+/** Verifies graph and cross-field evaluation for representative catalog models. */
 export function validateGenerationContractCapabilityScenarios() {
   const errors: string[] = []
   for (const scenario of CAPABILITY_SCENARIOS) {

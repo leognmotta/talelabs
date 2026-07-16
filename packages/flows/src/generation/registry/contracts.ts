@@ -1,172 +1,75 @@
+/**
+ * Flow-facing projection of the current checked-in model catalog.
+ *
+ * This module preserves the provider-neutral Flow contract while making
+ * `@talelabs/models-catalog` the only maintained current model inventory.
+ * Provider bindings remain private to admission and provider packages.
+ *
+ */
+
+import type { PublicCatalogModel } from '@talelabs/models-catalog'
 import type {
   GenerationModelDefinition,
   GenerationNodeType,
   GenerationOutputType,
+  HardenedGenerationModelDefinition,
 } from './types.js'
 
 import {
-  CURRENT_GENERATION_MODEL_REGISTRY,
-  GENERATION_MODEL_REGISTRY_2026_07_13_7,
-  GENERATION_MODEL_REGISTRY_2026_07_13_8,
-  GENERATION_MODEL_REGISTRY_2026_07_15_9,
-  GENERATION_MODEL_REGISTRY_2026_07_15_10,
-  GENERATION_MODEL_REGISTRY_2026_07_15_11,
-  GENERATION_MODEL_REGISTRY_2026_07_15_12,
-  GENERATION_MODEL_REGISTRY_2026_07_15_13,
-  GENERATION_MODEL_REGISTRY_2026_07_15_14,
-  GENERATION_MODEL_REGISTRY_2026_07_15_15,
-  GENERATION_MODEL_REGISTRY_2026_07_15_16,
-  GENERATION_MODEL_REGISTRY_2026_07_15_17,
-  GENERATION_MODEL_REGISTRY_2026_07_15_18,
-} from './current/index.js'
-import {
-  GENERATION_MODEL_CONTRACT_VERSION_2026_07_12_2,
-  GENERATION_MODEL_CONTRACT_VERSION_2026_07_12_3,
-  GENERATION_MODEL_CONTRACT_VERSION_2026_07_12_4,
-  GENERATION_MODEL_CONTRACT_VERSION_2026_07_12_5,
-  GENERATION_MODEL_REGISTRY_2026_07_12_2,
-  GENERATION_MODEL_REGISTRY_2026_07_12_3,
-  GENERATION_MODEL_REGISTRY_2026_07_12_4,
-  GENERATION_MODEL_REGISTRY_2026_07_12_5,
-  GENERATION_MODEL_REGISTRY_2026_07_13_1,
-  GENERATION_MODEL_REGISTRY_2026_07_13_2,
-  GENERATION_MODEL_REGISTRY_2026_07_13_3,
-  GENERATION_MODEL_REGISTRY_2026_07_13_4,
-  GENERATION_MODEL_REGISTRY_2026_07_13_5,
-  GENERATION_MODEL_REGISTRY_2026_07_13_6,
-} from './history/index.js'
+  MODEL_CATALOG,
+  SELECTABLE_CATALOG_MODELS,
+} from '@talelabs/models-catalog'
 
-export {
-  GENERATION_MODEL_CONTRACT_VERSION_2026_07_12_2,
-  GENERATION_MODEL_CONTRACT_VERSION_2026_07_12_3,
-  GENERATION_MODEL_CONTRACT_VERSION_2026_07_12_4,
-  GENERATION_MODEL_CONTRACT_VERSION_2026_07_12_5,
-  GENERATION_MODEL_REGISTRY_2026_07_12_2,
-  GENERATION_MODEL_REGISTRY_2026_07_12_3,
-  GENERATION_MODEL_REGISTRY_2026_07_12_4,
-  GENERATION_MODEL_REGISTRY_2026_07_12_5,
-  GENERATION_MODEL_REGISTRY_2026_07_13_1,
-  GENERATION_MODEL_REGISTRY_2026_07_13_2,
-  GENERATION_MODEL_REGISTRY_2026_07_13_3,
-  GENERATION_MODEL_REGISTRY_2026_07_13_4,
-  GENERATION_MODEL_REGISTRY_2026_07_13_5,
-  GENERATION_MODEL_REGISTRY_2026_07_13_6,
-}
-
-export const GENERATION_MODEL_CONTRACT_VERSION_2026_07_13_1 = '2026-07-13.1'
-export const GENERATION_MODEL_CONTRACT_VERSION_2026_07_13_2 = '2026-07-13.2'
-export const GENERATION_MODEL_CONTRACT_VERSION_2026_07_13_3 = '2026-07-13.3'
-export const GENERATION_MODEL_CONTRACT_VERSION_2026_07_13_4 = '2026-07-13.4'
-export const GENERATION_MODEL_CONTRACT_VERSION_2026_07_13_5 = '2026-07-13.5'
-export const GENERATION_MODEL_CONTRACT_VERSION_2026_07_13_6 = '2026-07-13.6'
-export const GENERATION_MODEL_CONTRACT_VERSION_2026_07_13_7 = '2026-07-13.7'
-export const GENERATION_MODEL_CONTRACT_VERSION_2026_07_13_8 = '2026-07-13.8'
-export const GENERATION_MODEL_CONTRACT_VERSION_2026_07_15_9 = '2026-07-15.9'
-export const GENERATION_MODEL_CONTRACT_VERSION_2026_07_15_10 = '2026-07-15.10'
-export const GENERATION_MODEL_CONTRACT_VERSION_2026_07_15_11 = '2026-07-15.11'
-export const GENERATION_MODEL_CONTRACT_VERSION_2026_07_15_12 = '2026-07-15.12'
-export const GENERATION_MODEL_CONTRACT_VERSION_2026_07_15_13 = '2026-07-15.13'
-export const GENERATION_MODEL_CONTRACT_VERSION_2026_07_15_14 = '2026-07-15.14'
-export const GENERATION_MODEL_CONTRACT_VERSION_2026_07_15_15 = '2026-07-15.15'
-export const GENERATION_MODEL_CONTRACT_VERSION_2026_07_15_16 = '2026-07-15.16'
-export const GENERATION_MODEL_CONTRACT_VERSION_2026_07_15_17 = '2026-07-15.17'
-export const GENERATION_MODEL_CONTRACT_VERSION_2026_07_15_18 = '2026-07-15.18'
-export const GENERATION_MODEL_CONTRACT_VERSION_2026_07_15_19 = '2026-07-15.19'
+/** Catalog format understood by mutable Flow drafts. */
 export const GENERATION_MODEL_CONTRACT_VERSION
-  = GENERATION_MODEL_CONTRACT_VERSION_2026_07_15_19
-export const GENERATION_REGISTRY_VERSION
-  = `${GENERATION_MODEL_CONTRACT_VERSION}-presentation.1`
+  = `catalog.${MODEL_CATALOG.catalogVersion}` as const
 
-export const GENERATION_MODEL_REGISTRY_2026_07_15_19
-  = CURRENT_GENERATION_MODEL_REGISTRY
+/** Catalog JSON format version captured in plans and snapshots. */
+export const GENERATION_CATALOG_VERSION = MODEL_CATALOG.catalogVersion
 
-function deepFreeze<T>(value: T): T {
-  if (!value || typeof value !== 'object')
-    return value
-  for (const nested of Object.values(value)) deepFreeze(nested)
-  return Object.isFrozen(value) ? value : Object.freeze(value)
+/** Content-sensitive catalog identity used for compatibility and provenance. */
+export const GENERATION_CATALOG_REVISION = MODEL_CATALOG.catalogRevision
+
+/** Current Flow contract version accepted by graph readers. */
+export type GenerationModelContractVersion
+  = typeof GENERATION_MODEL_CONTRACT_VERSION
+
+function toFlowModel(
+  model: PublicCatalogModel,
+): HardenedGenerationModelDefinition {
+  const { status, ...definition } = model
+  const flowModel = {
+    ...definition,
+    enabled: status === 'active',
+  } satisfies HardenedGenerationModelDefinition
+  return Object.freeze(flowModel)
 }
 
-/** Immutable released model contracts retained by version. */
-export const GENERATION_MODEL_CONTRACTS = deepFreeze({
-  [GENERATION_MODEL_CONTRACT_VERSION_2026_07_12_2]:
-    GENERATION_MODEL_REGISTRY_2026_07_12_2,
-  [GENERATION_MODEL_CONTRACT_VERSION_2026_07_12_3]:
-    GENERATION_MODEL_REGISTRY_2026_07_12_3,
-  [GENERATION_MODEL_CONTRACT_VERSION_2026_07_12_4]:
-    GENERATION_MODEL_REGISTRY_2026_07_12_4,
-  [GENERATION_MODEL_CONTRACT_VERSION_2026_07_12_5]:
-    GENERATION_MODEL_REGISTRY_2026_07_12_5,
-  [GENERATION_MODEL_CONTRACT_VERSION_2026_07_13_1]:
-    GENERATION_MODEL_REGISTRY_2026_07_13_1,
-  [GENERATION_MODEL_CONTRACT_VERSION_2026_07_13_2]:
-    GENERATION_MODEL_REGISTRY_2026_07_13_2,
-  [GENERATION_MODEL_CONTRACT_VERSION_2026_07_13_3]:
-    GENERATION_MODEL_REGISTRY_2026_07_13_3,
-  [GENERATION_MODEL_CONTRACT_VERSION_2026_07_13_4]:
-    GENERATION_MODEL_REGISTRY_2026_07_13_4,
-  [GENERATION_MODEL_CONTRACT_VERSION_2026_07_13_5]:
-    GENERATION_MODEL_REGISTRY_2026_07_13_5,
-  [GENERATION_MODEL_CONTRACT_VERSION_2026_07_13_6]:
-    GENERATION_MODEL_REGISTRY_2026_07_13_6,
-  [GENERATION_MODEL_CONTRACT_VERSION_2026_07_13_7]:
-    GENERATION_MODEL_REGISTRY_2026_07_13_7,
-  [GENERATION_MODEL_CONTRACT_VERSION_2026_07_13_8]:
-    GENERATION_MODEL_REGISTRY_2026_07_13_8,
-  [GENERATION_MODEL_CONTRACT_VERSION_2026_07_15_9]:
-    GENERATION_MODEL_REGISTRY_2026_07_15_9,
-  [GENERATION_MODEL_CONTRACT_VERSION_2026_07_15_10]:
-    GENERATION_MODEL_REGISTRY_2026_07_15_10,
-  [GENERATION_MODEL_CONTRACT_VERSION_2026_07_15_11]:
-    GENERATION_MODEL_REGISTRY_2026_07_15_11,
-  [GENERATION_MODEL_CONTRACT_VERSION_2026_07_15_12]:
-    GENERATION_MODEL_REGISTRY_2026_07_15_12,
-  [GENERATION_MODEL_CONTRACT_VERSION_2026_07_15_13]:
-    GENERATION_MODEL_REGISTRY_2026_07_15_13,
-  [GENERATION_MODEL_CONTRACT_VERSION_2026_07_15_14]:
-    GENERATION_MODEL_REGISTRY_2026_07_15_14,
-  [GENERATION_MODEL_CONTRACT_VERSION_2026_07_15_15]:
-    GENERATION_MODEL_REGISTRY_2026_07_15_15,
-  [GENERATION_MODEL_CONTRACT_VERSION_2026_07_15_16]:
-    GENERATION_MODEL_REGISTRY_2026_07_15_16,
-  [GENERATION_MODEL_CONTRACT_VERSION_2026_07_15_17]:
-    GENERATION_MODEL_REGISTRY_2026_07_15_17,
-  [GENERATION_MODEL_CONTRACT_VERSION_2026_07_15_18]:
-    GENERATION_MODEL_REGISTRY_2026_07_15_18,
-  [GENERATION_MODEL_CONTRACT_VERSION_2026_07_15_19]:
-    GENERATION_MODEL_REGISTRY_2026_07_15_19,
-})
+/** Current provider-neutral model registry derived from the assembled catalog. */
+export const GENERATION_MODEL_REGISTRY = Object.freeze(
+  Object.fromEntries(
+    SELECTABLE_CATALOG_MODELS.map(model => [model.id, toFlowModel(model)]),
+  ),
+) as Readonly<Record<string, HardenedGenerationModelDefinition>>
 
-export type GenerationModelContractVersion
-  = keyof typeof GENERATION_MODEL_CONTRACTS
-
-export const GENERATION_MODEL_REGISTRY
-  = GENERATION_MODEL_CONTRACTS[GENERATION_MODEL_CONTRACT_VERSION]
-
-export type GenerationModelId = Extract<
-  keyof typeof GENERATION_MODEL_REGISTRY,
-  string
->
-export type ImageGenerationModelId = {
-  [Id in GenerationModelId]: (typeof GENERATION_MODEL_REGISTRY)[Id]['mediaType'] extends 'image'
-    ? Id
-    : never;
-}[GenerationModelId]
-
+/** Current models in stable catalog source order. */
 export const GENERATION_MODELS = Object.freeze(
-  Object.values(GENERATION_MODEL_REGISTRY),
+  SELECTABLE_CATALOG_MODELS.map(model => GENERATION_MODEL_REGISTRY[model.id]!),
 ) as readonly GenerationModelDefinition[]
 
+/** Current image models in stable catalog source order. */
 export const IMAGE_GENERATION_MODELS = Object.freeze(
   GENERATION_MODELS.filter(model => model.mediaType === 'image'),
 )
 
-export const DEFAULT_GENERATION_MODEL_IDS = Object.freeze({
-  audio: 'talelabs/gemini-3.1-flash-tts-preview',
-  image: 'talelabs/gpt-image-2',
-  text: 'talelabs/gemini-3.1-flash-lite',
-  video: 'talelabs/veo-3.1-lite',
-} as const satisfies Record<GenerationOutputType, GenerationModelId>)
+/** Canonical model identity accepted by current Flow drafts. */
+export type GenerationModelId = string
+
+/** Canonical image-model identity accepted by current Flow drafts. */
+export type ImageGenerationModelId = string
+
+/** Canonical default model IDs owned by the catalog. */
+export const DEFAULT_GENERATION_MODEL_IDS = MODEL_CATALOG.defaults
 
 const defaultGenerationModelIdsByNode: Partial<Record<
   Exclude<GenerationNodeType, 'audioGeneration'>,
@@ -177,13 +80,17 @@ const defaultGenerationModelIdsByNode: Partial<Record<
   speechGeneration: DEFAULT_GENERATION_MODEL_IDS.audio,
   videoGeneration: DEFAULT_GENERATION_MODEL_IDS.video,
 }
+
+/** Default model IDs for node intents with a single product default. */
 export const DEFAULT_GENERATION_MODEL_IDS_BY_NODE = Object.freeze(
   defaultGenerationModelIdsByNode,
 )
 
+/** Canonical default Image Generation model ID. */
 export const DEFAULT_IMAGE_GENERATION_MODEL_ID
   = DEFAULT_GENERATION_MODEL_IDS.image
 
+/** Output media family owned by each generation-node intent. */
 export const GENERATION_NODE_MEDIA_TYPES = Object.freeze({
   audioGeneration: 'audio',
   imageGeneration: 'image',
@@ -196,10 +103,12 @@ export const GENERATION_NODE_MEDIA_TYPES = Object.freeze({
   voiceIsolation: 'audio',
 } as const satisfies Record<GenerationNodeType, GenerationOutputType>)
 
+/** Every generation-node intent understood by Flow validation. */
 export const GENERATION_NODE_TYPES = Object.freeze(
   Object.keys(GENERATION_NODE_MEDIA_TYPES) as GenerationNodeType[],
 )
 
+/** Current model-adaptive generation node intents. */
 export const ADAPTIVE_GENERATION_NODE_TYPES = Object.freeze([
   'imageGeneration',
   'llm',

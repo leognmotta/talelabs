@@ -9,12 +9,16 @@ Read [`README.md`](README.md), `docs/assets-flows-mvp-contract.md`, and `docs/fl
 - Keep graph vocabulary under `graph/`, node contracts under `nodes/`, generation capabilities under `generation/`, and immutable execution planning under `runtime/`.
 - Put modules in the narrowest owning directory. Do not rebuild a flat source folder or create generic dumping grounds such as `helpers/` or `utils/`.
 
-## Registry and history rules
+## Catalog and snapshot rules
 
-- The curated TypeScript generation registry is the active product catalog. Do not add provider-discovery JSON, runtime-generated catalogs, or database-backed model configuration.
-- Keep active declarations in `generation/registry/current/` and immutable prior contracts in `generation/registry/history/`.
-- Persist stable TaleLabs model IDs. A provider/model endpoint change must not silently change a Flow's creative identity.
-- Never edit a historical contract in place. Add an explicit new contract version and preserve readers/upcasters for stored Flows and snapshots.
+- `@talelabs/models-catalog` is the active product catalog. Flow may project its
+  provider-neutral public definitions, but must not copy model declarations,
+  bindings, route history, or provider-native facts.
+- Persist canonical `vendor/model` IDs and per-model revisions. A provider or
+  endpoint change must not change a Flow's creative identity.
+- New snapshots are self-contained. Preserve supported production snapshot
+  readers explicitly; never reconstruct an admitted binding from current
+  catalog state.
 - Every active model operation must be validated against its input slots, setting visibility, constraints, and output contract. Registry initialization must fail closed on drift.
 
 ## Graph and runtime invariants

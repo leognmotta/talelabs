@@ -1,9 +1,8 @@
+/** Deterministic model-adaptive resolver scenarios for current catalog records. */
+
 import type { GenerationModelDefinition } from '../registry/types.js'
 
-import {
-  GENERATION_MODEL_CONTRACTS,
-  GENERATION_MODEL_REGISTRY,
-} from '../registry/index.js'
+import { GENERATION_MODEL_REGISTRY } from '../registry/index.js'
 import { resolveImageGenerationState } from '../resolution/image.js'
 import { resolveLlmState } from '../resolution/llm.js'
 import { resolveVideoGenerationState } from '../resolution/video.js'
@@ -14,19 +13,17 @@ function defaultSettings(model: GenerationModelDefinition) {
   )
 }
 
-const historicalCurrentRegistry = GENERATION_MODEL_CONTRACTS['2026-07-15.14']
-const veo31 = historicalCurrentRegistry['talelabs/veo-3.1']
-const seedance20 = GENERATION_MODEL_REGISTRY['talelabs/seedance-2.0']
-const nanoBanana2 = GENERATION_MODEL_REGISTRY['talelabs/nano-banana-2']
-const recraft41 = GENERATION_MODEL_REGISTRY['talelabs/recraft-4.1']
-const legacyGptImage2
-  = GENERATION_MODEL_CONTRACTS['2026-07-13.3']['talelabs/gpt-image-2']
+const veo31 = GENERATION_MODEL_REGISTRY['google/veo-3.1']
+const seedance20 = GENERATION_MODEL_REGISTRY['bytedance/seedance-2.0']
+const nanoBanana2 = GENERATION_MODEL_REGISTRY['google/gemini-3.1-flash-image']
+const recraft41 = GENERATION_MODEL_REGISTRY['recraft/recraft-v4.1']
 const gemini31FlashLite
-  = GENERATION_MODEL_REGISTRY['talelabs/gemini-3.1-flash-lite']
-const gemini31Pro = GENERATION_MODEL_REGISTRY['talelabs/gemini-3.1-pro']
-const deepseekV32 = GENERATION_MODEL_REGISTRY['talelabs/deepseek-v3.2']
-const mistralLarge3 = GENERATION_MODEL_REGISTRY['talelabs/mistral-large-3']
+  = GENERATION_MODEL_REGISTRY['google/gemini-3.1-flash-lite']
+const gemini31Pro = GENERATION_MODEL_REGISTRY['google/gemini-3.1-pro-preview']
+const deepseekV32 = GENERATION_MODEL_REGISTRY['deepseek/deepseek-v3.2']
+const mistralLarge3 = GENERATION_MODEL_REGISTRY['mistralai/mistral-large-2512']
 
+/** Verifies operation and readiness resolution for representative model inputs. */
 export function validateGenerationResolverCapabilityScenarios() {
   const errors: string[] = []
   const resolverScenarios = [
@@ -120,19 +117,6 @@ export function validateGenerationResolverCapabilityScenarios() {
       expectedOperationId: 'imageToImage',
       expectedReadiness: 'ready',
       name: 'selected image items resolve image to image',
-    },
-    {
-      actual: resolveImageGenerationState({
-        connectionCounts: { references: 1 },
-        inlinePrompt: 'Preserve the legacy reference',
-        itemCounts: { references: 2 },
-        model: legacyGptImage2,
-        settings: defaultSettings(legacyGptImage2),
-      }),
-      expectedAvailability: 'connected',
-      expectedOperationId: 'imageToImage',
-      expectedReadiness: 'ready',
-      name: 'historical references alias remains resolvable before explicit upgrade',
     },
     {
       actual: resolveImageGenerationState({

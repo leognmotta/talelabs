@@ -1,11 +1,13 @@
+/** Safe readers for versioned generation-node data stored in mutable Flow drafts. */
+
 import type { ParsedFlowNodeData } from '../../graph/types.js'
 
-import { migrateLegacyAudioGenerationNode } from '../migrations/legacy-audio.js'
 import {
   getFlowNodeTypeDefinition,
   isFlowNodeType,
 } from '../registry/types.js'
 
+/** Parses persisted node data and migrates it to the current in-memory shape. */
 export function parseAndUpcastFlowNodeData(input: {
   data: unknown
   schemaVersion: number
@@ -45,9 +47,9 @@ export function parseAndUpcastFlowNodeData(input: {
     data = schema.parse(data)
   }
 
-  return migrateLegacyAudioGenerationNode({
+  return {
     data: data as Record<string, unknown>,
     schemaVersion: definition.currentVersion,
     type: input.type,
-  })
+  }
 }

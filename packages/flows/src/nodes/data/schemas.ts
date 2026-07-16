@@ -1,9 +1,11 @@
+/** Runtime schemas for versioned provider-neutral Flow node data. */
+
 import type { GenerationOutputType } from '../../generation/registry/index.js'
 import type { FlowNodeType } from '../../graph/types.js'
 
 import { z } from 'zod'
 import {
-  GENERATION_MODEL_CONTRACT_VERSION_2026_07_12_2,
+  GENERATION_MODEL_CONTRACT_VERSION,
   getGenerationMediaTypeForNode,
   getGenerationModel,
   getGenerationOperation,
@@ -13,11 +15,14 @@ import {
   matchesGenerationCondition,
 } from '../../generation/registry/index.js'
 
+/** Strict schema for node types with no persisted configuration. */
 export const EmptyNodeDataSchema = z.strictObject({})
+/** Shared lock state persisted by editable canvas nodes. */
 export const LockedNodeDataSchema = z.strictObject({
   locked: z.boolean(),
 })
 
+/** Normalized crop rectangle persisted for Asset image presentation. */
 export const FlowImageCropSchema = z
   .strictObject({
     height: z.number().positive().max(1),
@@ -41,17 +46,21 @@ export const FlowImageCropSchema = z
       })
     }
   })
+/** Current persisted data schema for Asset source nodes. */
 export const AssetNodeDataSchemaV3 = LockedNodeDataSchema.extend({
   crop: FlowImageCropSchema.optional(),
 })
 
+/** Legacy text-node data accepted during deterministic migration. */
 export const TextNodeDataSchemaV1 = z.strictObject({
   text: z.string().max(16_000),
 })
+/** Current persisted data schema for Text source nodes. */
 export const TextNodeDataSchemaV2 = TextNodeDataSchemaV1.extend({
   locked: z.boolean(),
 })
 
+/** Manual or automatic Asset-selection policy for one input slot. */
 export const InputSelectionSchema = z.discriminatedUnion('mode', [
   z.strictObject({ mode: z.literal('auto') }),
   z.strictObject({
@@ -60,6 +69,7 @@ export const InputSelectionSchema = z.discriminatedUnion('mode', [
   }),
 ])
 
+/** Legacy shared generation-node fields accepted only for migration. */
 export const GenerationNodeDataLegacySchema = z.strictObject({
   inputSelections: z.record(z.string(), InputSelectionSchema),
   modelId: z.string(),
@@ -68,24 +78,23 @@ export const GenerationNodeDataLegacySchema = z.strictObject({
     z.union([z.boolean(), z.number(), z.string()]),
   ),
 })
+/** Legacy image-node base retained for deterministic upcasting. */
 export const ImageGenerationNodeDataSchemaV3Base
   = GenerationNodeDataLegacySchema.extend({
     locked: z.boolean(),
   })
 
+/** Catalog-era generation fields introduced before current contract pinning. */
 export const GenerationNodeDataSchemaV4Base
   = ImageGenerationNodeDataSchemaV3Base.extend({
     operationId: z.string(),
   })
+/** Current shared base for all model-adaptive generation node schemas. */
 export const GenerationNodeDataSchemaBase = GenerationNodeDataSchemaV4Base.extend({
   modelContractVersion: z.string(),
 })
 
-export const LEGACY_IMAGE_MODEL_IDS = new Set([
-  'talelabs/image-draft',
-  'talelabs/image-studio',
-])
-
+/** Adds model, operation, setting, and selection consistency checks. */
 export function refineGenerationNodeData(
   data: z.infer<typeof GenerationNodeDataSchemaBase>,
   context: z.RefinementCtx,
@@ -230,12 +239,14 @@ export function refineGenerationNodeData(
   }
 }
 
+/** Creates a current model-adaptive schema for one output family. */
 export function createGenerationNodeDataSchema(mediaType: GenerationOutputType) {
   return GenerationNodeDataSchemaBase.superRefine((data, context) => {
     refineGenerationNodeData(data, context, mediaType)
   })
 }
 
+/** Creates a current schema constrained to one generation-node intent. */
 export function createIntentGenerationNodeDataSchema(
   nodeType: Exclude<
     FlowNodeType,
@@ -255,14 +266,14 @@ export function createIntentGenerationNodeDataSchema(
   )
 }
 
+/** Version 1 image-node schema retained for saved draft migration. */
 export const ImageGenerationNodeDataSchemaV1 = GenerationNodeDataLegacySchema
+/** Version 2 image-node schema retained for saved draft migration. */
 export const ImageGenerationNodeDataSchemaV2 = GenerationNodeDataLegacySchema
+/** Version 3 image-node schema retained for saved draft migration. */
 export const ImageGenerationNodeDataSchemaV3
   = ImageGenerationNodeDataSchemaV3Base.superRefine((data, context) => {
-    if (
-      !isGenerationModelId(data.modelId)
-      && !LEGACY_IMAGE_MODEL_IDS.has(data.modelId)
-    ) {
+    if (!isGenerationModelId(data.modelId)) {
       context.addIssue({
         code: 'custom',
         message: 'unknown_model',
@@ -270,71 +281,85 @@ export const ImageGenerationNodeDataSchemaV3
       })
     }
   })
+/** Version 4 image-node schema retained for saved draft migration. */
 export const ImageGenerationNodeDataSchemaV4
   = GenerationNodeDataSchemaV4Base.superRefine((data, context) => {
     refineGenerationNodeData(
       {
         ...data,
-        modelContractVersion: GENERATION_MODEL_CONTRACT_VERSION_2026_07_12_2,
+        modelContractVersion: GENERATION_MODEL_CONTRACT_VERSION,
       },
       context,
       'image',
     )
   })
+/** Version 5 image-node schema retained for saved draft migration. */
 export const ImageGenerationNodeDataSchemaV5 = createGenerationNodeDataSchema('image')
+/** Version 6 image base retained for catalog identity migration. */
 export const ImageGenerationNodeDataSchemaV6Base = GenerationNodeDataSchemaBase.extend(
   {
     prompt: z.string().max(16_000),
   },
 )
+/** Version 6 image-node schema retained for saved draft migration. */
 export const ImageGenerationNodeDataSchemaV6
   = ImageGenerationNodeDataSchemaV6Base.superRefine((data, context) => {
     refineGenerationNodeData(data, context, 'image')
   })
+/** Current image base with canonical provider-neutral identity and crop. */
 export const ImageGenerationNodeDataSchemaV7Base = ImageGenerationNodeDataSchemaV6Base.extend({
   crop: FlowImageCropSchema.optional(),
 })
+/** Current canonical image generation node data schema. */
 export const ImageGenerationNodeDataSchemaV7
   = ImageGenerationNodeDataSchemaV7Base.superRefine((data, context) => {
     refineGenerationNodeData(data, context, 'image')
   })
+/** Version 1 video-node schema retained for saved draft migration. */
 export const VideoGenerationNodeDataSchemaV1
   = GenerationNodeDataSchemaV4Base.superRefine((data, context) => {
     refineGenerationNodeData(
       {
         ...data,
-        modelContractVersion: GENERATION_MODEL_CONTRACT_VERSION_2026_07_12_2,
+        modelContractVersion: GENERATION_MODEL_CONTRACT_VERSION,
       },
       context,
       'video',
     )
   })
+/** Version 2 video-node schema retained for saved draft migration. */
 export const VideoGenerationNodeDataSchemaV2 = createGenerationNodeDataSchema('video')
+/** Current video base with canonical provider-neutral model identity. */
 export const VideoGenerationNodeDataSchemaV3Base = GenerationNodeDataSchemaBase.extend(
   {
     prompt: z.string().max(16_000),
   },
 )
+/** Current canonical video generation node data schema. */
 export const VideoGenerationNodeDataSchemaV3
   = VideoGenerationNodeDataSchemaV3Base.superRefine((data, context) => {
     refineGenerationNodeData(data, context, 'video')
   })
+/** Version 1 generic audio-node schema retained for saved draft migration. */
 export const AudioGenerationNodeDataSchemaV1
   = GenerationNodeDataSchemaV4Base.superRefine((data, context) => {
     refineGenerationNodeData(
       {
         ...data,
-        modelContractVersion: GENERATION_MODEL_CONTRACT_VERSION_2026_07_12_2,
+        modelContractVersion: GENERATION_MODEL_CONTRACT_VERSION,
       },
       context,
       'audio',
     )
   })
+/** Current canonical generic audio generation node data schema. */
 export const AudioGenerationNodeDataSchemaV2 = createGenerationNodeDataSchema('audio')
+/** Current canonical speech generation node data schema. */
 export const SpeechGenerationNodeDataSchemaV1 = createIntentGenerationNodeDataSchema(
   'speechGeneration',
   { prompt: z.string().max(16_000) },
 )
+/** Current canonical music generation node data schema. */
 export const MusicGenerationNodeDataSchemaV1 = createIntentGenerationNodeDataSchema(
   'musicGeneration',
   {
@@ -342,22 +367,27 @@ export const MusicGenerationNodeDataSchemaV1 = createIntentGenerationNodeDataSch
     prompt: z.string().max(16_000),
   },
 )
+/** Current canonical sound-effect generation node data schema. */
 export const SoundEffectGenerationNodeDataSchemaV1
   = createIntentGenerationNodeDataSchema(
     'soundEffectGeneration',
     { prompt: z.string().max(16_000) },
   )
+/** Current canonical voice-changer node data schema. */
 export const VoiceChangerNodeDataSchemaV1 = createIntentGenerationNodeDataSchema(
   'voiceChanger',
 )
+/** Current canonical voice-isolation node data schema. */
 export const VoiceIsolationNodeDataSchemaV1 = createIntentGenerationNodeDataSchema(
   'voiceIsolation',
 )
+/** Current LLM base with provider-neutral text-generation fields. */
 export const LlmNodeDataSchemaV1Base = GenerationNodeDataSchemaBase.extend({
   instructions: z.string().max(16_000),
   locked: z.boolean(),
   prompt: z.string().max(16_000),
 })
+/** Current canonical LLM node data schema. */
 export const LlmNodeDataSchemaV1 = LlmNodeDataSchemaV1Base.superRefine(
   (data, context) => {
     refineGenerationNodeData(data, context, 'text')

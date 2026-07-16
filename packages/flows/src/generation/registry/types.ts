@@ -1,9 +1,15 @@
+/**
+ * Flow-facing generation capability and model-definition contracts that exclude
+ * private provider bindings and credentials.
+ */
+
 import type { FlowValueType } from '../../graph/types.js'
 
 /** Asset-backed media that can participate in generation reference selection. */
 export type GenerationMediaType = 'audio' | 'image' | 'video'
 /** Every output family supported by the curated creative-model catalog. */
 export type GenerationOutputType = GenerationMediaType | 'text'
+/** Canvas generation-node intents supported by current model operations. */
 export type GenerationNodeType
   = | 'audioGeneration'
     | 'imageGeneration'
@@ -15,8 +21,10 @@ export type GenerationNodeType
     | 'voiceChanger'
     | 'voiceIsolation'
 
+/** Scalar setting values persisted in Flow drafts and immutable snapshots. */
 export type GenerationSettingValue = boolean | number | string
 
+/** Resolved UI and validation availability for one model input slot. */
 export type GenerationInputAvailability
   = | { state: 'unsupported' }
     | { state: 'available' }
@@ -28,6 +36,7 @@ export type GenerationInputAvailability
     }
     | { reasonKey: string, state: 'full' }
 
+/** Fixed condition vocabulary for visibility and cross-field constraints. */
 export type GenerationConditionDefinition
   = | {
     field: 'operation'
@@ -52,6 +61,7 @@ export type GenerationConditionDefinition
     operator: 'connected'
   }
 
+/** One provider-neutral cross-field rule owned by a model contract. */
 export interface GenerationConstraintDefinition {
   forbid?: readonly GenerationConditionDefinition[]
   id: string
@@ -60,6 +70,7 @@ export interface GenerationConstraintDefinition {
   when: readonly GenerationConditionDefinition[]
 }
 
+/** Typed setting definition with a stable persisted identifier and default. */
 export type GenerationSettingDefinition
   = | {
     advanced?: boolean
@@ -103,6 +114,7 @@ export type GenerationSettingDefinition
     visibleWhen?: readonly GenerationConditionDefinition[]
   }
 
+/** Creative roles that an accepted reference Asset may serve. */
 export type GenerationReferencePurpose
   = | 'audioGuidance'
     | 'composition'
@@ -114,18 +126,21 @@ export type GenerationReferencePurpose
     | 'subject'
     | 'videoExtension'
 
+/** Evidence-backed provider support for keeping several subjects distinct. */
 export type GenerationMultipleSubjectSupport
   = | 'not-applicable'
     | 'supported'
     | 'unknown'
     | 'unsupported'
 
+/** Product policy for combining several visual references into one input. */
 export type GenerationContactSheetPolicy
   = | 'never'
     | 'not-applicable'
     | 'preferred'
     | 'supported'
 
+/** Creative-reference semantics attached to one model input slot. */
 export interface GenerationReferenceProfile {
   contactSheetPolicy: GenerationContactSheetPolicy
   multipleSubjectSupport: GenerationMultipleSubjectSupport
@@ -134,6 +149,7 @@ export interface GenerationReferenceProfile {
   recommendedMaxItems?: number
 }
 
+/** Provider-reviewed restrictions for Asset media accepted by one slot. */
 export interface GenerationAcceptedMediaConstraints {
   aspectRatios?: readonly string[]
   durationSeconds?: { max: number, min: number }
@@ -143,6 +159,7 @@ export interface GenerationAcceptedMediaConstraints {
   resolutions?: readonly string[]
 }
 
+/** One typed input handle exposed by a generation model contract. */
 export interface GenerationInputSlotDefinition {
   accepts: readonly FlowValueType[]
   acceptedMedia?: GenerationAcceptedMediaConstraints
@@ -156,11 +173,13 @@ export interface GenerationInputSlotDefinition {
   referenceProfile?: GenerationReferenceProfile
 }
 
+/** Aggregate reference limit spanning the listed slot identities. */
 export interface GenerationReferenceLimit {
   maxItems: number
   slotIds: readonly string[]
 }
 
+/** Provider-neutral media family and bounded output count for an operation. */
 export interface GenerationOutputDefinition {
   count: {
     default: number
@@ -171,6 +190,7 @@ export interface GenerationOutputDefinition {
   mediaType: GenerationOutputType
 }
 
+/** One executable creative operation supported by a model. */
 export interface GenerationOperationDefinition {
   descriptionKey: string
   id: string
@@ -205,6 +225,7 @@ export interface GenerationModelProviderDefinition {
   id: string
 }
 
+/** Code-owned visual identity used by the public model presentation layer. */
 export type GenerationModelLogoId
   = | 'alibaba'
     | 'bytedance'
@@ -229,11 +250,13 @@ export type GenerationModelLogoId
     | 'zai'
     | 'kling'
 
+/** Stable public display metadata for one catalog model. */
 export interface GenerationModelPresentationDefinition {
   descriptionKey: string
   logoId: GenerationModelLogoId
 }
 
+/** Provider-neutral reasoning effort options supported by text models. */
 export type LlmReasoningMode
   = | 'off'
     | 'auto'
@@ -244,16 +267,19 @@ export type LlmReasoningMode
     | 'max'
     | 'xhigh'
 
+/** Allowed reasoning modes and default behavior for one text model. */
 export interface LlmReasoningCapability {
   default: LlmReasoningMode
   mandatory: boolean
   options: readonly LlmReasoningMode[]
 }
 
+/** Text-generation capabilities that do not apply to media models. */
 export interface LlmGenerationCapability {
   reasoning?: LlmReasoningCapability
 }
 
+/** Complete provider-neutral model contract consumed by Flow readers. */
 export interface GenerationModelDefinition {
   /**
    * Version 2 hardened outputs/references. Version 3 additionally tags every
@@ -279,9 +305,12 @@ export interface GenerationModelDefinition {
   /** @deprecated Not populated by current provider-independent contracts. */
   provider?: GenerationModelProviderDefinition
   recommended: boolean
+  /** Monotonic catalog revision captured by newly admitted runs. */
+  revision?: number
   settings: readonly GenerationSettingDefinition[]
 }
 
+/** Current operation shape with mandatory output and reference contracts. */
 export type HardenedGenerationOperationDefinition = Omit<
   GenerationOperationDefinition,
   'output' | 'referenceLimit'
@@ -290,6 +319,7 @@ export type HardenedGenerationOperationDefinition = Omit<
   referenceLimit: GenerationReferenceLimit
 }
 
+/** Current catalog model shape with mandatory revision and schema version. */
 export type HardenedGenerationModelDefinition = Omit<
   GenerationModelDefinition,
   'capabilitySchemaVersion' | 'operations' | 'provider'
@@ -297,8 +327,10 @@ export type HardenedGenerationModelDefinition = Omit<
   capabilitySchemaVersion: 2 | 3
   operations: readonly HardenedGenerationOperationDefinition[]
   provider?: never
+  revision: number
 }
 
+/** Source classification used while resolving model reference candidates. */
 export type GenerationCandidateOrigin
   = | {
     kind: 'asset'
@@ -309,6 +341,7 @@ export type GenerationCandidateOrigin
     outputIndex: number
   }
 
+/** One candidate reference value considered by model-adaptive resolution. */
 export interface GenerationReferenceCandidate {
   assetId: string
   candidateId: string
@@ -318,12 +351,14 @@ export interface GenerationReferenceCandidate {
   slotId: string
 }
 
+/** Candidate plus the deterministic reason it was accepted or rejected. */
 export interface GenerationConsideredCandidate {
   candidate: GenerationReferenceCandidate
   exclusionReasons: readonly string[]
   selected: boolean
 }
 
+/** Final provider input selection for one model slot. */
 export interface GenerationSelectedProviderInput {
   assetId: string
   candidateId: string

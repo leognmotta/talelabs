@@ -1,3 +1,5 @@
+/** Cross-record and per-model validation for Flow generation projections. */
+
 import type {
   GenerationModelDefinition,
   GenerationSettingValue,
@@ -10,6 +12,7 @@ import {
   validateGenerationCondition,
 } from './conditions.js'
 
+/** Validates identity, operation, slot, setting, and constraint invariants. */
 export function validateGenerationRegistry(
   registry: Readonly<
     Record<string, GenerationModelDefinition>
@@ -25,8 +28,11 @@ export function validateGenerationRegistry(
         || model.capabilitySchemaVersion === 3
     if (key !== model.id)
       errors.push(`${key}: model id must match its registry key`)
-    if (!model.id.startsWith('talelabs/'))
-      errors.push(`${key}: product model ids must use the talelabs namespace`)
+    if (!/^[^/]+\/.+/.test(model.id) || model.id.startsWith('talelabs/')) {
+      errors.push(
+        `${key}: product model ids must use canonical vendor/model identity`,
+      )
+    }
     if (!model.operations.length)
       errors.push(`${key}: at least one operation is required`)
     if (options.requireHardened && model.capabilitySchemaVersion !== 3) {
@@ -34,6 +40,8 @@ export function validateGenerationRegistry(
         `${key}: current contracts must use capability schema version 3`,
       )
     }
+    if (options.requireHardened && (!model.revision || model.revision < 1))
+      errors.push(`${key}: current contracts require a positive model revision`)
     if (options.requireHardened && !model.enabled) {
       errors.push(
         `${key}: unavailable models must not exist in the current catalog`,
@@ -548,6 +556,7 @@ export function validateGenerationRegistry(
   return errors
 }
 
+/** Enforces current schema-hardening requirements in addition to base invariants. */
 export function validateHardenedGenerationRegistry(
   registry: Readonly<
     Record<string, GenerationModelDefinition>
