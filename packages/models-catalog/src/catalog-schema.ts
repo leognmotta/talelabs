@@ -9,6 +9,7 @@
 import type { ModelCatalog } from './schema.js'
 
 import { z } from 'zod'
+import { CatalogProviderBindingSchema } from './providers/schema.js'
 
 const settingValueSchema = z.union([z.boolean(), z.number(), z.string()])
 const conditionSchema = z.union([
@@ -139,81 +140,6 @@ const operationSchema = z.object({
   }).strict(),
   requiredSettingIds: z.array(z.string().min(1)).optional(),
   settingIds: z.array(z.string().min(1)),
-}).strict()
-const lifecycleSchema = z.object({
-  cancellation: z.enum(['supported', 'unsupported']),
-  completions: z.array(z.enum(['poll', 'response', 'webhook'])).min(1),
-  deliveries: z.array(z.enum(['bytes', 'stream', 'text', 'url'])).min(1),
-  submission: z.enum(['asynchronous', 'immediate']),
-}).strict()
-const requestProfileSchema = z.discriminatedUnion('kind', [
-  z.object({
-    kind: z.literal('chat'),
-    maxImageReferences: z.number().int().nonnegative(),
-    maxTokensParameter: z.enum(['max_completion_tokens', 'max_tokens']),
-    reasoning: z.boolean(),
-    settingIds: z.array(z.string().min(1)),
-  }).strict(),
-  z.object({
-    kind: z.literal('image'),
-    maxReferences: z.number().int().nonnegative(),
-    settingIds: z.array(z.string().min(1)),
-  }).strict(),
-  z.object({
-    kind: z.literal('speech'),
-    outputFormats: z.tuple([z.literal('mp3')]),
-    settingIds: z.array(z.string().min(1)),
-    voiceValues: z.record(z.string(), z.string().min(1)),
-  }).strict(),
-  z.object({
-    frameMode: z.enum(['first', 'first-last', 'none']),
-    generateAudio: z.boolean(),
-    kind: z.literal('video'),
-    referenceLimits: z.object({
-      audio: z.number().int().nonnegative(),
-      image: z.number().int().nonnegative(),
-      video: z.number().int().nonnegative(),
-    }).strict(),
-    referenceValidationPolicy: z.enum(['none', 'seedance-2-reference-v1']),
-    settingIds: z.array(z.string().min(1)),
-  }).strict(),
-])
-/** Strict runtime schema for one private provider binding. */
-export const CatalogProviderBindingSchema = z.object({
-  adapterVersion: z.string().min(1),
-  costCapture: z.object({
-    creditCost: z.literal('unknown'),
-    providerCostUsd: z.literal('response-or-unknown'),
-    source: z.literal('provider-result'),
-  }).strict(),
-  endpoint: z.enum([
-    '/api/v1/audio/speech',
-    '/api/v1/chat/completions',
-    '/api/v1/images',
-    '/api/v1/videos',
-  ]),
-  evidence: z.object({
-    reviewedAt: z.iso.date(),
-    sources: z.tuple(
-      [z.url({ protocol: /^https$/ })],
-      z.url({ protocol: /^https$/ }),
-    ),
-  }).strict(),
-  lifecycle: lifecycleSchema,
-  nativeModelId: z.string().regex(/^[^/]+\/.+$/),
-  operationId: z.string().min(1),
-  priority: z.number().int(),
-  provider: z.literal('openrouter'),
-  providerTag: z.string().min(1),
-  protocol: z.enum(['chat', 'image', 'speech', 'video']),
-  requestProfile: requestProfileSchema,
-  requiresDurableSubmissionBoundary: z.literal(true),
-  routeVersion: z.string().min(1),
-  routingPolicy: z.literal('pinned'),
-  supportedParameters: z.tuple(
-    [z.string().min(1)],
-    z.string().min(1),
-  ),
 }).strict()
 const modelSchema = z.object({
   bindings: z.array(CatalogProviderBindingSchema),

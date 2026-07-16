@@ -8,73 +8,9 @@
 
 import type {
   CatalogModelRecord,
-  CatalogProviderBinding,
   ModelCatalog,
 } from './schema.js'
-
-function validateBinding(
-  model: CatalogModelRecord,
-  binding: CatalogProviderBinding,
-): string[] {
-  const operation = model.operations.find(item => item.id === binding.operationId)
-  const prefix = `${model.id}/${binding.operationId}`
-  if (!operation)
-    return [`${prefix}: binding does not resolve to an operation`]
-
-  const errors: string[] = []
-  const profile = binding.requestProfile
-  const expectedProtocol = model.mediaType === 'text'
-    ? 'chat'
-    : model.mediaType === 'audio'
-      ? 'speech'
-      : model.mediaType
-  const expectedEndpoint = {
-    chat: '/api/v1/chat/completions',
-    image: '/api/v1/images',
-    speech: '/api/v1/audio/speech',
-    video: '/api/v1/videos',
-  }[binding.protocol]
-  if (
-    binding.protocol !== expectedProtocol
-    || profile.kind !== binding.protocol
-    || binding.endpoint !== expectedEndpoint
-  ) {
-    errors.push(`${prefix}: protocol, endpoint, or media type is incompatible`)
-  }
-
-  const expectedAdapter = `openrouter-${binding.protocol}-v1`
-  if (binding.adapterVersion !== expectedAdapter)
-    errors.push(`${prefix}: adapter version is incompatible`)
-
-  const profileSettingIds = [...profile.settingIds].toSorted()
-  const operationSettingIds = [...operation.settingIds].toSorted()
-  if (JSON.stringify(profileSettingIds) !== JSON.stringify(operationSettingIds))
-    errors.push(`${prefix}: request profile settings do not match the operation`)
-
-  const profileReferences = profile.kind === 'image'
-    ? profile.maxReferences
-    : profile.kind === 'chat'
-      ? profile.maxImageReferences
-      : profile.kind === 'video'
-        ? Object.values(profile.referenceLimits).reduce((sum, value) => sum + value, 0)
-        + (profile.frameMode === 'first' ? 1 : profile.frameMode === 'first-last' ? 2 : 0)
-        : 0
-  if (profileReferences !== operation.referenceLimit.maxItems)
-    errors.push(`${prefix}: request profile reference limit does not match the operation`)
-
-  const lifecycle = binding.lifecycle
-  if (
-    binding.protocol === 'video'
-      ? lifecycle.submission !== 'asynchronous'
-      || !lifecycle.completions.includes('poll')
-      || !lifecycle.deliveries.includes('stream')
-      : lifecycle.submission !== 'immediate'
-        || !lifecycle.completions.includes('response')
-  ) {
-    errors.push(`${prefix}: lifecycle is incompatible with the protocol`)
-  }
-  return errors
-}
+import { validateProviderBinding } from './providers/validation.js'
 
 function validateModel(model: CatalogModelRecord): string[] {
   const errors: string[] = []
@@ -116,8 +52,13 @@ function validateModel(model: CatalogModelRecord): string[] {
     if (new Set(priorities).size !== priorities.length)
       errors.push(`${prefix}: provider binding priorities conflict`)
   }
-  for (const binding of model.bindings)
-    errors.push(...validateBinding(model, binding))
+  for (const binding of model.bindings) {
+    if (!operationIds.includes(binding.operationId)) {
+      errors.push(`${model.id}/${binding.operationId}: binding does not resolve to an operation`)
+      continue
+    }
+    errors.push(...validateProviderBinding(model, binding))
+  }
   return errors
 }
 

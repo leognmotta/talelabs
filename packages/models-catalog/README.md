@@ -13,6 +13,11 @@ client.
 - `src/catalog.ts` parses, validates, indexes, and freezes the complete catalog.
 - `src/public-catalog.ts` removes private provider bindings.
 - `src/provider-binding.ts` resolves an exact binding during run admission.
+- `src/providers/schema.ts` owns the provider-discriminated binding union.
+- `src/providers/openrouter.ts` owns OpenRouter-only endpoint, protocol,
+  request-profile, routing schema fields, and compatibility validation.
+- `src/providers/validation.ts` dispatches each binding to its provider-owned
+  validator without adding provider policy to generic catalog validation.
 - `scripts/check.ts` fails closed on schema, coverage, default, and privacy
   drift without contacting a provider.
 

@@ -7,6 +7,8 @@
  *
  */
 
+import type { CatalogProviderBinding } from './providers/schema.js'
+
 /** Media families emitted by current generation models. */
 export type CatalogMediaType = 'audio' | 'image' | 'text' | 'video'
 
@@ -24,9 +26,6 @@ export type CatalogNodeType
 
 /** Product lifecycle of a model record. */
 export type CatalogModelStatus = 'active' | 'deprecated' | 'retired'
-
-/** Provider protocols implemented by the OpenRouter boundary. */
-export type CatalogProtocol = 'chat' | 'image' | 'speech' | 'video'
 
 /** Provider-neutral graph values accepted by model input slots. */
 export type CatalogFlowValueType
@@ -345,145 +344,6 @@ export interface CatalogReasoningCapability {
   mandatory: boolean
   /** Ordered reasoning modes exposed by the product. */
   options: readonly CatalogReasoningMode[]
-}
-
-/** Immutable provider lifecycle captured in an admitted run binding. */
-export interface CatalogProviderLifecycle {
-  /** Whether the provider supports remote cancellation. */
-  cancellation: 'supported' | 'unsupported'
-  /** Durable completion signals accepted by the adapter. */
-  completions: readonly ('poll' | 'response' | 'webhook')[]
-  /** Output delivery forms returned by the adapter. */
-  deliveries: readonly ('bytes' | 'stream' | 'text' | 'url')[]
-  /** Whether submission completes immediately or creates provider work. */
-  submission: 'asynchronous' | 'immediate'
-}
-
-/** Request shaping policy for the shared image protocol. */
-export interface CatalogImageRequestProfile {
-  /** Protocol discriminator. */
-  kind: 'image'
-  /** Maximum image references sent in one request. */
-  maxReferences: number
-  /** Ordered TaleLabs setting IDs mapped into the request. */
-  settingIds: readonly string[]
-}
-
-/** Request shaping policy for the shared chat protocol. */
-export interface CatalogChatRequestProfile {
-  /** Protocol discriminator. */
-  kind: 'chat'
-  /** Maximum image references sent in one request. */
-  maxImageReferences: number
-  /** Provider parameter used for the output token bound. */
-  maxTokensParameter: 'max_completion_tokens' | 'max_tokens'
-  /** Whether the adapter may send reasoning controls. */
-  reasoning: boolean
-  /** Ordered TaleLabs setting IDs mapped into the request. */
-  settingIds: readonly string[]
-}
-
-/** Request shaping policy for the shared speech protocol. */
-export interface CatalogSpeechRequestProfile {
-  /** Protocol discriminator. */
-  kind: 'speech'
-  /** Output formats supported by the reviewed route. */
-  outputFormats: readonly ['mp3']
-  /** Ordered TaleLabs setting IDs mapped into the request. */
-  settingIds: readonly string[]
-  /** TaleLabs voice values mapped to provider-native voice IDs. */
-  voiceValues: Readonly<Record<string, string>>
-}
-
-/** Request shaping policy for the shared video protocol. */
-export interface CatalogVideoRequestProfile {
-  /** Whether the protocol sends no frame, a first frame, or first and last frames. */
-  frameMode: 'first' | 'first-last' | 'none'
-  /** Whether the reviewed operation can request native audio. */
-  generateAudio: boolean
-  /** Protocol discriminator. */
-  kind: 'video'
-  /** Additional reference limits by media family. */
-  referenceLimits: CatalogVideoReferenceLimits
-  /** Named provider-specific input validator, or `none`. */
-  referenceValidationPolicy: 'none' | 'seedance-2-reference-v1'
-  /** Ordered TaleLabs setting IDs mapped into the request. */
-  settingIds: readonly string[]
-}
-
-/** Additional non-frame reference limits for a video request. */
-export interface CatalogVideoReferenceLimits {
-  /** Maximum audio guidance items. */
-  audio: number
-  /** Maximum image reference items outside frame inputs. */
-  image: number
-  /** Maximum video reference items. */
-  video: number
-}
-
-/** Protocol-specific request-shaping policy captured with a binding. */
-export type CatalogRequestProfile
-  = | CatalogChatRequestProfile
-    | CatalogImageRequestProfile
-    | CatalogSpeechRequestProfile
-    | CatalogVideoRequestProfile
-
-/** Reviewed evidence for a private provider binding. */
-export interface CatalogBindingEvidence {
-  /** ISO date on which the binding facts were reviewed. */
-  reviewedAt: string
-  /** Non-empty HTTPS sources used during the review. */
-  sources: readonly [string, ...string[]]
-}
-
-/** Cost fields recorded by the current provider result boundary. */
-export interface CatalogCostCapture {
-  /** M5 credit estimate behavior while balances remain deferred. */
-  creditCost: 'unknown'
-  /** Source and nullability policy for provider cost. */
-  providerCostUsd: 'response-or-unknown'
-  /** Provider result as the authoritative cost source. */
-  source: 'provider-result'
-}
-
-/** Private, operation-specific provider route selected during admission. */
-export interface CatalogProviderBinding {
-  /** Shared protocol adapter version executed by a worker. */
-  adapterVersion: string
-  /** Provider-cost capture policy preserved from the current route. */
-  costCapture: CatalogCostCapture
-  /** Reviewed sources for route and capability facts. */
-  evidence: CatalogBindingEvidence
-  /** Provider endpoint path pinned into a new run snapshot. */
-  endpoint:
-    | '/api/v1/audio/speech'
-    | '/api/v1/chat/completions'
-    | '/api/v1/images'
-    | '/api/v1/videos'
-  /** Durable provider lifecycle executed by Trigger.dev. */
-  lifecycle: CatalogProviderLifecycle
-  /** Provider-native model identity sent over the wire. */
-  nativeModelId: string
-  /** Model operation executed by this binding. */
-  operationId: string
-  /** Ordered fallback priority; higher values are preferred. */
-  priority: number
-  /** Provider implementation owning the transport. */
-  provider: 'openrouter'
-  /** Reviewed provider endpoint tag pinned with fallback disabled. */
-  providerTag: string
-  /** Shared wire protocol used by this route. */
-  protocol: CatalogProtocol
-  /** Provider request-shaping policy for this operation. */
-  requestProfile: CatalogRequestProfile
-  /** Whether admission must persist before a paid network submission. */
-  requiresDurableSubmissionBoundary: true
-  /** Immutable route revision captured for diagnostics and retries. */
-  routeVersion: string
-  /** Provider routing policy; current OpenRouter routes are pinned. */
-  routingPolicy: 'pinned'
-  /** Parameters verified on the reviewed provider endpoint. */
-  supportedParameters: readonly [string, ...string[]]
 }
 
 /** Complete current product model and its private provider bindings. */
