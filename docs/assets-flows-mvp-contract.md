@@ -202,13 +202,13 @@ admit one generation node
 -> expose result on the node
 ```
 
-The active TypeScript generation-model registry is the public catalog, and
-`GENERATION_PROVIDER_ROUTES` is the single private execution-routing source.
-Every active model operation must have exactly one compatible route; startup,
-generation checks, and production builds fail closed on missing, duplicate, or
-incompatible routes. Historical model and route contracts remain readable for
-durable retry, but no secondary availability field or runtime fallback decides
-whether a current model executes. See `docs/m6-real-provider-integration.md`
+`packages/models-catalog/models.json` is the single current generation catalog.
+Its sanitized projection drives public capabilities, while admission resolves
+and captures one complete private provider binding. Every active operation must
+have a compatible binding; startup, catalog checks, and production builds fail
+closed on drift. Workers execute the captured binding directly and never
+reconstruct a route from current catalog state. See
+`docs/m6-real-provider-integration.md`
 for provider-boundary and user-owned paid-QA requirements without duplicating
 the code-owned model inventory here.
 

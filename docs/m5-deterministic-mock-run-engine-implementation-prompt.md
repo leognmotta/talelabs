@@ -315,7 +315,7 @@ Create one application/domain service for run admission:
   - requested mode, target/selection, and exact planned execution set
   - exact node configs and deterministic edge order
   - planner/executor version
-  - stable TaleLabs model IDs and model-contract versions/hashes
+  - canonical `vendor/model` creative IDs, per-model revisions, and catalog hash
   - derived operations and normalized settings
   - topological levels, work items, dimensions, and lineage
   - all considered static candidates/exclusions/selection decisions
@@ -378,7 +378,7 @@ Mock behavior:
 - Equivalent normalized request + mock-adapter version deterministically chooses
   the same fixture/text and metadata, although each admitted run still receives
   its own domain rows and unique output storage key.
-- Text: deterministic useful placeholder derived from request hash and prompt;
+- Text: one stable deterministic placeholder for every debug run;
   persist as text output, not Asset.
 - Image/audio/video: copy the selected fixture to the real generation output key
   using the existing R2/S3 storage abstraction, then continue through the same

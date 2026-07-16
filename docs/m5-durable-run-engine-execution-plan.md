@@ -525,12 +525,13 @@ adapter implementation, not a browser shortcut.
 
 ### Deterministic result
 
-Hash the normalized immutable request plus mock-adapter version and map it to a
-compatible fixture. Equivalent requests choose equivalent fixture bytes and
-metadata, while every output is copied to a unique generation output key.
+Map each media type and output position to a compatible versioned fixture.
+Debug runs deliberately return the same fixture bytes and metadata regardless
+of input content, while every output is copied to a unique generation output
+key.
 
-Text output is deterministic useful placeholder content derived from the request
-hash and prompt. It is stored as text, not an Asset.
+Text output is one stable deterministic placeholder for every debug run. It is
+stored as text, not an Asset.
 
 Media output sequence:
 

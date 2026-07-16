@@ -119,7 +119,7 @@ explicit user decision after exercising the product.
 | M2: Assets | Complete | Private media is durable, processed, searchable, organized, and reusable. |
 | M3: Canvas foundation | Implemented, refining | Flows persist and reopen with typed manual graph editing. |
 | M4: Canvas product reset | Complete, user approved | Every approved creative node is model-adaptive and its canvas UX is accepted. |
-| M5: Provider-independent run engine | Approved | Durable runs execute immutable canvas inputs and persist canonical output Assets; historical mock snapshots remain replayable. |
+| M5: Provider-independent run engine | Approved | Durable runs execute immutable canvas inputs and persist canonical output Assets; deterministic mock adapters remain available for offline verification. |
 | M6: Provider integration | Active - implementation verification | Four pinned OpenRouter route families (image, video, speech, and chat) use the M5 engine with no fallback; paid acceptance is tracked in `docs/m6-real-provider-integration.md`. |
 | M7: MVP candidate | Pending | Reliability, tenancy, staging, and user acceptance gates pass. |
 
@@ -297,12 +297,12 @@ long labels and responsive constraints
 
 M5 is approved and retained as the provider-independent durable foundation. It
 uses real saved Flow graphs, Text values, Asset records, model contracts,
-settings, and connections. Historical mock snapshots use the same admission,
-planning, persistence, orchestration, ingestion, status, and provenance path as
-current M6 provider adapters.
+settings, and connections. Deterministic mock adapters exercise the same
+admission, planning, persistence, orchestration, ingestion, status, and
+provenance path as current M6 provider adapters during offline verification.
 
 **Current implementation status (2026-07-16): approved.** Durable run admission,
-immutable snapshots, Trigger.dev orchestration, deterministic historical mocks,
+immutable snapshots, Trigger.dev orchestration, deterministic mock adapters,
 canonical output Assets, status hydration, cancellation, reconciliation, and
 dashboard bindings form the active foundation used by M6.
 
@@ -375,9 +375,9 @@ Run admission must:
 5. Resolve only direct Assets, Text, and same-run/prior pinned node outputs.
 6. Lock exact Asset inputs in stable ID order and require usable processing and
    lifecycle states.
-7. Pin node schema versions, stable TaleLabs model IDs, model contract versions,
-   derived operations, normalized settings, edge order, selected inputs, and
-   executor/snapshot versions.
+7. Pin node schema versions, canonical `vendor/model` identities, catalog
+   revisions, model contract versions, derived operations, normalized settings,
+   edge order, selected inputs, and executor/snapshot versions.
 8. Revalidate the Flow revision before inserting the run; drift returns a typed
    conflict rather than silently executing newer graph data.
 9. Insert the immutable run snapshot, planned nodes/items, jobs, source lineage,
@@ -441,6 +441,24 @@ unique output key even when fixture bytes are identical.
 
 M6 reuses this normalized boundary without replacing the surrounding run,
 storage, ingestion, or Asset contracts.
+
+### E-054A - System-Admin Debug Mode
+
+The Flow canvas exposes a debug-mode toggle only to system administrators and
+system super administrators. Run endpoints enforce that role boundary; hiding
+the control in the dashboard is not the authorization mechanism.
+
+Debug mode is an immutable per-run execution choice captured in the run
+snapshot. It applies uniformly to `node`, `downstream`, `upstream`, `selection`,
+and `all` commands and to explicit retries. Planning, saved inputs, request
+materialization, jobs, status transitions, output ingestion, canonical Assets,
+and provenance remain production-shaped. Only the normalized provider adapter
+is replaced: no OpenRouter request or callback is created, provider cost is
+zero, and each output position returns the same versioned text, image, video,
+or audio mock on every debug run.
+
+While enabled, the canvas must show both an active toggle treatment and a
+persistent warning indicator that the displayed results are mock outputs.
 
 ### E-055 - Run API And Realtime State
 
@@ -534,13 +552,13 @@ one generation node
 -> show the result on the node
 ```
 
-The active TypeScript model registry and the server-only
-`GENERATION_PROVIDER_ROUTES` registry define the executable OpenRouter surface.
-Every active operation must have exactly one compatible route. Add bounded
+The validated `packages/models-catalog/models.json` document defines the
+executable surface. Every active operation must have a compatible private
+binding, and admission captures the selected binding in full. Add bounded
 responses, timeouts, explicit cancellation semantics, provider error mapping,
 write-ahead submission safety, exact endpoint pinning, and actual-or-unknown
-cost capture before any model becomes active. Keep provider credentials, native
-endpoints, endpoint tags, fallback policy, and costs server-only.
+cost capture before any model becomes active. Keep credentials and the catalog's
+private binding, evidence, routing, and cost fields server-only.
 `docs/m6-real-provider-integration.md` is the binding provider-boundary and
 paid-smoke checklist; it intentionally does not duplicate the model inventory.
 

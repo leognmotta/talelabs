@@ -1,6 +1,6 @@
 # TaleLabs Generation Runtime Simplification Plan
 
-Status: Proposed
+Status: Implemented (2026-07-16)
 Research date: 2026-07-16
 Scope: `packages/flows`, `packages/openrouter`, `packages/trigger`, and the model catalog consumed by the API/dashboard
 
@@ -200,9 +200,11 @@ optional cleanup after implementation.
 
 Requirements:
 
-- Every authored source module begins with a file-level TSDoc overview using
-  `@packageDocumentation`. Explain the module's responsibility, its ownership
-  boundary, and where it sits in the common execution path.
+- Every package public entry point begins with a file-level TSDoc overview using
+  `@packageDocumentation`, which documents the package as a whole. Every other
+  authored source module begins with an ordinary `/** ... */` file overview and
+  must not use the package tag. Explain the module's responsibility, ownership
+  boundary, and place in the common execution path.
 - Every exported function, class, type, interface, and constant has TSDoc that
   explains what it represents or does, the contract it exposes, and any
   important invariants or lifecycle behavior.
@@ -234,6 +236,10 @@ Requirements:
   repeats a name, type annotation, or obvious statement from the code.
 - Keep documentation synchronized in the same change as behavior. A stale or
   misleading TSDoc contract is an acceptance failure.
+- Run the repository documentation check. It enforces module overviews,
+  exported-declaration TSDoc, and reserves `@packageDocumentation` for package
+  entry points; review remains responsible for the meaning and accuracy of
+  contract and field documentation.
 
 Example:
 
@@ -548,10 +554,12 @@ packages/flows/src/
     audio/
     inputs/
   runtime/
-    command-selection.ts
-    input-materialization.ts
-    job-expansion.ts
-    plan-assembly.ts
+    planning/
+      selected-graph-preparation.ts
+      execution-materialization.ts
+      job-expansion.ts
+      plan-assembly.ts
+      planner.ts
     snapshots/
     values/
 ```
@@ -564,12 +572,22 @@ Owns only OpenRouter transport and protocol translation:
 
 ```txt
 packages/openrouter/src/
-  client.ts
-  image.ts
-  video.ts
-  speech.ts
-  chat.ts
-  webhook.ts
+  adapter.ts
+  protocols/
+    image.ts
+    speech.ts
+    chat.ts
+    video/
+      index.ts
+      inputs.ts
+      media.ts
+      references.ts
+      response.ts
+      settings.ts
+      types.ts
+  transport/
+  sdk/
+  webhooks/
   errors.ts
   types.ts
   index.ts
@@ -812,15 +830,18 @@ run, and new retries do not query historical route copies.
 
 Goal: make provider code readable by protocol.
 
-1. Consolidate image request/response handling in `image.ts`.
-2. Consolidate video submit/status/webhook handling in `video.ts`.
-3. Consolidate speech byte handling in `speech.ts`.
-4. Consolidate chat handling in `chat.ts`.
+1. Consolidate image request/response handling in `protocols/image.ts`.
+2. Keep video submit/status handling behind the clear
+   `protocols/video/index.ts` facade, with input, media, reference, response,
+   setting, and wire-type concerns in that cohesive directory.
+3. Consolidate speech byte handling in `protocols/speech.ts`.
+4. Consolidate chat handling in `protocols/chat.ts`.
 5. Keep one client, error mapper, webhook verifier, and narrow shared types.
 6. Delete route builders and route catalogs no longer used by new snapshots.
 
-Exit gate: tracing an OpenRouter call requires opening one protocol module plus
-the client, not a model route family and a Trigger adapter family.
+Exit gate: tracing an OpenRouter call requires opening one protocol facade and
+its narrowly owned helpers plus the client, not a model route family and a
+Trigger adapter family.
 
 ### Phase 5 - Simplify Trigger ownership
 
@@ -940,6 +961,7 @@ all of them.
 - SDK generation;
 - all workspace type checks;
 - i18n validation for all supported locales;
+- repository TSDoc/module-overview validation;
 - repository lint;
 - forced production build;
 - Trigger.dev deployment dry run;
@@ -969,12 +991,15 @@ It must also satisfy:
     must come from deleted concepts, not compressed or hidden code.
 12. Package READMEs explain ownership, one common trace, and one extension trace
     in language a new developer can follow.
-13. Authored TypeScript follows the TSDoc contract: modules, exported symbols,
-    and exported type fields explain their ownership, purpose, and invariants.
-14. Documentation checks or focused review confirm comments remain synchronized
-    with behavior, remain at the appropriate top-level or field boundary, and
-    do not merely restate implementation syntax. Function-body comments require
-    a concrete exceptional reason.
+13. Authored TypeScript follows the TSDoc contract: package entry points alone
+    use `@packageDocumentation`; ordinary modules use file overviews; exported
+    symbols and exported type fields explain ownership, purpose, and invariants.
+14. The automated documentation check validates overview coverage,
+    exported-declaration TSDoc, and package-tag placement. Focused review
+    confirms comments remain synchronized with behavior, stay at the
+    appropriate top-level or field boundary, and do not merely restate
+    implementation syntax. Function-body comments require a concrete
+    exceptional reason.
 
 ## 14. Non-Goals
 

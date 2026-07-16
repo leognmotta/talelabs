@@ -10,21 +10,22 @@ presentation remain provider-independent.
 
 ## Executable surface
 
-The active TypeScript registry in `@talelabs/flows` is the public model catalog.
-`GENERATION_PROVIDER_ROUTES` in `@talelabs/openrouter` is the single private
-routing source. Do not copy the current model inventory into this document.
+`packages/models-catalog/models.json` is the single current model and private
+binding inventory. `@talelabs/flows` consumes its provider-neutral projection;
+admission captures a complete binding and `@talelabs/openrouter` executes it.
+Do not copy the current inventory into this document.
 
 Current availability has one definition:
 
 ```txt
 active catalog model operation
-+ exactly one compatible provider route
++ a compatible private binding
 = executable operation
 ```
 
-Route validation fails application startup, generation checks, and production
-builds when an active operation has a missing, duplicate, or incompatible
-route. Historical model and route contracts remain readable for durable retry.
+Catalog validation fails startup, generation checks, and production builds when
+an active operation has a missing or incompatible binding. Admitted retries use
+their self-contained snapshot rather than current catalog state.
 There is no public `executionAvailable` flag, no secondary allowlist, and no
 fallback to a mock, alternate model, provider, or endpoint.
 
@@ -44,12 +45,11 @@ contract remains readable.
 
 ## Route and spend safety
 
-Each new snapshot and job pins the TaleLabs model contract, registry version,
-operation, provider, native model, route version, exact API endpoint, reviewed
-provider endpoint tag, adapter version, and lifecycle/delivery contract. The
-worker asserts that relational job fields, the immutable snapshot, and the
-production route registry agree before resolving any Asset or calling a
-provider.
+Each new snapshot and job pins the canonical model ID and revision, catalog
+version, operation, provider, protocol, native model, route version, exact API
+endpoint, reviewed endpoint tag, request profile, adapter version, and lifecycle
+contract. The worker asserts that relational job fields and immutable binding
+agree before resolving any Asset or calling a provider.
 
 Pinned OpenRouter requests send:
 
@@ -168,8 +168,8 @@ within that bounded accounting window.
 
 ## Verification and paid acceptance
 
-Automated provider scenarios consume the production route registry and inject
-only fake HTTP. They assert route coverage, adapter reuse, exact endpoint tags,
+Automated provider scenarios consume production catalog bindings and inject
+only fake HTTP. They assert binding coverage, adapter reuse, exact endpoint tags,
 provider pinning with fallback disabled, protocol payload normalization,
 response validation, signed callback handling, asynchronous polling, durable
 completed-result recovery, and the Nano Banana 2 `16:9`/`4K` image-reference
@@ -199,6 +199,6 @@ provider generation requests.
 - [OpenRouter API reference](https://openrouter.ai/docs/api/reference/overview)
 
 Live discovery responses are research evidence only. Production behavior is
-encoded in versioned TypeScript; there is no checked-in provider discovery
+encoded in the versioned JSON catalog; there is no checked-in provider discovery
 snapshot, dated inventory JSON, or runtime UI configuration derived from live
 OpenRouter responses.

@@ -89,8 +89,9 @@ contract fixes each generation to one image and therefore exposes no output
 amount control. The result still travels through one stable `images` handle as
 an `ImageSet`, preserving the typed collection boundary without implying Flow
 iteration. The initial picker is deliberately smaller than external model
-discovery. Historical M5 snapshots remain replayable through deterministic
-mocks; current model operations execute through pinned M6 provider routes.
+discovery. New runs capture a complete immutable provider binding;
+deterministic mocks remain an offline verification seam rather than a historical
+route catalog.
 
 LLM is one dedicated, model-adaptive text-output node. It consumes a required
 prompt, optional system instructions, and up to eight images when the selected
@@ -856,19 +857,20 @@ other verified model capabilities
 ```
 
 Provider documentation informs reviewed implementation decisions, but TaleLabs
-owns a curated, code-versioned TypeScript model registry for enabled models,
-labels, defaults, operations, typed slots, cross-field constraints, pricing
-behavior, and feature flags. Server-only provider routes are also maintained in
-TypeScript. TaleLabs does not maintain provider discovery snapshots or dated
-inventory JSON, and live provider responses never control production UI or
-validation.
+owns one curated, checked-in JSON model catalog for enabled models, labels,
+defaults, operations, typed slots, cross-field constraints, and private provider
+bindings. The runtime-validating `@talelabs/models-catalog` package exposes a
+sanitized public projection and exact admission-time binding lookup. TaleLabs
+does not maintain parallel TypeScript route registries, provider discovery
+snapshots, or dated inventories, and live provider responses never control
+production UI or validation.
 
-Flows persist stable TaleLabs model identities. Public capabilities are shared
+Flows persist canonical `vendor/model` creative identities. Public capabilities are shared
 between the API and dashboard, while provider model IDs, endpoint pinning,
 fallbacks, credentials, negotiated costs, and routing policy remain server-only.
 TaleLabs may replace OpenRouter with a direct route for the same underlying model
 without migrating Flows. A materially different creative model receives a new
-TaleLabs model ID rather than silently changing existing semantics.
+canonical model ID rather than silently changing existing semantics.
 
 Capabilities must describe internal generation operations and dependent
 constraints, not only independent controls. Examples include text-to-video versus image-to-video,

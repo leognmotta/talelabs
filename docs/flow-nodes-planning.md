@@ -479,22 +479,23 @@ TaleLabs defines an honest provider-independent control and its validation.
 
 One request emits one `PortValue` item whose `ImageSet` contains one Asset. The
 typed collection remains stable for downstream compatibility and does not create
-an outer runtime item. The initial seven-model catalog is a deliberately curated
-product selection. It has no Element input, provider route, or live provider
-dependency on the canvas.
+an outer runtime item. The current catalog is a deliberately curated 43-model
+selection spanning image, video, audio, and text generation. It has no Element
+input or live provider dependency on the canvas; private bindings are resolved
+only during run admission.
 
-TaleLabs owns the production model catalog and private provider routes in
-versioned TypeScript. Provider documentation is reviewed when those registries
-change; TaleLabs does not maintain provider discovery snapshots or inventory
-JSON. A remote catalog change must never add, remove, or alter a production
-control without review and deployment.
+TaleLabs owns one production catalog at
+`packages/models-catalog/models.json`. Provider documentation is reviewed when
+that file changes; discovery never rewrites it or changes production behavior
+without review and deployment.
 
-Every persisted model reference uses a stable TaleLabs identity:
+Every persisted model reference uses a canonical creative identity:
 
 ```ts
 type ProductModelDefinition = {
-  id: "talelabs/veo-3.1";
-  capabilitySchemaVersion: 2;
+  id: "google/veo-3.1";
+  revision: 1;
+  capabilitySchemaVersion: 3;
   labelKey: "flows.models.veo31";
   mediaType: "video";
   inputSlots: GenerationInputSlotDefinition[];
@@ -504,20 +505,17 @@ type ProductModelDefinition = {
 };
 ```
 
-The provider route is server-only and independently replaceable:
+Each operation's provider binding is server-only and independently replaceable:
 
 ```ts
-type ProviderRoute = {
-  productModelId: "talelabs/veo-3.1";
-  modelContractVersion: string;
+type ProviderBinding = {
   operationId: "textToVideo";
-  adapter: "google-vertex";
-  providerRoute: {
-    policy: "pinned";
-    endpoint: ":predictLongRunning";
-    nativeModelId: "veo-3.1-generate-001";
-    supportedParameters: string[];
-  };
+  provider: "openrouter";
+  protocol: "video";
+  routingPolicy: "pinned";
+  endpoint: "/api/v1/videos";
+  nativeModelId: "google/veo-3.1";
+  supportedParameters: [string, ...string[]];
   lifecycle: {
     submission: "asynchronous";
     completions: ["poll"];
@@ -535,24 +533,17 @@ type ProviderRoute = {
 ```
 
 Changing OpenRouter to a direct API for the same underlying model may update the
-route without changing the TaleLabs model ID or Flow schema. Replacing the
+binding without changing the canonical model ID or Flow schema. Replacing the
 underlying creative model with materially different behavior requires a new
-TaleLabs model identity; it must not silently change historical semantics.
+canonical identity; it must not silently change historical semantics.
 
-The active generation-model registry and `GENERATION_PROVIDER_ROUTES` jointly
-define current execution: active catalog membership plus exactly one compatible
-route is availability. The dashboard and public API do not maintain a second
-execution allowlist. A released snapshot that pins `talelabs-mock` continues
-resolving that adapter on retry; there is no runtime fallback from a real route
-to a mock, alternate model, provider, or endpoint.
-
-Persisted nodes keep their immutable model contract version. Historical
-contracts remain readable and editable, but they are executable only when the
-server retains an exact route keyed by `(productModelId, modelContractVersion,
-operationId)`. The initial execution milestone routes only the current contract;
-the editor must offer an explicit same-model upgrade that rewrites the pinned
-version and reconciles incompatible connections, selections, and settings
-immediately as one undoable canvas mutation. The user's model or contract
+Active catalog membership plus a compatible binding defines admission. The
+dashboard receives only a sanitized projection and has no second allowlist.
+Admission captures canonical model ID, model revision, catalog version, and the
+complete provider binding. A worker validates and executes those immutable
+facts directly, so later catalog retirement or provider changes cannot alter a
+retry. There is no runtime fallback to a mock, alternate model, provider, or
+endpoint. The user's model or contract
 selection is the confirmation: do not interrupt it with a confirmation dialog,
 notification modal, or required follow-up action. This explicit transition is
 separate from passive hydration; loading an old node must never silently
@@ -741,8 +732,8 @@ The E-040 registry was reviewed against primary provider documentation on
 
 - OpenAI marks GPT Image 1.5 deprecated with removal scheduled for 2026-12-01.
   It is absent from the current creative catalog and remains resolvable only in
-  immutable historical contracts. New image nodes use stable TaleLabs ID
-  `talelabs/gpt-image-2`, privately pinned to snapshot
+  immutable admitted snapshots. New image nodes use canonical ID
+  `openai/gpt-image-2`, privately pinned to provider revision
   `gpt-image-2-2026-04-21`. The provider supports one through ten outputs, but
   the TaleLabs creative contract fixes that native parameter to one and does not
   expose it as a canvas setting. The curated safe contract keeps generate/edit,
@@ -777,9 +768,9 @@ video decisions, but its discovery response is not checked in or maintained as
 configuration. Narrow TaleLabs contracts describe Veo 3.1 Lite, Grok Imagine
 Video, and Seedance 2.0 alongside the direct Veo 3.1 and LTX routes;
 superseded, ambiguous, or insufficiently documented entries stay unavailable.
-No discovery response edits production behavior automatically. The curated,
-versioned TypeScript registry and linked primary evidence remain authoritative
-until an explicit reviewed deployment.
+No discovery response edits production behavior automatically. The validated
+JSON catalog and its linked primary evidence remain authoritative until an
+explicit reviewed deployment.
 
 Element role capacity and provider input capacity remain different constraints.
 An Element may retain eight Appearance references while the selected model
@@ -1544,7 +1535,7 @@ The node presents:
 M4  Canvas foundation
     Text and Asset source nodes
     Image, Video, LLM, Speech, Music, Sound Effect, Voice Changer, Voice Isolation
-    curated stable TaleLabs model identities
+    curated canonical vendor/model identities
     operation/mode, capability, and cross-field-constraint-driven node forms
     public capability registry separated from server-only provider routes
     typed handles and connection validation
@@ -1572,8 +1563,9 @@ M6  Controlled provider integration
     replace only normalized adapter boundaries
     first approved image, video, and audio adapters
     pinned endpoint or safe capability-intersection routing
-    TypeScript registry/route validation and provider lifecycle parity
+    JSON catalog/binding validation and provider lifecycle parity
     provider parity, spend controls, controlled smoke checks
+    system-admin debug mode captured per run and forced through deterministic mocks
 
 M7  Internal MVP candidate
     tenant and reliability audit

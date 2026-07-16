@@ -250,14 +250,14 @@ create table "generationJobs" (
            check ("status" in ('pending', 'running', 'succeeded', 'failed', 'canceled')),
 
   "provider" text not null,          -- resolved provider/adapter family, not a UI model identity
-  "model" text not null,             -- stable TaleLabs product model id ('talelabs/veo-3.1')
+  "model" text not null,             -- canonical creative model id ('google/veo-3.1')
   "operation" text not null,         -- curated operation id ('imageToVideo', 'tts', ...)
   "providerModel" text not null,     -- native provider model id selected at admission
-  "modelRegistryVersion" text not null,
+  "catalogRevision" text not null,    -- deterministic sha256 identity of models.json
   "providerRouteVersion" text not null,
   "adapterVersion" text not null,
-  "providerEndpoint" text,           -- exact server-only route pinned for M6; null on old M5 jobs
-  "providerEndpointTag" text,        -- exact reviewed provider endpoint slug; null on historical jobs
+  "providerEndpoint" text,           -- exact endpoint; required for post-reset admitted jobs
+  "providerEndpointTag" text,        -- reviewed endpoint slug; required for new jobs
   "providerLifecycle" jsonb,         -- pinned completion/delivery/cancellation contract
   "settings" jsonb not null default '{}',  -- aspect ratio, resolution, seed, ... (model-shaped)
   "resolvedPrompt" text,            -- final instructions composed from resolved Text sources
@@ -1062,8 +1062,8 @@ Execution semantics:
   re-validation. Selected existing Asset rows are locked in stable ID order and
   revalidated as ready and not purging. Planning rejects executable cycles before
   insertion. Later canvas or Asset edits affect future runs only.
-- **Model contract at creation:** the snapshot records the stable TaleLabs model
-  ID, curated registry version/hash, selected operation, normalized settings,
+- **Model contract at creation:** the snapshot records the canonical
+  `vendor/model` creative ID, catalog revision hash, selected operation, normalized settings,
   resolved capability decisions, and server-selected provider route/adapter
   version. It never stores credentials or signed URLs. Provider discovery data is
   not consulted dynamically while replaying a snapshot; historical execution is

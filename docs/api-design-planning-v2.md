@@ -1135,33 +1135,33 @@ upgrade.
 
 ### `GET /config/generation`
 
-The resolved public product contract the client renders from. TaleLabs owns this
-curated, code-versioned TypeScript registry; live OpenRouter/provider discovery
-never drives the response directly. Private provider routes are maintained in a
-server-only TypeScript registry and validated structurally against the public
-model contracts. Provider research is encoded directly into those two reviewed
-code registries; TaleLabs does not maintain discovery snapshots or inventory
-JSON. The endpoint is
+The resolved public product contract the client renders from. TaleLabs owns one
+validated `packages/models-catalog/models.json` document; live provider
+discovery never drives the response directly. The API returns the catalog's
+sanitized projection, which omits private bindings, evidence, routing, and cost
+policy. Provider research is encoded in that reviewed catalog; TaleLabs does
+not maintain discovery snapshots or parallel route registries. The endpoint is
 `ETag`-cacheable and changes only on deployment.
 
-The initial Image catalog is a deliberately curated seven-model selection.
-Public config exposes stable TaleLabs IDs, translation keys, semantic slots,
-safe setting intersections, and output profiles only. Native model IDs,
-provider tags, endpoint choice, and pricing remain in the server-only
-TypeScript provider-route registry.
+The current catalog is a deliberately curated 43-model selection spanning
+image, video, audio, and text generation. Public config exposes canonical
+`vendor/model` IDs, translation keys, semantic slots, safe setting intersections,
+and output profiles only. Native model IDs, provider tags, endpoint choice,
+evidence, and pricing remain in private catalog bindings.
 
 Response `200`:
 
 ```ts
 {
-  registryVersion: string
+  catalogRevision: `sha256:${string}` // deterministic content identity
   models: {
     contractVersion: string
-    id: string // stable TaleLabs identity, for example 'talelabs/veo-3.1'
+    id: string // canonical creative identity, for example 'google/veo-3.1'
+    revision: number // monotonic per-model capability revision
     displayName: string // proper model name; UI copy uses labelKey
     labelKey: string
     mediaType: MediaType
-    enabled: true // unavailable models are omitted; historical contracts resolve separately
+    enabled: true // unavailable models are omitted
     recommended: boolean
     defaultOperationId: string
     capabilities: {
@@ -1262,11 +1262,9 @@ Pinned native model IDs/endpoints, provider lifecycle and cancellation behavior,
 adapter/route versions, dated evidence and lifecycle freshness, credentials,
 fallback policy, mock pricing, negotiated costs, and emergency controls are
 deliberately absent. A
-server-only route registry resolves the tuple `(productModelId,
-modelContractVersion, operationId)` to a concrete provider route during run
-admission and snapshots that route/version. Historical contracts remain readable
-but are not executable when that exact route is absent; the client must explicitly
-upgrade the node contract first. If routing
+server-only catalog lookup resolves `(modelId, operationId)` to one concrete
+binding during run admission and snapshots the binding in full. Workers never
+look up the current catalog to replay an admitted run. If routing
 may choose among endpoints, the public capabilities are the verified intersection
 of every eligible endpoint; endpoint-specific capabilities require endpoint
 pinning.
