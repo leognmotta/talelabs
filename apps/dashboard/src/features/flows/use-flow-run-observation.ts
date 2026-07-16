@@ -1,3 +1,8 @@
+/**
+ * Active Flow-run observation, canvas synchronization, and terminal feedback.
+ *
+ */
+
 import type { FlowLatestResult, FlowRun } from '@talelabs/sdk'
 import type { TFunction } from 'i18next'
 import type { RefObject } from 'react'
@@ -22,6 +27,7 @@ import {
 import { isActiveRunStatus, isRetryableRunStatus } from './flow-run-status'
 import { useFlowRunDetailQueries } from './flow.queries'
 
+/** Observes active runs and projects their progress and outputs onto the canvas. */
 export function useFlowRunObservation(input: {
   edgesRef: RefObject<CanvasEdge[]>
   flowId: string
@@ -120,13 +126,15 @@ export function useFlowRunObservation(input: {
       const fallbackMessage = failedJob?.errorMessage
         ?? run.errorMessage
         ?? t('flows.runStatus.failed')
-      const message = errorCode?.startsWith('provider_')
-        ? fallbackMessage
-        : errorCode
-          ? t(`errors.${errorCode}` as 'errors.internal_error', {
-              defaultValue: fallbackMessage,
-            })
-          : fallbackMessage
+      const message = errorCode === 'provider_insufficient_balance'
+        ? t('errors.provider_insufficient_balance')
+        : errorCode?.startsWith('provider_')
+          ? fallbackMessage
+          : errorCode
+            ? t(`errors.${errorCode}` as 'errors.internal_error', {
+                defaultValue: fallbackMessage,
+              })
+            : fallbackMessage
       toast.error(message, { id: `flow-run-failure-${run.id}` })
     }
 

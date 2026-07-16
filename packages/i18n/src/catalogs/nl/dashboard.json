@@ -1395,7 +1395,7 @@
     "internal_error": "Er is iets misgegaan. Probeer het opnieuw.",
     "generation_provider_route_unavailable": "Dit generatiemodel of deze modus kan nog niet worden uitgevoerd.",
     "provider_authentication": "De generatieprovider kon niet worden geverifieerd.",
-    "provider_insufficient_balance": "Het account van de generatieprovider heeft onvoldoende saldo.",
+    "provider_insufficient_balance": "Er is iets misgegaan. Neem contact op met support.",
     "provider_rate_limited": "De generatieprovider is bezet. Probeer het zo opnieuw.",
     "provider_timeout": "De generatieprovider deed er te lang over om te reageren.",
     "provider_response_invalid": "De generatieprovider heeft een ongeldig antwoord teruggestuurd.",

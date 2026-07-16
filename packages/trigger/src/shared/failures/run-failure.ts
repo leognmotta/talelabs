@@ -1,3 +1,8 @@
+/**
+ * Product-safe Flow-run failure persistence and response projection.
+ *
+ */
+
 import {
   GenerationProviderError,
   sanitizeProviderPublicMessage,
@@ -15,7 +20,7 @@ const SAFE_RUN_FAILURE_MESSAGES = Object.freeze({
   /** Historical M5 code retained so existing rows remain presentable. */
   mock_generation_failed: 'Generation could not be completed.',
   provider_authentication: 'The generation provider could not be authenticated.',
-  provider_insufficient_balance: 'The generation provider account has insufficient balance.',
+  provider_insufficient_balance: 'Something went wrong. Contact support.',
   provider_rate_limited: 'The generation provider is busy. Try again shortly.',
   provider_rejected: 'The generation provider rejected this request.',
   provider_response_invalid: 'The generation provider returned an invalid response.',
@@ -29,13 +34,16 @@ const SAFE_RUN_FAILURE_MESSAGES = Object.freeze({
   trigger_run_missing: 'The run worker could not be found.',
 } as const)
 
+/** Stable public failure codes persisted for Flow runs and jobs. */
 export type SafeRunFailureCode = keyof typeof SAFE_RUN_FAILURE_MESSAGES
 
+/** Product-safe failure fields exposed outside the worker boundary. */
 export interface SafeRunFailure {
   code: SafeRunFailureCode
   message: string
 }
 
+/** Safe public fields plus redacted diagnostics retained for internal logging. */
 export interface SafeRunFailureBoundary extends SafeRunFailure {
   internal: {
     message: string
@@ -85,6 +93,7 @@ export function toSafeRunFailure(
       name,
     },
     message: isGenerationProviderFailureCode(resolvedCode)
+      && resolvedCode !== 'provider_insufficient_balance'
       ? sanitizeProviderPublicMessage(providerPublicMessage)
       ?? SAFE_RUN_FAILURE_MESSAGES[resolvedCode]
       : SAFE_RUN_FAILURE_MESSAGES[resolvedCode],
@@ -107,6 +116,7 @@ export function safeRunFailureForResponse(input: {
   return {
     code,
     message: isGenerationProviderFailureCode(code)
+      && code !== 'provider_insufficient_balance'
       ? sanitizeProviderPublicMessage(input.message)
       ?? SAFE_RUN_FAILURE_MESSAGES[code]
       : SAFE_RUN_FAILURE_MESSAGES[code],

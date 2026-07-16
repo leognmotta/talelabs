@@ -1395,7 +1395,7 @@
     "internal_error": "Qualcosa è andato storto. Riprova.",
     "generation_provider_route_unavailable": "Questo modello o modalità di generazione non è ancora disponibile per l’esecuzione.",
     "provider_authentication": "Non è stato possibile autenticare il provider di generazione.",
-    "provider_insufficient_balance": "Il saldo dell’account del provider di generazione non è sufficiente.",
+    "provider_insufficient_balance": "Si è verificato un problema. Contatta l’assistenza.",
     "provider_rate_limited": "Il provider di generazione è occupato. Riprova tra poco.",
     "provider_timeout": "Il provider di generazione ha impiegato troppo tempo a rispondere.",
     "provider_response_invalid": "Il provider di generazione ha restituito una risposta non valida.",

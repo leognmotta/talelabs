@@ -1395,7 +1395,7 @@
     "internal_error": "Coś poszło nie tak. Spróbuj ponownie.",
     "generation_provider_route_unavailable": "Ten model lub tryb generowania nie jest jeszcze dostępny do uruchomienia.",
     "provider_authentication": "Nie udało się uwierzytelnić dostawcy generowania.",
-    "provider_insufficient_balance": "Konto dostawcy generowania ma niewystarczające saldo.",
+    "provider_insufficient_balance": "Coś poszło nie tak. Skontaktuj się z pomocą techniczną.",
     "provider_rate_limited": "Dostawca generowania jest zajęty. Spróbuj ponownie za chwilę.",
     "provider_timeout": "Dostawca generowania zbyt długo nie odpowiadał.",
     "provider_response_invalid": "Dostawca generowania zwrócił nieprawidłową odpowiedź.",

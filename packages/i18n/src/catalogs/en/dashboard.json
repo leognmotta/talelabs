@@ -1395,7 +1395,7 @@
     "internal_error": "Something went wrong. Try again.",
     "generation_provider_route_unavailable": "This generation model or mode is not available to run yet.",
     "provider_authentication": "The generation provider could not be authenticated.",
-    "provider_insufficient_balance": "The generation provider account has insufficient balance.",
+    "provider_insufficient_balance": "Something went wrong. Contact support.",
     "provider_rate_limited": "The generation provider is busy. Try again shortly.",
     "provider_timeout": "The generation provider took too long to respond.",
     "provider_response_invalid": "The generation provider returned an invalid response.",

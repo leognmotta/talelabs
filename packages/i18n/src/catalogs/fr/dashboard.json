@@ -1395,7 +1395,7 @@
     "internal_error": "Une erreur est survenue. Réessayez.",
     "generation_provider_route_unavailable": "Ce modèle ou mode de génération n’est pas encore disponible à l’exécution.",
     "provider_authentication": "Le fournisseur de génération n’a pas pu être authentifié.",
-    "provider_insufficient_balance": "Le solde du compte du fournisseur de génération est insuffisant.",
+    "provider_insufficient_balance": "Un problème est survenu. Contactez l’assistance.",
     "provider_rate_limited": "Le fournisseur de génération est occupé. Réessayez dans quelques instants.",
     "provider_timeout": "Le fournisseur de génération a mis trop de temps à répondre.",
     "provider_response_invalid": "Le fournisseur de génération a renvoyé une réponse non valide.",

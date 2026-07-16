@@ -1395,7 +1395,7 @@
     "internal_error": "Algo deu errado. Tente novamente.",
     "generation_provider_route_unavailable": "Este modelo ou modo de geração ainda não está disponível para execução.",
     "provider_authentication": "Não foi possível autenticar o provedor de geração.",
-    "provider_insufficient_balance": "A conta do provedor de geração não tem saldo suficiente.",
+    "provider_insufficient_balance": "Algo deu errado. Entre em contato com o suporte.",
     "provider_rate_limited": "O provedor de geração está ocupado. Tente novamente em instantes.",
     "provider_timeout": "O provedor de geração demorou demais para responder.",
     "provider_response_invalid": "O provedor de geração retornou uma resposta inválida.",

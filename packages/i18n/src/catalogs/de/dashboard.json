@@ -1395,7 +1395,7 @@
     "internal_error": "Etwas ist schiefgelaufen. Versuche es erneut.",
     "generation_provider_route_unavailable": "Dieses Generierungsmodell oder dieser Modus kann noch nicht ausgeführt werden.",
     "provider_authentication": "Der Generierungsanbieter konnte nicht authentifiziert werden.",
-    "provider_insufficient_balance": "Das Konto des Generierungsanbieters verfügt nicht über genügend Guthaben.",
+    "provider_insufficient_balance": "Etwas ist schiefgelaufen. Kontaktiere den Support.",
     "provider_rate_limited": "Der Generierungsanbieter ist ausgelastet. Versuche es gleich noch einmal.",
     "provider_timeout": "Der Generierungsanbieter hat zu lange für eine Antwort gebraucht.",
     "provider_response_invalid": "Der Generierungsanbieter hat eine ungültige Antwort zurückgegeben.",
