@@ -546,7 +546,7 @@ must be represented in server-side routing, not discovered after charging a job.
 - Add mock `videoTransform`, `videoEdit`, and `performanceTransfer` operation
   definitions only when the Flow engine is ready to exercise them.
 - Use real source Assets and production-shaped snapshots/jobs.
-- Mock only the provider boundary with `TODO(provider-integration)`.
+- Mock only the normalized provider boundary during any future prototype.
 - Validate collection and outer-iteration semantics.
 
 ### Phase B: Video Transform

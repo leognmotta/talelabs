@@ -554,7 +554,7 @@ commercial launch.
   engine prototyping.
 - Use mock provider output.
 - Preserve production-shaped runs, jobs, snapshots, and Assets.
-- Mark provider replacement boundaries with `TODO(provider-integration)`.
+- Keep provider replacement isolated to normalized adapter boundaries.
 
 ### Phase B: hosted comparison
 

@@ -40,8 +40,8 @@ Assets
 
 Do not call OpenRouter or another LLM provider. Do not spend credits. Do not add
 Trigger.dev tasks, run admission, chat history, agents, tools, web search, or
-real streaming in this task. Mark the future adapter boundary with
-`TODO(provider-integration)`.
+real streaming in this task. Keep the future provider seam at the normalized
+adapter boundary.
 
 ## Read Before Editing
 
@@ -525,7 +525,7 @@ approved canvas nodes.
   reasoning marks the previous result stale under the shared mocked-output
   behavior.
 - Do not invent a second LLM-only execution store.
-- Keep `TODO(provider-integration)` at the normalized adapter replacement point.
+- Keep provider replacement at the normalized adapter boundary.
 
 When real execution ships, one successful LLM result must preserve immutable
 prompt, instructions, selected image IDs and ordering, model contract, resolved

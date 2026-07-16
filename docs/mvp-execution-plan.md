@@ -119,8 +119,8 @@ explicit user decision after exercising the product.
 | M2: Assets | Complete | Private media is durable, processed, searchable, organized, and reusable. |
 | M3: Canvas foundation | Implemented, refining | Flows persist and reopen with typed manual graph editing. |
 | M4: Canvas product reset | Complete, user approved | Every approved creative node is model-adaptive and its canvas UX is accepted. |
-| M5: Provider-independent run engine | Active - implementation and review in progress | Durable runs execute real canvas inputs through deterministic mock adapters and persist canonical output Assets. |
-| M6: Provider integration | Pending | One real provider path creates a canonical Asset end to end. |
+| M5: Provider-independent run engine | Approved | Durable runs execute immutable canvas inputs and persist canonical output Assets; historical mock snapshots remain replayable. |
+| M6: Provider integration | Active - implementation verification | Four pinned OpenRouter route families (image, video, speech, and chat) use the M5 engine with no fallback; paid acceptance is tracked in `docs/m6-real-provider-integration.md`. |
 | M7: MVP candidate | Pending | Reliability, tenancy, staging, and user acceptance gates pass. |
 
 ---
@@ -268,12 +268,7 @@ Add only enough deterministic behavior to evaluate the product:
 - Mock output never calls an external provider or spends credits.
 - Graph validation and connection semantics remain real.
 - Autosave persists node configuration and mocked presentation state safely.
-- Mocked media is clearly isolated at the future adapter boundary with:
-
-```ts
-// TODO(provider-integration): Replace this deterministic mock with the
-// normalized provider adapter while preserving the request/result contract.
-```
+- Mocked media is isolated at the normalized adapter boundary that M6 reuses.
 
 Do not create a parallel mock database model, alternate graph planner, or fake
 tenant/auth path.
@@ -300,18 +295,16 @@ long labels and responsive constraints
 
 ## M5 - Provider-Independent Durable Run Engine
 
-M5 is approved and active. It uses real saved Flow graphs, Text values, Asset
-records, model contracts, settings, and connections. Only the normalized
-provider result boundary is mocked. The mock engine must use the same admission,
-planning, persistence, orchestration, ingestion, status, and provenance path
-that M6 provider adapters will use.
+M5 is approved and retained as the provider-independent durable foundation. It
+uses real saved Flow graphs, Text values, Asset records, model contracts,
+settings, and connections. Historical mock snapshots use the same admission,
+planning, persistence, orchestration, ingestion, status, and provenance path as
+current M6 provider adapters.
 
-**Current implementation status (2026-07-14): implementation and review in
-progress.** Durable run admission, immutable snapshots, Trigger.dev
-orchestration, deterministic mock generation, canonical output Assets, status
-hydration, cancellation, reconciliation, and first dashboard bindings exist and
-are under correction review. M5 is not accepted until the remaining review
-findings and user-owned run QA are complete.
+**Current implementation status (2026-07-16): approved.** Durable run admission,
+immutable snapshots, Trigger.dev orchestration, deterministic historical mocks,
+canonical output Assets, status hydration, cancellation, reconciliation, and
+dashboard bindings form the active foundation used by M6.
 
 Implement M5 through these reviewable checkpoints, in order:
 
@@ -446,12 +439,8 @@ selects a fixture, copies it to the real generation job/output key, and continue
 through the exact completion/ingestion path used by M6. Each output Asset owns a
 unique output key even when fixture bytes are identical.
 
-Every mock replacement boundary includes:
-
-```ts
-// TODO(provider-integration): Replace the deterministic mock adapter with the
-// normalized provider adapter while preserving this request/result contract.
-```
+M6 reuses this normalized boundary without replacing the surrounding run,
+storage, ingestion, or Asset contracts.
 
 ### E-055 - Run API And Realtime State
 
@@ -521,13 +510,17 @@ no provider network requests or non-zero mock costs
 
 **Owner:** User
 
-The user validates run actions, planned scope clarity, selection behavior,
+**Status:** complete. Approved 2026-07-14; M6 is active.
+
+The user validated run actions, planned scope clarity, selection behavior,
 statuses, history, cancellation, rerun, output presentation, navigation during
-active runs, and overall canvas UX. M6 remains blocked until explicit approval.
+active runs, and overall canvas UX. Later reliability changes preserve that
+approved surface while strengthening the durable backend.
 
 ## M6 - First Real Provider Loop
 
-After the M5 rewrite is approved, implement one narrow path first:
+M6 is active. Implement and verify the reviewed provider paths through the
+approved M5 engine:
 
 ```txt
 one generation node
@@ -541,11 +534,17 @@ one generation node
 -> show the result on the node
 ```
 
-Add spending limits, timeouts, cancellation semantics, provider error mapping,
-and observability before expanding model coverage. Keep provider credentials,
-native endpoints, fallback policy, and costs server-only.
+The active TypeScript model registry and the server-only
+`GENERATION_PROVIDER_ROUTES` registry define the executable OpenRouter surface.
+Every active operation must have exactly one compatible route. Add bounded
+responses, timeouts, explicit cancellation semantics, provider error mapping,
+write-ahead submission safety, exact endpoint pinning, and actual-or-unknown
+cost capture before any model becomes active. Keep provider credentials, native
+endpoints, endpoint tags, fallback policy, and costs server-only.
+`docs/m6-real-provider-integration.md` is the binding provider-boundary and
+paid-smoke checklist; it intentionally does not duplicate the model inventory.
 
-The observability implementation is deferred while M5 completes. Before beta,
+The observability implementation remains deferred during M6 verification. Before beta,
 implement the baseline in `observability-planning.md`: `flowRunId` correlation,
 shared structured events, Trigger.dev telemetry and alerts, Sentry, and an
 internal PostgreSQL-backed Run Inspector. A centralized OpenTelemetry backend is

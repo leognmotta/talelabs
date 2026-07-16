@@ -525,7 +525,11 @@ type ProviderRoute = {
     cancellation: "unsupported";
   };
   evidence: { reviewedAt: string; sources: [string, ...string[]] };
-  mockPricing: { source: "mock"; creditCost: 0; providerCostUsd: 0 };
+  costCapture: {
+    source: "provider-result";
+    creditCost: "unknown";
+    providerCostUsd: "response-or-unknown";
+  };
   routeVersion: string;
 };
 ```
@@ -534,6 +538,13 @@ Changing OpenRouter to a direct API for the same underlying model may update the
 route without changing the TaleLabs model ID or Flow schema. Replacing the
 underlying creative model with materially different behavior requires a new
 TaleLabs model identity; it must not silently change historical semantics.
+
+The active generation-model registry and `GENERATION_PROVIDER_ROUTES` jointly
+define current execution: active catalog membership plus exactly one compatible
+route is availability. The dashboard and public API do not maintain a second
+execution allowlist. A released snapshot that pins `talelabs-mock` continues
+resolving that adapter on retry; there is no runtime fallback from a real route
+to a mock, alternate model, provider, or endpoint.
 
 Persisted nodes keep their immutable model contract version. Historical
 contracts remain readable and editable, but they are executable only when the
@@ -709,6 +720,20 @@ independent. The adapter discriminants require every method advertised by the
 route lifecycle and prohibit poll, webhook, or cancellation methods when that
 lifecycle does not support them.
 
+Completed provider results cross a durable checkpoint before output ingestion.
+The checkpoint stores provider facts and ordered text/storage descriptors;
+retries recover it, or already-created canonical outputs, before evaluating the
+write-ahead submission marker. Immediate paid requests are therefore never
+repeated merely because R2, Asset insertion, ingestion, or final aggregation
+failed after a successful provider response.
+
+OpenRouter video submissions include a per-job HTTPS `callback_url` when the
+signed receiver is configured. The receiver verifies the HMAC over the exact
+request bytes, persists and deduplicates the terminal event, then completes the
+current Trigger.dev wait token. The worker still polls after the wait timeout
+and always uses the normal poll/content adapter to normalize the final result;
+the callback is a low-latency wake-up, not a second completion path.
+
 ### Research Baseline
 
 The E-040 registry was reviewed against primary provider documentation on
@@ -747,14 +772,14 @@ The E-040 registry was reviewed against primary provider documentation on
   <https://elevenlabs.io/docs/api-reference/text-to-speech/stream>, and
   <https://elevenlabs.io/docs/api-reference/text-to-sound-effects/convert>.
 
-The checked-in 2026-07-13 OpenRouter inventory contains all sixteen models
-returned by the read-only video catalog. It is evidence, not production
-configuration. Narrow reviewed TaleLabs contracts enable Veo 3.1 Lite, Grok
-Imagine Video, and Seedance 2.0 alongside the direct Veo 3.1 and LTX routes;
-superseded, ambiguous, or insufficiently documented entries remain inventory-
-only. No discovery response edits production behavior automatically. The
-curated, versioned registry and its checked-in primary evidence remain
-authoritative until an explicit reviewed deployment.
+Read-only OpenRouter catalog research from 2026-07-13 informed the reviewed
+video decisions, but its discovery response is not checked in or maintained as
+configuration. Narrow TaleLabs contracts describe Veo 3.1 Lite, Grok Imagine
+Video, and Seedance 2.0 alongside the direct Veo 3.1 and LTX routes;
+superseded, ambiguous, or insufficiently documented entries stay unavailable.
+No discovery response edits production behavior automatically. The curated,
+versioned TypeScript registry and linked primary evidence remain authoritative
+until an explicit reviewed deployment.
 
 Element role capacity and provider input capacity remain different constraints.
 An Element may retain eight Appearance references while the selected model
@@ -1310,7 +1335,8 @@ one failed item      -> that item and dependent lineage fail/skip
 independent branches -> continue
 some success         -> partial run
 no success           -> failed run
-cancellation         -> cancel active work and remaining planned items
+cancellation         -> stop new work and make the run canceled to the user
+submitted provider work -> settle status/cost in bounded reconciliation; discard output
 ```
 
 ---

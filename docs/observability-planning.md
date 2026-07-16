@@ -126,6 +126,14 @@ This is an internal support surface. It must preserve tenant authorization and
 must not expose prompts, provider payloads, storage keys, signed URLs,
 credentials, or raw personal data in logs or error detail.
 
+Provider telemetry is allowlisted, not redaction-driven. It may record stable
+model and operation IDs, reviewed endpoint tags, reference counts and media
+types, output settings such as duration or resolution, status classes, timings,
+and bounded machine error codes. It must never attach a request body, response
+body, prompt, generated text, signed URL, provider message, or a recursively
+derived payload shape. Provider messages may be sanitized for an end-user error
+surface, but are not log metadata.
+
 ## First Observability Implementation Task
 
 When observability becomes active scope:

@@ -87,7 +87,10 @@ is deferred production-readiness work, not M5 scope. The integration contract:
      e. COMMIT. Cancel racing completion resolves to exactly one outcome; a
         completion retry can never destroy a canonical output; job, run-node,
         and run states can never diverge.
-7. Cancellation = runs.cancel(triggerRunId) + the same guarded update
+7. Cancellation makes the Flow run terminal immediately and cancels only work
+   that has not crossed `providerSubmittedAt`. Submitted jobs retain their
+   Trigger execution until provider settlement is `settled` or bounded recovery
+   records it as `unknown`; neither state is inferred from Trigger cancellation.
 8. Reconciliation sweeps: (a) redispatch status = 'pending' AND triggerRunId IS NULL
    AND createdAt < now() - interval '1 minute' — safe because domain-derived
    idempotency makes redispatch a no-op if the original trigger landed (running jobs never need
@@ -253,6 +256,9 @@ create table "generationJobs" (
   "modelRegistryVersion" text not null,
   "providerRouteVersion" text not null,
   "adapterVersion" text not null,
+  "providerEndpoint" text,           -- exact server-only route pinned for M6; null on old M5 jobs
+  "providerEndpointTag" text,        -- exact reviewed provider endpoint slug; null on historical jobs
+  "providerLifecycle" jsonb,         -- pinned completion/delivery/cancellation contract
   "settings" jsonb not null default '{}',  -- aspect ratio, resolution, seed, ... (model-shaped)
   "resolvedPrompt" text,            -- final instructions composed from resolved Text sources
 
@@ -266,13 +272,22 @@ create table "generationJobs" (
                                     -- providerJobId null it means outcome-uncertain: never resubmit
   "providerJobId" text,             -- provider execution id, persisted immediately after submission;
                                     -- task retries resume polling instead of resubmitting
+  "providerGenerationId" text,      -- provider accounting/provenance id when returned
+  "providerWaitTokenId" text,       -- current Trigger waitpoint token; callbacks wake this token
+  "providerCompletionStatus" text,  -- signed terminal callback status, used only to wake recovery
+  "providerCompletionEventId" text, -- provider idempotency key for callback deduplication
+  "providerCompletionReceivedAt" timestamptz,
+  "providerSettlementStatus" text not null default 'not_required'
+    check ("providerSettlementStatus" in
+      ('not_required', 'pending', 'settled', 'unknown')),
+  "providerSettlementResolvedAt" timestamptz,
 
   "creditCost" integer,             -- credits this execution cost, recorded from day one (no balance
                                     -- enforcement yet); pricing rules in credits-planning.md
-  "providerCostUsd" numeric(12, 6), -- raw provider spend, captured at execution time
+  "providerCostUsd" numeric(12, 6), -- actual provider spend when returned; null means unknown
 
   "errorCode" text,                 -- stable failure class: 'content_policy', 'provider_timeout', ...
-  "errorMessage" text,              -- safe to display; raw provider payloads go to logs only
+  "errorMessage" text,              -- allowlisted safe copy; raw provider payloads are discarded
 
   "createdAt" timestamptz not null default now(),
   "startedAt" timestamptz,
@@ -317,7 +332,10 @@ Notes:
   the chosen prompt plus raw sources are frozen into the immutable snapshot and
   `"resolvedPrompt"`. Inline and connected prompts are never silently concatenated.
 - **No retry/attempt/queue columns.** Trigger.dev owns retries, concurrency, and queueing; duplicating its state machine in Postgres would drift. `"status"` is the _domain_ outcome, written under the guarded-update rule (see the integration contract, including the atomic completion-vs-cancel transaction).
-- **No `cancelRequestedAt`.** With `runs.cancel(triggerRunId)` doing the actual interruption, a single guarded status write suffices — if the task already finished, the update affects zero rows and the terminal status stands.
+- **No `cancelRequestedAt`.** User cancellation is represented by the terminal
+  Flow-run status. Provider financial ownership is separate and durable through
+  `providerSettlementStatus`; Trigger cancellation is never evidence that
+  already-submitted external work stopped.
 - `"mediaType"` includes text, image, video, and audio. Successful media outputs
   become Assets; successful text outputs use the dedicated durable text-output
   relation described with the run tables.
@@ -325,8 +343,20 @@ Notes:
 - **`"flowRunId"` is `not null`.** Even a node command creates a run and may
   expand to multiple items or shards. There are no standalone jobs to reconcile
   with the workflow path later.
-- **Provider exactly-once is honest, not assumed.** `"providerSubmittedAt"` (write-ahead) + `"providerJobId"` (write-behind) bracket the provider call; the gap between them is the uncertainty window a retry must respect (contract step 4). The unique `(provider, "providerJobId")` index guarantees two job rows can never claim the same provider execution.
+- **Provider exactly-once is honest, not assumed.** `"providerSubmittedAt"` (write-ahead) + `"providerJobId"` (write-behind) bracket the provider call; the gap between them is the uncertainty window a retry must respect (contract step 4). `providerSettlementStatus` moves from `not_required` to `pending` in the same write-ahead update and ends as `settled` or explicitly `unknown`. Once a provider returns a complete result, `generationProviderResults` and `generationProviderOutputs` checkpoint its safe facts and staged outputs before Asset finalization. A retry resumes from ready output, inspects and promotes an atomically stored `staging` object, or reuses canonical outputs; it never calls the paid provider again. Product retry is rejected while settlement is pending/unknown or a checkpoint remains staging. A check constraint prevents an external job ID without the write-ahead marker, the unique `(provider, "providerJobId")` index guarantees two job rows can never claim the same provider execution, and real OpenRouter jobs require their pinned endpoint and lifecycle contract.
 - The composite FK on `("flowId", "organizationId")` makes a cross-org flow reference structurally impossible — see [Tenant isolation](#tenant-isolation).
+
+`generationProviderResults` is the tenant-scoped checkpoint header keyed by
+`jobId`; it stores expected output count plus provider generation/cost facts.
+`generationProviderOutputs` stores one ordered output descriptor per result.
+Text is stored directly. Media is staged at the deterministic public generated
+output location and recorded as a storage descriptor with
+`staging`/`ready`/`discarded` state. `staging` and `ready` own their object and
+block cleanup; `discarded` releases checkpoint ownership after cancellation.
+Both relations cascade with the job and use composite organization FKs.
+They are recovery state, not a second output product model: successful media
+still becomes an Asset and successful text still becomes a
+`generationJobTextOutputs` row.
 
 ### 4. Assets — the canonical media library
 
@@ -866,8 +896,8 @@ create table "flowRuns" (
   "lastReconciledAt" timestamptz,
         -- fair rotation cursor for active/canceled Trigger repair
   "cancellationReconciledAt" timestamptz,
-        -- set only after canceled Trigger work is terminal/missing, or when no
-        -- Trigger parent was ever dispatched; preserves triggerRunId for audit
+        -- set only after canceled Trigger work is terminal/missing and no job
+        -- remains active or pending provider settlement; preserves triggerRunId
   "createdAt" timestamptz not null default now(),
   "startedAt" timestamptz,
   "completedAt" timestamptz,
@@ -1015,7 +1045,10 @@ Execution semantics:
   concurrent manual run can never replace an in-flight input.
 - **Parallel branches** run concurrently (`batchTriggerAndWait` on the level's jobs); Trigger.dev owns the waiting.
 - **Partial failure:** a failed node marks its downstream dependents `'skipped'` in `flowRunNodes`; the run ends `'partial'` if some jobs succeeded, `'failed'` if none did. Succeeded outputs are already durable assets — a partial run loses nothing that completed.
-- **Cancel** cancels the run and cascades `runs.cancel` + guarded updates to active children; remaining `pending` run-nodes go `'canceled'`.
+- **Cancel** makes the run, items, and nodes user-terminal immediately. It
+  cancels the Trigger parent only when no submitted child remains. Submitted
+  children continue bounded settlement; retained provider status/cost is
+  persisted and non-canonical outputs are discarded afterward.
 - **Product retry creates a new run:** it derives a new immutable snapshot from
   the terminal source run, records `retryOfRunId`, freezes any reused successful
   outputs, and never reopens or mutates the source run.

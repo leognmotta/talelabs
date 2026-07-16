@@ -170,12 +170,9 @@ Finish the Flow editor and every model-adaptive node family. Inputs are real
 Assets and Text nodes. Outputs are deterministic mocks. No external generation
 request, credit charge, or production run orchestration belongs here.
 
-The user approved the adaptive generation-node designs on 2026-07-14. Every
-temporary provider boundary must remain explicit:
-
-```ts
-// TODO(provider-integration): replace deterministic mock with normalized adapter call.
-```
+The user approved the adaptive generation-node designs on 2026-07-14. M5 kept
+the normalized provider boundary explicit; M6 now implements the approved real
+routes at that boundary without changing graph or output semantics.
 
 ### Phase 3 - Provider-independent durable run engine
 
@@ -193,7 +190,7 @@ run-behavior approval. Passing engineering gates does not complete this phase.
 
 ### Phase 5 - Real provider loop (M6)
 
-Integrate one narrow vertical slice first:
+Integrate the approved narrow vertical slices:
 
 ```txt
 admit one generation node
@@ -205,7 +202,15 @@ admit one generation node
 -> expose result on the node
 ```
 
-Expand model and node coverage only after this loop is observable and reliable.
+The active TypeScript generation-model registry is the public catalog, and
+`GENERATION_PROVIDER_ROUTES` is the single private execution-routing source.
+Every active model operation must have exactly one compatible route; startup,
+generation checks, and production builds fail closed on missing, duplicate, or
+incompatible routes. Historical model and route contracts remain readable for
+durable retry, but no secondary availability field or runtime fallback decides
+whether a current model executes. See `docs/m6-real-provider-integration.md`
+for provider-boundary and user-owned paid-QA requirements without duplicating
+the code-owned model inventory here.
 
 ## Persistence And Compatibility
 
@@ -220,7 +225,8 @@ Expand model and node coverage only after this loop is observable and reliable.
 
 ## MVP Acceptance
 
-The MVP foundation is ready for real provider integration when a user can:
+The approved MVP foundation gate that enabled the active real-provider phase
+required a user to be able to:
 
 1. Upload or locate an Asset.
 2. Create and reopen a Flow.

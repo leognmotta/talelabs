@@ -915,8 +915,8 @@ This task validates canvas product design and capability resolution.
   execution.
 - If a shared deterministic mock adapter is already executable, use it through
   production-shaped normalized requests/results.
-- Mark every future real integration replacement point with
-  `TODO(provider-integration)` according to the execution plan.
+- Keep every future real integration replacement point at the normalized
+  adapter boundary defined by the execution plan.
 - Do not persist mock output URLs in node data.
 - Do not claim that a canonical generated Asset exists unless the shared mock
   run/output-ingestion path actually created it.

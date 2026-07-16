@@ -23,9 +23,8 @@ Step 2: real AI integration only after the canvas product design is approved
 ```
 
 Do not call OpenRouter or any other generation provider. Do not spend credits.
-Do not implement provider adapters. Preserve the `TODO(provider-integration)`
-boundary required by the execution plan wherever mocked behavior will later be
-replaced.
+Do not implement provider adapters in this historical node-refactor task. The
+later normalized boundary and approved M6 routes are documented separately.
 
 ## Read Before Editing
 
@@ -526,7 +525,7 @@ The task is complete only when all of the following are true:
 - All currently discovered OpenRouter video models appear in reviewed inventory;
   only evidence-backed contracts are enabled.
 - No paid generation request or external provider adapter was added.
-- `TODO(provider-integration)` remains at every future replacement boundary.
+- Provider replacement remains isolated to the normalized adapter boundary.
 - Existing Flow autosave, organization isolation, graph size limits, typed edge
   validation, and historical contract loading remain intact.
 - SDK generation, type checks, `npm run i18n:check`, lint, production build,

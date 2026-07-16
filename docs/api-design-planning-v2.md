@@ -1053,13 +1053,18 @@ type FlowRunSummary = Omit<FlowRun, "nodes"> & {
 
 ### `POST /runs/:id/cancel`
 
-Cancellation is honest about asynchrony (the provider may finish anyway), and it targets the right Trigger run per mode:
+Cancellation separates immediate product state from external financial
+settlement:
 
-- every M5 mode has a parent orchestration run; cancel it and any active child
-  tasks, then apply guarded job, item, node, and run transitions;
-- remaining pending items and nodes become `canceled`; provider completion that
-  wins the race remains an honest terminal success rather than being overwritten;
-- run still active → `202 FlowRun` (statuses reflect whatever the guarded writes won; keep polling)
+- every mode makes the run, remaining items, nodes, and unsubmitted jobs
+  `canceled` immediately;
+- a parent with no submitted provider work is canceled through Trigger.dev;
+- submitted jobs keep bounded Trigger execution until provider settlement is
+  `settled` or explicitly `unknown`; Trigger cancellation is not evidence that
+  provider work stopped;
+- a settled result that did not already become canonical records terminal
+  provider status/cost and discards its checkpoint output;
+- accepted cancellation → `202 FlowRun` with user-visible status `canceled`;
 - already terminal → `409 invalid_state`
 
 ### `POST /runs/:id/retry`
@@ -1069,6 +1074,9 @@ Retry is a new immutable run, never a transition that reopens the source run.
 - require `Idempotency-Key` and scope both the source lookup and new run to the
   active organization;
 - accept only terminal `failed`, `partial`, or `canceled` source runs;
+- reject with `409 provider_settlement_incomplete` while any source job has
+  pending/unknown provider settlement or a provider-result checkpoint remains
+  `staging`;
 - derive work from the source run snapshot, not the current mutable Flow;
 - include failed/skipped/canceled work and its required dependency closure;
 - freeze every reused successful output and validate that each referenced Asset

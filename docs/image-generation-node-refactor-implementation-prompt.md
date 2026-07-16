@@ -40,8 +40,7 @@ Assets
 
 Do not call OpenRouter or another generation provider. Do not spend credits. Do
 not implement adapters, Trigger.dev tasks, run admission, or generation jobs.
-Preserve `TODO(provider-integration)` boundaries where a later provider adapter
-will replace deterministic mocked behavior.
+Keep the later provider replacement isolated to the normalized adapter boundary.
 
 ## Read Before Editing
 
@@ -356,7 +355,7 @@ narrower contract:
 | Nano Banana 2 | `google/gemini-3.1-flash-image` | 0-14 | 512/1K/2K/4K, aspect ratio, output fixed at 1 |
 | Nano Banana Pro | `google/gemini-3-pro-image` | 0-14 | 1K/2K safe endpoint intersection, aspect ratio, output fixed at 1 |
 | GPT Image 2 | `openai/gpt-image-2` | 0-16 | quality, background auto/opaque, output 1-10; compression is evidence-only until its format behavior is safely modeled |
-| Seedream 4.5 | `bytedance-seed/seedream-4.5` | 0-14 | 1K/2K/4K, aspect ratio, output 1-10, seed if optional integers are modeled correctly |
+| Seedream 4.5 | `bytedance-seed/seedream-4.5` | 0-14 | 2K/4K, explicit aspect ratio, output 1-10, seed if optional integers are modeled correctly; 2K must map to an explicit size of at least 3,686,400 pixels |
 | FLUX.2 Pro | `black-forest-labs/flux.2-pro` | 0-8 | png/jpeg, output fixed at 1, seed if optional integers are modeled correctly |
 | Recraft 4.1 | `recraft/recraft-v4.1` | deliberately text-only in the first TaleLabs contract | output 1-6; aspect ratio only if the chosen private route verifies Recraft `size` support |
 

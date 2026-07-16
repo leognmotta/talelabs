@@ -112,12 +112,8 @@ M5 excludes:
 - provider-specific execution branches outside the normalized adapter boundary;
 - implicit fan-out from an ordinary media collection.
 
-Every mock replacement point uses exactly one boundary comment:
-
-```ts
-// TODO(provider-integration): Replace deterministic mocks with pinned M6
-// provider adapters without changing the run contract.
-```
+Every mock replacement point is isolated to the normalized adapter boundary.
+M6 now supplies pinned real adapters there without changing the run contract.
 
 ## 3. Non-Negotiable Runtime Invariants
 

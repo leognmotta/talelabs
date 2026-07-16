@@ -39,10 +39,11 @@ Elements remain an implemented experiment and a possible later reusable-context
 feature. They are not part of the active product sequence and must not shape or
 block the first Asset-to-Flow generation loop.
 
-The adaptive canvas and generation-node UX were approved on 2026-07-14. The
-immediate product goal is now the provider-independent M5 run engine: execute
-real saved canvas inputs through deterministic mock adapters, persist canonical
-output Assets, and validate the complete run experience before M6 provider calls.
+The adaptive canvas, generation-node UX, and provider-independent M5 run engine
+were approved on 2026-07-14. The active product goal is M6 provider-integration
+verification: execute pinned OpenRouter routes through the approved durable run
+engine, settle provider work safely, and persist every retained output as a
+canonical Asset before user-owned paid acceptance.
 
 ## Product Navigation
 
@@ -76,8 +77,8 @@ on a trustworthy media system. Generation-node UX comes next because it defines
 the actual creative contract the later run engine and provider adapters must
 execute.
 
-M5 run-engine work is authorized. Real OpenRouter/provider calls remain blocked
-until the user approves the complete run UX and durable mock loop.
+M5 is approved. M6 OpenRouter integration is active under the verification and
+paid-acceptance gates in `docs/m6-real-provider-integration.md`.
 
 Image Generation is one dedicated, model-adaptive canvas node. The user selects
 a curated TaleLabs model, not a provider operation: no selected image reference
@@ -88,14 +89,15 @@ contract fixes each generation to one image and therefore exposes no output
 amount control. The result still travels through one stable `images` handle as
 an `ImageSet`, preserving the typed collection boundary without implying Flow
 iteration. The initial picker is deliberately smaller than external model
-discovery. M5 executes this approved node through provider-independent
-deterministic mocks.
+discovery. Historical M5 snapshots remain replayable through deterministic
+mocks; current model operations execute through pinned M6 provider routes.
 
 LLM is one dedicated, model-adaptive text-output node. It consumes a required
 prompt, optional system instructions, and up to eight images when the selected
 model supports vision. Image presence derives `visionToText`; absence derives
-`textToText`. The approved M4 preview remains ephemeral; M5 adds durable run and
-job results without writing result truth into mutable node data.
+`textToText`. The approved M4 preview remains ephemeral; the durable M5 engine
+and current M6 routes persist results without writing truth into mutable node
+data.
 
 Audio is one output media family but not one creative intent. TaleLabs exposes
 five dedicated model-adaptive nodes: Speech, Music, Sound Effect, Voice Changer,
@@ -103,9 +105,9 @@ and Voice Isolation. Model operations carry an authoritative node-intent tag,
 so one provider-neutral product model may appear in more than one compatible
 picker without appearing in unrelated ones. Users never choose a native
 operation. All five nodes emit one typed `AudioSet` through stable handle
-`audio`; their inputs, settings, and readiness remain intent-specific. M5 runs
-them through deterministic adapters and canonical Asset ingestion. Real adapters
-remain M6 scope.
+`audio`; their inputs, settings, and readiness remain intent-specific. Historical
+M5 snapshots retain deterministic adapters; active supported operations use M6
+routes and the same canonical Asset ingestion path.
 
 ## Core Technology Choices
 

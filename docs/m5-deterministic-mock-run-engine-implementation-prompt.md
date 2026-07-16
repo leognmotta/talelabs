@@ -113,10 +113,9 @@ Effect, Voice Changer, or Voice Isolation node UX. Reuse the approved node
 shells, settings cards, input rails, previews, toolbars, and action primitives.
 Every current canvas button/action is user-approved.
 
-Do not implement M6. Add a concise
-`TODO(provider-integration): ...` only at the normalized adapter boundary where
-real providers will replace mocks. Do not scatter provider TODOs through the
-planner, persistence, or UI.
+Do not implement M6 in this historical M5 task. Keep the future replacement
+point only at the normalized adapter boundary; do not scatter provider seams
+through the planner, persistence, or UI.
 
 Approved run commands
 =====================
@@ -402,8 +401,7 @@ Mock behavior:
 - Never mark a failed/canceled job succeeded merely because an object exists.
 - Cleanup only unreferenced objects after a losing completion/cancel race.
 
-Put the single provider replacement comment at this adapter registry/boundary:
-`TODO(provider-integration): Replace deterministic mocks with pinned M6 provider adapters without changing the run contract.`
+Keep the single provider replacement seam at this adapter registry/boundary.
 
 Phase 6 - Hono API and SDK
 ==========================
