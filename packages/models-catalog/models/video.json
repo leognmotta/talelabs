@@ -1,0 +1,5386 @@
+[
+  {
+    "id": "google/veo-3.1",
+    "revision": 1,
+    "status": "active",
+    "displayName": "Veo 3.1",
+    "labelKey": "flows.models.veo31",
+    "presentation": {
+      "descriptionKey": "flows.modelDescriptions.veo31",
+      "logoId": "google"
+    },
+    "mediaType": "video",
+    "recommended": true,
+    "capabilitySchemaVersion": 3,
+    "defaultOperationId": "textToVideo",
+    "inputSlots": [
+      {
+        "accepts": [
+          "Text"
+        ],
+        "descriptionKey": "flows.inputs.promptDescription",
+        "id": "prompt",
+        "labelKey": "flows.inputs.prompt",
+        "maxConnections": 32,
+        "maxItems": 32,
+        "minConnections": 0
+      },
+      {
+        "accepts": [
+          "ImageSet"
+        ],
+        "acceptedMedia": {
+          "maxBytes": 20971520,
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ]
+        },
+        "descriptionKey": "flows.inputs.firstFrameDescription",
+        "id": "firstFrame",
+        "labelKey": "flows.inputs.firstFrame",
+        "maxConnections": 1,
+        "maxItems": 1,
+        "minConnections": 0,
+        "referenceProfile": {
+          "contactSheetPolicy": "not-applicable",
+          "multipleSubjectSupport": "not-applicable",
+          "purposes": [
+            "firstFrame"
+          ]
+        }
+      },
+      {
+        "accepts": [
+          "ImageSet"
+        ],
+        "acceptedMedia": {
+          "maxBytes": 20971520,
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ]
+        },
+        "descriptionKey": "flows.inputs.lastFrameDescription",
+        "id": "lastFrame",
+        "labelKey": "flows.inputs.lastFrame",
+        "maxConnections": 1,
+        "maxItems": 1,
+        "minConnections": 0,
+        "referenceProfile": {
+          "contactSheetPolicy": "not-applicable",
+          "multipleSubjectSupport": "not-applicable",
+          "purposes": [
+            "lastFrame"
+          ]
+        }
+      }
+    ],
+    "settings": [
+      {
+        "default": "16:9",
+        "id": "aspectRatio",
+        "kind": "enum",
+        "labelKey": "flows.settings.aspectRatio",
+        "options": [
+          {
+            "labelKey": "flows.settings.aspectRatios.landscape",
+            "value": "16:9"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatios.portrait",
+            "value": "9:16"
+          }
+        ]
+      },
+      {
+        "default": "8",
+        "id": "durationSeconds",
+        "kind": "enum",
+        "labelKey": "flows.settings.duration",
+        "options": [
+          {
+            "labelKey": "flows.settings.durations.seconds4",
+            "value": "4"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds6",
+            "value": "6"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds8",
+            "value": "8"
+          }
+        ]
+      },
+      {
+        "default": "720p",
+        "id": "resolution",
+        "kind": "enum",
+        "labelKey": "flows.settings.resolution",
+        "options": [
+          {
+            "labelKey": "flows.settings.resolutions.720p",
+            "value": "720p"
+          },
+          {
+            "labelKey": "flows.settings.resolutions.1080p",
+            "value": "1080p"
+          },
+          {
+            "labelKey": "flows.settings.resolutions.4k",
+            "value": "4K"
+          }
+        ]
+      },
+      {
+        "default": true,
+        "id": "generateAudio",
+        "kind": "boolean",
+        "labelKey": "flows.settings.generateAudio"
+      }
+    ],
+    "constraints": [
+      {
+        "id": "last-frame-requires-first-frame",
+        "messageKey": "flows.constraints.lastFrameRequiresFirstFrame",
+        "require": [
+          {
+            "field": "slot",
+            "id": "firstFrame",
+            "operator": "connected"
+          }
+        ],
+        "when": [
+          {
+            "field": "slot",
+            "id": "lastFrame",
+            "operator": "connected"
+          }
+        ]
+      }
+    ],
+    "operations": [
+      {
+        "descriptionKey": "flows.operations.textToVideoDescription",
+        "id": "textToVideo",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt"
+        ],
+        "labelKey": "flows.operations.textToVideo",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "video"
+        },
+        "referenceLimit": {
+          "maxItems": 0,
+          "slotIds": []
+        },
+        "settingIds": [
+          "aspectRatio",
+          "durationSeconds",
+          "resolution",
+          "generateAudio"
+        ],
+        "nodeType": "videoGeneration"
+      },
+      {
+        "descriptionKey": "flows.operations.firstLastFrameToVideoDescription",
+        "id": "firstLastFrameToVideo",
+        "inputs": {
+          "firstFrame": {
+            "required": true
+          },
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt",
+          "firstFrame",
+          "lastFrame"
+        ],
+        "labelKey": "flows.operations.firstLastFrameToVideo",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "video"
+        },
+        "referenceLimit": {
+          "maxItems": 2,
+          "slotIds": [
+            "firstFrame",
+            "lastFrame"
+          ]
+        },
+        "settingIds": [
+          "aspectRatio",
+          "durationSeconds",
+          "resolution",
+          "generateAudio"
+        ],
+        "nodeType": "videoGeneration"
+      }
+    ],
+    "bindings": [
+      {
+        "adapterVersion": "openrouter-video-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/videos",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/video-generation",
+            "https://openrouter.ai/api/v1/videos/models",
+            "https://openrouter.ai/google/veo-3.1"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "google/veo-3.1",
+        "operationId": "textToVideo",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "google-vertex",
+        "protocol": "video",
+        "requestProfile": {
+          "frameMode": "none",
+          "generateAudio": true,
+          "kind": "video",
+          "referenceLimits": {
+            "audio": 0,
+            "image": 0,
+            "video": 0
+          },
+          "referenceValidationPolicy": "none",
+          "settingIds": [
+            "aspectRatio",
+            "durationSeconds",
+            "resolution",
+            "generateAudio"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-16.1",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "aspect_ratio",
+          "callback_url",
+          "duration",
+          "model",
+          "prompt",
+          "provider",
+          "resolution",
+          "generate_audio"
+        ]
+      },
+      {
+        "adapterVersion": "openrouter-video-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/videos",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/video-generation",
+            "https://openrouter.ai/api/v1/videos/models",
+            "https://openrouter.ai/google/veo-3.1"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "google/veo-3.1",
+        "operationId": "firstLastFrameToVideo",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "google-vertex",
+        "protocol": "video",
+        "requestProfile": {
+          "frameMode": "first-last",
+          "generateAudio": true,
+          "kind": "video",
+          "referenceLimits": {
+            "audio": 0,
+            "image": 0,
+            "video": 0
+          },
+          "referenceValidationPolicy": "none",
+          "settingIds": [
+            "aspectRatio",
+            "durationSeconds",
+            "resolution",
+            "generateAudio"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-16.1",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "aspect_ratio",
+          "callback_url",
+          "duration",
+          "model",
+          "prompt",
+          "provider",
+          "resolution",
+          "generate_audio",
+          "frame_images"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "google/veo-3.1-lite",
+    "revision": 1,
+    "status": "active",
+    "displayName": "Veo 3.1 Lite",
+    "labelKey": "flows.models.veo31Lite",
+    "presentation": {
+      "descriptionKey": "flows.modelDescriptions.veo31Lite",
+      "logoId": "google"
+    },
+    "mediaType": "video",
+    "recommended": false,
+    "capabilitySchemaVersion": 3,
+    "defaultOperationId": "textToVideo",
+    "inputSlots": [
+      {
+        "accepts": [
+          "Text"
+        ],
+        "descriptionKey": "flows.inputs.promptDescription",
+        "id": "prompt",
+        "labelKey": "flows.inputs.prompt",
+        "maxConnections": 32,
+        "maxItems": 32,
+        "minConnections": 0
+      },
+      {
+        "accepts": [
+          "ImageSet"
+        ],
+        "acceptedMedia": {
+          "maxBytes": 20971520,
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ]
+        },
+        "descriptionKey": "flows.inputs.firstFrameDescription",
+        "id": "firstFrame",
+        "labelKey": "flows.inputs.firstFrame",
+        "maxConnections": 1,
+        "maxItems": 1,
+        "minConnections": 0,
+        "referenceProfile": {
+          "contactSheetPolicy": "not-applicable",
+          "multipleSubjectSupport": "not-applicable",
+          "purposes": [
+            "firstFrame"
+          ]
+        }
+      },
+      {
+        "accepts": [
+          "ImageSet"
+        ],
+        "acceptedMedia": {
+          "maxBytes": 20971520,
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ]
+        },
+        "descriptionKey": "flows.inputs.lastFrameDescription",
+        "id": "lastFrame",
+        "labelKey": "flows.inputs.lastFrame",
+        "maxConnections": 1,
+        "maxItems": 1,
+        "minConnections": 0,
+        "referenceProfile": {
+          "contactSheetPolicy": "not-applicable",
+          "multipleSubjectSupport": "not-applicable",
+          "purposes": [
+            "lastFrame"
+          ]
+        }
+      }
+    ],
+    "settings": [
+      {
+        "default": "16:9",
+        "id": "aspectRatio",
+        "kind": "enum",
+        "labelKey": "flows.settings.aspectRatio",
+        "options": [
+          {
+            "labelKey": "flows.settings.aspectRatios.landscape",
+            "value": "16:9"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatios.portrait",
+            "value": "9:16"
+          }
+        ]
+      },
+      {
+        "default": "8",
+        "id": "durationSeconds",
+        "kind": "enum",
+        "labelKey": "flows.settings.duration",
+        "options": [
+          {
+            "labelKey": "flows.settings.durations.seconds4",
+            "value": "4"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds6",
+            "value": "6"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds8",
+            "value": "8"
+          }
+        ]
+      },
+      {
+        "default": "720p",
+        "id": "resolution",
+        "kind": "enum",
+        "labelKey": "flows.settings.resolution",
+        "options": [
+          {
+            "labelKey": "flows.settings.resolutions.720p",
+            "value": "720p"
+          },
+          {
+            "labelKey": "flows.settings.resolutions.1080p",
+            "value": "1080p"
+          }
+        ]
+      },
+      {
+        "default": true,
+        "id": "generateAudio",
+        "kind": "boolean",
+        "labelKey": "flows.settings.generateAudio"
+      }
+    ],
+    "constraints": [
+      {
+        "id": "last-frame-requires-first-frame",
+        "messageKey": "flows.constraints.lastFrameRequiresFirstFrame",
+        "require": [
+          {
+            "field": "slot",
+            "id": "firstFrame",
+            "operator": "connected"
+          }
+        ],
+        "when": [
+          {
+            "field": "slot",
+            "id": "lastFrame",
+            "operator": "connected"
+          }
+        ]
+      }
+    ],
+    "operations": [
+      {
+        "descriptionKey": "flows.operations.textToVideoDescription",
+        "id": "textToVideo",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt"
+        ],
+        "labelKey": "flows.operations.textToVideo",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "video"
+        },
+        "referenceLimit": {
+          "maxItems": 0,
+          "slotIds": []
+        },
+        "settingIds": [
+          "aspectRatio",
+          "durationSeconds",
+          "resolution",
+          "generateAudio"
+        ],
+        "nodeType": "videoGeneration"
+      },
+      {
+        "descriptionKey": "flows.operations.firstLastFrameToVideoDescription",
+        "id": "firstLastFrameToVideo",
+        "inputs": {
+          "firstFrame": {
+            "required": true
+          },
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt",
+          "firstFrame",
+          "lastFrame"
+        ],
+        "labelKey": "flows.operations.firstLastFrameToVideo",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "video"
+        },
+        "referenceLimit": {
+          "maxItems": 2,
+          "slotIds": [
+            "firstFrame",
+            "lastFrame"
+          ]
+        },
+        "settingIds": [
+          "aspectRatio",
+          "durationSeconds",
+          "resolution",
+          "generateAudio"
+        ],
+        "nodeType": "videoGeneration"
+      }
+    ],
+    "bindings": [
+      {
+        "adapterVersion": "openrouter-video-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/videos",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/video-generation",
+            "https://openrouter.ai/api/v1/videos/models",
+            "https://openrouter.ai/google/veo-3.1-lite"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "google/veo-3.1-lite",
+        "operationId": "textToVideo",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "google-vertex",
+        "protocol": "video",
+        "requestProfile": {
+          "frameMode": "none",
+          "generateAudio": true,
+          "kind": "video",
+          "referenceLimits": {
+            "audio": 0,
+            "image": 0,
+            "video": 0
+          },
+          "referenceValidationPolicy": "none",
+          "settingIds": [
+            "aspectRatio",
+            "durationSeconds",
+            "resolution",
+            "generateAudio"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-16.1",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "aspect_ratio",
+          "callback_url",
+          "duration",
+          "model",
+          "prompt",
+          "provider",
+          "resolution",
+          "generate_audio"
+        ]
+      },
+      {
+        "adapterVersion": "openrouter-video-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/videos",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/video-generation",
+            "https://openrouter.ai/api/v1/videos/models",
+            "https://openrouter.ai/google/veo-3.1-lite"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "google/veo-3.1-lite",
+        "operationId": "firstLastFrameToVideo",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "google-vertex",
+        "protocol": "video",
+        "requestProfile": {
+          "frameMode": "first-last",
+          "generateAudio": true,
+          "kind": "video",
+          "referenceLimits": {
+            "audio": 0,
+            "image": 0,
+            "video": 0
+          },
+          "referenceValidationPolicy": "none",
+          "settingIds": [
+            "aspectRatio",
+            "durationSeconds",
+            "resolution",
+            "generateAudio"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-16.1",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "aspect_ratio",
+          "callback_url",
+          "duration",
+          "model",
+          "prompt",
+          "provider",
+          "resolution",
+          "generate_audio",
+          "frame_images"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "x-ai/grok-imagine-video",
+    "revision": 1,
+    "status": "active",
+    "displayName": "Grok Imagine Video",
+    "labelKey": "flows.models.grokImagineVideo",
+    "presentation": {
+      "descriptionKey": "flows.modelDescriptions.grokImagineVideo",
+      "logoId": "xai"
+    },
+    "mediaType": "video",
+    "recommended": false,
+    "capabilitySchemaVersion": 3,
+    "defaultOperationId": "textToVideo",
+    "inputSlots": [
+      {
+        "accepts": [
+          "Text"
+        ],
+        "descriptionKey": "flows.inputs.promptDescription",
+        "id": "prompt",
+        "labelKey": "flows.inputs.prompt",
+        "maxConnections": 32,
+        "maxItems": 32,
+        "minConnections": 0
+      },
+      {
+        "accepts": [
+          "ImageSet"
+        ],
+        "acceptedMedia": {
+          "maxBytes": 20971520,
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ]
+        },
+        "descriptionKey": "flows.inputs.firstFrameDescription",
+        "id": "firstFrame",
+        "labelKey": "flows.inputs.firstFrame",
+        "maxConnections": 1,
+        "maxItems": 1,
+        "minConnections": 0,
+        "referenceProfile": {
+          "contactSheetPolicy": "not-applicable",
+          "multipleSubjectSupport": "not-applicable",
+          "purposes": [
+            "firstFrame"
+          ]
+        }
+      },
+      {
+        "accepts": [
+          "ImageSet"
+        ],
+        "acceptedMedia": {
+          "maxBytes": 20971520,
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ]
+        },
+        "descriptionKey": "flows.inputs.imageReferencesDescription",
+        "id": "imageReferences",
+        "labelKey": "flows.inputs.imageReferences",
+        "maxConnections": 7,
+        "maxItems": 7,
+        "minConnections": 0,
+        "referenceProfile": {
+          "contactSheetPolicy": "never",
+          "multipleSubjectSupport": "unknown",
+          "purposes": [
+            "composition",
+            "identity",
+            "style",
+            "subject"
+          ]
+        }
+      }
+    ],
+    "settings": [
+      {
+        "default": "16:9",
+        "id": "aspectRatio",
+        "kind": "enum",
+        "labelKey": "flows.settings.aspectRatio",
+        "options": [
+          {
+            "labelKey": "flows.settings.aspectRatios.landscape",
+            "value": "16:9"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatios.portrait",
+            "value": "9:16"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatios.square",
+            "value": "1:1"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatios.photo",
+            "value": "4:3"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatios.portraitPhoto",
+            "value": "3:4"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatios.photo",
+            "value": "3:2"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatios.portraitPhoto",
+            "value": "2:3"
+          }
+        ]
+      },
+      {
+        "default": "6",
+        "id": "durationSeconds",
+        "kind": "enum",
+        "labelKey": "flows.settings.duration",
+        "options": [
+          {
+            "labelKey": "flows.settings.durations.seconds1",
+            "value": "1"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds2",
+            "value": "2"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds3",
+            "value": "3"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds4",
+            "value": "4"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds5",
+            "value": "5"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds6",
+            "value": "6"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds7",
+            "value": "7"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds8",
+            "value": "8"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds9",
+            "value": "9"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds10",
+            "value": "10"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds11",
+            "value": "11"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds12",
+            "value": "12"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds13",
+            "value": "13"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds14",
+            "value": "14"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds15",
+            "value": "15"
+          }
+        ]
+      },
+      {
+        "default": "480p",
+        "id": "resolution",
+        "kind": "enum",
+        "labelKey": "flows.settings.resolution",
+        "options": [
+          {
+            "labelKey": "flows.settings.resolutions.480p",
+            "value": "480p"
+          },
+          {
+            "labelKey": "flows.settings.resolutions.720p",
+            "value": "720p"
+          }
+        ]
+      }
+    ],
+    "constraints": [],
+    "operations": [
+      {
+        "descriptionKey": "flows.operations.textToVideoDescription",
+        "id": "textToVideo",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt"
+        ],
+        "labelKey": "flows.operations.textToVideo",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "video"
+        },
+        "referenceLimit": {
+          "maxItems": 0,
+          "slotIds": []
+        },
+        "settingIds": [
+          "aspectRatio",
+          "durationSeconds",
+          "resolution"
+        ],
+        "nodeType": "videoGeneration"
+      },
+      {
+        "descriptionKey": "flows.operations.imageToVideoDescription",
+        "id": "imageToVideo",
+        "inputs": {
+          "firstFrame": {
+            "required": true
+          },
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt",
+          "firstFrame"
+        ],
+        "labelKey": "flows.operations.imageToVideo",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "video"
+        },
+        "referenceLimit": {
+          "maxItems": 1,
+          "slotIds": [
+            "firstFrame"
+          ]
+        },
+        "settingIds": [
+          "aspectRatio",
+          "durationSeconds",
+          "resolution"
+        ],
+        "nodeType": "videoGeneration"
+      },
+      {
+        "descriptionKey": "flows.operations.referencesToVideoDescription",
+        "id": "referencesToVideo",
+        "inputs": {
+          "imageReferences": {
+            "required": true
+          },
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt",
+          "imageReferences"
+        ],
+        "labelKey": "flows.operations.referencesToVideo",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "video"
+        },
+        "referenceLimit": {
+          "maxItems": 7,
+          "slotIds": [
+            "imageReferences"
+          ]
+        },
+        "settingIds": [
+          "aspectRatio",
+          "durationSeconds",
+          "resolution"
+        ],
+        "nodeType": "videoGeneration"
+      }
+    ],
+    "bindings": [
+      {
+        "adapterVersion": "openrouter-video-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/videos",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/video-generation",
+            "https://openrouter.ai/api/v1/videos/models",
+            "https://openrouter.ai/x-ai/grok-imagine-video"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "x-ai/grok-imagine-video",
+        "operationId": "textToVideo",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "xai",
+        "protocol": "video",
+        "requestProfile": {
+          "frameMode": "none",
+          "generateAudio": false,
+          "kind": "video",
+          "referenceLimits": {
+            "audio": 0,
+            "image": 0,
+            "video": 0
+          },
+          "referenceValidationPolicy": "none",
+          "settingIds": [
+            "aspectRatio",
+            "durationSeconds",
+            "resolution"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-16.1",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "aspect_ratio",
+          "callback_url",
+          "duration",
+          "model",
+          "prompt",
+          "provider",
+          "resolution"
+        ]
+      },
+      {
+        "adapterVersion": "openrouter-video-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/videos",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/video-generation",
+            "https://openrouter.ai/api/v1/videos/models",
+            "https://openrouter.ai/x-ai/grok-imagine-video"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "x-ai/grok-imagine-video",
+        "operationId": "imageToVideo",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "xai",
+        "protocol": "video",
+        "requestProfile": {
+          "frameMode": "first",
+          "generateAudio": false,
+          "kind": "video",
+          "referenceLimits": {
+            "audio": 0,
+            "image": 0,
+            "video": 0
+          },
+          "referenceValidationPolicy": "none",
+          "settingIds": [
+            "aspectRatio",
+            "durationSeconds",
+            "resolution"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-16.1",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "aspect_ratio",
+          "callback_url",
+          "duration",
+          "model",
+          "prompt",
+          "provider",
+          "resolution",
+          "frame_images"
+        ]
+      },
+      {
+        "adapterVersion": "openrouter-video-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/videos",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/video-generation",
+            "https://openrouter.ai/api/v1/videos/models",
+            "https://openrouter.ai/x-ai/grok-imagine-video"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "x-ai/grok-imagine-video",
+        "operationId": "referencesToVideo",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "xai",
+        "protocol": "video",
+        "requestProfile": {
+          "frameMode": "none",
+          "generateAudio": false,
+          "kind": "video",
+          "referenceLimits": {
+            "audio": 0,
+            "image": 7,
+            "video": 0
+          },
+          "referenceValidationPolicy": "none",
+          "settingIds": [
+            "aspectRatio",
+            "durationSeconds",
+            "resolution"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-16.1",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "aspect_ratio",
+          "callback_url",
+          "duration",
+          "model",
+          "prompt",
+          "provider",
+          "resolution",
+          "input_references"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "bytedance/seedance-2.0",
+    "revision": 1,
+    "status": "active",
+    "displayName": "Seedance 2.0",
+    "labelKey": "flows.models.seedance20",
+    "presentation": {
+      "descriptionKey": "flows.modelDescriptions.seedance20",
+      "logoId": "bytedance"
+    },
+    "mediaType": "video",
+    "recommended": false,
+    "capabilitySchemaVersion": 3,
+    "defaultOperationId": "textToVideo",
+    "inputSlots": [
+      {
+        "accepts": [
+          "Text"
+        ],
+        "descriptionKey": "flows.inputs.promptDescription",
+        "id": "prompt",
+        "labelKey": "flows.inputs.prompt",
+        "maxConnections": 32,
+        "maxItems": 32,
+        "minConnections": 0
+      },
+      {
+        "accepts": [
+          "ImageSet"
+        ],
+        "acceptedMedia": {
+          "maxBytes": 31457280,
+          "mimeTypes": [
+            "image/bmp",
+            "image/gif",
+            "image/heic",
+            "image/heif",
+            "image/jpeg",
+            "image/png",
+            "image/tiff",
+            "image/webp"
+          ]
+        },
+        "descriptionKey": "flows.inputs.firstFrameDescription",
+        "id": "firstFrame",
+        "labelKey": "flows.inputs.firstFrame",
+        "maxConnections": 1,
+        "maxItems": 1,
+        "minConnections": 0,
+        "referenceProfile": {
+          "contactSheetPolicy": "not-applicable",
+          "multipleSubjectSupport": "not-applicable",
+          "purposes": [
+            "firstFrame"
+          ]
+        }
+      },
+      {
+        "accepts": [
+          "ImageSet"
+        ],
+        "acceptedMedia": {
+          "maxBytes": 31457280,
+          "mimeTypes": [
+            "image/bmp",
+            "image/gif",
+            "image/heic",
+            "image/heif",
+            "image/jpeg",
+            "image/png",
+            "image/tiff",
+            "image/webp"
+          ]
+        },
+        "descriptionKey": "flows.inputs.lastFrameDescription",
+        "id": "lastFrame",
+        "labelKey": "flows.inputs.lastFrame",
+        "maxConnections": 1,
+        "maxItems": 1,
+        "minConnections": 0,
+        "referenceProfile": {
+          "contactSheetPolicy": "not-applicable",
+          "multipleSubjectSupport": "not-applicable",
+          "purposes": [
+            "lastFrame"
+          ]
+        }
+      },
+      {
+        "accepts": [
+          "ImageSet"
+        ],
+        "acceptedMedia": {
+          "maxBytes": 31457280,
+          "mimeTypes": [
+            "image/bmp",
+            "image/gif",
+            "image/heic",
+            "image/heif",
+            "image/jpeg",
+            "image/png",
+            "image/tiff",
+            "image/webp"
+          ]
+        },
+        "descriptionKey": "flows.inputs.imageReferencesDescription",
+        "id": "imageReferences",
+        "labelKey": "flows.inputs.imageReferences",
+        "maxConnections": 9,
+        "maxItems": 9,
+        "minConnections": 0,
+        "referenceProfile": {
+          "contactSheetPolicy": "never",
+          "multipleSubjectSupport": "unknown",
+          "purposes": [
+            "composition",
+            "identity",
+            "style",
+            "subject"
+          ]
+        }
+      },
+      {
+        "accepts": [
+          "VideoSet"
+        ],
+        "acceptedMedia": {
+          "durationSeconds": {
+            "max": 15,
+            "min": 2
+          },
+          "maxBytes": 209715200,
+          "mimeTypes": [
+            "video/mp4",
+            "video/quicktime"
+          ]
+        },
+        "descriptionKey": "flows.inputs.videoReferencesDescription",
+        "id": "videoReferences",
+        "labelKey": "flows.inputs.videoReferences",
+        "maxConnections": 3,
+        "maxItems": 3,
+        "minConnections": 0,
+        "referenceProfile": {
+          "contactSheetPolicy": "not-applicable",
+          "multipleSubjectSupport": "not-applicable",
+          "purposes": [
+            "motion",
+            "videoExtension"
+          ]
+        }
+      },
+      {
+        "accepts": [
+          "AudioSet"
+        ],
+        "acceptedMedia": {
+          "durationSeconds": {
+            "max": 15,
+            "min": 2
+          },
+          "maxBytes": 15728640,
+          "mimeTypes": [
+            "audio/mpeg",
+            "audio/wav",
+            "audio/x-wav"
+          ]
+        },
+        "descriptionKey": "flows.inputs.audioReferencesDescription",
+        "id": "audioReferences",
+        "labelKey": "flows.inputs.audioReferences",
+        "maxConnections": 3,
+        "maxItems": 3,
+        "minConnections": 0,
+        "referenceProfile": {
+          "contactSheetPolicy": "not-applicable",
+          "multipleSubjectSupport": "not-applicable",
+          "purposes": [
+            "audioGuidance"
+          ]
+        }
+      }
+    ],
+    "settings": [
+      {
+        "default": "16:9",
+        "id": "aspectRatio",
+        "kind": "enum",
+        "labelKey": "flows.settings.aspectRatio",
+        "options": [
+          {
+            "labelKey": "flows.settings.aspectRatios.square",
+            "value": "1:1"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatios.portraitPhoto",
+            "value": "3:4"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatios.portrait",
+            "value": "9:16"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatios.photo",
+            "value": "4:3"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatios.landscape",
+            "value": "16:9"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatios.ultrawide",
+            "value": "21:9"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatios.portrait",
+            "value": "9:21"
+          }
+        ]
+      },
+      {
+        "default": "8",
+        "id": "durationSeconds",
+        "kind": "enum",
+        "labelKey": "flows.settings.duration",
+        "options": [
+          {
+            "labelKey": "flows.settings.durations.seconds4",
+            "value": "4"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds5",
+            "value": "5"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds6",
+            "value": "6"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds7",
+            "value": "7"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds8",
+            "value": "8"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds9",
+            "value": "9"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds10",
+            "value": "10"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds11",
+            "value": "11"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds12",
+            "value": "12"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds13",
+            "value": "13"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds14",
+            "value": "14"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds15",
+            "value": "15"
+          }
+        ]
+      },
+      {
+        "default": "480p",
+        "id": "resolution",
+        "kind": "enum",
+        "labelKey": "flows.settings.resolution",
+        "options": [
+          {
+            "labelKey": "flows.settings.resolutions.480p",
+            "value": "480p"
+          },
+          {
+            "labelKey": "flows.settings.resolutions.720p",
+            "value": "720p"
+          },
+          {
+            "labelKey": "flows.settings.resolutions.1080p",
+            "value": "1080p"
+          },
+          {
+            "labelKey": "flows.settings.resolutions.4k",
+            "value": "4K"
+          }
+        ]
+      },
+      {
+        "default": true,
+        "id": "generateAudio",
+        "kind": "boolean",
+        "labelKey": "flows.settings.generateAudio"
+      }
+    ],
+    "constraints": [
+      {
+        "id": "last-frame-requires-first-frame",
+        "messageKey": "flows.constraints.lastFrameRequiresFirstFrame",
+        "require": [
+          {
+            "field": "slot",
+            "id": "firstFrame",
+            "operator": "connected"
+          }
+        ],
+        "when": [
+          {
+            "field": "slot",
+            "id": "lastFrame",
+            "operator": "connected"
+          }
+        ]
+      }
+    ],
+    "operations": [
+      {
+        "descriptionKey": "flows.operations.textToVideoDescription",
+        "id": "textToVideo",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt"
+        ],
+        "labelKey": "flows.operations.textToVideo",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "video"
+        },
+        "referenceLimit": {
+          "maxItems": 0,
+          "slotIds": []
+        },
+        "settingIds": [
+          "aspectRatio",
+          "durationSeconds",
+          "resolution",
+          "generateAudio"
+        ],
+        "nodeType": "videoGeneration"
+      },
+      {
+        "descriptionKey": "flows.operations.firstLastFrameToVideoDescription",
+        "id": "firstLastFrameToVideo",
+        "inputs": {
+          "firstFrame": {
+            "required": true
+          },
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt",
+          "firstFrame",
+          "lastFrame"
+        ],
+        "labelKey": "flows.operations.firstLastFrameToVideo",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "video"
+        },
+        "referenceLimit": {
+          "maxItems": 2,
+          "slotIds": [
+            "firstFrame",
+            "lastFrame"
+          ]
+        },
+        "settingIds": [
+          "aspectRatio",
+          "durationSeconds",
+          "resolution",
+          "generateAudio"
+        ],
+        "nodeType": "videoGeneration"
+      },
+      {
+        "descriptionKey": "flows.operations.referencesToVideoDescription",
+        "id": "referencesToVideo",
+        "inputs": {
+          "prompt": {
+            "required": true
+          },
+          "visualReference": {
+            "atLeastOne": [
+              "imageReferences",
+              "videoReferences"
+            ]
+          }
+        },
+        "inputSlotIds": [
+          "prompt",
+          "imageReferences",
+          "videoReferences",
+          "audioReferences"
+        ],
+        "labelKey": "flows.operations.referencesToVideo",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "video"
+        },
+        "referenceLimit": {
+          "maxItems": 15,
+          "slotIds": [
+            "imageReferences",
+            "videoReferences",
+            "audioReferences"
+          ]
+        },
+        "settingIds": [
+          "aspectRatio",
+          "durationSeconds",
+          "resolution",
+          "generateAudio"
+        ],
+        "nodeType": "videoGeneration"
+      }
+    ],
+    "bindings": [
+      {
+        "adapterVersion": "openrouter-video-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/videos",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/video-generation",
+            "https://openrouter.ai/api/v1/videos/models",
+            "https://openrouter.ai/bytedance/seedance-2.0"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "bytedance/seedance-2.0",
+        "operationId": "textToVideo",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "seed",
+        "protocol": "video",
+        "requestProfile": {
+          "frameMode": "none",
+          "generateAudio": true,
+          "kind": "video",
+          "referenceLimits": {
+            "audio": 0,
+            "image": 0,
+            "video": 0
+          },
+          "referenceValidationPolicy": "none",
+          "settingIds": [
+            "aspectRatio",
+            "durationSeconds",
+            "resolution",
+            "generateAudio"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-16.1",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "aspect_ratio",
+          "callback_url",
+          "duration",
+          "model",
+          "prompt",
+          "provider",
+          "resolution",
+          "generate_audio"
+        ]
+      },
+      {
+        "adapterVersion": "openrouter-video-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/videos",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/video-generation",
+            "https://openrouter.ai/api/v1/videos/models",
+            "https://openrouter.ai/bytedance/seedance-2.0"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "bytedance/seedance-2.0",
+        "operationId": "firstLastFrameToVideo",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "seed",
+        "protocol": "video",
+        "requestProfile": {
+          "frameMode": "first-last",
+          "generateAudio": true,
+          "kind": "video",
+          "referenceLimits": {
+            "audio": 0,
+            "image": 0,
+            "video": 0
+          },
+          "referenceValidationPolicy": "none",
+          "settingIds": [
+            "aspectRatio",
+            "durationSeconds",
+            "resolution",
+            "generateAudio"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-16.1",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "aspect_ratio",
+          "callback_url",
+          "duration",
+          "model",
+          "prompt",
+          "provider",
+          "resolution",
+          "generate_audio",
+          "frame_images"
+        ]
+      },
+      {
+        "adapterVersion": "openrouter-video-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/videos",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/video-generation",
+            "https://openrouter.ai/api/v1/videos/models",
+            "https://openrouter.ai/bytedance/seedance-2.0"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "bytedance/seedance-2.0",
+        "operationId": "referencesToVideo",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "seed",
+        "protocol": "video",
+        "requestProfile": {
+          "frameMode": "none",
+          "generateAudio": true,
+          "kind": "video",
+          "referenceLimits": {
+            "audio": 3,
+            "image": 9,
+            "video": 3
+          },
+          "referenceValidationPolicy": "seedance-2-reference-v1",
+          "settingIds": [
+            "aspectRatio",
+            "durationSeconds",
+            "resolution",
+            "generateAudio"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-16.1",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "aspect_ratio",
+          "callback_url",
+          "duration",
+          "model",
+          "prompt",
+          "provider",
+          "resolution",
+          "generate_audio",
+          "input_references"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "kwaivgi/kling-v3.0-pro",
+    "revision": 1,
+    "status": "active",
+    "displayName": "Kling 3.0 Pro",
+    "labelKey": "flows.models.kling30Pro",
+    "presentation": {
+      "descriptionKey": "flows.modelDescriptions.nativeAudioFrameVideo",
+      "logoId": "kling"
+    },
+    "mediaType": "video",
+    "recommended": false,
+    "capabilitySchemaVersion": 3,
+    "defaultOperationId": "textToVideo",
+    "inputSlots": [
+      {
+        "accepts": [
+          "Text"
+        ],
+        "descriptionKey": "flows.inputs.promptDescription",
+        "id": "prompt",
+        "labelKey": "flows.inputs.prompt",
+        "maxConnections": 32,
+        "maxItems": 32,
+        "minConnections": 0
+      },
+      {
+        "acceptedMedia": {
+          "maxBytes": 20971520,
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ]
+        },
+        "accepts": [
+          "ImageSet"
+        ],
+        "descriptionKey": "flows.inputs.firstFrameDescription",
+        "id": "firstFrame",
+        "labelKey": "flows.inputs.firstFrame",
+        "maxConnections": 1,
+        "maxItems": 1,
+        "minConnections": 0,
+        "referenceProfile": {
+          "contactSheetPolicy": "not-applicable",
+          "multipleSubjectSupport": "not-applicable",
+          "purposes": [
+            "firstFrame"
+          ]
+        }
+      },
+      {
+        "acceptedMedia": {
+          "maxBytes": 20971520,
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ]
+        },
+        "accepts": [
+          "ImageSet"
+        ],
+        "descriptionKey": "flows.inputs.lastFrameDescription",
+        "id": "lastFrame",
+        "labelKey": "flows.inputs.lastFrame",
+        "maxConnections": 1,
+        "maxItems": 1,
+        "minConnections": 0,
+        "referenceProfile": {
+          "contactSheetPolicy": "not-applicable",
+          "multipleSubjectSupport": "not-applicable",
+          "purposes": [
+            "lastFrame"
+          ]
+        }
+      }
+    ],
+    "settings": [
+      {
+        "default": "16:9",
+        "id": "aspectRatio",
+        "kind": "enum",
+        "labelKey": "flows.settings.aspectRatio",
+        "options": [
+          {
+            "labelKey": "flows.settings.aspectRatios.landscape",
+            "value": "16:9"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatios.portrait",
+            "value": "9:16"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatios.square",
+            "value": "1:1"
+          }
+        ]
+      },
+      {
+        "default": "5",
+        "id": "durationSeconds",
+        "kind": "enum",
+        "labelKey": "flows.settings.duration",
+        "options": [
+          {
+            "labelKey": "flows.settings.durations.seconds3",
+            "value": "3"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds4",
+            "value": "4"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds5",
+            "value": "5"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds6",
+            "value": "6"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds7",
+            "value": "7"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds8",
+            "value": "8"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds9",
+            "value": "9"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds10",
+            "value": "10"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds11",
+            "value": "11"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds12",
+            "value": "12"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds13",
+            "value": "13"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds14",
+            "value": "14"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds15",
+            "value": "15"
+          }
+        ]
+      },
+      {
+        "default": "720p",
+        "id": "resolution",
+        "kind": "enum",
+        "labelKey": "flows.settings.resolution",
+        "options": [
+          {
+            "labelKey": "flows.settings.resolutions.720p",
+            "value": "720p"
+          }
+        ]
+      },
+      {
+        "default": true,
+        "id": "generateAudio",
+        "kind": "boolean",
+        "labelKey": "flows.settings.generateAudio"
+      }
+    ],
+    "constraints": [
+      {
+        "id": "last-frame-requires-first-frame",
+        "messageKey": "flows.constraints.lastFrameRequiresFirstFrame",
+        "require": [
+          {
+            "field": "slot",
+            "id": "firstFrame",
+            "operator": "connected"
+          }
+        ],
+        "when": [
+          {
+            "field": "slot",
+            "id": "lastFrame",
+            "operator": "connected"
+          }
+        ]
+      }
+    ],
+    "operations": [
+      {
+        "descriptionKey": "flows.operations.textToVideoDescription",
+        "id": "textToVideo",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt"
+        ],
+        "labelKey": "flows.operations.textToVideo",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "video"
+        },
+        "referenceLimit": {
+          "maxItems": 0,
+          "slotIds": []
+        },
+        "settingIds": [
+          "aspectRatio",
+          "durationSeconds",
+          "resolution",
+          "generateAudio"
+        ],
+        "nodeType": "videoGeneration"
+      },
+      {
+        "descriptionKey": "flows.operations.firstLastFrameToVideoDescription",
+        "id": "firstLastFrameToVideo",
+        "inputs": {
+          "firstFrame": {
+            "required": true
+          },
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt",
+          "firstFrame",
+          "lastFrame"
+        ],
+        "labelKey": "flows.operations.firstLastFrameToVideo",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "video"
+        },
+        "referenceLimit": {
+          "maxItems": 2,
+          "slotIds": [
+            "firstFrame",
+            "lastFrame"
+          ]
+        },
+        "settingIds": [
+          "aspectRatio",
+          "durationSeconds",
+          "resolution",
+          "generateAudio"
+        ],
+        "nodeType": "videoGeneration"
+      }
+    ],
+    "bindings": [
+      {
+        "adapterVersion": "openrouter-video-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/videos",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/video-generation",
+            "https://openrouter.ai/api/v1/videos/models",
+            "https://openrouter.ai/kwaivgi/kling-v3.0-pro"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "kwaivgi/kling-v3.0-pro",
+        "operationId": "textToVideo",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "atlas-cloud",
+        "protocol": "video",
+        "requestProfile": {
+          "frameMode": "none",
+          "generateAudio": true,
+          "kind": "video",
+          "referenceLimits": {
+            "audio": 0,
+            "image": 0,
+            "video": 0
+          },
+          "referenceValidationPolicy": "none",
+          "settingIds": [
+            "aspectRatio",
+            "durationSeconds",
+            "resolution",
+            "generateAudio"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-16.1",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "aspect_ratio",
+          "callback_url",
+          "duration",
+          "model",
+          "prompt",
+          "provider",
+          "resolution",
+          "generate_audio"
+        ]
+      },
+      {
+        "adapterVersion": "openrouter-video-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/videos",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/video-generation",
+            "https://openrouter.ai/api/v1/videos/models",
+            "https://openrouter.ai/kwaivgi/kling-v3.0-pro"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "kwaivgi/kling-v3.0-pro",
+        "operationId": "firstLastFrameToVideo",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "atlas-cloud",
+        "protocol": "video",
+        "requestProfile": {
+          "frameMode": "first-last",
+          "generateAudio": true,
+          "kind": "video",
+          "referenceLimits": {
+            "audio": 0,
+            "image": 0,
+            "video": 0
+          },
+          "referenceValidationPolicy": "none",
+          "settingIds": [
+            "aspectRatio",
+            "durationSeconds",
+            "resolution",
+            "generateAudio"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-16.1",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "aspect_ratio",
+          "callback_url",
+          "duration",
+          "model",
+          "prompt",
+          "provider",
+          "resolution",
+          "generate_audio",
+          "frame_images"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "kwaivgi/kling-v3.0-std",
+    "revision": 1,
+    "status": "active",
+    "displayName": "Kling 3.0 Standard",
+    "labelKey": "flows.models.kling30Standard",
+    "presentation": {
+      "descriptionKey": "flows.modelDescriptions.nativeAudioFrameVideo",
+      "logoId": "kling"
+    },
+    "mediaType": "video",
+    "recommended": false,
+    "capabilitySchemaVersion": 3,
+    "defaultOperationId": "textToVideo",
+    "inputSlots": [
+      {
+        "accepts": [
+          "Text"
+        ],
+        "descriptionKey": "flows.inputs.promptDescription",
+        "id": "prompt",
+        "labelKey": "flows.inputs.prompt",
+        "maxConnections": 32,
+        "maxItems": 32,
+        "minConnections": 0
+      },
+      {
+        "acceptedMedia": {
+          "maxBytes": 20971520,
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ]
+        },
+        "accepts": [
+          "ImageSet"
+        ],
+        "descriptionKey": "flows.inputs.firstFrameDescription",
+        "id": "firstFrame",
+        "labelKey": "flows.inputs.firstFrame",
+        "maxConnections": 1,
+        "maxItems": 1,
+        "minConnections": 0,
+        "referenceProfile": {
+          "contactSheetPolicy": "not-applicable",
+          "multipleSubjectSupport": "not-applicable",
+          "purposes": [
+            "firstFrame"
+          ]
+        }
+      },
+      {
+        "acceptedMedia": {
+          "maxBytes": 20971520,
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ]
+        },
+        "accepts": [
+          "ImageSet"
+        ],
+        "descriptionKey": "flows.inputs.lastFrameDescription",
+        "id": "lastFrame",
+        "labelKey": "flows.inputs.lastFrame",
+        "maxConnections": 1,
+        "maxItems": 1,
+        "minConnections": 0,
+        "referenceProfile": {
+          "contactSheetPolicy": "not-applicable",
+          "multipleSubjectSupport": "not-applicable",
+          "purposes": [
+            "lastFrame"
+          ]
+        }
+      }
+    ],
+    "settings": [
+      {
+        "default": "16:9",
+        "id": "aspectRatio",
+        "kind": "enum",
+        "labelKey": "flows.settings.aspectRatio",
+        "options": [
+          {
+            "labelKey": "flows.settings.aspectRatios.landscape",
+            "value": "16:9"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatios.portrait",
+            "value": "9:16"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatios.square",
+            "value": "1:1"
+          }
+        ]
+      },
+      {
+        "default": "5",
+        "id": "durationSeconds",
+        "kind": "enum",
+        "labelKey": "flows.settings.duration",
+        "options": [
+          {
+            "labelKey": "flows.settings.durations.seconds3",
+            "value": "3"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds4",
+            "value": "4"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds5",
+            "value": "5"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds6",
+            "value": "6"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds7",
+            "value": "7"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds8",
+            "value": "8"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds9",
+            "value": "9"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds10",
+            "value": "10"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds11",
+            "value": "11"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds12",
+            "value": "12"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds13",
+            "value": "13"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds14",
+            "value": "14"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds15",
+            "value": "15"
+          }
+        ]
+      },
+      {
+        "default": "720p",
+        "id": "resolution",
+        "kind": "enum",
+        "labelKey": "flows.settings.resolution",
+        "options": [
+          {
+            "labelKey": "flows.settings.resolutions.720p",
+            "value": "720p"
+          }
+        ]
+      },
+      {
+        "default": true,
+        "id": "generateAudio",
+        "kind": "boolean",
+        "labelKey": "flows.settings.generateAudio"
+      }
+    ],
+    "constraints": [
+      {
+        "id": "last-frame-requires-first-frame",
+        "messageKey": "flows.constraints.lastFrameRequiresFirstFrame",
+        "require": [
+          {
+            "field": "slot",
+            "id": "firstFrame",
+            "operator": "connected"
+          }
+        ],
+        "when": [
+          {
+            "field": "slot",
+            "id": "lastFrame",
+            "operator": "connected"
+          }
+        ]
+      }
+    ],
+    "operations": [
+      {
+        "descriptionKey": "flows.operations.textToVideoDescription",
+        "id": "textToVideo",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt"
+        ],
+        "labelKey": "flows.operations.textToVideo",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "video"
+        },
+        "referenceLimit": {
+          "maxItems": 0,
+          "slotIds": []
+        },
+        "settingIds": [
+          "aspectRatio",
+          "durationSeconds",
+          "resolution",
+          "generateAudio"
+        ],
+        "nodeType": "videoGeneration"
+      },
+      {
+        "descriptionKey": "flows.operations.firstLastFrameToVideoDescription",
+        "id": "firstLastFrameToVideo",
+        "inputs": {
+          "firstFrame": {
+            "required": true
+          },
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt",
+          "firstFrame",
+          "lastFrame"
+        ],
+        "labelKey": "flows.operations.firstLastFrameToVideo",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "video"
+        },
+        "referenceLimit": {
+          "maxItems": 2,
+          "slotIds": [
+            "firstFrame",
+            "lastFrame"
+          ]
+        },
+        "settingIds": [
+          "aspectRatio",
+          "durationSeconds",
+          "resolution",
+          "generateAudio"
+        ],
+        "nodeType": "videoGeneration"
+      }
+    ],
+    "bindings": [
+      {
+        "adapterVersion": "openrouter-video-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/videos",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/video-generation",
+            "https://openrouter.ai/api/v1/videos/models",
+            "https://openrouter.ai/kwaivgi/kling-v3.0-std"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "kwaivgi/kling-v3.0-std",
+        "operationId": "textToVideo",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "atlas-cloud",
+        "protocol": "video",
+        "requestProfile": {
+          "frameMode": "none",
+          "generateAudio": true,
+          "kind": "video",
+          "referenceLimits": {
+            "audio": 0,
+            "image": 0,
+            "video": 0
+          },
+          "referenceValidationPolicy": "none",
+          "settingIds": [
+            "aspectRatio",
+            "durationSeconds",
+            "resolution",
+            "generateAudio"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-16.1",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "aspect_ratio",
+          "callback_url",
+          "duration",
+          "model",
+          "prompt",
+          "provider",
+          "resolution",
+          "generate_audio"
+        ]
+      },
+      {
+        "adapterVersion": "openrouter-video-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/videos",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/video-generation",
+            "https://openrouter.ai/api/v1/videos/models",
+            "https://openrouter.ai/kwaivgi/kling-v3.0-std"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "kwaivgi/kling-v3.0-std",
+        "operationId": "firstLastFrameToVideo",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "atlas-cloud",
+        "protocol": "video",
+        "requestProfile": {
+          "frameMode": "first-last",
+          "generateAudio": true,
+          "kind": "video",
+          "referenceLimits": {
+            "audio": 0,
+            "image": 0,
+            "video": 0
+          },
+          "referenceValidationPolicy": "none",
+          "settingIds": [
+            "aspectRatio",
+            "durationSeconds",
+            "resolution",
+            "generateAudio"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-16.1",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "aspect_ratio",
+          "callback_url",
+          "duration",
+          "model",
+          "prompt",
+          "provider",
+          "resolution",
+          "generate_audio",
+          "frame_images"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "kwaivgi/kling-video-o1",
+    "revision": 1,
+    "status": "active",
+    "displayName": "Kling Video O1",
+    "labelKey": "flows.models.klingVideoO1",
+    "presentation": {
+      "descriptionKey": "flows.modelDescriptions.nativeAudioFrameVideo",
+      "logoId": "kling"
+    },
+    "mediaType": "video",
+    "recommended": false,
+    "capabilitySchemaVersion": 3,
+    "defaultOperationId": "textToVideo",
+    "inputSlots": [
+      {
+        "accepts": [
+          "Text"
+        ],
+        "descriptionKey": "flows.inputs.promptDescription",
+        "id": "prompt",
+        "labelKey": "flows.inputs.prompt",
+        "maxConnections": 32,
+        "maxItems": 32,
+        "minConnections": 0
+      },
+      {
+        "acceptedMedia": {
+          "maxBytes": 20971520,
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ]
+        },
+        "accepts": [
+          "ImageSet"
+        ],
+        "descriptionKey": "flows.inputs.firstFrameDescription",
+        "id": "firstFrame",
+        "labelKey": "flows.inputs.firstFrame",
+        "maxConnections": 1,
+        "maxItems": 1,
+        "minConnections": 0,
+        "referenceProfile": {
+          "contactSheetPolicy": "not-applicable",
+          "multipleSubjectSupport": "not-applicable",
+          "purposes": [
+            "firstFrame"
+          ]
+        }
+      },
+      {
+        "acceptedMedia": {
+          "maxBytes": 20971520,
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ]
+        },
+        "accepts": [
+          "ImageSet"
+        ],
+        "descriptionKey": "flows.inputs.lastFrameDescription",
+        "id": "lastFrame",
+        "labelKey": "flows.inputs.lastFrame",
+        "maxConnections": 1,
+        "maxItems": 1,
+        "minConnections": 0,
+        "referenceProfile": {
+          "contactSheetPolicy": "not-applicable",
+          "multipleSubjectSupport": "not-applicable",
+          "purposes": [
+            "lastFrame"
+          ]
+        }
+      }
+    ],
+    "settings": [
+      {
+        "default": "16:9",
+        "id": "aspectRatio",
+        "kind": "enum",
+        "labelKey": "flows.settings.aspectRatio",
+        "options": [
+          {
+            "labelKey": "flows.settings.aspectRatios.landscape",
+            "value": "16:9"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatios.portrait",
+            "value": "9:16"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatios.square",
+            "value": "1:1"
+          }
+        ]
+      },
+      {
+        "default": "5",
+        "id": "durationSeconds",
+        "kind": "enum",
+        "labelKey": "flows.settings.duration",
+        "options": [
+          {
+            "labelKey": "flows.settings.durations.seconds5",
+            "value": "5"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds10",
+            "value": "10"
+          }
+        ]
+      },
+      {
+        "default": "720p",
+        "id": "resolution",
+        "kind": "enum",
+        "labelKey": "flows.settings.resolution",
+        "options": [
+          {
+            "labelKey": "flows.settings.resolutions.720p",
+            "value": "720p"
+          }
+        ]
+      },
+      {
+        "default": true,
+        "id": "generateAudio",
+        "kind": "boolean",
+        "labelKey": "flows.settings.generateAudio"
+      }
+    ],
+    "constraints": [
+      {
+        "id": "last-frame-requires-first-frame",
+        "messageKey": "flows.constraints.lastFrameRequiresFirstFrame",
+        "require": [
+          {
+            "field": "slot",
+            "id": "firstFrame",
+            "operator": "connected"
+          }
+        ],
+        "when": [
+          {
+            "field": "slot",
+            "id": "lastFrame",
+            "operator": "connected"
+          }
+        ]
+      }
+    ],
+    "operations": [
+      {
+        "descriptionKey": "flows.operations.textToVideoDescription",
+        "id": "textToVideo",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt"
+        ],
+        "labelKey": "flows.operations.textToVideo",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "video"
+        },
+        "referenceLimit": {
+          "maxItems": 0,
+          "slotIds": []
+        },
+        "settingIds": [
+          "aspectRatio",
+          "durationSeconds",
+          "resolution",
+          "generateAudio"
+        ],
+        "nodeType": "videoGeneration"
+      },
+      {
+        "descriptionKey": "flows.operations.firstLastFrameToVideoDescription",
+        "id": "firstLastFrameToVideo",
+        "inputs": {
+          "firstFrame": {
+            "required": true
+          },
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt",
+          "firstFrame",
+          "lastFrame"
+        ],
+        "labelKey": "flows.operations.firstLastFrameToVideo",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "video"
+        },
+        "referenceLimit": {
+          "maxItems": 2,
+          "slotIds": [
+            "firstFrame",
+            "lastFrame"
+          ]
+        },
+        "settingIds": [
+          "aspectRatio",
+          "durationSeconds",
+          "resolution",
+          "generateAudio"
+        ],
+        "nodeType": "videoGeneration"
+      }
+    ],
+    "bindings": [
+      {
+        "adapterVersion": "openrouter-video-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/videos",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/video-generation",
+            "https://openrouter.ai/api/v1/videos/models",
+            "https://openrouter.ai/kwaivgi/kling-video-o1"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "kwaivgi/kling-video-o1",
+        "operationId": "textToVideo",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "atlas-cloud",
+        "protocol": "video",
+        "requestProfile": {
+          "frameMode": "none",
+          "generateAudio": true,
+          "kind": "video",
+          "referenceLimits": {
+            "audio": 0,
+            "image": 0,
+            "video": 0
+          },
+          "referenceValidationPolicy": "none",
+          "settingIds": [
+            "aspectRatio",
+            "durationSeconds",
+            "resolution",
+            "generateAudio"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-16.1",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "aspect_ratio",
+          "callback_url",
+          "duration",
+          "model",
+          "prompt",
+          "provider",
+          "resolution",
+          "generate_audio"
+        ]
+      },
+      {
+        "adapterVersion": "openrouter-video-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/videos",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/video-generation",
+            "https://openrouter.ai/api/v1/videos/models",
+            "https://openrouter.ai/kwaivgi/kling-video-o1"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "kwaivgi/kling-video-o1",
+        "operationId": "firstLastFrameToVideo",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "atlas-cloud",
+        "protocol": "video",
+        "requestProfile": {
+          "frameMode": "first-last",
+          "generateAudio": true,
+          "kind": "video",
+          "referenceLimits": {
+            "audio": 0,
+            "image": 0,
+            "video": 0
+          },
+          "referenceValidationPolicy": "none",
+          "settingIds": [
+            "aspectRatio",
+            "durationSeconds",
+            "resolution",
+            "generateAudio"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-16.1",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "aspect_ratio",
+          "callback_url",
+          "duration",
+          "model",
+          "prompt",
+          "provider",
+          "resolution",
+          "generate_audio",
+          "frame_images"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "alibaba/wan-2.7",
+    "revision": 1,
+    "status": "active",
+    "displayName": "Wan 2.7",
+    "labelKey": "flows.models.wan27",
+    "presentation": {
+      "descriptionKey": "flows.modelDescriptions.nativeAudioFrameVideo",
+      "logoId": "alibaba"
+    },
+    "mediaType": "video",
+    "recommended": false,
+    "capabilitySchemaVersion": 3,
+    "defaultOperationId": "textToVideo",
+    "inputSlots": [
+      {
+        "accepts": [
+          "Text"
+        ],
+        "descriptionKey": "flows.inputs.promptDescription",
+        "id": "prompt",
+        "labelKey": "flows.inputs.prompt",
+        "maxConnections": 32,
+        "maxItems": 32,
+        "minConnections": 0
+      },
+      {
+        "acceptedMedia": {
+          "maxBytes": 20971520,
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ]
+        },
+        "accepts": [
+          "ImageSet"
+        ],
+        "descriptionKey": "flows.inputs.firstFrameDescription",
+        "id": "firstFrame",
+        "labelKey": "flows.inputs.firstFrame",
+        "maxConnections": 1,
+        "maxItems": 1,
+        "minConnections": 0,
+        "referenceProfile": {
+          "contactSheetPolicy": "not-applicable",
+          "multipleSubjectSupport": "not-applicable",
+          "purposes": [
+            "firstFrame"
+          ]
+        }
+      },
+      {
+        "acceptedMedia": {
+          "maxBytes": 20971520,
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ]
+        },
+        "accepts": [
+          "ImageSet"
+        ],
+        "descriptionKey": "flows.inputs.lastFrameDescription",
+        "id": "lastFrame",
+        "labelKey": "flows.inputs.lastFrame",
+        "maxConnections": 1,
+        "maxItems": 1,
+        "minConnections": 0,
+        "referenceProfile": {
+          "contactSheetPolicy": "not-applicable",
+          "multipleSubjectSupport": "not-applicable",
+          "purposes": [
+            "lastFrame"
+          ]
+        }
+      }
+    ],
+    "settings": [
+      {
+        "default": "16:9",
+        "id": "aspectRatio",
+        "kind": "enum",
+        "labelKey": "flows.settings.aspectRatio",
+        "options": [
+          {
+            "labelKey": "flows.settings.aspectRatios.landscape",
+            "value": "16:9"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatios.portrait",
+            "value": "9:16"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatios.square",
+            "value": "1:1"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "4:3"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "3:4"
+          }
+        ]
+      },
+      {
+        "default": "5",
+        "id": "durationSeconds",
+        "kind": "enum",
+        "labelKey": "flows.settings.duration",
+        "options": [
+          {
+            "labelKey": "flows.settings.durations.seconds2",
+            "value": "2"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds3",
+            "value": "3"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds4",
+            "value": "4"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds5",
+            "value": "5"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds6",
+            "value": "6"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds7",
+            "value": "7"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds8",
+            "value": "8"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds9",
+            "value": "9"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds10",
+            "value": "10"
+          }
+        ]
+      },
+      {
+        "default": "720p",
+        "id": "resolution",
+        "kind": "enum",
+        "labelKey": "flows.settings.resolution",
+        "options": [
+          {
+            "labelKey": "flows.settings.resolutions.720p",
+            "value": "720p"
+          },
+          {
+            "labelKey": "flows.settings.resolutions.1080p",
+            "value": "1080p"
+          }
+        ]
+      },
+      {
+        "default": true,
+        "id": "generateAudio",
+        "kind": "boolean",
+        "labelKey": "flows.settings.generateAudio"
+      }
+    ],
+    "constraints": [
+      {
+        "id": "last-frame-requires-first-frame",
+        "messageKey": "flows.constraints.lastFrameRequiresFirstFrame",
+        "require": [
+          {
+            "field": "slot",
+            "id": "firstFrame",
+            "operator": "connected"
+          }
+        ],
+        "when": [
+          {
+            "field": "slot",
+            "id": "lastFrame",
+            "operator": "connected"
+          }
+        ]
+      }
+    ],
+    "operations": [
+      {
+        "descriptionKey": "flows.operations.textToVideoDescription",
+        "id": "textToVideo",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt"
+        ],
+        "labelKey": "flows.operations.textToVideo",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "video"
+        },
+        "referenceLimit": {
+          "maxItems": 0,
+          "slotIds": []
+        },
+        "settingIds": [
+          "aspectRatio",
+          "durationSeconds",
+          "resolution",
+          "generateAudio"
+        ],
+        "nodeType": "videoGeneration"
+      },
+      {
+        "descriptionKey": "flows.operations.firstLastFrameToVideoDescription",
+        "id": "firstLastFrameToVideo",
+        "inputs": {
+          "firstFrame": {
+            "required": true
+          },
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt",
+          "firstFrame",
+          "lastFrame"
+        ],
+        "labelKey": "flows.operations.firstLastFrameToVideo",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "video"
+        },
+        "referenceLimit": {
+          "maxItems": 2,
+          "slotIds": [
+            "firstFrame",
+            "lastFrame"
+          ]
+        },
+        "settingIds": [
+          "aspectRatio",
+          "durationSeconds",
+          "resolution",
+          "generateAudio"
+        ],
+        "nodeType": "videoGeneration"
+      }
+    ],
+    "bindings": [
+      {
+        "adapterVersion": "openrouter-video-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/videos",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/video-generation",
+            "https://openrouter.ai/api/v1/videos/models",
+            "https://openrouter.ai/alibaba/wan-2.7"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "alibaba/wan-2.7",
+        "operationId": "textToVideo",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "atlas-cloud",
+        "protocol": "video",
+        "requestProfile": {
+          "frameMode": "none",
+          "generateAudio": true,
+          "kind": "video",
+          "referenceLimits": {
+            "audio": 0,
+            "image": 0,
+            "video": 0
+          },
+          "referenceValidationPolicy": "none",
+          "settingIds": [
+            "aspectRatio",
+            "durationSeconds",
+            "resolution",
+            "generateAudio"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-16.1",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "aspect_ratio",
+          "callback_url",
+          "duration",
+          "model",
+          "prompt",
+          "provider",
+          "resolution",
+          "generate_audio"
+        ]
+      },
+      {
+        "adapterVersion": "openrouter-video-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/videos",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/video-generation",
+            "https://openrouter.ai/api/v1/videos/models",
+            "https://openrouter.ai/alibaba/wan-2.7"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "alibaba/wan-2.7",
+        "operationId": "firstLastFrameToVideo",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "atlas-cloud",
+        "protocol": "video",
+        "requestProfile": {
+          "frameMode": "first-last",
+          "generateAudio": true,
+          "kind": "video",
+          "referenceLimits": {
+            "audio": 0,
+            "image": 0,
+            "video": 0
+          },
+          "referenceValidationPolicy": "none",
+          "settingIds": [
+            "aspectRatio",
+            "durationSeconds",
+            "resolution",
+            "generateAudio"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-16.1",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "aspect_ratio",
+          "callback_url",
+          "duration",
+          "model",
+          "prompt",
+          "provider",
+          "resolution",
+          "generate_audio",
+          "frame_images"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "alibaba/wan-2.6",
+    "revision": 1,
+    "status": "active",
+    "displayName": "Wan 2.6",
+    "labelKey": "flows.models.wan26",
+    "presentation": {
+      "descriptionKey": "flows.modelDescriptions.nativeAudioFrameVideo",
+      "logoId": "alibaba"
+    },
+    "mediaType": "video",
+    "recommended": false,
+    "capabilitySchemaVersion": 3,
+    "defaultOperationId": "textToVideo",
+    "inputSlots": [
+      {
+        "accepts": [
+          "Text"
+        ],
+        "descriptionKey": "flows.inputs.promptDescription",
+        "id": "prompt",
+        "labelKey": "flows.inputs.prompt",
+        "maxConnections": 32,
+        "maxItems": 32,
+        "minConnections": 0
+      },
+      {
+        "acceptedMedia": {
+          "maxBytes": 20971520,
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ]
+        },
+        "accepts": [
+          "ImageSet"
+        ],
+        "descriptionKey": "flows.inputs.firstFrameDescription",
+        "id": "firstFrame",
+        "labelKey": "flows.inputs.firstFrame",
+        "maxConnections": 1,
+        "maxItems": 1,
+        "minConnections": 0,
+        "referenceProfile": {
+          "contactSheetPolicy": "not-applicable",
+          "multipleSubjectSupport": "not-applicable",
+          "purposes": [
+            "firstFrame"
+          ]
+        }
+      }
+    ],
+    "settings": [
+      {
+        "default": "16:9",
+        "id": "aspectRatio",
+        "kind": "enum",
+        "labelKey": "flows.settings.aspectRatio",
+        "options": [
+          {
+            "labelKey": "flows.settings.aspectRatios.landscape",
+            "value": "16:9"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatios.portrait",
+            "value": "9:16"
+          }
+        ]
+      },
+      {
+        "default": "5",
+        "id": "durationSeconds",
+        "kind": "enum",
+        "labelKey": "flows.settings.duration",
+        "options": [
+          {
+            "labelKey": "flows.settings.durations.seconds5",
+            "value": "5"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds10",
+            "value": "10"
+          }
+        ]
+      },
+      {
+        "default": "720p",
+        "id": "resolution",
+        "kind": "enum",
+        "labelKey": "flows.settings.resolution",
+        "options": [
+          {
+            "labelKey": "flows.settings.resolutions.720p",
+            "value": "720p"
+          },
+          {
+            "labelKey": "flows.settings.resolutions.1080p",
+            "value": "1080p"
+          }
+        ]
+      },
+      {
+        "default": true,
+        "id": "generateAudio",
+        "kind": "boolean",
+        "labelKey": "flows.settings.generateAudio"
+      }
+    ],
+    "constraints": [],
+    "operations": [
+      {
+        "descriptionKey": "flows.operations.textToVideoDescription",
+        "id": "textToVideo",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt"
+        ],
+        "labelKey": "flows.operations.textToVideo",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "video"
+        },
+        "referenceLimit": {
+          "maxItems": 0,
+          "slotIds": []
+        },
+        "settingIds": [
+          "aspectRatio",
+          "durationSeconds",
+          "resolution",
+          "generateAudio"
+        ],
+        "nodeType": "videoGeneration"
+      },
+      {
+        "descriptionKey": "flows.operations.imageToVideoDescription",
+        "id": "imageToVideo",
+        "inputs": {
+          "firstFrame": {
+            "required": true
+          },
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt",
+          "firstFrame"
+        ],
+        "labelKey": "flows.operations.imageToVideo",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "video"
+        },
+        "referenceLimit": {
+          "maxItems": 1,
+          "slotIds": [
+            "firstFrame"
+          ]
+        },
+        "settingIds": [
+          "aspectRatio",
+          "durationSeconds",
+          "resolution",
+          "generateAudio"
+        ],
+        "nodeType": "videoGeneration"
+      }
+    ],
+    "bindings": [
+      {
+        "adapterVersion": "openrouter-video-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/videos",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/video-generation",
+            "https://openrouter.ai/api/v1/videos/models",
+            "https://openrouter.ai/alibaba/wan-2.6"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "alibaba/wan-2.6",
+        "operationId": "textToVideo",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "atlas-cloud",
+        "protocol": "video",
+        "requestProfile": {
+          "frameMode": "none",
+          "generateAudio": true,
+          "kind": "video",
+          "referenceLimits": {
+            "audio": 0,
+            "image": 0,
+            "video": 0
+          },
+          "referenceValidationPolicy": "none",
+          "settingIds": [
+            "aspectRatio",
+            "durationSeconds",
+            "resolution",
+            "generateAudio"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-16.1",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "aspect_ratio",
+          "callback_url",
+          "duration",
+          "model",
+          "prompt",
+          "provider",
+          "resolution",
+          "generate_audio"
+        ]
+      },
+      {
+        "adapterVersion": "openrouter-video-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/videos",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/video-generation",
+            "https://openrouter.ai/api/v1/videos/models",
+            "https://openrouter.ai/alibaba/wan-2.6"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "alibaba/wan-2.6",
+        "operationId": "imageToVideo",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "atlas-cloud",
+        "protocol": "video",
+        "requestProfile": {
+          "frameMode": "first",
+          "generateAudio": true,
+          "kind": "video",
+          "referenceLimits": {
+            "audio": 0,
+            "image": 0,
+            "video": 0
+          },
+          "referenceValidationPolicy": "none",
+          "settingIds": [
+            "aspectRatio",
+            "durationSeconds",
+            "resolution",
+            "generateAudio"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-16.1",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "aspect_ratio",
+          "callback_url",
+          "duration",
+          "model",
+          "prompt",
+          "provider",
+          "resolution",
+          "generate_audio",
+          "frame_images"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "minimax/hailuo-2.3",
+    "revision": 1,
+    "status": "active",
+    "displayName": "Hailuo 2.3",
+    "labelKey": "flows.models.hailuo23",
+    "presentation": {
+      "descriptionKey": "flows.modelDescriptions.frameVideo",
+      "logoId": "minimax"
+    },
+    "mediaType": "video",
+    "recommended": false,
+    "capabilitySchemaVersion": 3,
+    "defaultOperationId": "textToVideo",
+    "inputSlots": [
+      {
+        "accepts": [
+          "Text"
+        ],
+        "descriptionKey": "flows.inputs.promptDescription",
+        "id": "prompt",
+        "labelKey": "flows.inputs.prompt",
+        "maxConnections": 32,
+        "maxItems": 32,
+        "minConnections": 0
+      },
+      {
+        "acceptedMedia": {
+          "maxBytes": 20971520,
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ]
+        },
+        "accepts": [
+          "ImageSet"
+        ],
+        "descriptionKey": "flows.inputs.firstFrameDescription",
+        "id": "firstFrame",
+        "labelKey": "flows.inputs.firstFrame",
+        "maxConnections": 1,
+        "maxItems": 1,
+        "minConnections": 0,
+        "referenceProfile": {
+          "contactSheetPolicy": "not-applicable",
+          "multipleSubjectSupport": "not-applicable",
+          "purposes": [
+            "firstFrame"
+          ]
+        }
+      }
+    ],
+    "settings": [
+      {
+        "default": "16:9",
+        "id": "aspectRatio",
+        "kind": "enum",
+        "labelKey": "flows.settings.aspectRatio",
+        "options": [
+          {
+            "labelKey": "flows.settings.aspectRatios.landscape",
+            "value": "16:9"
+          }
+        ]
+      },
+      {
+        "default": "6",
+        "id": "durationSeconds",
+        "kind": "enum",
+        "labelKey": "flows.settings.duration",
+        "options": [
+          {
+            "labelKey": "flows.settings.durations.seconds6",
+            "value": "6"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds10",
+            "value": "10"
+          }
+        ]
+      },
+      {
+        "default": "1080p",
+        "id": "resolution",
+        "kind": "enum",
+        "labelKey": "flows.settings.resolution",
+        "options": [
+          {
+            "labelKey": "flows.settings.resolutions.1080p",
+            "value": "1080p"
+          }
+        ]
+      }
+    ],
+    "constraints": [],
+    "operations": [
+      {
+        "descriptionKey": "flows.operations.textToVideoDescription",
+        "id": "textToVideo",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt"
+        ],
+        "labelKey": "flows.operations.textToVideo",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "video"
+        },
+        "referenceLimit": {
+          "maxItems": 0,
+          "slotIds": []
+        },
+        "settingIds": [
+          "aspectRatio",
+          "durationSeconds",
+          "resolution"
+        ],
+        "nodeType": "videoGeneration"
+      },
+      {
+        "descriptionKey": "flows.operations.imageToVideoDescription",
+        "id": "imageToVideo",
+        "inputs": {
+          "firstFrame": {
+            "required": true
+          },
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt",
+          "firstFrame"
+        ],
+        "labelKey": "flows.operations.imageToVideo",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "video"
+        },
+        "referenceLimit": {
+          "maxItems": 1,
+          "slotIds": [
+            "firstFrame"
+          ]
+        },
+        "settingIds": [
+          "aspectRatio",
+          "durationSeconds",
+          "resolution"
+        ],
+        "nodeType": "videoGeneration"
+      }
+    ],
+    "bindings": [
+      {
+        "adapterVersion": "openrouter-video-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/videos",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/video-generation",
+            "https://openrouter.ai/api/v1/videos/models",
+            "https://openrouter.ai/minimax/hailuo-2.3"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "minimax/hailuo-2.3",
+        "operationId": "textToVideo",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "minimax",
+        "protocol": "video",
+        "requestProfile": {
+          "frameMode": "none",
+          "generateAudio": false,
+          "kind": "video",
+          "referenceLimits": {
+            "audio": 0,
+            "image": 0,
+            "video": 0
+          },
+          "referenceValidationPolicy": "none",
+          "settingIds": [
+            "aspectRatio",
+            "durationSeconds",
+            "resolution"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-16.1",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "aspect_ratio",
+          "callback_url",
+          "duration",
+          "model",
+          "prompt",
+          "provider",
+          "resolution"
+        ]
+      },
+      {
+        "adapterVersion": "openrouter-video-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/videos",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/video-generation",
+            "https://openrouter.ai/api/v1/videos/models",
+            "https://openrouter.ai/minimax/hailuo-2.3"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "minimax/hailuo-2.3",
+        "operationId": "imageToVideo",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "minimax",
+        "protocol": "video",
+        "requestProfile": {
+          "frameMode": "first",
+          "generateAudio": false,
+          "kind": "video",
+          "referenceLimits": {
+            "audio": 0,
+            "image": 0,
+            "video": 0
+          },
+          "referenceValidationPolicy": "none",
+          "settingIds": [
+            "aspectRatio",
+            "durationSeconds",
+            "resolution"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-16.1",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "aspect_ratio",
+          "callback_url",
+          "duration",
+          "model",
+          "prompt",
+          "provider",
+          "resolution",
+          "frame_images"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "openai/sora-2-pro",
+    "revision": 1,
+    "status": "active",
+    "displayName": "Sora 2 Pro",
+    "labelKey": "flows.models.sora2Pro",
+    "presentation": {
+      "descriptionKey": "flows.modelDescriptions.textAudioVideo",
+      "logoId": "openai"
+    },
+    "mediaType": "video",
+    "recommended": false,
+    "capabilitySchemaVersion": 3,
+    "defaultOperationId": "textToVideo",
+    "inputSlots": [
+      {
+        "accepts": [
+          "Text"
+        ],
+        "descriptionKey": "flows.inputs.promptDescription",
+        "id": "prompt",
+        "labelKey": "flows.inputs.prompt",
+        "maxConnections": 32,
+        "maxItems": 32,
+        "minConnections": 0
+      }
+    ],
+    "settings": [
+      {
+        "default": "16:9",
+        "id": "aspectRatio",
+        "kind": "enum",
+        "labelKey": "flows.settings.aspectRatio",
+        "options": [
+          {
+            "labelKey": "flows.settings.aspectRatios.landscape",
+            "value": "16:9"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatios.portrait",
+            "value": "9:16"
+          }
+        ]
+      },
+      {
+        "default": "8",
+        "id": "durationSeconds",
+        "kind": "enum",
+        "labelKey": "flows.settings.duration",
+        "options": [
+          {
+            "labelKey": "flows.settings.durations.seconds4",
+            "value": "4"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds8",
+            "value": "8"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds12",
+            "value": "12"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds16",
+            "value": "16"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds20",
+            "value": "20"
+          }
+        ]
+      },
+      {
+        "default": "720p",
+        "id": "resolution",
+        "kind": "enum",
+        "labelKey": "flows.settings.resolution",
+        "options": [
+          {
+            "labelKey": "flows.settings.resolutions.720p",
+            "value": "720p"
+          },
+          {
+            "labelKey": "flows.settings.resolutions.1080p",
+            "value": "1080p"
+          }
+        ]
+      },
+      {
+        "default": true,
+        "id": "generateAudio",
+        "kind": "boolean",
+        "labelKey": "flows.settings.generateAudio"
+      }
+    ],
+    "constraints": [],
+    "operations": [
+      {
+        "descriptionKey": "flows.operations.textToVideoDescription",
+        "id": "textToVideo",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt"
+        ],
+        "labelKey": "flows.operations.textToVideo",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "video"
+        },
+        "referenceLimit": {
+          "maxItems": 0,
+          "slotIds": []
+        },
+        "settingIds": [
+          "aspectRatio",
+          "durationSeconds",
+          "resolution",
+          "generateAudio"
+        ],
+        "nodeType": "videoGeneration"
+      }
+    ],
+    "bindings": [
+      {
+        "adapterVersion": "openrouter-video-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/videos",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/video-generation",
+            "https://openrouter.ai/api/v1/videos/models",
+            "https://openrouter.ai/openai/sora-2-pro"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "openai/sora-2-pro",
+        "operationId": "textToVideo",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "openai",
+        "protocol": "video",
+        "requestProfile": {
+          "frameMode": "none",
+          "generateAudio": true,
+          "kind": "video",
+          "referenceLimits": {
+            "audio": 0,
+            "image": 0,
+            "video": 0
+          },
+          "referenceValidationPolicy": "none",
+          "settingIds": [
+            "aspectRatio",
+            "durationSeconds",
+            "resolution",
+            "generateAudio"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-16.1",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "aspect_ratio",
+          "callback_url",
+          "duration",
+          "model",
+          "prompt",
+          "provider",
+          "resolution",
+          "generate_audio"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "google/veo-3.1-fast",
+    "revision": 1,
+    "status": "active",
+    "displayName": "Veo 3.1 Fast",
+    "labelKey": "flows.models.veo31Fast",
+    "presentation": {
+      "descriptionKey": "flows.modelDescriptions.nativeAudioFrameVideo",
+      "logoId": "google"
+    },
+    "mediaType": "video",
+    "recommended": false,
+    "capabilitySchemaVersion": 3,
+    "defaultOperationId": "textToVideo",
+    "inputSlots": [
+      {
+        "accepts": [
+          "Text"
+        ],
+        "descriptionKey": "flows.inputs.promptDescription",
+        "id": "prompt",
+        "labelKey": "flows.inputs.prompt",
+        "maxConnections": 32,
+        "maxItems": 32,
+        "minConnections": 0
+      },
+      {
+        "acceptedMedia": {
+          "maxBytes": 20971520,
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ]
+        },
+        "accepts": [
+          "ImageSet"
+        ],
+        "descriptionKey": "flows.inputs.firstFrameDescription",
+        "id": "firstFrame",
+        "labelKey": "flows.inputs.firstFrame",
+        "maxConnections": 1,
+        "maxItems": 1,
+        "minConnections": 0,
+        "referenceProfile": {
+          "contactSheetPolicy": "not-applicable",
+          "multipleSubjectSupport": "not-applicable",
+          "purposes": [
+            "firstFrame"
+          ]
+        }
+      },
+      {
+        "acceptedMedia": {
+          "maxBytes": 20971520,
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ]
+        },
+        "accepts": [
+          "ImageSet"
+        ],
+        "descriptionKey": "flows.inputs.lastFrameDescription",
+        "id": "lastFrame",
+        "labelKey": "flows.inputs.lastFrame",
+        "maxConnections": 1,
+        "maxItems": 1,
+        "minConnections": 0,
+        "referenceProfile": {
+          "contactSheetPolicy": "not-applicable",
+          "multipleSubjectSupport": "not-applicable",
+          "purposes": [
+            "lastFrame"
+          ]
+        }
+      }
+    ],
+    "settings": [
+      {
+        "default": "16:9",
+        "id": "aspectRatio",
+        "kind": "enum",
+        "labelKey": "flows.settings.aspectRatio",
+        "options": [
+          {
+            "labelKey": "flows.settings.aspectRatios.landscape",
+            "value": "16:9"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatios.portrait",
+            "value": "9:16"
+          }
+        ]
+      },
+      {
+        "default": "8",
+        "id": "durationSeconds",
+        "kind": "enum",
+        "labelKey": "flows.settings.duration",
+        "options": [
+          {
+            "labelKey": "flows.settings.durations.seconds4",
+            "value": "4"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds6",
+            "value": "6"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds8",
+            "value": "8"
+          }
+        ]
+      },
+      {
+        "default": "720p",
+        "id": "resolution",
+        "kind": "enum",
+        "labelKey": "flows.settings.resolution",
+        "options": [
+          {
+            "labelKey": "flows.settings.resolutions.720p",
+            "value": "720p"
+          },
+          {
+            "labelKey": "flows.settings.resolutions.1080p",
+            "value": "1080p"
+          },
+          {
+            "labelKey": "flows.settings.resolutions.4k",
+            "value": "4K"
+          }
+        ]
+      },
+      {
+        "default": true,
+        "id": "generateAudio",
+        "kind": "boolean",
+        "labelKey": "flows.settings.generateAudio"
+      }
+    ],
+    "constraints": [
+      {
+        "id": "last-frame-requires-first-frame",
+        "messageKey": "flows.constraints.lastFrameRequiresFirstFrame",
+        "require": [
+          {
+            "field": "slot",
+            "id": "firstFrame",
+            "operator": "connected"
+          }
+        ],
+        "when": [
+          {
+            "field": "slot",
+            "id": "lastFrame",
+            "operator": "connected"
+          }
+        ]
+      }
+    ],
+    "operations": [
+      {
+        "descriptionKey": "flows.operations.textToVideoDescription",
+        "id": "textToVideo",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt"
+        ],
+        "labelKey": "flows.operations.textToVideo",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "video"
+        },
+        "referenceLimit": {
+          "maxItems": 0,
+          "slotIds": []
+        },
+        "settingIds": [
+          "aspectRatio",
+          "durationSeconds",
+          "resolution",
+          "generateAudio"
+        ],
+        "nodeType": "videoGeneration"
+      },
+      {
+        "descriptionKey": "flows.operations.firstLastFrameToVideoDescription",
+        "id": "firstLastFrameToVideo",
+        "inputs": {
+          "firstFrame": {
+            "required": true
+          },
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt",
+          "firstFrame",
+          "lastFrame"
+        ],
+        "labelKey": "flows.operations.firstLastFrameToVideo",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "video"
+        },
+        "referenceLimit": {
+          "maxItems": 2,
+          "slotIds": [
+            "firstFrame",
+            "lastFrame"
+          ]
+        },
+        "settingIds": [
+          "aspectRatio",
+          "durationSeconds",
+          "resolution",
+          "generateAudio"
+        ],
+        "nodeType": "videoGeneration"
+      }
+    ],
+    "bindings": [
+      {
+        "adapterVersion": "openrouter-video-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/videos",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/video-generation",
+            "https://openrouter.ai/api/v1/videos/models",
+            "https://openrouter.ai/google/veo-3.1-fast"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "google/veo-3.1-fast",
+        "operationId": "textToVideo",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "google-vertex",
+        "protocol": "video",
+        "requestProfile": {
+          "frameMode": "none",
+          "generateAudio": true,
+          "kind": "video",
+          "referenceLimits": {
+            "audio": 0,
+            "image": 0,
+            "video": 0
+          },
+          "referenceValidationPolicy": "none",
+          "settingIds": [
+            "aspectRatio",
+            "durationSeconds",
+            "resolution",
+            "generateAudio"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-16.1",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "aspect_ratio",
+          "callback_url",
+          "duration",
+          "model",
+          "prompt",
+          "provider",
+          "resolution",
+          "generate_audio"
+        ]
+      },
+      {
+        "adapterVersion": "openrouter-video-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/videos",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/video-generation",
+            "https://openrouter.ai/api/v1/videos/models",
+            "https://openrouter.ai/google/veo-3.1-fast"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "google/veo-3.1-fast",
+        "operationId": "firstLastFrameToVideo",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "google-vertex",
+        "protocol": "video",
+        "requestProfile": {
+          "frameMode": "first-last",
+          "generateAudio": true,
+          "kind": "video",
+          "referenceLimits": {
+            "audio": 0,
+            "image": 0,
+            "video": 0
+          },
+          "referenceValidationPolicy": "none",
+          "settingIds": [
+            "aspectRatio",
+            "durationSeconds",
+            "resolution",
+            "generateAudio"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-16.1",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "aspect_ratio",
+          "callback_url",
+          "duration",
+          "model",
+          "prompt",
+          "provider",
+          "resolution",
+          "generate_audio",
+          "frame_images"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "bytedance/seedance-2.0-fast",
+    "revision": 1,
+    "status": "active",
+    "displayName": "Seedance 2.0 Fast",
+    "labelKey": "flows.models.seedance20Fast",
+    "presentation": {
+      "descriptionKey": "flows.modelDescriptions.nativeAudioFrameVideo",
+      "logoId": "bytedance"
+    },
+    "mediaType": "video",
+    "recommended": false,
+    "capabilitySchemaVersion": 3,
+    "defaultOperationId": "textToVideo",
+    "inputSlots": [
+      {
+        "accepts": [
+          "Text"
+        ],
+        "descriptionKey": "flows.inputs.promptDescription",
+        "id": "prompt",
+        "labelKey": "flows.inputs.prompt",
+        "maxConnections": 32,
+        "maxItems": 32,
+        "minConnections": 0
+      },
+      {
+        "acceptedMedia": {
+          "maxBytes": 20971520,
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ]
+        },
+        "accepts": [
+          "ImageSet"
+        ],
+        "descriptionKey": "flows.inputs.firstFrameDescription",
+        "id": "firstFrame",
+        "labelKey": "flows.inputs.firstFrame",
+        "maxConnections": 1,
+        "maxItems": 1,
+        "minConnections": 0,
+        "referenceProfile": {
+          "contactSheetPolicy": "not-applicable",
+          "multipleSubjectSupport": "not-applicable",
+          "purposes": [
+            "firstFrame"
+          ]
+        }
+      },
+      {
+        "acceptedMedia": {
+          "maxBytes": 20971520,
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ]
+        },
+        "accepts": [
+          "ImageSet"
+        ],
+        "descriptionKey": "flows.inputs.lastFrameDescription",
+        "id": "lastFrame",
+        "labelKey": "flows.inputs.lastFrame",
+        "maxConnections": 1,
+        "maxItems": 1,
+        "minConnections": 0,
+        "referenceProfile": {
+          "contactSheetPolicy": "not-applicable",
+          "multipleSubjectSupport": "not-applicable",
+          "purposes": [
+            "lastFrame"
+          ]
+        }
+      }
+    ],
+    "settings": [
+      {
+        "default": "1:1",
+        "id": "aspectRatio",
+        "kind": "enum",
+        "labelKey": "flows.settings.aspectRatio",
+        "options": [
+          {
+            "labelKey": "flows.settings.aspectRatios.square",
+            "value": "1:1"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "3:4"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatios.portrait",
+            "value": "9:16"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "4:3"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatios.landscape",
+            "value": "16:9"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatios.ultrawide",
+            "value": "21:9"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "9:21"
+          }
+        ]
+      },
+      {
+        "default": "8",
+        "id": "durationSeconds",
+        "kind": "enum",
+        "labelKey": "flows.settings.duration",
+        "options": [
+          {
+            "labelKey": "flows.settings.durations.seconds4",
+            "value": "4"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds5",
+            "value": "5"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds6",
+            "value": "6"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds7",
+            "value": "7"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds8",
+            "value": "8"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds9",
+            "value": "9"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds10",
+            "value": "10"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds11",
+            "value": "11"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds12",
+            "value": "12"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds13",
+            "value": "13"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds14",
+            "value": "14"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds15",
+            "value": "15"
+          }
+        ]
+      },
+      {
+        "default": "480p",
+        "id": "resolution",
+        "kind": "enum",
+        "labelKey": "flows.settings.resolution",
+        "options": [
+          {
+            "labelKey": "flows.settings.resolutions.480p",
+            "value": "480p"
+          },
+          {
+            "labelKey": "flows.settings.resolutions.720p",
+            "value": "720p"
+          }
+        ]
+      },
+      {
+        "default": true,
+        "id": "generateAudio",
+        "kind": "boolean",
+        "labelKey": "flows.settings.generateAudio"
+      }
+    ],
+    "constraints": [
+      {
+        "id": "last-frame-requires-first-frame",
+        "messageKey": "flows.constraints.lastFrameRequiresFirstFrame",
+        "require": [
+          {
+            "field": "slot",
+            "id": "firstFrame",
+            "operator": "connected"
+          }
+        ],
+        "when": [
+          {
+            "field": "slot",
+            "id": "lastFrame",
+            "operator": "connected"
+          }
+        ]
+      }
+    ],
+    "operations": [
+      {
+        "descriptionKey": "flows.operations.textToVideoDescription",
+        "id": "textToVideo",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt"
+        ],
+        "labelKey": "flows.operations.textToVideo",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "video"
+        },
+        "referenceLimit": {
+          "maxItems": 0,
+          "slotIds": []
+        },
+        "settingIds": [
+          "aspectRatio",
+          "durationSeconds",
+          "resolution",
+          "generateAudio"
+        ],
+        "nodeType": "videoGeneration"
+      },
+      {
+        "descriptionKey": "flows.operations.firstLastFrameToVideoDescription",
+        "id": "firstLastFrameToVideo",
+        "inputs": {
+          "firstFrame": {
+            "required": true
+          },
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt",
+          "firstFrame",
+          "lastFrame"
+        ],
+        "labelKey": "flows.operations.firstLastFrameToVideo",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "video"
+        },
+        "referenceLimit": {
+          "maxItems": 2,
+          "slotIds": [
+            "firstFrame",
+            "lastFrame"
+          ]
+        },
+        "settingIds": [
+          "aspectRatio",
+          "durationSeconds",
+          "resolution",
+          "generateAudio"
+        ],
+        "nodeType": "videoGeneration"
+      }
+    ],
+    "bindings": [
+      {
+        "adapterVersion": "openrouter-video-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/videos",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/video-generation",
+            "https://openrouter.ai/api/v1/videos/models",
+            "https://openrouter.ai/bytedance/seedance-2.0-fast"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "bytedance/seedance-2.0-fast",
+        "operationId": "textToVideo",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "seed",
+        "protocol": "video",
+        "requestProfile": {
+          "frameMode": "none",
+          "generateAudio": true,
+          "kind": "video",
+          "referenceLimits": {
+            "audio": 0,
+            "image": 0,
+            "video": 0
+          },
+          "referenceValidationPolicy": "none",
+          "settingIds": [
+            "aspectRatio",
+            "durationSeconds",
+            "resolution",
+            "generateAudio"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-16.1",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "aspect_ratio",
+          "callback_url",
+          "duration",
+          "model",
+          "prompt",
+          "provider",
+          "resolution",
+          "generate_audio"
+        ]
+      },
+      {
+        "adapterVersion": "openrouter-video-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/videos",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/video-generation",
+            "https://openrouter.ai/api/v1/videos/models",
+            "https://openrouter.ai/bytedance/seedance-2.0-fast"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "bytedance/seedance-2.0-fast",
+        "operationId": "firstLastFrameToVideo",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "seed",
+        "protocol": "video",
+        "requestProfile": {
+          "frameMode": "first-last",
+          "generateAudio": true,
+          "kind": "video",
+          "referenceLimits": {
+            "audio": 0,
+            "image": 0,
+            "video": 0
+          },
+          "referenceValidationPolicy": "none",
+          "settingIds": [
+            "aspectRatio",
+            "durationSeconds",
+            "resolution",
+            "generateAudio"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-16.1",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "aspect_ratio",
+          "callback_url",
+          "duration",
+          "model",
+          "prompt",
+          "provider",
+          "resolution",
+          "generate_audio",
+          "frame_images"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "alibaba/happyhorse-1.1",
+    "revision": 1,
+    "status": "active",
+    "displayName": "HappyHorse 1.1",
+    "labelKey": "flows.models.happyhorse11",
+    "presentation": {
+      "descriptionKey": "flows.modelDescriptions.frameVideo",
+      "logoId": "alibaba"
+    },
+    "mediaType": "video",
+    "recommended": false,
+    "capabilitySchemaVersion": 3,
+    "defaultOperationId": "textToVideo",
+    "inputSlots": [
+      {
+        "accepts": [
+          "Text"
+        ],
+        "descriptionKey": "flows.inputs.promptDescription",
+        "id": "prompt",
+        "labelKey": "flows.inputs.prompt",
+        "maxConnections": 32,
+        "maxItems": 32,
+        "minConnections": 0
+      },
+      {
+        "acceptedMedia": {
+          "maxBytes": 20971520,
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ]
+        },
+        "accepts": [
+          "ImageSet"
+        ],
+        "descriptionKey": "flows.inputs.firstFrameDescription",
+        "id": "firstFrame",
+        "labelKey": "flows.inputs.firstFrame",
+        "maxConnections": 1,
+        "maxItems": 1,
+        "minConnections": 0,
+        "referenceProfile": {
+          "contactSheetPolicy": "not-applicable",
+          "multipleSubjectSupport": "not-applicable",
+          "purposes": [
+            "firstFrame"
+          ]
+        }
+      }
+    ],
+    "settings": [
+      {
+        "default": "16:9",
+        "id": "aspectRatio",
+        "kind": "enum",
+        "labelKey": "flows.settings.aspectRatio",
+        "options": [
+          {
+            "labelKey": "flows.settings.aspectRatios.landscape",
+            "value": "16:9"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatios.portrait",
+            "value": "9:16"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatios.square",
+            "value": "1:1"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "4:3"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "3:4"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatios.ultrawide",
+            "value": "21:9"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "9:21"
+          }
+        ]
+      },
+      {
+        "default": "5",
+        "id": "durationSeconds",
+        "kind": "enum",
+        "labelKey": "flows.settings.duration",
+        "options": [
+          {
+            "labelKey": "flows.settings.durations.seconds3",
+            "value": "3"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds4",
+            "value": "4"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds5",
+            "value": "5"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds6",
+            "value": "6"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds7",
+            "value": "7"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds8",
+            "value": "8"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds9",
+            "value": "9"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds10",
+            "value": "10"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds11",
+            "value": "11"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds12",
+            "value": "12"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds13",
+            "value": "13"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds14",
+            "value": "14"
+          },
+          {
+            "labelKey": "flows.settings.durations.seconds15",
+            "value": "15"
+          }
+        ]
+      },
+      {
+        "default": "720p",
+        "id": "resolution",
+        "kind": "enum",
+        "labelKey": "flows.settings.resolution",
+        "options": [
+          {
+            "labelKey": "flows.settings.resolutions.720p",
+            "value": "720p"
+          },
+          {
+            "labelKey": "flows.settings.resolutions.1080p",
+            "value": "1080p"
+          }
+        ]
+      }
+    ],
+    "constraints": [],
+    "operations": [
+      {
+        "descriptionKey": "flows.operations.textToVideoDescription",
+        "id": "textToVideo",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt"
+        ],
+        "labelKey": "flows.operations.textToVideo",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "video"
+        },
+        "referenceLimit": {
+          "maxItems": 0,
+          "slotIds": []
+        },
+        "settingIds": [
+          "aspectRatio",
+          "durationSeconds",
+          "resolution"
+        ],
+        "nodeType": "videoGeneration"
+      },
+      {
+        "descriptionKey": "flows.operations.imageToVideoDescription",
+        "id": "imageToVideo",
+        "inputs": {
+          "firstFrame": {
+            "required": true
+          },
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt",
+          "firstFrame"
+        ],
+        "labelKey": "flows.operations.imageToVideo",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "video"
+        },
+        "referenceLimit": {
+          "maxItems": 1,
+          "slotIds": [
+            "firstFrame"
+          ]
+        },
+        "settingIds": [
+          "aspectRatio",
+          "durationSeconds",
+          "resolution"
+        ],
+        "nodeType": "videoGeneration"
+      }
+    ],
+    "bindings": [
+      {
+        "adapterVersion": "openrouter-video-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/videos",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/video-generation",
+            "https://openrouter.ai/api/v1/videos/models",
+            "https://openrouter.ai/alibaba/happyhorse-1.1"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "alibaba/happyhorse-1.1",
+        "operationId": "textToVideo",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "alibaba",
+        "protocol": "video",
+        "requestProfile": {
+          "frameMode": "none",
+          "generateAudio": false,
+          "kind": "video",
+          "referenceLimits": {
+            "audio": 0,
+            "image": 0,
+            "video": 0
+          },
+          "referenceValidationPolicy": "none",
+          "settingIds": [
+            "aspectRatio",
+            "durationSeconds",
+            "resolution"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-16.1",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "aspect_ratio",
+          "callback_url",
+          "duration",
+          "model",
+          "prompt",
+          "provider",
+          "resolution"
+        ]
+      },
+      {
+        "adapterVersion": "openrouter-video-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/videos",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/video-generation",
+            "https://openrouter.ai/api/v1/videos/models",
+            "https://openrouter.ai/alibaba/happyhorse-1.1"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "alibaba/happyhorse-1.1",
+        "operationId": "imageToVideo",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "alibaba",
+        "protocol": "video",
+        "requestProfile": {
+          "frameMode": "first",
+          "generateAudio": false,
+          "kind": "video",
+          "referenceLimits": {
+            "audio": 0,
+            "image": 0,
+            "video": 0
+          },
+          "referenceValidationPolicy": "none",
+          "settingIds": [
+            "aspectRatio",
+            "durationSeconds",
+            "resolution"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-16.1",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "aspect_ratio",
+          "callback_url",
+          "duration",
+          "model",
+          "prompt",
+          "provider",
+          "resolution",
+          "frame_images"
+        ]
+      }
+    ]
+  }
+]

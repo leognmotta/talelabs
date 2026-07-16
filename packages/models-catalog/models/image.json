@@ -1,0 +1,3312 @@
+[
+  {
+    "id": "google/gemini-3.1-flash-lite-image",
+    "revision": 1,
+    "status": "active",
+    "displayName": "Nano Banana 2 Lite",
+    "labelKey": "flows.models.nanoBanana2Lite",
+    "presentation": {
+      "descriptionKey": "flows.modelDescriptions.nanoBanana2Lite",
+      "logoId": "nanobanana"
+    },
+    "mediaType": "image",
+    "recommended": false,
+    "capabilitySchemaVersion": 3,
+    "defaultOperationId": "textToImage",
+    "inputSlots": [
+      {
+        "accepts": [
+          "Text"
+        ],
+        "descriptionKey": "flows.inputs.promptDescription",
+        "id": "prompt",
+        "labelKey": "flows.inputs.prompt",
+        "maxConnections": 32,
+        "maxItems": 32,
+        "minConnections": 0
+      },
+      {
+        "accepts": [
+          "ImageSet"
+        ],
+        "acceptedMedia": {
+          "maxBytes": 52428800,
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ]
+        },
+        "descriptionKey": "flows.inputs.imageReferencesDescription",
+        "id": "imageReferences",
+        "labelKey": "flows.inputs.imageReferences",
+        "maxConnections": 32,
+        "maxItems": 14,
+        "minConnections": 0,
+        "referenceProfile": {
+          "contactSheetPolicy": "never",
+          "multipleSubjectSupport": "supported",
+          "purposes": [
+            "composition",
+            "identity",
+            "style",
+            "subject"
+          ]
+        }
+      }
+    ],
+    "settings": [
+      {
+        "default": "1:1",
+        "id": "aspectRatio",
+        "kind": "enum",
+        "labelKey": "flows.settings.aspectRatio",
+        "options": [
+          {
+            "labelKey": "flows.settings.aspectRatios.square",
+            "value": "1:1"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "1:4"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "1:8"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "2:3"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "3:2"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "3:4"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "4:1"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "4:3"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "4:5"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "5:4"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "8:1"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "9:16"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "16:9"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "21:9"
+          }
+        ]
+      }
+    ],
+    "constraints": [],
+    "operations": [
+      {
+        "descriptionKey": "flows.operations.textToImageDescription",
+        "id": "textToImage",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt"
+        ],
+        "labelKey": "flows.operations.textToImage",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "image"
+        },
+        "referenceLimit": {
+          "maxItems": 0,
+          "slotIds": []
+        },
+        "settingIds": [
+          "aspectRatio"
+        ],
+        "nodeType": "imageGeneration"
+      },
+      {
+        "descriptionKey": "flows.operations.imageToImageDescription",
+        "id": "imageToImage",
+        "inputs": {
+          "imageReferences": {
+            "required": true
+          },
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt",
+          "imageReferences"
+        ],
+        "labelKey": "flows.operations.imageToImage",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "image"
+        },
+        "referenceLimit": {
+          "maxItems": 14,
+          "slotIds": [
+            "imageReferences"
+          ]
+        },
+        "settingIds": [
+          "aspectRatio"
+        ],
+        "nodeType": "imageGeneration"
+      }
+    ],
+    "bindings": [
+      {
+        "adapterVersion": "openrouter-image-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/images",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/image-generation",
+            "https://openrouter.ai/google/gemini-3.1-flash-lite-image",
+            "https://openrouter.ai/api/v1/images/models/google/gemini-3.1-flash-lite-image/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "bytes"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "google/gemini-3.1-flash-lite-image",
+        "operationId": "textToImage",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "google-ai-studio",
+        "protocol": "image",
+        "requestProfile": {
+          "kind": "image",
+          "maxReferences": 0,
+          "settingIds": [
+            "aspectRatio"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-15.19",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "model",
+          "n",
+          "prompt",
+          "provider",
+          "aspect_ratio"
+        ]
+      },
+      {
+        "adapterVersion": "openrouter-image-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/images",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/image-generation",
+            "https://openrouter.ai/google/gemini-3.1-flash-lite-image",
+            "https://openrouter.ai/api/v1/images/models/google/gemini-3.1-flash-lite-image/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "bytes"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "google/gemini-3.1-flash-lite-image",
+        "operationId": "imageToImage",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "google-ai-studio",
+        "protocol": "image",
+        "requestProfile": {
+          "kind": "image",
+          "maxReferences": 14,
+          "settingIds": [
+            "aspectRatio"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-15.19",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "model",
+          "n",
+          "prompt",
+          "provider",
+          "input_references",
+          "aspect_ratio"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "google/gemini-3.1-flash-image",
+    "revision": 1,
+    "status": "active",
+    "displayName": "Nano Banana 2",
+    "labelKey": "flows.models.nanoBanana2",
+    "presentation": {
+      "descriptionKey": "flows.modelDescriptions.nanoBanana2",
+      "logoId": "nanobanana"
+    },
+    "mediaType": "image",
+    "recommended": true,
+    "capabilitySchemaVersion": 3,
+    "defaultOperationId": "textToImage",
+    "inputSlots": [
+      {
+        "accepts": [
+          "Text"
+        ],
+        "descriptionKey": "flows.inputs.promptDescription",
+        "id": "prompt",
+        "labelKey": "flows.inputs.prompt",
+        "maxConnections": 32,
+        "maxItems": 32,
+        "minConnections": 0
+      },
+      {
+        "accepts": [
+          "ImageSet"
+        ],
+        "acceptedMedia": {
+          "maxBytes": 52428800,
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ]
+        },
+        "descriptionKey": "flows.inputs.imageReferencesDescription",
+        "id": "imageReferences",
+        "labelKey": "flows.inputs.imageReferences",
+        "maxConnections": 32,
+        "maxItems": 14,
+        "minConnections": 0,
+        "referenceProfile": {
+          "contactSheetPolicy": "never",
+          "multipleSubjectSupport": "supported",
+          "purposes": [
+            "composition",
+            "identity",
+            "style",
+            "subject"
+          ]
+        }
+      }
+    ],
+    "settings": [
+      {
+        "default": "1:1",
+        "id": "aspectRatio",
+        "kind": "enum",
+        "labelKey": "flows.settings.aspectRatio",
+        "options": [
+          {
+            "labelKey": "flows.settings.aspectRatios.square",
+            "value": "1:1"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "1:4"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "1:8"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "2:3"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "3:2"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "3:4"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "4:1"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "4:3"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "4:5"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "5:4"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "8:1"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "9:16"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "16:9"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "21:9"
+          }
+        ]
+      },
+      {
+        "default": "1K",
+        "id": "resolution",
+        "kind": "enum",
+        "labelKey": "flows.settings.resolution",
+        "options": [
+          {
+            "labelKey": "flows.settings.resolutions.512",
+            "value": "512"
+          },
+          {
+            "labelKey": "flows.settings.resolutions.1k",
+            "value": "1K"
+          },
+          {
+            "labelKey": "flows.settings.resolutions.2k",
+            "value": "2K"
+          },
+          {
+            "labelKey": "flows.settings.resolutions.4k",
+            "value": "4K"
+          }
+        ]
+      }
+    ],
+    "constraints": [],
+    "operations": [
+      {
+        "descriptionKey": "flows.operations.textToImageDescription",
+        "id": "textToImage",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt"
+        ],
+        "labelKey": "flows.operations.textToImage",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "image"
+        },
+        "referenceLimit": {
+          "maxItems": 0,
+          "slotIds": []
+        },
+        "settingIds": [
+          "aspectRatio",
+          "resolution"
+        ],
+        "nodeType": "imageGeneration"
+      },
+      {
+        "descriptionKey": "flows.operations.imageToImageDescription",
+        "id": "imageToImage",
+        "inputs": {
+          "imageReferences": {
+            "required": true
+          },
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt",
+          "imageReferences"
+        ],
+        "labelKey": "flows.operations.imageToImage",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "image"
+        },
+        "referenceLimit": {
+          "maxItems": 14,
+          "slotIds": [
+            "imageReferences"
+          ]
+        },
+        "settingIds": [
+          "aspectRatio",
+          "resolution"
+        ],
+        "nodeType": "imageGeneration"
+      }
+    ],
+    "bindings": [
+      {
+        "adapterVersion": "openrouter-image-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/images",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/image-generation",
+            "https://openrouter.ai/google/gemini-3.1-flash-image",
+            "https://openrouter.ai/api/v1/images/models/google/gemini-3.1-flash-image/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "bytes"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "google/gemini-3.1-flash-image",
+        "operationId": "textToImage",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "google-ai-studio",
+        "protocol": "image",
+        "requestProfile": {
+          "kind": "image",
+          "maxReferences": 0,
+          "settingIds": [
+            "aspectRatio",
+            "resolution"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-15.19",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "model",
+          "n",
+          "prompt",
+          "provider",
+          "aspect_ratio",
+          "resolution"
+        ]
+      },
+      {
+        "adapterVersion": "openrouter-image-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/images",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/image-generation",
+            "https://openrouter.ai/google/gemini-3.1-flash-image",
+            "https://openrouter.ai/api/v1/images/models/google/gemini-3.1-flash-image/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "bytes"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "google/gemini-3.1-flash-image",
+        "operationId": "imageToImage",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "google-ai-studio",
+        "protocol": "image",
+        "requestProfile": {
+          "kind": "image",
+          "maxReferences": 14,
+          "settingIds": [
+            "aspectRatio",
+            "resolution"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-15.19",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "model",
+          "n",
+          "prompt",
+          "provider",
+          "input_references",
+          "aspect_ratio",
+          "resolution"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "google/gemini-3-pro-image",
+    "revision": 1,
+    "status": "active",
+    "displayName": "Nano Banana Pro",
+    "labelKey": "flows.models.nanoBananaPro",
+    "presentation": {
+      "descriptionKey": "flows.modelDescriptions.nanoBananaPro",
+      "logoId": "nanobanana"
+    },
+    "mediaType": "image",
+    "recommended": false,
+    "capabilitySchemaVersion": 3,
+    "defaultOperationId": "textToImage",
+    "inputSlots": [
+      {
+        "accepts": [
+          "Text"
+        ],
+        "descriptionKey": "flows.inputs.promptDescription",
+        "id": "prompt",
+        "labelKey": "flows.inputs.prompt",
+        "maxConnections": 32,
+        "maxItems": 32,
+        "minConnections": 0
+      },
+      {
+        "accepts": [
+          "ImageSet"
+        ],
+        "acceptedMedia": {
+          "maxBytes": 52428800,
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ]
+        },
+        "descriptionKey": "flows.inputs.imageReferencesDescription",
+        "id": "imageReferences",
+        "labelKey": "flows.inputs.imageReferences",
+        "maxConnections": 32,
+        "maxItems": 14,
+        "minConnections": 0,
+        "referenceProfile": {
+          "contactSheetPolicy": "never",
+          "multipleSubjectSupport": "supported",
+          "purposes": [
+            "composition",
+            "identity",
+            "style",
+            "subject"
+          ]
+        }
+      }
+    ],
+    "settings": [
+      {
+        "default": "1:1",
+        "id": "aspectRatio",
+        "kind": "enum",
+        "labelKey": "flows.settings.aspectRatio",
+        "options": [
+          {
+            "labelKey": "flows.settings.aspectRatios.square",
+            "value": "1:1"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "2:3"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "3:2"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "3:4"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "4:3"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "4:5"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "5:4"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "9:16"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "16:9"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "21:9"
+          }
+        ]
+      },
+      {
+        "default": "1K",
+        "id": "resolution",
+        "kind": "enum",
+        "labelKey": "flows.settings.resolution",
+        "options": [
+          {
+            "labelKey": "flows.settings.resolutions.1k",
+            "value": "1K"
+          },
+          {
+            "labelKey": "flows.settings.resolutions.2k",
+            "value": "2K"
+          },
+          {
+            "labelKey": "flows.settings.resolutions.4k",
+            "value": "4K"
+          }
+        ]
+      }
+    ],
+    "constraints": [],
+    "operations": [
+      {
+        "descriptionKey": "flows.operations.textToImageDescription",
+        "id": "textToImage",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt"
+        ],
+        "labelKey": "flows.operations.textToImage",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "image"
+        },
+        "referenceLimit": {
+          "maxItems": 0,
+          "slotIds": []
+        },
+        "settingIds": [
+          "aspectRatio",
+          "resolution"
+        ],
+        "nodeType": "imageGeneration"
+      },
+      {
+        "descriptionKey": "flows.operations.imageToImageDescription",
+        "id": "imageToImage",
+        "inputs": {
+          "imageReferences": {
+            "required": true
+          },
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt",
+          "imageReferences"
+        ],
+        "labelKey": "flows.operations.imageToImage",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "image"
+        },
+        "referenceLimit": {
+          "maxItems": 14,
+          "slotIds": [
+            "imageReferences"
+          ]
+        },
+        "settingIds": [
+          "aspectRatio",
+          "resolution"
+        ],
+        "nodeType": "imageGeneration"
+      }
+    ],
+    "bindings": [
+      {
+        "adapterVersion": "openrouter-image-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/images",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/image-generation",
+            "https://openrouter.ai/google/gemini-3-pro-image",
+            "https://openrouter.ai/api/v1/images/models/google/gemini-3-pro-image/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "bytes"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "google/gemini-3-pro-image",
+        "operationId": "textToImage",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "google-ai-studio/global",
+        "protocol": "image",
+        "requestProfile": {
+          "kind": "image",
+          "maxReferences": 0,
+          "settingIds": [
+            "aspectRatio",
+            "resolution"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-15.19",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "model",
+          "n",
+          "prompt",
+          "provider",
+          "aspect_ratio",
+          "resolution"
+        ]
+      },
+      {
+        "adapterVersion": "openrouter-image-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/images",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/image-generation",
+            "https://openrouter.ai/google/gemini-3-pro-image",
+            "https://openrouter.ai/api/v1/images/models/google/gemini-3-pro-image/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "bytes"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "google/gemini-3-pro-image",
+        "operationId": "imageToImage",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "google-ai-studio/global",
+        "protocol": "image",
+        "requestProfile": {
+          "kind": "image",
+          "maxReferences": 14,
+          "settingIds": [
+            "aspectRatio",
+            "resolution"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-15.19",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "model",
+          "n",
+          "prompt",
+          "provider",
+          "input_references",
+          "aspect_ratio",
+          "resolution"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-image-2",
+    "revision": 1,
+    "status": "active",
+    "displayName": "GPT Image 2",
+    "labelKey": "flows.models.gptImage2",
+    "presentation": {
+      "descriptionKey": "flows.modelDescriptions.gptImage2",
+      "logoId": "openai"
+    },
+    "mediaType": "image",
+    "recommended": false,
+    "capabilitySchemaVersion": 3,
+    "defaultOperationId": "textToImage",
+    "inputSlots": [
+      {
+        "accepts": [
+          "Text"
+        ],
+        "descriptionKey": "flows.inputs.promptDescription",
+        "id": "prompt",
+        "labelKey": "flows.inputs.prompt",
+        "maxConnections": 32,
+        "maxItems": 32,
+        "minConnections": 0
+      },
+      {
+        "accepts": [
+          "ImageSet"
+        ],
+        "acceptedMedia": {
+          "maxBytes": 52428800,
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ]
+        },
+        "descriptionKey": "flows.inputs.imageReferencesDescription",
+        "id": "imageReferences",
+        "labelKey": "flows.inputs.imageReferences",
+        "maxConnections": 32,
+        "maxItems": 16,
+        "minConnections": 0,
+        "referenceProfile": {
+          "contactSheetPolicy": "never",
+          "multipleSubjectSupport": "supported",
+          "purposes": [
+            "composition",
+            "identity",
+            "style",
+            "subject"
+          ]
+        }
+      }
+    ],
+    "settings": [
+      {
+        "default": "auto",
+        "id": "quality",
+        "kind": "enum",
+        "labelKey": "flows.settings.quality",
+        "options": [
+          {
+            "labelKey": "flows.settings.qualities.auto",
+            "value": "auto"
+          },
+          {
+            "labelKey": "flows.settings.qualities.low",
+            "value": "low"
+          },
+          {
+            "labelKey": "flows.settings.qualities.medium",
+            "value": "medium"
+          },
+          {
+            "labelKey": "flows.settings.qualities.high",
+            "value": "high"
+          }
+        ]
+      },
+      {
+        "advanced": true,
+        "default": "auto",
+        "id": "background",
+        "kind": "enum",
+        "labelKey": "flows.settings.background",
+        "options": [
+          {
+            "labelKey": "flows.settings.backgrounds.auto",
+            "value": "auto"
+          },
+          {
+            "labelKey": "flows.settings.backgrounds.opaque",
+            "value": "opaque"
+          }
+        ]
+      }
+    ],
+    "constraints": [],
+    "operations": [
+      {
+        "descriptionKey": "flows.operations.textToImageDescription",
+        "id": "textToImage",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt"
+        ],
+        "labelKey": "flows.operations.textToImage",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "image"
+        },
+        "referenceLimit": {
+          "maxItems": 0,
+          "slotIds": []
+        },
+        "settingIds": [
+          "quality",
+          "background"
+        ],
+        "nodeType": "imageGeneration"
+      },
+      {
+        "descriptionKey": "flows.operations.imageToImageDescription",
+        "id": "imageToImage",
+        "inputs": {
+          "imageReferences": {
+            "required": true
+          },
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt",
+          "imageReferences"
+        ],
+        "labelKey": "flows.operations.imageToImage",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "image"
+        },
+        "referenceLimit": {
+          "maxItems": 16,
+          "slotIds": [
+            "imageReferences"
+          ]
+        },
+        "settingIds": [
+          "quality",
+          "background"
+        ],
+        "nodeType": "imageGeneration"
+      }
+    ],
+    "bindings": [
+      {
+        "adapterVersion": "openrouter-image-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/images",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/image-generation",
+            "https://openrouter.ai/openai/gpt-image-2",
+            "https://openrouter.ai/api/v1/images/models/openai/gpt-image-2/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "bytes"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "openai/gpt-image-2",
+        "operationId": "textToImage",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "openai",
+        "protocol": "image",
+        "requestProfile": {
+          "kind": "image",
+          "maxReferences": 0,
+          "settingIds": [
+            "quality",
+            "background"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-15.19",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "model",
+          "n",
+          "prompt",
+          "provider",
+          "quality",
+          "background"
+        ]
+      },
+      {
+        "adapterVersion": "openrouter-image-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/images",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/image-generation",
+            "https://openrouter.ai/openai/gpt-image-2",
+            "https://openrouter.ai/api/v1/images/models/openai/gpt-image-2/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "bytes"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "openai/gpt-image-2",
+        "operationId": "imageToImage",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "openai",
+        "protocol": "image",
+        "requestProfile": {
+          "kind": "image",
+          "maxReferences": 16,
+          "settingIds": [
+            "quality",
+            "background"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-15.19",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "model",
+          "n",
+          "prompt",
+          "provider",
+          "input_references",
+          "quality",
+          "background"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "bytedance-seed/seedream-4.5",
+    "revision": 1,
+    "status": "active",
+    "displayName": "Seedream 4.5",
+    "labelKey": "flows.models.seedream45",
+    "presentation": {
+      "descriptionKey": "flows.modelDescriptions.seedream45",
+      "logoId": "bytedance"
+    },
+    "mediaType": "image",
+    "recommended": false,
+    "capabilitySchemaVersion": 3,
+    "defaultOperationId": "textToImage",
+    "inputSlots": [
+      {
+        "accepts": [
+          "Text"
+        ],
+        "descriptionKey": "flows.inputs.promptDescription",
+        "id": "prompt",
+        "labelKey": "flows.inputs.prompt",
+        "maxConnections": 32,
+        "maxItems": 32,
+        "minConnections": 0
+      },
+      {
+        "accepts": [
+          "ImageSet"
+        ],
+        "acceptedMedia": {
+          "maxBytes": 52428800,
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ]
+        },
+        "descriptionKey": "flows.inputs.imageReferencesDescription",
+        "id": "imageReferences",
+        "labelKey": "flows.inputs.imageReferences",
+        "maxConnections": 32,
+        "maxItems": 14,
+        "minConnections": 0,
+        "referenceProfile": {
+          "contactSheetPolicy": "never",
+          "multipleSubjectSupport": "supported",
+          "purposes": [
+            "composition",
+            "identity",
+            "style",
+            "subject"
+          ]
+        }
+      }
+    ],
+    "settings": [
+      {
+        "default": "1:1",
+        "id": "aspectRatio",
+        "kind": "enum",
+        "labelKey": "flows.settings.aspectRatio",
+        "options": [
+          {
+            "labelKey": "flows.settings.aspectRatios.square",
+            "value": "1:1"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "1:2"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "2:1"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "2:3"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "3:2"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "3:4"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "4:3"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "4:5"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "5:4"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "9:16"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "16:9"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "9:19.5"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "19.5:9"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "9:20"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "20:9"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "9:21"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "21:9"
+          }
+        ]
+      },
+      {
+        "default": "2K",
+        "id": "resolution",
+        "kind": "enum",
+        "labelKey": "flows.settings.resolution",
+        "options": [
+          {
+            "labelKey": "flows.settings.resolutions.2k",
+            "value": "2K"
+          },
+          {
+            "labelKey": "flows.settings.resolutions.4k",
+            "value": "4K"
+          }
+        ]
+      }
+    ],
+    "constraints": [],
+    "operations": [
+      {
+        "descriptionKey": "flows.operations.textToImageDescription",
+        "id": "textToImage",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt"
+        ],
+        "labelKey": "flows.operations.textToImage",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "image"
+        },
+        "referenceLimit": {
+          "maxItems": 0,
+          "slotIds": []
+        },
+        "settingIds": [
+          "aspectRatio",
+          "resolution"
+        ],
+        "nodeType": "imageGeneration"
+      },
+      {
+        "descriptionKey": "flows.operations.imageToImageDescription",
+        "id": "imageToImage",
+        "inputs": {
+          "imageReferences": {
+            "required": true
+          },
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt",
+          "imageReferences"
+        ],
+        "labelKey": "flows.operations.imageToImage",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "image"
+        },
+        "referenceLimit": {
+          "maxItems": 14,
+          "slotIds": [
+            "imageReferences"
+          ]
+        },
+        "settingIds": [
+          "aspectRatio",
+          "resolution"
+        ],
+        "nodeType": "imageGeneration"
+      }
+    ],
+    "bindings": [
+      {
+        "adapterVersion": "openrouter-image-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/images",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/image-generation",
+            "https://openrouter.ai/bytedance-seed/seedream-4.5",
+            "https://openrouter.ai/api/v1/images/models/bytedance-seed/seedream-4.5/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "bytes"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "bytedance-seed/seedream-4.5",
+        "operationId": "textToImage",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "seed",
+        "protocol": "image",
+        "requestProfile": {
+          "kind": "image",
+          "maxReferences": 0,
+          "settingIds": [
+            "aspectRatio",
+            "resolution"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-15.19",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "model",
+          "n",
+          "prompt",
+          "provider",
+          "aspect_ratio",
+          "resolution"
+        ]
+      },
+      {
+        "adapterVersion": "openrouter-image-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/images",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/image-generation",
+            "https://openrouter.ai/bytedance-seed/seedream-4.5",
+            "https://openrouter.ai/api/v1/images/models/bytedance-seed/seedream-4.5/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "bytes"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "bytedance-seed/seedream-4.5",
+        "operationId": "imageToImage",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "seed",
+        "protocol": "image",
+        "requestProfile": {
+          "kind": "image",
+          "maxReferences": 14,
+          "settingIds": [
+            "aspectRatio",
+            "resolution"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-15.19",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "model",
+          "n",
+          "prompt",
+          "provider",
+          "input_references",
+          "aspect_ratio",
+          "resolution"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "black-forest-labs/flux.2-pro",
+    "revision": 1,
+    "status": "active",
+    "displayName": "FLUX.2 Pro",
+    "labelKey": "flows.models.flux2Pro",
+    "presentation": {
+      "descriptionKey": "flows.modelDescriptions.flux2Pro",
+      "logoId": "flux"
+    },
+    "mediaType": "image",
+    "recommended": false,
+    "capabilitySchemaVersion": 3,
+    "defaultOperationId": "textToImage",
+    "inputSlots": [
+      {
+        "accepts": [
+          "Text"
+        ],
+        "descriptionKey": "flows.inputs.promptDescription",
+        "id": "prompt",
+        "labelKey": "flows.inputs.prompt",
+        "maxConnections": 32,
+        "maxItems": 32,
+        "minConnections": 0
+      },
+      {
+        "accepts": [
+          "ImageSet"
+        ],
+        "acceptedMedia": {
+          "maxBytes": 52428800,
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ]
+        },
+        "descriptionKey": "flows.inputs.imageReferencesDescription",
+        "id": "imageReferences",
+        "labelKey": "flows.inputs.imageReferences",
+        "maxConnections": 32,
+        "maxItems": 8,
+        "minConnections": 0,
+        "referenceProfile": {
+          "contactSheetPolicy": "never",
+          "multipleSubjectSupport": "supported",
+          "purposes": [
+            "composition",
+            "identity",
+            "style",
+            "subject"
+          ]
+        }
+      }
+    ],
+    "settings": [
+      {
+        "advanced": true,
+        "default": "png",
+        "id": "outputFormat",
+        "kind": "enum",
+        "labelKey": "flows.settings.outputFormat",
+        "options": [
+          {
+            "labelKey": "flows.settings.outputFormats.png",
+            "value": "png"
+          },
+          {
+            "labelKey": "flows.settings.outputFormats.jpeg",
+            "value": "jpeg"
+          }
+        ]
+      }
+    ],
+    "constraints": [],
+    "operations": [
+      {
+        "descriptionKey": "flows.operations.textToImageDescription",
+        "id": "textToImage",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt"
+        ],
+        "labelKey": "flows.operations.textToImage",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "image"
+        },
+        "referenceLimit": {
+          "maxItems": 0,
+          "slotIds": []
+        },
+        "settingIds": [
+          "outputFormat"
+        ],
+        "nodeType": "imageGeneration"
+      },
+      {
+        "descriptionKey": "flows.operations.imageToImageDescription",
+        "id": "imageToImage",
+        "inputs": {
+          "imageReferences": {
+            "required": true
+          },
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt",
+          "imageReferences"
+        ],
+        "labelKey": "flows.operations.imageToImage",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "image"
+        },
+        "referenceLimit": {
+          "maxItems": 8,
+          "slotIds": [
+            "imageReferences"
+          ]
+        },
+        "settingIds": [
+          "outputFormat"
+        ],
+        "nodeType": "imageGeneration"
+      }
+    ],
+    "bindings": [
+      {
+        "adapterVersion": "openrouter-image-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/images",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/image-generation",
+            "https://openrouter.ai/black-forest-labs/flux.2-pro",
+            "https://openrouter.ai/api/v1/images/models/black-forest-labs/flux.2-pro/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "bytes"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "black-forest-labs/flux.2-pro",
+        "operationId": "textToImage",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "black-forest-labs",
+        "protocol": "image",
+        "requestProfile": {
+          "kind": "image",
+          "maxReferences": 0,
+          "settingIds": [
+            "outputFormat"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-15.19",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "model",
+          "n",
+          "prompt",
+          "provider",
+          "output_format"
+        ]
+      },
+      {
+        "adapterVersion": "openrouter-image-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/images",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/image-generation",
+            "https://openrouter.ai/black-forest-labs/flux.2-pro",
+            "https://openrouter.ai/api/v1/images/models/black-forest-labs/flux.2-pro/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "bytes"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "black-forest-labs/flux.2-pro",
+        "operationId": "imageToImage",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "black-forest-labs",
+        "protocol": "image",
+        "requestProfile": {
+          "kind": "image",
+          "maxReferences": 8,
+          "settingIds": [
+            "outputFormat"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-15.19",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "model",
+          "n",
+          "prompt",
+          "provider",
+          "input_references",
+          "output_format"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "recraft/recraft-v4.1",
+    "revision": 1,
+    "status": "active",
+    "displayName": "Recraft 4.1",
+    "labelKey": "flows.models.recraft41",
+    "presentation": {
+      "descriptionKey": "flows.modelDescriptions.recraft41",
+      "logoId": "recraft"
+    },
+    "mediaType": "image",
+    "recommended": false,
+    "capabilitySchemaVersion": 3,
+    "defaultOperationId": "textToImage",
+    "inputSlots": [
+      {
+        "accepts": [
+          "Text"
+        ],
+        "descriptionKey": "flows.inputs.promptDescription",
+        "id": "prompt",
+        "labelKey": "flows.inputs.prompt",
+        "maxConnections": 32,
+        "maxItems": 32,
+        "minConnections": 0
+      },
+      {
+        "accepts": [
+          "ImageSet"
+        ],
+        "acceptedMedia": {
+          "maxBytes": 52428800,
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ]
+        },
+        "descriptionKey": "flows.inputs.imageReferencesDescription",
+        "id": "imageReferences",
+        "labelKey": "flows.inputs.imageReferences",
+        "maxConnections": 1,
+        "maxItems": 1,
+        "minConnections": 0,
+        "referenceProfile": {
+          "contactSheetPolicy": "never",
+          "multipleSubjectSupport": "supported",
+          "purposes": [
+            "composition",
+            "identity",
+            "style",
+            "subject"
+          ]
+        }
+      }
+    ],
+    "settings": [],
+    "constraints": [],
+    "operations": [
+      {
+        "descriptionKey": "flows.operations.textToImageDescription",
+        "id": "textToImage",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt"
+        ],
+        "labelKey": "flows.operations.textToImage",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "image"
+        },
+        "referenceLimit": {
+          "maxItems": 0,
+          "slotIds": []
+        },
+        "settingIds": [],
+        "nodeType": "imageGeneration"
+      },
+      {
+        "descriptionKey": "flows.operations.imageToImageDescription",
+        "id": "imageToImage",
+        "inputs": {
+          "imageReferences": {
+            "required": true
+          },
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt",
+          "imageReferences"
+        ],
+        "labelKey": "flows.operations.imageToImage",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "image"
+        },
+        "referenceLimit": {
+          "maxItems": 1,
+          "slotIds": [
+            "imageReferences"
+          ]
+        },
+        "settingIds": [],
+        "nodeType": "imageGeneration"
+      }
+    ],
+    "bindings": [
+      {
+        "adapterVersion": "openrouter-image-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/images",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/image-generation",
+            "https://openrouter.ai/recraft/recraft-v4.1",
+            "https://openrouter.ai/api/v1/images/models/recraft/recraft-v4.1/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "bytes"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "recraft/recraft-v4.1",
+        "operationId": "textToImage",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "recraft",
+        "protocol": "image",
+        "requestProfile": {
+          "kind": "image",
+          "maxReferences": 0,
+          "settingIds": []
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-15.19",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "model",
+          "n",
+          "prompt",
+          "provider"
+        ]
+      },
+      {
+        "adapterVersion": "openrouter-image-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/images",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/image-generation",
+            "https://openrouter.ai/recraft/recraft-v4.1",
+            "https://openrouter.ai/api/v1/images/models/recraft/recraft-v4.1/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "bytes"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "recraft/recraft-v4.1",
+        "operationId": "imageToImage",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "recraft",
+        "protocol": "image",
+        "requestProfile": {
+          "kind": "image",
+          "maxReferences": 1,
+          "settingIds": []
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-15.19",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "model",
+          "n",
+          "prompt",
+          "provider",
+          "input_references"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-5.4-image-2",
+    "revision": 1,
+    "status": "active",
+    "displayName": "GPT-5.4 Image 2",
+    "labelKey": "flows.models.gpt54Image2",
+    "presentation": {
+      "descriptionKey": "flows.modelDescriptions.gptImage2",
+      "logoId": "openai"
+    },
+    "mediaType": "image",
+    "recommended": false,
+    "capabilitySchemaVersion": 3,
+    "defaultOperationId": "textToImage",
+    "inputSlots": [
+      {
+        "accepts": [
+          "Text"
+        ],
+        "descriptionKey": "flows.inputs.promptDescription",
+        "id": "prompt",
+        "labelKey": "flows.inputs.prompt",
+        "maxConnections": 32,
+        "maxItems": 32,
+        "minConnections": 0
+      },
+      {
+        "accepts": [
+          "ImageSet"
+        ],
+        "acceptedMedia": {
+          "maxBytes": 52428800,
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ]
+        },
+        "descriptionKey": "flows.inputs.imageReferencesDescription",
+        "id": "imageReferences",
+        "labelKey": "flows.inputs.imageReferences",
+        "maxConnections": 32,
+        "maxItems": 16,
+        "minConnections": 0,
+        "referenceProfile": {
+          "contactSheetPolicy": "never",
+          "multipleSubjectSupport": "supported",
+          "purposes": [
+            "composition",
+            "identity",
+            "style",
+            "subject"
+          ]
+        }
+      }
+    ],
+    "settings": [
+      {
+        "default": "auto",
+        "id": "quality",
+        "kind": "enum",
+        "labelKey": "flows.settings.quality",
+        "options": [
+          {
+            "labelKey": "flows.settings.qualities.auto",
+            "value": "auto"
+          },
+          {
+            "labelKey": "flows.settings.qualities.low",
+            "value": "low"
+          },
+          {
+            "labelKey": "flows.settings.qualities.medium",
+            "value": "medium"
+          },
+          {
+            "labelKey": "flows.settings.qualities.high",
+            "value": "high"
+          }
+        ]
+      },
+      {
+        "advanced": true,
+        "default": "auto",
+        "id": "background",
+        "kind": "enum",
+        "labelKey": "flows.settings.background",
+        "options": [
+          {
+            "labelKey": "flows.settings.backgrounds.auto",
+            "value": "auto"
+          },
+          {
+            "labelKey": "flows.settings.backgrounds.opaque",
+            "value": "opaque"
+          }
+        ]
+      }
+    ],
+    "constraints": [],
+    "operations": [
+      {
+        "descriptionKey": "flows.operations.textToImageDescription",
+        "id": "textToImage",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt"
+        ],
+        "labelKey": "flows.operations.textToImage",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "image"
+        },
+        "referenceLimit": {
+          "maxItems": 0,
+          "slotIds": []
+        },
+        "settingIds": [
+          "quality",
+          "background"
+        ],
+        "nodeType": "imageGeneration"
+      },
+      {
+        "descriptionKey": "flows.operations.imageToImageDescription",
+        "id": "imageToImage",
+        "inputs": {
+          "imageReferences": {
+            "required": true
+          },
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt",
+          "imageReferences"
+        ],
+        "labelKey": "flows.operations.imageToImage",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "image"
+        },
+        "referenceLimit": {
+          "maxItems": 16,
+          "slotIds": [
+            "imageReferences"
+          ]
+        },
+        "settingIds": [
+          "quality",
+          "background"
+        ],
+        "nodeType": "imageGeneration"
+      }
+    ],
+    "bindings": [
+      {
+        "adapterVersion": "openrouter-image-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/images",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/image-generation",
+            "https://openrouter.ai/openai/gpt-5.4-image-2",
+            "https://openrouter.ai/api/v1/images/models/openai/gpt-5.4-image-2/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "bytes"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "openai/gpt-5.4-image-2",
+        "operationId": "textToImage",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "openai",
+        "protocol": "image",
+        "requestProfile": {
+          "kind": "image",
+          "maxReferences": 0,
+          "settingIds": [
+            "quality",
+            "background"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-15.19",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "model",
+          "n",
+          "prompt",
+          "provider",
+          "quality",
+          "background"
+        ]
+      },
+      {
+        "adapterVersion": "openrouter-image-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/images",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/image-generation",
+            "https://openrouter.ai/openai/gpt-5.4-image-2",
+            "https://openrouter.ai/api/v1/images/models/openai/gpt-5.4-image-2/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "bytes"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "openai/gpt-5.4-image-2",
+        "operationId": "imageToImage",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "openai",
+        "protocol": "image",
+        "requestProfile": {
+          "kind": "image",
+          "maxReferences": 16,
+          "settingIds": [
+            "quality",
+            "background"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-15.19",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "model",
+          "n",
+          "prompt",
+          "provider",
+          "input_references",
+          "quality",
+          "background"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "microsoft/mai-image-2.5",
+    "revision": 1,
+    "status": "active",
+    "displayName": "MAI Image 2.5",
+    "labelKey": "flows.models.maiImage25",
+    "presentation": {
+      "descriptionKey": "flows.modelDescriptions.gptImage2",
+      "logoId": "microsoft"
+    },
+    "mediaType": "image",
+    "recommended": false,
+    "capabilitySchemaVersion": 3,
+    "defaultOperationId": "textToImage",
+    "inputSlots": [
+      {
+        "accepts": [
+          "Text"
+        ],
+        "descriptionKey": "flows.inputs.promptDescription",
+        "id": "prompt",
+        "labelKey": "flows.inputs.prompt",
+        "maxConnections": 32,
+        "maxItems": 32,
+        "minConnections": 0
+      },
+      {
+        "accepts": [
+          "ImageSet"
+        ],
+        "acceptedMedia": {
+          "maxBytes": 52428800,
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ]
+        },
+        "descriptionKey": "flows.inputs.imageReferencesDescription",
+        "id": "imageReferences",
+        "labelKey": "flows.inputs.imageReferences",
+        "maxConnections": 32,
+        "maxItems": 1,
+        "minConnections": 0,
+        "referenceProfile": {
+          "contactSheetPolicy": "never",
+          "multipleSubjectSupport": "supported",
+          "purposes": [
+            "composition",
+            "identity",
+            "style",
+            "subject"
+          ]
+        }
+      }
+    ],
+    "settings": [
+      {
+        "default": "auto",
+        "id": "aspectRatio",
+        "kind": "enum",
+        "labelKey": "flows.settings.aspectRatio",
+        "options": [
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "auto"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatios.square",
+            "value": "1:1"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "4:3"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "3:4"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatios.landscape",
+            "value": "16:9"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatios.portrait",
+            "value": "9:16"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "3:2"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "2:3"
+          }
+        ]
+      }
+    ],
+    "constraints": [],
+    "operations": [
+      {
+        "descriptionKey": "flows.operations.textToImageDescription",
+        "id": "textToImage",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt"
+        ],
+        "labelKey": "flows.operations.textToImage",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "image"
+        },
+        "referenceLimit": {
+          "maxItems": 0,
+          "slotIds": []
+        },
+        "settingIds": [
+          "aspectRatio"
+        ],
+        "nodeType": "imageGeneration"
+      },
+      {
+        "descriptionKey": "flows.operations.imageToImageDescription",
+        "id": "imageToImage",
+        "inputs": {
+          "imageReferences": {
+            "required": true
+          },
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt",
+          "imageReferences"
+        ],
+        "labelKey": "flows.operations.imageToImage",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "image"
+        },
+        "referenceLimit": {
+          "maxItems": 1,
+          "slotIds": [
+            "imageReferences"
+          ]
+        },
+        "settingIds": [
+          "aspectRatio"
+        ],
+        "nodeType": "imageGeneration"
+      }
+    ],
+    "bindings": [
+      {
+        "adapterVersion": "openrouter-image-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/images",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/image-generation",
+            "https://openrouter.ai/microsoft/mai-image-2.5",
+            "https://openrouter.ai/api/v1/images/models/microsoft/mai-image-2.5/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "bytes"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "microsoft/mai-image-2.5",
+        "operationId": "textToImage",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "azure",
+        "protocol": "image",
+        "requestProfile": {
+          "kind": "image",
+          "maxReferences": 0,
+          "settingIds": [
+            "aspectRatio"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-15.19",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "model",
+          "n",
+          "prompt",
+          "provider",
+          "aspect_ratio"
+        ]
+      },
+      {
+        "adapterVersion": "openrouter-image-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/images",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/image-generation",
+            "https://openrouter.ai/microsoft/mai-image-2.5",
+            "https://openrouter.ai/api/v1/images/models/microsoft/mai-image-2.5/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "bytes"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "microsoft/mai-image-2.5",
+        "operationId": "imageToImage",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "azure",
+        "protocol": "image",
+        "requestProfile": {
+          "kind": "image",
+          "maxReferences": 1,
+          "settingIds": [
+            "aspectRatio"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-15.19",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "model",
+          "n",
+          "prompt",
+          "provider",
+          "input_references",
+          "aspect_ratio"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "x-ai/grok-imagine-image-quality",
+    "revision": 1,
+    "status": "active",
+    "displayName": "Grok Imagine Image Quality",
+    "labelKey": "flows.models.grokImagineImageQuality",
+    "presentation": {
+      "descriptionKey": "flows.modelDescriptions.gptImage2",
+      "logoId": "xai"
+    },
+    "mediaType": "image",
+    "recommended": false,
+    "capabilitySchemaVersion": 3,
+    "defaultOperationId": "textToImage",
+    "inputSlots": [
+      {
+        "accepts": [
+          "Text"
+        ],
+        "descriptionKey": "flows.inputs.promptDescription",
+        "id": "prompt",
+        "labelKey": "flows.inputs.prompt",
+        "maxConnections": 32,
+        "maxItems": 32,
+        "minConnections": 0
+      },
+      {
+        "accepts": [
+          "ImageSet"
+        ],
+        "acceptedMedia": {
+          "maxBytes": 52428800,
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ]
+        },
+        "descriptionKey": "flows.inputs.imageReferencesDescription",
+        "id": "imageReferences",
+        "labelKey": "flows.inputs.imageReferences",
+        "maxConnections": 32,
+        "maxItems": 3,
+        "minConnections": 0,
+        "referenceProfile": {
+          "contactSheetPolicy": "never",
+          "multipleSubjectSupport": "supported",
+          "purposes": [
+            "composition",
+            "identity",
+            "style",
+            "subject"
+          ]
+        }
+      }
+    ],
+    "settings": [
+      {
+        "default": "auto",
+        "id": "aspectRatio",
+        "kind": "enum",
+        "labelKey": "flows.settings.aspectRatio",
+        "options": [
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "auto"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatios.square",
+            "value": "1:1"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "3:4"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "4:3"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatios.portrait",
+            "value": "9:16"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatios.landscape",
+            "value": "16:9"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "2:3"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "3:2"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "9:19.5"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "19.5:9"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "9:20"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "20:9"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "1:2"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "2:1"
+          }
+        ]
+      },
+      {
+        "default": "1K",
+        "id": "resolution",
+        "kind": "enum",
+        "labelKey": "flows.settings.resolution",
+        "options": [
+          {
+            "labelKey": "flows.settings.resolutions.1k",
+            "value": "1K"
+          },
+          {
+            "labelKey": "flows.settings.resolutions.2k",
+            "value": "2K"
+          }
+        ]
+      }
+    ],
+    "constraints": [],
+    "operations": [
+      {
+        "descriptionKey": "flows.operations.textToImageDescription",
+        "id": "textToImage",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt"
+        ],
+        "labelKey": "flows.operations.textToImage",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "image"
+        },
+        "referenceLimit": {
+          "maxItems": 0,
+          "slotIds": []
+        },
+        "settingIds": [
+          "aspectRatio",
+          "resolution"
+        ],
+        "nodeType": "imageGeneration"
+      },
+      {
+        "descriptionKey": "flows.operations.imageToImageDescription",
+        "id": "imageToImage",
+        "inputs": {
+          "imageReferences": {
+            "required": true
+          },
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt",
+          "imageReferences"
+        ],
+        "labelKey": "flows.operations.imageToImage",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "image"
+        },
+        "referenceLimit": {
+          "maxItems": 3,
+          "slotIds": [
+            "imageReferences"
+          ]
+        },
+        "settingIds": [
+          "aspectRatio",
+          "resolution"
+        ],
+        "nodeType": "imageGeneration"
+      }
+    ],
+    "bindings": [
+      {
+        "adapterVersion": "openrouter-image-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/images",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/image-generation",
+            "https://openrouter.ai/x-ai/grok-imagine-image-quality",
+            "https://openrouter.ai/api/v1/images/models/x-ai/grok-imagine-image-quality/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "bytes"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "x-ai/grok-imagine-image-quality",
+        "operationId": "textToImage",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "xai",
+        "protocol": "image",
+        "requestProfile": {
+          "kind": "image",
+          "maxReferences": 0,
+          "settingIds": [
+            "aspectRatio",
+            "resolution"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-15.19",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "model",
+          "n",
+          "prompt",
+          "provider",
+          "aspect_ratio",
+          "resolution"
+        ]
+      },
+      {
+        "adapterVersion": "openrouter-image-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/images",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/image-generation",
+            "https://openrouter.ai/x-ai/grok-imagine-image-quality",
+            "https://openrouter.ai/api/v1/images/models/x-ai/grok-imagine-image-quality/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "bytes"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "x-ai/grok-imagine-image-quality",
+        "operationId": "imageToImage",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "xai",
+        "protocol": "image",
+        "requestProfile": {
+          "kind": "image",
+          "maxReferences": 3,
+          "settingIds": [
+            "aspectRatio",
+            "resolution"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-15.19",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "model",
+          "n",
+          "prompt",
+          "provider",
+          "input_references",
+          "aspect_ratio",
+          "resolution"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "black-forest-labs/flux.2-max",
+    "revision": 1,
+    "status": "active",
+    "displayName": "FLUX.2 Max",
+    "labelKey": "flows.models.flux2Max",
+    "presentation": {
+      "descriptionKey": "flows.modelDescriptions.flux2Pro",
+      "logoId": "flux"
+    },
+    "mediaType": "image",
+    "recommended": false,
+    "capabilitySchemaVersion": 3,
+    "defaultOperationId": "textToImage",
+    "inputSlots": [
+      {
+        "accepts": [
+          "Text"
+        ],
+        "descriptionKey": "flows.inputs.promptDescription",
+        "id": "prompt",
+        "labelKey": "flows.inputs.prompt",
+        "maxConnections": 32,
+        "maxItems": 32,
+        "minConnections": 0
+      },
+      {
+        "accepts": [
+          "ImageSet"
+        ],
+        "acceptedMedia": {
+          "maxBytes": 52428800,
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ]
+        },
+        "descriptionKey": "flows.inputs.imageReferencesDescription",
+        "id": "imageReferences",
+        "labelKey": "flows.inputs.imageReferences",
+        "maxConnections": 32,
+        "maxItems": 8,
+        "minConnections": 0,
+        "referenceProfile": {
+          "contactSheetPolicy": "never",
+          "multipleSubjectSupport": "supported",
+          "purposes": [
+            "composition",
+            "identity",
+            "style",
+            "subject"
+          ]
+        }
+      }
+    ],
+    "settings": [
+      {
+        "advanced": true,
+        "default": "png",
+        "id": "outputFormat",
+        "kind": "enum",
+        "labelKey": "flows.settings.outputFormat",
+        "options": [
+          {
+            "labelKey": "flows.settings.outputFormats.png",
+            "value": "png"
+          },
+          {
+            "labelKey": "flows.settings.outputFormats.jpeg",
+            "value": "jpeg"
+          }
+        ]
+      }
+    ],
+    "constraints": [],
+    "operations": [
+      {
+        "descriptionKey": "flows.operations.textToImageDescription",
+        "id": "textToImage",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt"
+        ],
+        "labelKey": "flows.operations.textToImage",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "image"
+        },
+        "referenceLimit": {
+          "maxItems": 0,
+          "slotIds": []
+        },
+        "settingIds": [
+          "outputFormat"
+        ],
+        "nodeType": "imageGeneration"
+      },
+      {
+        "descriptionKey": "flows.operations.imageToImageDescription",
+        "id": "imageToImage",
+        "inputs": {
+          "imageReferences": {
+            "required": true
+          },
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt",
+          "imageReferences"
+        ],
+        "labelKey": "flows.operations.imageToImage",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "image"
+        },
+        "referenceLimit": {
+          "maxItems": 8,
+          "slotIds": [
+            "imageReferences"
+          ]
+        },
+        "settingIds": [
+          "outputFormat"
+        ],
+        "nodeType": "imageGeneration"
+      }
+    ],
+    "bindings": [
+      {
+        "adapterVersion": "openrouter-image-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/images",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/image-generation",
+            "https://openrouter.ai/black-forest-labs/flux.2-max",
+            "https://openrouter.ai/api/v1/images/models/black-forest-labs/flux.2-max/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "bytes"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "black-forest-labs/flux.2-max",
+        "operationId": "textToImage",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "black-forest-labs",
+        "protocol": "image",
+        "requestProfile": {
+          "kind": "image",
+          "maxReferences": 0,
+          "settingIds": [
+            "outputFormat"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-15.19",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "model",
+          "n",
+          "prompt",
+          "provider",
+          "output_format"
+        ]
+      },
+      {
+        "adapterVersion": "openrouter-image-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/images",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/image-generation",
+            "https://openrouter.ai/black-forest-labs/flux.2-max",
+            "https://openrouter.ai/api/v1/images/models/black-forest-labs/flux.2-max/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "bytes"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "black-forest-labs/flux.2-max",
+        "operationId": "imageToImage",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "black-forest-labs",
+        "protocol": "image",
+        "requestProfile": {
+          "kind": "image",
+          "maxReferences": 8,
+          "settingIds": [
+            "outputFormat"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-15.19",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "model",
+          "n",
+          "prompt",
+          "provider",
+          "input_references",
+          "output_format"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "recraft/recraft-v4.1-pro",
+    "revision": 1,
+    "status": "active",
+    "displayName": "Recraft 4.1 Pro",
+    "labelKey": "flows.models.recraft41Pro",
+    "presentation": {
+      "descriptionKey": "flows.modelDescriptions.recraft41",
+      "logoId": "recraft"
+    },
+    "mediaType": "image",
+    "recommended": false,
+    "capabilitySchemaVersion": 3,
+    "defaultOperationId": "textToImage",
+    "inputSlots": [
+      {
+        "accepts": [
+          "Text"
+        ],
+        "descriptionKey": "flows.inputs.promptDescription",
+        "id": "prompt",
+        "labelKey": "flows.inputs.prompt",
+        "maxConnections": 32,
+        "maxItems": 32,
+        "minConnections": 0
+      },
+      {
+        "accepts": [
+          "ImageSet"
+        ],
+        "acceptedMedia": {
+          "maxBytes": 52428800,
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ]
+        },
+        "descriptionKey": "flows.inputs.imageReferencesDescription",
+        "id": "imageReferences",
+        "labelKey": "flows.inputs.imageReferences",
+        "maxConnections": 32,
+        "maxItems": 1,
+        "minConnections": 0,
+        "referenceProfile": {
+          "contactSheetPolicy": "never",
+          "multipleSubjectSupport": "supported",
+          "purposes": [
+            "composition",
+            "identity",
+            "style",
+            "subject"
+          ]
+        }
+      }
+    ],
+    "settings": [],
+    "constraints": [],
+    "operations": [
+      {
+        "descriptionKey": "flows.operations.textToImageDescription",
+        "id": "textToImage",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt"
+        ],
+        "labelKey": "flows.operations.textToImage",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "image"
+        },
+        "referenceLimit": {
+          "maxItems": 0,
+          "slotIds": []
+        },
+        "settingIds": [],
+        "nodeType": "imageGeneration"
+      },
+      {
+        "descriptionKey": "flows.operations.imageToImageDescription",
+        "id": "imageToImage",
+        "inputs": {
+          "imageReferences": {
+            "required": true
+          },
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt",
+          "imageReferences"
+        ],
+        "labelKey": "flows.operations.imageToImage",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "image"
+        },
+        "referenceLimit": {
+          "maxItems": 1,
+          "slotIds": [
+            "imageReferences"
+          ]
+        },
+        "settingIds": [],
+        "nodeType": "imageGeneration"
+      }
+    ],
+    "bindings": [
+      {
+        "adapterVersion": "openrouter-image-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/images",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/image-generation",
+            "https://openrouter.ai/recraft/recraft-v4.1-pro",
+            "https://openrouter.ai/api/v1/images/models/recraft/recraft-v4.1-pro/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "bytes"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "recraft/recraft-v4.1-pro",
+        "operationId": "textToImage",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "recraft",
+        "protocol": "image",
+        "requestProfile": {
+          "kind": "image",
+          "maxReferences": 0,
+          "settingIds": []
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-15.19",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "model",
+          "n",
+          "prompt",
+          "provider"
+        ]
+      },
+      {
+        "adapterVersion": "openrouter-image-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/images",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/image-generation",
+            "https://openrouter.ai/recraft/recraft-v4.1-pro",
+            "https://openrouter.ai/api/v1/images/models/recraft/recraft-v4.1-pro/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "bytes"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "recraft/recraft-v4.1-pro",
+        "operationId": "imageToImage",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "recraft",
+        "protocol": "image",
+        "requestProfile": {
+          "kind": "image",
+          "maxReferences": 1,
+          "settingIds": []
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-15.19",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "model",
+          "n",
+          "prompt",
+          "provider",
+          "input_references"
+        ]
+      }
+    ]
+  }
+]

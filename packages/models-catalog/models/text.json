@@ -1,0 +1,4429 @@
+[
+  {
+    "id": "google/gemini-3.1-flash-lite",
+    "revision": 1,
+    "status": "active",
+    "displayName": "Gemini 3.1 Flash Lite",
+    "labelKey": "flows.models.gemini31FlashLite",
+    "presentation": {
+      "descriptionKey": "flows.modelDescriptions.gemini31FlashLite",
+      "logoId": "gemini"
+    },
+    "mediaType": "text",
+    "recommended": true,
+    "capabilitySchemaVersion": 3,
+    "defaultOperationId": "textToText",
+    "llm": {
+      "reasoning": {
+        "default": "minimal",
+        "mandatory": false,
+        "options": [
+          "off",
+          "auto",
+          "minimal",
+          "low",
+          "medium",
+          "high"
+        ]
+      }
+    },
+    "inputSlots": [
+      {
+        "accepts": [
+          "Text"
+        ],
+        "descriptionKey": "flows.inputs.promptDescription",
+        "id": "prompt",
+        "labelKey": "flows.inputs.prompt",
+        "maxConnections": 1,
+        "maxItems": 1,
+        "minConnections": 0
+      },
+      {
+        "acceptedMedia": {
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ]
+        },
+        "accepts": [
+          "ImageSet"
+        ],
+        "descriptionKey": "flows.inputs.llmImageReferencesDescription",
+        "id": "imageReferences",
+        "labelKey": "flows.inputs.imageReferences",
+        "maxConnections": 1,
+        "maxItems": 8,
+        "minConnections": 0,
+        "referenceProfile": {
+          "contactSheetPolicy": "never",
+          "multipleSubjectSupport": "supported",
+          "purposes": [
+            "composition",
+            "identity",
+            "style",
+            "subject"
+          ]
+        }
+      }
+    ],
+    "settings": [
+      {
+        "default": "auto",
+        "descriptionKey": "flows.settings.responseLengthDescription",
+        "id": "responseLength",
+        "kind": "enum",
+        "labelKey": "flows.settings.responseLength",
+        "options": [
+          {
+            "labelKey": "flows.settings.responseLengths.auto",
+            "value": "auto"
+          },
+          {
+            "labelKey": "flows.settings.responseLengths.short",
+            "value": "short"
+          },
+          {
+            "labelKey": "flows.settings.responseLengths.medium",
+            "value": "medium"
+          },
+          {
+            "labelKey": "flows.settings.responseLengths.long",
+            "value": "long"
+          }
+        ]
+      },
+      {
+        "default": "minimal",
+        "descriptionKey": "flows.settings.reasoningDescription",
+        "id": "reasoningMode",
+        "kind": "enum",
+        "labelKey": "flows.settings.reasoning",
+        "options": [
+          {
+            "labelKey": "flows.settings.reasoningModes.off",
+            "value": "off"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.auto",
+            "value": "auto"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.minimal",
+            "value": "minimal"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.low",
+            "value": "low"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.medium",
+            "value": "medium"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.high",
+            "value": "high"
+          }
+        ]
+      }
+    ],
+    "constraints": [],
+    "operations": [
+      {
+        "descriptionKey": "flows.operations.textToTextDescription",
+        "id": "textToText",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt"
+        ],
+        "labelKey": "flows.operations.textToText",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "text"
+        },
+        "referenceLimit": {
+          "maxItems": 0,
+          "slotIds": []
+        },
+        "settingIds": [
+          "responseLength",
+          "reasoningMode"
+        ],
+        "nodeType": "llm"
+      },
+      {
+        "descriptionKey": "flows.operations.visionToTextDescription",
+        "id": "visionToText",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt",
+          "imageReferences"
+        ],
+        "labelKey": "flows.operations.visionToText",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "text"
+        },
+        "referenceLimit": {
+          "maxItems": 8,
+          "slotIds": [
+            "imageReferences"
+          ]
+        },
+        "settingIds": [
+          "responseLength",
+          "reasoningMode"
+        ],
+        "nodeType": "llm"
+      }
+    ],
+    "bindings": [
+      {
+        "adapterVersion": "openrouter-chat-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/chat/completions",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/api/reference/overview",
+            "https://openrouter.ai/docs/guides/best-practices/reasoning-tokens",
+            "https://openrouter.ai/google/gemini-3.1-flash-lite",
+            "https://openrouter.ai/api/v1/models/google/gemini-3.1-flash-lite/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "text"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "google/gemini-3.1-flash-lite",
+        "operationId": "textToText",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "google-vertex/global",
+        "protocol": "chat",
+        "requestProfile": {
+          "kind": "chat",
+          "maxImageReferences": 0,
+          "maxTokensParameter": "max_tokens",
+          "reasoning": true,
+          "settingIds": [
+            "responseLength",
+            "reasoningMode"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-15.19",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "max_tokens",
+          "messages",
+          "model",
+          "provider",
+          "reasoning"
+        ]
+      },
+      {
+        "adapterVersion": "openrouter-chat-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/chat/completions",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/api/reference/overview",
+            "https://openrouter.ai/docs/guides/best-practices/reasoning-tokens",
+            "https://openrouter.ai/google/gemini-3.1-flash-lite",
+            "https://openrouter.ai/api/v1/models/google/gemini-3.1-flash-lite/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "text"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "google/gemini-3.1-flash-lite",
+        "operationId": "visionToText",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "google-vertex/global",
+        "protocol": "chat",
+        "requestProfile": {
+          "kind": "chat",
+          "maxImageReferences": 8,
+          "maxTokensParameter": "max_tokens",
+          "reasoning": true,
+          "settingIds": [
+            "responseLength",
+            "reasoningMode"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-15.19",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "max_tokens",
+          "messages",
+          "model",
+          "provider",
+          "reasoning"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "anthropic/claude-sonnet-4.6",
+    "revision": 1,
+    "status": "active",
+    "displayName": "Claude Sonnet 4.6",
+    "labelKey": "flows.models.claudeSonnet46",
+    "presentation": {
+      "descriptionKey": "flows.modelDescriptions.claudeSonnet46",
+      "logoId": "claude"
+    },
+    "mediaType": "text",
+    "recommended": false,
+    "capabilitySchemaVersion": 3,
+    "defaultOperationId": "textToText",
+    "llm": {
+      "reasoning": {
+        "default": "medium",
+        "mandatory": false,
+        "options": [
+          "off",
+          "auto",
+          "low",
+          "medium",
+          "high",
+          "max"
+        ]
+      }
+    },
+    "inputSlots": [
+      {
+        "accepts": [
+          "Text"
+        ],
+        "descriptionKey": "flows.inputs.promptDescription",
+        "id": "prompt",
+        "labelKey": "flows.inputs.prompt",
+        "maxConnections": 1,
+        "maxItems": 1,
+        "minConnections": 0
+      },
+      {
+        "acceptedMedia": {
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ]
+        },
+        "accepts": [
+          "ImageSet"
+        ],
+        "descriptionKey": "flows.inputs.llmImageReferencesDescription",
+        "id": "imageReferences",
+        "labelKey": "flows.inputs.imageReferences",
+        "maxConnections": 1,
+        "maxItems": 8,
+        "minConnections": 0,
+        "referenceProfile": {
+          "contactSheetPolicy": "never",
+          "multipleSubjectSupport": "supported",
+          "purposes": [
+            "composition",
+            "identity",
+            "style",
+            "subject"
+          ]
+        }
+      }
+    ],
+    "settings": [
+      {
+        "default": "auto",
+        "descriptionKey": "flows.settings.responseLengthDescription",
+        "id": "responseLength",
+        "kind": "enum",
+        "labelKey": "flows.settings.responseLength",
+        "options": [
+          {
+            "labelKey": "flows.settings.responseLengths.auto",
+            "value": "auto"
+          },
+          {
+            "labelKey": "flows.settings.responseLengths.short",
+            "value": "short"
+          },
+          {
+            "labelKey": "flows.settings.responseLengths.medium",
+            "value": "medium"
+          },
+          {
+            "labelKey": "flows.settings.responseLengths.long",
+            "value": "long"
+          }
+        ]
+      },
+      {
+        "default": "medium",
+        "descriptionKey": "flows.settings.reasoningDescription",
+        "id": "reasoningMode",
+        "kind": "enum",
+        "labelKey": "flows.settings.reasoning",
+        "options": [
+          {
+            "labelKey": "flows.settings.reasoningModes.off",
+            "value": "off"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.auto",
+            "value": "auto"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.low",
+            "value": "low"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.medium",
+            "value": "medium"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.high",
+            "value": "high"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.max",
+            "value": "max"
+          }
+        ]
+      }
+    ],
+    "constraints": [],
+    "operations": [
+      {
+        "descriptionKey": "flows.operations.textToTextDescription",
+        "id": "textToText",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt"
+        ],
+        "labelKey": "flows.operations.textToText",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "text"
+        },
+        "referenceLimit": {
+          "maxItems": 0,
+          "slotIds": []
+        },
+        "settingIds": [
+          "responseLength",
+          "reasoningMode"
+        ],
+        "nodeType": "llm"
+      },
+      {
+        "descriptionKey": "flows.operations.visionToTextDescription",
+        "id": "visionToText",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt",
+          "imageReferences"
+        ],
+        "labelKey": "flows.operations.visionToText",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "text"
+        },
+        "referenceLimit": {
+          "maxItems": 8,
+          "slotIds": [
+            "imageReferences"
+          ]
+        },
+        "settingIds": [
+          "responseLength",
+          "reasoningMode"
+        ],
+        "nodeType": "llm"
+      }
+    ],
+    "bindings": [
+      {
+        "adapterVersion": "openrouter-chat-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/chat/completions",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/api/reference/overview",
+            "https://openrouter.ai/docs/guides/best-practices/reasoning-tokens",
+            "https://openrouter.ai/anthropic/claude-sonnet-4.6",
+            "https://openrouter.ai/api/v1/models/anthropic/claude-sonnet-4.6/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "text"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "anthropic/claude-sonnet-4.6",
+        "operationId": "textToText",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "anthropic",
+        "protocol": "chat",
+        "requestProfile": {
+          "kind": "chat",
+          "maxImageReferences": 0,
+          "maxTokensParameter": "max_tokens",
+          "reasoning": true,
+          "settingIds": [
+            "responseLength",
+            "reasoningMode"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-15.19",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "max_tokens",
+          "messages",
+          "model",
+          "provider",
+          "reasoning"
+        ]
+      },
+      {
+        "adapterVersion": "openrouter-chat-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/chat/completions",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/api/reference/overview",
+            "https://openrouter.ai/docs/guides/best-practices/reasoning-tokens",
+            "https://openrouter.ai/anthropic/claude-sonnet-4.6",
+            "https://openrouter.ai/api/v1/models/anthropic/claude-sonnet-4.6/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "text"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "anthropic/claude-sonnet-4.6",
+        "operationId": "visionToText",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "anthropic",
+        "protocol": "chat",
+        "requestProfile": {
+          "kind": "chat",
+          "maxImageReferences": 8,
+          "maxTokensParameter": "max_tokens",
+          "reasoning": true,
+          "settingIds": [
+            "responseLength",
+            "reasoningMode"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-15.19",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "max_tokens",
+          "messages",
+          "model",
+          "provider",
+          "reasoning"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-5.4",
+    "revision": 1,
+    "status": "active",
+    "displayName": "GPT-5.4",
+    "labelKey": "flows.models.gpt54",
+    "presentation": {
+      "descriptionKey": "flows.modelDescriptions.gpt54",
+      "logoId": "openai"
+    },
+    "mediaType": "text",
+    "recommended": false,
+    "capabilitySchemaVersion": 3,
+    "defaultOperationId": "textToText",
+    "llm": {
+      "reasoning": {
+        "default": "off",
+        "mandatory": false,
+        "options": [
+          "off",
+          "auto",
+          "low",
+          "medium",
+          "high",
+          "xhigh"
+        ]
+      }
+    },
+    "inputSlots": [
+      {
+        "accepts": [
+          "Text"
+        ],
+        "descriptionKey": "flows.inputs.promptDescription",
+        "id": "prompt",
+        "labelKey": "flows.inputs.prompt",
+        "maxConnections": 1,
+        "maxItems": 1,
+        "minConnections": 0
+      },
+      {
+        "acceptedMedia": {
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ]
+        },
+        "accepts": [
+          "ImageSet"
+        ],
+        "descriptionKey": "flows.inputs.llmImageReferencesDescription",
+        "id": "imageReferences",
+        "labelKey": "flows.inputs.imageReferences",
+        "maxConnections": 1,
+        "maxItems": 8,
+        "minConnections": 0,
+        "referenceProfile": {
+          "contactSheetPolicy": "never",
+          "multipleSubjectSupport": "supported",
+          "purposes": [
+            "composition",
+            "identity",
+            "style",
+            "subject"
+          ]
+        }
+      }
+    ],
+    "settings": [
+      {
+        "default": "auto",
+        "descriptionKey": "flows.settings.responseLengthDescription",
+        "id": "responseLength",
+        "kind": "enum",
+        "labelKey": "flows.settings.responseLength",
+        "options": [
+          {
+            "labelKey": "flows.settings.responseLengths.auto",
+            "value": "auto"
+          },
+          {
+            "labelKey": "flows.settings.responseLengths.short",
+            "value": "short"
+          },
+          {
+            "labelKey": "flows.settings.responseLengths.medium",
+            "value": "medium"
+          },
+          {
+            "labelKey": "flows.settings.responseLengths.long",
+            "value": "long"
+          }
+        ]
+      },
+      {
+        "default": "off",
+        "descriptionKey": "flows.settings.reasoningDescription",
+        "id": "reasoningMode",
+        "kind": "enum",
+        "labelKey": "flows.settings.reasoning",
+        "options": [
+          {
+            "labelKey": "flows.settings.reasoningModes.off",
+            "value": "off"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.auto",
+            "value": "auto"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.low",
+            "value": "low"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.medium",
+            "value": "medium"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.high",
+            "value": "high"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.xhigh",
+            "value": "xhigh"
+          }
+        ]
+      }
+    ],
+    "constraints": [],
+    "operations": [
+      {
+        "descriptionKey": "flows.operations.textToTextDescription",
+        "id": "textToText",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt"
+        ],
+        "labelKey": "flows.operations.textToText",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "text"
+        },
+        "referenceLimit": {
+          "maxItems": 0,
+          "slotIds": []
+        },
+        "settingIds": [
+          "responseLength",
+          "reasoningMode"
+        ],
+        "nodeType": "llm"
+      },
+      {
+        "descriptionKey": "flows.operations.visionToTextDescription",
+        "id": "visionToText",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt",
+          "imageReferences"
+        ],
+        "labelKey": "flows.operations.visionToText",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "text"
+        },
+        "referenceLimit": {
+          "maxItems": 8,
+          "slotIds": [
+            "imageReferences"
+          ]
+        },
+        "settingIds": [
+          "responseLength",
+          "reasoningMode"
+        ],
+        "nodeType": "llm"
+      }
+    ],
+    "bindings": [
+      {
+        "adapterVersion": "openrouter-chat-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/chat/completions",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/api/reference/overview",
+            "https://openrouter.ai/docs/guides/best-practices/reasoning-tokens",
+            "https://openrouter.ai/openai/gpt-5.4",
+            "https://openrouter.ai/api/v1/models/openai/gpt-5.4/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "text"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "openai/gpt-5.4",
+        "operationId": "textToText",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "azure",
+        "protocol": "chat",
+        "requestProfile": {
+          "kind": "chat",
+          "maxImageReferences": 0,
+          "maxTokensParameter": "max_completion_tokens",
+          "reasoning": true,
+          "settingIds": [
+            "responseLength",
+            "reasoningMode"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-15.19",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "max_completion_tokens",
+          "messages",
+          "model",
+          "provider",
+          "reasoning"
+        ]
+      },
+      {
+        "adapterVersion": "openrouter-chat-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/chat/completions",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/api/reference/overview",
+            "https://openrouter.ai/docs/guides/best-practices/reasoning-tokens",
+            "https://openrouter.ai/openai/gpt-5.4",
+            "https://openrouter.ai/api/v1/models/openai/gpt-5.4/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "text"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "openai/gpt-5.4",
+        "operationId": "visionToText",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "azure",
+        "protocol": "chat",
+        "requestProfile": {
+          "kind": "chat",
+          "maxImageReferences": 8,
+          "maxTokensParameter": "max_completion_tokens",
+          "reasoning": true,
+          "settingIds": [
+            "responseLength",
+            "reasoningMode"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-15.19",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "max_completion_tokens",
+          "messages",
+          "model",
+          "provider",
+          "reasoning"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "google/gemini-3.1-pro-preview",
+    "revision": 1,
+    "status": "active",
+    "displayName": "Gemini 3.1 Pro",
+    "labelKey": "flows.models.gemini31Pro",
+    "presentation": {
+      "descriptionKey": "flows.modelDescriptions.gemini31Pro",
+      "logoId": "gemini"
+    },
+    "mediaType": "text",
+    "recommended": false,
+    "capabilitySchemaVersion": 3,
+    "defaultOperationId": "textToText",
+    "llm": {
+      "reasoning": {
+        "default": "medium",
+        "mandatory": true,
+        "options": [
+          "auto",
+          "low",
+          "medium",
+          "high"
+        ]
+      }
+    },
+    "inputSlots": [
+      {
+        "accepts": [
+          "Text"
+        ],
+        "descriptionKey": "flows.inputs.promptDescription",
+        "id": "prompt",
+        "labelKey": "flows.inputs.prompt",
+        "maxConnections": 1,
+        "maxItems": 1,
+        "minConnections": 0
+      },
+      {
+        "acceptedMedia": {
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ]
+        },
+        "accepts": [
+          "ImageSet"
+        ],
+        "descriptionKey": "flows.inputs.llmImageReferencesDescription",
+        "id": "imageReferences",
+        "labelKey": "flows.inputs.imageReferences",
+        "maxConnections": 1,
+        "maxItems": 8,
+        "minConnections": 0,
+        "referenceProfile": {
+          "contactSheetPolicy": "never",
+          "multipleSubjectSupport": "supported",
+          "purposes": [
+            "composition",
+            "identity",
+            "style",
+            "subject"
+          ]
+        }
+      }
+    ],
+    "settings": [
+      {
+        "default": "auto",
+        "descriptionKey": "flows.settings.responseLengthDescription",
+        "id": "responseLength",
+        "kind": "enum",
+        "labelKey": "flows.settings.responseLength",
+        "options": [
+          {
+            "labelKey": "flows.settings.responseLengths.auto",
+            "value": "auto"
+          },
+          {
+            "labelKey": "flows.settings.responseLengths.short",
+            "value": "short"
+          },
+          {
+            "labelKey": "flows.settings.responseLengths.medium",
+            "value": "medium"
+          },
+          {
+            "labelKey": "flows.settings.responseLengths.long",
+            "value": "long"
+          }
+        ]
+      },
+      {
+        "default": "medium",
+        "descriptionKey": "flows.settings.reasoningMandatoryDescription",
+        "id": "reasoningMode",
+        "kind": "enum",
+        "labelKey": "flows.settings.reasoning",
+        "options": [
+          {
+            "labelKey": "flows.settings.reasoningModes.auto",
+            "value": "auto"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.low",
+            "value": "low"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.medium",
+            "value": "medium"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.high",
+            "value": "high"
+          }
+        ]
+      }
+    ],
+    "constraints": [],
+    "operations": [
+      {
+        "descriptionKey": "flows.operations.textToTextDescription",
+        "id": "textToText",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt"
+        ],
+        "labelKey": "flows.operations.textToText",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "text"
+        },
+        "referenceLimit": {
+          "maxItems": 0,
+          "slotIds": []
+        },
+        "settingIds": [
+          "responseLength",
+          "reasoningMode"
+        ],
+        "nodeType": "llm"
+      },
+      {
+        "descriptionKey": "flows.operations.visionToTextDescription",
+        "id": "visionToText",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt",
+          "imageReferences"
+        ],
+        "labelKey": "flows.operations.visionToText",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "text"
+        },
+        "referenceLimit": {
+          "maxItems": 8,
+          "slotIds": [
+            "imageReferences"
+          ]
+        },
+        "settingIds": [
+          "responseLength",
+          "reasoningMode"
+        ],
+        "nodeType": "llm"
+      }
+    ],
+    "bindings": [
+      {
+        "adapterVersion": "openrouter-chat-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/chat/completions",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/api/reference/overview",
+            "https://openrouter.ai/docs/guides/best-practices/reasoning-tokens",
+            "https://openrouter.ai/google/gemini-3.1-pro-preview",
+            "https://openrouter.ai/api/v1/models/google/gemini-3.1-pro-preview/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "text"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "google/gemini-3.1-pro-preview",
+        "operationId": "textToText",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "google-ai-studio",
+        "protocol": "chat",
+        "requestProfile": {
+          "kind": "chat",
+          "maxImageReferences": 0,
+          "maxTokensParameter": "max_tokens",
+          "reasoning": true,
+          "settingIds": [
+            "responseLength",
+            "reasoningMode"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-15.19",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "max_tokens",
+          "messages",
+          "model",
+          "provider",
+          "reasoning"
+        ]
+      },
+      {
+        "adapterVersion": "openrouter-chat-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/chat/completions",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/api/reference/overview",
+            "https://openrouter.ai/docs/guides/best-practices/reasoning-tokens",
+            "https://openrouter.ai/google/gemini-3.1-pro-preview",
+            "https://openrouter.ai/api/v1/models/google/gemini-3.1-pro-preview/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "text"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "google/gemini-3.1-pro-preview",
+        "operationId": "visionToText",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "google-ai-studio",
+        "protocol": "chat",
+        "requestProfile": {
+          "kind": "chat",
+          "maxImageReferences": 8,
+          "maxTokensParameter": "max_tokens",
+          "reasoning": true,
+          "settingIds": [
+            "responseLength",
+            "reasoningMode"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-15.19",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "max_tokens",
+          "messages",
+          "model",
+          "provider",
+          "reasoning"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "deepseek/deepseek-v3.2",
+    "revision": 1,
+    "status": "active",
+    "displayName": "DeepSeek V3.2",
+    "labelKey": "flows.models.deepseekV32",
+    "presentation": {
+      "descriptionKey": "flows.modelDescriptions.deepseekV32",
+      "logoId": "deepseek"
+    },
+    "mediaType": "text",
+    "recommended": false,
+    "capabilitySchemaVersion": 3,
+    "defaultOperationId": "textToText",
+    "llm": {
+      "reasoning": {
+        "default": "off",
+        "mandatory": false,
+        "options": [
+          "off",
+          "auto"
+        ]
+      }
+    },
+    "inputSlots": [
+      {
+        "accepts": [
+          "Text"
+        ],
+        "descriptionKey": "flows.inputs.promptDescription",
+        "id": "prompt",
+        "labelKey": "flows.inputs.prompt",
+        "maxConnections": 1,
+        "maxItems": 1,
+        "minConnections": 0
+      }
+    ],
+    "settings": [
+      {
+        "default": "auto",
+        "descriptionKey": "flows.settings.responseLengthDescription",
+        "id": "responseLength",
+        "kind": "enum",
+        "labelKey": "flows.settings.responseLength",
+        "options": [
+          {
+            "labelKey": "flows.settings.responseLengths.auto",
+            "value": "auto"
+          },
+          {
+            "labelKey": "flows.settings.responseLengths.short",
+            "value": "short"
+          },
+          {
+            "labelKey": "flows.settings.responseLengths.medium",
+            "value": "medium"
+          },
+          {
+            "labelKey": "flows.settings.responseLengths.long",
+            "value": "long"
+          }
+        ]
+      },
+      {
+        "default": "off",
+        "descriptionKey": "flows.settings.reasoningDescription",
+        "id": "reasoningMode",
+        "kind": "enum",
+        "labelKey": "flows.settings.reasoning",
+        "options": [
+          {
+            "labelKey": "flows.settings.reasoningModes.off",
+            "value": "off"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.auto",
+            "value": "auto"
+          }
+        ]
+      }
+    ],
+    "constraints": [],
+    "operations": [
+      {
+        "descriptionKey": "flows.operations.textToTextDescription",
+        "id": "textToText",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt"
+        ],
+        "labelKey": "flows.operations.textToText",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "text"
+        },
+        "referenceLimit": {
+          "maxItems": 0,
+          "slotIds": []
+        },
+        "settingIds": [
+          "responseLength",
+          "reasoningMode"
+        ],
+        "nodeType": "llm"
+      }
+    ],
+    "bindings": [
+      {
+        "adapterVersion": "openrouter-chat-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/chat/completions",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/api/reference/overview",
+            "https://openrouter.ai/docs/guides/best-practices/reasoning-tokens",
+            "https://openrouter.ai/deepseek/deepseek-v3.2",
+            "https://openrouter.ai/api/v1/models/deepseek/deepseek-v3.2/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "text"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "deepseek/deepseek-v3.2",
+        "operationId": "textToText",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "streamlake/fp8",
+        "protocol": "chat",
+        "requestProfile": {
+          "kind": "chat",
+          "maxImageReferences": 0,
+          "maxTokensParameter": "max_tokens",
+          "reasoning": true,
+          "settingIds": [
+            "responseLength",
+            "reasoningMode"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-15.19",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "max_tokens",
+          "messages",
+          "model",
+          "provider",
+          "reasoning"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "mistralai/mistral-large-2512",
+    "revision": 1,
+    "status": "active",
+    "displayName": "Mistral Large 3",
+    "labelKey": "flows.models.mistralLarge3",
+    "presentation": {
+      "descriptionKey": "flows.modelDescriptions.mistralLarge3",
+      "logoId": "mistral"
+    },
+    "mediaType": "text",
+    "recommended": false,
+    "capabilitySchemaVersion": 3,
+    "defaultOperationId": "textToText",
+    "llm": {},
+    "inputSlots": [
+      {
+        "accepts": [
+          "Text"
+        ],
+        "descriptionKey": "flows.inputs.promptDescription",
+        "id": "prompt",
+        "labelKey": "flows.inputs.prompt",
+        "maxConnections": 1,
+        "maxItems": 1,
+        "minConnections": 0
+      },
+      {
+        "acceptedMedia": {
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ]
+        },
+        "accepts": [
+          "ImageSet"
+        ],
+        "descriptionKey": "flows.inputs.llmImageReferencesDescription",
+        "id": "imageReferences",
+        "labelKey": "flows.inputs.imageReferences",
+        "maxConnections": 1,
+        "maxItems": 8,
+        "minConnections": 0,
+        "referenceProfile": {
+          "contactSheetPolicy": "never",
+          "multipleSubjectSupport": "supported",
+          "purposes": [
+            "composition",
+            "identity",
+            "style",
+            "subject"
+          ]
+        }
+      }
+    ],
+    "settings": [
+      {
+        "default": "auto",
+        "descriptionKey": "flows.settings.responseLengthDescription",
+        "id": "responseLength",
+        "kind": "enum",
+        "labelKey": "flows.settings.responseLength",
+        "options": [
+          {
+            "labelKey": "flows.settings.responseLengths.auto",
+            "value": "auto"
+          },
+          {
+            "labelKey": "flows.settings.responseLengths.short",
+            "value": "short"
+          },
+          {
+            "labelKey": "flows.settings.responseLengths.medium",
+            "value": "medium"
+          },
+          {
+            "labelKey": "flows.settings.responseLengths.long",
+            "value": "long"
+          }
+        ]
+      }
+    ],
+    "constraints": [],
+    "operations": [
+      {
+        "descriptionKey": "flows.operations.textToTextDescription",
+        "id": "textToText",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt"
+        ],
+        "labelKey": "flows.operations.textToText",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "text"
+        },
+        "referenceLimit": {
+          "maxItems": 0,
+          "slotIds": []
+        },
+        "settingIds": [
+          "responseLength"
+        ],
+        "nodeType": "llm"
+      },
+      {
+        "descriptionKey": "flows.operations.visionToTextDescription",
+        "id": "visionToText",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt",
+          "imageReferences"
+        ],
+        "labelKey": "flows.operations.visionToText",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "text"
+        },
+        "referenceLimit": {
+          "maxItems": 8,
+          "slotIds": [
+            "imageReferences"
+          ]
+        },
+        "settingIds": [
+          "responseLength"
+        ],
+        "nodeType": "llm"
+      }
+    ],
+    "bindings": [
+      {
+        "adapterVersion": "openrouter-chat-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/chat/completions",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/api/reference/overview",
+            "https://openrouter.ai/mistralai/mistral-large-2512",
+            "https://openrouter.ai/api/v1/models/mistralai/mistral-large-2512/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "text"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "mistralai/mistral-large-2512",
+        "operationId": "textToText",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "mistral",
+        "protocol": "chat",
+        "requestProfile": {
+          "kind": "chat",
+          "maxImageReferences": 0,
+          "maxTokensParameter": "max_tokens",
+          "reasoning": false,
+          "settingIds": [
+            "responseLength"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-15.19",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "max_tokens",
+          "messages",
+          "model",
+          "provider"
+        ]
+      },
+      {
+        "adapterVersion": "openrouter-chat-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/chat/completions",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/api/reference/overview",
+            "https://openrouter.ai/mistralai/mistral-large-2512",
+            "https://openrouter.ai/api/v1/models/mistralai/mistral-large-2512/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "text"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "mistralai/mistral-large-2512",
+        "operationId": "visionToText",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "mistral",
+        "protocol": "chat",
+        "requestProfile": {
+          "kind": "chat",
+          "maxImageReferences": 8,
+          "maxTokensParameter": "max_tokens",
+          "reasoning": false,
+          "settingIds": [
+            "responseLength"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-15.19",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "max_tokens",
+          "messages",
+          "model",
+          "provider"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-5.5",
+    "revision": 1,
+    "status": "active",
+    "displayName": "GPT-5.5",
+    "labelKey": "flows.models.gpt55",
+    "presentation": {
+      "descriptionKey": "flows.modelDescriptions.majorVisionLlm",
+      "logoId": "openai"
+    },
+    "mediaType": "text",
+    "recommended": false,
+    "capabilitySchemaVersion": 3,
+    "defaultOperationId": "textToText",
+    "llm": {
+      "reasoning": {
+        "default": "off",
+        "mandatory": false,
+        "options": [
+          "off",
+          "auto",
+          "low",
+          "medium",
+          "high",
+          "xhigh"
+        ]
+      }
+    },
+    "inputSlots": [
+      {
+        "accepts": [
+          "Text"
+        ],
+        "descriptionKey": "flows.inputs.promptDescription",
+        "id": "prompt",
+        "labelKey": "flows.inputs.prompt",
+        "maxConnections": 1,
+        "maxItems": 1,
+        "minConnections": 0
+      },
+      {
+        "acceptedMedia": {
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ]
+        },
+        "accepts": [
+          "ImageSet"
+        ],
+        "descriptionKey": "flows.inputs.llmImageReferencesDescription",
+        "id": "imageReferences",
+        "labelKey": "flows.inputs.imageReferences",
+        "maxConnections": 1,
+        "maxItems": 8,
+        "minConnections": 0,
+        "referenceProfile": {
+          "contactSheetPolicy": "never",
+          "multipleSubjectSupport": "supported",
+          "purposes": [
+            "composition",
+            "identity",
+            "style",
+            "subject"
+          ]
+        }
+      }
+    ],
+    "settings": [
+      {
+        "default": "auto",
+        "descriptionKey": "flows.settings.responseLengthDescription",
+        "id": "responseLength",
+        "kind": "enum",
+        "labelKey": "flows.settings.responseLength",
+        "options": [
+          {
+            "labelKey": "flows.settings.responseLengths.auto",
+            "value": "auto"
+          },
+          {
+            "labelKey": "flows.settings.responseLengths.short",
+            "value": "short"
+          },
+          {
+            "labelKey": "flows.settings.responseLengths.medium",
+            "value": "medium"
+          },
+          {
+            "labelKey": "flows.settings.responseLengths.long",
+            "value": "long"
+          }
+        ]
+      },
+      {
+        "default": "off",
+        "descriptionKey": "flows.settings.reasoningDescription",
+        "id": "reasoningMode",
+        "kind": "enum",
+        "labelKey": "flows.settings.reasoning",
+        "options": [
+          {
+            "labelKey": "flows.settings.reasoningModes.off",
+            "value": "off"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.auto",
+            "value": "auto"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.low",
+            "value": "low"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.medium",
+            "value": "medium"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.high",
+            "value": "high"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.xhigh",
+            "value": "xhigh"
+          }
+        ]
+      }
+    ],
+    "constraints": [],
+    "operations": [
+      {
+        "descriptionKey": "flows.operations.textToTextDescription",
+        "id": "textToText",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt"
+        ],
+        "labelKey": "flows.operations.textToText",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "text"
+        },
+        "referenceLimit": {
+          "maxItems": 0,
+          "slotIds": []
+        },
+        "settingIds": [
+          "responseLength",
+          "reasoningMode"
+        ],
+        "nodeType": "llm"
+      },
+      {
+        "descriptionKey": "flows.operations.visionToTextDescription",
+        "id": "visionToText",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt",
+          "imageReferences"
+        ],
+        "labelKey": "flows.operations.visionToText",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "text"
+        },
+        "referenceLimit": {
+          "maxItems": 8,
+          "slotIds": [
+            "imageReferences"
+          ]
+        },
+        "settingIds": [
+          "responseLength",
+          "reasoningMode"
+        ],
+        "nodeType": "llm"
+      }
+    ],
+    "bindings": [
+      {
+        "adapterVersion": "openrouter-chat-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/chat/completions",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/api/reference/overview",
+            "https://openrouter.ai/docs/guides/best-practices/reasoning-tokens",
+            "https://openrouter.ai/openai/gpt-5.5",
+            "https://openrouter.ai/api/v1/models/openai/gpt-5.5/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "text"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "openai/gpt-5.5",
+        "operationId": "textToText",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "azure",
+        "protocol": "chat",
+        "requestProfile": {
+          "kind": "chat",
+          "maxImageReferences": 0,
+          "maxTokensParameter": "max_completion_tokens",
+          "reasoning": true,
+          "settingIds": [
+            "responseLength",
+            "reasoningMode"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-15.19",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "max_completion_tokens",
+          "messages",
+          "model",
+          "provider",
+          "reasoning"
+        ]
+      },
+      {
+        "adapterVersion": "openrouter-chat-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/chat/completions",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/api/reference/overview",
+            "https://openrouter.ai/docs/guides/best-practices/reasoning-tokens",
+            "https://openrouter.ai/openai/gpt-5.5",
+            "https://openrouter.ai/api/v1/models/openai/gpt-5.5/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "text"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "openai/gpt-5.5",
+        "operationId": "visionToText",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "azure",
+        "protocol": "chat",
+        "requestProfile": {
+          "kind": "chat",
+          "maxImageReferences": 8,
+          "maxTokensParameter": "max_completion_tokens",
+          "reasoning": true,
+          "settingIds": [
+            "responseLength",
+            "reasoningMode"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-15.19",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "max_completion_tokens",
+          "messages",
+          "model",
+          "provider",
+          "reasoning"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-5.6-sol",
+    "revision": 1,
+    "status": "active",
+    "displayName": "GPT-5.6 SOL",
+    "labelKey": "flows.models.gpt56Sol",
+    "presentation": {
+      "descriptionKey": "flows.modelDescriptions.majorVisionLlm",
+      "logoId": "openai"
+    },
+    "mediaType": "text",
+    "recommended": false,
+    "capabilitySchemaVersion": 3,
+    "defaultOperationId": "textToText",
+    "llm": {
+      "reasoning": {
+        "default": "off",
+        "mandatory": false,
+        "options": [
+          "off",
+          "auto",
+          "low",
+          "medium",
+          "high",
+          "xhigh"
+        ]
+      }
+    },
+    "inputSlots": [
+      {
+        "accepts": [
+          "Text"
+        ],
+        "descriptionKey": "flows.inputs.promptDescription",
+        "id": "prompt",
+        "labelKey": "flows.inputs.prompt",
+        "maxConnections": 1,
+        "maxItems": 1,
+        "minConnections": 0
+      },
+      {
+        "acceptedMedia": {
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ]
+        },
+        "accepts": [
+          "ImageSet"
+        ],
+        "descriptionKey": "flows.inputs.llmImageReferencesDescription",
+        "id": "imageReferences",
+        "labelKey": "flows.inputs.imageReferences",
+        "maxConnections": 1,
+        "maxItems": 8,
+        "minConnections": 0,
+        "referenceProfile": {
+          "contactSheetPolicy": "never",
+          "multipleSubjectSupport": "supported",
+          "purposes": [
+            "composition",
+            "identity",
+            "style",
+            "subject"
+          ]
+        }
+      }
+    ],
+    "settings": [
+      {
+        "default": "auto",
+        "descriptionKey": "flows.settings.responseLengthDescription",
+        "id": "responseLength",
+        "kind": "enum",
+        "labelKey": "flows.settings.responseLength",
+        "options": [
+          {
+            "labelKey": "flows.settings.responseLengths.auto",
+            "value": "auto"
+          },
+          {
+            "labelKey": "flows.settings.responseLengths.short",
+            "value": "short"
+          },
+          {
+            "labelKey": "flows.settings.responseLengths.medium",
+            "value": "medium"
+          },
+          {
+            "labelKey": "flows.settings.responseLengths.long",
+            "value": "long"
+          }
+        ]
+      },
+      {
+        "default": "off",
+        "descriptionKey": "flows.settings.reasoningDescription",
+        "id": "reasoningMode",
+        "kind": "enum",
+        "labelKey": "flows.settings.reasoning",
+        "options": [
+          {
+            "labelKey": "flows.settings.reasoningModes.off",
+            "value": "off"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.auto",
+            "value": "auto"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.low",
+            "value": "low"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.medium",
+            "value": "medium"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.high",
+            "value": "high"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.xhigh",
+            "value": "xhigh"
+          }
+        ]
+      }
+    ],
+    "constraints": [],
+    "operations": [
+      {
+        "descriptionKey": "flows.operations.textToTextDescription",
+        "id": "textToText",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt"
+        ],
+        "labelKey": "flows.operations.textToText",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "text"
+        },
+        "referenceLimit": {
+          "maxItems": 0,
+          "slotIds": []
+        },
+        "settingIds": [
+          "responseLength",
+          "reasoningMode"
+        ],
+        "nodeType": "llm"
+      },
+      {
+        "descriptionKey": "flows.operations.visionToTextDescription",
+        "id": "visionToText",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt",
+          "imageReferences"
+        ],
+        "labelKey": "flows.operations.visionToText",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "text"
+        },
+        "referenceLimit": {
+          "maxItems": 8,
+          "slotIds": [
+            "imageReferences"
+          ]
+        },
+        "settingIds": [
+          "responseLength",
+          "reasoningMode"
+        ],
+        "nodeType": "llm"
+      }
+    ],
+    "bindings": [
+      {
+        "adapterVersion": "openrouter-chat-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/chat/completions",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/api/reference/overview",
+            "https://openrouter.ai/docs/guides/best-practices/reasoning-tokens",
+            "https://openrouter.ai/openai/gpt-5.6-sol",
+            "https://openrouter.ai/api/v1/models/openai/gpt-5.6-sol/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "text"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "openai/gpt-5.6-sol",
+        "operationId": "textToText",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "azure",
+        "protocol": "chat",
+        "requestProfile": {
+          "kind": "chat",
+          "maxImageReferences": 0,
+          "maxTokensParameter": "max_completion_tokens",
+          "reasoning": true,
+          "settingIds": [
+            "responseLength",
+            "reasoningMode"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-15.19",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "max_completion_tokens",
+          "messages",
+          "model",
+          "provider",
+          "reasoning"
+        ]
+      },
+      {
+        "adapterVersion": "openrouter-chat-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/chat/completions",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/api/reference/overview",
+            "https://openrouter.ai/docs/guides/best-practices/reasoning-tokens",
+            "https://openrouter.ai/openai/gpt-5.6-sol",
+            "https://openrouter.ai/api/v1/models/openai/gpt-5.6-sol/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "text"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "openai/gpt-5.6-sol",
+        "operationId": "visionToText",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "azure",
+        "protocol": "chat",
+        "requestProfile": {
+          "kind": "chat",
+          "maxImageReferences": 8,
+          "maxTokensParameter": "max_completion_tokens",
+          "reasoning": true,
+          "settingIds": [
+            "responseLength",
+            "reasoningMode"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-15.19",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "max_completion_tokens",
+          "messages",
+          "model",
+          "provider",
+          "reasoning"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "anthropic/claude-opus-4.8",
+    "revision": 1,
+    "status": "active",
+    "displayName": "Claude Opus 4.8",
+    "labelKey": "flows.models.claudeOpus48",
+    "presentation": {
+      "descriptionKey": "flows.modelDescriptions.majorVisionLlm",
+      "logoId": "claude"
+    },
+    "mediaType": "text",
+    "recommended": false,
+    "capabilitySchemaVersion": 3,
+    "defaultOperationId": "textToText",
+    "llm": {
+      "reasoning": {
+        "default": "medium",
+        "mandatory": false,
+        "options": [
+          "off",
+          "auto",
+          "low",
+          "medium",
+          "high"
+        ]
+      }
+    },
+    "inputSlots": [
+      {
+        "accepts": [
+          "Text"
+        ],
+        "descriptionKey": "flows.inputs.promptDescription",
+        "id": "prompt",
+        "labelKey": "flows.inputs.prompt",
+        "maxConnections": 1,
+        "maxItems": 1,
+        "minConnections": 0
+      },
+      {
+        "acceptedMedia": {
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ]
+        },
+        "accepts": [
+          "ImageSet"
+        ],
+        "descriptionKey": "flows.inputs.llmImageReferencesDescription",
+        "id": "imageReferences",
+        "labelKey": "flows.inputs.imageReferences",
+        "maxConnections": 1,
+        "maxItems": 8,
+        "minConnections": 0,
+        "referenceProfile": {
+          "contactSheetPolicy": "never",
+          "multipleSubjectSupport": "supported",
+          "purposes": [
+            "composition",
+            "identity",
+            "style",
+            "subject"
+          ]
+        }
+      }
+    ],
+    "settings": [
+      {
+        "default": "auto",
+        "descriptionKey": "flows.settings.responseLengthDescription",
+        "id": "responseLength",
+        "kind": "enum",
+        "labelKey": "flows.settings.responseLength",
+        "options": [
+          {
+            "labelKey": "flows.settings.responseLengths.auto",
+            "value": "auto"
+          },
+          {
+            "labelKey": "flows.settings.responseLengths.short",
+            "value": "short"
+          },
+          {
+            "labelKey": "flows.settings.responseLengths.medium",
+            "value": "medium"
+          },
+          {
+            "labelKey": "flows.settings.responseLengths.long",
+            "value": "long"
+          }
+        ]
+      },
+      {
+        "default": "medium",
+        "descriptionKey": "flows.settings.reasoningDescription",
+        "id": "reasoningMode",
+        "kind": "enum",
+        "labelKey": "flows.settings.reasoning",
+        "options": [
+          {
+            "labelKey": "flows.settings.reasoningModes.off",
+            "value": "off"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.auto",
+            "value": "auto"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.low",
+            "value": "low"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.medium",
+            "value": "medium"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.high",
+            "value": "high"
+          }
+        ]
+      }
+    ],
+    "constraints": [],
+    "operations": [
+      {
+        "descriptionKey": "flows.operations.textToTextDescription",
+        "id": "textToText",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt"
+        ],
+        "labelKey": "flows.operations.textToText",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "text"
+        },
+        "referenceLimit": {
+          "maxItems": 0,
+          "slotIds": []
+        },
+        "settingIds": [
+          "responseLength",
+          "reasoningMode"
+        ],
+        "nodeType": "llm"
+      },
+      {
+        "descriptionKey": "flows.operations.visionToTextDescription",
+        "id": "visionToText",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt",
+          "imageReferences"
+        ],
+        "labelKey": "flows.operations.visionToText",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "text"
+        },
+        "referenceLimit": {
+          "maxItems": 8,
+          "slotIds": [
+            "imageReferences"
+          ]
+        },
+        "settingIds": [
+          "responseLength",
+          "reasoningMode"
+        ],
+        "nodeType": "llm"
+      }
+    ],
+    "bindings": [
+      {
+        "adapterVersion": "openrouter-chat-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/chat/completions",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/api/reference/overview",
+            "https://openrouter.ai/docs/guides/best-practices/reasoning-tokens",
+            "https://openrouter.ai/anthropic/claude-opus-4.8",
+            "https://openrouter.ai/api/v1/models/anthropic/claude-opus-4.8/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "text"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "anthropic/claude-opus-4.8",
+        "operationId": "textToText",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "anthropic",
+        "protocol": "chat",
+        "requestProfile": {
+          "kind": "chat",
+          "maxImageReferences": 0,
+          "maxTokensParameter": "max_tokens",
+          "reasoning": true,
+          "settingIds": [
+            "responseLength",
+            "reasoningMode"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-15.19",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "max_tokens",
+          "messages",
+          "model",
+          "provider",
+          "reasoning"
+        ]
+      },
+      {
+        "adapterVersion": "openrouter-chat-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/chat/completions",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/api/reference/overview",
+            "https://openrouter.ai/docs/guides/best-practices/reasoning-tokens",
+            "https://openrouter.ai/anthropic/claude-opus-4.8",
+            "https://openrouter.ai/api/v1/models/anthropic/claude-opus-4.8/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "text"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "anthropic/claude-opus-4.8",
+        "operationId": "visionToText",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "anthropic",
+        "protocol": "chat",
+        "requestProfile": {
+          "kind": "chat",
+          "maxImageReferences": 8,
+          "maxTokensParameter": "max_tokens",
+          "reasoning": true,
+          "settingIds": [
+            "responseLength",
+            "reasoningMode"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-15.19",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "max_tokens",
+          "messages",
+          "model",
+          "provider",
+          "reasoning"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "anthropic/claude-sonnet-5",
+    "revision": 1,
+    "status": "active",
+    "displayName": "Claude Sonnet 5",
+    "labelKey": "flows.models.claudeSonnet5",
+    "presentation": {
+      "descriptionKey": "flows.modelDescriptions.majorVisionLlm",
+      "logoId": "claude"
+    },
+    "mediaType": "text",
+    "recommended": false,
+    "capabilitySchemaVersion": 3,
+    "defaultOperationId": "textToText",
+    "llm": {
+      "reasoning": {
+        "default": "medium",
+        "mandatory": false,
+        "options": [
+          "off",
+          "auto",
+          "low",
+          "medium",
+          "high"
+        ]
+      }
+    },
+    "inputSlots": [
+      {
+        "accepts": [
+          "Text"
+        ],
+        "descriptionKey": "flows.inputs.promptDescription",
+        "id": "prompt",
+        "labelKey": "flows.inputs.prompt",
+        "maxConnections": 1,
+        "maxItems": 1,
+        "minConnections": 0
+      },
+      {
+        "acceptedMedia": {
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ]
+        },
+        "accepts": [
+          "ImageSet"
+        ],
+        "descriptionKey": "flows.inputs.llmImageReferencesDescription",
+        "id": "imageReferences",
+        "labelKey": "flows.inputs.imageReferences",
+        "maxConnections": 1,
+        "maxItems": 8,
+        "minConnections": 0,
+        "referenceProfile": {
+          "contactSheetPolicy": "never",
+          "multipleSubjectSupport": "supported",
+          "purposes": [
+            "composition",
+            "identity",
+            "style",
+            "subject"
+          ]
+        }
+      }
+    ],
+    "settings": [
+      {
+        "default": "auto",
+        "descriptionKey": "flows.settings.responseLengthDescription",
+        "id": "responseLength",
+        "kind": "enum",
+        "labelKey": "flows.settings.responseLength",
+        "options": [
+          {
+            "labelKey": "flows.settings.responseLengths.auto",
+            "value": "auto"
+          },
+          {
+            "labelKey": "flows.settings.responseLengths.short",
+            "value": "short"
+          },
+          {
+            "labelKey": "flows.settings.responseLengths.medium",
+            "value": "medium"
+          },
+          {
+            "labelKey": "flows.settings.responseLengths.long",
+            "value": "long"
+          }
+        ]
+      },
+      {
+        "default": "medium",
+        "descriptionKey": "flows.settings.reasoningDescription",
+        "id": "reasoningMode",
+        "kind": "enum",
+        "labelKey": "flows.settings.reasoning",
+        "options": [
+          {
+            "labelKey": "flows.settings.reasoningModes.off",
+            "value": "off"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.auto",
+            "value": "auto"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.low",
+            "value": "low"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.medium",
+            "value": "medium"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.high",
+            "value": "high"
+          }
+        ]
+      }
+    ],
+    "constraints": [],
+    "operations": [
+      {
+        "descriptionKey": "flows.operations.textToTextDescription",
+        "id": "textToText",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt"
+        ],
+        "labelKey": "flows.operations.textToText",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "text"
+        },
+        "referenceLimit": {
+          "maxItems": 0,
+          "slotIds": []
+        },
+        "settingIds": [
+          "responseLength",
+          "reasoningMode"
+        ],
+        "nodeType": "llm"
+      },
+      {
+        "descriptionKey": "flows.operations.visionToTextDescription",
+        "id": "visionToText",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt",
+          "imageReferences"
+        ],
+        "labelKey": "flows.operations.visionToText",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "text"
+        },
+        "referenceLimit": {
+          "maxItems": 8,
+          "slotIds": [
+            "imageReferences"
+          ]
+        },
+        "settingIds": [
+          "responseLength",
+          "reasoningMode"
+        ],
+        "nodeType": "llm"
+      }
+    ],
+    "bindings": [
+      {
+        "adapterVersion": "openrouter-chat-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/chat/completions",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/api/reference/overview",
+            "https://openrouter.ai/docs/guides/best-practices/reasoning-tokens",
+            "https://openrouter.ai/anthropic/claude-sonnet-5",
+            "https://openrouter.ai/api/v1/models/anthropic/claude-sonnet-5/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "text"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "anthropic/claude-sonnet-5",
+        "operationId": "textToText",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "anthropic",
+        "protocol": "chat",
+        "requestProfile": {
+          "kind": "chat",
+          "maxImageReferences": 0,
+          "maxTokensParameter": "max_tokens",
+          "reasoning": true,
+          "settingIds": [
+            "responseLength",
+            "reasoningMode"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-15.19",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "max_tokens",
+          "messages",
+          "model",
+          "provider",
+          "reasoning"
+        ]
+      },
+      {
+        "adapterVersion": "openrouter-chat-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/chat/completions",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/api/reference/overview",
+            "https://openrouter.ai/docs/guides/best-practices/reasoning-tokens",
+            "https://openrouter.ai/anthropic/claude-sonnet-5",
+            "https://openrouter.ai/api/v1/models/anthropic/claude-sonnet-5/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "text"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "anthropic/claude-sonnet-5",
+        "operationId": "visionToText",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "anthropic",
+        "protocol": "chat",
+        "requestProfile": {
+          "kind": "chat",
+          "maxImageReferences": 8,
+          "maxTokensParameter": "max_tokens",
+          "reasoning": true,
+          "settingIds": [
+            "responseLength",
+            "reasoningMode"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-15.19",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "max_tokens",
+          "messages",
+          "model",
+          "provider",
+          "reasoning"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "google/gemini-3.5-flash",
+    "revision": 1,
+    "status": "active",
+    "displayName": "Gemini 3.5 Flash",
+    "labelKey": "flows.models.gemini35Flash",
+    "presentation": {
+      "descriptionKey": "flows.modelDescriptions.majorVisionLlm",
+      "logoId": "gemini"
+    },
+    "mediaType": "text",
+    "recommended": false,
+    "capabilitySchemaVersion": 3,
+    "defaultOperationId": "textToText",
+    "llm": {
+      "reasoning": {
+        "default": "medium",
+        "mandatory": false,
+        "options": [
+          "off",
+          "auto",
+          "low",
+          "medium",
+          "high"
+        ]
+      }
+    },
+    "inputSlots": [
+      {
+        "accepts": [
+          "Text"
+        ],
+        "descriptionKey": "flows.inputs.promptDescription",
+        "id": "prompt",
+        "labelKey": "flows.inputs.prompt",
+        "maxConnections": 1,
+        "maxItems": 1,
+        "minConnections": 0
+      },
+      {
+        "acceptedMedia": {
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ]
+        },
+        "accepts": [
+          "ImageSet"
+        ],
+        "descriptionKey": "flows.inputs.llmImageReferencesDescription",
+        "id": "imageReferences",
+        "labelKey": "flows.inputs.imageReferences",
+        "maxConnections": 1,
+        "maxItems": 8,
+        "minConnections": 0,
+        "referenceProfile": {
+          "contactSheetPolicy": "never",
+          "multipleSubjectSupport": "supported",
+          "purposes": [
+            "composition",
+            "identity",
+            "style",
+            "subject"
+          ]
+        }
+      }
+    ],
+    "settings": [
+      {
+        "default": "auto",
+        "descriptionKey": "flows.settings.responseLengthDescription",
+        "id": "responseLength",
+        "kind": "enum",
+        "labelKey": "flows.settings.responseLength",
+        "options": [
+          {
+            "labelKey": "flows.settings.responseLengths.auto",
+            "value": "auto"
+          },
+          {
+            "labelKey": "flows.settings.responseLengths.short",
+            "value": "short"
+          },
+          {
+            "labelKey": "flows.settings.responseLengths.medium",
+            "value": "medium"
+          },
+          {
+            "labelKey": "flows.settings.responseLengths.long",
+            "value": "long"
+          }
+        ]
+      },
+      {
+        "default": "medium",
+        "descriptionKey": "flows.settings.reasoningDescription",
+        "id": "reasoningMode",
+        "kind": "enum",
+        "labelKey": "flows.settings.reasoning",
+        "options": [
+          {
+            "labelKey": "flows.settings.reasoningModes.off",
+            "value": "off"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.auto",
+            "value": "auto"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.low",
+            "value": "low"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.medium",
+            "value": "medium"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.high",
+            "value": "high"
+          }
+        ]
+      }
+    ],
+    "constraints": [],
+    "operations": [
+      {
+        "descriptionKey": "flows.operations.textToTextDescription",
+        "id": "textToText",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt"
+        ],
+        "labelKey": "flows.operations.textToText",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "text"
+        },
+        "referenceLimit": {
+          "maxItems": 0,
+          "slotIds": []
+        },
+        "settingIds": [
+          "responseLength",
+          "reasoningMode"
+        ],
+        "nodeType": "llm"
+      },
+      {
+        "descriptionKey": "flows.operations.visionToTextDescription",
+        "id": "visionToText",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt",
+          "imageReferences"
+        ],
+        "labelKey": "flows.operations.visionToText",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "text"
+        },
+        "referenceLimit": {
+          "maxItems": 8,
+          "slotIds": [
+            "imageReferences"
+          ]
+        },
+        "settingIds": [
+          "responseLength",
+          "reasoningMode"
+        ],
+        "nodeType": "llm"
+      }
+    ],
+    "bindings": [
+      {
+        "adapterVersion": "openrouter-chat-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/chat/completions",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/api/reference/overview",
+            "https://openrouter.ai/docs/guides/best-practices/reasoning-tokens",
+            "https://openrouter.ai/google/gemini-3.5-flash",
+            "https://openrouter.ai/api/v1/models/google/gemini-3.5-flash/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "text"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "google/gemini-3.5-flash",
+        "operationId": "textToText",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "google-vertex/global",
+        "protocol": "chat",
+        "requestProfile": {
+          "kind": "chat",
+          "maxImageReferences": 0,
+          "maxTokensParameter": "max_tokens",
+          "reasoning": true,
+          "settingIds": [
+            "responseLength",
+            "reasoningMode"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-15.19",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "max_tokens",
+          "messages",
+          "model",
+          "provider",
+          "reasoning"
+        ]
+      },
+      {
+        "adapterVersion": "openrouter-chat-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/chat/completions",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/api/reference/overview",
+            "https://openrouter.ai/docs/guides/best-practices/reasoning-tokens",
+            "https://openrouter.ai/google/gemini-3.5-flash",
+            "https://openrouter.ai/api/v1/models/google/gemini-3.5-flash/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "text"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "google/gemini-3.5-flash",
+        "operationId": "visionToText",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "google-vertex/global",
+        "protocol": "chat",
+        "requestProfile": {
+          "kind": "chat",
+          "maxImageReferences": 8,
+          "maxTokensParameter": "max_tokens",
+          "reasoning": true,
+          "settingIds": [
+            "responseLength",
+            "reasoningMode"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-15.19",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "max_tokens",
+          "messages",
+          "model",
+          "provider",
+          "reasoning"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "x-ai/grok-4.5",
+    "revision": 1,
+    "status": "active",
+    "displayName": "Grok 4.5",
+    "labelKey": "flows.models.grok45",
+    "presentation": {
+      "descriptionKey": "flows.modelDescriptions.majorVisionLlm",
+      "logoId": "xai"
+    },
+    "mediaType": "text",
+    "recommended": false,
+    "capabilitySchemaVersion": 3,
+    "defaultOperationId": "textToText",
+    "llm": {
+      "reasoning": {
+        "default": "medium",
+        "mandatory": false,
+        "options": [
+          "off",
+          "auto",
+          "low",
+          "medium",
+          "high"
+        ]
+      }
+    },
+    "inputSlots": [
+      {
+        "accepts": [
+          "Text"
+        ],
+        "descriptionKey": "flows.inputs.promptDescription",
+        "id": "prompt",
+        "labelKey": "flows.inputs.prompt",
+        "maxConnections": 1,
+        "maxItems": 1,
+        "minConnections": 0
+      },
+      {
+        "acceptedMedia": {
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ]
+        },
+        "accepts": [
+          "ImageSet"
+        ],
+        "descriptionKey": "flows.inputs.llmImageReferencesDescription",
+        "id": "imageReferences",
+        "labelKey": "flows.inputs.imageReferences",
+        "maxConnections": 1,
+        "maxItems": 8,
+        "minConnections": 0,
+        "referenceProfile": {
+          "contactSheetPolicy": "never",
+          "multipleSubjectSupport": "supported",
+          "purposes": [
+            "composition",
+            "identity",
+            "style",
+            "subject"
+          ]
+        }
+      }
+    ],
+    "settings": [
+      {
+        "default": "auto",
+        "descriptionKey": "flows.settings.responseLengthDescription",
+        "id": "responseLength",
+        "kind": "enum",
+        "labelKey": "flows.settings.responseLength",
+        "options": [
+          {
+            "labelKey": "flows.settings.responseLengths.auto",
+            "value": "auto"
+          },
+          {
+            "labelKey": "flows.settings.responseLengths.short",
+            "value": "short"
+          },
+          {
+            "labelKey": "flows.settings.responseLengths.medium",
+            "value": "medium"
+          },
+          {
+            "labelKey": "flows.settings.responseLengths.long",
+            "value": "long"
+          }
+        ]
+      },
+      {
+        "default": "medium",
+        "descriptionKey": "flows.settings.reasoningDescription",
+        "id": "reasoningMode",
+        "kind": "enum",
+        "labelKey": "flows.settings.reasoning",
+        "options": [
+          {
+            "labelKey": "flows.settings.reasoningModes.off",
+            "value": "off"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.auto",
+            "value": "auto"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.low",
+            "value": "low"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.medium",
+            "value": "medium"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.high",
+            "value": "high"
+          }
+        ]
+      }
+    ],
+    "constraints": [],
+    "operations": [
+      {
+        "descriptionKey": "flows.operations.textToTextDescription",
+        "id": "textToText",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt"
+        ],
+        "labelKey": "flows.operations.textToText",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "text"
+        },
+        "referenceLimit": {
+          "maxItems": 0,
+          "slotIds": []
+        },
+        "settingIds": [
+          "responseLength",
+          "reasoningMode"
+        ],
+        "nodeType": "llm"
+      },
+      {
+        "descriptionKey": "flows.operations.visionToTextDescription",
+        "id": "visionToText",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt",
+          "imageReferences"
+        ],
+        "labelKey": "flows.operations.visionToText",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "text"
+        },
+        "referenceLimit": {
+          "maxItems": 8,
+          "slotIds": [
+            "imageReferences"
+          ]
+        },
+        "settingIds": [
+          "responseLength",
+          "reasoningMode"
+        ],
+        "nodeType": "llm"
+      }
+    ],
+    "bindings": [
+      {
+        "adapterVersion": "openrouter-chat-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/chat/completions",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/api/reference/overview",
+            "https://openrouter.ai/docs/guides/best-practices/reasoning-tokens",
+            "https://openrouter.ai/x-ai/grok-4.5",
+            "https://openrouter.ai/api/v1/models/x-ai/grok-4.5/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "text"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "x-ai/grok-4.5",
+        "operationId": "textToText",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "xai",
+        "protocol": "chat",
+        "requestProfile": {
+          "kind": "chat",
+          "maxImageReferences": 0,
+          "maxTokensParameter": "max_tokens",
+          "reasoning": true,
+          "settingIds": [
+            "responseLength",
+            "reasoningMode"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-15.19",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "max_tokens",
+          "messages",
+          "model",
+          "provider",
+          "reasoning"
+        ]
+      },
+      {
+        "adapterVersion": "openrouter-chat-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/chat/completions",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/api/reference/overview",
+            "https://openrouter.ai/docs/guides/best-practices/reasoning-tokens",
+            "https://openrouter.ai/x-ai/grok-4.5",
+            "https://openrouter.ai/api/v1/models/x-ai/grok-4.5/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "text"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "x-ai/grok-4.5",
+        "operationId": "visionToText",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "xai",
+        "protocol": "chat",
+        "requestProfile": {
+          "kind": "chat",
+          "maxImageReferences": 8,
+          "maxTokensParameter": "max_tokens",
+          "reasoning": true,
+          "settingIds": [
+            "responseLength",
+            "reasoningMode"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-15.19",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "max_tokens",
+          "messages",
+          "model",
+          "provider",
+          "reasoning"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "deepseek/deepseek-v4-pro",
+    "revision": 1,
+    "status": "active",
+    "displayName": "DeepSeek V4 Pro",
+    "labelKey": "flows.models.deepseekV4Pro",
+    "presentation": {
+      "descriptionKey": "flows.modelDescriptions.majorTextLlm",
+      "logoId": "deepseek"
+    },
+    "mediaType": "text",
+    "recommended": false,
+    "capabilitySchemaVersion": 3,
+    "defaultOperationId": "textToText",
+    "llm": {
+      "reasoning": {
+        "default": "medium",
+        "mandatory": false,
+        "options": [
+          "off",
+          "auto",
+          "low",
+          "medium",
+          "high"
+        ]
+      }
+    },
+    "inputSlots": [
+      {
+        "accepts": [
+          "Text"
+        ],
+        "descriptionKey": "flows.inputs.promptDescription",
+        "id": "prompt",
+        "labelKey": "flows.inputs.prompt",
+        "maxConnections": 1,
+        "maxItems": 1,
+        "minConnections": 0
+      }
+    ],
+    "settings": [
+      {
+        "default": "auto",
+        "descriptionKey": "flows.settings.responseLengthDescription",
+        "id": "responseLength",
+        "kind": "enum",
+        "labelKey": "flows.settings.responseLength",
+        "options": [
+          {
+            "labelKey": "flows.settings.responseLengths.auto",
+            "value": "auto"
+          },
+          {
+            "labelKey": "flows.settings.responseLengths.short",
+            "value": "short"
+          },
+          {
+            "labelKey": "flows.settings.responseLengths.medium",
+            "value": "medium"
+          },
+          {
+            "labelKey": "flows.settings.responseLengths.long",
+            "value": "long"
+          }
+        ]
+      },
+      {
+        "default": "medium",
+        "descriptionKey": "flows.settings.reasoningDescription",
+        "id": "reasoningMode",
+        "kind": "enum",
+        "labelKey": "flows.settings.reasoning",
+        "options": [
+          {
+            "labelKey": "flows.settings.reasoningModes.off",
+            "value": "off"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.auto",
+            "value": "auto"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.low",
+            "value": "low"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.medium",
+            "value": "medium"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.high",
+            "value": "high"
+          }
+        ]
+      }
+    ],
+    "constraints": [],
+    "operations": [
+      {
+        "descriptionKey": "flows.operations.textToTextDescription",
+        "id": "textToText",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt"
+        ],
+        "labelKey": "flows.operations.textToText",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "text"
+        },
+        "referenceLimit": {
+          "maxItems": 0,
+          "slotIds": []
+        },
+        "settingIds": [
+          "responseLength",
+          "reasoningMode"
+        ],
+        "nodeType": "llm"
+      }
+    ],
+    "bindings": [
+      {
+        "adapterVersion": "openrouter-chat-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/chat/completions",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/api/reference/overview",
+            "https://openrouter.ai/docs/guides/best-practices/reasoning-tokens",
+            "https://openrouter.ai/deepseek/deepseek-v4-pro",
+            "https://openrouter.ai/api/v1/models/deepseek/deepseek-v4-pro/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "text"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "deepseek/deepseek-v4-pro",
+        "operationId": "textToText",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "deepseek",
+        "protocol": "chat",
+        "requestProfile": {
+          "kind": "chat",
+          "maxImageReferences": 0,
+          "maxTokensParameter": "max_tokens",
+          "reasoning": true,
+          "settingIds": [
+            "responseLength",
+            "reasoningMode"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-15.19",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "max_tokens",
+          "messages",
+          "model",
+          "provider",
+          "reasoning"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "z-ai/glm-5.2",
+    "revision": 1,
+    "status": "active",
+    "displayName": "GLM-5.2",
+    "labelKey": "flows.models.glm52",
+    "presentation": {
+      "descriptionKey": "flows.modelDescriptions.majorTextLlm",
+      "logoId": "zai"
+    },
+    "mediaType": "text",
+    "recommended": false,
+    "capabilitySchemaVersion": 3,
+    "defaultOperationId": "textToText",
+    "llm": {
+      "reasoning": {
+        "default": "medium",
+        "mandatory": false,
+        "options": [
+          "off",
+          "auto",
+          "low",
+          "medium",
+          "high"
+        ]
+      }
+    },
+    "inputSlots": [
+      {
+        "accepts": [
+          "Text"
+        ],
+        "descriptionKey": "flows.inputs.promptDescription",
+        "id": "prompt",
+        "labelKey": "flows.inputs.prompt",
+        "maxConnections": 1,
+        "maxItems": 1,
+        "minConnections": 0
+      }
+    ],
+    "settings": [
+      {
+        "default": "auto",
+        "descriptionKey": "flows.settings.responseLengthDescription",
+        "id": "responseLength",
+        "kind": "enum",
+        "labelKey": "flows.settings.responseLength",
+        "options": [
+          {
+            "labelKey": "flows.settings.responseLengths.auto",
+            "value": "auto"
+          },
+          {
+            "labelKey": "flows.settings.responseLengths.short",
+            "value": "short"
+          },
+          {
+            "labelKey": "flows.settings.responseLengths.medium",
+            "value": "medium"
+          },
+          {
+            "labelKey": "flows.settings.responseLengths.long",
+            "value": "long"
+          }
+        ]
+      },
+      {
+        "default": "medium",
+        "descriptionKey": "flows.settings.reasoningDescription",
+        "id": "reasoningMode",
+        "kind": "enum",
+        "labelKey": "flows.settings.reasoning",
+        "options": [
+          {
+            "labelKey": "flows.settings.reasoningModes.off",
+            "value": "off"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.auto",
+            "value": "auto"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.low",
+            "value": "low"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.medium",
+            "value": "medium"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.high",
+            "value": "high"
+          }
+        ]
+      }
+    ],
+    "constraints": [],
+    "operations": [
+      {
+        "descriptionKey": "flows.operations.textToTextDescription",
+        "id": "textToText",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt"
+        ],
+        "labelKey": "flows.operations.textToText",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "text"
+        },
+        "referenceLimit": {
+          "maxItems": 0,
+          "slotIds": []
+        },
+        "settingIds": [
+          "responseLength",
+          "reasoningMode"
+        ],
+        "nodeType": "llm"
+      }
+    ],
+    "bindings": [
+      {
+        "adapterVersion": "openrouter-chat-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/chat/completions",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/api/reference/overview",
+            "https://openrouter.ai/docs/guides/best-practices/reasoning-tokens",
+            "https://openrouter.ai/z-ai/glm-5.2",
+            "https://openrouter.ai/api/v1/models/z-ai/glm-5.2/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "text"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "z-ai/glm-5.2",
+        "operationId": "textToText",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "alibaba",
+        "protocol": "chat",
+        "requestProfile": {
+          "kind": "chat",
+          "maxImageReferences": 0,
+          "maxTokensParameter": "max_tokens",
+          "reasoning": true,
+          "settingIds": [
+            "responseLength",
+            "reasoningMode"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-15.19",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "max_tokens",
+          "messages",
+          "model",
+          "provider",
+          "reasoning"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "qwen/qwen3.7-plus",
+    "revision": 1,
+    "status": "active",
+    "displayName": "Qwen3.7 Plus",
+    "labelKey": "flows.models.qwen37Plus",
+    "presentation": {
+      "descriptionKey": "flows.modelDescriptions.majorVisionLlm",
+      "logoId": "qwen"
+    },
+    "mediaType": "text",
+    "recommended": false,
+    "capabilitySchemaVersion": 3,
+    "defaultOperationId": "textToText",
+    "llm": {
+      "reasoning": {
+        "default": "medium",
+        "mandatory": false,
+        "options": [
+          "off",
+          "auto",
+          "low",
+          "medium",
+          "high"
+        ]
+      }
+    },
+    "inputSlots": [
+      {
+        "accepts": [
+          "Text"
+        ],
+        "descriptionKey": "flows.inputs.promptDescription",
+        "id": "prompt",
+        "labelKey": "flows.inputs.prompt",
+        "maxConnections": 1,
+        "maxItems": 1,
+        "minConnections": 0
+      },
+      {
+        "acceptedMedia": {
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ]
+        },
+        "accepts": [
+          "ImageSet"
+        ],
+        "descriptionKey": "flows.inputs.llmImageReferencesDescription",
+        "id": "imageReferences",
+        "labelKey": "flows.inputs.imageReferences",
+        "maxConnections": 1,
+        "maxItems": 8,
+        "minConnections": 0,
+        "referenceProfile": {
+          "contactSheetPolicy": "never",
+          "multipleSubjectSupport": "supported",
+          "purposes": [
+            "composition",
+            "identity",
+            "style",
+            "subject"
+          ]
+        }
+      }
+    ],
+    "settings": [
+      {
+        "default": "auto",
+        "descriptionKey": "flows.settings.responseLengthDescription",
+        "id": "responseLength",
+        "kind": "enum",
+        "labelKey": "flows.settings.responseLength",
+        "options": [
+          {
+            "labelKey": "flows.settings.responseLengths.auto",
+            "value": "auto"
+          },
+          {
+            "labelKey": "flows.settings.responseLengths.short",
+            "value": "short"
+          },
+          {
+            "labelKey": "flows.settings.responseLengths.medium",
+            "value": "medium"
+          },
+          {
+            "labelKey": "flows.settings.responseLengths.long",
+            "value": "long"
+          }
+        ]
+      },
+      {
+        "default": "medium",
+        "descriptionKey": "flows.settings.reasoningDescription",
+        "id": "reasoningMode",
+        "kind": "enum",
+        "labelKey": "flows.settings.reasoning",
+        "options": [
+          {
+            "labelKey": "flows.settings.reasoningModes.off",
+            "value": "off"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.auto",
+            "value": "auto"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.low",
+            "value": "low"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.medium",
+            "value": "medium"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.high",
+            "value": "high"
+          }
+        ]
+      }
+    ],
+    "constraints": [],
+    "operations": [
+      {
+        "descriptionKey": "flows.operations.textToTextDescription",
+        "id": "textToText",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt"
+        ],
+        "labelKey": "flows.operations.textToText",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "text"
+        },
+        "referenceLimit": {
+          "maxItems": 0,
+          "slotIds": []
+        },
+        "settingIds": [
+          "responseLength",
+          "reasoningMode"
+        ],
+        "nodeType": "llm"
+      },
+      {
+        "descriptionKey": "flows.operations.visionToTextDescription",
+        "id": "visionToText",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt",
+          "imageReferences"
+        ],
+        "labelKey": "flows.operations.visionToText",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "text"
+        },
+        "referenceLimit": {
+          "maxItems": 8,
+          "slotIds": [
+            "imageReferences"
+          ]
+        },
+        "settingIds": [
+          "responseLength",
+          "reasoningMode"
+        ],
+        "nodeType": "llm"
+      }
+    ],
+    "bindings": [
+      {
+        "adapterVersion": "openrouter-chat-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/chat/completions",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/api/reference/overview",
+            "https://openrouter.ai/docs/guides/best-practices/reasoning-tokens",
+            "https://openrouter.ai/qwen/qwen3.7-plus",
+            "https://openrouter.ai/api/v1/models/qwen/qwen3.7-plus/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "text"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "qwen/qwen3.7-plus",
+        "operationId": "textToText",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "alibaba",
+        "protocol": "chat",
+        "requestProfile": {
+          "kind": "chat",
+          "maxImageReferences": 0,
+          "maxTokensParameter": "max_tokens",
+          "reasoning": true,
+          "settingIds": [
+            "responseLength",
+            "reasoningMode"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-15.19",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "max_tokens",
+          "messages",
+          "model",
+          "provider",
+          "reasoning"
+        ]
+      },
+      {
+        "adapterVersion": "openrouter-chat-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/chat/completions",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/api/reference/overview",
+            "https://openrouter.ai/docs/guides/best-practices/reasoning-tokens",
+            "https://openrouter.ai/qwen/qwen3.7-plus",
+            "https://openrouter.ai/api/v1/models/qwen/qwen3.7-plus/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "text"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "qwen/qwen3.7-plus",
+        "operationId": "visionToText",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "alibaba",
+        "protocol": "chat",
+        "requestProfile": {
+          "kind": "chat",
+          "maxImageReferences": 8,
+          "maxTokensParameter": "max_tokens",
+          "reasoning": true,
+          "settingIds": [
+            "responseLength",
+            "reasoningMode"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-15.19",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "max_tokens",
+          "messages",
+          "model",
+          "provider",
+          "reasoning"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "moonshotai/kimi-k2.5",
+    "revision": 1,
+    "status": "active",
+    "displayName": "Kimi K2.5",
+    "labelKey": "flows.models.kimiK25",
+    "presentation": {
+      "descriptionKey": "flows.modelDescriptions.majorVisionLlm",
+      "logoId": "moonshot"
+    },
+    "mediaType": "text",
+    "recommended": false,
+    "capabilitySchemaVersion": 3,
+    "defaultOperationId": "textToText",
+    "llm": {
+      "reasoning": {
+        "default": "medium",
+        "mandatory": false,
+        "options": [
+          "off",
+          "auto",
+          "low",
+          "medium",
+          "high"
+        ]
+      }
+    },
+    "inputSlots": [
+      {
+        "accepts": [
+          "Text"
+        ],
+        "descriptionKey": "flows.inputs.promptDescription",
+        "id": "prompt",
+        "labelKey": "flows.inputs.prompt",
+        "maxConnections": 1,
+        "maxItems": 1,
+        "minConnections": 0
+      },
+      {
+        "acceptedMedia": {
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ]
+        },
+        "accepts": [
+          "ImageSet"
+        ],
+        "descriptionKey": "flows.inputs.llmImageReferencesDescription",
+        "id": "imageReferences",
+        "labelKey": "flows.inputs.imageReferences",
+        "maxConnections": 1,
+        "maxItems": 8,
+        "minConnections": 0,
+        "referenceProfile": {
+          "contactSheetPolicy": "never",
+          "multipleSubjectSupport": "supported",
+          "purposes": [
+            "composition",
+            "identity",
+            "style",
+            "subject"
+          ]
+        }
+      }
+    ],
+    "settings": [
+      {
+        "default": "auto",
+        "descriptionKey": "flows.settings.responseLengthDescription",
+        "id": "responseLength",
+        "kind": "enum",
+        "labelKey": "flows.settings.responseLength",
+        "options": [
+          {
+            "labelKey": "flows.settings.responseLengths.auto",
+            "value": "auto"
+          },
+          {
+            "labelKey": "flows.settings.responseLengths.short",
+            "value": "short"
+          },
+          {
+            "labelKey": "flows.settings.responseLengths.medium",
+            "value": "medium"
+          },
+          {
+            "labelKey": "flows.settings.responseLengths.long",
+            "value": "long"
+          }
+        ]
+      },
+      {
+        "default": "medium",
+        "descriptionKey": "flows.settings.reasoningDescription",
+        "id": "reasoningMode",
+        "kind": "enum",
+        "labelKey": "flows.settings.reasoning",
+        "options": [
+          {
+            "labelKey": "flows.settings.reasoningModes.off",
+            "value": "off"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.auto",
+            "value": "auto"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.low",
+            "value": "low"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.medium",
+            "value": "medium"
+          },
+          {
+            "labelKey": "flows.settings.reasoningModes.high",
+            "value": "high"
+          }
+        ]
+      }
+    ],
+    "constraints": [],
+    "operations": [
+      {
+        "descriptionKey": "flows.operations.textToTextDescription",
+        "id": "textToText",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt"
+        ],
+        "labelKey": "flows.operations.textToText",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "text"
+        },
+        "referenceLimit": {
+          "maxItems": 0,
+          "slotIds": []
+        },
+        "settingIds": [
+          "responseLength",
+          "reasoningMode"
+        ],
+        "nodeType": "llm"
+      },
+      {
+        "descriptionKey": "flows.operations.visionToTextDescription",
+        "id": "visionToText",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt",
+          "imageReferences"
+        ],
+        "labelKey": "flows.operations.visionToText",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "text"
+        },
+        "referenceLimit": {
+          "maxItems": 8,
+          "slotIds": [
+            "imageReferences"
+          ]
+        },
+        "settingIds": [
+          "responseLength",
+          "reasoningMode"
+        ],
+        "nodeType": "llm"
+      }
+    ],
+    "bindings": [
+      {
+        "adapterVersion": "openrouter-chat-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/chat/completions",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/api/reference/overview",
+            "https://openrouter.ai/docs/guides/best-practices/reasoning-tokens",
+            "https://openrouter.ai/moonshotai/kimi-k2.5",
+            "https://openrouter.ai/api/v1/models/moonshotai/kimi-k2.5/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "text"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "moonshotai/kimi-k2.5",
+        "operationId": "textToText",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "moonshotai/int4",
+        "protocol": "chat",
+        "requestProfile": {
+          "kind": "chat",
+          "maxImageReferences": 0,
+          "maxTokensParameter": "max_tokens",
+          "reasoning": true,
+          "settingIds": [
+            "responseLength",
+            "reasoningMode"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-15.19",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "max_tokens",
+          "messages",
+          "model",
+          "provider",
+          "reasoning"
+        ]
+      },
+      {
+        "adapterVersion": "openrouter-chat-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/chat/completions",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/api/reference/overview",
+            "https://openrouter.ai/docs/guides/best-practices/reasoning-tokens",
+            "https://openrouter.ai/moonshotai/kimi-k2.5",
+            "https://openrouter.ai/api/v1/models/moonshotai/kimi-k2.5/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "text"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "moonshotai/kimi-k2.5",
+        "operationId": "visionToText",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "moonshotai/int4",
+        "protocol": "chat",
+        "requestProfile": {
+          "kind": "chat",
+          "maxImageReferences": 8,
+          "maxTokensParameter": "max_tokens",
+          "reasoning": true,
+          "settingIds": [
+            "responseLength",
+            "reasoningMode"
+          ]
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-15.19",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "max_tokens",
+          "messages",
+          "model",
+          "provider",
+          "reasoning"
+        ]
+      }
+    ]
+  }
+]

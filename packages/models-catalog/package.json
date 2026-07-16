@@ -1,0 +1,27 @@
+{
+  "name": "@talelabs/models-catalog",
+  "type": "module",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "default": "./dist/src/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc && node dist/scripts/check.js",
+    "catalog:check": "tsx scripts/check.ts",
+    "check-types": "tsc --noEmit",
+    "dev:build": "tsc --watch --preserveWatchOutput",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.3",
+    "tsx": "^4.20.6",
+    "typescript": "5.9.2"
+  }
+}

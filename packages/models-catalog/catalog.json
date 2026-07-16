@@ -1,0 +1,10 @@
+{
+  "catalogVersion": 1,
+  "catalogRevision": "sha256:80b64b50bcf161bbb28ab109ba9700f18c2167a071f85d2f1b1fadb49c02ef89",
+  "defaults": {
+    "audio": "google/gemini-3.1-flash-tts-preview",
+    "image": "openai/gpt-image-2",
+    "text": "google/gemini-3.1-flash-lite",
+    "video": "google/veo-3.1-lite"
+  }
+}

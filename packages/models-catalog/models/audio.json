@@ -1,0 +1,149 @@
+[
+  {
+    "id": "google/gemini-3.1-flash-tts-preview",
+    "revision": 1,
+    "status": "active",
+    "displayName": "Gemini 3.1 Flash TTS Preview",
+    "labelKey": "flows.models.gemini31FlashTtsPreview",
+    "presentation": {
+      "descriptionKey": "flows.modelDescriptions.gemini31FlashTtsPreview",
+      "logoId": "gemini"
+    },
+    "mediaType": "audio",
+    "recommended": true,
+    "capabilitySchemaVersion": 3,
+    "defaultOperationId": "textToSpeech",
+    "inputSlots": [
+      {
+        "accepts": [
+          "Text"
+        ],
+        "descriptionKey": "flows.inputs.scriptDescription",
+        "id": "prompt",
+        "labelKey": "flows.inputs.script",
+        "maxConnections": 1,
+        "maxItems": 1,
+        "minConnections": 0
+      }
+    ],
+    "settings": [
+      {
+        "default": "gemini-alloy",
+        "id": "voice",
+        "kind": "enum",
+        "labelKey": "flows.settings.voice",
+        "options": [
+          {
+            "labelKey": "flows.settings.voices.geminiAlloy",
+            "value": "gemini-alloy"
+          }
+        ]
+      },
+      {
+        "advanced": true,
+        "default": "mp3",
+        "id": "outputFormat",
+        "kind": "enum",
+        "labelKey": "flows.settings.outputFormat",
+        "options": [
+          {
+            "labelKey": "flows.settings.outputFormats.mp3",
+            "value": "mp3"
+          }
+        ]
+      }
+    ],
+    "constraints": [],
+    "operations": [
+      {
+        "descriptionKey": "flows.operations.textToSpeechDescription",
+        "id": "textToSpeech",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt"
+        ],
+        "labelKey": "flows.operations.textToSpeech",
+        "nodeType": "speechGeneration",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "audio"
+        },
+        "referenceLimit": {
+          "maxItems": 0,
+          "slotIds": []
+        },
+        "requiredSettingIds": [
+          "voice"
+        ],
+        "settingIds": [
+          "voice",
+          "outputFormat"
+        ]
+      }
+    ],
+    "bindings": [
+      {
+        "adapterVersion": "openrouter-speech-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/audio/speech",
+        "evidence": {
+          "reviewedAt": "2026-07-15",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/tts",
+            "https://openrouter.ai/google/gemini-3.1-flash-tts-preview"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "bytes"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "google/gemini-3.1-flash-tts-preview",
+        "operationId": "textToSpeech",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "google-vertex",
+        "protocol": "speech",
+        "requestProfile": {
+          "kind": "speech",
+          "outputFormats": [
+            "mp3"
+          ],
+          "settingIds": [
+            "voice",
+            "outputFormat"
+          ],
+          "voiceValues": {
+            "gemini-alloy": "alloy"
+          }
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-15.19",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "input",
+          "model",
+          "response_format",
+          "voice"
+        ]
+      }
+    ]
+  }
+]
