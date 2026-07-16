@@ -73,6 +73,17 @@ export type GenerationJobStatus
     | 'pending'
     | 'running'
     | 'succeeded'
+export type GenerationProviderOutputStatus = 'discarded' | 'ready' | 'staging'
+export type GenerationProviderSettlementStatus
+  = | 'not_required'
+    | 'pending'
+    | 'settled'
+    | 'unknown'
+export type GenerationProviderCompletionStatus
+  = | 'cancelled'
+    | 'completed'
+    | 'expired'
+    | 'failed'
 export type GenerationJobSourceType
   = | 'asset'
     | 'element'
@@ -233,8 +244,18 @@ export interface GenerationJobTable {
   requestHash: string
   requestPayload: JsonValue
   triggerRunId: string | null
+  providerEndpoint: string | null
+  providerEndpointTag: string | null
+  providerGenerationId: string | null
+  providerLifecycle: JsonValue | null
   providerSubmittedAt: NullableTimestamp
   providerJobId: string | null
+  providerWaitTokenId: string | null
+  providerCompletionStatus: GenerationProviderCompletionStatus | null
+  providerCompletionEventId: string | null
+  providerCompletionReceivedAt: NullableTimestamp
+  providerSettlementResolvedAt: NullableTimestamp
+  providerSettlementStatus: Generated<GenerationProviderSettlementStatus>
   creditCost: number | null
   providerCostUsd: NullableNumericColumn
   errorCode: string | null
@@ -243,6 +264,31 @@ export interface GenerationJobTable {
   createdAt: GeneratedTimestamp
   startedAt: NullableTimestamp
   completedAt: NullableTimestamp
+}
+
+export interface GenerationProviderResultTable {
+  organizationId: string
+  jobId: string
+  expectedOutputCount: number
+  providerGenerationId: string | null
+  providerCostUsd: NullableNumericColumn
+  createdAt: GeneratedTimestamp
+}
+
+export interface GenerationProviderOutputTable {
+  organizationId: string
+  jobId: string
+  outputIndex: number
+  mediaType: GenerationJobMediaType
+  status: Generated<GenerationProviderOutputStatus>
+  delivery: 'storage' | 'text'
+  mimeType: string | null
+  storageBucket: string | null
+  storageKey: string | null
+  text: string | null
+  metadata: GeneratedJsonColumn
+  createdAt: GeneratedTimestamp
+  updatedAt: GeneratedTimestamp
 }
 
 export interface FlowRunNodeTable {
@@ -418,6 +464,8 @@ export interface Database {
   generationJobSources: GenerationJobSourceTable
   generationJobTextOutputs: GenerationJobTextOutputTable
   generationJobs: GenerationJobTable
+  generationProviderOutputs: GenerationProviderOutputTable
+  generationProviderResults: GenerationProviderResultTable
   invitation: InvitationTable
   member: MemberTable
   organization: OrganizationTable
