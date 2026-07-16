@@ -68,7 +68,7 @@ docs/db-design-planning.md
 docs/api-design-planning.md
 ```
 
-Execution rules for the active M5 milestone:
+Execution rules for the active Flow runtime:
 
 1. Every execution is a `flowRuns` row. M5 supports `node`, `downstream`,
    `upstream`, `selection`, and `all`; `tool` remains a future compatibility
@@ -90,11 +90,10 @@ Execution rules for the active M5 milestone:
    ToolVersion is an immutable, monotonically numbered published snapshot. Tool
    nodes and runs pin a concrete version; a current-version pointer is only a
    mutable default alias for new invocations.
-10. During the provider-independent engine milestone, mock only the normalized
-    provider adapter/result boundary. Mark each such replacement point with
-    `TODO(provider-integration)` as specified by `docs/mvp-execution-plan.md`.
-    Graph planning, snapshots, runs, jobs, Trigger.dev state, provenance, output
-    ingestion, and canonical Assets must remain production-shaped.
+10. Mock and real providers must implement the same normalized provider
+    adapter/result boundary. Graph planning, snapshots, runs, jobs, Trigger.dev
+    state, provenance, output ingestion, and canonical Assets remain
+    provider-independent and production-shaped.
 11. TaleLabs owns one curated, checked-in generation catalog in
     `packages/models-catalog`. `catalog.json` and the explicit
     `models/<media>.json` records assemble into one validated runtime catalog.
@@ -113,6 +112,104 @@ Execution rules for the active M5 milestone:
     cross-field constraints. Do not reduce them to independent input/setting
     lists. If routing across multiple provider endpoints, expose only their safe
     capability intersection unless the route is pinned to a concrete endpoint.
+
+## Generation runtime architecture
+
+The generation runtime must remain understandable as one direct execution path:
+
+```txt
+models catalog -> admission/planning -> immutable snapshot -> Trigger.dev
+-> provider adapter -> canonical Asset
+```
+
+Package and ownership rules:
+
+1. `@talelabs/models-catalog` is one logical source of truth. Splitting its
+   records by media category is only a physical organization detail; do not add
+   another catalog, route registry, capability registry, database configuration,
+   provider inventory, or discovery snapshot beside it.
+2. Catalog records use canonical provider-native creative IDs such as
+   `bytedance/seedance-2.0`. A model may expose ordered `bindings[]` for multiple
+   execution providers. Do not introduce a parallel `routes` concept or branded
+   aliases for the same creative model.
+3. Creative capabilities and execution bindings are separate concepts.
+   Capabilities describe what the model can do. Private bindings describe where
+   and how TaleLabs may execute it. The public API exposes only the sanitized
+   creative contract.
+4. `@talelabs/flows` owns provider-neutral graph values, validation, planning,
+   snapshots, and execution contracts. It must not import provider clients,
+   provider HTTP payloads, credentials, or transport-specific behavior.
+5. Run admission resolves one exact binding according to current catalog and
+   policy, then captures the complete resolved binding in the immutable
+   snapshot. Workers execute that captured binding and never rediscover routing
+   from the mutable current catalog.
+6. `@talelabs/trigger` owns durable orchestration, retries, cancellation,
+   reconciliation, accounting, and output finalization. Trigger tasks receive
+   tenant-scoped IDs, load validated snapshots from PostgreSQL, and do not own
+   model capabilities or provider request translation.
+7. `@talelabs/providers` owns external provider protocols, HTTP clients,
+   request/response translation, lifecycle handling, and a small explicit
+   provider registry. Keep each provider in its own cohesive directory. Do not
+   create a package per provider or let the root registry become a second model
+   catalog.
+8. Reuse one adapter for models that share a real provider protocol. Add a
+   model-specific adapter only when the external protocol or lifecycle is truly
+   different, not merely because settings or model IDs differ.
+9. Adding a provider should normally require only its private binding schema,
+   its implementation directory and registry entry, and catalog bindings. It
+   must not require changes to canvas components, graph planning, run
+   persistence, or Asset ingestion.
+10. Provider adapters receive credentials through an injected runtime contract;
+    they must not read environment variables directly. Platform credentials may
+    currently be resolved by server/worker composition, while this seam remains
+    ready for future BYOK without implementing BYOK prematurely.
+11. Never place raw provider credentials in the catalog, Flow graphs, immutable
+    snapshots, run/job rows, Trigger payloads, logs, metrics, API responses, or
+    browser state. Provider authentication policy belongs to private runtime
+    composition, not individual model bindings.
+
+## Readability and documentation rules
+
+The target architecture is not the most elaborate architecture. It is the
+smallest explicit design that remains reliable, extensible, and understandable
+to a good developer without AI assistance.
+
+1. A reader must be able to locate a model definition, trace one request through
+   the execution path above, identify the owner of each validation rule, and
+   find the provider translation without searching through parallel registries
+   or speculative abstraction layers.
+2. Prefer direct control flow, explicit names, typed data, and narrow module
+   boundaries. Reject hidden registration side effects, magic discovery,
+   circular ownership, generic configuration engines, and abstractions whose
+   behavior requires jumping through several files to understand.
+3. Keep one authoritative representation of each fact. Derived projections may
+   exist only when generated or validated from that source. Do not manually
+   maintain duplicated capabilities, defaults, bindings, request shapes, error
+   maps, or UI metadata across packages.
+4. Share stable repeated behavior, especially provider protocols, generation
+   node primitives, validation, query keys, actions, inspectors, and status
+   presentation. Do not create generic abstractions before the repeated contract
+   is understood, and do not copy existing behavior to avoid finding its owner.
+5. Each file owns one cohesive responsibility and exposes a narrow public API.
+   Split by domain ownership rather than by arbitrary numbered fragments. The
+   600-line and three-function limits below are guardrails, not substitutes for
+   single responsibility.
+6. Every authored TypeScript module begins with a short TSDoc overview explaining
+   its ownership and purpose. Use `@packageDocumentation` only for package public
+   entry points.
+7. Every exported function, type, interface, class, and constant has useful
+   TSDoc. Every field of an exported object type or interface documents what the
+   field represents, when it is populated, and any important invariant or unit.
+8. TSDoc explains contracts, ownership, invariants, units, lifecycle, and the
+   reason a boundary exists. It must not merely restate names or narrate obvious
+   implementation.
+9. Routine function bodies should be self-explanatory and free of narration.
+   Add an inline body comment only for a rare algorithmic, concurrency, provider,
+   or compatibility constraint that cannot be made clear through names and
+   extraction.
+10. Reviews must treat unnecessary indirection, duplicate sources of truth,
+    provider leakage, repeated UI/business logic, misleading documentation, and
+    high extension cost as architecture defects, even when the code compiles.
 
 ## Code structure rules
 
