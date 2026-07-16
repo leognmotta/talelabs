@@ -1,26 +1,35 @@
+/** Provider-neutral request and Asset fixtures for OpenRouter protocol scenarios. */
+
 import type {
   NormalizedGenerationMediaAsset,
   NormalizedGenerationRequest,
 } from '@talelabs/flows'
-import type { GenerationProviderRoute } from '@talelabs/openrouter'
+import type { CatalogRouteFixture } from './routes.js'
 
-import { defaultSettings, pinnedRoute } from './routes.js'
+import {
+  GENERATION_MODEL_CONTRACT_VERSION,
+} from '@talelabs/flows'
+import { MODEL_CATALOG } from '@talelabs/models-catalog'
+import { defaultSettings } from './settings.js'
 
+/** Builds one immutable normalized request matching a catalog route fixture. */
 export function providerRequest(input: {
   orderedInputs?: NormalizedGenerationRequest['orderedInputs']
-  route: GenerationProviderRoute
+  route: CatalogRouteFixture
   settings?: NormalizedGenerationRequest['settings']
 }): NormalizedGenerationRequest {
-  const route = pinnedRoute(input.route)
   return {
-    adapterRequestVersion: 1,
+    adapterRequestVersion: 3,
+    catalogRevision: MODEL_CATALOG.catalogRevision,
+    catalogVersion: MODEL_CATALOG.catalogVersion,
     itemKey: 'item-0',
-    modelContractVersion: route.modelContractVersion,
+    modelContractVersion: GENERATION_MODEL_CONTRACT_VERSION,
+    modelRevision: input.route.model.revision,
     nodeId: 'node-0',
-    operationId: route.operationId,
+    operationId: input.route.operation.id,
     orderedInputs: input.orderedInputs ?? [],
     outputCount: 1,
-    productModelId: route.productModelId,
+    productModelId: input.route.model.id,
     requestId: 'job-0',
     requestIndex: 0,
     requestPayloadHash: 'a'.repeat(64),
@@ -42,6 +51,7 @@ export function providerRequest(input: {
   }
 }
 
+/** Builds one ordered image Asset input for a target slot. */
 export function imageInput(targetSlotId = 'imageReferences'):
 NormalizedGenerationRequest['orderedInputs'][number] {
   return {
@@ -59,6 +69,7 @@ NormalizedGenerationRequest['orderedInputs'][number] {
   }
 }
 
+/** Resolves a fixture Asset to bounded metadata and a deterministic signed URL. */
 export function resolvedAsset(asset: NormalizedGenerationMediaAsset) {
   return Promise.resolve({
     assetId: asset.assetId,

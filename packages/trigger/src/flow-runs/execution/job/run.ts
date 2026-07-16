@@ -1,3 +1,9 @@
+/**
+ * Durable execution path for one admitted generation job.
+ *
+ * The task verifies captured contracts before crossing the provider spend boundary.
+ */
+
 import type { GenerationOutputType } from '@talelabs/flows'
 import type { TaskRunContext } from '@trigger.dev/sdk'
 import type { GenerationJobTaskPayload } from '../../../tasks/flow-runs/contracts.js'
@@ -14,7 +20,7 @@ import { resolveGenerationProviderAdapter } from '../../../generation/adapters/r
 import { toSafeRunFailure } from '../../../shared/failures/run-failure.js'
 import {
   assertJobMatchesSnapshotExecutionContract,
-  loadSnapshotExecutionContract,
+  loadSnapshotExecutionContext,
 } from '../../contracts/execution.js'
 import { expectedSnapshotExecutorVersion } from '../../contracts/snapshot.js'
 import { logRunEngine } from '../../observability/logging.js'
@@ -30,6 +36,7 @@ import {
   persistProviderFacts,
 } from './state/index.js'
 
+/** Executes one tenant-scoped admitted job through final Asset persistence. */
 export async function runGenerationJob(
   payload: GenerationJobTaskPayload,
   { ctx }: { ctx: TaskRunContext },
@@ -112,12 +119,13 @@ export async function runGenerationJob(
     return { state: 'failed' as const }
   }
 
-  const executionContract = await loadSnapshotExecutionContract({
+  const executionContext = await loadSnapshotExecutionContext({
     database: db,
     flowRunId: job.flowRunId,
     nodeId: job.nodeId,
     organizationId: payload.organizationId,
   })
+  const executionContract = executionContext.contract
   assertJobMatchesSnapshotExecutionContract({
     contract: executionContract,
     job,
@@ -159,24 +167,29 @@ export async function runGenerationJob(
   })
   const resolvedAdapter = resolveGenerationProviderAdapter({
     adapterVersion: job.adapterVersion,
+    catalogRevision: executionContract.catalogRevision,
+    catalogVersion: executionContract.catalogVersion,
+    executionMode: executionContext.executionMode,
     modelContractVersion: executionContract.modelContractVersion,
-    modelRegistryVersion: job.modelRegistryVersion,
+    modelRevision: executionContract.modelRevision,
     operationId: job.operation,
     organizationId: payload.organizationId,
     outputType: job.mediaType as GenerationOutputType,
     productModelId: job.model,
-    provider: executionContract.provider ?? job.provider,
+    provider: executionContract.provider,
     providerEndpoint: executionContract.providerEndpoint,
     providerEndpointTag: executionContract.providerEndpointTag,
     providerLifecycle: executionContract.providerLifecycle,
     providerModel: job.providerModel,
     providerRouteVersion: job.providerRouteVersion,
+    providerBinding: executionContract.providerBinding,
   })
   logRunEngine('info', 'generation_job.provider_route.resolved', {
     adapterVersion: resolvedAdapter.route.adapterVersion,
     generationJobId: job.id,
+    executionMode: executionContext.executionMode,
     modelContractVersion: resolvedAdapter.route.modelContractVersion,
-    modelRegistryVersion: resolvedAdapter.route.modelRegistryVersion,
+    catalogRevision: resolvedAdapter.route.catalogRevision,
     operationId: resolvedAdapter.route.operationId,
     organizationId: payload.organizationId,
     productModelId: resolvedAdapter.route.productModelId,
@@ -186,7 +199,8 @@ export async function runGenerationJob(
     providerRouteVersion: resolvedAdapter.route.providerRouteVersion,
     runId: job.flowRunId,
   })
-  const callbackUrl = resolvedAdapter.route.provider === 'openrouter'
+  const callbackUrl = executionContext.executionMode === 'live'
+    && resolvedAdapter.route.provider === 'openrouter'
     && resolvedAdapter.route.providerEndpoint === '/api/v1/videos'
     ? openRouterVideoCallbackUrl({
         generationJobId: job.id,

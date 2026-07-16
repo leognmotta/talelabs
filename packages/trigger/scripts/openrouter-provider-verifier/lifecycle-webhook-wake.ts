@@ -1,3 +1,5 @@
+/** Durable webhook-wake ordering scenario for asynchronous provider recovery. */
+
 import assert from 'node:assert/strict'
 
 import { runGenerationProviderLifecycle } from '../../src/generation/adapters/lifecycle/runner.js'
@@ -18,7 +20,7 @@ async function waitForWebhookPoll(
 /** Proves a terminal callback wake is consumed before pending recovery polls. */
 export async function verifyWebhookWakeBackoff() {
   persistedWakeAllowances.length = 0
-  const route = currentRoute('talelabs/seedance-2.0', 'textToVideo')
+  const route = currentRoute('bytedance/seedance-2.0', 'textToVideo')
   const result = await runGenerationProviderLifecycle({
     request: providerRequest({ route }),
     resolvedAdapter: {

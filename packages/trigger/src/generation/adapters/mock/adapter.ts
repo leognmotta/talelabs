@@ -1,3 +1,5 @@
+/** Deterministic zero-cost normalized provider adapter for debug runs. */
+
 import type {
   NormalizedGenerationOutput,
   NormalizedGenerationProviderAdapter,
@@ -27,7 +29,10 @@ export function createDeterministicMockAdapter(input: {
     },
     submit: async (request) => {
       if (
-        request.modelContractVersion !== input.route.modelContractVersion
+        request.catalogRevision !== input.route.catalogRevision
+        || request.catalogVersion !== input.route.catalogVersion
+        || request.modelContractVersion !== input.route.modelContractVersion
+        || request.modelRevision !== input.route.modelRevision
         || request.operationId !== input.route.operationId
         || request.productModelId !== input.route.productModelId
       ) {
@@ -37,7 +42,6 @@ export function createDeterministicMockAdapter(input: {
       for (let outputIndex = 0; outputIndex < request.outputCount; outputIndex += 1) {
         if (input.route.outputType === 'text') {
           outputs.push(await createDeterministicMockTextOutput(
-            request,
             outputIndex,
           ))
         }
@@ -45,7 +49,6 @@ export function createDeterministicMockAdapter(input: {
           const fixture = selectMockGenerationFixture({
             mediaType: input.route.outputType,
             outputIndex,
-            requestPayloadHash: request.requestPayloadHash,
           })
           outputs.push({
             mediaType: input.route.outputType,

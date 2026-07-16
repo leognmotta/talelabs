@@ -1,7 +1,11 @@
+/** Provider registry resolving captured bindings without reshaping requests. */
+
 import type {
+  FlowRunExecutionMode,
   GenerationOutputType,
   GenerationProviderLifecycle,
 } from '@talelabs/flows'
+import type { CatalogProviderBinding } from '@talelabs/models-catalog'
 
 import type {
   PinnedGenerationProviderRoute,
@@ -9,29 +13,23 @@ import type {
 } from './contracts.js'
 
 import {
-  GENERATION_MODEL_CONTRACT_VERSION,
   generationProviderLifecyclesEqual,
-  getGenerationModel,
 } from '@talelabs/flows'
 import {
-  getGenerationProviderRouteForSnapshot,
+  createOpenRouterProviderAdapter,
   OPENROUTER_PROVIDER,
 } from '@talelabs/openrouter'
 import { createGenerationAssetResolver } from '../inputs/asset-resolver.js'
 import { createDeterministicMockAdapter } from './mock/adapter.js'
-import { createOpenRouterChatAdapter } from './openrouter/chat/adapter.js'
-import { createOpenRouterImageAdapter } from './openrouter/image/adapter.js'
-import { createOpenRouterSpeechAdapter } from './openrouter/speech/adapter.js'
-import { createOpenRouterVideoAdapter } from './openrouter/video/adapter.js'
-
-const MOCK_ADAPTER_VERSION = 'mock-adapter-v1'
-const MOCK_PROVIDER = 'talelabs-mock'
 
 /** Resolves one immutable job route to its provider implementation. */
 export function resolveGenerationProviderAdapter(input: {
   adapterVersion: string
+  catalogRevision: string
+  catalogVersion: number
+  executionMode: FlowRunExecutionMode
   modelContractVersion: string
-  modelRegistryVersion: string
+  modelRevision: number
   operationId: string
   organizationId: string
   outputType: GenerationOutputType
@@ -42,32 +40,34 @@ export function resolveGenerationProviderAdapter(input: {
   providerLifecycle?: GenerationProviderLifecycle
   providerModel: string
   providerRouteVersion: string
+  providerBinding: CatalogProviderBinding
 }): ResolvedGenerationProviderAdapter {
-  const { organizationId, ...pinnedRoute } = input
+  const { executionMode, organizationId, ...pinnedRoute } = input
   const route = Object.freeze(pinnedRoute) satisfies Readonly<
     PinnedGenerationProviderRoute
   >
-  const model = getGenerationModel(
-    route.productModelId,
-    route.modelContractVersion,
-  )
-  const operation = model?.operations.find(
-    candidate => candidate.id === route.operationId,
-  )
+  const binding = route.providerBinding
   if (
-    !model
-    || !operation
-    || model.mediaType !== route.outputType
-    || !route.modelRegistryVersion
+    !route.catalogRevision
+    || !route.catalogVersion
+    || !route.modelRevision
     || !route.providerModel
     || !route.providerRouteVersion
+    || binding.adapterVersion !== route.adapterVersion
+    || binding.endpoint !== route.providerEndpoint
+    || binding.nativeModelId !== route.providerModel
+    || binding.operationId !== route.operationId
+    || binding.provider !== route.provider
+    || binding.providerTag !== route.providerEndpointTag
+    || binding.routeVersion !== route.providerRouteVersion
+    || !generationProviderLifecyclesEqual(
+      route.providerLifecycle,
+      binding.lifecycle,
+    )
   ) {
     throw new Error('generation_provider_route_invalid')
   }
-  if (
-    route.provider === MOCK_PROVIDER
-    && route.adapterVersion === MOCK_ADAPTER_VERSION
-  ) {
+  if (executionMode === 'debug') {
     return {
       adapter: createDeterministicMockAdapter({ route }),
       requiresDurableSubmissionBoundary: false,
@@ -75,53 +75,11 @@ export function resolveGenerationProviderAdapter(input: {
     }
   }
   if (route.provider === OPENROUTER_PROVIDER) {
-    const approved = getGenerationProviderRouteForSnapshot({
-      modelContractVersion: route.modelContractVersion,
-      operationId: route.operationId,
-      productModelId: route.productModelId,
-      routeVersion: route.providerRouteVersion,
-    })
-    if (
-      !approved
-      || approved.adapterVersion !== route.adapterVersion
-      || approved.providerRoute.endpoint !== route.providerEndpoint
-      || (route.providerEndpointTag === undefined
-        ? route.modelContractVersion === GENERATION_MODEL_CONTRACT_VERSION
-        : approved.providerRoute.providerTag !== route.providerEndpointTag)
-      || approved.outputType !== route.outputType
-      || approved.providerRoute.nativeModelId !== route.providerModel
-      || !generationProviderLifecyclesEqual(
-        approved.lifecycle,
-        route.providerLifecycle,
-      )
-    ) {
-      throw new Error('generation_provider_route_invalid')
-    }
     const resolveAsset = createGenerationAssetResolver(organizationId)
-    const adapter = approved.requestProfile.kind === 'image'
-      ? createOpenRouterImageAdapter({
-          profile: approved.requestProfile,
-          resolveAsset,
-          route,
-        })
-      : approved.requestProfile.kind === 'video'
-        ? createOpenRouterVideoAdapter({
-            profile: approved.requestProfile,
-            resolveAsset,
-            route,
-          })
-        : approved.requestProfile.kind === 'speech'
-          ? createOpenRouterSpeechAdapter({
-              profile: approved.requestProfile,
-              route,
-            })
-          : approved.requestProfile.kind === 'chat'
-            ? createOpenRouterChatAdapter({
-                profile: approved.requestProfile,
-                resolveAsset,
-                route,
-              })
-            : undefined
+    const adapter = createOpenRouterProviderAdapter({
+      binding,
+      resolveAsset,
+    })
     if (
       !adapter
       || !generationProviderLifecyclesEqual(
@@ -134,7 +92,7 @@ export function resolveGenerationProviderAdapter(input: {
     return {
       adapter,
       requiresDurableSubmissionBoundary:
-        approved.requiresDurableSubmissionBoundary,
+        binding.requiresDurableSubmissionBoundary,
       route,
     }
   }

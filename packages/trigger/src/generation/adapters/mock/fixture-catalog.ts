@@ -1,9 +1,13 @@
+/** Versioned private media fixtures used by deterministic debug execution. */
+
 import type { GenerationMediaType } from '@talelabs/flows'
 
 import { TALELABS_PRIVATE_BUCKET } from '@talelabs/storage'
 
+/** Version identifying the immutable debug-mode media fixture set. */
 export const MOCK_FIXTURE_CATALOG_VERSION = 'mock-generation-fixtures-v1'
 
+/** Metadata and private-storage address for one deterministic mock fixture. */
 export interface MockGenerationFixture {
   catalogVersion: typeof MOCK_FIXTURE_CATALOG_VERSION
   checksumSha256: string
@@ -21,6 +25,7 @@ export interface MockGenerationFixture {
   width?: number
 }
 
+/** Canonical fixed fixtures available to debug-mode provider adapters. */
 export const MOCK_GENERATION_FIXTURES: readonly Readonly<MockGenerationFixture>[]
   = Object.freeze([
     Object.freeze({
@@ -74,14 +79,11 @@ export const MOCK_GENERATION_FIXTURES: readonly Readonly<MockGenerationFixture>[
 export function selectMockGenerationFixture(input: {
   mediaType: GenerationMediaType
   outputIndex: number
-  requestPayloadHash: string
 }) {
   const compatible = MOCK_GENERATION_FIXTURES.filter(
     fixture => fixture.mediaType === input.mediaType,
   )
   if (!compatible.length)
     throw new Error('generation_fixture_unavailable')
-  const offset = Number.parseInt(input.requestPayloadHash.slice(0, 8), 16)
-    + input.outputIndex
-  return compatible[offset % compatible.length]!
+  return compatible[input.outputIndex % compatible.length]!
 }

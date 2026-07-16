@@ -1,53 +1,27 @@
-import type { GenerationProviderRoute } from '@talelabs/openrouter'
+/** Production-adapter fixtures backed by deterministic fake OpenRouter transport. */
+
 import type { fakeProvider } from './fake-provider.js'
+import type { CatalogRouteFixture } from './routes.js'
 
 import assert from 'node:assert/strict'
-import { createOpenRouterChatAdapter } from '../../src/generation/adapters/openrouter/chat/adapter.js'
-import { createOpenRouterImageAdapter } from '../../src/generation/adapters/openrouter/image/adapter.js'
-import { createOpenRouterSpeechAdapter } from '../../src/generation/adapters/openrouter/speech/adapter.js'
-import { createOpenRouterVideoAdapter } from '../../src/generation/adapters/openrouter/video/adapter.js'
+import { createOpenRouterProviderAdapter } from '@talelabs/openrouter'
 import { imageInput, resolvedAsset } from './requests.js'
-import { pinnedRoute } from './routes.js'
 
+/** Creates the production OpenRouter adapter wired to one fake transport. */
 export function adapterFor(
-  route: GenerationProviderRoute,
+  route: CatalogRouteFixture,
   provider: ReturnType<typeof fakeProvider>,
 ) {
-  const pinned = pinnedRoute(route)
-  const profile = route.requestProfile
-  if (profile.kind === 'image') {
-    return createOpenRouterImageAdapter({
-      client: provider.client,
-      profile,
-      resolveAsset: resolvedAsset,
-      route: pinned,
-    })
-  }
-  if (profile.kind === 'video') {
-    return createOpenRouterVideoAdapter({
-      client: provider.client,
-      profile,
-      resolveAsset: resolvedAsset,
-      route: pinned,
-    })
-  }
-  if (profile.kind === 'speech') {
-    return createOpenRouterSpeechAdapter({
-      client: provider.client,
-      profile,
-      route: pinned,
-    })
-  }
-  return createOpenRouterChatAdapter({
+  return createOpenRouterProviderAdapter({
+    binding: route.binding,
     client: provider.client,
-    profile,
     resolveAsset: resolvedAsset,
-    route: pinned,
   })
 }
 
-export function videoInputs(route: GenerationProviderRoute) {
-  const profile = route.requestProfile
+/** Builds the minimum valid video inputs required by one catalog profile. */
+export function videoInputs(route: CatalogRouteFixture) {
+  const profile = route.binding.requestProfile
   assert.equal(profile.kind, 'video')
   if (profile.kind !== 'video')
     return []

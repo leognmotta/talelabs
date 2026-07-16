@@ -1,3 +1,5 @@
+/** Durable recovery scenario for an immediate provider result already persisted. */
+
 import type { GenerationProviderLifecycleResult } from '../../src/generation/adapters/lifecycle/runner.js'
 
 import assert from 'node:assert/strict'
@@ -25,7 +27,7 @@ async function resumeImmediateCompleted(): Promise<GenerationProviderLifecycleRe
 
 /** Proves a durable completed result wins over the uncertain-submit guard. */
 export async function verifyLifecycleRecovery() {
-  const route = currentRoute('talelabs/gpt-image-2', 'textToImage')
+  const route = currentRoute('openai/gpt-image-2', 'textToImage')
   const recovered = await runGenerationProviderLifecycle({
     providerSubmittedAt: new Date(),
     request: providerRequest({ route }),

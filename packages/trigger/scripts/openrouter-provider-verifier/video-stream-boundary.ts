@@ -1,6 +1,8 @@
+/** Hard output-size boundary scenario for streamed OpenRouter video responses. */
+
 import assert from 'node:assert/strict'
 
-import { validatedOpenRouterVideoStream } from '../../src/generation/adapters/openrouter/video/stream.js'
+import { validatedOpenRouterVideoStream } from '@talelabs/openrouter'
 
 /** Proves streamed video bytes are rejected at the configured hard ceiling. */
 export async function verifyVideoStreamBoundary() {

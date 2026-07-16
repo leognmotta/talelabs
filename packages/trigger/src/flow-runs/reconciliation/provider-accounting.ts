@@ -1,10 +1,13 @@
+/** Post-success reconciliation for eventually consistent OpenRouter costs. */
+
 import type { createOpenRouterHttpClient } from '@talelabs/openrouter'
 
 import { db } from '@talelabs/db'
-import { createOpenRouterHttpClient as createClient } from '@talelabs/openrouter'
-
-import { lookupOpenRouterGenerationCost } from '../../generation/adapters/openrouter/shared/generation-metadata.js'
-import { safeProviderCost } from '../../generation/adapters/openrouter/shared/provider-facts.js'
+import {
+  createOpenRouterHttpClient as createClient,
+  lookupOpenRouterGenerationCost,
+  safeProviderCost,
+} from '@talelabs/openrouter'
 import { claimMissingOpenRouterProviderCosts } from '../persistence/accounting-queries.js'
 import { recomputeFlowRunProviderCost } from '../persistence/costs.js'
 

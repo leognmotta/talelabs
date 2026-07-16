@@ -1,5 +1,7 @@
+/** Executable snapshot aliases and worker-contract compatibility policy. */
+
 import type {
-  FlowRunSnapshotV1,
+  FlowRunSnapshot,
   ReadableFlowRunPlanSnapshot,
 } from '@talelabs/flows'
 
@@ -7,7 +9,8 @@ import { FLOW_RUN_EXECUTOR_CONTRACT_VERSION } from '../../platform/task-contract
 
 const LEGACY_LOCAL_EXECUTOR_VERSION = 'development'
 
-export type ExecutableFlowRunSnapshot = FlowRunSnapshotV1<ReadableFlowRunPlanSnapshot>
+/** Strictly readable plan snapshot accepted by the current durable worker. */
+export type ExecutableFlowRunSnapshot = FlowRunSnapshot<ReadableFlowRunPlanSnapshot>
 
 /** Keeps pre-contract M5 development snapshots readable without weakening new runs. */
 export function expectedSnapshotExecutorVersion(input: {

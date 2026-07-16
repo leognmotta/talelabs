@@ -1,8 +1,11 @@
+/** Immutable admitted provider route and resolved adapter contracts. */
+
 import type {
   GenerationOutputType,
   GenerationProviderLifecycle,
   NormalizedGenerationProviderAdapter,
 } from '@talelabs/flows'
+import type { CatalogProviderBinding } from '@talelabs/models-catalog'
 
 /**
  * Complete immutable route identity frozen at admission. Adapter factories
@@ -10,8 +13,10 @@ import type {
  */
 export interface PinnedGenerationProviderRoute {
   adapterVersion: string
+  catalogRevision: string
+  catalogVersion: number
   modelContractVersion: string
-  modelRegistryVersion: string
+  modelRevision: number
   operationId: string
   outputType: GenerationOutputType
   productModelId: string
@@ -22,8 +27,11 @@ export interface PinnedGenerationProviderRoute {
   providerLifecycle?: GenerationProviderLifecycle
   providerModel: string
   providerRouteVersion: string
+  /** Complete provider execution contract captured during admission. */
+  providerBinding: CatalogProviderBinding
 }
 
+/** Runtime provider implementation paired with its immutable admitted route. */
 export interface ResolvedGenerationProviderAdapter {
   adapter: NormalizedGenerationProviderAdapter
   requiresDurableSubmissionBoundary: boolean
