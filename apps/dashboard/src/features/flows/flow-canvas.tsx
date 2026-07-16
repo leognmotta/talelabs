@@ -1,3 +1,5 @@
+/** Interactive React Flow canvas and durable generation-run integration. */
+
 import type { Viewport } from '@xyflow/react'
 import type {
   KeyboardEvent as ReactKeyboardEvent,
@@ -12,6 +14,7 @@ import {
   ContextMenu,
   ContextMenuTrigger,
 } from '@talelabs/ui/components/context-menu'
+import { cn } from '@talelabs/ui/lib/utils'
 import {
   Background,
   BackgroundVariant,
@@ -24,6 +27,7 @@ import {
   useNodesState,
   useReactFlow,
 } from '@xyflow/react'
+import { useQueryState } from 'nuqs'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useBlocker } from 'react-router'
@@ -31,6 +35,7 @@ import { toast } from 'sonner'
 import { ACCEPTED_ASSET_MEDIA } from '../assets/asset-upload-files'
 import { FlowCanvasContext } from './flow-canvas-context'
 import { FlowCanvasContextMenuContent } from './flow-canvas-context-menu-content'
+import { FlowCanvasDebugIndicator } from './flow-canvas-debug-indicator'
 import { FlowCanvasDialogs } from './flow-canvas-dialogs'
 import { isEditableCanvasTarget } from './flow-canvas-editable-target'
 import { FlowCanvasHeader } from './flow-canvas-header'
@@ -43,6 +48,7 @@ import {
   FLOW_CANVAS_PRO_OPTIONS,
   FLOW_CANVAS_SNAP_GRID,
 } from './flow-canvas-react-flow-config'
+import { flowCanvasSearchParams } from './flow-canvas-search-params'
 import {
   toCanvasEdges,
   toCanvasNodes,
@@ -66,6 +72,7 @@ import { useFlowVisibleEdges } from './use-flow-visible-edges'
 import '@xyflow/react/dist/style.css'
 
 function FlowCanvasInner({
+  canUseDebugMode,
   flow,
   generationConfig,
   graph,
@@ -80,6 +87,11 @@ function FlowCanvasInner({
   const [edges, setEdges] = useEdgesState<CanvasEdge>(toCanvasEdges(graph.edges))
   const [assetPickerNodeId, setAssetPickerNodeId] = useState<null | string>(null)
   const [editingImageCropNodeId, setEditingImageCropNodeId] = useState<null | string>(null)
+  const [requestedDebugMode, setDebugMode] = useQueryState(
+    'debug',
+    flowCanvasSearchParams.debug,
+  )
+  const debugMode = canUseDebugMode && requestedDebugMode
   const nodesRef = useRef(nodes)
   const edgesRef = useRef(edges)
   const allowNavigationRef = useRef(false)
@@ -252,6 +264,7 @@ function FlowCanvasInner({
   } = useFlowMockRunOrchestration({
     edges,
     edgesRef,
+    executionMode: debugMode ? 'debug' : 'live',
     flowId: flow.id,
     initialActiveRunIds: graph.activeRuns.map(run => run.runId),
     initialLatestResults: graph.latestResults,
@@ -413,9 +426,10 @@ function FlowCanvasInner({
         />
         <ContextMenu>
           <ContextMenuTrigger
-            className="
-              relative size-full overflow-hidden bg-background outline-none
-            "
+            className={cn(
+              `relative size-full overflow-hidden bg-background outline-none`,
+              debugMode && 'ring-2 ring-warning/70 ring-inset',
+            )}
             render={(
               <div
                 ref={wrapperRef}
@@ -483,6 +497,11 @@ function FlowCanvasInner({
                   onUndo={undo}
                 />
               </Panel>
+              {debugMode && (
+                <Panel className="m-4!" position="top-center">
+                  <FlowCanvasDebugIndicator />
+                </Panel>
+              )}
               {selectedNode && (
                 <Panel className="m-5!" position="top-right">
                   <FlowCanvasInspectorPanel
@@ -496,8 +515,10 @@ function FlowCanvasInner({
               <Panel className="m-5!" position="bottom-center">
                 <FlowCanvasToolbar
                   canAddNodeType={canAddNodeType}
+                  canUseDebugMode={canUseDebugMode}
                   canRedo={canRedo}
                   canUndo={canUndo}
+                  debugMode={debugMode}
                   hasSelection={hasSelection}
                   isRunAllRunning={isRunAllRunning}
                   runAllDisabled={isRunAllRunning || hasUnavailableGenerationNode}
@@ -506,6 +527,7 @@ function FlowCanvasInner({
                   status={status}
                   onAddNode={addNode}
                   onDelete={deleteSelection}
+                  onDebugModeChange={setDebugMode}
                   onDuplicate={duplicateNodes}
                   onFitView={() => void reactFlow.fitView({
                     duration: 300,
@@ -560,6 +582,7 @@ function FlowCanvasInner({
   )
 }
 
+/** Renders a provider-backed React Flow canvas for one editable Flow. */
 export function FlowCanvas(props: FlowCanvasProps) {
   return (
     <ReactFlowProvider>

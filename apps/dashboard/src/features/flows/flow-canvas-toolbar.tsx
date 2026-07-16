@@ -1,9 +1,12 @@
+/** Main canvas action bar for graph editing and whole-Flow execution. */
+
 import type { FlowNodeType } from '@talelabs/flows'
 import type { FlowSaveStatus } from './flow-canvas-types'
 
 import {
   IconArrowBackUp,
   IconArrowForwardUp,
+  IconBug,
   IconCopy,
   IconFocusCentered,
   IconPlayerPlay,
@@ -17,10 +20,13 @@ import { useTranslation } from 'react-i18next'
 import { FlowCanvasNodePicker } from './flow-canvas-node-picker'
 import { FlowToolbarButton } from './flow-toolbar-button'
 
+/** Renders canvas editing actions, debug selection, and whole-Flow execution. */
 export function FlowCanvasToolbar(input: {
   canAddNodeType: (nodeType: FlowNodeType) => boolean
+  canUseDebugMode: boolean
   canRedo: boolean
   canUndo: boolean
+  debugMode: boolean
   hasSelection: boolean
   isRunAllRunning: boolean
   runAllDisabled: boolean
@@ -34,6 +40,7 @@ export function FlowCanvasToolbar(input: {
   status: FlowSaveStatus
   onAddNode: (nodeType: FlowNodeType) => void
   onDelete: () => void
+  onDebugModeChange: (enabled: boolean) => void
   onDuplicate: (nodeIds: string[]) => void
   onFitView: () => void
   onRedo: () => void
@@ -88,6 +95,17 @@ export function FlowCanvasToolbar(input: {
         onClick={input.onDelete}
       />
       <span aria-hidden className="mx-1 h-5 w-px bg-border/80" />
+      {input.canUseDebugMode && (
+        <FlowToolbarButton
+          icon={IconBug}
+          label={input.debugMode
+            ? t('flows.debugMode.disable')
+            : t('flows.debugMode.enable')}
+          pressed={input.debugMode}
+          tone="warning"
+          onClick={() => input.onDebugModeChange(!input.debugMode)}
+        />
+      )}
       <FlowToolbarButton
         disabled={input.runAllDisabled}
         icon={IconPlayerPlay}

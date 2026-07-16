@@ -1,3 +1,6 @@
+/** Canvas command orchestration for durable live and debug Flow runs. */
+
+import type { FlowRunExecutionMode } from '@talelabs/flows'
 import type { FlowLatestResult } from '@talelabs/sdk'
 import type { TFunction } from 'i18next'
 import type { RefObject } from 'react'
@@ -26,6 +29,7 @@ import { useFlowRunObservation } from './use-flow-run-observation'
 export function useFlowMockRunOrchestration(input: {
   edges: readonly CanvasEdge[]
   edgesRef: RefObject<CanvasEdge[]>
+  executionMode: FlowRunExecutionMode
   flowId: string
   initialActiveRunIds: readonly string[]
   initialLatestResults: readonly FlowLatestResult[]
@@ -41,6 +45,7 @@ export function useFlowMockRunOrchestration(input: {
   const {
     edges,
     edgesRef,
+    executionMode,
     flowId,
     initialActiveRunIds,
     initialLatestResults,
@@ -97,6 +102,7 @@ export function useFlowMockRunOrchestration(input: {
     referenceDataRef,
   ])
   const admitRun = useFlowRunAdmission({
+    executionMode,
     flowId,
     observeRun,
     organizationId,
@@ -141,7 +147,10 @@ export function useFlowMockRunOrchestration(input: {
     updateRunStatePreview(nodeId, previous.fingerprint, 'pending')
     try {
       const run = await postRunsIdRetry({
-        data: { expectedRunStatus: previous.retrySource.status },
+        data: {
+          executionMode,
+          expectedRunStatus: previous.retrySource.status,
+        },
         id: previous.retrySource.runId,
       }, {
         headers: {
@@ -155,7 +164,7 @@ export function useFlowMockRunOrchestration(input: {
       updatePreview(nodeId, previous)
       toast.error(getApiErrorMessage(error, t('flows.runStatus.failed')))
     }
-  }, [observeRun, organizationId, previewsRef, t, updatePreview, updateRunStatePreview])
+  }, [executionMode, observeRun, organizationId, previewsRef, t, updatePreview, updateRunStatePreview])
 
   const runGenerationPreview = useCallback(async (
     nodeId: string,

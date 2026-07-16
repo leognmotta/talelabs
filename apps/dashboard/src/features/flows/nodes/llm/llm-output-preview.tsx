@@ -1,3 +1,5 @@
+/** LLM generation-node preview for durable and in-flight text outputs. */
+
 import type { FlowGenerationPreview } from '../../flow-canvas-types'
 /* eslint-disable better-tailwindcss/no-unknown-classes -- React Flow uses these interaction classes as behavior hooks. */
 
@@ -8,6 +10,7 @@ import { useTranslation } from 'react-i18next'
 import { useCopyOutputText } from '../../use-copy-output-text'
 import { GenerationPreviewStage } from '../generation-preview-stage'
 
+/** Renders the latest canonical LLM output and its active run state. */
 export function LlmOutputPreview({
   currentFingerprint,
   preview,
@@ -25,6 +28,7 @@ export function LlmOutputPreview({
   const stale = Boolean(
     preview
     && preview.status === 'succeeded'
+    && !preview.resultSets?.length
     && preview.fingerprint !== currentFingerprint,
   )
   const output = preview

@@ -1,3 +1,6 @@
+/** Flow editor route screen and server-state loading boundary. */
+
+import { useGetMe } from '@talelabs/sdk'
 import { Button } from '@talelabs/ui/components/button'
 import {
   Empty,
@@ -18,6 +21,7 @@ import {
   useGenerationConfigQuery,
 } from './flow.queries'
 
+/** Loads a Flow editor route and supplies canvas data plus system privileges. */
 export function FlowEditorScreen() {
   const { t } = useTranslation()
   const { flowId } = useParams()
@@ -26,6 +30,7 @@ export function FlowEditorScreen() {
   const graphQuery = useFlowGraphQuery(flowId ?? null)
   const referencesQuery = useFlowReferencesQuery(flowId ?? null)
   const configQuery = useGenerationConfigQuery()
+  const accountQuery = useGetMe()
 
   if (!flowId)
     return <Navigate replace to="/flows" />
@@ -77,6 +82,7 @@ export function FlowEditorScreen() {
               )
             : (
                 <FlowCanvas
+                  canUseDebugMode={accountQuery.data?.isSystemAdmin === true}
                   key={`${organizationId}:${flow.id}`}
                   flow={flow}
                   generationConfig={generationConfig}
