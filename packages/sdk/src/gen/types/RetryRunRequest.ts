@@ -3,6 +3,14 @@
  * Do not edit manually.
  */
 
+export const retryRunRequestExecutionModeEnum = {
+  live: "live",
+  debug: "debug",
+} as const;
+
+export type RetryRunRequestExecutionModeEnumKey =
+  (typeof retryRunRequestExecutionModeEnum)[keyof typeof retryRunRequestExecutionModeEnum];
+
 export const retryRunRequestExpectedRunStatusEnum = {
   pending: "pending",
   running: "running",
@@ -16,6 +24,10 @@ export type RetryRunRequestExpectedRunStatusEnumKey =
   (typeof retryRunRequestExpectedRunStatusEnum)[keyof typeof retryRunRequestExpectedRunStatusEnum];
 
 export type RetryRunRequest = {
+  /**
+   * @type string | undefined
+   */
+  executionMode?: RetryRunRequestExecutionModeEnumKey;
   /**
    * @type string | undefined
    */

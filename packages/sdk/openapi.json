@@ -3115,6 +3115,13 @@
       "RetryRunRequest": {
         "type": "object",
         "properties": {
+          "executionMode": {
+            "type": "string",
+            "enum": [
+              "live",
+              "debug"
+            ]
+          },
           "expectedRunStatus": {
             "type": "string",
             "enum": [

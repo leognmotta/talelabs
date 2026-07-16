@@ -7,6 +7,7 @@ import * as z from "zod";
 import type { RetryRunRequest } from "../types/RetryRunRequest.ts";
 
 export const retryRunRequestSchema = z.object({
+  executionMode: z.optional(z.enum(["live", "debug"])),
   expectedRunStatus: z.optional(
     z.enum([
       "pending",
