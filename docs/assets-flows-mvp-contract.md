@@ -202,8 +202,9 @@ admit one generation node
 -> expose result on the node
 ```
 
-`packages/models-catalog/models.json` is the single current generation catalog.
-Its sanitized projection drives public capabilities, while admission resolves
+`packages/models-catalog` is the single current generation catalog. Its
+`catalog.json` metadata and explicit `models/<media>.json` records are assembled
+and validated as one catalog. Its sanitized projection drives public capabilities, while admission resolves
 and captures one complete private provider binding. Every active operation must
 have a compatible binding; startup, catalog checks, and production builds fail
 closed on drift. Workers execute the captured binding directly and never

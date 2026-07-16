@@ -10,8 +10,9 @@ presentation remain provider-independent.
 
 ## Executable surface
 
-`packages/models-catalog/models.json` is the single current model and private
-binding inventory. `@talelabs/flows` consumes its provider-neutral projection;
+`packages/models-catalog` is the single current model and private binding
+inventory. It assembles `catalog.json` and the explicit `models/<media>.json`
+records into one validated catalog. `@talelabs/flows` consumes its provider-neutral projection;
 admission captures a complete binding and `@talelabs/openrouter` executes it.
 Do not copy the current inventory into this document.
 

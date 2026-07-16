@@ -9,7 +9,7 @@ Scope: `packages/flows`, `packages/openrouter`, `packages/trigger`, and the mode
 Refactor the generation system around one deliberately plain mental model:
 
 ```txt
-models.json          what TaleLabs offers and where it runs
+models catalog       what TaleLabs offers and where it runs
 flows                what the graph means and what must execute
 openrouter           how OpenRouter protocols are called
 trigger              when durable work executes
@@ -21,7 +21,7 @@ system that a competent developer can trace, change, and debug without AI help.
 
 A developer should be able to answer these questions quickly:
 
-1. Which models does TaleLabs offer? Open `models.json`.
+1. Which models does TaleLabs offer? Open the matching `models/<media>.json`.
 2. What inputs and settings does a model accept? Read that model record.
 3. How is the graph planned? Follow the small provider-neutral Flow planner.
 4. How is OpenRouter called? Open one of four protocol files.
@@ -150,7 +150,7 @@ following without broad repository search or AI assistance:
 Target trace for a new run:
 
 ```txt
-models.json model record
+models/<media>.json model record
   -> Flow planner
   -> immutable run binding
   -> provider registry
@@ -218,7 +218,7 @@ Requirements:
 - Every field of an exported type or interface has field-level TSDoc explaining
   what the field is used for. Include units, nullability meaning, identifier
   namespace, persistence semantics, and versioning meaning when relevant.
-- Catalog schema types document every field represented in `models.json`, since
+- Catalog schema types document every field represented in the catalog JSON, since
   JSON itself cannot carry TSDoc comments.
 - Documentation belongs at module, declaration, and type-field boundaries. Do
   not scatter explanatory comments through function bodies or comment each
@@ -327,10 +327,16 @@ Create one intentionally small package:
 
 ```txt
 packages/models-catalog/
-  models.json
+  catalog.json
+  models/
+    image.json
+    video.json
+    text.json
+    audio.json
   package.json
   src/
     schema.ts
+    catalog-source.ts
     catalog.ts
     public-catalog.ts
     provider-binding.ts
@@ -340,12 +346,21 @@ packages/models-catalog/
 ```
 
 This is a library, not a service or framework. It owns the only manually
-maintained model inventory.
+maintained model inventory and assembles the physical JSON sources into one
+immutable runtime catalog.
 
 ### 5.1 Source-of-truth rule
 
-`models.json` is the only file in which a developer manually adds, removes,
-retires, or changes a current model.
+`packages/models-catalog` is the only authoritative catalog. A developer adds,
+removes, retires, or changes a current model in exactly one matching
+`models/<media>.json` file. `catalog.json` owns only the format version, content
+revision, and default model IDs.
+
+The split is physical organization, not a merge system. Every model record
+remains complete and explicit. Do not introduce inheritance, templates, JSON
+references, or deep-merge rules. `catalog-source.ts` combines the four media
+arrays, rejects records placed in the wrong category, and passes the complete
+result through the one runtime schema and invariant validator.
 
 Code may contain:
 
@@ -360,7 +375,7 @@ Code may contain:
 Code must not repeat model IDs, settings, capabilities, routes, or presentation
 metadata in separate registries.
 
-### 5.2 Proposed record
+### 5.2 Assembled catalog shape
 
 Keep the schema readable rather than maximally normalized:
 
@@ -504,7 +519,7 @@ compiler's perspective.
 
 OpenRouter discovery APIs are research tools, not production configuration.
 They can be used manually or by a read-only verification command when reviewing
-a model change. They must never rewrite `models.json` or silently alter runtime
+a model change. They must never rewrite the checked-in catalog sources or silently alter runtime
 behavior.
 
 The reviewed decision is encoded in JSON and ships with the application.
@@ -574,11 +589,25 @@ Owns only OpenRouter transport and protocol translation:
 packages/openrouter/src/
   adapter.ts
   protocols/
+    immediate-adapter.ts
     image.ts
+    image/
+      prepare.ts
+      execute.ts
     speech.ts
+    speech/
+      prepare.ts
+      execute.ts
+      accounting.ts
     chat.ts
+    chat/
+      prepare.ts
+      execute.ts
     video/
       index.ts
+      prepare.ts
+      execute.ts
+      poll.ts
       inputs.ts
       media.ts
       references.ts
@@ -747,7 +776,7 @@ Adding one model must not create a new historical copy of every other model.
 
 ### Move and simplify
 
-- current model capabilities and presentation data -> `models.json`;
+- current model capabilities and presentation data -> matching `models/<media>.json`;
 - current private routes -> each model's `bindings`;
 - OpenRouter request/response logic currently under Trigger -> OpenRouter
   protocol modules;
@@ -789,7 +818,8 @@ old implementation's internal shape.
 Goal: create one validated model source without switching runtime behavior.
 
 1. Add `packages/models-catalog`.
-2. Translate current active models and bindings mechanically into `models.json`.
+2. Translate current active models and bindings mechanically into the explicit
+   media catalog files.
 3. Add runtime schema parsing and uniqueness/coverage checks.
 4. Add public/private projection checks.
 5. Add a temporary parity script comparing old and new active catalog outputs.
@@ -830,14 +860,20 @@ run, and new retries do not query historical route copies.
 
 Goal: make provider code readable by protocol.
 
-1. Consolidate image request/response handling in `protocols/image.ts`.
+1. Keep `protocols/image.ts` as the image facade, with request preparation and
+   execution/response handling in the cohesive `protocols/image/` directory.
 2. Keep video submit/status handling behind the clear
-   `protocols/video/index.ts` facade, with input, media, reference, response,
-   setting, and wire-type concerns in that cohesive directory.
-3. Consolidate speech byte handling in `protocols/speech.ts`.
-4. Consolidate chat handling in `protocols/chat.ts`.
-5. Keep one client, error mapper, webhook verifier, and narrow shared types.
-6. Delete route builders and route catalogs no longer used by new snapshots.
+   `protocols/video/index.ts` facade, with preparation, execution, polling,
+   input, media, reference, response, setting, and wire-type concerns in that
+   cohesive directory.
+3. Keep `protocols/speech.ts` as the speech facade, with preparation,
+   execution, response, and accounting concerns in `protocols/speech/`.
+4. Keep `protocols/chat.ts` as the chat facade, with request preparation and
+   execution/response handling in `protocols/chat/`.
+5. Use one narrow immediate-adapter constructor for the shared
+   prepare-to-submit lifecycle without moving protocol semantics into it.
+6. Keep one client, error mapper, webhook verifier, and narrow shared types.
+7. Delete route builders and route catalogs no longer used by new snapshots.
 
 Exit gate: tracing an OpenRouter call requires opening one protocol facade and
 its narrowly owned helpers plus the client, not a model route family and a
@@ -891,7 +927,7 @@ Exit gate: one maintained catalog and one execution path exist for all new work.
 ### Add a model using an existing protocol
 
 1. Research official provider/OpenRouter capability evidence.
-2. Add one model record to `models.json`.
+2. Add one model record to the matching `models/<media>.json` file.
 3. Run catalog and fake-provider checks.
 4. Add translations only when new label/description keys are required.
 

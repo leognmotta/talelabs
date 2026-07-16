@@ -857,9 +857,10 @@ other verified model capabilities
 ```
 
 Provider documentation informs reviewed implementation decisions, but TaleLabs
-owns one curated, checked-in JSON model catalog for enabled models, labels,
-defaults, operations, typed slots, cross-field constraints, and private provider
-bindings. The runtime-validating `@talelabs/models-catalog` package exposes a
+owns one curated, checked-in model catalog assembled from explicit JSON media
+files for enabled models, labels, defaults, operations, typed slots,
+cross-field constraints, and private provider bindings. The runtime-validating
+`@talelabs/models-catalog` package exposes a
 sanitized public projection and exact admission-time binding lookup. TaleLabs
 does not maintain parallel TypeScript route registries, provider discovery
 snapshots, or dated inventories, and live provider responses never control

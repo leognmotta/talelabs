@@ -552,8 +552,9 @@ one generation node
 -> show the result on the node
 ```
 
-The validated `packages/models-catalog/models.json` document defines the
-executable surface. Every active operation must have a compatible private
+The validated catalog assembled by `packages/models-catalog` from
+`catalog.json` and `models/<media>.json` defines the executable surface. Every
+active operation must have a compatible private
 binding, and admission captures the selected binding in full. Add bounded
 responses, timeouts, explicit cancellation semantics, provider error mapping,
 write-ahead submission safety, exact endpoint pinning, and actual-or-unknown

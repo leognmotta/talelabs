@@ -28,8 +28,8 @@ parity implementation described below has now been removed.
   behavior remain covered by fake-HTTP provider scenarios.
 
 The exact active model capabilities, settings, operations, lifecycle facts,
-request profiles, evidence, and bindings were captured mechanically in
-`packages/models-catalog/models.json`. Phase 1 used a temporary parity command;
+request profiles, evidence, and bindings were captured mechanically in the
+checked-in JSON sources under `packages/models-catalog`. Phase 1 used a temporary parity command;
 Phase 7 removed it with the duplicated TypeScript registries.
 
 ## Baseline commands

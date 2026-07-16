@@ -484,9 +484,9 @@ selection spanning image, video, audio, and text generation. It has no Element
 input or live provider dependency on the canvas; private bindings are resolved
 only during run admission.
 
-TaleLabs owns one production catalog at
-`packages/models-catalog/models.json`. Provider documentation is reviewed when
-that file changes; discovery never rewrites it or changes production behavior
+TaleLabs owns one production catalog in `packages/models-catalog`, assembled
+from `catalog.json` and explicit `models/<media>.json` records. Provider
+documentation is reviewed when those sources change; discovery never rewrites them or changes production behavior
 without review and deployment.
 
 Every persisted model reference uses a canonical creative identity:

@@ -1136,7 +1136,8 @@ upgrade.
 ### `GET /config/generation`
 
 The resolved public product contract the client renders from. TaleLabs owns one
-validated `packages/models-catalog/models.json` document; live provider
+validated catalog assembled by `packages/models-catalog` from `catalog.json`
+and `models/<media>.json`; live provider
 discovery never drives the response directly. The API returns the catalog's
 sanitized projection, which omits private bindings, evidence, routing, and cost
 policy. Provider research is encoded in that reviewed catalog; TaleLabs does

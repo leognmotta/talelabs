@@ -253,7 +253,7 @@ create table "generationJobs" (
   "model" text not null,             -- canonical creative model id ('google/veo-3.1')
   "operation" text not null,         -- curated operation id ('imageToVideo', 'tts', ...)
   "providerModel" text not null,     -- native provider model id selected at admission
-  "catalogRevision" text not null,    -- deterministic sha256 identity of models.json
+  "catalogRevision" text not null,    -- deterministic sha256 identity of the assembled model catalog
   "providerRouteVersion" text not null,
   "adapterVersion" text not null,
   "providerEndpoint" text,           -- exact endpoint; required for post-reset admitted jobs
