@@ -388,6 +388,10 @@ export type GenerationConfigResponse = {
      */
     recommended: boolean;
     /**
+     * @type integer
+     */
+    revision: number;
+    /**
      * @type object
      */
     presentation: {

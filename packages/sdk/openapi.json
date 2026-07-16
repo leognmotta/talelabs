@@ -3153,6 +3153,11 @@
                 "recommended": {
                   "type": "boolean"
                 },
+                "revision": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "exclusiveMinimum": true
+                },
                 "presentation": {
                   "type": "object",
                   "properties": {
@@ -4741,6 +4746,7 @@
                 "mediaType",
                 "enabled",
                 "recommended",
+                "revision",
                 "presentation",
                 "defaultOperationId",
                 "capabilities"
