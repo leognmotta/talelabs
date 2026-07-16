@@ -3150,9 +3150,6 @@
                 "enabled": {
                   "type": "boolean"
                 },
-                "executionAvailable": {
-                  "type": "boolean"
-                },
                 "recommended": {
                   "type": "boolean"
                 },
@@ -3165,6 +3162,7 @@
                     "logoId": {
                       "type": "string",
                       "enum": [
+                        "alibaba",
                         "bytedance",
                         "claude",
                         "deepseek",
@@ -3172,14 +3170,20 @@
                         "flux",
                         "gemini",
                         "google",
+                        "kling",
                         "lightricks",
                         "llm",
+                        "microsoft",
+                        "minimax",
                         "mistral",
+                        "moonshot",
                         "nanobanana",
                         "openai",
+                        "qwen",
                         "recraft",
                         "stability",
-                        "xai"
+                        "xai",
+                        "zai"
                       ]
                     }
                   },
@@ -4736,7 +4740,6 @@
                 "labelKey",
                 "mediaType",
                 "enabled",
-                "executionAvailable",
                 "recommended",
                 "presentation",
                 "defaultOperationId",
@@ -4750,16 +4753,11 @@
               "type": "string",
               "enum": [
                 "asset",
-                "audioGeneration",
                 "imageGeneration",
                 "llm",
-                "musicGeneration",
-                "soundEffectGeneration",
                 "speechGeneration",
                 "text",
-                "videoGeneration",
-                "voiceChanger",
-                "voiceIsolation"
+                "videoGeneration"
               ]
             }
           },

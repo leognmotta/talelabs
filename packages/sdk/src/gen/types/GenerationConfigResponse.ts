@@ -16,6 +16,7 @@ export type ModelsMediaTypeEnumKey =
   (typeof modelsMediaTypeEnum)[keyof typeof modelsMediaTypeEnum];
 
 export const presentationLogoIdEnum = {
+  alibaba: "alibaba",
   bytedance: "bytedance",
   claude: "claude",
   deepseek: "deepseek",
@@ -23,14 +24,20 @@ export const presentationLogoIdEnum = {
   flux: "flux",
   gemini: "gemini",
   google: "google",
+  kling: "kling",
   lightricks: "lightricks",
   llm: "llm",
+  microsoft: "microsoft",
+  minimax: "minimax",
   mistral: "mistral",
+  moonshot: "moonshot",
   nanobanana: "nanobanana",
   openai: "openai",
+  qwen: "qwen",
   recraft: "recraft",
   stability: "stability",
   xai: "xai",
+  zai: "zai",
 } as const;
 
 export type PresentationLogoIdEnumKey =
@@ -333,16 +340,11 @@ export type ForbidOperatorEnum3Key =
 
 export const generationConfigResponseNodeTypesEnum = {
   asset: "asset",
-  audioGeneration: "audioGeneration",
   imageGeneration: "imageGeneration",
   llm: "llm",
-  musicGeneration: "musicGeneration",
-  soundEffectGeneration: "soundEffectGeneration",
   speechGeneration: "speechGeneration",
   text: "text",
   videoGeneration: "videoGeneration",
-  voiceChanger: "voiceChanger",
-  voiceIsolation: "voiceIsolation",
 } as const;
 
 export type GenerationConfigResponseNodeTypesEnumKey =
@@ -381,10 +383,6 @@ export type GenerationConfigResponse = {
      * @type boolean
      */
     enabled: boolean;
-    /**
-     * @type boolean
-     */
-    executionAvailable: boolean;
     /**
      * @type boolean
      */

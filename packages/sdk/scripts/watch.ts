@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url'
 
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const apiSource = resolve(packageRoot, '../../apps/api/src')
+const openRouterBuild = resolve(packageRoot, '../openrouter/dist')
 const sdkConfig = resolve(packageRoot, 'kubb.config.ts')
 
 let isGenerating = false
@@ -69,6 +70,7 @@ await generate()
 
 const watchers = [
   watch(apiSource, { recursive: true }, scheduleGenerate),
+  watch(openRouterBuild, { recursive: true }, scheduleGenerate),
   watch(sdkConfig, scheduleGenerate),
 ]
 
