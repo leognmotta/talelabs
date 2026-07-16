@@ -71,8 +71,81 @@ decision and remove the duplicate layers around it.
 
 ### 3.1 Optimize for reading
 
-Prefer the code path with fewer concepts and fewer jumps, even when a more
-generic design could support hypothetical future behavior.
+Readability is judged from the perspective of a competent developer who did not
+author the code. Google Engineering Practices defines excessive complexity as
+code that readers cannot understand quickly or are likely to modify
+incorrectly, and specifically warns against making code more generic than the
+current problem requires. The Google TypeScript Style Guide similarly favors
+descriptive names and the simplest type construct that expresses the contract.
+
+For this refactor, readable code has these observable properties:
+
+1. **Facts are local.** A model capability is defined in one model record. A
+   provider wire format is implemented in one protocol module. A run transition
+   is owned by one clearly named orchestration operation. Readers do not search
+   parallel registries to reconstruct one decision.
+2. **The common path is linear.** The main function reads in execution order,
+   uses early returns for invalid states, and delegates cohesive steps through
+   domain-named functions. Avoid deep nesting, recursive callback chains, and
+   control flow hidden inside generic factories or event indirection. Breaks in
+   linear flow and additional nesting increase cognitive complexity.
+3. **Names carry domain meaning.** Prefer `claimProviderCostCandidates` over
+   `processItems`, `resolveVideoBinding` over `handleConfig`, and
+   `provider-accounting.ts` over `utils.ts`. Avoid unfamiliar abbreviations,
+   broad terms such as `manager`, `helper`, `common`, or `data`, and names that
+   force the reader to inspect the implementation to discover the domain.
+4. **Side effects are visible.** Network calls, transactions, object-storage
+   writes, Trigger dispatch, and mutable state are explicit in function names,
+   signatures, and module ownership. Do not hide them in constructors, getters,
+   import-time initialization, schema parsing, or innocent-looking mapping
+   functions.
+5. **Types reduce work for the reader.** Use explicit domain interfaces and
+   discriminated unions at boundaries. Prefer a small amount of obvious
+   repetition over mapped, conditional, or highly inferred types that require
+   mental evaluation across files. Do not encode business behavior in a type
+   puzzle.
+6. **Abstractions remove demonstrated repetition.** Share stable protocol,
+   validation, and persistence behavior. Do not introduce a framework, factory,
+   strategy hierarchy, plugin contract, or generic rule engine for one
+   implementation or a hypothetical future provider.
+7. **Modules are cohesive.** A module has one domain responsibility and a narrow
+   public API. Splitting code should reduce the number of concepts per file, not
+   create pass-through wrappers or force readers to jump between numbered
+   fragments.
+8. **Change surface is predictable.** Adding a model that uses an existing
+   protocol changes one catalog record. Adding a genuinely new protocol changes
+   one provider protocol area and its verification. A small product change must
+   not require synchronized edits across Flow, Trigger, API, dashboard, and
+   several registries.
+9. **Failure behavior is direct.** Stable domain errors and state transitions
+   are visible near the operation that can fail. Do not swallow errors, return
+   ambiguous booleans, or use flags whose combinations create hidden execution
+   modes.
+10. **Comments are not required to decode routine logic.** Top-level TSDoc
+    explains contracts and intent. Function bodies remain understandable from
+    names, types, and structure, following the documentation rules in section
+    3.5.
+
+Good and bad reading paths:
+
+| Good | Bad |
+| --- | --- |
+| Open one model record to understand capabilities and routing | Search current, major, historical, presentation, route, and scenario registries |
+| Follow `admitRun -> planFlow -> resolveBinding -> executeProtocol` | Follow factories, generic dispatchers, registries, and pass-through adapters before finding the HTTP call |
+| Read explicit `image`, `video`, `speech`, and `chat` protocol modules | Read one universal adapter controlled by provider/model/mode boolean combinations |
+| See transaction and storage effects in named operations | Discover writes hidden inside mapping, parsing, constructors, or import side effects |
+| Read a concrete interface with documented fields | Evaluate nested mapped and conditional types across module boundaries |
+| Change one cohesive owner and its verification | Make matching edits in multiple packages to preserve duplicated facts |
+
+A review must reject a design as unreadable when a developer cannot answer the
+following without broad repository search or AI assistance:
+
+- Where is this product fact defined?
+- Which function owns this state transition or side effect?
+- What is the normal execution order?
+- What can fail, retry, or partially succeed?
+- Which files must change for the next expected extension?
+- Why does each abstraction exist today?
 
 Target trace for a new run:
 
@@ -118,6 +191,70 @@ Simplification must not weaken:
 - canonical generated Assets and managed folders;
 - persisted canvas outputs;
 - public generated-output storage policy.
+
+### 3.5 TSDoc is part of the design
+
+All authored TypeScript must follow the [TSDoc](https://tsdoc.org/) comment
+standard. Documentation is part of the refactor's readability contract, not an
+optional cleanup after implementation.
+
+Requirements:
+
+- Every authored source module begins with a file-level TSDoc overview using
+  `@packageDocumentation`. Explain the module's responsibility, its ownership
+  boundary, and where it sits in the common execution path.
+- Every exported function, class, type, interface, and constant has TSDoc that
+  explains what it represents or does, the contract it exposes, and any
+  important invariants or lifecycle behavior.
+- Document internal functions when their purpose, ordering, side effects,
+  concurrency behavior, failure behavior, or domain meaning is not immediately
+  clear from the implementation.
+- Function documentation describes meaningful parameters, return values,
+  durable side effects, expected errors, idempotency, transaction boundaries,
+  and retry behavior where applicable. Use standard tags such as `@param`,
+  `@returns`, and `@throws` when they improve understanding.
+- Every field of an exported type or interface has field-level TSDoc explaining
+  what the field is used for. Include units, nullability meaning, identifier
+  namespace, persistence semantics, and versioning meaning when relevant.
+- Catalog schema types document every field represented in `models.json`, since
+  JSON itself cannot carry TSDoc comments.
+- Documentation belongs at module, declaration, and type-field boundaries. Do
+  not scatter explanatory comments through function bodies or comment each
+  logic step.
+- Function bodies must be self-explanatory through precise names, cohesive
+  responsibilities, explicit domain types, and small extracted operations. If
+  the body needs routine narration to be understood, improve the code structure
+  instead of adding comments.
+- A function-body comment is allowed only as a rare exception for genuinely
+  complex behavior that cannot be made clear through naming or extraction, such
+  as a non-obvious protocol requirement, concurrency invariant, compatibility
+  workaround, or specialized algorithm. Explain why the unusual code exists,
+  not what each statement does.
+- Comments explain intent and constraints. Never add narration that merely
+  repeats a name, type annotation, or obvious statement from the code.
+- Keep documentation synchronized in the same change as behavior. A stale or
+  misleading TSDoc contract is an acceptance failure.
+
+Example:
+
+```ts
+/**
+ * Immutable provider route captured when a Flow run is admitted.
+ *
+ * Workers execute this captured binding instead of consulting the mutable
+ * model catalog, so retries preserve the exact original provider contract.
+ */
+export interface ProviderBinding {
+  /** Stable canonical `vendor/model` identity selected in the Flow. */
+  modelId: string
+
+  /** Provider implementation used for this admitted run. */
+  provider: ProviderId
+
+  /** Provider-native identifier sent over the selected wire protocol. */
+  nativeModelId: string
+}
+```
 
 ## 4. Smallest Useful Domain Model
 
@@ -832,6 +969,12 @@ It must also satisfy:
     must come from deleted concepts, not compressed or hidden code.
 12. Package READMEs explain ownership, one common trace, and one extension trace
     in language a new developer can follow.
+13. Authored TypeScript follows the TSDoc contract: modules, exported symbols,
+    and exported type fields explain their ownership, purpose, and invariants.
+14. Documentation checks or focused review confirm comments remain synchronized
+    with behavior, remain at the appropriate top-level or field boundary, and
+    do not merely restate implementation syntax. Function-body comments require
+    a concrete exceptional reason.
 
 ## 14. Non-Goals
 
@@ -883,8 +1026,20 @@ This design intentionally follows a small number of practical sources:
   Trigger remains useful for TaleLabs-owned orchestration even when providers
   own their internal media-generation jobs.
 - [Google engineering review guidance](https://google.github.io/eng-practices/review/reviewer/looking-for.html):
-  avoid over-engineering and require code to be understandable rather than
-  accepting complexity hidden behind comments.
+  complexity is code readers cannot understand quickly or are likely to modify
+  incorrectly; avoid speculative generic behavior and complexity hidden behind
+  comments.
+- [Google TypeScript Style Guide](https://google.github.io/styleguide/tsguide.html):
+  use descriptive names, named exports, clear imports, and the simplest type
+  construct that expresses the contract; mapped and conditional types impose a
+  real readability cost when readers must evaluate them across files.
+- [Sonar cognitive-complexity research](https://www.sonarsource.com/the-state-of-code-languages.pdf):
+  breaks in linear control flow and deeper nesting increase the effort required
+  to understand code, supporting the plan's preference for visible pipelines
+  and shallow control flow.
+- [Google README guidance](https://google.github.io/styleguide/docguide/READMEs.html):
+  package-level READMEs give first-time readers ownership, purpose, usage, and
+  navigation context without requiring repository-wide discovery.
 - [AWS Strangler Fig guidance](https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/strangler-fig.html):
   incrementally replace a working system instead of accepting big-bang rewrite
   risk.
