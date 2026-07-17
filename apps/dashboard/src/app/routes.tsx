@@ -334,21 +334,23 @@ export function DashboardRoutes() {
               organizationStatus={organization.organizationStatus}
               onSignOut={handleSignOut}
             >
-              <DashboardLayout
-                activeOrganizationId={organization.activeWorkspaceId}
-                currentSessionId={session.data?.session.id}
-                email={session.data?.user.email}
-                language={language.preference}
-                name={session.data?.user.name}
-                onCreateOrganization={handleCreateOrganization}
-                onOpenCookiePreferences={handleOpenCookiePreferences}
-                onLanguageChange={handleLanguageChange}
-                onProfileUpdated={handleAuthenticated}
-                onSignOut={handleSignOut}
-                onSwitchOrganization={handleSwitchOrganization}
-                onThemeChange={handleThemeChange}
-                theme={theme}
-              />
+              <Suspense fallback={<SplashScreen />}>
+                <DashboardLayout
+                  activeOrganizationId={organization.activeWorkspaceId}
+                  currentSessionId={session.data?.session.id}
+                  email={session.data?.user.email}
+                  language={language.preference}
+                  name={session.data?.user.name}
+                  onCreateOrganization={handleCreateOrganization}
+                  onOpenCookiePreferences={handleOpenCookiePreferences}
+                  onLanguageChange={handleLanguageChange}
+                  onProfileUpdated={handleAuthenticated}
+                  onSignOut={handleSignOut}
+                  onSwitchOrganization={handleSwitchOrganization}
+                  onThemeChange={handleThemeChange}
+                  theme={theme}
+                />
+              </Suspense>
             </ProtectedRoute>
           )}
         >
@@ -365,9 +367,7 @@ export function DashboardRoutes() {
                   />
                 )}
               >
-                <Suspense fallback={<SplashScreen />}>
-                  <AssetsScreen />
-                </Suspense>
+                <AssetsScreen />
               </ErrorBoundary>
             )}
           />
@@ -383,7 +383,7 @@ export function DashboardRoutes() {
                   />
                 )}
               >
-                <Suspense fallback={<SplashScreen />}><FlowsScreen /></Suspense>
+                <FlowsScreen />
               </ErrorBoundary>
             )}
           />
@@ -399,7 +399,7 @@ export function DashboardRoutes() {
                   />
                 )}
               >
-                <Suspense fallback={<SplashScreen />}><FlowEditorScreen /></Suspense>
+                <FlowEditorScreen />
               </ErrorBoundary>
             )}
           />
