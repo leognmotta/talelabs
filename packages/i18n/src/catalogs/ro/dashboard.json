@@ -1434,6 +1434,7 @@
     "internal_error": "Ceva nu a funcționat. Încercați din nou.",
     "generation_provider_route_unavailable": "Acest model sau mod de generare nu este încă disponibil pentru rulare.",
     "provider_authentication": "Furnizorul de generare nu a putut fi autentificat.",
+    "browser_openrouter_insufficient_balance": "Contul dvs. OpenRouter nu are suficiente credite. Adăugați credite în OpenRouter și încercați din nou.",
     "provider_insufficient_balance": "Ceva nu a funcționat. Contactați echipa de asistență.",
     "provider_rate_limited": "Furnizorul de generare este ocupat. Încercați din nou în scurt timp.",
     "provider_timeout": "Furnizorul de generare a răspuns prea târziu.",

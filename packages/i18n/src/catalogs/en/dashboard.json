@@ -1434,6 +1434,7 @@
     "internal_error": "Something went wrong. Try again.",
     "generation_provider_route_unavailable": "This generation model or mode is not available to run yet.",
     "provider_authentication": "The generation provider could not be authenticated.",
+    "browser_openrouter_insufficient_balance": "Your OpenRouter account does not have enough credits. Add credits in OpenRouter and try again.",
     "provider_insufficient_balance": "Something went wrong. Contact support.",
     "provider_rate_limited": "The generation provider is busy. Try again shortly.",
     "provider_timeout": "The generation provider took too long to respond.",

@@ -1434,6 +1434,7 @@
     "internal_error": "Une erreur est survenue. Réessayez.",
     "generation_provider_route_unavailable": "Ce modèle ou mode de génération n’est pas encore disponible à l’exécution.",
     "provider_authentication": "Le fournisseur de génération n’a pas pu être authentifié.",
+    "browser_openrouter_insufficient_balance": "Votre compte OpenRouter n’a pas assez de crédits. Ajoutez des crédits dans OpenRouter, puis réessayez.",
     "provider_insufficient_balance": "Un problème est survenu. Contactez l’assistance.",
     "provider_rate_limited": "Le fournisseur de génération est occupé. Réessayez dans quelques instants.",
     "provider_timeout": "Le fournisseur de génération a mis trop de temps à répondre.",

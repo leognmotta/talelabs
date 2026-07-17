@@ -1434,6 +1434,7 @@
     "internal_error": "Er is iets misgegaan. Probeer het opnieuw.",
     "generation_provider_route_unavailable": "Dit generatiemodel of deze modus kan nog niet worden uitgevoerd.",
     "provider_authentication": "De generatieprovider kon niet worden geverifieerd.",
+    "browser_openrouter_insufficient_balance": "Je OpenRouter-account heeft onvoldoende tegoed. Voeg tegoed toe in OpenRouter en probeer het opnieuw.",
     "provider_insufficient_balance": "Er is iets misgegaan. Neem contact op met support.",
     "provider_rate_limited": "De generatieprovider is bezet. Probeer het zo opnieuw.",
     "provider_timeout": "De generatieprovider deed er te lang over om te reageren.",

@@ -1434,6 +1434,7 @@
     "internal_error": "Algo correu mal. Tente novamente.",
     "generation_provider_route_unavailable": "Este modelo ou modo de geração ainda não está disponível para execução.",
     "provider_authentication": "Não foi possível autenticar o fornecedor de geração.",
+    "browser_openrouter_insufficient_balance": "A sua conta OpenRouter não tem créditos suficientes. Adicione créditos no OpenRouter e tente novamente.",
     "provider_insufficient_balance": "Ocorreu um problema. Contacte o suporte.",
     "provider_rate_limited": "O fornecedor de geração está ocupado. Tente novamente dentro de instantes.",
     "provider_timeout": "O fornecedor de geração demorou demasiado tempo a responder.",

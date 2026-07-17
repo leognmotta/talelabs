@@ -1434,6 +1434,7 @@
     "internal_error": "Etwas ist schiefgelaufen. Versuche es erneut.",
     "generation_provider_route_unavailable": "Dieses Generierungsmodell oder dieser Modus kann noch nicht ausgeführt werden.",
     "provider_authentication": "Der Generierungsanbieter konnte nicht authentifiziert werden.",
+    "browser_openrouter_insufficient_balance": "Dein OpenRouter-Konto hat nicht genügend Guthaben. Lade Guthaben bei OpenRouter auf und versuche es erneut.",
     "provider_insufficient_balance": "Etwas ist schiefgelaufen. Kontaktiere den Support.",
     "provider_rate_limited": "Der Generierungsanbieter ist ausgelastet. Versuche es gleich noch einmal.",
     "provider_timeout": "Der Generierungsanbieter hat zu lange für eine Antwort gebraucht.",
