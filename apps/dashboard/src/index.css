@@ -1,5 +1,8 @@
 #root {
-  min-height: 100vh;
+  min-height: 100svh;
+  color: var(--foreground);
+  background-color: var(--background);
+  background-image: linear-gradient(var(--background), var(--background));
 }
 
 body {

@@ -21,8 +21,7 @@ export function WorkspaceState({
 
   return (
     <main className="
-      flex min-h-screen items-center justify-center bg-background px-6 py-8
-      text-foreground
+      flex min-h-svh items-center justify-center px-6 py-8 text-foreground
     "
     >
       <section className="

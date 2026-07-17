@@ -293,10 +293,6 @@
 }
 
 @layer components {
-  [data-splash-screen] {
-    background-image: linear-gradient(var(--background), var(--background));
-  }
-
   @keyframes talelabs-splash-progress {
     0% {
       transform: translateX(-110%);

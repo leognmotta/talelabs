@@ -20,10 +20,10 @@ export function ErrorFallback({
     <main
       className={cn(
         `
-          flex min-h-80 flex-1 items-center justify-center bg-background px-6
-          py-10 text-foreground
+          flex min-h-80 flex-1 items-center justify-center px-6 py-10
+          text-foreground
         `,
-        fullScreen && 'min-h-screen',
+        fullScreen && 'min-h-svh',
       )}
     >
       <section

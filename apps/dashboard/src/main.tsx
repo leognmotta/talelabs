@@ -5,6 +5,7 @@ import { AppProviders } from './app/providers'
 import { getResolvedLocale, i18n, initializeI18n } from './i18n/i18n'
 import { applyThemePreference, getInitialThemePreference } from './shared/lib/theme'
 import '@talelabs/ui/globals.css'
+import './index.css'
 
 async function bootstrap() {
   applyThemePreference(getInitialThemePreference())

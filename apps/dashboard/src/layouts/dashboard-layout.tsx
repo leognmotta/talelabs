@@ -136,8 +136,7 @@ export function DashboardLayout({
               <FlowRunRealtimeSubscriptions organizationId={activeOrganizationId} />
             )}
             <main className="
-              flex h-svh min-h-0 flex-col overflow-hidden bg-background
-              text-foreground
+              flex h-svh min-h-0 flex-col overflow-hidden text-foreground
             "
             >
               <Outlet />
@@ -167,12 +166,8 @@ export function DashboardLayout({
               onSignOut={onSignOut}
               onSwitchOrganization={onSwitchOrganization}
             />
-            <SidebarInset className="min-h-0 overflow-hidden">
-              <div
-                className="
-                  flex min-h-0 flex-1 flex-col bg-background text-foreground
-                "
-              >
+            <SidebarInset className="min-h-0 overflow-hidden bg-transparent">
+              <div className="flex min-h-0 flex-1 flex-col text-foreground">
                 {!isFlowEditor && (
                   <>
                     <header className="
