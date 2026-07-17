@@ -33,7 +33,8 @@
     "inviteMember": "Invite member",
     "organizationSettings": "Organization settings",
     "profile": "Profile",
-    "settings": "Settings"
+    "settings": "Settings",
+    "toggleSidebar": "Toggle sidebar"
   },
   "flows": {
     "actionFailed": "The Flow action could not be completed.",

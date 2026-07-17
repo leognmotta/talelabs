@@ -21,9 +21,6 @@ import { cn } from '@talelabs/ui/lib/utils'
 import {
   lazy,
   Suspense,
-  useCallback,
-  useEffect,
-  useRef,
   useState,
 } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -39,9 +36,6 @@ import { UploadProvider } from '../features/uploads/upload-provider'
 import { AssetIcon } from '../shared/domain-icons'
 import { AppSidebar } from './app-sidebar'
 import { GlobalSearch } from './global-search'
-
-const SIDEBAR_OPEN_DELAY_MS = 60
-const SIDEBAR_CLOSE_DELAY_MS = 240
 
 function loadAssetLibraryDialog() {
   return import('../features/assets/asset-library-dialog')
@@ -87,181 +81,6 @@ export function DashboardLayout({
   const assetViewer = useAssetViewerUrlState()
   const [isAssetLibraryOpen, setIsAssetLibraryOpen] = useState(false)
   const [isTeamInviteFormOpen, setIsTeamInviteFormOpen] = useState(false)
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-  const isSidebarOpenRef = useRef(false)
-  const isSidebarPointerInsideRef = useRef(false)
-  const isSidebarOverlayOpenRef = useRef(false)
-  const sidebarPointerPositionRef = useRef<{
-    x: number
-    y: number
-  } | null>(null)
-  const sidebarOpenTimerRef = useRef<number | null>(null)
-  const sidebarCloseTimerRef = useRef<number | null>(null)
-
-  const setSidebarOpenState = useCallback((open: boolean) => {
-    isSidebarOpenRef.current = open
-    setIsSidebarOpen(open)
-  }, [])
-
-  const clearSidebarOpenTimer = useCallback(() => {
-    if (sidebarOpenTimerRef.current === null)
-      return
-
-    window.clearTimeout(sidebarOpenTimerRef.current)
-    sidebarOpenTimerRef.current = null
-  }, [])
-
-  const clearSidebarCloseTimer = useCallback(() => {
-    if (sidebarCloseTimerRef.current === null)
-      return
-
-    window.clearTimeout(sidebarCloseTimerRef.current)
-    sidebarCloseTimerRef.current = null
-  }, [])
-
-  const isPointerOverSidebar = useCallback(() => {
-    const pointerPosition = sidebarPointerPositionRef.current
-
-    if (!pointerPosition)
-      return isSidebarPointerInsideRef.current
-
-    return document
-      .elementsFromPoint(pointerPosition.x, pointerPosition.y)
-      .some(element => Boolean(element.closest('[data-slot="sidebar"]')))
-  }, [])
-
-  const closeSidebarNow = useCallback(() => {
-    clearSidebarOpenTimer()
-    clearSidebarCloseTimer()
-    setSidebarOpenState(false)
-  }, [clearSidebarCloseTimer, clearSidebarOpenTimer, setSidebarOpenState])
-
-  const openSidebarWithIntent = useCallback(() => {
-    clearSidebarCloseTimer()
-
-    if (isSidebarOpenRef.current || sidebarOpenTimerRef.current !== null)
-      return
-
-    sidebarOpenTimerRef.current = window.setTimeout(() => {
-      setSidebarOpenState(true)
-      sidebarOpenTimerRef.current = null
-    }, SIDEBAR_OPEN_DELAY_MS)
-  }, [clearSidebarCloseTimer, setSidebarOpenState])
-
-  const closeSidebarWithIntent = useCallback(
-    (options?: { force?: boolean }) => {
-      clearSidebarOpenTimer()
-
-      if (!options?.force && isSidebarOverlayOpenRef.current)
-        return
-
-      if (!isSidebarOpenRef.current || sidebarCloseTimerRef.current !== null)
-        return
-
-      sidebarCloseTimerRef.current = window.setTimeout(() => {
-        setSidebarOpenState(false)
-        sidebarCloseTimerRef.current = null
-      }, SIDEBAR_CLOSE_DELAY_MS)
-    },
-    [clearSidebarOpenTimer, setSidebarOpenState],
-  )
-
-  const handleSidebarPointerEnter = useCallback(() => {
-    isSidebarPointerInsideRef.current = true
-    openSidebarWithIntent()
-  }, [openSidebarWithIntent])
-
-  const handleSidebarPointerLeave = useCallback(() => {
-    isSidebarPointerInsideRef.current = false
-    closeSidebarWithIntent()
-  }, [closeSidebarWithIntent])
-
-  const handleSidebarOverlayOpenChange = useCallback(
-    (open: boolean) => {
-      isSidebarOverlayOpenRef.current = open
-
-      if (open) {
-        clearSidebarCloseTimer()
-        setSidebarOpenState(true)
-        return
-      }
-
-      window.requestAnimationFrame(() => {
-        const isPointerInsideSidebar = isPointerOverSidebar()
-        isSidebarPointerInsideRef.current = isPointerInsideSidebar
-
-        if (!isPointerInsideSidebar)
-          closeSidebarNow()
-      })
-    },
-    [
-      clearSidebarCloseTimer,
-      closeSidebarNow,
-      isPointerOverSidebar,
-      setSidebarOpenState,
-    ],
-  )
-
-  useEffect(() => {
-    function handleDocumentPointerDown(event: PointerEvent) {
-      sidebarPointerPositionRef.current = {
-        x: event.clientX,
-        y: event.clientY,
-      }
-
-      if (!isSidebarOverlayOpenRef.current)
-        return
-
-      const target = event.target
-
-      if (!(target instanceof Element))
-        return
-
-      const isInsideSidebarSurface = Boolean(
-        target.closest(
-          '[data-slot="sidebar"], [data-slot="dropdown-menu-content"]',
-        ),
-      )
-
-      if (isInsideSidebarSurface)
-        return
-
-      isSidebarOverlayOpenRef.current = false
-      isSidebarPointerInsideRef.current = false
-
-      closeSidebarNow()
-    }
-
-    function handleDocumentPointerMove(event: PointerEvent) {
-      sidebarPointerPositionRef.current = {
-        x: event.clientX,
-        y: event.clientY,
-      }
-    }
-
-    document.addEventListener('pointerdown', handleDocumentPointerDown, {
-      capture: true,
-    })
-    document.addEventListener('pointermove', handleDocumentPointerMove, {
-      capture: true,
-    })
-
-    return () => {
-      document.removeEventListener('pointerdown', handleDocumentPointerDown, {
-        capture: true,
-      })
-      document.removeEventListener('pointermove', handleDocumentPointerMove, {
-        capture: true,
-      })
-    }
-  }, [closeSidebarNow])
-
-  useEffect(() => {
-    return () => {
-      clearSidebarOpenTimer()
-      clearSidebarCloseTimer()
-    }
-  }, [clearSidebarCloseTimer, clearSidebarOpenTimer])
 
   function handleOpenSettings(nextTab: SettingsTab = 'general') {
     void setSettingsTab(nextTab)
@@ -337,11 +156,7 @@ export function DashboardLayout({
           {activeOrganizationId && (
             <FlowRunRealtimeSubscriptions organizationId={activeOrganizationId} />
           )}
-          <SidebarProvider
-            className="h-svh min-h-0 overflow-hidden"
-            open={isSidebarOpen}
-            onOpenChange={setSidebarOpenState}
-          >
+          <SidebarProvider className="h-svh min-h-0 overflow-hidden">
             <AppSidebar
               activeOrganizationId={activeOrganizationId}
               email={email}
@@ -350,10 +165,7 @@ export function DashboardLayout({
               onOpenInviteMemberSettings={handleOpenInviteMemberSettings}
               onOpenSettings={handleOpenSettings}
               onSignOut={onSignOut}
-              onSidebarOverlayOpenChange={handleSidebarOverlayOpenChange}
               onSwitchOrganization={onSwitchOrganization}
-              onPointerEnter={handleSidebarPointerEnter}
-              onPointerLeave={handleSidebarPointerLeave}
             />
             <SidebarInset className="min-h-0 overflow-hidden">
               <div
@@ -367,7 +179,9 @@ export function DashboardLayout({
                       flex h-16 shrink-0 items-center gap-3 px-6
                     "
                     >
-                      <SidebarTrigger className="md:hidden" />
+                      <SidebarTrigger
+                        aria-label={t('navigation.toggleSidebar')}
+                      />
                       <div className="flex min-w-0 flex-1 justify-center">
                         <GlobalSearch
                           onOpenInviteMemberSettings={

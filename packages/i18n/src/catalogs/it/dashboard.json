@@ -33,7 +33,8 @@
     "inviteMember": "Invita membro",
     "organizationSettings": "Impostazioni organizzazione",
     "profile": "Profilo",
-    "settings": "Impostazioni"
+    "settings": "Impostazioni",
+    "toggleSidebar": "Mostra o nascondi la barra laterale"
   },
   "flows": {
     "actionFailed": "Non è stato possibile completare l’azione sul Flusso.",

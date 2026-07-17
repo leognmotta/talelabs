@@ -33,7 +33,8 @@
     "inviteMember": "Inviter un membre",
     "organizationSettings": "Paramètres de l’organisation",
     "profile": "Profil",
-    "settings": "Paramètres"
+    "settings": "Paramètres",
+    "toggleSidebar": "Afficher ou masquer la barre latérale"
   },
   "flows": {
     "actionFailed": "L’action sur le Flux n’a pas pu aboutir.",

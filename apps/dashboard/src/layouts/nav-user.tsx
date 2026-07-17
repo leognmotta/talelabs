@@ -31,14 +31,12 @@ import { useTranslation } from 'react-i18next'
 export function NavUser({
   onOpenInviteMemberSettings,
   onOpenSettings,
-  onDropdownOpenChange,
   onSignOut,
   signOutIcon: SignOutIcon,
   user,
 }: {
   onOpenInviteMemberSettings: () => void
   onOpenSettings: (tab?: SettingsTab) => void
-  onDropdownOpenChange: (open: boolean) => void
   onSignOut: () => Promise<void>
   signOutIcon: TablerIcon
   user: {
@@ -58,7 +56,7 @@ export function NavUser({
   return (
     <SidebarMenu>
       <SidebarMenuItem>
-        <DropdownMenu onOpenChange={onDropdownOpenChange}>
+        <DropdownMenu>
           <DropdownMenuTrigger
             render={(
               <SidebarMenuButton

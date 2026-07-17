@@ -33,7 +33,8 @@
     "inviteMember": "Invită membru",
     "organizationSettings": "Setările organizației",
     "profile": "Profil",
-    "settings": "Setări"
+    "settings": "Setări",
+    "toggleSidebar": "Afișează sau ascunde bara laterală"
   },
   "flows": {
     "actionFailed": "Acțiunea asupra fluxului nu a putut fi finalizată.",

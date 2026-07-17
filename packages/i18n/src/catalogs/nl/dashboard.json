@@ -33,7 +33,8 @@
     "inviteMember": "Lid uitnodigen",
     "organizationSettings": "Organisatie-instellingen",
     "profile": "Profiel",
-    "settings": "Instellingen"
+    "settings": "Instellingen",
+    "toggleSidebar": "Zijbalk tonen of verbergen"
   },
   "flows": {
     "actionFailed": "De workflowactie kon niet worden voltooid.",

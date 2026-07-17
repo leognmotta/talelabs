@@ -33,7 +33,8 @@
     "inviteMember": "Mitglied einladen",
     "organizationSettings": "Organisationseinstellungen",
     "profile": "Profil",
-    "settings": "Einstellungen"
+    "settings": "Einstellungen",
+    "toggleSidebar": "Seitenleiste ein- oder ausblenden"
   },
   "flows": {
     "actionFailed": "Die Workflow-Aktion konnte nicht abgeschlossen werden.",

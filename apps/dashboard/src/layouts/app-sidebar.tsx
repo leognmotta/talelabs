@@ -26,7 +26,6 @@ export function AppSidebar({
   onCreateOrganization,
   onOpenInviteMemberSettings,
   onOpenSettings,
-  onSidebarOverlayOpenChange,
   onSignOut,
   onSwitchOrganization,
   ...props
@@ -37,7 +36,6 @@ export function AppSidebar({
   onCreateOrganization: (name: string, slug: string) => Promise<string | null>
   onOpenInviteMemberSettings: () => void
   onOpenSettings: (tab?: SettingsTab) => void
-  onSidebarOverlayOpenChange: (open: boolean) => void
   onSignOut: () => Promise<void>
   onSwitchOrganization: (organizationId: string) => Promise<string | null>
 }) {
@@ -72,7 +70,6 @@ export function AppSidebar({
         <OrganizationSwitcher
           activeOrganizationId={activeOrganizationId}
           onCreateOrganization={onCreateOrganization}
-          onDropdownOpenChange={onSidebarOverlayOpenChange}
           onSwitchOrganization={onSwitchOrganization}
         />
       </SidebarHeader>
@@ -100,7 +97,6 @@ export function AppSidebar({
           }}
           onOpenInviteMemberSettings={onOpenInviteMemberSettings}
           onOpenSettings={onOpenSettings}
-          onDropdownOpenChange={onSidebarOverlayOpenChange}
           onSignOut={onSignOut}
           signOutIcon={IconLogout}
         />

@@ -64,12 +64,10 @@ type CreateOrganizationFormValues = z.infer<typeof createOrganizationSchema>
 export function OrganizationSwitcher({
   activeOrganizationId,
   onCreateOrganization,
-  onDropdownOpenChange,
   onSwitchOrganization,
 }: {
   activeOrganizationId: string | null
   onCreateOrganization: (name: string, slug: string) => Promise<string | null>
-  onDropdownOpenChange: (open: boolean) => void
   onSwitchOrganization: (organizationId: string) => Promise<string | null>
 }) {
   const { t } = useTranslation()
@@ -149,7 +147,7 @@ export function OrganizationSwitcher({
     <>
       <SidebarMenu>
         <SidebarMenuItem>
-          <DropdownMenu onOpenChange={onDropdownOpenChange}>
+          <DropdownMenu>
             <DropdownMenuTrigger
               render={(
                 <SidebarMenuButton

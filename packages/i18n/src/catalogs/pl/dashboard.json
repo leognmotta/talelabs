@@ -33,7 +33,8 @@
     "inviteMember": "Zaproś członka",
     "organizationSettings": "Ustawienia organizacji",
     "profile": "Profil",
-    "settings": "Ustawienia"
+    "settings": "Ustawienia",
+    "toggleSidebar": "Pokaż lub ukryj pasek boczny"
   },
   "flows": {
     "actionFailed": "Nie udało się wykonać działania w przepływie pracy.",
