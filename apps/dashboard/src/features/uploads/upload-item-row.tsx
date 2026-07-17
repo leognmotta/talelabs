@@ -1,3 +1,5 @@
+/** One upload queue item's progress, retry, cancellation, and failure feedback. */
+
 import type { UploadItemState, UploadStatus } from './upload.types'
 
 import { IconRefresh, IconX } from '@tabler/icons-react'
@@ -5,10 +7,14 @@ import { Button } from '@talelabs/ui/components/button'
 import { Progress } from '@talelabs/ui/components/progress'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { formatAssetSize } from '../assets/asset-formatters'
+import { formatAssetSize } from '../assets/media/asset-formatters'
+import { cancelUploadItem } from './cancellation/upload-item-cancellation'
+import {
+  dismissUploadItem,
+  retryUploadItem,
+} from './queue/upload-queue-recovery'
 import { getUploadErrorMessage } from './upload-error-message'
 import { UploadStatusIcon } from './upload-item-status'
-import { uploadManager } from './upload-manager'
 import { isActiveUploadStatus } from './upload.types'
 
 const STAGE_KEYS: Record<UploadStatus, string> = {
@@ -22,6 +28,7 @@ const STAGE_KEYS: Record<UploadStatus, string> = {
   uploading: 'uploads.stages.uploading',
 }
 
+/** Keeps controls available while transfers continue independently of navigation. */
 export function UploadItemRow({ item }: { item: UploadItemState }) {
   const { i18n, t } = useTranslation()
   const percentage = useMemo(
@@ -72,7 +79,7 @@ export function UploadItemRow({ item }: { item: UploadItemState }) {
             size="icon-xs"
             type="button"
             variant="ghost"
-            onClick={() => uploadManager.cancelItem(item.id)}
+            onClick={() => cancelUploadItem(item.id)}
           >
             <IconX />
           </Button>
@@ -84,7 +91,7 @@ export function UploadItemRow({ item }: { item: UploadItemState }) {
               size="xs"
               type="button"
               variant="ghost"
-              onClick={() => uploadManager.retryItem(item.id)}
+              onClick={() => retryUploadItem(item.id)}
             >
               <IconRefresh data-icon="inline-start" />
               {t('common.retry')}
@@ -94,7 +101,7 @@ export function UploadItemRow({ item }: { item: UploadItemState }) {
               size="xs"
               type="button"
               variant="ghost"
-              onClick={() => uploadManager.dismissItem(item.id)}
+              onClick={() => dismissUploadItem(item.id)}
             >
               <IconX data-icon="inline-start" />
               {t('uploads.dismiss')}

@@ -1,21 +1,23 @@
+/** Query-cache side effects invoked only after upload persistence commits. */
+
 import type { Asset, Folder } from '@talelabs/sdk'
 import type { QueryClient } from '@tanstack/react-query'
 
-import { postFolders } from '@talelabs/sdk'
-import { getOrganizationRequestHeaders } from '../../shared/lib/organization-request'
-import { invalidateAssetCache, upsertAssetCache } from '../assets/asset-query-cache'
-import { assetQueryKeys } from '../assets/asset-query-keys'
-import { invalidateFolderCache, upsertFolderCache } from '../assets/folder-query-cache'
-import { invalidateElementCache } from '../elements/element-query-cache'
-import { flowQueryKeys } from '../flows/flow-query-keys'
+import { createAssetRegisteredCacheHandler } from './upload-asset-cache'
+import { createElementLinkedCacheHandler } from './upload-element-cache'
+import { createUploadFolderCacheHandler } from './upload-folder-cache'
 
+/** Cache operations required by folder preparation and canonical Asset registration. */
 export interface UploadCacheAdapter {
+  /** Upserts the registered Asset and refreshes affected Asset/folder collections. */
   assetRegistered: (organizationId: string, asset: Asset) => Promise<void>
+  /** Creates one folder and publishes it into the organization folder cache. */
   createFolder: (
     organizationId: string,
     input: { name: string, parentId: null | string },
     signal: AbortSignal,
   ) => Promise<Folder>
+  /** Refreshes Element, Asset, and Flow references after an Element link commits. */
   elementLinked: (
     organizationId: string,
     elementId: string,
@@ -23,42 +25,13 @@ export interface UploadCacheAdapter {
   ) => Promise<void>
 }
 
+/** Binds upload commit events to the mounted dashboard QueryClient. */
 export function createUploadCacheAdapter(
   queryClient: QueryClient,
 ): UploadCacheAdapter {
   return {
-    async assetRegistered(organizationId, asset) {
-      upsertAssetCache(queryClient, organizationId, asset)
-      await Promise.all([
-        invalidateAssetCache(queryClient, organizationId, 'none'),
-        invalidateFolderCache(queryClient, organizationId),
-      ])
-    },
-    async createFolder(organizationId, input, signal) {
-      const folder = await postFolders({ data: input }, {
-        headers: getOrganizationRequestHeaders(organizationId),
-        signal,
-      })
-      upsertFolderCache(queryClient, organizationId, folder)
-      await queryClient.invalidateQueries({
-        queryKey: assetQueryKeys.folders(organizationId),
-        refetchType: 'none',
-      })
-      return folder
-    },
-    async elementLinked(organizationId, elementId, assetId) {
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: assetQueryKeys.detail(organizationId, assetId),
-        }),
-        queryClient.invalidateQueries({
-          queryKey: assetQueryKeys.lists(organizationId),
-        }),
-        invalidateElementCache(queryClient, organizationId, { elementId }),
-        queryClient.invalidateQueries({
-          queryKey: flowQueryKeys.allReferences(organizationId),
-        }),
-      ])
-    },
+    assetRegistered: createAssetRegisteredCacheHandler(queryClient),
+    createFolder: createUploadFolderCacheHandler(queryClient),
+    elementLinked: createElementLinkedCacheHandler(queryClient),
   }
 }

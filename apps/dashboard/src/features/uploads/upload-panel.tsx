@@ -1,3 +1,5 @@
+/** Global upload queue presentation grouped by enqueue batch. */
+
 import type { UploadItemState } from './upload.types'
 
 import { IconRefresh } from '@tabler/icons-react'
@@ -11,11 +13,14 @@ import {
 } from '@talelabs/ui/components/sheet'
 import { useTranslation } from 'react-i18next'
 import { useStore } from 'zustand'
+import { cancelUploadBatch } from './cancellation/upload-item-cancellation'
+import { retryUploadBatch } from './queue/upload-queue-recovery'
+import { clearSettledUploads } from './queue/upload-queue-settled'
 import { UploadItemRow } from './upload-item-row'
-import { uploadManager } from './upload-manager'
 import { uploadStore } from './upload-store'
 import { isActiveUploadStatus } from './upload.types'
 
+/** Exposes progress and recovery controls for the active organization's batches. */
 export function UploadPanel({ organizationId }: { organizationId: string }) {
   const { t } = useTranslation()
   const batches = useStore(uploadStore, state => state.batchOrder
@@ -41,7 +46,7 @@ export function UploadPanel({ organizationId }: { organizationId: string }) {
               size="sm"
               type="button"
               variant="ghost"
-              onClick={() => uploadManager.clearSettled(organizationId)}
+              onClick={() => clearSettledUploads(organizationId)}
             >
               {t('uploads.clearFinished')}
             </Button>
@@ -92,7 +97,7 @@ export function UploadPanel({ organizationId }: { organizationId: string }) {
                           size="xs"
                           type="button"
                           variant="ghost"
-                          onClick={() => uploadManager.retryBatch(batch.id)}
+                          onClick={() => retryUploadBatch(batch.id)}
                         >
                           <IconRefresh data-icon="inline-start" />
                           {t('uploads.retryFailed')}
@@ -103,7 +108,7 @@ export function UploadPanel({ organizationId }: { organizationId: string }) {
                           size="xs"
                           type="button"
                           variant="ghost"
-                          onClick={() => uploadManager.cancelBatch(batch.id)}
+                          onClick={() => cancelUploadBatch(batch.id)}
                         >
                           {t('uploads.cancelBatch')}
                         </Button>
