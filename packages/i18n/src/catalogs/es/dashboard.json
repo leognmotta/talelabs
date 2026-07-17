@@ -549,6 +549,13 @@
     "runStatus": {
       "failed": "La generación falló"
     },
+    "browserExecution": {
+      "credential_required": "Añade una clave de API de OpenRouter en Almacenamiento seguro para ejecutar en este navegador.",
+      "credential_store_unavailable": "El almacenamiento seguro de claves del navegador no está disponible. Abre Almacenamiento seguro e inténtalo de nuevo.",
+      "failed": "La ejecución en el navegador se detuvo. Mantén esta pestaña abierta e inténtalo de nuevo.",
+      "openSecureStore": "Abrir Almacenamiento seguro",
+      "retrying": "La ejecución en el navegador perdió la conexión y está reintentando. Mantén esta pestaña abierta."
+    },
     "saveStatus": {
       "saved": "Guardado",
       "saving": "Guardando...",

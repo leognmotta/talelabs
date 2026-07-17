@@ -549,6 +549,13 @@
     "runStatus": {
       "failed": "Generowanie nie powiodło się"
     },
+    "browserExecution": {
+      "credential_required": "Dodaj klucz API OpenRouter w Bezpiecznej pamięci, aby uruchamiać zadania w tej przeglądarce.",
+      "credential_store_unavailable": "Bezpieczna pamięć kluczy przeglądarki jest niedostępna. Otwórz Bezpieczną pamięć i spróbuj ponownie.",
+      "failed": "Wykonywanie w przeglądarce zostało zatrzymane. Pozostaw tę kartę otwartą i spróbuj ponownie.",
+      "openSecureStore": "Otwórz Bezpieczną pamięć",
+      "retrying": "Wykonywanie w przeglądarce utraciło połączenie i próbuje ponownie. Pozostaw tę kartę otwartą."
+    },
     "saveStatus": {
       "saved": "Zapisano",
       "saving": "Zapisywanie...",

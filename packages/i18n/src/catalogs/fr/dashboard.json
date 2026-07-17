@@ -549,6 +549,13 @@
     "runStatus": {
       "failed": "La génération a échoué"
     },
+    "browserExecution": {
+      "credential_required": "Ajoutez une clé API OpenRouter dans le Stockage sécurisé pour exécuter dans ce navigateur.",
+      "credential_store_unavailable": "Le stockage sécurisé des clés du navigateur est indisponible. Ouvrez le Stockage sécurisé et réessayez.",
+      "failed": "L’exécution dans le navigateur s’est arrêtée. Gardez cet onglet ouvert et réessayez.",
+      "openSecureStore": "Ouvrir le Stockage sécurisé",
+      "retrying": "L’exécution dans le navigateur a perdu la connexion et réessaie. Gardez cet onglet ouvert."
+    },
     "saveStatus": {
       "saved": "Enregistré",
       "saving": "Enregistrement...",

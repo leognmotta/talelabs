@@ -549,6 +549,13 @@
     "runStatus": {
       "failed": "Generatie mislukt"
     },
+    "browserExecution": {
+      "credential_required": "Voeg in Veilige opslag een OpenRouter-API-sleutel toe om in deze browser uit te voeren.",
+      "credential_store_unavailable": "De veilige sleutelopslag van de browser is niet beschikbaar. Open Veilige opslag en probeer het opnieuw.",
+      "failed": "De uitvoering in de browser is gestopt. Houd dit tabblad open en probeer het opnieuw.",
+      "openSecureStore": "Veilige opslag openen",
+      "retrying": "De uitvoering in de browser heeft de verbinding verloren en probeert het opnieuw. Houd dit tabblad open."
+    },
     "saveStatus": {
       "saved": "Opgeslagen",
       "saving": "Opslaan...",

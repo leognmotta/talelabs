@@ -549,6 +549,13 @@
     "runStatus": {
       "failed": "Generierung fehlgeschlagen"
     },
+    "browserExecution": {
+      "credential_required": "Füge im Sicheren Speicher einen OpenRouter-API-Schlüssel hinzu, um in diesem Browser auszuführen.",
+      "credential_store_unavailable": "Der sichere Schlüsselspeicher des Browsers ist nicht verfügbar. Öffne den Sicheren Speicher und versuche es erneut.",
+      "failed": "Die Browser-Ausführung wurde beendet. Lass diesen Tab geöffnet und versuche es erneut.",
+      "openSecureStore": "Sicheren Speicher öffnen",
+      "retrying": "Die Browser-Ausführung hat die Verbindung verloren und versucht es erneut. Lass diesen Tab geöffnet."
+    },
     "saveStatus": {
       "saved": "Gespeichert",
       "saving": "Wird gespeichert...",

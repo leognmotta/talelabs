@@ -549,6 +549,13 @@
     "runStatus": {
       "failed": "Generarea a eșuat"
     },
+    "browserExecution": {
+      "credential_required": "Adăugați o cheie API OpenRouter în Stocarea securizată pentru a rula în acest browser.",
+      "credential_store_unavailable": "Stocarea securizată a cheilor din browser nu este disponibilă. Deschideți Stocarea securizată și încercați din nou.",
+      "failed": "Execuția în browser s-a oprit. Păstrați această filă deschisă și încercați din nou.",
+      "openSecureStore": "Deschideți Stocarea securizată",
+      "retrying": "Execuția în browser a pierdut conexiunea și încearcă din nou. Păstrați această filă deschisă."
+    },
     "saveStatus": {
       "saved": "Salvat",
       "saving": "Se salvează...",

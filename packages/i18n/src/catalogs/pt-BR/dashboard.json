@@ -549,6 +549,13 @@
     "runStatus": {
       "failed": "Falha na geração"
     },
+    "browserExecution": {
+      "credential_required": "Adicione uma chave de API da OpenRouter no Armazenamento seguro para executar neste navegador.",
+      "credential_store_unavailable": "O armazenamento seguro de chaves do navegador não está disponível. Abra o Armazenamento seguro e tente novamente.",
+      "failed": "A execução no navegador foi interrompida. Mantenha esta aba aberta e tente novamente.",
+      "openSecureStore": "Abrir Armazenamento seguro",
+      "retrying": "A execução no navegador perdeu a conexão e está tentando novamente. Mantenha esta aba aberta."
+    },
     "saveStatus": {
       "saved": "Salvo",
       "saving": "Salvando...",

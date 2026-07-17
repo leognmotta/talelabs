@@ -549,6 +549,13 @@
     "runStatus": {
       "failed": "Generazione non riuscita"
     },
+    "browserExecution": {
+      "credential_required": "Aggiungi una chiave API OpenRouter nell’Archiviazione sicura per eseguire in questo browser.",
+      "credential_store_unavailable": "L’archiviazione sicura delle chiavi del browser non è disponibile. Apri l’Archiviazione sicura e riprova.",
+      "failed": "L’esecuzione nel browser si è interrotta. Mantieni aperta questa scheda e riprova.",
+      "openSecureStore": "Apri Archiviazione sicura",
+      "retrying": "L’esecuzione nel browser ha perso la connessione e sta riprovando. Mantieni aperta questa scheda."
+    },
     "saveStatus": {
       "saved": "Salvato",
       "saving": "Salvataggio...",

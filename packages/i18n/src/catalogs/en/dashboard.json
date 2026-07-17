@@ -549,6 +549,13 @@
     "runStatus": {
       "failed": "Generation failed"
     },
+    "browserExecution": {
+      "credential_required": "Add an OpenRouter API key in Secure Store to run in this browser.",
+      "credential_store_unavailable": "Secure browser key storage is unavailable. Open Secure Store and try again.",
+      "failed": "Browser execution stopped. Keep this tab open and try again.",
+      "openSecureStore": "Open Secure Store",
+      "retrying": "Browser execution lost its connection and is retrying. Keep this tab open."
+    },
     "saveStatus": {
       "saved": "Saved",
       "saving": "Saving...",
