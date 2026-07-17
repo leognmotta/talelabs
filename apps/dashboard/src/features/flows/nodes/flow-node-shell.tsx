@@ -1,10 +1,13 @@
+/** Shared node frame with selection and keyed generation-run presentation. */
+
 import type { ComponentType, ReactNode } from 'react'
 
 import { BorderBeam } from '@talelabs/ui/components/border-beam'
 import { cn } from '@talelabs/ui/lib/utils'
-import { useFlowCanvas } from '../flow-canvas-context'
+import { useFlowGenerationPreview } from '../flow-canvas-runtime-context'
 import { FlowNodeToolbar } from '../flow-node-toolbar'
 
+/** Renders the shared visual shell and keyed pending state for one node. */
 export function FlowNodeShell({
   children,
   className,
@@ -31,7 +34,7 @@ export function FlowNodeShell({
   titleMeta?: string
 }) {
   const fullTitle = titleMeta ? `${title} · ${titleMeta}` : title
-  const running = useFlowCanvas().getGenerationPreview(nodeId)?.status === 'pending'
+  const running = useFlowGenerationPreview(nodeId)?.status === 'pending'
 
   return (
     <>

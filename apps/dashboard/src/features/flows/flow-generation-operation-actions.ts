@@ -1,16 +1,23 @@
+/** Generation operation and setting commands shared by inspector controls. */
+
 import type {
   GenerationModelDefinition,
   GenerationOperationDefinition,
 } from '@talelabs/flows'
-import type { FlowCanvasContextValue } from './flow-canvas-context'
 import type { CanvasNode } from './flow-canvas-types'
 import type { FlowGenerationConfigurationChange } from './flow-generation-configuration'
 
 import { applyGenerationSettingRequirements } from '@talelabs/flows'
 
+/** Creates operation and setting commands for one generation inspector. */
 export function createFlowGenerationOperationActions(input: {
   applyConfiguration: (change: FlowGenerationConfigurationChange) => void
-  canvas: FlowCanvasContextValue
+  canvas: {
+    updateNodeData: (
+      nodeId: string,
+      update: (data: Record<string, any>) => Record<string, any>,
+    ) => void
+  }
   connectedSlotIds: ReadonlySet<string>
   model?: GenerationModelDefinition
   node: CanvasNode

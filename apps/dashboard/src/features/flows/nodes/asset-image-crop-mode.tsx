@@ -1,8 +1,12 @@
+/** Local crop editor that commits persistent Asset-node crop data on apply. */
+
 import type { FlowImageCrop } from '@talelabs/flows'
 import type { FlowReferenceAsset } from '@talelabs/sdk'
 
 import { useState } from 'react'
-import { useFlowCanvas } from '../flow-canvas-context'
+import { updateCanvasNodeData } from '../canvas-state/canvas-node-actions'
+import { useCanvasStoreApi } from '../canvas-state/canvas-store-context'
+import { useFlowCanvasRuntime } from '../flow-canvas-runtime-context'
 import {
   FULL_IMAGE_CROP,
   imageCropAspectRatio,
@@ -12,6 +16,7 @@ import {
 import { ImageCropEditor } from '../image-crop-editor'
 import { ImageCropToolbar } from '../image-crop-toolbar'
 
+/** Edits and applies crop metadata for one image Asset node. */
 export function AssetImageCropMode({
   asset,
   nodeId,
@@ -23,7 +28,8 @@ export function AssetImageCropMode({
   savedCrop: FlowImageCrop | null
   src: string
 }) {
-  const canvas = useFlowCanvas()
+  const store = useCanvasStoreApi()
+  const runtime = useFlowCanvasRuntime()
   const [draftCrop, setDraftCrop] = useState<FlowImageCrop>(
     savedCrop ?? FULL_IMAGE_CROP,
   )
@@ -36,13 +42,16 @@ export function AssetImageCropMode({
   )
 
   function applyCrop() {
-    canvas.updateNodeData(nodeId, (current) => {
+    updateCanvasNodeData({
+      referenceData: runtime.referenceData,
+      store,
+    }, nodeId, (current) => {
       if (!isFullImageCrop(draftCrop))
         return { ...current, crop: draftCrop }
       const { crop: _crop, ...withoutCrop } = current
       return withoutCrop
     })
-    canvas.setEditingImageCropNodeId(null)
+    store.setState({ editingImageCropNodeId: null })
   }
 
   return (
@@ -51,7 +60,7 @@ export function AssetImageCropMode({
         draftCrop={draftCrop}
         nodeId={nodeId}
         onApply={applyCrop}
-        onCancel={() => canvas.setEditingImageCropNodeId(null)}
+        onCancel={() => store.setState({ editingImageCropNodeId: null })}
         onReset={() => setDraftCrop(FULL_IMAGE_CROP)}
       />
       <ImageCropEditor

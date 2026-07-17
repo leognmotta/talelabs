@@ -1,18 +1,20 @@
+/** Input-port preview projection from connected nodes and selected Assets. */
+
 import type { FlowHandleDefinition } from '@talelabs/flows'
 import type { TFunction } from 'i18next'
-import type { FlowCanvasContextValue } from './flow-canvas-context'
 import type { CanvasEdge, CanvasNode } from './flow-canvas-types'
-import type { PortPreviewItem } from './flow-node-port-preview'
+import type { FlowNodePortCanvas, PortPreviewItem } from './flow-node-port-preview'
 
 import { compareFlowEdgesByPriority, getFlowNodeHandles } from '@talelabs/flows'
 import { canvasNodeToGraphNode } from './flow-canvas-serialization'
 import { outputPortPreviewItems } from './flow-node-port-output-items'
 
+/** Projects selected direct Assets and connected outputs for one input port. */
 export function inputPortPreviewItems(
   edges: CanvasEdge[],
   handle: FlowHandleDefinition,
   node: CanvasNode,
-  canvas: FlowCanvasContextValue,
+  canvas: FlowNodePortCanvas,
   t: TFunction,
 ): PortPreviewItem[] {
   const valueType = handle.valueTypes[0]

@@ -1,5 +1,8 @@
+/** Stable visual edge projection from semantic node and reference state. */
+
 import type { FlowValueType } from '@talelabs/flows'
-import type { CanvasEdge, CanvasNode, FlowReferenceData } from './flow-canvas-types'
+import type { CanvasStore } from './canvas-state/canvas-store'
+import type { CanvasEdge, FlowReferenceData } from './flow-canvas-types'
 
 import { getFlowNodeHandles } from '@talelabs/flows'
 import { useMemo } from 'react'
@@ -14,20 +17,30 @@ const FLOW_VALUE_COLORS = {
   VideoSet: 'var(--flow-type-video)',
 } as const satisfies Record<FlowValueType, string>
 
+/** Projects stable styled edges without reacting to position-only node changes. */
 export function useFlowVisibleEdges(input: {
   edges: CanvasEdge[]
-  nodes: CanvasNode[]
   referenceData: FlowReferenceData
+  store: CanvasStore
 }) {
-  const nodesById = useMemo(
-    () => new Map(input.nodes.map(node => [node.id, node])),
-    [input.nodes],
-  )
+  const nodes = input.store.getState().nodes
+  const nodeSemantics = nodes.map(node => [
+    node.id,
+    node.assetId,
+    node.type,
+    node.data.modelId,
+    node.data.modelContractVersion,
+    node.data.operationId,
+  ].join(':')).join('|')
+  const semanticNodes = useMemo(() => {
+    void nodeSemantics
+    return input.store.getState().nodes
+  }, [input.store, nodeSemantics])
   return useMemo(() => input.edges.filter((edge) => {
-    const targetNode = nodesById.get(edge.target)
+    const targetNode = semanticNodes.find(node => node.id === edge.target)
     return !(targetNode?.type === 'llm' && edge.targetHandle === 'instructions')
   }).map((edge) => {
-    const sourceNode = nodesById.get(edge.source)
+    const sourceNode = semanticNodes.find(node => node.id === edge.source)
     const sourceHandle = sourceNode
       ? getFlowNodeHandles(
           canvasNodeToGraphNode(sourceNode),
@@ -51,5 +64,5 @@ export function useFlowVisibleEdges(input: {
         strokeWidth: edge.selected ? 2.25 : 1.75,
       },
     }
-  }), [input.edges, input.referenceData, nodesById])
+  }), [input.edges, input.referenceData, semanticNodes])
 }

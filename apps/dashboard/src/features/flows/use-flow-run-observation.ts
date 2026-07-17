@@ -5,11 +5,10 @@
 
 import type { FlowLatestResult, FlowRun } from '@talelabs/sdk'
 import type { TFunction } from 'i18next'
-import type { RefObject } from 'react'
 import type { CanvasEdge, FlowGenerationPreview } from './flow-canvas-types'
 
 import { useQueryClient } from '@tanstack/react-query'
-import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useReducer, useRef } from 'react'
 import { toast } from 'sonner'
 
 import { areGenerationPreviewsEqual } from './flow-generation-preview-comparison'
@@ -29,7 +28,7 @@ import { useFlowRunDetailQueries } from './flow.queries'
 
 /** Observes active runs and projects their progress and outputs onto the canvas. */
 export function useFlowRunObservation(input: {
-  edgesRef: RefObject<CanvasEdge[]>
+  getEdges: () => readonly CanvasEdge[]
   flowId: string
   initialActiveRunIds: readonly string[]
   initialLatestResults: readonly FlowLatestResult[]
@@ -37,7 +36,7 @@ export function useFlowRunObservation(input: {
   t: TFunction
 }) {
   const {
-    edgesRef,
+    getEdges,
     flowId,
     initialActiveRunIds,
     initialLatestResults,
@@ -51,10 +50,10 @@ export function useFlowRunObservation(input: {
       t,
     )
   }
-  const [previews, setPreviews] = useState<Readonly<Record<string, FlowGenerationPreview>>>(
-    () => initialPreviewsRef.current ?? {},
+  const previewsRef = useRef<Readonly<Record<string, FlowGenerationPreview>>>(
+    initialPreviewsRef.current ?? {},
   )
-  const previewsRef = useRef(previews)
+  const previewListenersRef = useRef(new Set<() => void>())
   const [runAllRunIds, dispatchRunAllRunIds] = useReducer(
     activeRunIdsReducer,
     [],
@@ -80,7 +79,8 @@ export function useFlowRunObservation(input: {
       return
     const next = { ...previewsRef.current, [nodeId]: preview }
     previewsRef.current = next
-    setPreviews(next)
+    for (const listener of previewListenersRef.current)
+      listener()
   }, [])
 
   const updateRunStatePreview = useCallback((
@@ -139,7 +139,7 @@ export function useFlowRunObservation(input: {
     }
 
     const activeNodeIds = activeRunNodeIdsFromRun({
-      edges: edgesRef.current,
+      edges: getEdges(),
       run,
     })
     for (const node of run.nodes) {
@@ -210,8 +210,8 @@ export function useFlowRunObservation(input: {
       }
     }
   }, [
-    edgesRef,
     flowId,
+    getEdges,
     organizationId,
     queryClient,
     t,
@@ -248,12 +248,22 @@ export function useFlowRunObservation(input: {
     })
   }, [])
 
+  const getGenerationPreview = useCallback(
+    (nodeId: string) => previewsRef.current[nodeId],
+    [],
+  )
+  const subscribeGenerationPreviews = useCallback((listener: () => void) => {
+    previewListenersRef.current.add(listener)
+    return () => previewListenersRef.current.delete(listener)
+  }, [])
+
   return {
+    getGenerationPreview,
     isRunAllRunning: runAllRunIds.length > 0,
     observeRun,
-    previews,
     previewsRef,
     setRunAllAdmissionRunning,
+    subscribeGenerationPreviews,
     updatePreview,
     updateRunStatePreview,
   }

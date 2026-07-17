@@ -1,3 +1,5 @@
+/** Memoized generic audio generation node for dormant compatibility paths. */
+
 import type {
   GenerationInputAvailability,
   GenerationInputSlotDefinition,
@@ -14,7 +16,7 @@ import {
 import { useNodeConnections } from '@xyflow/react'
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useFlowCanvas } from '../flow-canvas-context'
+import { useFlowCanvasRuntime } from '../flow-canvas-runtime-context'
 import { getCanvasGenerationModel } from '../flow-generation-contract'
 import { AudioWaveformPreview } from './audio/shared/audio-waveform-preview'
 import { GenerationInputPort } from './generation-input-port'
@@ -22,6 +24,7 @@ import { GenerationInputRail } from './generation-input-rail'
 import { GenerationNodeFrame } from './generation-node-frame'
 import { GenerationNodePreviewArea } from './generation-node-preview-area'
 
+/** Renders the memoized compatibility audio-generation node. */
 export const GenerationFlowNode = memo(({
   data,
   id,
@@ -29,7 +32,7 @@ export const GenerationFlowNode = memo(({
   type,
 }: NodeProps<CanvasNode>) => {
   const { t } = useTranslation()
-  const canvas = useFlowCanvas()
+  const runtime = useFlowCanvasRuntime()
   const incomingConnections = useNodeConnections({ handleType: 'target', id })
   const model = getCanvasGenerationModel({ data, type })
   const operation = model
@@ -56,7 +59,7 @@ export const GenerationFlowNode = memo(({
   const itemCounts = Object.fromEntries(activeSlots.map((slot) => {
     return [
       slot.id,
-      canvas.getExecutableInputCount(id, slot.id),
+      runtime.getExecutableInputCount(id, slot.id),
     ]
   }))
   const evaluation = evaluateGenerationContract({

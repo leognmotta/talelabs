@@ -1,12 +1,15 @@
+/** Confirmation-aware generation model transition commands for one node. */
+
 import type { GenerationModelDefinition } from '@talelabs/flows'
 import type { GenerationConfigResponse } from '@talelabs/sdk'
-import type { GenerationConfigurationUpdate } from '../flow-canvas-context'
+import type { GenerationConfigurationUpdate } from '../canvas-state/canvas-generation-actions'
 
 import { getGenerationModel } from '@talelabs/flows'
 import { useCallback } from 'react'
 
 type ConfigModel = GenerationConfigResponse['models'][number]
 
+/** Coordinates confirmed model changes and current-contract upgrades. */
 export function useGenerationModelTransition(input: {
   applyConfiguration: (
     nodeId: string,

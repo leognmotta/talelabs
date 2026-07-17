@@ -1,3 +1,5 @@
+/** Memoized custom edge presentation and direct edge deletion control. */
+
 import type { EdgeProps } from '@xyflow/react'
 import type { CanvasEdge, CanvasNode } from './flow-canvas-types'
 /* eslint-disable better-tailwindcss/no-unknown-classes -- React Flow uses these interaction classes as behavior hooks. */
@@ -10,10 +12,11 @@ import {
   getBezierPath,
   useReactFlow,
 } from '@xyflow/react'
-import { useEffect, useRef, useState } from 'react'
+import { memo, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-export function FlowCanvasEdge({
+/** Renders one memoized bezier edge and its contextual delete affordance. */
+export const FlowCanvasEdge = memo(({
   deletable,
   id,
   interactionWidth,
@@ -27,7 +30,7 @@ export function FlowCanvasEdge({
   targetPosition,
   targetX,
   targetY,
-}: EdgeProps<CanvasEdge>) {
+}: EdgeProps<CanvasEdge>) => {
   const { t } = useTranslation()
   const { deleteElements } = useReactFlow<CanvasNode, CanvasEdge>()
   const [hovered, setHovered] = useState(false)
@@ -102,4 +105,4 @@ export function FlowCanvasEdge({
       )}
     </>
   )
-}
+})

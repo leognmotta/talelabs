@@ -1,10 +1,13 @@
+/** Pure generation-node input contracts and connection-count projections. */
+
 import type {
   GenerationInputSlotDefinition,
   GenerationModelDefinition,
 } from '@talelabs/flows'
 import type { NodeConnection } from '@xyflow/react'
-import type { GenerationInputContract } from '../flow-canvas-context'
+import type { GenerationInputContract } from '../canvas-state/canvas-generation-actions'
 
+/** Counts incoming React Flow connections by target handle. */
 export function generationConnectionCounts(
   connections: readonly NodeConnection[],
 ) {
@@ -18,6 +21,7 @@ export function generationConnectionCounts(
   return counts
 }
 
+/** Returns an inline value only when its external input is disconnected. */
 export function generationInlineValue(input: {
   connectionCounts: Readonly<Record<string, number>>
   data: Readonly<Record<string, unknown>>
@@ -28,6 +32,7 @@ export function generationInlineValue(input: {
     : String(input.data[input.slotId] ?? '')
 }
 
+/** Projects model slots into canvas compatibility contracts. */
 export function generationInputContracts(input: {
   model: GenerationModelDefinition
   normalizeSlotId?: (slotId: string) => string

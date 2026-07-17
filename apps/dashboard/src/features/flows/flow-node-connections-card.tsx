@@ -1,3 +1,5 @@
+/** Selected-node input and output connection preview inspector. */
+
 import type { FlowHandleDefinition } from '@talelabs/flows'
 import type { CanvasEdge, CanvasNode } from './flow-canvas-types'
 import type { PortPreviewItem } from './flow-node-port-preview'
@@ -11,9 +13,12 @@ import {
   CardHeader,
   CardTitle,
 } from '@talelabs/ui/components/card'
+import { useMemo, useSyncExternalStore } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useFlowCanvas } from './flow-canvas-context'
+import { useCanvasStoreApi } from './canvas-state/canvas-store-context'
+import { useFlowCanvasRuntime } from './flow-canvas-runtime-context'
 import { canvasNodeToGraphNode } from './flow-canvas-serialization'
+import { createFlowGenerationCanvasBridge } from './flow-generation-canvas-bridge'
 import { inputPortPreviewItems } from './flow-node-port-input-items'
 import { FlowNodePortItemRow } from './flow-node-port-item-row'
 import { outputPortPreviewItems } from './flow-node-port-output-items'
@@ -25,6 +30,7 @@ interface PortPreviewGroup {
   label: string
 }
 
+/** Renders available input and output values for the selected node. */
 export function FlowNodeConnectionsCard({
   edges,
   node,
@@ -33,7 +39,23 @@ export function FlowNodeConnectionsCard({
   node: CanvasNode
 }) {
   const { t } = useTranslation()
-  const canvas = useFlowCanvas()
+  const store = useCanvasStoreApi()
+  const runtime = useFlowCanvasRuntime()
+  useSyncExternalStore(
+    runtime.subscribeGenerationPreviews,
+    () => edges.map(edge => JSON.stringify(
+      runtime.getGenerationPreview(edge.source) ?? null,
+    )).join(':'),
+    () => '',
+  )
+  const generationCanvas = useMemo(() => createFlowGenerationCanvasBridge({
+    referenceData: runtime.referenceData,
+    store,
+  }), [runtime.referenceData, store])
+  const canvas = useMemo(() => ({
+    ...generationCanvas,
+    getGenerationPreview: runtime.getGenerationPreview,
+  }), [generationCanvas, runtime.getGenerationPreview])
   const handles = getFlowNodeHandles(
     canvasNodeToGraphNode(node),
     canvas.referenceData,
@@ -41,7 +63,7 @@ export function FlowNodeConnectionsCard({
   const inputGroups: PortPreviewGroup[] = handles
     .filter(handle => handle.direction === 'input')
     .map((handle) => {
-      const label = flowNodeHandleLabel(handle, node, t, canvas)
+      const label = flowNodeHandleLabel(handle, node, t)
       return {
         handle,
         items: inputPortPreviewItems(edges, handle, node, canvas, t),
@@ -52,7 +74,7 @@ export function FlowNodeConnectionsCard({
   const outputGroups: PortPreviewGroup[] = handles
     .filter(handle => handle.direction === 'output')
     .map((handle) => {
-      const label = flowNodeHandleLabel(handle, node, t, canvas)
+      const label = flowNodeHandleLabel(handle, node, t)
       return {
         handle,
         items: outputPortPreviewItems(handle, node, canvas, t),

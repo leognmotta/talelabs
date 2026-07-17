@@ -1,3 +1,5 @@
+/** Memoized Asset node with upload, crop, playback, and output presentation. */
+
 import type { NodeProps } from '@xyflow/react'
 /* eslint-disable better-tailwindcss/no-unknown-classes -- React Flow uses these interaction classes as behavior hooks. */
 import type { CanvasNode } from '../flow-canvas-types'
@@ -11,8 +13,12 @@ import { useTranslation } from 'react-i18next'
 import { AssetIcon } from '../../../shared/domain-icons'
 import { AssetMediaPreview } from '../../assets/asset-media-preview'
 import { useAssetDetailQuery } from '../../assets/asset.queries'
+import { useCanvasStore, useCanvasStoreApi } from '../canvas-state/canvas-store-context'
 import { FlowActionTooltip } from '../flow-action-tooltip'
-import { useFlowCanvas } from '../flow-canvas-context'
+import {
+  useFlowCanvasAssetUploadState,
+  useFlowCanvasRuntime,
+} from '../flow-canvas-runtime-context'
 import { useFlowMediaPreview } from '../flow-media-preview-context'
 import { readImageCrop } from '../image-crop'
 import { CroppedImagePreview } from '../image-crop-editor'
@@ -24,23 +30,30 @@ import { FlowNodeSelectionStage } from './flow-node-selection-stage'
 import { FlowNodeShell } from './flow-node-shell'
 import { FlowNodeUploadProgress } from './flow-node-upload-progress'
 
+/** Renders one memoized Asset node and only its own Asset and crop state. */
 export const AssetFlowNode = memo(({
   data,
   id,
   selected,
 }: NodeProps<CanvasNode>) => {
   const { t } = useTranslation()
-  const canvas = useFlowCanvas()
+  const store = useCanvasStoreApi()
+  const runtime = useFlowCanvasRuntime()
   const mediaPreview = useFlowMediaPreview()
   const [measuredMedia, setMeasuredMedia] = useState<{
     aspectRatio: number
     assetId: string
   } | null>(null)
   const [videoPlaybackStarted, setVideoPlaybackStarted] = useState(false)
-  const assetId = canvas.getNode(id)?.assetId
-  const assetUpload = canvas.getAssetUpload(id)
+  const assetId = useCanvasStore(
+    state => state.nodes.find(node => node.id === id)?.assetId,
+  )
+  const editingCrop = useCanvasStore(
+    state => state.editingImageCropNodeId === id,
+  )
+  const assetUpload = useFlowCanvasAssetUploadState(id)
   const referenceAsset = assetId
-    ? canvas.referenceData.assetsById.get(assetId)
+    ? runtime.referenceData.assetsById.get(assetId)
     : undefined
   const asset = assetUpload?.asset ?? referenceAsset
   const displayAsset = assetUpload && asset
@@ -72,7 +85,6 @@ export const AssetFlowNode = memo(({
   const imageSource = displayAsset?.type === 'image'
     ? displayAsset.thumbnailUrl ?? displayAsset.url
     : null
-  const editingCrop = canvas.editingImageCropNodeId === id
   const savedCrop = readImageCrop(data.crop)
   const declaredSourceAspectRatio = asset
     && (asset.type === 'image' || asset.type === 'video')
@@ -240,7 +252,7 @@ export const AssetFlowNode = memo(({
               icon={AssetIcon}
               label={t('flows.chooseAsset')}
               valueType="Asset"
-              onSelect={() => canvas.openAssetPicker(id)}
+              onSelect={() => store.setState({ assetPickerNodeId: id })}
             />
           )}
     </FlowNodeShell>

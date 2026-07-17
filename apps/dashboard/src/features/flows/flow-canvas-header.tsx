@@ -1,3 +1,5 @@
+/** Flow identity, navigation, history, and document commands above the canvas. */
+
 import type { Flow } from '@talelabs/sdk'
 /* eslint-disable better-tailwindcss/no-unknown-classes -- React Flow uses these interaction classes as behavior hooks. */
 
@@ -21,7 +23,7 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@talelabs/ui/components/dropdown-menu'
-import { useState } from 'react'
+import { memo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import { TaleLabsLogo } from '../../shared/components/talelabs-logo'
@@ -31,7 +33,8 @@ import { DeleteFlowDialog } from './delete-flow-dialog'
 import { getFlowCanvasShortcutLabels } from './flow-canvas-shortcuts'
 import { RenameFlowDialog } from './rename-flow-dialog'
 
-export function FlowCanvasHeader({
+/** Renders Flow navigation, identity, document commands, and history controls. */
+export const FlowCanvasHeader = memo(({
   canRedo,
   canUndo,
   flow,
@@ -45,7 +48,7 @@ export function FlowCanvasHeader({
   onFlowDeleted: () => void
   onRedo: () => void
   onUndo: () => void
-}) {
+}) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [, setSettingsTab] = useSettingsTabState()
@@ -149,4 +152,4 @@ export function FlowCanvasHeader({
       />
     </>
   )
-}
+})

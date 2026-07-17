@@ -1,7 +1,11 @@
+/** Generation-output crop editor that commits node crop data on apply. */
+
 import type { FlowImageCrop } from '@talelabs/flows'
 
 import { useEffect, useState } from 'react'
-import { useFlowCanvas } from '../../flow-canvas-context'
+import { updateCanvasNodeData } from '../../canvas-state/canvas-node-actions'
+import { useCanvasStoreApi } from '../../canvas-state/canvas-store-context'
+import { useFlowCanvasRuntime } from '../../flow-canvas-runtime-context'
 import {
   FULL_IMAGE_CROP,
   imageCropAspectRatio,
@@ -11,6 +15,7 @@ import {
 import { ImageCropEditor } from '../../image-crop-editor'
 import { ImageCropToolbar } from '../../image-crop-toolbar'
 
+/** Edits and applies crop metadata for one generated image preview. */
 export function ImageGenerationCropMode({
   nodeId,
   savedCrop,
@@ -20,7 +25,8 @@ export function ImageGenerationCropMode({
   savedCrop: FlowImageCrop | null
   src: string
 }) {
-  const canvas = useFlowCanvas()
+  const store = useCanvasStoreApi()
+  const runtime = useFlowCanvasRuntime()
   const [draftCrop, setDraftCrop] = useState<FlowImageCrop>(
     savedCrop ?? FULL_IMAGE_CROP,
   )
@@ -51,13 +57,16 @@ export function ImageGenerationCropMode({
   )
 
   function applyCrop() {
-    canvas.updateNodeData(nodeId, (current) => {
+    updateCanvasNodeData({
+      referenceData: runtime.referenceData,
+      store,
+    }, nodeId, (current) => {
       if (!isFullImageCrop(draftCrop))
         return { ...current, crop: draftCrop }
       const { crop: _crop, ...withoutCrop } = current
       return withoutCrop
     })
-    canvas.setEditingImageCropNodeId(null)
+    store.setState({ editingImageCropNodeId: null })
   }
 
   return (
@@ -66,7 +75,7 @@ export function ImageGenerationCropMode({
         draftCrop={draftCrop}
         nodeId={nodeId}
         onApply={applyCrop}
-        onCancel={() => canvas.setEditingImageCropNodeId(null)}
+        onCancel={() => store.setState({ editingImageCropNodeId: null })}
         onReset={() => setDraftCrop(FULL_IMAGE_CROP)}
       />
       <ImageCropEditor

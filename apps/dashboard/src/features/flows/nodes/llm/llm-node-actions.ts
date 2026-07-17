@@ -1,16 +1,18 @@
+/** LLM prompt, setting, and input-state commands over a scoped node canvas. */
+
 import type {
   GenerationInputSlotDefinition,
   GenerationModelDefinition,
   GenerationSettingValue,
 } from '@talelabs/flows'
-import type { FlowCanvasContextValue } from '../../flow-canvas-context'
 import type { CanvasNode } from '../../flow-canvas-types'
+import type { GenerationNodeCanvas } from '../use-generation-node-controller'
 
 import { resolveLlmState } from '@talelabs/flows'
 import { generationInlineValue } from '../use-generation-node-controller'
 
 interface LlmActionContext {
-  canvas: FlowCanvasContextValue
+  canvas: GenerationNodeCanvas
   connectionCounts: Readonly<Record<string, number>>
   inlineInstructions: string
   itemCounts: Readonly<Record<string, number>>
@@ -18,6 +20,7 @@ interface LlmActionContext {
   node: Pick<CanvasNode, 'data' | 'id'>
 }
 
+/** Applies one LLM setting and its derived operation state. */
 export function updateLlmSetting(
   context: LlmActionContext,
   settingId: string,
@@ -46,6 +49,7 @@ export function updateLlmSetting(
   }))
 }
 
+/** Resolves current selected and available items for one LLM input slot. */
 export function getLlmInputState(
   context: Pick<LlmActionContext, 'canvas' | 'node'>,
   slot: GenerationInputSlotDefinition,
@@ -53,6 +57,7 @@ export function getLlmInputState(
   return context.canvas.getInputState(context.node.id, slot.id)
 }
 
+/** Applies the inline prompt for one LLM node. */
 export function updateLlmPrompt(
   context: Pick<LlmActionContext, 'canvas' | 'node'>,
   prompt: string,

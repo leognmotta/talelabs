@@ -1,20 +1,26 @@
+/** Memoized editable text input node backed by scoped canvas state. */
+
 import type { NodeProps } from '@xyflow/react'
 import type { CanvasNode } from '../flow-canvas-types'
 import { IconTextCaption } from '@tabler/icons-react'
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useFlowCanvas } from '../flow-canvas-context'
+import { updateCanvasNodeData } from '../canvas-state/canvas-node-actions'
+import { useCanvasStoreApi } from '../canvas-state/canvas-store-context'
+import { useFlowCanvasRuntime } from '../flow-canvas-runtime-context'
 import { FlowNodeOutputFooter } from './flow-node-output-footer'
 import { FlowNodeShell } from './flow-node-shell'
 import { FlowNodeTextarea } from './flow-node-textarea'
 
+/** Renders one memoized editable text node. */
 export const TextFlowNode = memo(({
   data,
   id,
   selected,
 }: NodeProps<CanvasNode>) => {
   const { t } = useTranslation()
-  const canvas = useFlowCanvas()
+  const store = useCanvasStoreApi()
+  const runtime = useFlowCanvasRuntime()
 
   return (
     <FlowNodeShell
@@ -51,10 +57,10 @@ export const TextFlowNode = memo(({
         maxLength={16_000}
         placeholder={t('flows.textPlaceholder')}
         value={typeof data.text === 'string' ? data.text : ''}
-        onChange={event => canvas.updateNodeData(id, current => ({
-          ...current,
-          text: event.target.value,
-        }))}
+        onChange={event => updateCanvasNodeData({
+          referenceData: runtime.referenceData,
+          store,
+        }, id, current => ({ ...current, text: event.target.value }))}
         onKeyDown={event => event.stopPropagation()}
       />
     </FlowNodeShell>

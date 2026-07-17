@@ -16,12 +16,13 @@ import {
 import { Badge } from '@talelabs/ui/components/badge'
 import { Button } from '@talelabs/ui/components/button'
 import { Spinner } from '@talelabs/ui/components/spinner'
+import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FlowCanvasNodePicker } from './flow-canvas-node-picker'
 import { FlowToolbarButton } from './flow-toolbar-button'
 
 /** Renders canvas editing actions, debug selection, and whole-Flow execution. */
-export function FlowCanvasToolbar(input: {
+export const FlowCanvasToolbar = memo((input: {
   canAddNodeType: (nodeType: FlowNodeType) => boolean
   canUseDebugMode: boolean
   canRedo: boolean
@@ -47,7 +48,7 @@ export function FlowCanvasToolbar(input: {
   onRetrySave: () => void
   onRunAll: () => void
   onUndo: () => void
-}) {
+}) => {
   const { t } = useTranslation()
   return (
     <div className="
@@ -137,4 +138,4 @@ export function FlowCanvasToolbar(input: {
       )}
     </div>
   )
-}
+})

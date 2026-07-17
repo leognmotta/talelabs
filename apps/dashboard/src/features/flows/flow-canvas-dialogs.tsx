@@ -1,3 +1,5 @@
+/** Asset selection and unsaved-navigation dialogs for the Flow canvas. */
+
 import type { Asset } from '@talelabs/sdk'
 import type { FlowSaveStatus } from './flow-canvas-types'
 
@@ -12,18 +14,26 @@ import {
   AlertDialogTitle,
 } from '@talelabs/ui/components/alert-dialog'
 import { Spinner } from '@talelabs/ui/components/spinner'
+import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AssetLibraryDialog } from '../assets/asset-library-dialog'
 
+/** Navigation-blocker projection consumed by the canvas dialog layer. */
 export interface FlowCanvasNavigationDialogState {
+  /** Whether navigation is currently blocked by unsaved graph edits. */
   blocked: boolean
+  /** Cancels the pending navigation and keeps the editor open. */
   onCancel: () => void
+  /** Saves the graph and continues the blocked navigation. */
   onSave: () => void
+  /** Whether the save-before-leave command is in flight. */
   saving: boolean
+  /** Current graph autosave presentation status. */
   status: FlowSaveStatus
 }
 
-export function FlowCanvasDialogs({
+/** Renders Asset selection and unsaved-navigation dialogs. */
+export const FlowCanvasDialogs = memo(({
   assetPickerNodeId,
   navigation,
   onAssetPickerOpenChange,
@@ -35,7 +45,7 @@ export function FlowCanvasDialogs({
   onAssetPickerOpenChange: (open: boolean) => void
   onSelectAsset: (asset: Asset) => void
   selectedAssetId: null | string
-}) {
+}) => {
   const { t } = useTranslation()
 
   return (
@@ -77,4 +87,4 @@ export function FlowCanvasDialogs({
       />
     </>
   )
-}
+})

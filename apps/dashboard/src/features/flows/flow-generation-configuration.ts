@@ -1,8 +1,7 @@
+/** Generation model and operation transitions applied to canvas node state. */
+
 import type { GenerationModelDefinition } from '@talelabs/flows'
-import type {
-  FlowCanvasContextValue,
-  GenerationInputContract,
-} from './flow-canvas-context'
+import type { GenerationConfigurationUpdate, GenerationInputContract } from './canvas-state/canvas-generation-actions'
 import type { CanvasNode } from './flow-canvas-types'
 
 import {
@@ -10,12 +9,26 @@ import {
   getGenerationModel,
 } from '@talelabs/flows'
 
+/** Model and operation identity requested by a settings transition. */
 export interface FlowGenerationConfigurationChange {
+  /** Immutable catalog contract version selected for the node. */
   modelContractVersion: string
+  /** Canonical creative model ID selected for the node. */
   modelId: string
+  /** Operation exposed by the selected model. */
   operationId: string
 }
 
+/** Canvas command required to apply one complete generation configuration. */
+export interface FlowGenerationConfigurationCanvas {
+  /** Atomically applies the resolved model contract to one node. */
+  updateGenerationConfiguration: (
+    nodeId: string,
+    configuration: GenerationConfigurationUpdate,
+  ) => void
+}
+
+/** Resolves the input contracts exposed by one model operation. */
 export function generationTargetInputContracts(
   targetModel: GenerationModelDefinition,
   operationId: string,
@@ -39,8 +52,9 @@ export function generationTargetInputContracts(
     }))
 }
 
+/** Normalizes and applies a complete model or operation transition. */
 export function applyFlowGenerationConfiguration(input: {
-  canvas: FlowCanvasContextValue
+  canvas: FlowGenerationConfigurationCanvas
   change: FlowGenerationConfigurationChange
   connectedSlotIds: ReadonlySet<string>
   currentModel?: GenerationModelDefinition

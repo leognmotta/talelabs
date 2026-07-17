@@ -1,17 +1,27 @@
+/** Asset-node toolbar commands backed by narrow canvas and runtime queries. */
+
 import { IconArrowsMaximize, IconCrop, IconDownload } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { useAssetDownload } from '../assets/use-asset-download'
-import { useFlowCanvas } from './flow-canvas-context'
+import { useCanvasStore, useCanvasStoreApi } from './canvas-state/canvas-store-context'
+import { useFlowCanvasRuntime } from './flow-canvas-runtime-context'
 import { FlowToolbarButton } from './flow-toolbar-button'
 
+/** Renders media tools for one Asset node without observing the graph array. */
 export function FlowAssetToolbarActions({ nodeId }: { nodeId: string }) {
   const { t } = useTranslation()
-  const canvas = useFlowCanvas()
+  const store = useCanvasStoreApi()
+  const runtime = useFlowCanvasRuntime()
   const downloadAsset = useAssetDownload()
-  const node = canvas.getNode(nodeId)
-  const asset = node?.assetId
-    ? canvas.referenceData.assetsById.get(node.assetId)
+  const assetId = useCanvasStore(
+    state => state.nodes.find(node => node.id === nodeId)?.assetId,
+  )
+  const editingImageCropNodeId = useCanvasStore(
+    state => state.editingImageCropNodeId,
+  )
+  const asset = assetId
+    ? runtime.referenceData.assetsById.get(assetId)
     : undefined
   const canUseMediaTools = Boolean(
     asset && ['audio', 'image', 'video'].includes(asset.type),
@@ -41,10 +51,12 @@ export function FlowAssetToolbarActions({ nodeId }: { nodeId: string }) {
         <FlowToolbarButton
           icon={IconCrop}
           label={t('flows.nodeToolbar.crop')}
-          pressed={canvas.editingImageCropNodeId === nodeId}
-          onClick={() => canvas.setEditingImageCropNodeId(
-            canvas.editingImageCropNodeId === nodeId ? null : nodeId,
-          )}
+          pressed={editingImageCropNodeId === nodeId}
+          onClick={() => store.setState({
+            editingImageCropNodeId: editingImageCropNodeId === nodeId
+              ? null
+              : nodeId,
+          })}
         />
       )}
       <FlowToolbarButton

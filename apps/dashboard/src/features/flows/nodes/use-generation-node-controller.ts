@@ -1,9 +1,11 @@
+/** Per-node generation controller over narrow runtime and scoped store access. */
+
 import type {
   AudioIntentNodeType,
 } from '@talelabs/flows'
 import type { NodeConnection } from '@xyflow/react'
-import type { CanvasNode } from '../flow-canvas-types'
-
+import type { GenerationConfigurationUpdate, GenerationInputContract } from '../canvas-state/canvas-generation-actions'
+import type { CanvasEdge, CanvasNode, FlowInputState } from '../flow-canvas-types'
 import {
   getGenerationInputSlotsForNodeType,
   isCurrentGenerationModelContract,
@@ -11,7 +13,10 @@ import {
 import { useUpdateNodeInternals } from '@xyflow/react'
 import { useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useFlowCanvas } from '../flow-canvas-context'
+import { useCanvasStoreApi } from '../canvas-state/canvas-store-context'
+import { setCanvasSelection } from '../canvas-state/canvas-ui-actions'
+import { useFlowCanvasRuntime, useFlowGenerationPreview } from '../flow-canvas-runtime-context'
+import { createFlowGenerationCanvasBridge } from '../flow-generation-canvas-bridge'
 import { getCanvasGenerationModel } from '../flow-generation-contract'
 import { generationConnectionCounts } from './generation-node-controller-values'
 
@@ -31,13 +36,50 @@ type GenerationNodeScope
     nodeType: AudioIntentNodeType
   }
 
+/** Graph commands and runtime queries scoped to one generation-node controller. */
+export interface GenerationNodeCanvas {
+  /** Server-owned generation catalog projection. */
+  generationConfig: ReturnType<typeof useFlowCanvasRuntime>['generationConfig']
+  /** Reads the executable item count for one input slot. */
+  getExecutableInputCount: ReturnType<typeof useFlowCanvasRuntime>['getExecutableInputCount']
+  /** Reads the latest durable run preview for one node. */
+  getGenerationPreview: ReturnType<typeof useFlowCanvasRuntime>['getGenerationPreview']
+  /** Computes the current immutable run-input fingerprint for one node. */
+  getGenerationPreviewFingerprint: ReturnType<typeof useFlowCanvasRuntime>['getGenerationPreviewFingerprint']
+  /** Finds incoming edges rejected by a proposed generation contract. */
+  getIncompatibleGenerationEdges: (
+    nodeId: string,
+    inputContracts: readonly GenerationInputContract[],
+  ) => readonly CanvasEdge[]
+  /** Resolves the current input selection and availability state. */
+  getInputState: (
+    nodeId: string,
+    slotId: string,
+  ) => FlowInputState | null
+  /** Selects one node and focuses its output connection inspector. */
+  openNodeOutputInspector: (nodeId: string) => void
+  /** Atomically applies one complete generation model configuration. */
+  updateGenerationConfiguration: (
+    nodeId: string,
+    configuration: GenerationConfigurationUpdate,
+  ) => void
+  /** Applies one persistent node-data mutation. */
+  updateNodeData: (
+    nodeId: string,
+    update: (data: Record<string, any>) => Record<string, any>,
+  ) => void
+}
+
+/** Builds localized generation configuration and commands for one node. */
 export function useGenerationNodeController(input: {
   incomingConnections: readonly NodeConnection[]
   node: Pick<CanvasNode, 'data' | 'id' | 'type'>
   scope: GenerationNodeScope
 }) {
   const { t } = useTranslation()
-  const canvas = useFlowCanvas()
+  const store = useCanvasStoreApi()
+  const runtime = useFlowCanvasRuntime()
+  const preview = useFlowGenerationPreview(input.node.id)
   const updateNodeInternals = useUpdateNodeInternals()
   const model = getCanvasGenerationModel(input.node)
   const scopedNodeType = input.scope.kind === 'nodeType'
@@ -72,7 +114,7 @@ export function useGenerationNodeController(input: {
   ])
 
   const configModels = useMemo(
-    () => canvas.generationConfig.models.filter((config) => {
+    () => runtime.generationConfig.models.filter((config) => {
       if (!config.enabled)
         return false
       if (scopedMediaType)
@@ -82,7 +124,7 @@ export function useGenerationNodeController(input: {
         operation => operation.nodeType === nodeType,
       )
     }),
-    [canvas.generationConfig.models, scopedMediaType, scopedNodeType],
+    [runtime.generationConfig.models, scopedMediaType, scopedNodeType],
   )
   const modelOptions = useMemo(
     () => configModels.map((config) => {
@@ -115,6 +157,30 @@ export function useGenerationNodeController(input: {
       input.node.data.modelContractVersion,
     ),
   )
+  const generationCanvas = useMemo(() => createFlowGenerationCanvasBridge({
+    referenceData: runtime.referenceData,
+    store,
+  }), [runtime.referenceData, store])
+  const canvas = useMemo<GenerationNodeCanvas>(() => ({
+    generationConfig: runtime.generationConfig,
+    getExecutableInputCount: runtime.getExecutableInputCount,
+    getGenerationPreview: nodeId => nodeId === input.node.id
+      ? preview
+      : runtime.getGenerationPreview(nodeId),
+    getGenerationPreviewFingerprint: runtime.getGenerationPreviewFingerprint,
+    getIncompatibleGenerationEdges:
+      generationCanvas.getIncompatibleGenerationEdges,
+    getInputState: generationCanvas.getInputState,
+    openNodeOutputInspector: (nodeId) => {
+      setCanvasSelection(store, { nodeIds: [nodeId] })
+      requestAnimationFrame(() => {
+        document.getElementById(`flow-node-connections-${nodeId}`)?.focus()
+      })
+    },
+    updateGenerationConfiguration:
+      generationCanvas.updateGenerationConfiguration,
+    updateNodeData: generationCanvas.updateNodeData,
+  }), [generationCanvas, input.node.id, preview, runtime, store])
 
   return {
     canvas,

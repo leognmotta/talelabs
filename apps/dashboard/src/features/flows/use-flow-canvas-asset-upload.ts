@@ -1,14 +1,13 @@
+/** Asset upload orchestration kept outside Zustand with keyed node updates. */
+
 import type {
   Asset,
   FlowGraphReferences,
   FlowReferenceAsset,
 } from '@talelabs/sdk'
 import type { ReactFlowInstance, XYPosition } from '@xyflow/react'
-import type {
-  Dispatch,
-  RefObject,
-  SetStateAction,
-} from 'react'
+import type { RefObject } from 'react'
+import type { CanvasStore } from './canvas-state/canvas-store'
 import type {
   CanvasEdge,
   CanvasNode,
@@ -30,6 +29,8 @@ import { uploadAsset } from '../assets/asset-upload'
 import { getAcceptedAssetFiles } from '../assets/asset-upload-files'
 import { invalidateFolderCache } from '../assets/folder-query-cache'
 import { useAssetUploadPolicyDescription } from '../assets/use-asset-upload-policy-description'
+import { captureCanvasHistory } from './canvas-state/canvas-history-actions'
+import { setCanvasSelection } from './canvas-state/canvas-ui-actions'
 import { createCanvasNode } from './flow-canvas-node-factory'
 import { flowQueryKeys } from './flow-query-keys'
 
@@ -99,32 +100,21 @@ function createOptimisticReferenceAsset(
   }
 }
 
+/** Uploads Assets while keeping File and AbortController objects outside Zustand. */
 export function useFlowCanvasAssetUpload(input: {
-  captureHistory: () => void
   flowId: string
-  markDirty: () => void
-  nodes: CanvasNode[]
-  nodesRef: RefObject<CanvasNode[]>
   organizationId: string
   reactFlow: ReactFlowInstance<CanvasNode, CanvasEdge>
   references: FlowGraphReferences
-  setEdges: Dispatch<SetStateAction<CanvasEdge[]>>
-  setNodes: Dispatch<SetStateAction<CanvasNode[]>>
-  setSelectedIds: (nodeIds: string[], edgeIds?: string[]) => void
+  store: CanvasStore
   wrapperRef: RefObject<HTMLDivElement | null>
 }) {
   const {
-    captureHistory,
     flowId,
-    markDirty,
-    nodes,
-    nodesRef,
     organizationId,
     reactFlow,
     references,
-    setEdges,
-    setNodes,
-    setSelectedIds,
+    store,
     wrapperRef,
   } = input
   const { t } = useTranslation()
@@ -134,18 +124,21 @@ export function useFlowCanvasAssetUpload(input: {
   const uploadScreenPositionRef = useRef<null | XYPosition>(null)
   const controllersRef = useRef(new Map<string, AbortController>())
   const uploadsRef = useRef<Record<string, FlowCanvasAssetUpload>>({})
-  const [uploads, setUploads] = useState<
-    Readonly<Record<string, FlowCanvasAssetUpload>>
-  >({})
+  const uploadListenersRef = useRef(new Set<() => void>())
+  const [uploadAssetRevision, setUploadAssetRevision] = useState(0)
 
   const publishUploads = useCallback((
     update: (
       current: Record<string, FlowCanvasAssetUpload>,
     ) => Record<string, FlowCanvasAssetUpload>,
+    referencesChanged = false,
   ) => {
     const next = update(uploadsRef.current)
     uploadsRef.current = next
-    setUploads(next)
+    for (const listener of uploadListenersRef.current)
+      listener()
+    if (referencesChanged)
+      setUploadAssetRevision(current => current + 1)
   }, [])
 
   const removeUpload = useCallback((nodeId: string) => {
@@ -157,7 +150,7 @@ export function useFlowCanvasAssetUpload(input: {
       const next = { ...current }
       delete next[nodeId]
       return next
-    })
+    }, true)
   }, [publishUploads])
 
   const { mutate: upload } = useMutation({
@@ -200,7 +193,7 @@ export function useFlowCanvasAssetUpload(input: {
         variables.file,
         variables.temporaryAssetId,
       )
-      captureHistory()
+      captureCanvasHistory(store)
       publishUploads(current => ({
         ...current,
         [variables.nodeId]: {
@@ -209,24 +202,33 @@ export function useFlowCanvasAssetUpload(input: {
           progress: 0,
           status: 'uploading',
         },
-      }))
-      setNodes(current => [
-        ...current.map(node => ({ ...node, selected: false })),
-        createCanvasNode({
-          assetId: variables.temporaryAssetId,
-          id: variables.nodeId,
-          position: variables.position,
-          transient: { kind: 'assetUpload' },
-          type: 'asset',
-        }),
-      ])
-      setSelectedIds([variables.nodeId])
+      }), true)
+      const state = store.getState()
+      store.setState({
+        nodes: [
+          ...state.nodes.map(node => node.selected
+            ? { ...node, selected: false }
+            : node),
+          createCanvasNode({
+            assetId: variables.temporaryAssetId,
+            id: variables.nodeId,
+            position: variables.position,
+            transient: { kind: 'assetUpload' },
+            type: 'asset',
+          }),
+        ],
+      })
+      setCanvasSelection(store, { nodeIds: [variables.nodeId] })
     },
     onError: (error, variables) => {
-      setNodes(current => current.filter(node => node.id !== variables.nodeId))
-      setEdges(current => current.filter(edge => (
-        edge.source !== variables.nodeId && edge.target !== variables.nodeId
-      )))
+      const state = store.getState()
+      store.setState({
+        edges: state.edges.filter(edge => (
+          edge.source !== variables.nodeId && edge.target !== variables.nodeId
+        )),
+        nodes: state.nodes.filter(node => node.id !== variables.nodeId),
+        selectedNodeIds: state.selectedNodeIds.filter(id => id !== variables.nodeId),
+      })
       if (uploadsRef.current[variables.nodeId])
         removeUpload(variables.nodeId)
       else
@@ -238,7 +240,7 @@ export function useFlowCanvasAssetUpload(input: {
       }
     },
     onSuccess: (asset, variables) => {
-      if (!nodesRef.current.some(node => node.id === variables.nodeId)) {
+      if (!store.getState().nodes.some(node => node.id === variables.nodeId)) {
         removeUpload(variables.nodeId)
         return
       }
@@ -270,15 +272,18 @@ export function useFlowCanvasAssetUpload(input: {
               },
             }
           : current
+      }, true)
+      const state = store.getState()
+      store.setState({
+        graphRevision: state.graphRevision + 1,
+        nodes: state.nodes.map(node => node.id === variables.nodeId
+          ? {
+              ...node,
+              assetId: asset.id,
+              transient: undefined,
+            }
+          : node),
       })
-      setNodes(current => current.map(node => node.id === variables.nodeId
-        ? {
-            ...node,
-            assetId: asset.id,
-            transient: undefined,
-          }
-        : node))
-      markDirty()
     },
     onSettled: (_data, _error, variables) => {
       controllersRef.current.delete(variables.nodeId)
@@ -333,13 +338,15 @@ export function useFlowCanvasAssetUpload(input: {
     }
   }, [policyDescription, reactFlow, t, upload, wrapperRef])
 
-  useEffect(() => {
-    const nodeIds = new Set(nodes.map(node => node.id))
+  useEffect(() => store.subscribe((state, previous) => {
+    if (state.nodes === previous.nodes)
+      return
+    const nodeIds = new Set(state.nodes.map(node => node.id))
     for (const [nodeId, controller] of controllersRef.current) {
       if (!nodeIds.has(nodeId) && uploadsRef.current[nodeId])
         controller.abort()
     }
-  }, [nodes])
+  }), [store])
 
   useEffect(() => {
     const canonicalAssets = new Map(
@@ -362,18 +369,26 @@ export function useFlowCanvasAssetUpload(input: {
   }, [])
 
   const transientAssets = useMemo(
-    () => Object.values(uploads).map(upload => upload.asset),
-    [uploads],
+    () => {
+      void uploadAssetRevision
+      return Object.values(uploadsRef.current).map(upload => upload.asset)
+    },
+    [uploadAssetRevision],
   )
   const getUpload = useCallback(
-    (nodeId: string) => uploads[nodeId],
-    [uploads],
+    (nodeId: string) => uploadsRef.current[nodeId],
+    [],
   )
+  const subscribeUploads = useCallback((listener: () => void) => {
+    uploadListenersRef.current.add(listener)
+    return () => uploadListenersRef.current.delete(listener)
+  }, [])
 
   return {
     fileInputRef,
     getUpload,
     openFilePicker,
+    subscribeUploads,
     transientAssets,
     uploadFiles,
   }

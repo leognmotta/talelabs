@@ -1,13 +1,13 @@
+/** LLM model-transition normalization and input compatibility projection. */
+
 import type {
   GenerationModelDefinition,
   GenerationSettingValue,
 } from '@talelabs/flows'
 import type { NodeConnection } from '@xyflow/react'
-import type {
-  FlowCanvasContextValue,
-  GenerationConfigurationUpdate,
-} from '../../flow-canvas-context'
+import type { GenerationConfigurationUpdate } from '../../canvas-state/canvas-generation-actions'
 import type { CanvasNode } from '../../flow-canvas-types'
+import type { GenerationNodeCanvas } from '../use-generation-node-controller'
 
 import {
   isGenerationSettingValueValid,
@@ -18,6 +18,7 @@ import {
   generationInputContracts,
 } from '../use-generation-node-controller'
 
+/** Normalizes saved LLM settings against one target model contract. */
 export function llmTargetSettings(
   node: Pick<CanvasNode, 'data'>,
   targetModel: GenerationModelDefinition,
@@ -33,9 +34,10 @@ export function llmTargetSettings(
   })) as Record<string, GenerationSettingValue>
 }
 
+/** Resolves an atomic LLM model transition from compatible current inputs. */
 export function resolveLlmModelConfiguration(
   context: {
-    canvas: FlowCanvasContextValue
+    canvas: GenerationNodeCanvas
     incomingConnections: readonly NodeConnection[]
     node: Pick<CanvasNode, 'data' | 'id'>
   },

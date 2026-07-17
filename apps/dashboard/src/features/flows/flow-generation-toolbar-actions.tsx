@@ -1,3 +1,5 @@
+/** Durable run and retry commands rendered in a generation-node toolbar. */
+
 import { IconChevronDown } from '@tabler/icons-react'
 import { Button } from '@talelabs/ui/components/button'
 import {
@@ -10,8 +12,9 @@ import {
 import { Spinner } from '@talelabs/ui/components/spinner'
 import { useTranslation } from 'react-i18next'
 import { FlowActionTooltip } from './flow-action-tooltip'
-import { useFlowCanvas } from './flow-canvas-context'
+import { useFlowCanvasRuntime, useFlowGenerationPreview } from './flow-canvas-runtime-context'
 
+/** Renders run, scoped-run, and retry commands for one generation node. */
 export function FlowGenerationToolbarActions({
   canRun,
   nodeId,
@@ -20,15 +23,15 @@ export function FlowGenerationToolbarActions({
   nodeId: string
 }) {
   const { t } = useTranslation()
-  const canvas = useFlowCanvas()
+  const runtime = useFlowCanvasRuntime()
   const label = t('flows.nodeToolbar.run')
   const optionsLabel = t('flows.nodeToolbar.runOptions')
-  const preview = canvas.getGenerationPreview(nodeId)
+  const preview = useFlowGenerationPreview(nodeId)
   const previewStatus = preview?.status
   const retryAvailable = Boolean(preview?.retrySource)
   const running = previewStatus === 'pending'
   const queued = previewStatus === 'queued'
-  const hasRunnablePlan = Boolean(canvas.getGenerationPreviewFingerprint(nodeId))
+  const hasRunnablePlan = Boolean(runtime.getGenerationPreviewFingerprint(nodeId))
   const runDisabled = (!canRun && !hasRunnablePlan)
     || running
     || queued
@@ -43,7 +46,7 @@ export function FlowGenerationToolbarActions({
           disabled={runDisabled}
           size="sm"
           type="button"
-          onClick={() => void canvas.runGenerationPreview(nodeId)}
+          onClick={() => void runtime.runGenerationPreview(nodeId)}
         >
           {running && <Spinner aria-hidden="true" className="size-3.5" />}
           {label}
@@ -76,7 +79,7 @@ export function FlowGenerationToolbarActions({
                 <>
                   <DropdownMenuItem
                     className="items-start py-3"
-                    onClick={() => void canvas.retryGenerationRun(nodeId)}
+                    onClick={() => void runtime.retryGenerationRun(nodeId)}
                   >
                     {t('flows.nodeToolbar.retryEntireRun')}
                   </DropdownMenuItem>
@@ -87,7 +90,7 @@ export function FlowGenerationToolbarActions({
           <DropdownMenuItem
             className="items-start py-3"
             disabled={runDisabled}
-            onClick={() => void canvas.runGenerationPreview(nodeId, 'fromHere')}
+            onClick={() => void runtime.runGenerationPreview(nodeId, 'fromHere')}
           >
             <span className="flex flex-col gap-0.5">
               <span>{t('flows.nodeToolbar.runFromHere')}</span>
@@ -99,7 +102,7 @@ export function FlowGenerationToolbarActions({
           <DropdownMenuItem
             className="items-start py-3"
             disabled={runDisabled}
-            onClick={() => void canvas.runGenerationPreview(nodeId, 'tillHere')}
+            onClick={() => void runtime.runGenerationPreview(nodeId, 'tillHere')}
           >
             <span className="flex flex-col gap-0.5">
               <span>{t('flows.nodeToolbar.runTillHere')}</span>

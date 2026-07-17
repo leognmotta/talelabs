@@ -1,8 +1,9 @@
+/** Output-port preview projection for Assets, text, and generation results. */
+
 import type { FlowHandleDefinition } from '@talelabs/flows'
 import type { TFunction } from 'i18next'
-import type { FlowCanvasContextValue } from './flow-canvas-context'
 import type { CanvasNode } from './flow-canvas-types'
-import type { PortPreviewItem } from './flow-node-port-preview'
+import type { FlowNodePortCanvas, PortPreviewItem } from './flow-node-port-preview'
 
 import { isGenerationNodeType } from '@talelabs/flows'
 import { flowNodeName } from './flow-node-port-preview'
@@ -10,7 +11,7 @@ import { flowNodeName } from './flow-node-port-preview'
 function generationOutputPreviewItems(
   handle: FlowHandleDefinition,
   node: CanvasNode,
-  canvas: FlowCanvasContextValue,
+  canvas: FlowNodePortCanvas,
 ): PortPreviewItem[] {
   const preview = canvas.getGenerationPreview(node.id)
   const valueType = handle.valueTypes[0]
@@ -45,10 +46,11 @@ function generationOutputPreviewItems(
     }))
 }
 
+/** Projects current values available from one node output port. */
 export function outputPortPreviewItems(
   handle: FlowHandleDefinition,
   node: CanvasNode,
-  canvas: FlowCanvasContextValue,
+  canvas: FlowNodePortCanvas,
   t: TFunction,
 ): PortPreviewItem[] {
   const valueType = handle.valueTypes[0]

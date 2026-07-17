@@ -1,5 +1,7 @@
+/** Context-menu presentation for pane, node, and multi-selection targets. */
+
 import type { FlowNodeType } from '@talelabs/flows'
-import type { FlowCanvasContextTarget } from './use-flow-canvas-selection'
+import type { CanvasContextTarget } from './canvas-state/canvas-store'
 
 import { IconCopy, IconTrash } from '@tabler/icons-react'
 import {
@@ -9,13 +11,15 @@ import {
   ContextMenuSeparator,
   ContextMenuShortcut,
 } from '@talelabs/ui/components/context-menu'
+import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FlowCanvasPaneContextMenu } from './flow-canvas-pane-context-menu'
 import { FlowCanvasSelectionContextMenu } from './flow-canvas-selection-context-menu'
 
-export function FlowCanvasContextMenuContent(input: {
+/** Renders the menu appropriate for the current scoped canvas target. */
+export const FlowCanvasContextMenuContent = memo((input: {
   canAddNodeType: (nodeType: FlowNodeType) => boolean
-  contextTarget: FlowCanvasContextTarget
+  contextTarget: CanvasContextTarget
   getCanRunNode: (nodeId: string) => boolean
   shortcutLabels: Readonly<{ delete: string, duplicate: string }>
   onAddNode: (
@@ -34,7 +38,7 @@ export function FlowCanvasContextMenuContent(input: {
   onRunTillHere: (nodeId: string) => void
   onSelectAll: () => void
   onUploadAssets: (position: null | { x: number, y: number }) => void
-}) {
+}) => {
   const { t } = useTranslation()
   const target = input.contextTarget
   return (
@@ -111,4 +115,4 @@ export function FlowCanvasContextMenuContent(input: {
             )}
     </ContextMenuContent>
   )
-}
+})

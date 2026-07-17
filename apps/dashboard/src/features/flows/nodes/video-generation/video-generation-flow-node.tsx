@@ -1,3 +1,5 @@
+/** Memoized video generation node driven by its own data and run preview. */
+
 import type { NodeProps } from '@xyflow/react'
 import type { CanvasNode } from '../../flow-canvas-types'
 
@@ -5,7 +7,7 @@ import { IconVideo } from '@tabler/icons-react'
 import { useNodeConnections } from '@xyflow/react'
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useFlowCanvas } from '../../flow-canvas-context'
+import { useFlowGenerationPreview } from '../../flow-canvas-runtime-context'
 import { FlowNodeShell } from '../flow-node-shell'
 import { GenerationNodeFrame } from '../generation-node-frame'
 import { GenerationNodePreviewArea } from '../generation-node-preview-area'
@@ -15,6 +17,7 @@ import { VideoGenerationInputRail } from './video-generation-input-rail'
 import { VideoGenerationPreview } from './video-generation-preview'
 import { VideoGenerationPrompt } from './video-generation-prompt'
 
+/** Renders one memoized video generation node and its keyed preview. */
 export const VideoGenerationFlowNode = memo(({
   data,
   id,
@@ -22,7 +25,7 @@ export const VideoGenerationFlowNode = memo(({
   type,
 }: NodeProps<CanvasNode>) => {
   const { t } = useTranslation()
-  const canvas = useFlowCanvas()
+  const preview = useFlowGenerationPreview(id)
   const incomingConnections = useNodeConnections({ handleType: 'target', id })
   const node = { data, id, type }
   const video = useVideoGenerationNode({ incomingConnections, node })
@@ -63,7 +66,6 @@ export const VideoGenerationFlowNode = memo(({
     : undefined
 
   const outputLabel = t('flows.outputs.videos')
-  const preview = canvas.getGenerationPreview(id)
   const previewUrl = preview
     && 'output' in preview
     && preview.output?.kind === 'media'

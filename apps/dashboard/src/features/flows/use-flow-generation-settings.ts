@@ -1,3 +1,5 @@
+/** Generation settings inspector state and commands for one selected node. */
+
 import type { CanvasNode } from './flow-canvas-types'
 import type {
   FlowGenerationConfigurationChange,
@@ -8,8 +10,11 @@ import {
   getGenerationOperation,
   isCurrentGenerationModelContract,
 } from '@talelabs/flows'
+import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useFlowCanvas } from './flow-canvas-context'
+import { useCanvasStoreApi } from './canvas-state/canvas-store-context'
+import { useFlowCanvasRuntime } from './flow-canvas-runtime-context'
+import { createFlowGenerationCanvasBridge } from './flow-generation-canvas-bridge'
 import {
   applyFlowGenerationConfiguration,
 } from './flow-generation-configuration'
@@ -25,11 +30,17 @@ function nodeMediaType(node: CanvasNode) {
   return 'image'
 }
 
+/** Resolves settings presentation and direct store commands for one node. */
 export function useFlowGenerationSettings(node: CanvasNode) {
   const { t } = useTranslation()
-  const canvas = useFlowCanvas()
+  const store = useCanvasStoreApi()
+  const runtime = useFlowCanvasRuntime()
+  const canvas = useMemo(() => createFlowGenerationCanvasBridge({
+    referenceData: runtime.referenceData,
+    store,
+  }), [runtime.referenceData, store])
   const mediaType = nodeMediaType(node)
-  const mediaModels = canvas.generationConfig.models.filter(
+  const mediaModels = runtime.generationConfig.models.filter(
     model => model.mediaType === mediaType,
   )
   const availableModels = mediaModels.filter(model => model.enabled)

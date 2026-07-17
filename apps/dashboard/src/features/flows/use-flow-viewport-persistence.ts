@@ -1,13 +1,19 @@
-import type { Viewport } from '@xyflow/react'
+/** Debounced server persistence for React Flow viewport presentation state. */
+
+import type { OnMoveEnd, Viewport } from '@xyflow/react'
 
 import { useCallback, useEffect, useRef } from 'react'
 import { saveFlowViewport } from './flow.queries'
 
 const VIEWPORT_SAVE_DELAY_MS = 300
 
+/** Returns a React Flow move-end handler that persists only the latest viewport. */
 export function useFlowViewportPersistence(input: {
+  /** Flow whose viewport is being persisted. */
   flowId: string
+  /** Reports the latest failed viewport write after queued work settles. */
   onError: () => void
+  /** Organization that owns the Flow. */
   organizationId: string
 }) {
   const pendingViewportRef = useRef<null | Viewport>(null)
@@ -56,7 +62,7 @@ export function useFlowViewportPersistence(input: {
     return savePromiseRef.current
   }, [performSave])
 
-  const schedule = useCallback((viewport: Viewport) => {
+  const schedule = useCallback<OnMoveEnd>((_event, viewport) => {
     pendingViewportRef.current = viewport
     clearTimer()
     timerRef.current = window.setTimeout(() => {

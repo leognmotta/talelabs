@@ -1,3 +1,5 @@
+/** Memoized image generation node with keyed preview and crop state. */
+
 import type { NodeProps } from '@xyflow/react'
 import type { CanvasNode } from '../../flow-canvas-types'
 
@@ -6,7 +8,8 @@ import { normalizeImageGenerationInputSlotId } from '@talelabs/flows'
 import { useNodeConnections } from '@xyflow/react'
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useFlowCanvas } from '../../flow-canvas-context'
+import { useCanvasStore } from '../../canvas-state/canvas-store-context'
+import { useFlowGenerationPreview } from '../../flow-canvas-runtime-context'
 import { readImageCrop } from '../../image-crop'
 import { FlowNodeShell } from '../flow-node-shell'
 import { GenerationNodeFrame } from '../generation-node-frame'
@@ -18,10 +21,14 @@ import { ImageGenerationPreview } from './image-generation-preview'
 import { ImageGenerationPrompt } from './image-generation-prompt'
 import { useImageGenerationNode } from './use-image-generation-node'
 
+/** Renders one memoized image generation node and its keyed preview. */
 export const ImageGenerationFlowNode = memo(
   ({ data, id, selected, type }: NodeProps<CanvasNode>) => {
     const { t } = useTranslation()
-    const canvas = useFlowCanvas()
+    const preview = useFlowGenerationPreview(id)
+    const editingCrop = useCanvasStore(
+      state => state.editingImageCropNodeId === id,
+    )
     const incomingConnections = useNodeConnections({
       handleType: 'target',
       id,
@@ -66,13 +73,11 @@ export const ImageGenerationFlowNode = memo(
         : undefined
 
     const outputLabel = t('flows.outputs.images')
-    const preview = canvas.getGenerationPreview(id)
     const previewUrl = preview
       && 'output' in preview
       && preview.output?.kind === 'media'
       ? preview.output.download.content
       : undefined
-    const editingCrop = canvas.editingImageCropNodeId === id
     const savedCrop = readImageCrop(data.crop)
 
     return (

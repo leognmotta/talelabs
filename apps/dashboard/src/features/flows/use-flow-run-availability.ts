@@ -1,21 +1,25 @@
+/** Runtime availability queries for adding and executing generation nodes. */
+
 import type { FlowNodeType } from '@talelabs/flows'
 import type { GenerationConfigResponse } from '@talelabs/sdk'
-import type { CanvasNode, FlowGenerationPreview } from './flow-canvas-types'
+import type { CanvasStore } from './canvas-state/canvas-store'
+import type { FlowGenerationPreview } from './flow-canvas-types'
 
 import { isGenerationNodeType } from '@talelabs/flows'
 import { useCallback, useMemo } from 'react'
 
+/** Resolves model availability and imperative run admission checks. */
 export function useFlowRunAvailability(input: {
   generationConfig: GenerationConfigResponse
   getGenerationPreview: (nodeId: string) => FlowGenerationPreview | undefined
   getGenerationPreviewFingerprint: (nodeId: string) => null | string
-  nodes: CanvasNode[]
+  store: CanvasStore
 }) {
   const {
     generationConfig,
     getGenerationPreview,
     getGenerationPreviewFingerprint,
-    nodes,
+    store,
   } = input
   const executableModelIds = useMemo(
     () => new Set(generationConfig.models.map(model => model.id)),
@@ -33,7 +37,7 @@ export function useFlowRunAvailability(input: {
     [executableGenerationNodeTypes],
   )
   const getCanRunNode = useCallback((nodeId: string) => {
-    const node = nodes.find(candidate => candidate.id === nodeId)
+    const node = store.getState().nodes.find(candidate => candidate.id === nodeId)
     if (
       node
       && isGenerationNodeType(node.type)
@@ -49,9 +53,9 @@ export function useFlowRunAvailability(input: {
     executableModelIds,
     getGenerationPreview,
     getGenerationPreviewFingerprint,
-    nodes,
+    store,
   ])
-  const hasUnavailableGenerationNode = nodes.some(node =>
+  const hasUnavailableGenerationNode = store.getState().nodes.some(node =>
     isGenerationNodeType(node.type)
     && !executableModelIds.has(String(node.data.modelId ?? '')),
   )

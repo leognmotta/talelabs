@@ -1,3 +1,5 @@
+/** Memoized speech generation node driven by its own data and run preview. */
+
 import type { NodeProps } from '@xyflow/react'
 import type { CanvasNode } from '../../../flow-canvas-types'
 
@@ -5,7 +7,7 @@ import { IconMicrophone } from '@tabler/icons-react'
 import { useNodeConnections } from '@xyflow/react'
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useFlowCanvas } from '../../../flow-canvas-context'
+import { useFlowGenerationPreview } from '../../../flow-canvas-runtime-context'
 import { FlowNodeShell } from '../../flow-node-shell'
 import { GenerationNodeFrame } from '../../generation-node-frame'
 import { GenerationNodePreviewArea } from '../../generation-node-preview-area'
@@ -14,6 +16,7 @@ import { AudioPreview } from '../shared/audio-preview'
 import { AudioTextField } from '../shared/audio-text-field'
 import { useSpeechGenerationNode } from './use-speech-generation-node'
 
+/** Renders one memoized speech generation node and its keyed preview. */
 export const SpeechGenerationFlowNode = memo(({
   data,
   id,
@@ -21,13 +24,12 @@ export const SpeechGenerationFlowNode = memo(({
   type,
 }: NodeProps<CanvasNode>) => {
   const { t } = useTranslation()
-  const canvas = useFlowCanvas()
+  const preview = useFlowGenerationPreview(id)
   const incomingConnections = useNodeConnections({ handleType: 'target', id })
   const speech = useSpeechGenerationNode({
     incomingConnections,
     node: { data, id, type },
   })
-  const preview = canvas.getGenerationPreview(id)
   const audioPreviewUrl = preview
     && 'output' in preview
     && preview.output?.kind === 'media'

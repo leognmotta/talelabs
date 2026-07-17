@@ -4,16 +4,13 @@ import type { FlowRunExecutionMode } from '@talelabs/flows'
 import type { FlowLatestResult } from '@talelabs/sdk'
 import type { TFunction } from 'i18next'
 import type { RefObject } from 'react'
-import type {
-  CanvasEdge,
-  CanvasNode,
-  FlowReferenceData,
-} from './flow-canvas-types'
+import type { CanvasStore } from './canvas-state/canvas-store'
+import type { FlowReferenceData } from './flow-canvas-types'
 import type { FlowGenerationPreviewScope } from './flow-mock-runtime-planner'
 
 import { isGenerationNodeType } from '@talelabs/flows'
 import { postRunsIdRetry } from '@talelabs/sdk'
-import { useCallback, useMemo } from 'react'
+import { useCallback } from 'react'
 import { toast } from 'sonner'
 
 import { getApiErrorMessage } from '../../shared/lib/api-error'
@@ -27,39 +24,32 @@ import { useFlowRunObservation } from './use-flow-run-observation'
 
 /** Coordinates canvas commands while admission, observation, and projection stay isolated. */
 export function useFlowMockRunOrchestration(input: {
-  edges: readonly CanvasEdge[]
-  edgesRef: RefObject<CanvasEdge[]>
   executionMode: FlowRunExecutionMode
   flowId: string
   initialActiveRunIds: readonly string[]
   initialLatestResults: readonly FlowLatestResult[]
   locale: string
-  nodes: readonly CanvasNode[]
-  nodesRef: RefObject<CanvasNode[]>
   organizationId: string
-  referenceData: FlowReferenceData
   referenceDataRef: RefObject<FlowReferenceData>
   saveNow: (options?: { reconcileWithServer?: boolean }) => Promise<null | number>
+  store: CanvasStore
   t: TFunction
 }) {
   const {
-    edges,
-    edgesRef,
     executionMode,
     flowId,
     initialActiveRunIds,
     initialLatestResults,
     locale,
-    nodes,
-    nodesRef,
     organizationId,
-    referenceData,
     referenceDataRef,
     saveNow,
+    store,
     t,
   } = input
+  const getEdges = useCallback(() => store.getState().edges, [store])
   const observation = useFlowRunObservation({
-    edgesRef,
+    getEdges,
     flowId,
     initialActiveRunIds,
     initialLatestResults,
@@ -69,37 +59,24 @@ export function useFlowMockRunOrchestration(input: {
   const {
     isRunAllRunning,
     observeRun,
-    previews,
+    getGenerationPreview,
     previewsRef,
     setRunAllAdmissionRunning,
+    subscribeGenerationPreviews,
     updatePreview,
     updateRunStatePreview,
   } = observation
-  const planner = useMemo(() => createFlowMockRuntimePlanner({
-    edges,
-    locale,
-    nodes,
-    previews,
-    referenceData,
-  }), [
-    edges,
-    locale,
-    nodes,
-    previews,
-    referenceData,
-  ])
   const createCurrentPlanner = useCallback(() => createFlowMockRuntimePlanner({
-    edges: edgesRef.current,
+    edges: store.getState().edges,
     locale,
-    nodes: nodesRef.current,
+    nodes: store.getState().nodes,
     previews: previewsRef.current,
     referenceData: referenceDataRef.current,
   }), [
-    edgesRef,
     locale,
-    nodesRef,
     previewsRef,
     referenceDataRef,
+    store,
   ])
   const admitRun = useFlowRunAdmission({
     executionMode,
@@ -111,13 +88,13 @@ export function useFlowMockRunOrchestration(input: {
 
   const markPreviewScope = useCallback((nodeIds: readonly string[]) => {
     const activeNodeIds = activePreviewNodeIdsFromClosure({
-      edges: edgesRef.current,
-      nodes: nodesRef.current,
+      edges: store.getState().edges,
+      nodes: store.getState().nodes,
       previewNodeIds: nodeIds,
     })
     const currentPlanner = createCurrentPlanner()
     for (const nodeId of nodeIds) {
-      const node = nodesRef.current.find(item => item.id === nodeId)
+      const node = store.getState().nodes.find(item => item.id === nodeId)
       if (!node || !isGenerationNodeType(node.type))
         continue
       updateRunStatePreview(
@@ -126,7 +103,7 @@ export function useFlowMockRunOrchestration(input: {
         activeNodeIds.has(nodeId) ? 'pending' : 'queued',
       )
     }
-  }, [createCurrentPlanner, edgesRef, nodesRef, updateRunStatePreview])
+  }, [createCurrentPlanner, store, updateRunStatePreview])
 
   const markPreviewScopeFailed = useCallback((nodeIds: readonly string[]) => {
     const currentPlanner = createCurrentPlanner()
@@ -208,9 +185,7 @@ export function useFlowMockRunOrchestration(input: {
 
   const runAll = useCallback(async () => {
     setRunAllAdmissionRunning(true)
-    const nodeIds = nodesRef.current
-      .filter(node => isGenerationNodeType(node.type))
-      .map(node => node.id)
+    const nodeIds = store.getState().nodes.filter(node => isGenerationNodeType(node.type)).map(node => node.id)
     markPreviewScope(nodeIds)
     try {
       const result = await admitRun({ mode: 'all' })
@@ -228,26 +203,26 @@ export function useFlowMockRunOrchestration(input: {
     finally {
       setRunAllAdmissionRunning(false)
     }
-  }, [admitRun, markPreviewScope, markPreviewScopeFailed, nodesRef, setRunAllAdmissionRunning, t])
-
-  const getGenerationPreview = useCallback(
-    (nodeId: string) => previews[nodeId],
-    [previews],
-  )
+  }, [admitRun, markPreviewScope, markPreviewScopeFailed, setRunAllAdmissionRunning, store, t])
   const getGenerationPreviewFingerprint = useCallback(
-    (nodeId: string) => planner.getFingerprint(nodeId),
-    [planner],
+    (nodeId: string) => createCurrentPlanner().getFingerprint(nodeId),
+    [createCurrentPlanner],
+  )
+  const getExecutableInputCount = useCallback(
+    (nodeId: string, slotId: string) =>
+      createCurrentPlanner().getExecutableInputCount(nodeId, slotId),
+    [createCurrentPlanner],
   )
 
   return {
-    getExecutableInputCount: planner.getExecutableInputCount,
+    getExecutableInputCount,
     getGenerationPreview,
     getGenerationPreviewFingerprint,
     isRunAllRunning,
-    previews,
     retryGenerationRun,
     runAll,
     runGenerationPreview,
     runGenerationSelectionPreview,
+    subscribeGenerationPreviews,
   }
 }

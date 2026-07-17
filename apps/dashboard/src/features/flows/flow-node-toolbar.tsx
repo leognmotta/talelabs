@@ -1,16 +1,20 @@
+/** Selection-aware toolbar composition for one custom Flow node. */
 /* eslint-disable better-tailwindcss/no-unknown-classes -- React Flow uses these interaction classes as behavior hooks. */
 
 import { IconLock, IconLockOpen } from '@tabler/icons-react'
 import { NodeToolbar, Position } from '@xyflow/react'
 import { useTranslation } from 'react-i18next'
+import { updateCanvasNodeData } from './canvas-state/canvas-node-actions'
+import { useCanvasStore, useCanvasStoreApi } from './canvas-state/canvas-store-context'
 import { FlowAssetToolbarActions } from './flow-asset-toolbar-actions'
-import { useFlowCanvas } from './flow-canvas-context'
+import { useFlowCanvasRuntime } from './flow-canvas-runtime-context'
 import { getFlowDashboardNodeDefinition } from './flow-dashboard-node-registry'
 import { FlowGenerationOutputToolbarActions } from './flow-generation-output-toolbar-actions'
 import { FlowGenerationToolbarActions } from './flow-generation-toolbar-actions'
 import { FlowNodeToolbarActions } from './flow-node-toolbar-actions'
 import { FlowToolbarButton } from './flow-toolbar-button'
 
+/** Renders the selected node's commands from its narrow store slice. */
 export function FlowNodeToolbar({
   generationReadiness,
   nodeId,
@@ -19,8 +23,11 @@ export function FlowNodeToolbar({
   nodeId: string
 }) {
   const { t } = useTranslation()
-  const canvas = useFlowCanvas()
-  const node = canvas.getNode(nodeId)
+  const store = useCanvasStoreApi()
+  const runtime = useFlowCanvasRuntime()
+  const node = useCanvasStore(
+    state => state.nodes.find(candidate => candidate.id === nodeId),
+  )
 
   if (!node)
     return null
@@ -63,10 +70,10 @@ export function FlowNodeToolbar({
         )}
         pressed={locked}
         onClick={() =>
-          canvas.updateNodeData(nodeId, current => ({
-            ...current,
-            locked: !locked,
-          }))}
+          updateCanvasNodeData({
+            referenceData: runtime.referenceData,
+            store,
+          }, nodeId, current => ({ ...current, locked: !locked }))}
       />
     </NodeToolbar>
   )
