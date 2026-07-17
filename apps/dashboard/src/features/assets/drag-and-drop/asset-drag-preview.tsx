@@ -1,9 +1,12 @@
+/** Asset library drag-and-drop behavior and payload contracts. */
+
 import type { Asset } from '@talelabs/sdk'
 
 import { Badge } from '@talelabs/ui/components/badge'
 import { createPortal } from 'react-dom'
-import { AssetMediaPreview } from '../asset-media-preview'
+import { AssetMediaPreview } from '../media/asset-media-preview'
 
+/** Displays the dragged Asset/folder identity and multi-selection count. */
 export function AssetDragPreview({
   asset,
   count,

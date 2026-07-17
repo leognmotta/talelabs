@@ -1,3 +1,5 @@
+/** Global drag monitor that resolves the active library payload and folder target. */
+
 import type { LibraryDragData } from './asset-drag-data'
 
 import { monitorForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
@@ -5,8 +7,9 @@ import { useEffect, useRef, useState } from 'react'
 import {
   isFolderDropTargetData,
   isLibraryDragData,
-} from './asset-drag-data'
+} from './library-drop-data-guards'
 
+/** Tracks the active drag payload and dispatches a validated drop when it ends. */
 export function useAssetDragMonitor({
   onDrop,
 }: {
@@ -40,3 +43,4 @@ export function useAssetDragMonitor({
 
   return activeDragData
 }
+/** Global drag monitor that resolves the active library payload and folder target. */

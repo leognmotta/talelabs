@@ -1,14 +1,18 @@
+/** Folder drop-target registration with live move-admission feedback. */
+
 import type { Folder } from '@talelabs/sdk'
 import type { RefObject } from 'react'
 import type { LibraryDragData } from './asset-drag-data'
 
 import { dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
 import { useEffect, useRef, useState } from 'react'
-import { isLibraryDragData } from './asset-drag-data'
 import { validateLibraryMove } from './folder-move-validation'
+import { isLibraryDragData } from './library-drop-data-guards'
 
+/** Visual state combining pointer activity with move-admission status. */
 export type FolderDropState = 'active-forbidden' | 'active-valid' | 'forbidden' | 'idle' | 'valid'
 
+/** Registers one folder target and reports whether the current payload may drop. */
 export function useFolderDropTarget({
   activeDragData,
   elementRef,
@@ -54,3 +58,4 @@ export function useFolderDropTarget({
 
   return valid ? 'valid' : 'forbidden'
 }
+/** Folder drop-target registration with live move-admission feedback. */
