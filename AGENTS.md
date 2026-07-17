@@ -193,8 +193,8 @@ to a good developer without AI assistance.
    is understood, and do not copy existing behavior to avoid finding its owner.
 5. Each file owns one cohesive responsibility and exposes a narrow public API.
    Split by domain ownership rather than by arbitrary numbered fragments. The
-   600-line and three-function limits below are guardrails, not substitutes for
-   single responsibility.
+   600-line limit and cohesion rules below are guardrails, not substitutes for
+   engineering judgment.
 6. Every authored TypeScript module begins with a short TSDoc overview explaining
    its ownership and purpose. Use `@packageDocumentation` only for package public
    entry points.
@@ -214,26 +214,28 @@ to a good developer without AI assistance.
 
 ## Code structure rules
 
-These limits apply to every authored source file. Generated SDK artifacts,
+These rules apply to every authored source file. Generated SDK artifacts,
 lockfiles, and machine-generated catalogs are not refactoring targets.
 
 1. An authored source file must not exceed 600 physical lines. Split the file
    before it crosses this limit, using domain ownership and single
    responsibility as the boundary rather than arbitrary numbered fragments.
-2. An authored source file must not define more than three functions. Function
-   declarations, assigned function expressions, React components, hooks, and
-   class or object methods all count toward this limit.
-3. Small callbacks written directly inside operations such as `map`, `filter`,
-   or event props do not count as standalone functions, but must not be used to
-   hide substantial logic or bypass the three-function limit.
-4. Do not satisfy these limits by creating thin wrapper files, numbered file
-   fragments, giant classes, oversized anonymous callbacks, or generic helpers
-   with unrelated responsibilities. Each extracted module must have a clear,
-   cohesive owner and a narrow public API.
-5. Before adding code to a file near either limit, extract an existing
-   responsibility first. Reviews must report violations and reject new work
-   that increases an existing violation without an explicit user-approved
-   remediation plan.
+2. Function count is a review signal, not a hard limit. A file may define
+   multiple closely related functions, React components, hooks, state actions,
+   or query-key factories when they collectively implement one clear domain
+   responsibility and are easier to understand together.
+3. Split a file when it mixes unrelated workflows or architectural layers,
+   exposes a broad or incoherent API, repeats independently useful behavior, or
+   forces a reader to scan unrelated code to understand a change. Report the
+   concrete responsibility or readability problem, not the raw function count.
+4. Do not create thin wrappers, numbered fragments, one-file folders, giant
+   classes, oversized anonymous callbacks, or generic dumping-ground helpers to
+   make files look smaller. Every extracted module must reduce reasoning cost
+   and have a clear owner and narrow public API.
+5. Before adding code to a file near the line limit or adding a second domain
+   responsibility, extract a cohesive boundary where one exists. Reviews must
+   reject spaghetti structure, but must not demand mechanical splitting of a
+   cohesive module solely because it contains several functions.
 
 ## Environment variable rules
 

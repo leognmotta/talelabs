@@ -12,7 +12,8 @@ tracing or research.
 ## 1. Establish The Contract
 
 1. Read the applicable `AGENTS.md` files before judging code.
-2. Always read `docs/talelabs-product-vision.md`.
+2. Always read `docs/assets-flows-mvp-contract.md` and
+   `docs/talelabs-product-vision.md`.
 3. Read only the source-of-truth documents relevant to the changed behavior:
    - `docs/flow-nodes-planning.md` for Flow nodes, execution, batching, Tools,
      Recipes, snapshots, or runtime values.
@@ -124,6 +125,12 @@ questions instead of performing a broad market survey for every change.
 ### Code quality and maintainability
 
 - Apply DRY to duplicated policy and behavior, not merely similar syntax.
+- Prefer the smallest explicit architecture that remains reliable and
+  extensible. A good developer must be able to trace the primary behavior
+  without AI assistance, hidden registration, or speculative abstractions.
+- Require direct control flow, explicit names, narrow module boundaries, and
+  one authoritative representation of each fact. Derived projections are
+  acceptable only when generated or validated from that source.
 - Prefer one authoritative implementation for invariants, validation, query
   keys, cache policy, registries, and provider capabilities.
 - Check cohesion, naming, control flow, type safety, error semantics, comments,
@@ -169,6 +176,13 @@ questions instead of performing a broad market survey for every change.
 
 - Keep code in the repository's established package, feature, domain, service,
   data, and shared-component boundaries.
+- Verify the repository's authored-source guardrails: no file over 600 physical
+  lines, and each file must retain one cohesive responsibility with a narrow,
+  understandable API. Function count is a diagnostic signal, not a defect by
+  itself. Report mixed responsibilities, difficult tracing, repeated logic, or
+  broad APIs instead of reporting a raw function total. Do not accept thin
+  wrappers, numbered fragments, large anonymous callbacks, or unrelated generic
+  helpers as artificial remedies.
 - Flag files that coordinate unrelated responsibilities, mix policy with
   presentation or persistence, or become a central dependency for unrelated
   features.
@@ -177,6 +191,52 @@ questions instead of performing a broad market survey for every change.
   a design problem.
 - Avoid both monolithic “solve everything here” modules and fragmented wrappers
   that add indirection without ownership.
+
+### Human-readable frontend organization
+
+- Review feature folders as navigation systems, not just storage locations. A
+  newcomer should be able to identify the screen entry point, state owner, API
+  boundary, primary interactions, and shared primitives from folder names
+  without scanning dozens of unrelated files or relying on a global search.
+- Organize large features by cohesive product responsibility or user workflow,
+  such as `browse`, `editor`, `runs`, `generation`, `viewer`, or `folders`.
+  Reject flat feature roots that mix many independent responsibilities.
+- Treat more than 20 directly contained authored files as an investigation
+  threshold, not an automatic defect. Determine whether the directory still
+  communicates one cohesive purpose. A feature root already above that
+  threshold should not receive more flat files without an explicit ownership
+  reason.
+- Prefer purpose-bearing folder names. Avoid catch-all `components`, `hooks`,
+  `types`, `utils`, and `helpers` directories when the name does not explain the
+  product capability those files support.
+- Preserve the existing feature-first top level. Do not recommend a wholesale
+  architecture framework, excessive nesting, broad barrel exports, or a second
+  shared layer merely to make the tree look systematic.
+- Reject one-file folders and long chains of nested directories unless the
+  folder defines a stable boundary with a credible growth or ownership reason.
+  Reorganization should reduce search cost, not replace one flat list with a
+  tree of trivial wrappers.
+- Check dependency direction. Route and screen entry points may compose feature
+  capabilities; capabilities may depend on their local state, data, and UI
+  primitives. Lower-level modules must not import screens or create cycles.
+- Inspect cross-feature imports. Repeated consumers should use a small stable
+  explicit seam rather than reaching through arbitrary feature internals. Do
+  not add a broad `index.ts` barrel when explicit paths are clearer.
+- Colocate Zustand selectors and actions with the store state they understand.
+  Keep server state in TanStack Query, URL state in the router/nuqs, and local
+  ephemeral state in the smallest owning component. Do not duplicate derived
+  state across these systems.
+- Protect React Flow performance while reorganizing files: node/edge components
+  and React Flow configuration remain referentially stable; high-frequency
+  consumers use narrow selectors; unrelated UI must not subscribe to complete
+  `nodes` or `edges` arrays.
+- Require useful module and exported-symbol TSDoc according to the root
+  `AGENTS.md`. Documentation must explain ownership, contracts, lifecycle, and
+  invariants rather than narrating obvious implementation.
+- Apply an extension-path test: name the files a developer must inspect or
+  change to add a sibling screen, node, run behavior, or Asset view. Flag paths
+  that require unrelated edits, duplicate plumbing, or knowledge of hidden
+  internals.
 
 ### Product and UX
 

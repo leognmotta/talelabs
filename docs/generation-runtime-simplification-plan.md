@@ -933,7 +933,8 @@ Goal: reduce the reading path without changing graph semantics.
    command selection -> materialization -> job expansion -> snapshot assembly.
 2. Organize generation resolution by node family, not provider or catalog era.
 3. Extract only cohesive responsibilities.
-4. Respect the 600-line and three-function authored-source limits.
+4. Respect the 600-line limit and authored-source cohesion rules. Function
+   count is a review signal rather than a mechanical acceptance gate.
 5. Reject thin wrappers, generic helper dumping grounds, and numbered fragments.
 
 Exit gate: a developer can explain planner stages from filenames and trace one
@@ -1047,7 +1048,8 @@ It must also satisfy:
 2. No model-specific adapter is needed for that change.
 3. A developer can trace a run through no more than four conceptual modules.
 4. No authored source file exceeds 600 physical lines.
-5. No authored source file defines more than three functions.
+5. Each authored source file owns one cohesive responsibility with a narrow,
+   understandable API; several closely related functions may remain together.
 6. Flows contains no provider-specific routes or native model IDs.
 7. Trigger contains no OpenRouter request-shaping knowledge.
 8. OpenRouter contains no TaleLabs product presentation registry.
