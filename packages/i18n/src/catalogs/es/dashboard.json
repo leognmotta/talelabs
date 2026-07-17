@@ -1187,6 +1187,8 @@
   },
   "auth": {
     "authenticationFailed": "Error de autenticación.",
+    "brandDescription": "Crea, ejecuta y perfecciona cada flujo creativo en un único espacio de trabajo.",
+    "brandTitle": "De la primera idea al resultado final.",
     "continueWithGoogle": "Continuar con Google",
     "couldNotContinueWithGoogle": "No se pudo continuar con Google.",
     "createAccount": "Crear cuenta",

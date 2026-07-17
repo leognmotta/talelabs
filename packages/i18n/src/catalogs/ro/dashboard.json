@@ -1187,6 +1187,8 @@
   },
   "auth": {
     "authenticationFailed": "Autentificarea a eșuat.",
+    "brandDescription": "Creează, rulează și rafinează fiecare flux creativ într-un singur spațiu de lucru.",
+    "brandTitle": "De la prima idee la rezultatul final.",
     "continueWithGoogle": "Continuă cu Google",
     "couldNotContinueWithGoogle": "Nu s-a putut continua cu Google.",
     "createAccount": "Creează cont",

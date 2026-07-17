@@ -263,7 +263,7 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply min-h-full bg-background text-foreground;
     -webkit-font-smoothing: antialiased;
     font-feature-settings: "ss01", "cv01", "cv02", "cv03";
     letter-spacing: -0.006em;
@@ -288,11 +288,40 @@
   }
 
   html {
-    @apply font-sans;
+    @apply min-h-full bg-background font-sans;
   }
 }
 
 @layer components {
+  @keyframes talelabs-splash-progress {
+    0% {
+      transform: translateX(-110%);
+    }
+
+    50% {
+      transform: translateX(75%);
+    }
+
+    100% {
+      transform: translateX(250%);
+    }
+  }
+
+  [data-auth-screen] {
+    background:
+      radial-gradient(
+        circle at 12% 18%,
+        color-mix(in oklab, var(--brand-twilight) 18%, transparent) 0,
+        transparent 38rem
+      ),
+      radial-gradient(
+        circle at 88% 82%,
+        color-mix(in oklab, var(--brand-glacier) 12%, transparent) 0,
+        transparent 32rem
+      ),
+      var(--background);
+  }
+
   [data-flow-card-grid] {
     background-image:
       linear-gradient(
@@ -306,6 +335,18 @@
       );
     background-position: -1px -1px;
     background-size: 32px 32px;
+  }
+
+  [data-splash-progress] {
+    animation: talelabs-splash-progress 1.6s
+      cubic-bezier(0.65, 0, 0.35, 1) infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-splash-progress] {
+      animation: none;
+      transform: translateX(75%);
+    }
   }
 
   .react-flow {

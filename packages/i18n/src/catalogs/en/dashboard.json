@@ -1187,6 +1187,8 @@
   },
   "auth": {
     "authenticationFailed": "Authentication failed.",
+    "brandDescription": "Build, run, and refine every creative workflow in one focused workspace.",
+    "brandTitle": "From first idea to finished work.",
     "continueWithGoogle": "Continue with Google",
     "couldNotContinueWithGoogle": "Could not continue with Google.",
     "createAccount": "Create account",

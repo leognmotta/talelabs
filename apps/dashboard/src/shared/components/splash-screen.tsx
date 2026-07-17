@@ -1,5 +1,12 @@
-import { useTranslation } from 'react-i18next'
+/**
+ * Branded full-screen loading state for dashboard and route transitions.
+ *
+ */
 
+import { useTranslation } from 'react-i18next'
+import { TaleLabsLogo } from './talelabs-logo'
+
+/** Presents a compact TaleLabs loading state with optional contextual copy. */
 export function SplashScreen({
   message,
 }: {
@@ -9,30 +16,40 @@ export function SplashScreen({
 
   return (
     <main className="
-      flex min-h-screen items-center justify-center bg-background px-6 py-8
-      text-foreground
+      fixed inset-0 z-50 flex items-center justify-center overflow-hidden
+      bg-background px-6 py-10 text-foreground
     "
     >
-      <section className="
-        flex w-full max-w-sm flex-col items-center gap-5 text-center
-      "
+      <section
+        aria-live="polite"
+        className="
+          relative flex w-full max-w-xs flex-col items-center text-center
+        "
+        role="status"
       >
         <div className="
-          flex size-14 items-center justify-center rounded-lg bg-primary text-xl
-          font-semibold text-primary-foreground shadow-lg
+          flex size-24 items-center justify-center rounded-2xl border
+          border-border/70 bg-card shadow-lg
         "
         >
-          C
+          <TaleLabsLogo className="size-16" variant="icon" />
         </div>
-        <div className="flex flex-col gap-2">
-          <h1 className="text-2xl font-semibold tracking-tight">TaleLabs</h1>
-          <p className="text-sm text-muted-foreground">
-            {message ?? t('workspace.loading')}
-          </p>
-        </div>
-        <div className="flex w-36 flex-col gap-2">
-          <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
-            <div className="h-full w-1/2 rounded-full bg-primary" />
+
+        <h1 className="mt-7 text-xl font-semibold tracking-tight">
+          TaleLabs
+        </h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          {message ?? t('workspace.loading')}
+        </p>
+
+        <div
+          aria-hidden="true"
+          className="mt-8 h-px w-28 overflow-hidden bg-border"
+        >
+          <div
+            className="h-full w-2/5 bg-foreground"
+            data-splash-progress
+          >
           </div>
         </div>
       </section>

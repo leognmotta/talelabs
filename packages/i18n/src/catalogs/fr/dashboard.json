@@ -1187,6 +1187,8 @@
   },
   "auth": {
     "authenticationFailed": "Échec de l’authentification.",
+    "brandDescription": "Créez, exécutez et affinez chaque processus créatif dans un espace de travail unique.",
+    "brandTitle": "De la première idée au résultat final.",
     "continueWithGoogle": "Continuer avec Google",
     "couldNotContinueWithGoogle": "Impossible de continuer avec Google.",
     "createAccount": "Créer un compte",

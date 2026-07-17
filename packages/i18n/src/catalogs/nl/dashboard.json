@@ -1187,6 +1187,8 @@
   },
   "auth": {
     "authenticationFailed": "Authenticatie mislukt.",
+    "brandDescription": "Bouw, voer uit en verfijn elke creatieve workflow in één overzichtelijke werkruimte.",
+    "brandTitle": "Van eerste idee tot eindresultaat.",
     "continueWithGoogle": "Doorgaan met Google",
     "couldNotContinueWithGoogle": "Kan niet doorgaan met Google.",
     "createAccount": "Account maken",

@@ -1187,6 +1187,8 @@
   },
   "auth": {
     "authenticationFailed": "Uwierzytelnianie nie powiodło się.",
+    "brandDescription": "Twórz, uruchamiaj i udoskonalaj każdy kreatywny przepływ pracy w jednym uporządkowanym miejscu.",
+    "brandTitle": "Od pierwszego pomysłu do gotowego efektu.",
     "continueWithGoogle": "Kontynuuj z Google",
     "couldNotContinueWithGoogle": "Nie można kontynuować w Google.",
     "createAccount": "Utwórz konto",

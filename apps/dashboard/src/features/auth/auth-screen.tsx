@@ -1,3 +1,4 @@
+/** Branded sign-in and sign-up entry surface. */
 import type { AuthMode } from '../../shared/types/auth'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@talelabs/ui/components/button'
@@ -15,6 +16,7 @@ import { Controller, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
 import { LocalizedFieldError } from '../../shared/components/localized-field-error'
+import { TaleLabsLogo } from '../../shared/components/talelabs-logo'
 import { getAuthErrorMessage } from '../../shared/lib/auth-error'
 import { authClient, signIn, signUp } from './auth-client'
 import { AuthModeLink } from './auth-mode-link'
@@ -32,6 +34,7 @@ const signUpSchema = authBaseSchema.extend({
 
 type AuthFormValues = z.infer<typeof authBaseSchema>
 
+/** Renders the branded authentication surface for the requested auth mode. */
 export function AuthScreen({
   initialMode,
   onAuthenticated,
@@ -112,44 +115,80 @@ export function AuthScreen({
   }
 
   return (
-    <main className="
-      flex min-h-screen items-center justify-center bg-background px-6 py-8
-      text-foreground
-    "
+    <main
+      data-auth-screen
+      className="
+        flex min-h-dvh items-center justify-center p-4 text-foreground
+        sm:px-6 sm:py-8
+        lg:py-4
+      "
     >
       <section className="
-        grid w-full max-w-5xl overflow-hidden rounded-lg border border-border
-        bg-card shadow-lg
-        md:grid-cols-[1fr_420px]
+        grid w-full max-w-6xl overflow-hidden rounded-2xl border border-border
+        bg-card
+        lg:min-h-[680px] lg:grid-cols-[minmax(0,1.08fr)_minmax(420px,0.92fr)]
       "
       >
         <div className="
-          flex min-h-[520px] flex-col justify-between bg-muted p-8
+          relative hidden overflow-hidden border-r border-border p-12
+          lg:flex lg:flex-col
         "
         >
-          <div className="flex flex-col gap-3">
-            <p className="text-sm font-medium text-muted-foreground">TaleLabs</p>
-            <h1 className="max-w-xl text-4xl font-semibold tracking-tight">
-              {t('auth.organizationFirstTitle')}
-            </h1>
+          <div className="flex items-center gap-3">
+            <TaleLabsLogo className="h-7 w-32" variant="full" />
+            <span className="sr-only">{t('common.appName')}</span>
           </div>
-          <p className="max-w-lg text-sm text-muted-foreground">
-            {t('auth.organizationFirstDescription')}
-          </p>
+
+          <div className="my-auto flex max-w-lg flex-col items-start py-12">
+            <p className="
+              max-w-md text-5xl/none font-semibold tracking-[-0.045em]
+            "
+            >
+              {t('auth.brandTitle')}
+            </p>
+            <p className="mt-5 max-w-md text-base/7 text-muted-foreground">
+              {t('auth.brandDescription')}
+            </p>
+          </div>
+
+          <div
+            aria-hidden="true"
+            className="absolute inset-x-0 bottom-0 grid h-1 grid-cols-5"
+          >
+            <span className="bg-(--brand-dune)" />
+            <span className="bg-(--brand-flora)" />
+            <span className="bg-(--brand-glacier)" />
+            <span className="bg-(--brand-terra)" />
+            <span className="bg-(--brand-twilight)" />
+          </div>
         </div>
 
         <form
-          className="flex flex-col gap-5 p-8"
+          className="
+            mx-auto flex w-full max-w-lg flex-col justify-center gap-6 px-6
+            py-10
+            sm:px-10 sm:py-12
+            lg:px-12
+          "
           onSubmit={form.handleSubmit(handleSubmit)}
         >
-          <div className="flex flex-col gap-1">
-            <h2 className="text-2xl font-semibold tracking-tight">{title}</h2>
-            <p className="text-sm text-muted-foreground">
+          <div className="
+            mb-2
+            lg:hidden
+          "
+          >
+            <TaleLabsLogo className="h-7 w-32" variant="full" />
+            <span className="sr-only">{t('common.appName')}</span>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <h1 className="text-3xl font-semibold tracking-tight">{title}</h1>
+            <p className="text-sm/6 text-muted-foreground">
               {t('auth.useWorkEmail')}
             </p>
           </div>
 
-          <nav className="grid grid-cols-2 gap-2 rounded-lg bg-muted p-1">
+          <nav className="grid grid-cols-2 gap-1 rounded-xl bg-muted p-1">
             <AuthModeLink isActive={mode === 'sign-in'} to="/sign-in">
               {t('auth.signIn')}
             </AuthModeLink>
@@ -162,6 +201,7 @@ export function AuthScreen({
             type="button"
             variant="outline"
             size="lg"
+            className="h-11"
             disabled={isSubmitting || isGoogleSubmitting}
             onClick={() => void handleGoogleSignIn()}
           >
@@ -186,6 +226,7 @@ export function AuthScreen({
                     {...field}
                     id="auth-name"
                     autoComplete="name"
+                    className="h-11"
                     aria-invalid={fieldState.invalid}
                   />
                   {fieldState.invalid && (
@@ -208,6 +249,7 @@ export function AuthScreen({
                     id="auth-email"
                     type="email"
                     autoComplete="email"
+                    className="h-11"
                     aria-invalid={fieldState.invalid}
                   />
                   {fieldState.invalid && (
@@ -228,6 +270,7 @@ export function AuthScreen({
                     id="auth-password"
                     type="password"
                     autoComplete={mode === 'sign-in' ? 'current-password' : 'new-password'}
+                    className="h-11"
                     aria-invalid={fieldState.invalid}
                   />
                   {fieldState.invalid && (
@@ -244,7 +287,12 @@ export function AuthScreen({
             </FieldError>
           )}
 
-          <Button type="submit" size="lg" disabled={isSubmitting || isGoogleSubmitting}>
+          <Button
+            type="submit"
+            size="lg"
+            className="h-11"
+            disabled={isSubmitting || isGoogleSubmitting}
+          >
             {isSubmitting ? t('auth.working') : submitLabel}
           </Button>
         </form>

@@ -1187,6 +1187,8 @@
   },
   "auth": {
     "authenticationFailed": "Authentifizierung fehlgeschlagen.",
+    "brandDescription": "Erstelle, starte und verfeinere jeden kreativen Workflow in einem zentralen Arbeitsbereich.",
+    "brandTitle": "Von der ersten Idee bis zum fertigen Ergebnis.",
     "continueWithGoogle": "Mit Google fortfahren",
     "couldNotContinueWithGoogle": "Konnte mit Google nicht fortfahren.",
     "createAccount": "Konto erstellen",
