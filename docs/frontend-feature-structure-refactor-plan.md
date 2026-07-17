@@ -1,8 +1,8 @@
 # TaleLabs Frontend Feature Structure Refactor
 
-Status: implemented on 2026-07-17; user-owned browser UI/E2E QA pending  
+Status: implemented on 2026-07-17; user-owned browser UI/E2E QA pending
 Scope: `apps/dashboard/src/features/flows` and
-`apps/dashboard/src/features/assets`  
+`apps/dashboard/src/features/assets`
 Behavioral goal: no product, API, state, or runtime behavior changes
 
 ## Goal
