@@ -228,6 +228,8 @@ export interface FlowRunTable {
   createdBy: string | null
   flowId: string | null
   mode: FlowRunMode
+  /** Driver selected at admission; existing rows default to managed. */
+  executionRuntime: Generated<'browser' | 'managed'>
   targetNodeId: string | null
   status: Generated<FlowRunStatus>
   graphSnapshot: GeneratedJsonColumn
@@ -245,9 +247,43 @@ export interface FlowRunTable {
   errorMessage: string | null
   lastReconciledAt: NullableTimestamp
   cancellationReconciledAt: NullableTimestamp
+  /** Safe browser-driver condition projected to active canvas observers. */
+  browserExecutorStatus:
+    | 'blocked'
+    | 'canceling'
+    | 'error'
+    | 'ready'
+    | 'retrying'
+    | null
+  /** Stable non-secret reason for the current browser-driver condition. */
+  browserExecutorCode: string | null
+  /** Database-authored instant of the latest browser-driver condition change. */
+  browserExecutorUpdatedAt: NullableTimestamp
   createdAt: GeneratedTimestamp
   startedAt: NullableTimestamp
   completedAt: NullableTimestamp
+}
+
+/** Authoritative browser executor ownership for one tenant-scoped run. */
+export interface FlowRunBrowserLeaseTable {
+  /** Tenant owning both the lease and its run. */
+  organizationId: string
+  /** Browser-executed run under exclusive server ownership. */
+  flowRunId: string
+  /** Authenticated user allowed to renew and exercise the lease. */
+  userId: string
+  /** Opaque tab-scoped executor identity; never a credential. */
+  executorId: string
+  /** Monotonic ownership generation used to reject stale browser mutations. */
+  fenceToken: Generated<number>
+  /** Instant after which another browser executor may take over. */
+  leaseExpiresAt: Timestamp
+  /** Database-authored instant of the latest successful heartbeat. */
+  heartbeatAt: Timestamp
+  /** First ownership record creation instant. */
+  createdAt: GeneratedTimestamp
+  /** Most recent acquisition or heartbeat instant. */
+  updatedAt: GeneratedTimestamp
 }
 
 /** Durable generation-job provenance and execution table contract. */
@@ -287,8 +323,33 @@ export interface GenerationJobTable {
   providerCompletionReceivedAt: NullableTimestamp
   providerSettlementResolvedAt: NullableTimestamp
   providerSettlementStatus: Generated<GenerationProviderSettlementStatus>
+  /** Browser retry attempt count; managed retries remain owned by Trigger.dev. */
+  browserAttemptCount: Generated<number>
+  /** Lease generation that most recently claimed this browser job. */
+  browserFenceToken: number | null
+  /** One-shot provider submission boundary for takeover-safe recovery. */
+  browserSubmissionState: Generated<'not_started' | 'submitted' | 'submitting'>
+  /** User cancellation instant recorded before browser-side provider cancellation. */
+  browserCancelRequestedAt: NullableTimestamp
+  /** Durable instant when the browser reported a provider cancellation outcome. */
+  browserCancelAcknowledgedAt: NullableTimestamp
+  /** Safe provider cancellation outcome reported by the browser executor. */
+  browserCancelStatus:
+    | 'accepted'
+    | 'rejected'
+    | 'unavailable'
+    | 'unsupported'
+    | null
+  /** Whether the reported cancellation outcome requires no further provider work. */
+  browserCancelFinal: boolean | null
+  /** Database-authored instant after which browser claiming may retry. */
+  browserNextEligibleAt: NullableTimestamp
   creditCost: number | null
   providerCostUsd: NullableNumericColumn
+  /** Informational browser-reported cost that is never trusted for billing. */
+  browserReportedProviderCostUsd: NullableNumericColumn
+  /** Informational browser-reported generation identity awaiting independent trust. */
+  browserReportedProviderGenerationId: string | null
   providerCostReconciliationAttempts: Generated<number>
   providerCostReconciliationAttemptedAt: NullableTimestamp
   errorCode: string | null
@@ -507,6 +568,7 @@ export interface Database {
   flowRunNodeItems: FlowRunNodeItemTable
   flowRunNodes: FlowRunNodeTable
   flowRuns: FlowRunTable
+  flowRunBrowserLeases: FlowRunBrowserLeaseTable
   flows: FlowTable
   folders: FolderTable
   generationJobInputs: GenerationJobInputTable
