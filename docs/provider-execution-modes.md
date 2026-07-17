@@ -90,6 +90,28 @@ running in the same compromised browser origin can access an unlocked key.
 TaleLabs must continue to defend against XSS, malicious dependencies, browser
 extensions, compromised devices, and accidental telemetry capture.
 
+### Current browser credential storage
+
+TaleLabs currently implements the credential-persistence boundary for
+OpenRouter, independently of local provider execution. The browser package uses
+one versioned IndexedDB database with separate stores for encrypted credentials
+and a single non-extractable 256-bit AES-GCM `CryptoKey` persisted by structured
+clone. Each credential write uses a unique 96-bit initialization vector and
+authenticates `{ schemaVersion, userId, providerId }` as additional data.
+
+Credential records are scoped by the immutable Better Auth user ID and provider
+ID. Every stored value is treated as untrusted and validated before status or
+decryption. Invalid records, invalid keys, missing cryptographic support, and
+storage failures produce a fixed non-secret error and fail closed. Explicit
+sign-out deletes all credential records for the current user before the Better
+Auth session is ended.
+
+The Settings UI can show non-secret status and can store, replace, or remove the
+OpenRouter key. It never resolves the plaintext key. Plaintext resolution is a
+reserved browser-package API for the future local executor. The current feature
+does not make provider calls, send credentials over TaleLabs APIs, or implement
+browser run admission or durability.
+
 ### Local run behavior
 
 Local execution should still use server admission for graph validation,
@@ -313,7 +335,7 @@ necessary.
 1. Preserve and verify the browser-safe provider package boundaries.
 2. Define browser eligibility separately from model availability.
 3. Implement local credential entry and browser-only storage without sending the
-   value to TaleLabs.
+   value to TaleLabs. **Implemented for OpenRouter.**
 4. Add local run admission, browser execution, progress, interruption states,
    and canonical output upload.
 5. Validate every supported provider protocol for CORS and browser lifecycle.

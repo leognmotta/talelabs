@@ -5,9 +5,10 @@ universal, browser, and server entry points. OpenRouter is the only implemented
 provider today.
 
 The protocol core is browser-compatible so a future browser-local BYOK product
-can reuse request and response behavior. Browser BYOK itself is not implemented:
-there is no browser credential storage, private binding delivery, provider
-eligibility policy, or local durability claim.
+can reuse request and response behavior. Browser-only credential persistence is
+implemented for OpenRouter, but browser execution is not: there is no private
+binding delivery, provider eligibility policy, provider request dispatch, or
+local durability claim.
 
 The binding execution modes and their trust boundaries are defined in
 [`docs/provider-execution-modes.md`](../../docs/provider-execution-modes.md).
@@ -23,12 +24,33 @@ passes the complete binding captured during admission to the server registry.
 | --- | --- |
 | `@talelabs/providers` | Browser-safe package root; re-exports `/core` only |
 | `@talelabs/providers/core` | Universal protocol translation, normalized errors, provider facts, and fetch-based bounded transport |
-| `@talelabs/providers/browser` | Deliberately browser-safe composition boundary; currently exposes only `/core` |
+| `@talelabs/providers/browser` | Browser-safe protocol exports plus user-scoped encrypted IndexedDB credential storage |
 | `@talelabs/providers/server` | Managed registry, platform credentials, private binding dispatch, SDK helpers, accounting, and webhook cryptography |
 
 `/core` and `/browser` never import Node built-ins, environment access,
 Trigger.dev, PostgreSQL, storage SDKs, webhooks, or accounting. `/server` is the
 only entry point used by API and Trigger.dev.
+
+## Browser credential storage
+
+`/browser` stores one OpenRouter credential per immutable Better Auth user ID.
+It persists a single non-extractable 256-bit AES-GCM `CryptoKey` through
+IndexedDB structured cloning and stores only ciphertext records. Every write
+uses a unique 96-bit initialization vector and authenticates the schema version,
+user ID, and provider ID as additional data. Reads validate all IndexedDB values
+as untrusted input and fail closed when a record, key, or browser capability is
+invalid.
+
+The browser API supports status, store or replace, remove, user-scoped sign-out
+cleanup, and a plaintext resolver reserved for a future browser executor. The
+dashboard settings surface never imports the resolver. No credential operation
+makes a network request, logs secret material, or falls back to local storage,
+session storage, cookies, URL state, or React state persistence.
+
+Encryption at rest limits accidental disclosure of copied browser storage; it
+does not protect against malicious code running in the same origin, a compromised
+browser extension, or a compromised device. Browser execution and the provider
+request trust boundary remain future work.
 
 ## Managed execution path
 
@@ -57,7 +79,8 @@ was signed by server storage or supplied by another future runtime.
 src/
 ├── index.ts                 Browser-safe package root
 ├── core.ts                  Universal public protocol boundary
-├── browser.ts               Browser-safe future composition boundary
+├── browser.ts               Browser-safe protocols and credential-store API
+├── browser/                 IndexedDB schema, validation, AES-GCM, and lifecycle
 ├── server.ts                Managed server public boundary
 ├── contracts.ts             Universal runtime-service contracts
 ├── server/
