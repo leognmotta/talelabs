@@ -1275,7 +1275,11 @@
     "storeKey": "Armazenar chave",
     "storeTitle": "Armazenar chave de API da OpenRouter",
     "storedInBrowser": "Armazenada neste navegador",
-    "unavailable": "O armazenamento seguro do navegador não está disponível. Verifique as configurações do navegador e tente novamente."
+    "unavailable": "O armazenamento seguro do navegador não está disponível. Verifique as configurações do navegador e tente novamente.",
+    "executionRuntime": "Ambiente de execução",
+    "executionRuntimeDescription": "Escolha onde o provedor será executado. A execução no navegador mantém as chaves neste dispositivo e exige que este navegador permaneça disponível.",
+    "runtimeManaged": "Gerenciado pela TaleLabs",
+    "runtimeBrowser": "Neste navegador"
   },
   "settings": {
     "accountSecurity": "Segurança da conta",

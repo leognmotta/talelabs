@@ -1275,7 +1275,11 @@
     "storeKey": "Stocker la clé",
     "storeTitle": "Stocker la clé API OpenRouter",
     "storedInBrowser": "Stockée dans ce navigateur",
-    "unavailable": "Le stockage sécurisé du navigateur n’est pas disponible. Vérifiez les paramètres du navigateur et réessayez."
+    "unavailable": "Le stockage sécurisé du navigateur n’est pas disponible. Vérifiez les paramètres du navigateur et réessayez.",
+    "executionRuntime": "Environnement d’exécution",
+    "executionRuntimeDescription": "Choisissez où s’exécute le fournisseur. L’exécution dans le navigateur conserve les clés sur cet appareil et nécessite que ce navigateur reste disponible.",
+    "runtimeManaged": "Géré par TaleLabs",
+    "runtimeBrowser": "Dans ce navigateur"
   },
   "settings": {
     "accountSecurity": "Sécurité du compte",

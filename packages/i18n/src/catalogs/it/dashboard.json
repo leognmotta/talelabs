@@ -1275,7 +1275,11 @@
     "storeKey": "Archivia chiave",
     "storeTitle": "Archivia la chiave API OpenRouter",
     "storedInBrowser": "Archiviata in questo browser",
-    "unavailable": "L'archiviazione sicura del browser non è disponibile. Controlla le impostazioni del browser e riprova."
+    "unavailable": "L'archiviazione sicura del browser non è disponibile. Controlla le impostazioni del browser e riprova.",
+    "executionRuntime": "Ambiente di esecuzione",
+    "executionRuntimeDescription": "Scegli dove viene eseguito il provider. L’esecuzione nel browser conserva le chiavi su questo dispositivo e richiede che il browser resti disponibile.",
+    "runtimeManaged": "Gestito da TaleLabs",
+    "runtimeBrowser": "In questo browser"
   },
   "settings": {
     "accountSecurity": "Sicurezza account",

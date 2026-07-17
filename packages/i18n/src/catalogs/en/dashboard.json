@@ -1275,7 +1275,11 @@
     "storeKey": "Store key",
     "storeTitle": "Store OpenRouter API key",
     "storedInBrowser": "Stored in this browser",
-    "unavailable": "Secure browser storage is unavailable. Check your browser settings and try again."
+    "unavailable": "Secure browser storage is unavailable. Check your browser settings and try again.",
+    "executionRuntime": "Execution runtime",
+    "executionRuntimeDescription": "Choose where provider work runs. Browser execution keeps keys on this device and requires this browser to remain available.",
+    "runtimeManaged": "TaleLabs managed",
+    "runtimeBrowser": "This browser"
   },
   "settings": {
     "accountSecurity": "Account security",

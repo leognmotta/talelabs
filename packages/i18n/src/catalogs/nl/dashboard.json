@@ -1275,7 +1275,11 @@
     "storeKey": "Sleutel opslaan",
     "storeTitle": "OpenRouter-API-sleutel opslaan",
     "storedInBrowser": "Opgeslagen in deze browser",
-    "unavailable": "Veilige browseropslag is niet beschikbaar. Controleer je browserinstellingen en probeer het opnieuw."
+    "unavailable": "Veilige browseropslag is niet beschikbaar. Controleer je browserinstellingen en probeer het opnieuw.",
+    "executionRuntime": "Uitvoeringsomgeving",
+    "executionRuntimeDescription": "Kies waar de provider wordt uitgevoerd. Uitvoering in de browser bewaart sleutels op dit apparaat en vereist dat deze browser beschikbaar blijft.",
+    "runtimeManaged": "Beheerd door TaleLabs",
+    "runtimeBrowser": "In deze browser"
   },
   "settings": {
     "accountSecurity": "Accountbeveiliging",

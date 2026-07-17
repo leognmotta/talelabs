@@ -1275,7 +1275,11 @@
     "storeKey": "Zapisz klucz",
     "storeTitle": "Zapisz klucz API OpenRouter",
     "storedInBrowser": "Zapisany w tej przeglądarce",
-    "unavailable": "Bezpieczna pamięć przeglądarki jest niedostępna. Sprawdź ustawienia przeglądarki i spróbuj ponownie."
+    "unavailable": "Bezpieczna pamięć przeglądarki jest niedostępna. Sprawdź ustawienia przeglądarki i spróbuj ponownie.",
+    "executionRuntime": "Środowisko wykonawcze",
+    "executionRuntimeDescription": "Wybierz, gdzie działa dostawca. Wykonywanie w przeglądarce zachowuje klucze na tym urządzeniu i wymaga, aby przeglądarka pozostała dostępna.",
+    "runtimeManaged": "Zarządzane przez TaleLabs",
+    "runtimeBrowser": "W tej przeglądarce"
   },
   "settings": {
     "accountSecurity": "Bezpieczeństwo konta",

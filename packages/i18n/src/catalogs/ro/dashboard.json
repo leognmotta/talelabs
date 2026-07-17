@@ -1275,7 +1275,11 @@
     "storeKey": "Stocați cheia",
     "storeTitle": "Stocați cheia API OpenRouter",
     "storedInBrowser": "Stocată în acest browser",
-    "unavailable": "Stocarea securizată în browser nu este disponibilă. Verificați setările browserului și încercați din nou."
+    "unavailable": "Stocarea securizată în browser nu este disponibilă. Verificați setările browserului și încercați din nou.",
+    "executionRuntime": "Mediu de execuție",
+    "executionRuntimeDescription": "Alege unde rulează furnizorul. Execuția în browser păstrează cheile pe acest dispozitiv și necesită ca browserul să rămână disponibil.",
+    "runtimeManaged": "Gestionat de TaleLabs",
+    "runtimeBrowser": "În acest browser"
   },
   "settings": {
     "accountSecurity": "Securitatea contului",
