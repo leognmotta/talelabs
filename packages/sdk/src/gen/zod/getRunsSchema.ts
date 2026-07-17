@@ -22,32 +22,31 @@ import { errorResponseSchema } from "./errorResponseSchema.ts";
 import { paginationLimitSchema } from "./paginationLimitSchema.ts";
 import { runListResponseSchema } from "./runListResponseSchema.ts";
 
-export const getRunsQueryParamsSchema = z
-  .object({
-    get cursor() {
-      return cursorSchema
-        .describe("Opaque cursor returned by a previous list response")
-        .optional();
-    },
-    executionRuntime: z.optional(z.enum(["managed", "browser"])),
-    get flowId() {
-      return cuid2Schema.optional();
-    },
-    get limit() {
-      return paginationLimitSchema.default(50).optional();
-    },
-    status: z.optional(
-      z.enum([
-        "pending",
-        "running",
-        "succeeded",
-        "partial",
-        "failed",
-        "canceled",
-      ]),
-    ),
-  })
-  .optional() as unknown as z.ZodType<GetRunsQueryParams>;
+export const getRunsQueryParamsSchema = z.object({
+  get cursor() {
+    return cursorSchema
+      .describe("Opaque cursor returned by a previous list response")
+      .optional();
+  },
+  executionRuntime: z.optional(z.enum(["managed", "browser"])),
+  get flowId() {
+    return cuid2Schema.optional();
+  },
+  get limit() {
+    return paginationLimitSchema.default(50).optional();
+  },
+  scope: z.enum(["all", "mine"]).default("all"),
+  status: z.optional(
+    z.enum([
+      "pending",
+      "running",
+      "succeeded",
+      "partial",
+      "failed",
+      "canceled",
+    ]),
+  ),
+}) as unknown as z.ZodType<GetRunsQueryParams>;
 
 /**
  * @description Run list

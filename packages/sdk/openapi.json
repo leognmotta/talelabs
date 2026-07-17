@@ -9325,6 +9325,19 @@
             "schema": {
               "type": "string",
               "enum": [
+                "all",
+                "mine"
+              ],
+              "default": "all"
+            },
+            "required": false,
+            "name": "scope",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
                 "pending",
                 "running",
                 "succeeded",
@@ -12838,7 +12851,8 @@
                   },
                   "required": [
                     "jobs"
-                  ]
+                  ],
+                  "additionalProperties": false
                 }
               }
             }
@@ -13119,11 +13133,13 @@
                   },
                   "contentMd5": {
                     "type": "string",
-                    "minLength": 1
+                    "minLength": 24,
+                    "maxLength": 24
                   },
                   "mimeType": {
                     "type": "string",
-                    "minLength": 1
+                    "minLength": 1,
+                    "maxLength": 255
                   },
                   "outputIndex": {
                     "type": "integer",
@@ -13296,14 +13312,16 @@
                           "type": "number"
                         },
                         {
-                          "type": "string"
+                          "type": "string",
+                          "maxLength": 2000
                         }
                       ]
                     }
                   },
                   "mimeType": {
                     "type": "string",
-                    "minLength": 1
+                    "minLength": 1,
+                    "maxLength": 255
                   },
                   "outputIndex": {
                     "type": "integer",

@@ -97,7 +97,7 @@ export const postRunsIdBrowserJobsJobidFinalizeMediaMutationRequestSchema =
     metadata: z.optional(
       z.object({}).catchall(z.union([z.boolean(), z.string(), z.number()])),
     ),
-    mimeType: z.string().min(1),
+    mimeType: z.string().min(1).max(255),
     outputIndex: z.int().min(0),
   }) as unknown as z.ZodType<PostRunsIdBrowserJobsJobidFinalizeMediaMutationRequest>;
 

@@ -92,8 +92,8 @@ export const postRunsIdBrowserJobsJobidOutputGrantMutationRequestSchema =
   z.object({
     executorId: z.string().min(16).max(200),
     contentLength: z.optional(z.int().gt(0)),
-    contentMd5: z.optional(z.string().min(1)),
-    mimeType: z.string().min(1),
+    contentMd5: z.optional(z.string().min(24).max(24)),
+    mimeType: z.string().min(1).max(255),
     outputIndex: z.int().min(0),
   }) as unknown as z.ZodType<PostRunsIdBrowserJobsJobidOutputGrantMutationRequest>;
 

@@ -17,6 +17,14 @@ export const getRunsQueryParamsExecutionRuntimeEnum = {
 export type GetRunsQueryParamsExecutionRuntimeEnumKey =
   (typeof getRunsQueryParamsExecutionRuntimeEnum)[keyof typeof getRunsQueryParamsExecutionRuntimeEnum];
 
+export const getRunsQueryParamsScopeEnum = {
+  all: "all",
+  mine: "mine",
+} as const;
+
+export type GetRunsQueryParamsScopeEnumKey =
+  (typeof getRunsQueryParamsScopeEnum)[keyof typeof getRunsQueryParamsScopeEnum];
+
 export const getRunsQueryParamsStatusEnum = {
   pending: "pending",
   running: "running",
@@ -49,6 +57,11 @@ export type GetRunsQueryParams = {
    * @type integer | undefined
    */
   limit?: PaginationLimit;
+  /**
+   * @default "all"
+   * @type string | undefined
+   */
+  scope?: GetRunsQueryParamsScopeEnumKey;
   /**
    * @type string | undefined
    */

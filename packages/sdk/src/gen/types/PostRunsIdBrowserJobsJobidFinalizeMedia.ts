@@ -80,6 +80,7 @@ export type PostRunsIdBrowserJobsJobidFinalizeMediaMutationRequest = {
   };
   /**
    * @minLength 1
+   * @maxLength 255
    * @type string
    */
   mimeType: string;

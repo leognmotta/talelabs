@@ -90,12 +90,14 @@ export type PostRunsIdBrowserJobsJobidOutputGrantMutationRequest = {
    */
   contentLength?: number;
   /**
-   * @minLength 1
+   * @minLength 24
+   * @maxLength 24
    * @type string | undefined
    */
   contentMd5?: string;
   /**
    * @minLength 1
+   * @maxLength 255
    * @type string
    */
   mimeType: string;
