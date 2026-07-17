@@ -1,3 +1,5 @@
+/** Dashboard shell composition for global Asset and Flow runtime surfaces. */
+
 import type { LanguagePreference } from '@talelabs/i18n'
 import type { SettingsTab } from '../features/settings/settings-state'
 import type { ThemePreference } from '../shared/lib/theme'
@@ -25,9 +27,9 @@ import {
 } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Outlet, useMatch } from 'react-router'
-import { AssetViewerDialog } from '../features/assets/asset-viewer-dialog'
-import { useAssetViewerUrlState } from '../features/assets/use-asset-viewer-url-state'
-import { FlowRunRealtimeSubscriptions } from '../features/flows/flow-run-realtime-subscriptions'
+import { AssetViewerDialog } from '../features/assets/viewer/asset-viewer-dialog'
+import { useAssetViewerUrlState } from '../features/assets/viewer/use-asset-viewer-url-state'
+import { FlowRunRealtimeSubscriptions } from '../features/flows/runs/realtime/flow-run-realtime-subscriptions'
 import { OrganizationScopeProvider } from '../features/organizations/organization-scope'
 import { SettingsDialog } from '../features/settings/settings-dialog'
 import { useSettingsTabState } from '../features/settings/settings-state'
@@ -38,12 +40,13 @@ import { AppSidebar } from './app-sidebar'
 import { GlobalSearch } from './global-search'
 
 function loadAssetLibraryDialog() {
-  return import('../features/assets/asset-library-dialog')
+  return import('../features/assets/library/asset-library-dialog')
 }
 const AssetLibraryDialog = lazy(async () => ({
   default: (await loadAssetLibraryDialog()).AssetLibraryDialog,
 }))
 
+/** Renders dashboard layout for the dashboard layout boundary. */
 export function DashboardLayout({
   activeOrganizationId,
   currentSessionId,

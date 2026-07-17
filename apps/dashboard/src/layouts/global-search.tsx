@@ -29,7 +29,7 @@ import { Kbd } from '@talelabs/ui/components/kbd'
 import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
-import { useAssetViewerUrlState } from '../features/assets/use-asset-viewer-url-state'
+import { useAssetViewerUrlState } from '../features/assets/viewer/use-asset-viewer-url-state'
 import {
   GLOBAL_SEARCH_MIN_LENGTH,
   GLOBAL_SEARCH_RESULT_LIMIT,

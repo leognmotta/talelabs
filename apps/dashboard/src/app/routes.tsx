@@ -32,7 +32,13 @@ import {
   removeOrganizationProductQueries,
 } from '../features/organizations/organization-query-cache'
 import { useOrganizationSession } from '../features/organizations/use-organization-session'
-import { uploadManager } from '../features/uploads/upload-manager'
+import {
+  cancelAllUploads,
+  cancelOrganizationUploads,
+} from '../features/uploads/cancellation/upload-organization-cancellation'
+import {
+  setActiveUploadOrganization,
+} from '../features/uploads/queue/upload-queue-lifecycle'
 import { useLanguage } from '../i18n/language-context'
 import { DashboardLayout } from '../layouts/dashboard-layout'
 import { CreateOrganizationRoute } from '../routes/create-organization-route'
@@ -52,17 +58,17 @@ import {
 } from '../shared/lib/theme'
 
 const AssetsScreen = lazy(async () => {
-  const module = await import('../features/assets/assets-screen')
+  const module = await import('../features/assets/library/assets-screen')
   return { default: module.AssetsScreen }
 })
 
 const FlowsScreen = lazy(async () => {
-  const module = await import('../features/flows/flows-screen')
+  const module = await import('../features/flows/browse/flows-screen')
   return { default: module.FlowsScreen }
 })
 
 const FlowEditorScreen = lazy(async () => {
-  const module = await import('../features/flows/flow-editor-screen')
+  const module = await import('../features/flows/editor/flow-editor-screen')
   return { default: module.FlowEditorScreen }
 })
 
@@ -105,7 +111,7 @@ export function DashboardRoutes() {
   }
 
   async function handleSignOut() {
-    await uploadManager.cancelAll()
+    await cancelAllUploads()
 
     const userId = session.data?.user.id
     if (userId) {
@@ -179,11 +185,11 @@ export function DashboardRoutes() {
 
   async function handleCreateOrganization(name: string, slug: string) {
     const previousOrganizationId = organization.activeWorkspaceId
-    await uploadManager.cancelOrganization(previousOrganizationId)
+    await cancelOrganizationUploads(previousOrganizationId)
     const result = await authClient.organization.create({ name, slug })
 
     if (result.error) {
-      uploadManager.setActiveOrganization(previousOrganizationId)
+      setActiveUploadOrganization(previousOrganizationId)
       const message = t('organizations.couldNotCreate')
       toast.error(message)
       return message
@@ -195,7 +201,7 @@ export function DashboardRoutes() {
       })
 
       if (activeResult.error) {
-        uploadManager.setActiveOrganization(previousOrganizationId)
+        setActiveUploadOrganization(previousOrganizationId)
         const message
           = t('organizations.couldNotActivate')
         toast.error(message)
@@ -222,7 +228,7 @@ export function DashboardRoutes() {
 
   async function handleSwitchOrganization(organizationId: string) {
     const previousOrganizationId = organization.activeWorkspaceId
-    await uploadManager.cancelOrganization(previousOrganizationId)
+    await cancelOrganizationUploads(previousOrganizationId)
     await removeOrganizationProductQueries(
       queryClient,
       previousOrganizationId,
@@ -232,7 +238,7 @@ export function DashboardRoutes() {
       await activateOrganization({ organizationId })
     }
     catch (error) {
-      uploadManager.setActiveOrganization(previousOrganizationId)
+      setActiveUploadOrganization(previousOrganizationId)
       const message = getApiErrorMessage(
         error,
         'organizations.couldNotSwitch',
@@ -255,7 +261,7 @@ export function DashboardRoutes() {
   }
 
   async function handleInvitationAccepted(organizationId: string) {
-    await uploadManager.cancelAll()
+    await cancelAllUploads()
     storeLastOrganizationId(organizationId)
     queryClient.clear()
     await session.refetch()
