@@ -8,7 +8,7 @@
       "node"
     ],
     "strict": true,
-    "outDir": "./dist",
+    "noEmit": true,
     "verbatimModuleSyntax": true,
     "skipLibCheck": true
   },

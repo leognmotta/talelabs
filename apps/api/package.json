@@ -3,8 +3,10 @@
   "type": "module",
   "scripts": {
     "dev": "NODE_ENV=development tsx watch --include '../../packages/{assets,auth,db,elements,email,flows,i18n,models-catalog,providers,storage,trigger}/dist/**/*.js' src/index.ts",
+    "dev:e2e": "NODE_ENV=development tsx watch src/index.ts",
     "verify:m4.5": "npm run build -w @talelabs/db && npm run build -w @talelabs/elements && npm run build -w @talelabs/flows && tsx scripts/verify-element-consistency-invariants.ts",
-    "verify:m5-runs": "tsx scripts/verify-m5-run-modes.ts",
+    "verify:m5-runs": "npm run run:check -w @talelabs/flows",
+    "verify:browser-planner-snapshot": "tsx scripts/verify-browser-planner-snapshot-matrix.ts",
     "build": "tsc -p tsconfig.build.json",
     "check-types": "tsc --noEmit",
     "start": "node dist/index.js",
