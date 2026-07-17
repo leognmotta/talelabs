@@ -23,7 +23,8 @@
     "tsdoc:check": "node scripts/check-tsdoc-coverage.mjs",
     "trigger:deploy:check": "trigger deploy --env prod --dry-run --config trigger.config.ts",
     "trigger:deploy:prod": "trigger deploy --env prod --config trigger.config.ts",
-    "trigger:dev": "turbo run dev --filter=@talelabs/trigger"
+    "trigger:dev": "turbo run dev --filter=@talelabs/trigger",
+    "verify:browser-runtime": "npm run verify:browser-runtime -w api"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^9.0.0",
