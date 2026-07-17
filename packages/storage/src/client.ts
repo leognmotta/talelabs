@@ -1,3 +1,5 @@
+/** Storage client operations for signed object transfer and object metadata. */
+
 import type { CopyObjectCommandInput } from '@aws-sdk/client-s3'
 import type { Buffer } from 'node:buffer'
 
@@ -18,16 +20,25 @@ import './env.js'
 
 type SignedUrlOptions = NonNullable<Parameters<typeof getSignedUrl>[2]>
 
+/** Environment key containing the Cloudflare account identifier. */
 export const R2_ACCOUNT_ID_ENV = 'R2_ACCOUNT_ID'
+/** Environment key containing the object-storage access-key identifier. */
 export const R2_ACCESS_KEY_ID_ENV = 'R2_ACCESS_KEY_ID'
+/** Environment key containing the object-storage secret access key. */
 export const R2_SECRET_ACCESS_KEY_ENV = 'R2_SECRET_ACCESS_KEY'
 
+/** Region token required by the R2 S3-compatible endpoint. */
 export const R2_DEFAULT_REGION = 'auto'
+/** Private bucket containing tenant-scoped source and generated objects. */
 export const TALELABS_PRIVATE_BUCKET = 'talelabs-private'
+/** Public bucket reserved for intentionally public objects. */
 export const TALELABS_PUBLIC_BUCKET = 'talelabs-public'
+/** Default validity in seconds for upload grants. */
 export const DEFAULT_SIGNED_URL_EXPIRES_IN = 60 * 5
+/** Default validity in seconds for download grants. */
 export const DEFAULT_DOWNLOAD_URL_EXPIRES_IN = 60 * 60
 
+/** Optional secret-bearing values accepted by object-storage composition. */
 export type ObjectStorageEnv = Partial<
   Record<
     | typeof R2_ACCOUNT_ID_ENV
@@ -37,56 +48,93 @@ export type ObjectStorageEnv = Partial<
   >
 >
 
+/** Explicit client composition options, primarily used by deployment and checks. */
 export interface ObjectStorageClientOptions {
+  /** Access-key identifier; defaults to the process secret. */
   accessKeyId?: string
+  /** Cloudflare account identifier; defaults to the process secret. */
   accountId?: string
+  /** S3-compatible endpoint override used by local checks. */
   endpoint?: string
+  /** Secret source override used without mutating global process state. */
   env?: ObjectStorageEnv
+  /** S3 region token; R2 normally uses `auto`. */
   region?: string
+  /** Secret access key; defaults to the process secret. */
   secretAccessKey?: string
 }
 
+/** Tenant-resolved object coordinates within one bucket. */
 export interface ObjectStorageObjectInput {
+  /** Bucket containing the object. */
   bucket: string
+  /** Fully resolved, tenant-prefixed object key. */
   key: string
 }
 
+/** Constraints captured into a short-lived signed upload grant. */
 export interface CreateUploadUrlInput extends ObjectStorageObjectInput {
-  contentMd5: string
+  /** Optional digest for buffered uploads; streaming browser uploads omit it. */
+  contentMd5?: string
+  /** Expected byte length when the caller can determine it in advance. */
   contentLength?: number
+  /** Media type signed into the upload request. */
   contentType?: string
+  /** Signed grant lifetime in seconds. */
   expiresIn?: number
-  ifNoneMatch?: '*'
+  /** Create-only precondition; null permits idempotent replacement of one exact key. */
+  ifNoneMatch?: '*' | null
+  /** Non-secret metadata attached to the uploaded object. */
   metadata?: Record<string, string>
 }
 
+/** Response overrides captured into a short-lived signed download grant. */
 export interface CreateDownloadUrlInput extends ObjectStorageObjectInput {
+  /** Signed grant lifetime in seconds. */
   expiresIn?: number
+  /** Optional browser-facing content-disposition override. */
   responseContentDisposition?: string
+  /** Optional browser-facing media-type override. */
   responseContentType?: string
 }
 
+/** Coordinates for deleting one exact object. */
 export interface DeleteObjectInput extends ObjectStorageObjectInput {}
 
+/** Coordinates for reading metadata for one exact object. */
 export interface HeadObjectInput extends ObjectStorageObjectInput {}
 
+/** Server-side object body and metadata written to exact coordinates. */
 export interface PutObjectInput extends ObjectStorageObjectInput {
+  /** Complete object body or readable stream. */
   body: Buffer | Readable | Uint8Array
+  /** Stored object media type. */
   contentType?: string
+  /** Non-secret metadata attached to the stored object. */
   metadata?: Record<string, string>
 }
 
+/** Exact source and destination coordinates for a server-side object copy. */
 export interface CopyObjectInput {
+  /** Default bucket used when source or destination overrides are absent. */
   bucket: string
+  /** Optional bucket receiving the copied object. */
   destinationBucket?: string
+  /** Exact destination object key. */
   destinationKey: string
+  /** Replacement metadata applied when populated. */
   metadata?: Record<string, string>
+  /** Optional bucket containing the source object. */
   sourceBucket?: string
+  /** Exact source object key. */
   sourceKey: string
 }
 
+/** Browser CORS policy inputs for the private object bucket. */
 export interface ConfigureBucketCorsInput {
+  /** Exact origins allowed to transfer signed objects. */
   allowedOrigins: string[]
+  /** Bucket override; defaults to the private TaleLabs bucket. */
   bucket?: string
 }
 
@@ -109,10 +157,12 @@ function encodeCopySource(bucket: string, key: string) {
   return `${bucket}/${key.split('/').map(encodeURIComponent).join('/')}`
 }
 
+/** Builds the account-specific R2 S3-compatible endpoint. */
 export function getR2Endpoint(accountId: string) {
   return `https://${accountId}.r2.cloudflarestorage.com`
 }
 
+/** Preserves the explicit bucket name at the storage boundary. */
 export function getObjectStorageBucket(bucket: string) {
   return bucket
 }
@@ -128,14 +178,17 @@ function organizationPrefix(organizationId: string) {
   return `organizations/${assertKeyPart(organizationId, 'organizationId')}`
 }
 
+/** Builds tenant-scoped coordinates for a pending upload. */
 export function buildUploadObjectKey(organizationId: string, uploadId: string) {
   return `${organizationPrefix(organizationId)}/uploads/${assertKeyPart(uploadId, 'uploadId')}`
 }
 
+/** Builds tenant-scoped coordinates for an Asset original. */
 export function buildOriginalObjectKey(organizationId: string, assetId: string) {
   return `${organizationPrefix(organizationId)}/originals/${assertKeyPart(assetId, 'assetId')}`
 }
 
+/** Builds deterministic tenant and output-index coordinates for generated media. */
 export function buildGeneratedObjectKey(
   organizationId: string,
   jobId: string,
@@ -147,10 +200,12 @@ export function buildGeneratedObjectKey(
   return `${organizationPrefix(organizationId)}/generated/${assertKeyPart(jobId, 'jobId')}/${outputIndex}`
 }
 
+/** Builds tenant-scoped coordinates for an Asset thumbnail. */
 export function buildThumbnailObjectKey(organizationId: string, assetId: string) {
   return `${organizationPrefix(organizationId)}/thumbnails/${assertKeyPart(assetId, 'assetId')}`
 }
 
+/** Creates the shared S3-compatible client from injected or process credentials. */
 export function createObjectStorageClient(
   options: ObjectStorageClientOptions = {},
 ) {
@@ -171,8 +226,10 @@ export function createObjectStorageClient(
   })
 }
 
+/** Process-composed object-storage client reused by server operations. */
 export const r2Client = createObjectStorageClient()
 
+/** Signs a create-only PUT grant with the requested transfer constraints. */
 export async function createUploadUrl(
   input: CreateUploadUrlInput,
   client = r2Client,
@@ -182,7 +239,7 @@ export async function createUploadUrl(
     ContentMD5: input.contentMd5,
     ContentLength: input.contentLength,
     ContentType: input.contentType,
-    IfNoneMatch: input.ifNoneMatch ?? '*',
+    IfNoneMatch: input.ifNoneMatch === null ? undefined : '*',
     Key: input.key,
     Metadata: input.metadata,
   })
@@ -193,6 +250,7 @@ export async function createUploadUrl(
   return getSignedUrl(client, command, presignOptions)
 }
 
+/** Reads authoritative object metadata without downloading the body. */
 export async function headObject(
   input: HeadObjectInput,
   client = r2Client,
@@ -203,6 +261,7 @@ export async function headObject(
   }))
 }
 
+/** Downloads one exact object through the server storage client. */
 export async function getObject(
   input: ObjectStorageObjectInput,
   client = r2Client,
@@ -213,6 +272,7 @@ export async function getObject(
   }))
 }
 
+/** Writes an object directly from a trusted server context. */
 export async function putObject(
   input: PutObjectInput,
   client = r2Client,
@@ -226,6 +286,7 @@ export async function putObject(
   }))
 }
 
+/** Signs a short-lived GET grant for one exact object. */
 export async function createDownloadUrl(
   input: CreateDownloadUrlInput,
   client = r2Client,
@@ -243,6 +304,7 @@ export async function createDownloadUrl(
   return getSignedUrl(client, command, presignOptions)
 }
 
+/** Deletes one exact object from a trusted server context. */
 export async function deleteObject(
   input: DeleteObjectInput,
   client = r2Client,
@@ -253,6 +315,7 @@ export async function deleteObject(
   }))
 }
 
+/** Copies one object server-side, optionally replacing its metadata. */
 export async function copyObject(
   input: CopyObjectInput,
   client = r2Client,
@@ -273,6 +336,7 @@ export async function copyObject(
   await client.send(new CopyObjectCommand(commandInput))
 }
 
+/** Applies the minimal signed-transfer CORS policy to an object bucket. */
 export async function configureBucketCors(
   input: ConfigureBucketCorsInput,
   client = r2Client,
