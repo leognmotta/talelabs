@@ -1,12 +1,15 @@
+/** Prompt, instructions, and optional vision inputs ordered by the LLM contract. */
+
 import type {
   GenerationInputSlotDefinition,
   LlmState,
 } from '@talelabs/flows'
-import type { FlowInputState } from '../../flow-canvas-types'
+import type { FlowInputState } from '../../editor/flow-canvas-types'
 
-import { GenerationInputRail } from '../generation-input-rail'
+import { GenerationInputRail } from '../shared/generation-node/generation-input-rail'
 import { LlmMediaInput } from './llm-media-input'
 
+/** Displays text, instruction, and image-context handles supported by the model. */
 export function LlmInputRail({
   ariaLabel,
   inputState,

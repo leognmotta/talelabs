@@ -1,25 +1,26 @@
+/** Narrow canvas and server-state controller for one video-generation node. */
+
 import type {
   GenerationInputSlotDefinition,
-  GenerationModelDefinition,
   GenerationSettingValue,
 } from '@talelabs/flows'
 import type { NodeConnection } from '@xyflow/react'
-import type { CanvasNode } from '../../flow-canvas-types'
+import type { CanvasNode } from '../../editor/flow-canvas-types'
 
 import {
   applyGenerationSettingRequirements,
   getActiveGenerationSettings,
-  isGenerationSettingValueValid,
   resolveVideoGenerationState,
 } from '@talelabs/flows'
 import { useMemo } from 'react'
-import { useGenerationModelTransition } from '../use-generation-model-transition'
+import { useGenerationModelTransition } from '../shared/generation-node/use-generation-model-transition'
 import {
   generationInlineValue,
-  generationInputContracts,
   useGenerationNodeController,
-} from '../use-generation-node-controller'
+} from '../shared/generation-node/use-generation-node-controller'
+import { resolveVideoGenerationModelConfiguration } from './video-generation-model-configuration'
 
+/** Resolves one video-generation node and binds its model/settings canvas actions. */
 export function useVideoGenerationNode(input: {
   incomingConnections: readonly NodeConnection[]
   node: Pick<CanvasNode, 'data' | 'id' | 'type'>
@@ -84,70 +85,6 @@ export function useVideoGenerationNode(input: {
           resolution.resolvedOperationId,
         ).filter(setting => visibleSettingIds.has(setting.id))
       : []
-  function normalizedSettings(targetModel: GenerationModelDefinition) {
-    const settings = Object.fromEntries(
-      targetModel.settings.map((setting) => {
-        const existing = input.node.data.settings?.[setting.id]
-        return [
-          setting.id,
-          existing !== undefined
-          && isGenerationSettingValueValid(setting, existing)
-            ? existing
-            : setting.default,
-        ]
-      }),
-    ) as Record<string, GenerationSettingValue>
-    const targetCounts = Object.fromEntries(
-      targetModel.inputSlots.map(slot => [
-        slot.id,
-        connectionCounts[slot.id] ?? 0,
-      ]),
-    )
-    const targetItems = Object.fromEntries(
-      targetModel.inputSlots.map(slot => [
-        slot.id,
-        canvas.getExecutableInputCount(input.node.id, slot.id),
-      ]),
-    )
-    const targetResolution = resolveVideoGenerationState({
-      connectionCounts: targetCounts,
-      inlinePrompt: generationInlineValue({
-        connectionCounts,
-        data: input.node.data,
-        slotId: 'prompt',
-      }),
-      itemCounts: targetItems,
-      model: targetModel,
-      settings,
-    })
-    return applyGenerationSettingRequirements({
-      connectedSlotIds: new Set(
-        Object.entries(targetCounts)
-          .filter(([, count]) => count > 0)
-          .map(([slotId]) => slotId),
-      ),
-      model: targetModel,
-      operationId:
-        targetResolution.resolvedOperationId ?? targetModel.defaultOperationId,
-      settings,
-    })
-  }
-
-  function resolveModelConfiguration(
-    targetModel: GenerationModelDefinition,
-    targetContractVersion: string,
-  ) {
-    const settings = normalizedSettings(targetModel)
-    return {
-      activeInputContracts: generationInputContracts({ model: targetModel }),
-      inputSlotIds: targetModel.inputSlots.map(slot => slot.id),
-      modelContractVersion: targetContractVersion,
-      modelId: targetModel.id,
-      operationId: targetModel.defaultOperationId,
-      settings,
-    }
-  }
-
   const { requestModelChange, upgradeModelContract }
     = useGenerationModelTransition({
       applyConfiguration: canvas.updateGenerationConfiguration,
@@ -155,7 +92,15 @@ export function useVideoGenerationNode(input: {
       currentContractVersion: input.node.data.modelContractVersion,
       currentModel: model,
       nodeId: input.node.id,
-      resolveConfiguration: resolveModelConfiguration,
+      resolveConfiguration: (targetModel, targetContractVersion) =>
+        resolveVideoGenerationModelConfiguration({
+          connectionCounts,
+          getExecutableInputCount: (nodeId, slotId) =>
+            canvas.getExecutableInputCount(nodeId, slotId),
+          node: input.node,
+          targetContractVersion,
+          targetModel,
+        }),
     })
 
   function updateSetting(settingId: string, value: GenerationSettingValue) {

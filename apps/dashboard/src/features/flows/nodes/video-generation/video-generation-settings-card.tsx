@@ -1,8 +1,11 @@
-import type { FlowGenerationSettingsInspectorProps } from '../../flow-generation-settings-inspector'
+/** Video inspector composition for model, derived operation, and active settings. */
+
+import type { FlowGenerationSettingsInspectorProps } from '../../generation/flow-generation-settings-inspector'
 import { useNodeConnections } from '@xyflow/react'
-import { AdaptiveGenerationSettingsCard } from '../adaptive-generation-settings-card'
+import { AdaptiveGenerationSettingsCard } from '../shared/settings/adaptive-generation-settings-card'
 import { useVideoGenerationNode } from './use-video-generation-node'
 
+/** Displays active video operation settings and model transition controls. */
 export function VideoGenerationSettingsCard({
   node,
   presentation,

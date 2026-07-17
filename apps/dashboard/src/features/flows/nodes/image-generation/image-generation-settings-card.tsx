@@ -1,8 +1,11 @@
-import type { FlowGenerationSettingsInspectorProps } from '../../flow-generation-settings-inspector'
+/** Image inspector composition for model, derived operation, and active settings. */
+
+import type { FlowGenerationSettingsInspectorProps } from '../../generation/flow-generation-settings-inspector'
 import { useNodeConnections } from '@xyflow/react'
-import { AdaptiveGenerationSettingsCard } from '../adaptive-generation-settings-card'
+import { AdaptiveGenerationSettingsCard } from '../shared/settings/adaptive-generation-settings-card'
 import { useImageGenerationNode } from './use-image-generation-node'
 
+/** Displays active image settings plus model selection and contract upgrade actions. */
 export function ImageGenerationSettingsCard({
   node,
   presentation,

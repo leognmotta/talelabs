@@ -1,7 +1,9 @@
+/** Deterministic waveform and playback controls for generated audio previews. */
+
 import { IconWaveSine } from '@tabler/icons-react'
 import { Spinner } from '@talelabs/ui/components/spinner'
 import { useTranslation } from 'react-i18next'
-import { GenerationPreviewStage } from '../../generation-preview-stage'
+import { GenerationPreviewStage } from '../../shared/generation-node/generation-preview-stage'
 
 const WAVEFORM_HEIGHTS = [
   18,
@@ -30,6 +32,7 @@ const WAVEFORM_HEIGHTS = [
   50,
 ] as const
 
+/** Displays deterministic waveform bars with play, pause, and time progress. */
 export function AudioWaveformPreview({
   ariaLabel,
   pending = false,

@@ -1,8 +1,11 @@
-import type { FlowGenerationSettingsInspectorProps } from '../../flow-generation-settings-inspector'
+/** LLM inspector composition for model, derived operation, and active settings. */
+
+import type { FlowGenerationSettingsInspectorProps } from '../../generation/flow-generation-settings-inspector'
 import { useNodeConnections } from '@xyflow/react'
-import { AdaptiveGenerationSettingsCard } from '../adaptive-generation-settings-card'
+import { AdaptiveGenerationSettingsCard } from '../shared/settings/adaptive-generation-settings-card'
 import { useLlmNode } from './use-llm-node'
 
+/** Displays active LLM settings plus model selection and contract upgrade actions. */
 export function LlmSettingsCard({
   node,
   presentation,

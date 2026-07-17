@@ -1,12 +1,15 @@
+/** Inline audio text editor that yields authority to a connected Text edge. */
+
 import type {
   GenerationInputAvailability,
   GenerationInputSlotDefinition,
 } from '@talelabs/flows'
-import type { FlowInputState } from '../../../flow-canvas-types'
+import type { FlowInputState } from '../../../editor/flow-canvas-types'
 
-import { GenerationPromptField } from '../../generation-prompt-field'
+import { GenerationPromptField } from '../../shared/generation-node/generation-prompt-field'
 import { AudioMediaInput } from './audio-media-input'
 
+/** Edits an inline audio text slot unless an upstream connection owns its value. */
 export function AudioTextField({
   externalConnected,
   externalHelp,

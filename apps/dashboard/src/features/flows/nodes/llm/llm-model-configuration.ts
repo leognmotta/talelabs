@@ -5,9 +5,9 @@ import type {
   GenerationSettingValue,
 } from '@talelabs/flows'
 import type { NodeConnection } from '@xyflow/react'
-import type { GenerationConfigurationUpdate } from '../../canvas-state/canvas-generation-actions'
-import type { CanvasNode } from '../../flow-canvas-types'
-import type { GenerationNodeCanvas } from '../use-generation-node-controller'
+import type { CanvasNode } from '../../editor/flow-canvas-types'
+import type { GenerationConfigurationUpdate } from '../../generation/flow-generation-configuration'
+import type { GenerationNodeCanvas } from '../shared/generation-node/use-generation-node-controller'
 
 import {
   isGenerationSettingValueValid,
@@ -16,7 +16,7 @@ import {
 import {
   generationInlineValue,
   generationInputContracts,
-} from '../use-generation-node-controller'
+} from '../shared/generation-node/use-generation-node-controller'
 
 /** Normalizes saved LLM settings against one target model contract. */
 export function llmTargetSettings(

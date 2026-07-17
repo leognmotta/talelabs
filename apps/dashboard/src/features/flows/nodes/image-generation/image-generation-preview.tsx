@@ -1,14 +1,17 @@
+/** Image output projection across retained preview, crop, and run states. */
+
 import type { FlowImageCrop, ImageGenerationState } from '@talelabs/flows'
 
 import { IconPhotoSpark } from '@tabler/icons-react'
 import { Spinner } from '@talelabs/ui/components/spinner'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { imageCropAspectRatio } from '../../image-crop'
-import { CroppedImagePreview } from '../../image-crop-editor'
-import { readAspectRatio } from '../flow-node-aspect-ratio'
-import { GenerationPreviewStage } from '../generation-preview-stage'
+import { readAspectRatio } from '../shared/flow-node-aspect-ratio'
+import { GenerationPreviewStage } from '../shared/generation-node/generation-preview-stage'
+import { CroppedImagePreview } from '../shared/media/cropped-image-preview'
+import { imageCropAspectRatio } from '../shared/media/image-crop-geometry'
 
+/** Displays the latest image output with persisted crop and source dimensions. */
 export function ImageGenerationPreview({
   aspectRatio: aspectRatioSetting,
   pending = false,

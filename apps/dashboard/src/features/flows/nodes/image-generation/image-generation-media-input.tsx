@@ -1,6 +1,9 @@
-import type { GenerationMediaInputProps } from '../generation-media-input'
-import { GenerationMediaInput } from '../generation-media-input'
+/** Candidate and connection feedback for one image-generation media slot. */
 
+import type { GenerationMediaInputProps } from '../shared/generation-node/generation-media-input'
+import { GenerationMediaInput } from '../shared/generation-node/generation-media-input'
+
+/** Displays one image-reference slot and its selected upstream Assets. */
 export function ImageGenerationMediaInput({
   availability,
   className,

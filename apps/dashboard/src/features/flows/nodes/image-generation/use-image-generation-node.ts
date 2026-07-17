@@ -1,26 +1,28 @@
+/** Narrow canvas and server-state controller for one image-generation node. */
+
 import type {
   GenerationInputSlotDefinition,
-  GenerationModelDefinition,
   GenerationSettingValue,
 } from '@talelabs/flows'
 import type { NodeConnection } from '@xyflow/react'
-import type { CanvasNode } from '../../flow-canvas-types'
+import type { CanvasNode } from '../../editor/flow-canvas-types'
 
 import {
   getActiveGenerationSettings,
-  normalizeImageGenerationInputSlotId,
   resolveImageGenerationState,
 } from '@talelabs/flows'
 import { useMemo } from 'react'
-import { useGenerationModelTransition } from '../use-generation-model-transition'
+import { useGenerationModelTransition } from '../shared/generation-node/use-generation-model-transition'
 import {
   generationInlineValue,
-  generationInputContracts,
   useGenerationNodeController,
-} from '../use-generation-node-controller'
+} from '../shared/generation-node/use-generation-node-controller'
+import {
+  IMAGE_GENERATION_SEMANTIC_SLOT_IDS,
+  resolveImageGenerationModelConfiguration,
+} from './image-generation-model-configuration'
 
-const IMAGE_SLOT_IDS = new Set(['prompt', 'references', 'imageReferences'])
-
+/** Resolves one image-generation node and binds its model/settings canvas actions. */
 export function useImageGenerationNode(input: {
   incomingConnections: readonly NodeConnection[]
   node: Pick<CanvasNode, 'data' | 'id' | 'type'>
@@ -43,7 +45,7 @@ export function useImageGenerationNode(input: {
     },
   })
   const semanticSlots = useMemo(
-    () => slots.filter(slot => IMAGE_SLOT_IDS.has(slot.id)),
+    () => slots.filter(slot => IMAGE_GENERATION_SEMANTIC_SLOT_IDS.has(slot.id)),
     [slots],
   )
   const itemCounts = useMemo(
@@ -94,61 +96,6 @@ export function useImageGenerationNode(input: {
             && visibleSettingIds.has(setting.id),
         )
       : []
-  function targetCounts(targetModel: GenerationModelDefinition) {
-    const counts: Record<string, number> = {}
-    const items: Record<string, number> = {}
-    for (const slot of targetModel.inputSlots) {
-      const legacySlotId
-        = slot.id === 'imageReferences' ? 'references' : slot.id
-      counts[slot.id] = Math.max(
-        connectionCounts[slot.id] ?? 0,
-        connectionCounts[legacySlotId] ?? 0,
-      )
-      items[slot.id]
-        = canvas.getExecutableInputCount(input.node.id, slot.id)
-          || canvas.getExecutableInputCount(input.node.id, legacySlotId)
-    }
-    return { counts, items }
-  }
-
-  function resolveModelConfiguration(
-    targetModel: GenerationModelDefinition,
-    targetContractVersion: string,
-  ) {
-    const target = targetCounts(targetModel)
-    const targetResolution = resolveImageGenerationState({
-      connectionCounts: target.counts,
-      inlinePrompt: generationInlineValue({
-        connectionCounts,
-        data: input.node.data,
-        slotId: 'prompt',
-      }),
-      itemCounts: target.items,
-      model: targetModel,
-      settings: input.node.data.settings ?? {},
-    })
-    const contracts = generationInputContracts({
-      model: targetModel,
-      normalizeSlotId: slotId => normalizeImageGenerationInputSlotId(slotId),
-      slots: targetModel.inputSlots.filter(slot => IMAGE_SLOT_IDS.has(slot.id)),
-    })
-    return {
-      activeInputContracts: contracts,
-      inputHandleAliases: { references: 'imageReferences' },
-      inputMaximums: Object.fromEntries(
-        targetModel.inputSlots.map(slot => [slot.id, slot.maxItems]),
-      ),
-      inputSlotIds: targetModel.inputSlots
-        .filter(slot => IMAGE_SLOT_IDS.has(slot.id))
-        .map(slot => normalizeImageGenerationInputSlotId(slot.id)),
-      modelContractVersion: targetContractVersion,
-      modelId: targetModel.id,
-      operationId:
-        targetResolution.resolvedOperationId ?? targetModel.defaultOperationId,
-      settings: targetResolution.normalizedSettings,
-    }
-  }
-
   const { requestModelChange, upgradeModelContract }
     = useGenerationModelTransition({
       applyConfiguration: canvas.updateGenerationConfiguration,
@@ -156,7 +103,15 @@ export function useImageGenerationNode(input: {
       currentContractVersion: input.node.data.modelContractVersion,
       currentModel: model,
       nodeId: input.node.id,
-      resolveConfiguration: resolveModelConfiguration,
+      resolveConfiguration: (targetModel, targetContractVersion) =>
+        resolveImageGenerationModelConfiguration({
+          connectionCounts,
+          getExecutableInputCount: (nodeId, slotId) =>
+            canvas.getExecutableInputCount(nodeId, slotId),
+          node: input.node,
+          targetContractVersion,
+          targetModel,
+        }),
     })
 
   function updateSetting(settingId: string, value: GenerationSettingValue) {

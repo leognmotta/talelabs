@@ -1,6 +1,9 @@
-import type { GenerationMediaInputProps } from '../generation-media-input'
-import { GenerationMediaInput } from '../generation-media-input'
+/** Vision candidate and connection feedback for the optional LLM image slot. */
 
+import type { GenerationMediaInputProps } from '../shared/generation-node/generation-media-input'
+import { GenerationMediaInput } from '../shared/generation-node/generation-media-input'
+
+/** Displays one LLM image-context slot and its selected upstream Assets. */
 export function LlmMediaInput({
   availability,
   className,

@@ -1,14 +1,14 @@
 /** LLM generation-node preview for durable and in-flight text outputs. */
 
-import type { FlowGenerationPreview } from '../../flow-canvas-types'
+import type { FlowGenerationPreview } from '../../editor/flow-canvas-types'
 /* eslint-disable better-tailwindcss/no-unknown-classes -- React Flow uses these interaction classes as behavior hooks. */
 
 import { IconCopy, IconTextCaption } from '@tabler/icons-react'
 import { Button } from '@talelabs/ui/components/button'
 import { cn } from '@talelabs/ui/lib/utils'
 import { useTranslation } from 'react-i18next'
-import { useCopyOutputText } from '../../use-copy-output-text'
-import { GenerationPreviewStage } from '../generation-preview-stage'
+import { GenerationPreviewStage } from '../shared/generation-node/generation-preview-stage'
+import { useCopyOutputText } from '../shared/toolbars/use-copy-output-text'
 
 /** Renders the latest canonical LLM output and its active run state. */
 export function LlmOutputPreview({

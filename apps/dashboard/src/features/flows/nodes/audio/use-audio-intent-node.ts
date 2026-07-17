@@ -1,27 +1,27 @@
+/** Shared narrow controller for model-adaptive audio intent nodes. */
+
 import type {
   AudioIntentNodeType,
   GenerationInputSlotDefinition,
-  GenerationModelDefinition,
   GenerationSettingValue,
 } from '@talelabs/flows'
 import type { NodeConnection } from '@xyflow/react'
-import type { CanvasNode } from '../../flow-canvas-types'
+import type { CanvasNode } from '../../editor/flow-canvas-types'
 
 import {
   getActiveGenerationSettings,
-  getGenerationInputSlotsForNodeType,
   getGenerationOperationsForNodeType,
-  reconcileAudioNodeModel,
   resolveAudioNodeState,
 } from '@talelabs/flows'
 import { useMemo } from 'react'
-import { useGenerationModelTransition } from '../use-generation-model-transition'
+import { useGenerationModelTransition } from '../shared/generation-node/use-generation-model-transition'
 import {
   generationInlineValue,
-  generationInputContracts,
   useGenerationNodeController,
-} from '../use-generation-node-controller'
+} from '../shared/generation-node/use-generation-node-controller'
+import { resolveAudioModelConfiguration } from './audio-model-configuration'
 
+/** Resolves one audio-intent node and binds its model/settings canvas actions. */
 export function useAudioIntentNode(input: {
   incomingConnections: readonly NodeConnection[]
   node: Pick<CanvasNode, 'data' | 'id' | 'type'>
@@ -96,57 +96,6 @@ export function useAudioIntentNode(input: {
         visibleSettingIds.has(setting.id),
       )
     : []
-  function resolveModelConfiguration(
-    targetModel: GenerationModelDefinition,
-    targetContractVersion: string,
-  ) {
-    const targetOperation = getGenerationOperationsForNodeType(
-      targetModel,
-      input.nodeType,
-    )[0]
-    if (!targetOperation)
-      return null
-    const reconciled = reconcileAudioNodeModel(input.nodeType, {
-      connectionCounts,
-      inlineLyrics: generationInlineValue({
-        connectionCounts,
-        data: input.node.data,
-        slotId: 'lyrics',
-      }),
-      inlinePrompt: generationInlineValue({
-        connectionCounts,
-        data: input.node.data,
-        slotId: 'prompt',
-      }),
-      itemCounts,
-      model: targetModel,
-      settings: input.node.data.settings ?? {},
-    })
-    const targetSlots = getGenerationInputSlotsForNodeType(
-      targetModel,
-      input.nodeType,
-    )
-    return {
-      activeInputContracts: generationInputContracts({
-        model: targetModel,
-        operations: getGenerationOperationsForNodeType(
-          targetModel,
-          input.nodeType,
-        ),
-        slots: targetSlots,
-      }),
-      inputMaximums: Object.fromEntries(
-        targetSlots.map(slot => [slot.id, slot.maxItems]),
-      ),
-      inputSlotIds: targetSlots.map(slot => slot.id),
-      modelContractVersion: targetContractVersion,
-      modelId: targetModel.id,
-      operationId:
-        reconciled.resolution.resolvedOperationId ?? targetOperation.id,
-      settings: reconciled.settings,
-    }
-  }
-
   const { requestModelChange, upgradeModelContract }
     = useGenerationModelTransition({
       applyConfiguration: canvas.updateGenerationConfiguration,
@@ -154,7 +103,15 @@ export function useAudioIntentNode(input: {
       currentContractVersion: input.node.data.modelContractVersion,
       currentModel: model,
       nodeId: input.node.id,
-      resolveConfiguration: resolveModelConfiguration,
+      resolveConfiguration: (targetModel, targetContractVersion) =>
+        resolveAudioModelConfiguration({
+          connectionCounts,
+          itemCounts,
+          nodeData: input.node.data,
+          nodeType: input.nodeType,
+          targetContractVersion,
+          targetModel,
+        }),
     })
 
   function updateSetting(settingId: string, value: GenerationSettingValue) {

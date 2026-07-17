@@ -1,6 +1,9 @@
-import type { GenerationMediaInputProps } from '../../generation-media-input'
-import { GenerationMediaInput } from '../../generation-media-input'
+/** Candidate and connection feedback for one audio-node media slot. */
 
+import type { GenerationMediaInputProps } from '../../shared/generation-node/generation-media-input'
+import { GenerationMediaInput } from '../../shared/generation-node/generation-media-input'
+
+/** Renders one typed audio/media slot with connection and item-count feedback. */
 export function AudioMediaInput({
   availability,
   className,

@@ -1,16 +1,18 @@
+/** Narrow canvas and server-state controller for one LLM node. */
+
 import type { NodeConnection } from '@xyflow/react'
-import type { CanvasNode } from '../../flow-canvas-types'
+import type { CanvasNode } from '../../editor/flow-canvas-types'
 
 import {
   getActiveGenerationSettings,
   resolveLlmState,
 } from '@talelabs/flows'
 import { useMemo } from 'react'
-import { useGenerationModelTransition } from '../use-generation-model-transition'
+import { useGenerationModelTransition } from '../shared/generation-node/use-generation-model-transition'
 import {
   generationInlineValue,
   useGenerationNodeController,
-} from '../use-generation-node-controller'
+} from '../shared/generation-node/use-generation-node-controller'
 import { resolveLlmModelConfiguration } from './llm-model-configuration'
 import {
   getLlmInputState,
@@ -18,6 +20,7 @@ import {
   updateLlmSetting,
 } from './llm-node-actions'
 
+/** Resolves LLM readiness and binds prompt, instruction, model, and setting actions. */
 export function useLlmNode(input: {
   incomingConnections: readonly NodeConnection[]
   node: Pick<CanvasNode, 'data' | 'id' | 'type'>

@@ -1,7 +1,10 @@
+/** Speech-intent specialization of the shared audio node controller. */
+
 import type { NodeConnection } from '@xyflow/react'
-import type { CanvasNode } from '../../../flow-canvas-types'
+import type { CanvasNode } from '../../../editor/flow-canvas-types'
 import { useAudioIntentNode } from '../use-audio-intent-node'
 
+/** Specializes the shared audio-intent controller for speech generation. */
 export function useSpeechGenerationNode(input: {
   incomingConnections: readonly NodeConnection[]
   node: Pick<CanvasNode, 'data' | 'id' | 'type'>

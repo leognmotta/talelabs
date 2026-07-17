@@ -1,8 +1,10 @@
+/** Shared inspector composition for intent-specific audio model settings. */
+
 import type { AudioIntentNodeType, FlowNodeType } from '@talelabs/flows'
-import type { FlowGenerationSettingsInspectorProps } from '../../../flow-generation-settings-inspector'
+import type { FlowGenerationSettingsInspectorProps } from '../../../generation/flow-generation-settings-inspector'
 
 import { useNodeConnections } from '@xyflow/react'
-import { AdaptiveGenerationSettingsCard } from '../../adaptive-generation-settings-card'
+import { AdaptiveGenerationSettingsCard } from '../../shared/settings/adaptive-generation-settings-card'
 import { useAudioIntentNode } from '../use-audio-intent-node'
 
 const AUDIO_INTENT_NODE_TYPES = new Set<FlowNodeType>([
@@ -19,6 +21,7 @@ function requireAudioIntentNodeType(type: FlowNodeType): AudioIntentNodeType {
   throw new Error(`Expected an audio intent node, received ${type}`)
 }
 
+/** Displays active audio settings plus model selection and contract upgrade actions. */
 export function AudioSettingsCard({
   node,
   presentation,

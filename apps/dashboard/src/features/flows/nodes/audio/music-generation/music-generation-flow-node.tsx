@@ -1,19 +1,22 @@
+/** Music-generation node composition for lyrics, prompt, settings, and audio output. */
+
 import type { NodeProps } from '@xyflow/react'
-import type { CanvasNode } from '../../../flow-canvas-types'
+import type { CanvasNode } from '../../../editor/flow-canvas-types'
 
 import { IconMusic } from '@tabler/icons-react'
 import { useNodeConnections } from '@xyflow/react'
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { FlowNodeShell } from '../../flow-node-shell'
-import { GenerationNodeFrame } from '../../generation-node-frame'
-import { GenerationNodePreviewArea } from '../../generation-node-preview-area'
-import { GenerationNodePromptSection } from '../../generation-node-prompt-section'
+import { FlowNodeShell } from '../../shared/flow-node-shell'
+import { GenerationNodeFrame } from '../../shared/generation-node/generation-node-frame'
+import { GenerationNodePreviewArea } from '../../shared/generation-node/generation-node-preview-area'
+import { GenerationNodePromptSection } from '../../shared/generation-node/generation-node-prompt-section'
 import { AudioInputRail } from '../shared/audio-input-rail'
 import { AudioPreview } from '../shared/audio-preview'
 import { AudioTextField } from '../shared/audio-text-field'
 import { useMusicGenerationNode } from './use-music-generation-node'
 
+/** Composes lyric/prompt inputs, adaptive settings, output preview, and run controls. */
 export const MusicGenerationFlowNode = memo(({
   data,
   id,

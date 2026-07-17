@@ -1,13 +1,16 @@
+/** Inline video prompt editor whose value yields to a connected Text input. */
+
 import type {
   GenerationInputSlotDefinition,
   VideoInputAvailability,
 } from '@talelabs/flows'
-import type { FlowInputState } from '../../flow-canvas-types'
+import type { FlowInputState } from '../../editor/flow-canvas-types'
 
 import { useTranslation } from 'react-i18next'
-import { GenerationPromptField } from '../generation-prompt-field'
+import { GenerationPromptField } from '../shared/generation-node/generation-prompt-field'
 import { VideoGenerationMediaInput } from './video-generation-media-input'
 
+/** Edits inline video prompt text unless the active contract supplies it by edge. */
 export function VideoGenerationPrompt({
   externalPromptConnected,
   helpId,

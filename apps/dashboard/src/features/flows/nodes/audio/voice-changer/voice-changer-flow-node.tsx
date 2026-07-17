@@ -1,17 +1,20 @@
+/** Voice-change node composition for source audio, settings, and transformed output. */
+
 import type { NodeProps } from '@xyflow/react'
-import type { CanvasNode } from '../../../flow-canvas-types'
+import type { CanvasNode } from '../../../editor/flow-canvas-types'
 
 import { IconArrowsExchange } from '@tabler/icons-react'
 import { useNodeConnections } from '@xyflow/react'
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { FlowNodeShell } from '../../flow-node-shell'
-import { GenerationNodeFrame } from '../../generation-node-frame'
-import { GenerationNodePreviewArea } from '../../generation-node-preview-area'
+import { FlowNodeShell } from '../../shared/flow-node-shell'
+import { GenerationNodeFrame } from '../../shared/generation-node/generation-node-frame'
+import { GenerationNodePreviewArea } from '../../shared/generation-node/generation-node-preview-area'
 import { AudioInputRail } from '../shared/audio-input-rail'
 import { AudioPreview } from '../shared/audio-preview'
 import { useVoiceChangerNode } from './use-voice-changer-node'
 
+/** Composes the voice-change input, adaptive settings, preview, and run controls. */
 export const VoiceChangerFlowNode = memo(({
   data,
   id,

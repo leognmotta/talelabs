@@ -1,0 +1,327 @@
+/** Interactive React Flow canvas and durable generation-run integration. */
+
+import type { FlowCanvasProps } from './flow-canvas-props'
+import type { CanvasEdge, CanvasNode } from './flow-canvas-types'
+
+import {
+  ContextMenu,
+  ContextMenuTrigger,
+} from '@talelabs/ui/components/context-menu'
+import { cn } from '@talelabs/ui/lib/utils'
+import {
+  Background,
+  BackgroundVariant,
+  Controls,
+  MiniMap,
+  Panel,
+  ReactFlow,
+  ReactFlowProvider,
+  useReactFlow,
+} from '@xyflow/react'
+import { useQueryState } from 'nuqs'
+import { useMemo, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
+import { ACCEPTED_ASSET_MEDIA } from '../../assets/upload/asset-upload-files'
+import { FLOW_REACT_NODE_TYPES } from '../nodes/flow-dashboard-node-registry'
+import { useFlowRunAvailability } from '../runs/admission/use-flow-run-availability'
+import { useFlowMockRunOrchestration } from '../runs/mock-runtime/use-flow-mock-run-orchestration'
+import { CanvasStoreProvider, useCanvasStore, useCanvasStoreApi } from './canvas-state/canvas-store-context'
+import { FlowCanvasDebugIndicator } from './flow-canvas-debug-indicator'
+import { FlowCanvasOverlays } from './flow-canvas-overlays'
+import {
+  FlowCanvasHeaderPanel,
+  FlowCanvasInspectorPanelSlot,
+  FlowCanvasToolbarPanel,
+} from './flow-canvas-panels'
+import {
+  FLOW_CANVAS_DEFAULT_EDGE_OPTIONS,
+  FLOW_CANVAS_DELETE_KEY_CODE,
+  FLOW_CANVAS_EDGE_TYPES,
+  FLOW_CANVAS_PRO_OPTIONS,
+  FLOW_CANVAS_SNAP_GRID,
+} from './flow-canvas-react-flow-config'
+import { FlowCanvasRuntimeContext } from './flow-canvas-runtime-context'
+import { FlowMediaPreviewProvider } from './flow-media-preview-provider'
+import { getFlowCanvasShortcutLabels } from './interactions/flow-canvas-shortcuts'
+import { useFlowCanvasAssetUpload } from './interactions/use-flow-canvas-asset-upload'
+import { useFlowCanvasCommands } from './interactions/use-flow-canvas-commands'
+import { useFlowCanvasLifecycle } from './interactions/use-flow-canvas-lifecycle'
+import { useFlowCanvasReactFlowHandlers } from './interactions/use-flow-canvas-react-flow-handlers'
+import { useFlowVisibleEdges } from './interactions/use-flow-visible-edges'
+import { flowCanvasSearchParams } from './persistence/flow-canvas-search-params'
+import { useFlowAutosave } from './persistence/use-flow-autosave'
+import { useFlowNavigationAutosave } from './persistence/use-flow-navigation-autosave'
+import { useFlowReferenceData } from './persistence/use-flow-reference-data'
+import { useFlowViewportPersistence } from './persistence/use-flow-viewport-persistence'
+import '@xyflow/react/dist/style.css'
+
+function FlowCanvasInner({
+  canUseDebugMode,
+  flow,
+  generationConfig,
+  graph,
+  organizationId,
+  references,
+}: FlowCanvasProps) {
+  const { i18n, t } = useTranslation()
+  const store = useCanvasStoreApi()
+  const nodes = useCanvasStore(state => state.nodes)
+  const edges = useCanvasStore(state => state.edges)
+  const wrapperRef = useRef<HTMLDivElement>(null)
+  const referenceDataRef = useRef<ReturnType<typeof useFlowReferenceData>>(null!)
+  const allowNavigationRef = useRef(false)
+  const reactFlow = useReactFlow<CanvasNode, CanvasEdge>()
+  const shortcutLabels = useMemo(getFlowCanvasShortcutLabels, [])
+  const [requestedDebugMode, setDebugMode] = useQueryState(
+    'debug',
+    flowCanvasSearchParams.debug,
+  )
+  const debugMode = canUseDebugMode && requestedDebugMode
+  const autosave = useFlowAutosave({
+    flowId: flow.id,
+    initialGraph: graph,
+    organizationId,
+  })
+  useFlowNavigationAutosave({
+    allowNavigationRef,
+    dirty: autosave.dirty,
+    flowId: flow.id,
+    organizationId,
+    saveNow: autosave.saveNow,
+  })
+  const assetUploads = useFlowCanvasAssetUpload({
+    flowId: flow.id,
+    organizationId,
+    reactFlow,
+    references,
+    store,
+    wrapperRef,
+  })
+  const referenceData = useFlowReferenceData(
+    references,
+    assetUploads.transientAssets,
+  )
+  referenceDataRef.current = referenceData
+  const runs = useFlowMockRunOrchestration({
+    executionMode: debugMode ? 'debug' : 'live',
+    flowId: flow.id,
+    initialActiveRunIds: graph.activeRuns.map(run => run.runId),
+    initialLatestResults: graph.latestResults,
+    locale: i18n.resolvedLanguage ?? i18n.language ?? 'en',
+    organizationId,
+    referenceDataRef,
+    saveNow: autosave.saveNow,
+    store,
+    t,
+  })
+  const {
+    getExecutableInputCount,
+    getGenerationPreview,
+    getGenerationPreviewFingerprint,
+    retryGenerationRun,
+    runAll: runAllCommand,
+    runGenerationPreview,
+    runGenerationSelectionPreview,
+    subscribeGenerationPreviews,
+  } = runs
+  const runtime = useMemo(() => ({
+    generationConfig,
+    getAssetUpload: assetUploads.getUpload,
+    getExecutableInputCount,
+    getGenerationPreview,
+    getGenerationPreviewFingerprint,
+    referenceData,
+    retryGenerationRun,
+    runGenerationPreview,
+    subscribeAssetUploads: assetUploads.subscribeUploads,
+    subscribeGenerationPreviews,
+  }), [
+    assetUploads.getUpload,
+    assetUploads.subscribeUploads,
+    generationConfig,
+    referenceData,
+    getExecutableInputCount,
+    getGenerationPreview,
+    getGenerationPreviewFingerprint,
+    retryGenerationRun,
+    runGenerationPreview,
+    subscribeGenerationPreviews,
+  ])
+  const lifecycle = useFlowCanvasLifecycle({
+    allowNavigationRef,
+    defaultViewport: flow.viewport,
+    discardPendingChanges: autosave.discard,
+    nodeDescription: t('flows.a11y.nodeDescription'),
+    store,
+    uploadFiles: assetUploads.uploadFiles,
+    viewportSaveFailedMessage: t('flows.viewportSaveFailed'),
+  })
+  const persistViewport = useFlowViewportPersistence({
+    flowId: flow.id,
+    onError: lifecycle.onViewportSaveError,
+    organizationId,
+  })
+  const reactFlowHandlers = useFlowCanvasReactFlowHandlers({
+    connectionRejectedMessage: t('flows.connectionRejected'),
+    persistViewport,
+    referenceDataRef,
+    store,
+  })
+  const commands = useFlowCanvasCommands({
+    reactFlow,
+    referenceData,
+    retrySave: autosave.retry,
+    runAll: runAllCommand,
+    runGeneration: runGenerationPreview,
+    runSelection: runGenerationSelectionPreview,
+    store,
+    wrapperRef,
+  })
+  const runAvailability = useFlowRunAvailability({
+    generationConfig,
+    getGenerationPreview,
+    getGenerationPreviewFingerprint,
+    store,
+  })
+  const visibleEdges = useFlowVisibleEdges({ edges, referenceData, store })
+
+  return (
+    <FlowCanvasRuntimeContext value={runtime}>
+      <FlowMediaPreviewProvider>
+        <input
+          ref={assetUploads.fileInputRef}
+          accept={ACCEPTED_ASSET_MEDIA}
+          aria-label={t('assets.uploadFiles')}
+          className="sr-only"
+          multiple
+          tabIndex={-1}
+          type="file"
+          onChange={lifecycle.handleFileChange}
+        />
+        <ContextMenu>
+          <ContextMenuTrigger
+            className={cn(
+              'relative size-full overflow-hidden bg-background outline-none',
+              debugMode && 'ring-2 ring-warning/70 ring-inset',
+            )}
+            render={(
+              <div
+                ref={wrapperRef}
+                tabIndex={-1}
+                onKeyDown={lifecycle.handleCanvasKeyDown}
+                onPointerDownCapture={lifecycle.handleCanvasPointerDown}
+              />
+            )}
+          >
+            <ReactFlow
+              aria-label={t('flows.a11y.canvas')}
+              ariaLabelConfig={lifecycle.ariaLabelConfig}
+              defaultEdgeOptions={FLOW_CANVAS_DEFAULT_EDGE_OPTIONS}
+              defaultViewport={lifecycle.defaultViewport}
+              deleteKeyCode={FLOW_CANVAS_DELETE_KEY_CODE}
+              edgeTypes={FLOW_CANVAS_EDGE_TYPES}
+              edges={visibleEdges}
+              fitView={graph.nodes.length === 0}
+              isValidConnection={reactFlowHandlers.isValidConnection}
+              maxZoom={2}
+              minZoom={0.15}
+              nodes={nodes}
+              nodeTypes={FLOW_REACT_NODE_TYPES}
+              proOptions={FLOW_CANVAS_PRO_OPTIONS}
+              reconnectRadius={14}
+              snapGrid={FLOW_CANVAS_SNAP_GRID}
+              snapToGrid
+              onConnect={reactFlowHandlers.onConnect}
+              onEdgeContextMenu={reactFlowHandlers.onEdgeContextMenu}
+              onEdgesChange={reactFlowHandlers.onEdgesChange}
+              onMoveEnd={reactFlowHandlers.onMoveEnd}
+              onNodeContextMenu={reactFlowHandlers.onNodeContextMenu}
+              onNodeDoubleClick={reactFlowHandlers.onNodeDoubleClick}
+              onNodesChange={reactFlowHandlers.onNodesChange}
+              onPaneContextMenu={reactFlowHandlers.onPaneContextMenu}
+              onReconnect={reactFlowHandlers.onReconnect}
+              onSelectionChange={reactFlowHandlers.onSelectionChange}
+              onSelectionContextMenu={reactFlowHandlers.onSelectionContextMenu}
+            >
+              <Background color="var(--flow-dot)" gap={20} size={1.4} variant={BackgroundVariant.Dots} />
+              <Controls
+                position="bottom-left"
+                showInteractive={false}
+                aria-label={t('flows.a11y.controls')}
+              />
+              <MiniMap
+                ariaLabel={t('flows.a11y.minimap')}
+                className="rounded-xl! border! bg-card/92! shadow-lg!"
+                maskColor="color-mix(in oklab, var(--background) 75%, transparent)"
+                nodeColor="var(--muted-foreground)"
+                pannable
+                position="bottom-right"
+                zoomable
+              />
+              <FlowCanvasHeaderPanel
+                flow={flow}
+                onFlowDeleted={lifecycle.onFlowDeleted}
+              />
+              {debugMode && (
+                <Panel className="m-4!" position="top-center">
+                  <FlowCanvasDebugIndicator />
+                </Panel>
+              )}
+              <FlowCanvasInspectorPanelSlot />
+              <FlowCanvasToolbarPanel
+                canAddNodeType={runAvailability.canAddNodeType}
+                canUseDebugMode={canUseDebugMode}
+                debugMode={debugMode}
+                isRunAllRunning={runs.isRunAllRunning}
+                runAllDisabled={runs.isRunAllRunning || runAvailability.hasUnavailableGenerationNode}
+                shortcutLabels={shortcutLabels}
+                status={autosave.status}
+                onAddNode={commands.addNode}
+                onDebugModeChange={setDebugMode}
+                onDelete={commands.deleteSelection}
+                onDuplicate={commands.duplicateNodes}
+                onFitView={commands.fitView}
+                onRetrySave={commands.retrySave}
+                onRunAll={commands.runAll}
+              />
+            </ReactFlow>
+          </ContextMenuTrigger>
+          <FlowCanvasOverlays
+            canAddNodeType={runAvailability.canAddNodeType}
+            getCanRunNode={runAvailability.getCanRunNode}
+            shortcutLabels={shortcutLabels}
+            onAddNode={commands.addNode}
+            onArrange={commands.arrangeSelection}
+            onDeleteNodeIds={commands.deleteNodes}
+            onDeleteSelection={commands.deleteSelection}
+            onDuplicate={commands.duplicateNodes}
+            onFitView={commands.fitView}
+            onFocus={commands.focusSelection}
+            onRunFromHere={commands.runFromHere}
+            onRunNode={commands.runNode}
+            onRunSelection={commands.runSelection}
+            onRunTillHere={commands.runTillHere}
+            onSelectAll={commands.selectAll}
+            onUploadAssets={assetUploads.openFilePicker}
+          />
+        </ContextMenu>
+      </FlowMediaPreviewProvider>
+    </FlowCanvasRuntimeContext>
+  )
+}
+
+/** Renders a scoped Zustand store and React Flow provider for one editable Flow. */
+export function FlowCanvas(props: FlowCanvasProps) {
+  return (
+    <CanvasStoreProvider
+      key={`${props.organizationId}:${props.flow.id}`}
+      flowId={props.flow.id}
+      graph={props.graph}
+      organizationId={props.organizationId}
+    >
+      <ReactFlowProvider>
+        <FlowCanvasInner {...props} />
+      </ReactFlowProvider>
+    </CanvasStoreProvider>
+  )
+}

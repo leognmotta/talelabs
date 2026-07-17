@@ -3,17 +3,19 @@
 import type { FlowImageCrop } from '@talelabs/flows'
 
 import { useEffect, useState } from 'react'
-import { updateCanvasNodeData } from '../../canvas-state/canvas-node-actions'
-import { useCanvasStoreApi } from '../../canvas-state/canvas-store-context'
-import { useFlowCanvasRuntime } from '../../flow-canvas-runtime-context'
+import { updateCanvasNodeData } from '../../editor/canvas-state/canvas-node-actions'
+import { useCanvasStoreApi } from '../../editor/canvas-state/canvas-store-context'
+import { useFlowCanvasRuntime } from '../../editor/flow-canvas-runtime-context'
 import {
   FULL_IMAGE_CROP,
+  isFullImageCrop,
+} from '../shared/media/image-crop'
+import { ImageCropEditor } from '../shared/media/image-crop-editor'
+import {
   imageCropAspectRatio,
   imageNodeDisplayAspectRatio,
-  isFullImageCrop,
-} from '../../image-crop'
-import { ImageCropEditor } from '../../image-crop-editor'
-import { ImageCropToolbar } from '../../image-crop-toolbar'
+} from '../shared/media/image-crop-geometry'
+import { ImageCropToolbar } from '../shared/media/image-crop-toolbar'
 
 /** Edits and applies crop metadata for one generated image preview. */
 export function ImageGenerationCropMode({

@@ -1,13 +1,16 @@
+/** Inline LLM prompt/instructions editor with connected-input authority. */
+
 import type {
   GenerationInputAvailability,
   GenerationInputSlotDefinition,
 } from '@talelabs/flows'
-import type { FlowInputState } from '../../flow-canvas-types'
+import type { FlowInputState } from '../../editor/flow-canvas-types'
 
 import { useTranslation } from 'react-i18next'
-import { GenerationPromptField } from '../generation-prompt-field'
+import { GenerationPromptField } from '../shared/generation-node/generation-prompt-field'
 import { LlmMediaInput } from './llm-media-input'
 
+/** Edits prompt and instruction values while respecting connected input ownership. */
 export function LlmPrompt({
   externalPromptConnected,
   helpId,

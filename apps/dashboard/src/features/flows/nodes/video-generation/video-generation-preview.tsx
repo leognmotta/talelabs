@@ -1,10 +1,13 @@
+/** Video output projection across retained preview, playback, and run states. */
+
 import type { VideoGenerationState } from '@talelabs/flows'
 
 import { IconPlayerPlayFilled } from '@tabler/icons-react'
 import { Spinner } from '@talelabs/ui/components/spinner'
 import { useTranslation } from 'react-i18next'
-import { GenerationPreviewStage } from '../generation-preview-stage'
+import { GenerationPreviewStage } from '../shared/generation-node/generation-preview-stage'
 
+/** Displays the latest generated video, loading state, or empty output stage. */
 export function VideoGenerationPreview({
   pending = false,
   previewUrl,

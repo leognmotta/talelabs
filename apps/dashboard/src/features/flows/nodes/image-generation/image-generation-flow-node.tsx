@@ -1,27 +1,27 @@
 /** Memoized image generation node with keyed preview and crop state. */
 
 import type { NodeProps } from '@xyflow/react'
-import type { CanvasNode } from '../../flow-canvas-types'
+import type { CanvasNode } from '../../editor/flow-canvas-types'
 
 import { IconPhotoSpark } from '@tabler/icons-react'
 import { normalizeImageGenerationInputSlotId } from '@talelabs/flows'
 import { useNodeConnections } from '@xyflow/react'
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useCanvasStore } from '../../canvas-state/canvas-store-context'
-import { useFlowGenerationPreview } from '../../flow-canvas-runtime-context'
-import { readImageCrop } from '../../image-crop'
-import { FlowNodeShell } from '../flow-node-shell'
-import { GenerationNodeFrame } from '../generation-node-frame'
-import { GenerationNodePreviewArea } from '../generation-node-preview-area'
-import { GenerationNodePromptSection } from '../generation-node-prompt-section'
+import { useCanvasStore } from '../../editor/canvas-state/canvas-store-context'
+import { useFlowGenerationPreview } from '../../editor/flow-canvas-runtime-context'
+import { FlowNodeShell } from '../shared/flow-node-shell'
+import { GenerationNodeFrame } from '../shared/generation-node/generation-node-frame'
+import { GenerationNodePreviewArea } from '../shared/generation-node/generation-node-preview-area'
+import { GenerationNodePromptSection } from '../shared/generation-node/generation-node-prompt-section'
+import { readImageCrop } from '../shared/media/image-crop'
 import { ImageGenerationCropMode } from './image-generation-crop-mode'
 import { ImageGenerationInputRail } from './image-generation-input-rail'
 import { ImageGenerationPreview } from './image-generation-preview'
 import { ImageGenerationPrompt } from './image-generation-prompt'
 import { useImageGenerationNode } from './use-image-generation-node'
 
-/** Renders one memoized image generation node and its keyed preview. */
+/** Memoized image-generation projection keyed only by this node and its preview. */
 export const ImageGenerationFlowNode = memo(
   ({ data, id, selected, type }: NodeProps<CanvasNode>) => {
     const { t } = useTranslation()

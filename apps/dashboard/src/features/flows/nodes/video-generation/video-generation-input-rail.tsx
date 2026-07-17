@@ -1,12 +1,15 @@
+/** Semantic video inputs ordered and filtered by the selected model contract. */
+
 import type {
   GenerationInputSlotDefinition,
   VideoGenerationState,
 } from '@talelabs/flows'
-import type { FlowInputState } from '../../flow-canvas-types'
+import type { FlowInputState } from '../../editor/flow-canvas-types'
 
-import { GenerationInputRail } from '../generation-input-rail'
+import { GenerationInputRail } from '../shared/generation-node/generation-input-rail'
 import { VideoGenerationMediaInput } from './video-generation-media-input'
 
+/** Displays model-adaptive video input handles and their connected values. */
 export function VideoGenerationInputRail({
   ariaLabel,
   inputState,

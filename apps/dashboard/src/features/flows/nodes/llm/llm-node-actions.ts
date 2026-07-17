@@ -5,11 +5,11 @@ import type {
   GenerationModelDefinition,
   GenerationSettingValue,
 } from '@talelabs/flows'
-import type { CanvasNode } from '../../flow-canvas-types'
-import type { GenerationNodeCanvas } from '../use-generation-node-controller'
+import type { CanvasNode } from '../../editor/flow-canvas-types'
+import type { GenerationNodeCanvas } from '../shared/generation-node/use-generation-node-controller'
 
 import { resolveLlmState } from '@talelabs/flows'
-import { generationInlineValue } from '../use-generation-node-controller'
+import { generationInlineValue } from '../shared/generation-node/use-generation-node-controller'
 
 interface LlmActionContext {
   canvas: GenerationNodeCanvas

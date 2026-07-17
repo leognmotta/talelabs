@@ -1,23 +1,23 @@
 /** Memoized video generation node driven by its own data and run preview. */
 
 import type { NodeProps } from '@xyflow/react'
-import type { CanvasNode } from '../../flow-canvas-types'
+import type { CanvasNode } from '../../editor/flow-canvas-types'
 
 import { IconVideo } from '@tabler/icons-react'
 import { useNodeConnections } from '@xyflow/react'
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useFlowGenerationPreview } from '../../flow-canvas-runtime-context'
-import { FlowNodeShell } from '../flow-node-shell'
-import { GenerationNodeFrame } from '../generation-node-frame'
-import { GenerationNodePreviewArea } from '../generation-node-preview-area'
-import { GenerationNodePromptSection } from '../generation-node-prompt-section'
+import { useFlowGenerationPreview } from '../../editor/flow-canvas-runtime-context'
+import { FlowNodeShell } from '../shared/flow-node-shell'
+import { GenerationNodeFrame } from '../shared/generation-node/generation-node-frame'
+import { GenerationNodePreviewArea } from '../shared/generation-node/generation-node-preview-area'
+import { GenerationNodePromptSection } from '../shared/generation-node/generation-node-prompt-section'
 import { useVideoGenerationNode } from './use-video-generation-node'
 import { VideoGenerationInputRail } from './video-generation-input-rail'
 import { VideoGenerationPreview } from './video-generation-preview'
 import { VideoGenerationPrompt } from './video-generation-prompt'
 
-/** Renders one memoized video generation node and its keyed preview. */
+/** Memoized video-generation projection keyed only by this node and its preview. */
 export const VideoGenerationFlowNode = memo(({
   data,
   id,

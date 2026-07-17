@@ -1,13 +1,16 @@
+/** Inline image prompt editor whose value yields to a connected Text input. */
+
 import type {
   GenerationInputAvailability,
   GenerationInputSlotDefinition,
 } from '@talelabs/flows'
-import type { FlowInputState } from '../../flow-canvas-types'
+import type { FlowInputState } from '../../editor/flow-canvas-types'
 
 import { useTranslation } from 'react-i18next'
-import { GenerationPromptField } from '../generation-prompt-field'
+import { GenerationPromptField } from '../shared/generation-node/generation-prompt-field'
 import { ImageGenerationMediaInput } from './image-generation-media-input'
 
+/** Edits inline image prompt text unless an upstream text edge supplies it. */
 export function ImageGenerationPrompt({
   externalPromptConnected,
   helpId,

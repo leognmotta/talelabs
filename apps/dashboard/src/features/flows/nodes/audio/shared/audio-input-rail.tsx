@@ -1,12 +1,15 @@
+/** Typed input rail ordered by the selected audio intent and model contract. */
+
 import type {
   AudioNodeState,
   GenerationInputSlotDefinition,
 } from '@talelabs/flows'
-import type { FlowInputState } from '../../../flow-canvas-types'
+import type { FlowInputState } from '../../../editor/flow-canvas-types'
 
-import { GenerationInputRail } from '../../generation-input-rail'
+import { GenerationInputRail } from '../../shared/generation-node/generation-input-rail'
 import { AudioMediaInput } from './audio-media-input'
 
+/** Displays intent-specific audio input handles in active model slot order. */
 export function AudioInputRail({
   ariaLabel,
   inputState,

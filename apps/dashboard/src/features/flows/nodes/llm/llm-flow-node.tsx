@@ -1,19 +1,22 @@
+/** Memoized LLM node composition over its own canvas data and durable preview. */
+
 import type { NodeProps } from '@xyflow/react'
-import type { CanvasNode } from '../../flow-canvas-types'
+import type { CanvasNode } from '../../editor/flow-canvas-types'
 
 import { IconSparkles } from '@tabler/icons-react'
 import { useNodeConnections } from '@xyflow/react'
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { FlowNodeShell } from '../flow-node-shell'
-import { GenerationNodeFrame } from '../generation-node-frame'
-import { GenerationNodePreviewArea } from '../generation-node-preview-area'
-import { GenerationNodePromptSection } from '../generation-node-prompt-section'
+import { FlowNodeShell } from '../shared/flow-node-shell'
+import { GenerationNodeFrame } from '../shared/generation-node/generation-node-frame'
+import { GenerationNodePreviewArea } from '../shared/generation-node/generation-node-preview-area'
+import { GenerationNodePromptSection } from '../shared/generation-node/generation-node-prompt-section'
 import { LlmInputRail } from './llm-input-rail'
 import { LlmOutputPreview } from './llm-output-preview'
 import { LlmPrompt } from './llm-prompt'
 import { useLlmNode } from './use-llm-node'
 
+/** Composes prompt, instructions, media context, settings, preview, and run controls. */
 export const LlmFlowNode = memo(({
   data,
   id,
