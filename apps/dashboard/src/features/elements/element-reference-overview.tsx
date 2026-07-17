@@ -1,3 +1,5 @@
+/** Read-only grouping of a dormant Element's approved master references by role. */
+
 import type { ElementTypeDefinition } from '@talelabs/elements'
 import type { ElementAssetLink, ElementDetail } from '@talelabs/sdk'
 import type { ElementAssetRoleId } from './element-i18n'
@@ -8,13 +10,14 @@ import { Skeleton } from '@talelabs/ui/components/skeleton'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { getApiErrorMessage } from '../../shared/lib/api-error'
-import { AssetMediaCard } from '../assets/asset-media-card'
-import { useAssetViewerUrlState } from '../assets/use-asset-viewer-url-state'
+import { AssetMediaCard } from '../assets/media/asset-media-card'
+import { useAssetViewerUrlState } from '../assets/viewer/use-asset-viewer-url-state'
 import { useActiveOrganizationId } from '../organizations/organization-scope-context'
 import { ElementAssetActionMenu } from './element-asset-action-menu'
 import { elementAssetRoleTranslationKey } from './element-i18n'
 import { useElementMutations } from './element.queries'
 
+/** Summarizes usable master media without making Elements an active Flow dependency. */
 export function ElementReferenceOverview({
   element,
   error,

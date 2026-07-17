@@ -1,3 +1,5 @@
+/** One dormant Element role's persisted references and in-flight uploads. */
+
 import type {
   ElementAssetMediaType,
   ElementAssetRoleDefinition,
@@ -14,18 +16,26 @@ import {
   MediaLibraryCardPreview,
   MediaLibraryGrid,
 } from '../../shared/components/media-library-card'
-import { AssetMediaCard } from '../assets/asset-media-card'
+import { AssetMediaCard } from '../assets/media/asset-media-card'
 import { ElementAssetActionMenu } from './element-asset-action-menu'
 
+/** Upload queue projection reserved against one Element role's capacity. */
 export interface ElementUploadItem {
+  /** Cancels this queue item without unlinking already persisted references. */
   cancel: () => void
+  /** Stable client queue identifier. */
   id: string
+  /** Media family validated against the role contract. */
   mediaType: ElementAssetMediaType
+  /** Original filename presented while no canonical Asset exists. */
   name: string
+  /** Normalized transfer and registration progress from zero through one. */
   progress: number
+  /** Stable Element role that will receive the registered Asset. */
   role: string
 }
 
+/** Enforces role capacity across persisted links and reserved queue items. */
 export function ElementAssetRoleSection({
   description,
   label,

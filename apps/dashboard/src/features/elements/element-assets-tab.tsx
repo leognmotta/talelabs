@@ -1,3 +1,5 @@
+/** Existing-reference management for one dormant Element and its canonical Assets. */
+
 import type {
   ElementAssetRoleDefinition,
   ElementCustomAssetRole,
@@ -14,9 +16,10 @@ import { toast } from 'sonner'
 import { useStore } from 'zustand'
 import { useShallow } from 'zustand/react/shallow'
 import { getApiErrorMessage } from '../../shared/lib/api-error'
-import { useAssetViewerUrlState } from '../assets/use-asset-viewer-url-state'
+import { useAssetViewerUrlState } from '../assets/viewer/use-asset-viewer-url-state'
 import { useActiveOrganizationId } from '../organizations/organization-scope-context'
-import { uploadManager } from '../uploads/upload-manager'
+import { cancelUploadItem } from '../uploads/cancellation/upload-item-cancellation'
+import { enqueueElementUploadBatch } from '../uploads/queue/upload-queue-enqueue'
 import { uploadStore } from '../uploads/upload-store'
 import { isActiveUploadStatus } from '../uploads/upload.types'
 import {
@@ -31,9 +34,10 @@ import { elementAssetRoleTranslationKey } from './element-i18n'
 import { useElementKitQuery, useElementMutations } from './element.queries'
 
 const AssetLibraryDialog = lazy(async () => ({
-  default: (await import('../assets/asset-library-dialog')).AssetLibraryDialog,
+  default: (await import('../assets/library/asset-library-dialog')).AssetLibraryDialog,
 }))
 
+/** Coordinates role limits, master links, and background uploads for one Element. */
 export function ElementAssetsTab({ element }: { element: ElementDetail }) {
   const { t } = useTranslation()
   const organizationId = useActiveOrganizationId()
@@ -56,7 +60,7 @@ export function ElementAssetsTab({ element }: { element: ElementDetail }) {
       const mediaType = getElementAssetMediaType(item.mimeType)
       return mediaType
         ? [{
-            cancel: () => uploadManager.cancelItem(item.id),
+            cancel: () => cancelUploadItem(item.id),
             id: item.id,
             mediaType,
             name: item.filename,
@@ -212,7 +216,7 @@ export function ElementAssetsTab({ element }: { element: ElementDetail }) {
             setUploadRole(null)
             return
           }
-          const batchId = uploadManager.enqueueElementBatch({
+          const batchId = enqueueElementUploadBatch({
             destinationLabel: element.name,
             elementId: element.id,
             files: selection.accepted.map((file, index) => ({

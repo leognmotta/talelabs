@@ -1,3 +1,5 @@
+/** Dormant Element identity summary with its preferred master reference preview. */
+
 import type { ElementAssetLink, ElementDetail } from '@talelabs/sdk'
 
 import { getElementTypeDefinition } from '@talelabs/elements'
@@ -5,7 +7,7 @@ import { Badge } from '@talelabs/ui/components/badge'
 import { Skeleton } from '@talelabs/ui/components/skeleton'
 import { useTranslation } from 'react-i18next'
 import { MediaLibraryCardPreview } from '../../shared/components/media-library-card'
-import { AssetMediaPreview } from '../assets/asset-media-preview'
+import { AssetMediaPreview } from '../assets/media/asset-media-preview'
 import { elementTypeTranslationKey } from './element-i18n'
 import { ELEMENT_TYPE_ICONS } from './element-type-icons'
 
@@ -27,6 +29,7 @@ function selectPreviewLink(type: ElementDetail['type'], links: ElementAssetLink[
     ?? visualLinks[0]
 }
 
+/** Presents stored identity guidance without participating in active Flow contracts. */
 export function ElementIdentityHeader({
   element,
   links,

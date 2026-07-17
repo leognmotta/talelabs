@@ -1,3 +1,5 @@
+/** Commands for one persisted Element-to-Asset master-reference link. */
+
 import { IconDots, IconPhotoCheck, IconTrash } from '@tabler/icons-react'
 import { Button } from '@talelabs/ui/components/button'
 import {
@@ -7,8 +9,9 @@ import {
   DropdownMenuTrigger,
 } from '@talelabs/ui/components/dropdown-menu'
 import { useTranslation } from 'react-i18next'
-import { LibraryItemAction } from '../assets/library-item-action'
+import { LibraryItemAction } from '../assets/library/library-item-action'
 
+/** Exposes primary-selection and unlink commands while leaving mutations to the tab. */
 export function ElementAssetActionMenu({
   isPrimary,
   onDelete,

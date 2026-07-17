@@ -1,3 +1,5 @@
+/** Local staging lifecycle for Files and existing Assets before Element creation. */
+
 import type { ElementAssetRoleDefinition } from '@talelabs/elements'
 import type { Asset } from '@talelabs/sdk'
 import type { PendingElementAsset } from './pending-element-assets'
@@ -5,7 +7,7 @@ import type { PendingElementAsset } from './pending-element-assets'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
-import { getAssetFileValidationError } from '../assets/asset-upload-files'
+import { getAssetFileValidationError } from '../assets/upload/asset-upload-files'
 import {
   elementAssetRoleHasCapacity,
   formatRejectedElementAssetFiles,
@@ -17,6 +19,7 @@ function fileIdentity(file: File) {
   return `${file.name}:${file.size}:${file.lastModified}:${file.type}`
 }
 
+/** Owns preview object URLs and revokes them when staged references leave the draft. */
 export function usePendingElementAssets() {
   const { t } = useTranslation()
   const [assets, setAssets] = useState<PendingElementAsset[]>([])

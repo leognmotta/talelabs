@@ -1,3 +1,5 @@
+/** Dormant Element server state, master-reference polling, and optimistic mutations. */
+
 import type {
   CreateElementAssetRequest,
   CreateElementRequest,
@@ -33,12 +35,12 @@ import {
 } from '@tanstack/react-query'
 import { useEffect, useRef } from 'react'
 import { getOrganizationRequestHeaders } from '../../shared/lib/organization-request'
-import { invalidateAssetCache } from '../assets/asset-query-cache'
+import { invalidateAssetCache } from '../assets/data/asset-cache-snapshot'
 import {
   ASSET_PROCESSING_REFRESH_INTERVAL_MS,
   assetNeedsProcessingRefresh,
-} from '../assets/asset-query-timing'
-import { flowQueryKeys } from '../flows/flow-query-keys'
+} from '../assets/data/asset-query-timing'
+import { flowQueryKeys } from '../flows/data/query-keys/flow-query-keys'
 import { useActiveOrganizationId } from '../organizations/organization-scope-context'
 import { invalidateElementCache } from './element-query-cache'
 import { elementQueryKeys } from './element-query-keys'
@@ -168,6 +170,7 @@ function hasOrganizationScopeCache(
   }).length > 0
 }
 
+/** Pages organization-scoped Elements and polls only while references are processing. */
 export function useElementListQuery(input: {
   search: string
   type?: ElementType
@@ -200,6 +203,7 @@ export function useElementListQuery(input: {
   })
 }
 
+/** Loads one organization-scoped Element identity when its stable ID is available. */
 export function useElementDetailQuery(elementId: null | string) {
   const organizationId = useActiveOrganizationId()
   return useQuery({
@@ -215,6 +219,7 @@ export function useElementDetailQuery(elementId: null | string) {
   })
 }
 
+/** Observes master references and invalidates derived Element state when they change. */
 export function useElementKitQuery(elementId: null | string) {
   const organizationId = useActiveOrganizationId()
   const queryClient = useQueryClient()
@@ -266,6 +271,7 @@ export function useElementKitQuery(elementId: null | string) {
   return query
 }
 
+/** Loads persisted Flow usage only when the caller needs deletion safeguards. */
 export function useElementUsageQuery(elementId: null | string, enabled = true) {
   const organizationId = useActiveOrganizationId()
   return useQuery({
@@ -281,6 +287,7 @@ export function useElementUsageQuery(elementId: null | string, enabled = true) {
   })
 }
 
+/** Owns optimistic Element/link cache updates and their organization-scoped rollback. */
 export function useElementMutations() {
   const queryClient = useQueryClient()
 

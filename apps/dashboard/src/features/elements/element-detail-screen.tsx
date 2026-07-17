@@ -1,3 +1,5 @@
+/** Dormant Element detail route with identity, references, editing, and deletion. */
+
 import { IconArrowLeft, IconDots, IconPencil, IconTrash } from '@tabler/icons-react'
 import { Button, buttonVariants } from '@talelabs/ui/components/button'
 import {
@@ -13,7 +15,9 @@ import { Link, Navigate, useNavigate, useParams } from 'react-router'
 import { toast } from 'sonner'
 import { getApiErrorMessage } from '../../shared/lib/api-error'
 import { useActiveOrganizationId } from '../organizations/organization-scope-context'
-import { uploadManager } from '../uploads/upload-manager'
+import {
+  cancelElementUploads,
+} from '../uploads/cancellation/upload-target-cancellation'
 import { ElementDataView } from './element-data-view'
 import { ElementDeleteDialog } from './element-delete-dialog'
 import { ElementIdentityHeader } from './element-identity-header'
@@ -24,6 +28,7 @@ import {
   useElementMutations,
 } from './element.queries'
 
+/** Loads one Element and cancels its unfinished uploads before deletion. */
 export function ElementDetailScreen() {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -145,7 +150,7 @@ export function ElementDetailScreen() {
           try {
             if (!organizationId)
               throw new Error('An active organization is required.')
-            await uploadManager.cancelElement(organizationId, element.id)
+            await cancelElementUploads(organizationId, element.id)
             await mutations.remove.mutateAsync({ id: element.id, organizationId })
             toast.success(t('elements.deleted'))
             navigate('/elements', { replace: true })

@@ -1,3 +1,5 @@
+/** Dormant Element creation route with local reference staging and queue handoff. */
+
 import type { ElementCustomAssetRole } from '@talelabs/elements'
 import type { ElementFormSubmission } from './forms/element-form.types'
 
@@ -8,7 +10,7 @@ import { Navigate, useNavigate, useParams } from 'react-router'
 import { toast } from 'sonner'
 import { getApiErrorMessage } from '../../shared/lib/api-error'
 import { useActiveOrganizationId } from '../organizations/organization-scope-context'
-import { uploadManager } from '../uploads/upload-manager'
+import { enqueueElementUploadBatch } from '../uploads/queue/upload-queue-enqueue'
 import { ElementCreateAssetsSection } from './element-create-assets-section'
 import { ElementEditorLayout } from './element-editor-layout'
 import { elementTypeTranslationKey } from './element-i18n'
@@ -17,6 +19,7 @@ import { useElementMutations } from './element.queries'
 import { ELEMENT_FORM_REGISTRY } from './forms/element-form-registry'
 import { usePendingElementAssets } from './use-pending-element-assets'
 
+/** Persists identity first, then transfers staged Files to background uploads. */
 export function ElementCreateScreen() {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -84,7 +87,7 @@ export function ElementCreateScreen() {
 
     const uploads = pendingAssets.assets.filter(asset => asset.kind === 'upload')
     const uploadBatchId = uploads.length > 0
-      ? uploadManager.enqueueElementBatch({
+      ? enqueueElementUploadBatch({
           destinationLabel: element.name,
           elementId: element.id,
           files: uploads.map(asset => ({

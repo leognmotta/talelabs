@@ -1,3 +1,5 @@
+/** Local File and existing-Asset staging for one dormant Element reference role. */
+
 import type {
   ElementAssetRoleDefinition,
 } from '@talelabs/elements'
@@ -16,7 +18,7 @@ import { Button } from '@talelabs/ui/components/button'
 import { cn } from '@talelabs/ui/lib/utils'
 import { useId, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { AssetMediaPreview } from '../assets/asset-media-preview'
+import { AssetMediaPreview } from '../assets/media/asset-media-preview'
 
 function PendingAssetPreview({ asset }: { asset: PendingElementAsset }) {
   if (asset.kind === 'existing')
@@ -63,6 +65,7 @@ function pendingAssetName(asset: PendingElementAsset) {
   return asset.kind === 'upload' ? asset.file.name : asset.asset.name
 }
 
+/** Keeps File previews local until Element creation transfers them to the upload queue. */
 export function ElementAssetDropzone({
   assets,
   description,

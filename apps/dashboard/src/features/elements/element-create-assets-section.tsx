@@ -1,3 +1,5 @@
+/** Creation-time reference-role composition for the dormant Element editor. */
+
 import type {
   ElementAssetMediaType,
   ElementAssetRoleDefinition,
@@ -28,9 +30,10 @@ import { elementAssetRoleTranslationKey } from './element-i18n'
 import { ElementRoleMediaTypePicker } from './element-role-media-type-picker'
 
 const AssetLibraryDialog = lazy(async () => ({
-  default: (await import('../assets/asset-library-dialog')).AssetLibraryDialog,
+  default: (await import('../assets/library/asset-library-dialog')).AssetLibraryDialog,
 }))
 
+/** Stages role-bounded uploads and existing Assets without exposing Elements to Flows. */
 export function ElementCreateAssetsSection({
   assets,
   customRoles,
