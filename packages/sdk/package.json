@@ -12,7 +12,7 @@
   "scripts": {
     "build": "npm run generate && tsc --noEmit",
     "check-types": "npm run generate && tsc --noEmit",
-    "dev": "tsx scripts/watch.ts",
+    "dev:sdk": "tsx scripts/watch.ts",
     "generate": "tsx scripts/generate.ts",
     "generate:openapi": "tsx scripts/write-openapi.ts"
   },

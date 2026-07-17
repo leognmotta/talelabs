@@ -1,4 +1,4 @@
-/** Watches API and provider builds and regenerates the public SDK safely. */
+/** Opt-in watcher that regenerates the SDK only for changed API contracts. */
 
 import { spawn } from 'node:child_process'
 import { watch } from 'node:fs'
@@ -12,12 +12,25 @@ const providersBuild = resolve(packageRoot, '../providers/dist')
 const sdkConfig = resolve(packageRoot, 'kubb.config.ts')
 
 let isGenerating = false
-let pendingGeneration = false
+let pendingMode: GenerationMode | undefined
+let scheduledMode: GenerationMode | undefined
 let debounceTimer: ReturnType<typeof setTimeout> | undefined
 
-function runGenerate() {
+type GenerationMode = 'force' | 'if-contract-changed'
+
+function mergeGenerationModes(
+  current: GenerationMode | undefined,
+  incoming: GenerationMode,
+): GenerationMode {
+  return current === 'force' || incoming === 'force' ? 'force' : 'if-contract-changed'
+}
+
+function runGenerate(mode: GenerationMode) {
   return new Promise<void>((resolvePromise, reject) => {
-    const child = spawn('npm', ['run', 'generate'], {
+    const args = mode === 'force'
+      ? ['run', 'generate']
+      : ['run', 'generate', '--', '--if-contract-changed']
+    const child = spawn('npm', args, {
       cwd: packageRoot,
       shell: false,
       stdio: 'inherit',
@@ -35,16 +48,16 @@ function runGenerate() {
   })
 }
 
-async function generate() {
+async function generate(mode: GenerationMode) {
   if (isGenerating) {
-    pendingGeneration = true
+    pendingMode = mergeGenerationModes(pendingMode, mode)
     return
   }
 
   isGenerating = true
 
   try {
-    await runGenerate()
+    await runGenerate(mode)
   }
   catch (error) {
     console.error(error)
@@ -52,31 +65,35 @@ async function generate() {
   finally {
     isGenerating = false
 
-    if (pendingGeneration) {
-      pendingGeneration = false
-      await generate()
+    if (pendingMode) {
+      const nextMode = pendingMode
+      pendingMode = undefined
+      await generate(nextMode)
     }
   }
 }
 
-function scheduleGenerate() {
+function scheduleGenerate(mode: GenerationMode) {
+  scheduledMode = mergeGenerationModes(scheduledMode, mode)
   if (debounceTimer)
     clearTimeout(debounceTimer)
 
   debounceTimer = setTimeout(() => {
-    void generate()
+    const nextMode = scheduledMode ?? 'if-contract-changed'
+    scheduledMode = undefined
+    void generate(nextMode)
   }, 150)
 }
 
-await generate()
+await generate('force')
 
 const watchers = [
-  watch(apiSource, { recursive: true }, scheduleGenerate),
-  watch(providersBuild, { recursive: true }, scheduleGenerate),
-  watch(sdkConfig, scheduleGenerate),
+  watch(apiSource, { recursive: true }, () => scheduleGenerate('if-contract-changed')),
+  watch(providersBuild, { recursive: true }, () => scheduleGenerate('if-contract-changed')),
+  watch(sdkConfig, () => scheduleGenerate('force')),
 ]
 
-console.log('Watching API OpenAPI sources for SDK generation.')
+console.log('Watching API contract sources. Unchanged OpenAPI does not republish the SDK.')
 
 process.on('SIGINT', () => {
   for (const watcher of watchers)

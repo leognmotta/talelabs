@@ -1,8 +1,11 @@
+/** Generates and content-stably publishes the checked-in TaleLabs SDK. */
+
 import { spawn } from 'node:child_process'
 import {
   copyFile,
   mkdir,
   readdir,
+  readFile,
   rm,
   stat,
 } from 'node:fs/promises'
@@ -18,6 +21,13 @@ const lockParent = resolve(packageRoot, '../../node_modules/.cache')
 const lockPath = resolve(lockParent, 'talelabs-sdk-generate.lock')
 const generatedPath = resolve(packageRoot, 'src/gen')
 const staleLockAgeMs = 120_000
+
+interface PublishStats {
+  added: number
+  removed: number
+  unchanged: number
+  updated: number
+}
 
 async function acquireGenerationLock() {
   await mkdir(lockParent, { recursive: true })
@@ -47,9 +57,13 @@ async function acquireGenerationLock() {
   }
 }
 
-function runKubbGenerateOnce(stagingPath: string) {
+function runKubbGenerateOnce(stagingPath: string, showDiagnostics: boolean) {
   return new Promise<number>((resolvePromise, reject) => {
-    const child = spawn('kubb', ['generate', '--config', 'kubb.config.ts'], {
+    const args = ['generate', '--config', 'kubb.config.ts']
+    if (!showDiagnostics)
+      args.push('--silent')
+
+    const child = spawn('kubb', args, {
       cwd: packageRoot,
       env: {
         ...process.env,
@@ -70,7 +84,7 @@ async function runKubbGenerate(stagingPath: string) {
   const maxAttempts = 3
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    const code = await runKubbGenerateOnce(stagingPath)
+    const code = await runKubbGenerateOnce(stagingPath, attempt === maxAttempts)
     if (code === 0)
       return
 
@@ -83,7 +97,11 @@ async function runKubbGenerate(stagingPath: string) {
   throw new Error(`Kubb generation failed after ${maxAttempts} attempts.`)
 }
 
-async function copyGeneratedTree(source: string, destination: string) {
+async function copyGeneratedTree(
+  source: string,
+  destination: string,
+  stats: PublishStats,
+) {
   await mkdir(destination, { recursive: true })
   const entries = await readdir(source, { withFileTypes: true })
   const orderedEntries = entries.toSorted((left, right) => {
@@ -102,17 +120,39 @@ async function copyGeneratedTree(source: string, destination: string) {
     if (entry.isDirectory()) {
       if (destinationStat && !destinationStat.isDirectory())
         await rm(destinationEntry, { force: true })
-      await copyGeneratedTree(sourceEntry, destinationEntry)
+      await copyGeneratedTree(sourceEntry, destinationEntry, stats)
       continue
     }
 
-    if (destinationStat?.isDirectory())
+    if (destinationStat?.isDirectory()) {
       await rm(destinationEntry, { force: true, recursive: true })
+      stats.removed += 1
+    }
+
+    if (destinationStat?.isFile()) {
+      const [sourceContent, destinationContent] = await Promise.all([
+        readFile(sourceEntry),
+        readFile(destinationEntry),
+      ])
+      if (sourceContent.equals(destinationContent)) {
+        stats.unchanged += 1
+        continue
+      }
+      stats.updated += 1
+    }
+    else {
+      stats.added += 1
+    }
+
     await copyFile(sourceEntry, destinationEntry)
   }
 }
 
-async function removeStaleGeneratedEntries(source: string, destination: string) {
+async function removeStaleGeneratedEntries(
+  source: string,
+  destination: string,
+  stats: PublishStats,
+) {
   const sourceNames = new Set((await readdir(source)).map(name => name))
   const destinationEntries = await readdir(destination, { withFileTypes: true })
 
@@ -120,30 +160,56 @@ async function removeStaleGeneratedEntries(source: string, destination: string) 
     const destinationEntry = join(destination, entry.name)
     if (!sourceNames.has(entry.name)) {
       await rm(destinationEntry, { force: true, recursive: true })
+      stats.removed += 1
       continue
     }
 
     if (entry.isDirectory())
-      await removeStaleGeneratedEntries(join(source, entry.name), destinationEntry)
+      await removeStaleGeneratedEntries(join(source, entry.name), destinationEntry, stats)
   }
 }
 
 async function publishGeneratedTree(stagingPath: string) {
-  await copyGeneratedTree(stagingPath, generatedPath)
-  await removeStaleGeneratedEntries(stagingPath, generatedPath)
+  const stats: PublishStats = {
+    added: 0,
+    removed: 0,
+    unchanged: 0,
+    updated: 0,
+  }
+  await copyGeneratedTree(stagingPath, generatedPath, stats)
+  await removeStaleGeneratedEntries(stagingPath, generatedPath, stats)
+  return stats
 }
 
-await acquireGenerationLock()
-
-const stagingPath = resolve(packageRoot, `src/.gen-${process.pid}`)
-
-try {
-  await rm(stagingPath, { force: true, recursive: true })
-  await writeOpenApiSpec()
-  await runKubbGenerate(stagingPath)
-  await publishGeneratedTree(stagingPath)
+async function generatedTreeExists() {
+  return (await stat(generatedPath).catch(() => null))?.isDirectory() === true
 }
-finally {
-  await rm(stagingPath, { force: true, recursive: true })
-  await rm(lockPath, { force: true, recursive: true })
+
+async function generateSdk() {
+  await acquireGenerationLock()
+
+  const stagingPath = resolve(packageRoot, `src/.gen-${process.pid}`)
+
+  try {
+    await rm(stagingPath, { force: true, recursive: true })
+    const contractChanged = await writeOpenApiSpec()
+    const generateOnlyForContractChange = process.argv.includes('--if-contract-changed')
+
+    if (generateOnlyForContractChange && !contractChanged && await generatedTreeExists()) {
+      console.log('OpenAPI contract unchanged; SDK generation skipped.')
+      return
+    }
+
+    await runKubbGenerate(stagingPath)
+    const stats = await publishGeneratedTree(stagingPath)
+    console.log(
+      `SDK publication: ${stats.added} added, ${stats.updated} updated, ${stats.removed} removed, ${stats.unchanged} unchanged.`,
+    )
+  }
+  finally {
+    await rm(stagingPath, { force: true, recursive: true })
+    await rm(lockPath, { force: true, recursive: true })
+  }
 }
+
+await generateSdk()
