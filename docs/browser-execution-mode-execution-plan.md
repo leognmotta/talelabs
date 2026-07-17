@@ -1,6 +1,8 @@
 # TaleLabs Browser Execution Runtime - Execution Plan
 
-Status: Approved product direction; implementation pending.
+Status: Implemented behind a code-owned flag; engineering verification is
+complete, while browser interaction, visual QA, and final product approval
+remain user-owned.
 
 This plan adds browser-local BYOK execution as a second driver for the existing
 TaleLabs run engine. Browser and managed execution must use the same saved Flow,
@@ -63,10 +65,10 @@ drivers in `debug` mode.
 
 Required matrix:
 
-| Execution runtime | `node` | `downstream` | `upstream` | `selection` | `all` |
-| --- | --- | --- | --- | --- | --- |
-| `managed + debug` | Required | Required | Required | Required | Required |
-| `browser + debug` | Required | Required | Required | Required | Required |
+| Execution runtime | `node`   | `downstream` | `upstream` | `selection` | `all`    |
+| ----------------- | -------- | ------------ | ---------- | ----------- | -------- |
+| `managed + debug` | Required | Required     | Required   | Required    | Required |
+| `browser + debug` | Required | Required     | Required   | Required    | Required |
 
 All ten cells must prove:
 
@@ -99,13 +101,13 @@ No paid provider request is required for this gate.
 Real versus deterministic behavior remains:
 
 ```ts
-type ExecutionMode = 'live' | 'debug'
+type ExecutionMode = "live" | "debug";
 ```
 
 The execution driver is a separate dimension:
 
 ```ts
-type ExecutionRuntime = 'browser' | 'managed'
+type ExecutionRuntime = "browser" | "managed";
 ```
 
 Examples:
@@ -267,20 +269,20 @@ to React state.
 
 ## State Ownership
 
-| State | Owner | Rule |
-| --- | --- | --- |
-| Nodes, edges, selection, viewport, editor history | Canvas Zustand store | Transient controlled React Flow state only. |
-| Saved Flow graph and revision | PostgreSQL through Flow API | Authoritative creative document. |
-| Run snapshot, jobs, prerequisites, outputs, status | PostgreSQL | Authoritative execution state. |
-| Server state in React | TanStack Query | Queries and invalidation; do not copy into Zustand. |
-| Provider credential | Existing encrypted Secure Store | Never enter Zustand, query cache, journal, or API traffic. |
-| Runtime preference | User-scoped `localStorage` initially | Non-sensitive device preference; future billing may replace it. |
-| Tab identity | `sessionStorage` | Random non-secret identifier. |
-| Active local scheduling | One small `p-queue` | Disposable and bounded. |
-| Browser recovery checkpoint | IndexedDB journal | Non-secret recovery cache only. |
-| Local leader | Web Locks | Same-origin coordination only. |
-| Authoritative executor ownership | PostgreSQL lease | Prevents duplicate execution across tabs/sessions. |
-| Cross-tab notifications | BroadcastChannel | Invalidation hints only. |
+| State                                              | Owner                                | Rule                                                            |
+| -------------------------------------------------- | ------------------------------------ | --------------------------------------------------------------- |
+| Nodes, edges, selection, viewport, editor history  | Canvas Zustand store                 | Transient controlled React Flow state only.                     |
+| Saved Flow graph and revision                      | PostgreSQL through Flow API          | Authoritative creative document.                                |
+| Run snapshot, jobs, prerequisites, outputs, status | PostgreSQL                           | Authoritative execution state.                                  |
+| Server state in React                              | TanStack Query                       | Queries and invalidation; do not copy into Zustand.             |
+| Provider credential                                | Existing encrypted Secure Store      | Never enter Zustand, query cache, journal, or API traffic.      |
+| Runtime preference                                 | User-scoped `localStorage` initially | Non-sensitive device preference; future billing may replace it. |
+| Tab identity                                       | `sessionStorage`                     | Random non-secret identifier.                                   |
+| Active local scheduling                            | One small `p-queue`                  | Disposable and bounded.                                         |
+| Browser recovery checkpoint                        | IndexedDB journal                    | Non-secret recovery cache only.                                 |
+| Local leader                                       | Web Locks                            | Same-origin coordination only.                                  |
+| Authoritative executor ownership                   | PostgreSQL lease                     | Prevents duplicate execution across tabs/sessions.              |
+| Cross-tab notifications                            | BroadcastChannel                     | Invalidation hints only.                                        |
 
 The canvas may project outputs from run queries. It must not own leases,
 provider job IDs, credentials, queue truth, or durable statuses.
@@ -548,6 +550,7 @@ flowRunBrowserLeases
   flowRunId
   userId
   executorId
+  fenceToken
   expiresAt
   heartbeatAt
   createdAt
@@ -560,10 +563,33 @@ Invariants:
 - run and lease organization must match;
 - acquisition, renewal, release, and expired takeover use guarded SQL;
 - database time determines expiry;
+- every expired takeover increments a monotonic fence token;
+- acquisition, release, and fenced mutations serialize on one transaction-scoped
+  PostgreSQL advisory lock keyed by organization and run, so canonical
+  finalization can safely use its existing database transactions without a
+  cross-connection row-lock cycle;
+- normal release expires the retained lease row instead of deleting it, which
+  preserves the monotonic fence generation until terminal aggregation retires
+  the lease;
+- every claim, checkpoint, output, failure, completion, and cancellation
+  acknowledgement must match the current executor and fence while the lease
+  row is locked;
 - terminal runs retire the lease;
 - `executorId` is a random tab-session ID, never a credential;
 - claiming an individual job also uses state-guarded persistence so a stale
   lease holder cannot submit it.
+
+Provider submission has a separate durable one-shot boundary. The API records
+`submitting` immediately before the browser calls the provider. If ownership is
+lost before a resumable provider job ID is checkpointed, takeover marks the job
+`provider_submission_uncertain` and never resubmits it. Only an explicit
+provider response proving that no work was accepted may reset the boundary for
+a safe retry.
+
+Run cancellation serializes on the same advisory fence. If an asynchronous
+submission returns its provider job ID after cancellation wins, the fenced
+checkpoint may record that ID without reopening the canceled job so recovery
+can still attempt and durably acknowledge provider cancellation.
 
 ### Browser recovery journal
 
@@ -578,21 +604,21 @@ Record only:
 
 ```ts
 interface BrowserJobCheckpoint {
-  flowRunId: string
-  generationJobId: string
-  organizationId: string
-  userId: string
+  flowRunId: string;
+  generationJobId: string;
+  organizationId: string;
+  userId: string;
   state:
-    | 'claimed'
-    | 'submitting'
-    | 'providerProcessing'
-    | 'downloading'
-    | 'uploading'
-    | 'finalizing'
-    | 'interrupted'
-  providerJobId?: string
-  nextEligibleAt?: string
-  updatedAt: string
+    | "claimed"
+    | "submitting"
+    | "providerProcessing"
+    | "downloading"
+    | "uploading"
+    | "finalizing"
+    | "interrupted";
+  providerJobId?: string;
+  nextEligibleAt?: string;
+  updatedAt: string;
 }
 ```
 
@@ -677,15 +703,19 @@ Remove the old `browser_runtime_node_only` and
 Prefer explicit use-case endpoints:
 
 ```txt
-POST /runs/:runId/browser/lease
-GET  /runs/:runId/browser/manifest
-POST /runs/:runId/browser/claim-jobs
-POST /runs/:runId/browser/jobs/:jobId/checkpoint
-POST /runs/:runId/browser/jobs/:jobId/output-grant
-POST /runs/:runId/browser/jobs/:jobId/finalize-media
-POST /runs/:runId/browser/jobs/:jobId/finalize-text
-POST /runs/:runId/browser/jobs/:jobId/fail
-POST /runs/:runId/browser/release
+PUT    /runs/:runId/browser-lease
+DELETE /runs/:runId/browser-lease
+GET    /runs/:runId/browser-manifest
+POST   /runs/:runId/browser-jobs/claim
+POST   /runs/:runId/browser-jobs/:jobId/begin-submission
+POST   /runs/:runId/browser-jobs/:jobId/checkpoint
+POST   /runs/:runId/browser-jobs/:jobId/output-grant
+POST   /runs/:runId/browser-jobs/:jobId/finalize-media
+POST   /runs/:runId/browser-jobs/:jobId/finalize-text
+POST   /runs/:runId/browser-jobs/:jobId/complete
+POST   /runs/:runId/browser-jobs/:jobId/fail
+POST   /runs/:runId/browser-jobs/:jobId/cancel-ack
+PUT    /runs/:runId/browser-executor-status
 ```
 
 `claim-jobs` accepts a bounded requested capacity and returns only atomically
@@ -696,7 +726,7 @@ Every endpoint:
 
 - authenticates and authorizes organization membership;
 - matches run, job, user, organization, runtime, snapshot, and active lease;
-- uses compare-and-set transitions;
+- uses fenced compare-and-set transitions and replay-safe results;
 - accepts bounded normalized metadata only;
 - is idempotent under replay;
 - never returns credentials or managed route secrets.
@@ -827,6 +857,9 @@ The canvas reads run queries, not IndexedDB or `p-queue` directly.
    logs, analytics, traces, session replay, BroadcastChannel, query keys,
    Zustand, or the recovery journal.
 8. Browser-reported costs are informational and untrusted for billing.
+   Browser-reported provider cost and generation identifiers are stored only in
+   explicitly unverified fields; they never settle costs or overwrite trusted
+   managed-provider facts.
 9. CSP and third-party script review are release blockers for the local-key
    security claim.
 10. Logout/key removal stops local execution and releases ownership.
@@ -897,8 +930,10 @@ Acceptance:
 
 ### Phase 4 - Dual-runtime debug parity gate
 
-Run the complete ten-cell matrix from the non-negotiable approval gate. Compare
-the canonical plan summaries and terminal result shape for the same fixtures.
+Run the complete ten-cell matrix from the non-negotiable approval gate. The
+repeatable planner/snapshot verifier proves admission parity only; real driver,
+canonical ingestion, cancellation, retry, and refresh behavior require the
+separate runtime scenarios and product UI matrix.
 
 Acceptance:
 
@@ -944,7 +979,8 @@ Acceptance:
 Required checks:
 
 ```txt
-dual-runtime debug matrix for all five run modes
+dual-runtime product debug matrix for all five run modes
+repeatable planner/snapshot parity matrix for all ten cells
 planner and snapshot scenarios
 browser manifest parsing scenarios
 job readiness and transition scenarios

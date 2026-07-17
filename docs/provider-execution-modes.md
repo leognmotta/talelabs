@@ -40,11 +40,11 @@ honestly.
 
 ## Execution Modes
 
-| Mode | Provider credential | Provider request runs in | Trigger.dev | Intended product use |
-| --- | --- | --- | --- | --- |
-| Local BYOK | User-controlled browser credential | Browser | No | Free/local-first V1 |
-| Managed platform | TaleLabs platform credential | Trigger.dev worker today | Yes | Paid credits and durable cloud execution |
-| Managed BYOK | User credential in a dedicated vault | TaleLabs Provider Gateway | Yes | Future paid managed convenience |
+| Mode             | Provider credential                  | Provider request runs in  | Trigger.dev | Intended product use                     |
+| ---------------- | ------------------------------------ | ------------------------- | ----------- | ---------------------------------------- |
+| Local BYOK       | User-controlled browser credential   | Browser                   | No          | Free/local-first V1                      |
+| Managed platform | TaleLabs platform credential         | Trigger.dev worker today  | Yes         | Paid credits and durable cloud execution |
+| Managed BYOK     | User credential in a dedicated vault | TaleLabs Provider Gateway | Yes         | Future paid managed convenience          |
 
 The selected mode is part of execution provenance. A run must never silently
 move between local and managed execution because the trust model, durability,
@@ -90,10 +90,10 @@ running in the same compromised browser origin can access an unlocked key.
 TaleLabs must continue to defend against XSS, malicious dependencies, browser
 extensions, compromised devices, and accidental telemetry capture.
 
-### Current browser credential storage
+### Browser credential storage
 
-TaleLabs currently implements the credential-persistence boundary for
-OpenRouter, independently of local provider execution. The browser package uses
+TaleLabs implements the credential-persistence boundary for OpenRouter and uses
+it only from the local execution driver. The browser package uses
 one versioned IndexedDB database with separate stores for encrypted credentials
 and a single non-extractable 256-bit AES-GCM `CryptoKey` persisted by structured
 clone. Each credential write uses a unique 96-bit initialization vector and
@@ -107,10 +107,10 @@ sign-out deletes all credential records for the current user before the Better
 Auth session is ended.
 
 The Settings UI can show non-secret status and can store, replace, or remove the
-OpenRouter key. It never resolves the plaintext key. Plaintext resolution is a
-reserved browser-package API for the future local executor. The current feature
-does not make provider calls, send credentials over TaleLabs APIs, or implement
-browser run admission or durability.
+OpenRouter key. It never resolves the plaintext key. Plaintext resolution occurs
+only inside the browser job runner immediately before its direct provider call.
+Run admission, manifests, checkpoints, recovery records, and output finalization
+contain no credential material.
 
 ### Local run behavior
 
@@ -143,6 +143,9 @@ Local runs have explicit limitations:
 - background execution is constrained by browser lifecycle and throttling;
 - a missing browser credential prevents recovery on another device;
 - client-reported cost and provider metadata cannot be trusted for billing;
+- client-reported provider cost and generation identifiers are persisted only
+  as unverified browser reports and never settle accounting or replace trusted
+  managed-provider facts;
 - provider support is enabled per protocol only after browser compatibility is
   verified.
 
