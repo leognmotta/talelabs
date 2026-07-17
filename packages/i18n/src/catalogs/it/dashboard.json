@@ -1256,6 +1256,24 @@
     "workspaceSlug": "URL dell’area di lavoro",
     "yourOrganizations": "Le tue organizzazioni"
   },
+  "secureStore": {
+    "apiKeyLabel": "Chiave API OpenRouter",
+    "couldNotRemove": "Impossibile rimuovere la chiave API da questo browser.",
+    "couldNotStore": "Impossibile archiviare la chiave API in questo browser.",
+    "description": "Gestisci le chiavi API dei provider crittografate in questo browser.",
+    "dialogDescription": "Inserisci la chiave API per crittografarla e archiviarla in questo browser.",
+    "openRouter": "OpenRouter",
+    "removeKey": "Rimuovi chiave",
+    "removing": "Rimozione...",
+    "replaceKey": "Sostituisci chiave",
+    "replaceTitle": "Sostituisci la chiave API OpenRouter",
+    "securityNotice": "Le tue chiavi API vengono crittografate e archiviate solo in questo browser. TaleLabs non le invia ai propri server. Se esci, cancelli i dati del browser o usi un altro browser o dispositivo, dovrai inserirle di nuovo.",
+    "signOutCleanupFailed": "Impossibile cancellare le chiavi dei provider archiviate nel browser. Riprova prima di uscire.",
+    "storeKey": "Archivia chiave",
+    "storeTitle": "Archivia la chiave API OpenRouter",
+    "storedInBrowser": "Archiviata in questo browser",
+    "unavailable": "L'archiviazione sicura del browser non è disponibile. Controlla le impostazioni del browser e riprova."
+  },
   "settings": {
     "accountSecurity": "Sicurezza account",
     "autoDetect": "Rileva automaticamente",
@@ -1270,7 +1288,9 @@
     "newPassword": "Nuova password",
     "organization": "Organizzazione",
     "profile": "Profilo",
+    "providers": "Provider",
     "security": "Sicurezza",
+    "secureStore": "Archiviazione sicura",
     "system": "Sistema",
     "team": "Team",
     "theme": "Tema"

@@ -1256,6 +1256,24 @@
     "workspaceSlug": "Werkruimte-URL",
     "yourOrganizations": "Jouw organisaties"
   },
+  "secureStore": {
+    "apiKeyLabel": "OpenRouter-API-sleutel",
+    "couldNotRemove": "De API-sleutel kon niet uit deze browser worden verwijderd.",
+    "couldNotStore": "De API-sleutel kon niet in deze browser worden opgeslagen.",
+    "description": "Beheer versleutelde API-sleutels van providers in deze browser.",
+    "dialogDescription": "Voer de API-sleutel in om deze versleuteld in deze browser op te slaan.",
+    "openRouter": "OpenRouter",
+    "removeKey": "Sleutel verwijderen",
+    "removing": "Verwijderen...",
+    "replaceKey": "Sleutel vervangen",
+    "replaceTitle": "OpenRouter-API-sleutel vervangen",
+    "securityNotice": "Je API-sleutels worden versleuteld en alleen in deze browser opgeslagen. TaleLabs uploadt ze niet naar zijn servers. Als je uitlogt, browsergegevens wist of een andere browser of ander apparaat gebruikt, moet je ze opnieuw invoeren.",
+    "signOutCleanupFailed": "De in de browser opgeslagen providersleutels konden niet worden gewist. Probeer het opnieuw voordat je uitlogt.",
+    "storeKey": "Sleutel opslaan",
+    "storeTitle": "OpenRouter-API-sleutel opslaan",
+    "storedInBrowser": "Opgeslagen in deze browser",
+    "unavailable": "Veilige browseropslag is niet beschikbaar. Controleer je browserinstellingen en probeer het opnieuw."
+  },
   "settings": {
     "accountSecurity": "Accountbeveiliging",
     "autoDetect": "Automatisch detecteren",
@@ -1270,7 +1288,9 @@
     "newPassword": "Nieuw wachtwoord",
     "organization": "Organisatie",
     "profile": "Profiel",
+    "providers": "Providers",
     "security": "Beveiliging",
+    "secureStore": "Veilige opslag",
     "system": "Systeem",
     "team": "Team",
     "theme": "Thema"

@@ -1,3 +1,5 @@
+/** Global command palette for pages, Settings, folders, and Assets. */
+
 import type { ReactNode } from 'react'
 import type { SettingsTab } from '../features/settings/settings-state'
 
@@ -5,6 +7,7 @@ import {
   IconAlertCircle,
   IconBuilding,
   IconGitBranch,
+  IconKey,
   IconRefresh,
   IconSearch,
   IconSettings,
@@ -52,9 +55,10 @@ const settingsActions = [
   { icon: IconBuilding, titleKey: 'navigation.organizationSettings', tab: 'organization' },
   { icon: IconUserCircle, titleKey: 'navigation.profile', tab: 'profile' },
   { icon: IconUsersGroup, titleKey: 'navigation.inviteMember', tab: 'team' },
+  { icon: IconKey, titleKey: 'settings.secureStore', tab: 'secureStore' },
 ] satisfies {
   icon: typeof IconSettings
-  titleKey: 'navigation.generalSettings' | 'navigation.inviteMember' | 'navigation.organizationSettings' | 'navigation.profile'
+  titleKey: 'navigation.generalSettings' | 'navigation.inviteMember' | 'navigation.organizationSettings' | 'navigation.profile' | 'settings.secureStore'
   tab: SettingsTab
 }[]
 
@@ -72,6 +76,7 @@ function matchesCommand(search: string, value: string) {
   return terms.every(term => normalizedValue.includes(term))
 }
 
+/** Renders the Cmd-K search surface and routes selected results. */
 export function GlobalSearch({
   onOpenInviteMemberSettings,
   onOpenSettings,

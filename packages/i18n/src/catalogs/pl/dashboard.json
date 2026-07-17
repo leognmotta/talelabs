@@ -1256,6 +1256,24 @@
     "workspaceSlug": "Adres URL obszaru roboczego",
     "yourOrganizations": "Twoje organizacje"
   },
+  "secureStore": {
+    "apiKeyLabel": "Klucz API OpenRouter",
+    "couldNotRemove": "Nie udało się usunąć klucza API z tej przeglądarki.",
+    "couldNotStore": "Nie udało się zapisać klucza API w tej przeglądarce.",
+    "description": "Zarządzaj zaszyfrowanymi kluczami API dostawców w tej przeglądarce.",
+    "dialogDescription": "Wprowadź klucz API, aby go zaszyfrować i zapisać w tej przeglądarce.",
+    "openRouter": "OpenRouter",
+    "removeKey": "Usuń klucz",
+    "removing": "Usuwanie...",
+    "replaceKey": "Zastąp klucz",
+    "replaceTitle": "Zastąp klucz API OpenRouter",
+    "securityNotice": "Twoje klucze API są szyfrowane i przechowywane wyłącznie w tej przeglądarce. TaleLabs nie przesyła ich na swoje serwery. Po wylogowaniu, wyczyszczeniu danych przeglądarki albo użyciu innej przeglądarki lub urządzenia trzeba wprowadzić je ponownie.",
+    "signOutCleanupFailed": "Nie udało się wyczyścić kluczy dostawców zapisanych w przeglądarce. Spróbuj ponownie przed wylogowaniem.",
+    "storeKey": "Zapisz klucz",
+    "storeTitle": "Zapisz klucz API OpenRouter",
+    "storedInBrowser": "Zapisany w tej przeglądarce",
+    "unavailable": "Bezpieczna pamięć przeglądarki jest niedostępna. Sprawdź ustawienia przeglądarki i spróbuj ponownie."
+  },
   "settings": {
     "accountSecurity": "Bezpieczeństwo konta",
     "autoDetect": "Wykryj automatycznie",
@@ -1270,7 +1288,9 @@
     "newPassword": "Nowe hasło",
     "organization": "Organizacja",
     "profile": "Profil",
+    "providers": "Dostawcy",
     "security": "Bezpieczeństwo",
+    "secureStore": "Bezpieczna pamięć",
     "system": "System",
     "team": "Zespół",
     "theme": "Motyw"

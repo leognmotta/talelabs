@@ -1,5 +1,8 @@
+/** Shared layout for one labeled Settings control row. */
+
 import type { ReactNode } from 'react'
 
+/** Aligns a Settings label and optional description with its controls. */
 export function SettingsRow({
   children,
   description,
@@ -7,7 +10,7 @@ export function SettingsRow({
 }: {
   children: ReactNode
   description?: string
-  label: string
+  label: ReactNode
 }) {
   return (
     <div className="

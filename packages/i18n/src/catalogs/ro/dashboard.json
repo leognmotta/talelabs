@@ -1256,6 +1256,24 @@
     "workspaceSlug": "Adresa spațiului de lucru",
     "yourOrganizations": "Organizațiile dvs."
   },
+  "secureStore": {
+    "apiKeyLabel": "Cheie API OpenRouter",
+    "couldNotRemove": "Cheia API nu a putut fi eliminată din acest browser.",
+    "couldNotStore": "Cheia API nu a putut fi stocată în acest browser.",
+    "description": "Gestionați cheile API ale furnizorilor criptate în acest browser.",
+    "dialogDescription": "Introduceți cheia API pentru a o cripta și stoca în acest browser.",
+    "openRouter": "OpenRouter",
+    "removeKey": "Eliminați cheia",
+    "removing": "Se elimină...",
+    "replaceKey": "Înlocuiți cheia",
+    "replaceTitle": "Înlocuiți cheia API OpenRouter",
+    "securityNotice": "Cheile dvs. API sunt criptate și stocate numai în acest browser. TaleLabs nu le încarcă pe serverele sale. Dacă vă deconectați, ștergeți datele browserului sau folosiți alt browser ori dispozitiv, va trebui să le introduceți din nou.",
+    "signOutCleanupFailed": "Cheile furnizorilor stocate în browser nu au putut fi șterse. Încercați din nou înainte de deconectare.",
+    "storeKey": "Stocați cheia",
+    "storeTitle": "Stocați cheia API OpenRouter",
+    "storedInBrowser": "Stocată în acest browser",
+    "unavailable": "Stocarea securizată în browser nu este disponibilă. Verificați setările browserului și încercați din nou."
+  },
   "settings": {
     "accountSecurity": "Securitatea contului",
     "autoDetect": "Detectează automat",
@@ -1270,7 +1288,9 @@
     "newPassword": "Parolă nouă",
     "organization": "Organizație",
     "profile": "Profil",
+    "providers": "Furnizori",
     "security": "Securitate",
+    "secureStore": "Stocare securizată",
     "system": "Sistem",
     "team": "Echipă",
     "theme": "Temă"

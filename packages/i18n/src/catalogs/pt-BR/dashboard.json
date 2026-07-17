@@ -1256,6 +1256,24 @@
     "workspaceSlug": "URL do workspace",
     "yourOrganizations": "Suas organizações"
   },
+  "secureStore": {
+    "apiKeyLabel": "Chave de API da OpenRouter",
+    "couldNotRemove": "Não foi possível remover a chave de API deste navegador.",
+    "couldNotStore": "Não foi possível armazenar a chave de API neste navegador.",
+    "description": "Gerencie chaves de API de provedores criptografadas neste navegador.",
+    "dialogDescription": "Insira a chave de API para criptografá-la e armazená-la neste navegador.",
+    "openRouter": "OpenRouter",
+    "removeKey": "Remover chave",
+    "removing": "Removendo...",
+    "replaceKey": "Substituir chave",
+    "replaceTitle": "Substituir chave de API da OpenRouter",
+    "securityNotice": "Suas chaves de API são criptografadas e armazenadas somente neste navegador. A TaleLabs não as envia para seus servidores. Ao sair da conta, limpar os dados do navegador ou usar outro navegador ou dispositivo, será necessário inseri-las novamente.",
+    "signOutCleanupFailed": "Não foi possível limpar as chaves de provedores armazenadas no navegador. Tente novamente antes de sair.",
+    "storeKey": "Armazenar chave",
+    "storeTitle": "Armazenar chave de API da OpenRouter",
+    "storedInBrowser": "Armazenada neste navegador",
+    "unavailable": "O armazenamento seguro do navegador não está disponível. Verifique as configurações do navegador e tente novamente."
+  },
   "settings": {
     "accountSecurity": "Segurança da conta",
     "autoDetect": "Detectar automaticamente",
@@ -1270,7 +1288,9 @@
     "newPassword": "Nova senha",
     "organization": "Organização",
     "profile": "Perfil",
+    "providers": "Provedores",
     "security": "Segurança",
+    "secureStore": "Armazenamento seguro",
     "system": "Sistema",
     "team": "Equipe",
     "theme": "Tema"

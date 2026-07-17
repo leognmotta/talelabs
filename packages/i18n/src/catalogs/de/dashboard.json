@@ -1256,6 +1256,24 @@
     "workspaceSlug": "Workspace-URL",
     "yourOrganizations": "Deine Organisationen"
   },
+  "secureStore": {
+    "apiKeyLabel": "OpenRouter-API-Schlüssel",
+    "couldNotRemove": "Der API-Schlüssel konnte nicht aus diesem Browser entfernt werden.",
+    "couldNotStore": "Der API-Schlüssel konnte nicht in diesem Browser gespeichert werden.",
+    "description": "Verwalte verschlüsselte Anbieter-API-Schlüssel in diesem Browser.",
+    "dialogDescription": "Gib den API-Schlüssel ein, um ihn verschlüsselt in diesem Browser zu speichern.",
+    "openRouter": "OpenRouter",
+    "removeKey": "Schlüssel entfernen",
+    "removing": "Wird entfernt...",
+    "replaceKey": "Schlüssel ersetzen",
+    "replaceTitle": "OpenRouter-API-Schlüssel ersetzen",
+    "securityNotice": "Deine API-Schlüssel werden verschlüsselt und nur in diesem Browser gespeichert. TaleLabs lädt sie nicht auf seine Server hoch. Wenn du dich abmeldest, Browserdaten löschst oder einen anderen Browser bzw. ein anderes Gerät verwendest, musst du sie erneut eingeben.",
+    "signOutCleanupFailed": "Die im Browser gespeicherten Anbieterschlüssel konnten nicht gelöscht werden. Versuche es vor dem Abmelden erneut.",
+    "storeKey": "Schlüssel speichern",
+    "storeTitle": "OpenRouter-API-Schlüssel speichern",
+    "storedInBrowser": "In diesem Browser gespeichert",
+    "unavailable": "Der sichere Browser-Speicher ist nicht verfügbar. Prüfe deine Browser-Einstellungen und versuche es erneut."
+  },
   "settings": {
     "accountSecurity": "Kontosicherheit",
     "autoDetect": "Automatisch erkennen",
@@ -1270,7 +1288,9 @@
     "newPassword": "Neues Passwort",
     "organization": "Organisation",
     "profile": "Profil",
+    "providers": "Anbieter",
     "security": "Sicherheit",
+    "secureStore": "Sicherer Speicher",
     "system": "System",
     "team": "Team",
     "theme": "Design"

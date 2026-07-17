@@ -1,5 +1,8 @@
+/** Dashboard routing, authenticated session lifecycle, and global preferences. */
+
 import type { LanguagePreference } from '@talelabs/i18n'
 import type { ThemePreference } from '../shared/lib/theme'
+import { clearUserCredentials } from '@talelabs/providers/browser'
 import {
   activateOrganization,
   getMeQueryKey,
@@ -63,6 +66,7 @@ const FlowEditorScreen = lazy(async () => {
   return { default: module.FlowEditorScreen }
 })
 
+/** Composes public and protected routes around the current account session. */
 export function DashboardRoutes() {
   const { t } = useTranslation()
   const language = useLanguage()
@@ -102,6 +106,18 @@ export function DashboardRoutes() {
 
   async function handleSignOut() {
     await uploadManager.cancelAll()
+
+    const userId = session.data?.user.id
+    if (userId) {
+      try {
+        await clearUserCredentials({ userId })
+      }
+      catch {
+        toast.error(t('secureStore.signOutCleanupFailed'))
+        return
+      }
+    }
+
     await signOut()
     queryClient.clear()
     clearLastOrganizationId()

@@ -1,3 +1,5 @@
+/** Account Settings dialog navigation and destination composition. */
+
 import type { LanguagePreference } from '@talelabs/i18n'
 import type { ThemePreference } from '../../shared/lib/theme'
 import type { SettingsTab } from './settings-state'
@@ -17,11 +19,13 @@ import { useTranslation } from 'react-i18next'
 import { GeneralSettings } from './general-settings'
 import { OrganizationSettings } from './organization-settings'
 import { ProfileSettings } from './profile-settings'
+import { SecureStoreSettings } from './secure-store-settings'
 import { SecuritySettings } from './security-settings'
-import { settingsNavigation } from './settings-options'
+import { settingsNavigationGroups } from './settings-options'
 import { getInitials } from './settings-utils'
 import { TeamSettings } from './team-settings'
 
+/** Renders the account Settings dialog and its active destination. */
 export function SettingsDialog({
   activeOrganizationId,
   currentSessionId,
@@ -94,33 +98,54 @@ export function SettingsDialog({
               </div>
             </div>
             <nav className="
-              flex gap-1 overflow-x-auto
+              flex gap-3 overflow-x-auto
               md:flex-col md:overflow-visible
             "
             >
-              {settingsNavigation.map((item) => {
-                const Icon = item.icon
-                const isActive = tab === item.value
+              {settingsNavigationGroups.map(group => (
+                <div
+                  className="
+                    flex shrink-0 gap-1
+                    md:flex-col
+                  "
+                  key={group.id}
+                >
+                  {group.labelKey && (
+                    <p className="
+                      hidden px-3 pt-2 pb-1 text-xs font-medium
+                      text-muted-foreground
+                      md:block
+                    "
+                    >
+                      {t(group.labelKey)}
+                    </p>
+                  )}
+                  {group.items.map((item) => {
+                    const Icon = item.icon
+                    const isActive = tab === item.value
 
-                return (
-                  <Button
-                    key={item.value}
-                    type="button"
-                    variant="ghost"
-                    className={cn(
-                      `
-                        h-9 justify-start rounded-2xl px-3 text-muted-foreground
-                        hover:text-foreground
-                      `,
-                      isActive && 'bg-muted text-foreground',
-                    )}
-                    onClick={() => onTabChange(item.value)}
-                  >
-                    <Icon />
-                    <span>{t(item.labelKey)}</span>
-                  </Button>
-                )
-              })}
+                    return (
+                      <Button
+                        key={item.value}
+                        type="button"
+                        variant="ghost"
+                        className={cn(
+                          `
+                            h-9 justify-start rounded-2xl px-3
+                            text-muted-foreground
+                            hover:text-foreground
+                          `,
+                          isActive && 'bg-muted text-foreground',
+                        )}
+                        onClick={() => onTabChange(item.value)}
+                      >
+                        <Icon />
+                        <span>{t(item.labelKey)}</span>
+                      </Button>
+                    )
+                  })}
+                </div>
+              ))}
             </nav>
           </aside>
           <section className="min-h-0 overflow-y-auto p-6">
@@ -159,6 +184,7 @@ export function SettingsDialog({
                 onInviteFormOpenChange={onTeamInviteFormOpenChange}
               />
             )}
+            {tab === 'secureStore' && <SecureStoreSettings />}
           </section>
         </div>
       </DialogContent>
