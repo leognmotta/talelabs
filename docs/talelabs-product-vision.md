@@ -893,9 +893,12 @@ registry in `@talelabs/providers/server`. The server registry dispatches the
 exact binding captured at admission and resolves provider credentials only as
 non-serializable runtime services. Credentials never enter model bindings,
 snapshots, jobs, task payloads, logs, or public configuration. The explicit
-`/browser` entry point preserves a future browser-local BYOK seam without
-implementing browser credential storage, private routing delivery, or local run
-durability now.
+`/browser` entry point is the provider boundary for the approved browser-local
+BYOK runtime. Browser execution is implementation-pending and must reuse server
+admission, canonical planning, immutable snapshots, persisted jobs, and
+canonical output Assets. It must not introduce browser-owned graph semantics or
+claim managed durability. Its binding implementation and approval matrix are
+defined in `docs/browser-execution-mode-execution-plan.md`.
 
 Local BYOK, managed platform execution, and future managed BYOK follow the
 trust-boundary contract in `docs/provider-execution-modes.md`. In particular,

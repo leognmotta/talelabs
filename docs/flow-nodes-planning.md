@@ -655,8 +655,10 @@ provider completes synchronously.
 accounting, and webhook cryptography. Trigger dispatches immutable snapshot
 bindings through the server registry and may inject a runtime-only credential;
 it does not import provider implementation modules or reconstruct request
-payloads itself. The `/browser` boundary is compatibility infrastructure for a
-future browser-local BYOK product, not an implemented execution mode.
+payloads itself. The `/browser` boundary supports the approved,
+implementation-pending browser-local BYOK driver. That driver executes jobs
+from the same server-admitted immutable plan and never owns graph traversal or
+command semantics. See `docs/browser-execution-mode-execution-plan.md`.
 
 The normalized contract is:
 

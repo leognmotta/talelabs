@@ -317,9 +317,13 @@ M5.5  dashboard binding, durable statuses/history, Run all, Run selection
 M5.6  engineering verification + user-owned run UX/E2E QA
 ```
 
-Do not replace the browser preview piecemeal before M5.2 exists. Once the durable
-path is available, bind every approved Run command to that single server-owned
-execution path; do not retain a second production-shaped browser executor.
+Do not replace the browser preview piecemeal before M5.2 exists. The durable
+server-owned planner, immutable snapshot, run persistence, and canonical output
+path remain authoritative for every approved Run command. Browser-local BYOK
+adds a second execution driver for jobs in that admitted plan; it must not add a
+second planner, graph traversal implementation, run schema, or output path.
+Implementation and dual-runtime acceptance are defined in
+`docs/browser-execution-mode-execution-plan.md`.
 
 Every canvas command must first flush pending autosave and pin an
 `expectedFlowRevision`. The server plans and executes only that saved revision;

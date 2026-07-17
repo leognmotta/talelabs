@@ -114,10 +114,27 @@ browser run admission or durability.
 
 ### Local run behavior
 
-Local execution should still use server admission for graph validation,
-immutable snapshots, ownership checks, run identity, and canonical output Asset
-registration. The browser performs only the provider lifecycle for jobs assigned
-to local execution.
+Local execution uses the same server admission, canonical planner, immutable
+snapshot, ownership checks, run identity, prerequisite semantics, aggregation,
+and canonical output Asset registration as managed execution. The browser is a
+second execution driver for jobs in that admitted plan; it does not traverse the
+mutable Flow or reinterpret the selected command.
+
+The approved commands keep identical semantics in both runtimes:
+
+```txt
+Run node
+Run from here
+Run till here
+Run selection
+Run all
+```
+
+A small browser queue bounds provider-job concurrency and schedules only jobs
+already selected by the server planner. PostgreSQL remains authoritative, and
+the API atomically validates prerequisites before a browser claims a job. This
+browser scheduler is not part of the Provider Gateway and is not a second Flow
+planner or durable workflow system.
 
 Local runs have explicit limitations:
 
@@ -128,6 +145,11 @@ Local runs have explicit limitations:
 - client-reported cost and provider metadata cannot be trusted for billing;
 - provider support is enabled per protocol only after browser compatibility is
   verified.
+
+The complete local scheduler, lease, recovery, command-parity, and acceptance
+contract is defined in `browser-execution-mode-execution-plan.md`. Browser mode
+is not approved until every run command passes in both browser and managed
+drivers under deterministic debug execution.
 
 If the browser persists a provider job ID before interruption, a later session
 may resume polling when the same credential is available. TaleLabs must present

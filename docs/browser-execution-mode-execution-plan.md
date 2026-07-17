@@ -1,84 +1,108 @@
-# TaleLabs Browser Execution Mode - Execution Plan
+# TaleLabs Browser Execution Runtime - Execution Plan
 
-**Status:** proposed implementation plan. No browser run executor is implemented
-by this document.
+Status: Approved product direction; implementation pending.
 
-**Product decision:** Browser execution is the initial local BYOK path. It uses
-a provider key stored only in the current browser and supports **Run node only**.
-Multi-node commands remain part of managed Trigger.dev execution and may become
-paid features later.
+This plan adds browser-local BYOK execution as a second driver for the existing
+TaleLabs run engine. Browser and managed execution must use the same saved Flow,
+planner, immutable snapshot, run tables, job contracts, canonical Assets, and
+canvas output projection.
 
-This plan extends the trust-boundary design in
-`docs/provider-execution-modes.md`. It does not replace the existing managed run
-engine, immutable run snapshots, PostgreSQL authority, or canonical Asset
-pipeline.
-
-## Outcome
-
-The first browser execution release must support this complete loop:
+The central design is:
 
 ```txt
-user selects Browser mode
--> user clicks Run on one executable node
--> API validates and admits one immutable node run
--> browser obtains the admitted browser execution manifest
--> browser resolves the local provider key
--> browser calls the provider directly
--> browser waits or polls when the provider is asynchronous
--> browser uploads the output through a scoped TaleLabs grant
--> API validates and finalizes the output as a canonical Asset
--> the existing run query projects the output onto the canvas
--> refreshing the page preserves the completed output
+saved Flow
+-> server admission and canonical planning
+-> immutable run snapshot and persisted jobs
+-> selected execution driver
+   -> managed: Trigger.dev
+   -> browser: browser scheduler plus local provider credential
+-> canonical output Assets
+-> persisted canvas outputs
 ```
 
-The provider key must never be sent to TaleLabs API, PostgreSQL, R2,
-Trigger.dev, analytics, logs, traces, errors, session replay, or Flow data.
+The browser is not a second workflow product. It is a less durable execution
+driver for the same admitted plan.
 
-## Deliberate V1 Boundary
+## Product Outcome
 
-Browser execution supports only:
+Users can choose **Browser mode** under **Providers -> Secure Store** and run a
+Flow with the provider key stored in that browser. TaleLabs and Trigger.dev do
+not receive the plaintext key.
 
-```txt
-command mode       node
-executable nodes   exactly 1
-planned jobs       exactly 1
-provider route     explicitly browser eligible
-credential source  encrypted browser Secure Store
-```
-
-Browser execution does not support:
+Browser mode must support the same approved commands as managed execution:
 
 ```txt
+Run node
 Run from here
 Run till here
 Run selection
 Run all
-automatic upstream execution
-iteration or outer runtime-item expansion
-provider webhooks
-managed BYOK
-silent fallback to a TaleLabs credential
-silent fallback to Trigger.dev
 ```
 
-`Run node` continues to reuse already persisted compatible upstream outputs.
-It does not regenerate upstream nodes. If required upstream output is missing,
-the run fails admission with a localized, actionable validation error.
+The command selects the same subgraph in both runtimes. Only the component that
+performs provider requests changes.
 
-The existing managed runtime retains every approved run mode. Billing and
-entitlement enforcement are separate future work; this implementation only
-establishes the runtime capability boundary.
+Browser mode is intentionally less durable:
+
+- route navigation inside TaleLabs must not stop a run;
+- reload recovery is supported when enough non-secret provider state was saved;
+- another tab may safely take over an expired execution lease;
+- a frozen, discarded, closed, or sleeping browser may interrupt progress;
+- managed execution remains the durable option for work that must continue
+  independently of the user's browser.
+
+Never silently switch a browser run to managed execution or use a TaleLabs
+credential when a local key is missing. Runtime selection changes the security,
+durability, and cost boundary and must remain explicit.
+
+## Non-Negotiable Approval Gate
+
+This feature is not approved because one node can call one provider. It is
+approved only after every existing run command works through both execution
+drivers in `debug` mode.
+
+Required matrix:
+
+| Execution runtime | `node` | `downstream` | `upstream` | `selection` | `all` |
+| --- | --- | --- | --- | --- | --- |
+| `managed + debug` | Required | Required | Required | Required | Required |
+| `browser + debug` | Required | Required | Required | Required | Required |
+
+All ten cells must prove:
+
+1. The same saved Flow revision is admitted.
+2. The same canonical planner selects the command scope.
+3. The immutable snapshot and plan hashes are valid.
+4. The expected executable nodes, items, jobs, prerequisites, and disconnected
+   branches are persisted.
+5. Jobs execute only after their prerequisites are satisfied.
+6. Multiple outputs retain item, output-index, and lineage ordering.
+7. Terminal node and run aggregation is correct, including `partial`.
+8. Debug media outputs become canonical Assets through the real ingestion path.
+9. Refresh restores completed outputs on the canvas.
+10. Retry and cancellation do not duplicate provider work or canonical Assets.
+
+`Run selection` keeps the user-approved selected-only contract: execute selected
+executable nodes and reuse compatible prior upstream outputs. It must not
+silently regenerate unselected ancestors.
+
+Engineering must provide a repeatable debug-mode verification command for the
+matrix. Browser interaction and visual QA remain user-owned. An AI session may
+report the implementation as engineering-complete, but must not call the
+feature approved until the user validates the browser and managed command
+matrix from the product UI.
+
+No paid provider request is required for this gate.
 
 ## Naming: Two Independent Dimensions
 
-The current `executionMode` means real versus deterministic provider behavior:
+Real versus deterministic behavior remains:
 
 ```ts
 type ExecutionMode = 'live' | 'debug'
 ```
 
-Browser versus managed execution is a different decision and must not overload
-that field:
+The execution driver is a separate dimension:
 
 ```ts
 type ExecutionRuntime = 'browser' | 'managed'
@@ -89,132 +113,251 @@ Examples:
 ```txt
 managed + live   = Trigger.dev with a TaleLabs platform credential
 managed + debug  = Trigger.dev with the deterministic mock adapter
-browser + live   = local BYOK request from the current browser
-browser + debug  = optional local deterministic development path
+browser + live   = local provider request with the browser-owned key
+browser + debug  = browser scheduler with deterministic browser fixtures
 ```
 
-V1 product UI needs only `managed + live` and `browser + live`. The debug
-combination remains an engineering seam and must not add product controls.
+Do not overload `executionMode`, infer runtime from `triggerRunId`, or encode
+runtime choice in model IDs.
 
-## Architectural Rules
+## Research Conclusions
 
-### One run model
+The architecture follows these verified platform properties.
 
-Do not create `localRuns`, browser-only generation tables, or a second Flow
-planner. Browser and managed runs share:
+### React Flow and Zustand
 
-- server-side graph validation;
-- immutable snapshots and plan hashes;
-- `flowRuns`, run nodes, items, jobs, sources, inputs, and outputs;
-- tenant isolation and authorization;
-- model and provider binding capture;
-- canonical Asset creation and provenance;
-- run and node status APIs;
-- canvas output hydration after refresh;
-- retry and cancellation state vocabulary where behavior is supported.
+React Flow documents Zustand as an appropriate state-management option for
+controlled, growing Flow editors. It also recommends narrow selectors and
+memoized callbacks to avoid rerendering components on unrelated node changes.
+TaleLabs already follows this model for canvas editing.
 
-The runtime changes who performs the provider lifecycle, not what a TaleLabs
-run means.
+Browser run execution must not be added to the canvas Zustand store. Canvas
+state is editor state; durable run state belongs to PostgreSQL and TanStack
+Query. The browser executor mounts outside the editor so navigation does not
+destroy it.
 
-### Clear state ownership
+### A browser queue controls concurrency, not durability
 
-| State | Owner | Notes |
+`p-queue` is a lightweight Promise scheduler with concurrency, backpressure,
+AbortSignal, and rate-limit support. It is suitable for limiting local provider
+requests. Its own documentation distinguishes this from a durable server queue.
+
+Therefore:
+
+- `p-queue` may bound active browser jobs;
+- it must not select the Flow subgraph;
+- it must not own canonical job state;
+- it must not contain every job in a large run at once;
+- it must be reconstructable from the API and local journal;
+- losing the in-memory queue must not lose the admitted run.
+
+### Browser lifecycle is not a background worker guarantee
+
+Browsers may freeze a hidden tab, suspending timers and fetch callbacks, and may
+discard it without firing a final event. `beforeunload` and `unload` are not
+reliable recovery boundaries. Browser mode must checkpoint as state changes and
+when the document becomes hidden, then recover from server state on startup.
+
+This is why local execution cannot claim managed durability even when
+IndexedDB, Web Locks, and a queue are used.
+
+### IndexedDB is a recovery journal, not the source of truth
+
+IndexedDB supports persistent structured browser data, but active transactions
+can be aborted during browser shutdown and best-effort storage can be evicted.
+`navigator.storage.persist()` may improve retention but can be denied.
+
+Store only minimal non-secret recovery checkpoints. PostgreSQL remains
+authoritative.
+
+### Cross-tab coordination requires two layers
+
+Web Locks coordinate same-origin tabs and release when the lock callback ends.
+They do not protect against another browser profile, device, or stale server
+state. BroadcastChannel transports same-origin hints but defines no application
+protocol and provides no persistence.
+
+Use:
+
+```txt
+Web Lock          -> local leader election
+PostgreSQL lease  -> authoritative run/job ownership
+BroadcastChannel  -> query invalidation and takeover hints only
+```
+
+### Trigger.dev remains the managed driver
+
+Trigger.dev queues, concurrency keys, retries, cancellation, and idempotency
+continue to provide managed durability. Browser parity means command and output
+semantics match; it does not mean replacing those managed guarantees with web
+APIs.
+
+## Architectural Invariants
+
+### One planner and one immutable run model
+
+Do not create a browser planner, browser graph traversal implementation,
+`localRuns` table, browser-only job schema, or browser-specific output format.
+
+Both runtimes share:
+
+- server authorization and tenant isolation;
+- Flow revision validation and autosave flush;
+- graph validation and command-scope selection;
+- immutable snapshots, plan hashes, and executor compatibility checks;
+- persisted run nodes, items, jobs, sources, inputs, and outputs;
+- exact captured provider bindings and operation contracts;
+- job prerequisite and topological-level semantics;
+- canonical Asset ingestion and provenance;
+- node/run aggregation, retry, cancellation, and error vocabulary;
+- run detail queries and canvas output hydration.
+
+The browser receives an already admitted execution manifest. It never decides
+what the command means.
+
+### One direct progression model
+
+The same provider-neutral progression rules must answer:
+
+```txt
+Which persisted jobs are ready?
+Which required inputs are now resolvable?
+Which transitions are legal?
+When is a node partial, failed, canceled, or succeeded?
+When is the run terminal?
+```
+
+Pure transition/readiness logic belongs in `@talelabs/flows`. PostgreSQL row
+locking, job claims, Asset resolution, and aggregation remain server-owned.
+Trigger.dev and the browser driver consume these contracts rather than
+reimplementing them.
+
+### Server validates every browser transition
+
+Browser code is untrusted. Before returning a job manifest, the API atomically:
+
+1. validates organization, user, run, execution runtime, and lease;
+2. confirms the job belongs to the immutable snapshot;
+3. confirms prerequisites and reusable upstream outputs;
+4. claims the job with compare-and-set semantics;
+5. resolves current short-lived Asset access without persisting signed URLs;
+6. returns only the sanitized executable job contract.
+
+Completion, failure, cancellation, retry, and output finalization receive the
+same tenant-scoped and state-guarded treatment.
+
+### Debug and live use the same driver boundary
+
+Browser debug mode must exercise admission, claims, scheduling, prerequisites,
+output transfer, canonical ingestion, aggregation, and canvas hydration. It may
+replace only the external provider operation.
+
+Use versioned non-secret fixtures:
+
+```txt
+text   -> deterministic text from request hash
+image  -> versioned public image fixture
+audio  -> versioned public audio fixture
+video  -> versioned public short-video fixture
+```
+
+Each debug output is copied or uploaded to a unique generated-output object and
+passes through the real canonical Asset pipeline. Do not return fake data only
+to React state.
+
+## State Ownership
+
+| State | Owner | Rule |
 | --- | --- | --- |
-| Flow nodes, edges, selection, viewport, editor history | Canvas Zustand store | Transient controlled React Flow state only. |
-| Flow graph and revision | PostgreSQL through Flow API | Authoritative saved creative document. |
-| Run, job, snapshot, inputs, outputs, status | PostgreSQL | Authoritative execution state. |
-| Server state in React | TanStack Query | Queries and invalidation; never copy into a second global store. |
-| Provider key | Existing encrypted Secure Store IndexedDB database | Never expose through Zustand or TanStack Query. |
-| Browser recovery checkpoint | Separate non-secret IndexedDB journal | Recovery cache, never source of truth. |
-| Browser runtime preference | `localStorage`, scoped to the current user | Non-sensitive device preference. |
-| Executor tab identity | `sessionStorage` | Random non-secret ID per tab session. |
-| Active in-tab work | Small `p-queue` instance | Disposable scheduling, reconstructed from API and journal. |
-| Cross-tab leadership | Web Locks API | Local coordination only; server lease remains authoritative. |
-| Cross-tab status hints | BroadcastChannel | Invalidation hints only, never authoritative state. |
+| Nodes, edges, selection, viewport, editor history | Canvas Zustand store | Transient controlled React Flow state only. |
+| Saved Flow graph and revision | PostgreSQL through Flow API | Authoritative creative document. |
+| Run snapshot, jobs, prerequisites, outputs, status | PostgreSQL | Authoritative execution state. |
+| Server state in React | TanStack Query | Queries and invalidation; do not copy into Zustand. |
+| Provider credential | Existing encrypted Secure Store | Never enter Zustand, query cache, journal, or API traffic. |
+| Runtime preference | User-scoped `localStorage` initially | Non-sensitive device preference; future billing may replace it. |
+| Tab identity | `sessionStorage` | Random non-secret identifier. |
+| Active local scheduling | One small `p-queue` | Disposable and bounded. |
+| Browser recovery checkpoint | IndexedDB journal | Non-secret recovery cache only. |
+| Local leader | Web Locks | Same-origin coordination only. |
+| Authoritative executor ownership | PostgreSQL lease | Prevents duplicate execution across tabs/sessions. |
+| Cross-tab notifications | BroadcastChannel | Invalidation hints only. |
 
-The canvas Zustand store may project whether a node is selected or display a
-run result already obtained from run queries. It must not own provider
-credentials, durable job status, provider job IDs, leases, or recovery truth.
+The canvas may project outputs from run queries. It must not own leases,
+provider job IDs, credentials, queue truth, or durable statuses.
 
-### Shared logic without a universal engine
+## Browser Scheduling Model
 
-Reuse only deterministic policy across runtimes:
+### Queue unit
 
-- snapshot and manifest schemas;
-- job readiness;
-- request normalization;
-- provider output validation;
-- normalized provider lifecycle results;
-- retry/backoff calculations;
-- cancellation transition rules;
-- safe error normalization.
+The queue unit is one persisted generation job, not one node and not one entire
+run. A node may create several jobs because of output count or runtime-item
+multiplicity.
 
-Keep runtime effects separate:
+Use one layout-scoped queue for the current user and organization. Start with a
+code-owned concurrency of `2`. Do not add an environment variable.
 
-```txt
-managed driver  -> Trigger.dev, PostgreSQL, R2, managed credential, reconciliation
-browser driver  -> browser key, fetch, IndexedDB journal, browser lease, upload grant
-```
+### Bounded fill, not eager enqueue
 
-Do not create a giant generic executor with dozens of callbacks. Shared modules
-must remain pure, small, and named after one domain responsibility.
+Do not enqueue thousands of functions when a large run is admitted. The
+scheduler keeps a small fill window, for example no more than twice current
+concurrency, and asks the API for claimable jobs only when capacity is
+available. Use `p-queue` backpressure rather than an unbounded array.
 
-## Package Changes
+When several browser runs are active, fill capacity round-robin by run so one
+large `Run all` does not starve a newer `Run node`.
 
-### New dependencies
+### Dependency progression
 
-Install in the dashboard workspace:
+The admitted snapshot contains selected nodes, jobs, prerequisites, levels,
+and lineage. The browser scheduler may use shared pure readiness helpers for
+presentation and wake-up decisions, but the API performs the authoritative
+claim check.
 
-```bash
-npm install idb p-queue -w dashboard
-```
-
-`idb` is a small promise-based IndexedDB wrapper. It keeps the recovery journal
-readable without introducing a second database abstraction or reworking the
-existing encrypted credential store.
-
-`p-queue` is not the Flow engine. It provides bounded scheduling for multiple
-independent single-node browser runs started by the user. Start with a
-code-owned concurrency limit of `2`. The API and PostgreSQL remain authoritative;
-the queue can always be discarded and reconstructed.
-
-### Existing dependencies to reuse
+Lifecycle:
 
 ```txt
-zustand                 canvas interaction and transient presentation
-@tanstack/react-query   server state and run invalidation
-@xyflow/react           canvas rendering and interactions
-@talelabs/flows         deterministic planning and snapshot contracts
-@talelabs/providers     browser-safe protocol behavior and Secure Store
-@talelabs/sdk           generated authenticated TaleLabs API client
-zod                     strict untrusted manifest and journal parsing
+admit run
+-> acquire run lease
+-> request claimable jobs up to available capacity
+-> API claims and returns exact job manifests
+-> p-queue executes claimed jobs
+-> checkpoint provider lifecycle
+-> finalize output or failure
+-> API aggregates and releases newly ready jobs
+-> refill queue
+-> repeat until terminal
 ```
 
-### Packages explicitly not required
+Disconnected branches in `Run all` become ready independently. Downstream jobs
+wait for required upstream terminal outputs. `Run selection` uses the prior
+output references captured by admission and does not schedule unselected
+ancestors.
 
-Do not add:
+### Retry and throttling
 
-```txt
-Dexie
-Redux
-XState
-Workbox
-a service-worker queue
-a Web Worker framework
-a BroadcastChannel polyfill
-a browser DAG/workflow engine
-```
+Reuse normalized retry classifications and `Retry-After` handling. Do not keep
+a sleeping retry inside an active queue slot. Persist the next eligible time,
+release the slot, and refill when eligible.
 
-Native Web Locks and BroadcastChannel are sufficient for current browser
-targets. Service Worker Background Sync is not a reliable execution host for
-multi-minute generation and must not be presented as durability equivalent to
-Trigger.dev.
+Provider/account policy may lower concurrency or interval capacity. These are
+typed code/catalog decisions, not new environment variables.
 
-## Proposed Folder Structure
+### Cancellation
 
-Only create a module when its phase is implemented. Do not scaffold empty files.
+- queued unclaimed jobs are canceled server-side;
+- claimed but not submitted jobs abort through `AbortSignal`;
+- submitted asynchronous jobs call provider cancel when supported;
+- unsupported provider cancellation records `cancelRequested` and ignores or
+  safely cleans late outputs according to shared transition rules;
+- the queue and journal are never the only place cancellation is recorded.
 
-### Provider-neutral runtime policy
+## Package and Folder Organization
+
+Create files only when their phase is implemented. Do not scaffold empty
+modules. Names below express ownership; adjust exact filenames to existing
+feature conventions without flattening everything into one directory.
+
+### `@talelabs/flows`: pure execution contracts
 
 ```txt
 packages/flows/src/runtime/execution/
@@ -225,16 +368,16 @@ packages/flows/src/runtime/execution/
   retry-policy.ts
 ```
 
-- `contracts.ts`: `ExecutionRuntime` and runtime-neutral execution types.
-- `browser-manifest.ts`: strict sanitized manifest schema and parser.
-- `job-readiness.ts`: pure readiness decisions for one admitted job.
-- `job-transitions.ts`: legal provider-independent state transitions.
-- `retry-policy.ts`: pure backoff and retry eligibility calculations; no timers.
+Responsibilities:
 
-Do not move PostgreSQL, R2, Trigger.dev, credentials, React, or browser APIs into
-`@talelabs/flows`.
+- runtime-neutral types and strict manifest schemas;
+- pure job readiness and legal transition decisions;
+- retry eligibility/backoff calculations;
+- no React, browser APIs, provider clients, PostgreSQL, R2, or Trigger.dev.
 
-### Browser provider composition
+Do not duplicate the existing planner or snapshot reader here. Reuse them.
+
+### `@talelabs/providers/browser`: credential-bearing provider calls
 
 ```txt
 packages/providers/src/browser/execution/
@@ -244,134 +387,160 @@ packages/providers/src/browser/execution/
   lifecycle.ts
 ```
 
-- `contracts.ts`: injected browser execution dependencies and normalized result.
-- `eligibility.ts`: explicit provider/protocol browser capability checks.
-- `registry.ts`: maps one captured browser binding to an existing protocol
-  adapter; no model-specific adapters.
-- `lifecycle.ts`: immediate submit or asynchronous submit/poll/cancel using the
-  injected credential and fetch implementation.
+Responsibilities:
 
-Extend `packages/providers/src/browser.ts` with only the stable public browser
-execution API. Keep Node built-ins, environment access, Trigger.dev, accounting,
-webhook verification, and server credential fallback behind `/server`.
+- resolve a captured binding to an existing browser-safe protocol adapter;
+- receive a credential through injection immediately before the request;
+- execute immediate or submit/poll/cancel lifecycles;
+- return normalized provider results and safe errors.
 
-### API browser-run boundary
+Do not add model-specific adapters when models share a protocol. Do not import
+Node built-ins, environment variables, managed credentials, accounting,
+webhook verification, Trigger.dev, or database code.
+
+### API: admission, claims, and authoritative transitions
 
 ```txt
 apps/api/src/domain/runs/browser/
-  contracts.ts
-  manifest.service.ts
-  lease.service.ts
-  checkpoint.service.ts
-  output.service.ts
+  browser-run-manifest.service.ts
+  browser-run-lease.service.ts
+  browser-job-claim.service.ts
+  browser-job-transition.service.ts
+  browser-output.service.ts
 
-apps/api/src/data/
-  browser-run-leases.data.ts
-  browser-run-checkpoints.data.ts
+apps/api/src/data/runs/browser/
+  browser-run-lease.data.ts
+  browser-job-claim.data.ts
+  browser-job-transition.data.ts
 
 apps/api/src/routes/runs/
   browser-runs.routes.ts
   browser-runs.schemas.ts
 ```
 
-- `manifest.service.ts`: projects the already admitted immutable snapshot into
-  the minimum safe browser execution manifest.
-- `lease.service.ts`: tenant-scoped compare-and-set ownership and renewal.
-- `checkpoint.service.ts`: validates and persists normalized progress and
-  provider job identity without accepting secrets.
-- `output.service.ts`: issues scoped output upload grants and finalizes text or
-  media through the existing canonical Asset pipeline.
-- data modules own SQL only; routes own HTTP validation only.
+Keep routes limited to HTTP validation/translation, domain modules focused on
+one use case, and data modules limited to SQL. Reuse existing admission,
+snapshot, run aggregation, retry, output ingestion, and generated-folder policy.
 
-Do not duplicate admission, snapshot reading, run aggregation, output ingestion,
-or Asset folder policy.
-
-### Dashboard browser executor
+### Dashboard: one cohesive browser-run feature
 
 ```txt
-apps/dashboard/src/features/browser-execution/
+apps/dashboard/src/features/flows/runs/browser/
+  controller/
+    browser-run-root.tsx
+    browser-run-controller.ts
+  scheduling/
+    browser-run-queue.ts
+    browser-run-scheduler.ts
+  execution/
+    browser-job-runner.ts
+    browser-output-transfer.ts
+  recovery/
+    browser-run-journal.ts
+    browser-run-recovery.ts
+    browser-run-coordination.ts
+  data/
+    browser-run.queries.ts
   contracts.ts
-  executor-root.tsx
-  run-controller.ts
-  job-runner.ts
-  scheduler.ts
-  recovery.ts
-  journal.ts
-  leader-lock.ts
-  channel.ts
-  output-transfer.ts
-  runtime-preference.ts
-  browser-run.queries.ts
 ```
 
-- `executor-root.tsx`: mounts once under the authenticated dashboard layout and
-  starts/stops the controller for the current user and organization.
-- `run-controller.ts`: coordinates admitted browser runs; no React rendering.
-- `job-runner.ts`: resolves the local credential, executes one manifest job, and
-  reports checkpoints.
-- `scheduler.ts`: one small `p-queue` instance for independent single-node runs.
-- `recovery.ts`: reconciles API active runs with the non-secret local journal.
-- `journal.ts`: typed IndexedDB read/write/delete operations.
-- `leader-lock.ts`: one Web Lock per user and organization executor.
-- `channel.ts`: cross-tab query-invalidation and takeover hints.
-- `output-transfer.ts`: bounded provider output download and scoped R2 upload.
-- `runtime-preference.ts`: user-scoped non-secret `managed | browser` device
-  preference.
-- `browser-run.queries.ts`: generated SDK mutations and TanStack Query keys.
+Mount `browser-run-root.tsx` under the authenticated dashboard layout so route
+navigation does not stop execution. Do not put the executor in `flow-canvas.tsx`
+or the canvas Zustand store.
 
-Do not place browser execution state inside `flow-canvas-store/`. The canvas
-store remains focused on editing the graph.
+Provider key management remains under the existing Settings/Secure Store
+feature. Do not create another credential screen.
 
-### Settings integration
+## Organization and Readability Principles
 
-Modify the existing provider settings rather than adding a second API-key page:
+The implementation is rejected if it works only by concentrating the whole
+runtime in one controller or by scattering duplicate rules across packages.
+
+1. **One direct trace.** A developer must be able to follow admission -> claim
+   -> provider call -> output finalization -> aggregation without discovering a
+   second planner or hidden registry.
+2. **One owner per fact.** Command selection belongs to the canonical planner;
+   capabilities and browser eligibility belong to the models catalog; provider
+   translation belongs to `@talelabs/providers`; durable state belongs to the
+   API/database; local scheduling belongs to the browser feature.
+3. **Group by responsibility.** Use the domain folders above. Do not add another
+   large set of flat `use-flow-*` files or catch-all `helpers.ts`, `utils.ts`,
+   `manager.ts`, or `engine.ts` modules.
+4. **Compose small explicit operations.** Prefer named admission, claim,
+   execute, checkpoint, finalize, and refill operations over a universal
+   executor configured by many callbacks.
+5. **Share stable policy, not effects.** Readiness, transitions, validation,
+   and retry policy may be shared. Browser fetch, Web Locks, IndexedDB,
+   Trigger.dev, SQL, and R2 remain runtime-specific effects.
+6. **No mechanical fragmentation.** The 600-line source limit is hard. Function
+   count is a diagnostic, not a reason to create thin wrappers. Keep cohesive
+   related functions together and split mixed responsibilities.
+7. **Narrow exports.** Avoid broad barrels and internal exports. Each directory
+   exposes only the contract required by its consumer.
+8. **Useful TSDoc.** Document module ownership, exported contracts, invariants,
+   lifecycle, units, and security boundaries. Do not narrate routine function
+   bodies.
+9. **No parallel state.** Do not mirror TanStack Query run data in Zustand,
+   mirror the queue in React state, or persist graph/output truth in IndexedDB.
+10. **No speculative framework.** Do not add a universal workflow framework,
+    service worker, Web Worker framework, XState, Dexie, Redux, or browser
+    provider gateway unless measured product needs require it.
+
+Before creating a component, hook, query key, validation helper, or status
+presentation, search the existing Flow run implementation and reuse its owner.
+
+## Dependencies
+
+Install in the dashboard workspace when implementation starts:
+
+```bash
+npm install idb p-queue -w dashboard
+```
+
+- `idb` keeps the small recovery journal readable.
+- `p-queue` limits active Promise work and supports backpressure/AbortSignal.
+
+Reuse:
 
 ```txt
-apps/dashboard/src/features/settings/
-  secure-store-settings.tsx
-  provider-execution-mode.tsx
+zustand                 canvas editor state only
+@tanstack/react-query   authoritative server-state projection
+@xyflow/react           canvas UI and command selection
+@talelabs/flows         planner, snapshots, readiness, transitions
+@talelabs/providers     browser-safe provider protocols and Secure Store
+@talelabs/sdk           generated TaleLabs API client
+zod                     strict manifest/journal parsing
 ```
 
-`provider-execution-mode.tsx` renders a segmented or radio control for:
+Do not add a Redis-style browser queue, service-worker queue, or second state
+library.
 
-```txt
-Browser  -> use the key stored in this browser
-Managed  -> use TaleLabs managed execution
-```
-
-The visible label may be **Browser mode**, but internal code uses
-`ExecutionRuntime`. Never call this `executionMode`, because that name already
-means `live | debug`.
-
-## Data Model
+## Persistence
 
 ### `flowRuns`
 
-Add a forward-only migration with:
+Add or reuse:
 
 ```txt
 executionRuntime text not null default 'managed'
 check executionRuntime in ('managed', 'browser')
 ```
 
-Persist it in the immutable snapshot envelope and expose it in run responses.
-Existing rows remain `managed`.
+Capture it in the immutable snapshot envelope and expose it in run responses.
+Existing rows remain `managed`. Never infer it from credential availability or
+`triggerRunId`.
 
-For a browser run, enforce at admission:
+For browser runs:
 
-```txt
-mode = 'node'
-planned executable count = 1
-planned job count = 1
-captured binding is browser eligible
-execution mode = 'live' for product use
-```
+- every approved run command is valid;
+- debug mode is valid without a provider credential;
+- live mode requires every captured executable binding to be browser eligible
+  and its credential available locally;
+- no Trigger task is dispatched.
 
-Do not infer the runtime from `triggerRunId` or credential availability.
+### Browser execution leases
 
-### Browser executor lease
-
-Add one tenant-scoped table:
+Use one tenant-scoped lease table or an equivalent explicit existing run lease:
 
 ```txt
 flowRunBrowserLeases
@@ -385,59 +554,36 @@ flowRunBrowserLeases
   updatedAt
 ```
 
-Required invariants:
+Invariants:
 
-- one active lease per browser run;
-- Flow run and lease organization must match;
-- only the admitting user or an explicitly authorized workspace actor may
-  acquire the lease;
-- acquisition, renewal, takeover, and release use guarded SQL updates;
-- takeover is allowed only after expiration;
-- run cancellation or terminal completion retires the lease;
-- `executorId` is a random non-secret tab identifier, not a credential.
+- one active executor lease per browser run;
+- run and lease organization must match;
+- acquisition, renewal, release, and expired takeover use guarded SQL;
+- database time determines expiry;
+- terminal runs retire the lease;
+- `executorId` is a random tab-session ID, never a credential;
+- claiming an individual job also uses state-guarded persistence so a stale
+  lease holder cannot submit it.
 
-Use database time for expiry comparisons. Web Locks reduce duplicate work in
-one browser profile, but the PostgreSQL lease is the concurrency authority.
+### Browser recovery journal
 
-### Existing job and output tables
-
-Reuse existing generation jobs, provider checkpoints, provider output rows,
-text outputs, sources, inputs, and Asset provenance. Do not create browser
-copies.
-
-Browser checkpoint writes may populate the existing normalized fields:
-
-```txt
-providerGenerationId
-providerJobId
-provider lifecycle/status
-submission time
-completion status
-normalized provider metadata
-```
-
-Every write remains tenant-scoped and guarded by the current job state and
-browser lease.
-
-### Browser journal
-
-Create a separate IndexedDB database:
+Use a separate IndexedDB database:
 
 ```txt
 talelabs-browser-execution-v1
   runCheckpoints
 ```
 
-Journal record:
+Record only:
 
 ```ts
-interface BrowserRunCheckpoint {
+interface BrowserJobCheckpoint {
   flowRunId: string
   generationJobId: string
   organizationId: string
   userId: string
   state:
-    | 'admitted'
+    | 'claimed'
     | 'submitting'
     | 'providerProcessing'
     | 'downloading'
@@ -445,21 +591,19 @@ interface BrowserRunCheckpoint {
     | 'finalizing'
     | 'interrupted'
   providerJobId?: string
-  nextPollAt?: string
+  nextEligibleAt?: string
   updatedAt: string
 }
 ```
 
-Never store provider credentials, Authorization headers, signed URLs, full
-provider request/response bodies, prompts, generated media, lease credentials,
-or telemetry payloads. The journal assists recovery; API state always wins.
+Never store credentials, authorization headers, signed URLs, prompts, full
+provider payloads, generated media, or output bytes. Keep each journal mutation
+atomic and schema-validated.
 
-## Models Catalog Changes
+## Models Catalog Contract
 
-Browser execution eligibility belongs to the captured provider binding, not the
-public model record and not a dashboard allowlist.
-
-Extend the provider binding schema with an explicit runtime policy:
+Browser eligibility belongs to each private execution binding, not the public
+model and not a dashboard allowlist:
 
 ```json
 {
@@ -469,68 +613,73 @@ Extend the provider binding schema with an explicit runtime policy:
 
 Rules:
 
-1. `managed` remains supported for current bindings.
-2. Add `browser` only after verifying the exact protocol and endpoint.
-3. Browser eligibility must validate CORS, request delivery, polling,
-   cancellation behavior, output delivery, and browser-safe adapter imports.
-4. One model may be managed-only even when another model using the same
-   provider is browser eligible.
-5. Admission captures the exact binding and runtime policy into the snapshot.
-6. Changing current eligibility never changes historical admitted runs.
-7. Catalog validation fails if a browser-eligible binding points at a
-   server-only adapter or unsupported lifecycle.
+1. `managed` remains the default current capability.
+2. Add `browser` only after verifying the exact endpoint's CORS, authentication,
+   request body, media input delivery, polling, cancellation, output delivery,
+   and browser-safe imports.
+3. Browser eligibility is operation/binding-specific, not inferred from a model
+   being present in the catalog.
+4. Admission captures the exact binding and runtime policy.
+5. Catalog validation rejects a browser binding that resolves only through a
+   server adapter.
+6. The dashboard consumes the sanitized catalog projection and keeps no second
+   runtime matrix.
+7. `debug` uses an explicit deterministic binding and does not need a key.
 
-The dashboard must not maintain a second model/runtime matrix.
+OpenRouter documents bearer-token authentication and CORS-related request
+errors. Do not assume that this makes every provider endpoint or output URL
+browser compatible; verify each enabled binding.
 
 ## API Contract
 
-### Run admission
+### Admission
 
-Extend the existing run admission request:
+Extend the existing request without adding another planning endpoint:
 
 ```json
 {
   "executionRuntime": "browser",
-  "executionMode": "live",
-  "mode": "node",
-  "targetNodeId": "node_id",
+  "executionMode": "debug",
+  "mode": "all",
   "expectedFlowRevision": 42
 }
 ```
 
-The API performs the same authorization, Flow revision check, graph validation,
-Asset locking, planning, snapshot capture, and persistence used by managed
-execution.
-
-For `executionRuntime = browser`, it additionally:
-
-- rejects every command except `node`;
-- rejects plans with anything other than one executable and one job;
-- rejects a binding without browser eligibility;
-- persists the run but does not dispatch Trigger.dev;
-- returns the admitted run summary; the browser obtains a lease and manifest
-  through authenticated endpoints.
-
-Stable error examples:
+Existing command-specific fields remain:
 
 ```txt
-browser_runtime_node_only
-browser_runtime_multiple_jobs_unsupported
+node/downstream/upstream -> targetNodeId
+selection               -> selectedNodeIds
+all                     -> no node IDs
+```
+
+The API performs the same autosave/revision check, authorization, validation,
+planning, snapshot capture, Asset locking, and persistence as managed
+admission. For browser runtime it persists the admitted run without dispatching
+Trigger.dev.
+
+Stable failures include:
+
+```txt
 browser_runtime_binding_unsupported
 browser_runtime_credential_required
 browser_runtime_lease_conflict
 browser_runtime_interrupted
+browser_runtime_job_not_ready
+browser_runtime_recovery_unavailable
 ```
 
-API errors remain machine-readable; the dashboard translates them.
+Remove the old `browser_runtime_node_only` and
+`browser_runtime_multiple_jobs_unsupported` concepts.
 
 ### Browser endpoints
 
-Add explicit endpoints rather than a generic event ingestion API:
+Prefer explicit use-case endpoints:
 
 ```txt
 POST /runs/:runId/browser/lease
 GET  /runs/:runId/browser/manifest
+POST /runs/:runId/browser/claim-jobs
 POST /runs/:runId/browser/jobs/:jobId/checkpoint
 POST /runs/:runId/browser/jobs/:jobId/output-grant
 POST /runs/:runId/browser/jobs/:jobId/finalize-media
@@ -539,136 +688,81 @@ POST /runs/:runId/browser/jobs/:jobId/fail
 POST /runs/:runId/browser/release
 ```
 
-Every endpoint must:
+`claim-jobs` accepts a bounded requested capacity and returns only atomically
+claimed jobs that are ready. It must not return every pending job or trust the
+browser's readiness claim.
 
-- authenticate the Better Auth session;
-- authorize organization membership and run ownership;
-- match run, job, node, organization, user, and active lease;
-- validate runtime is `browser` and command is `node`;
-- validate current state with compare-and-set semantics;
-- accept only normalized bounded metadata;
-- remain idempotent under request replay;
-- return no provider credential or managed route secret.
+Every endpoint:
 
-The manifest contains only the exact admitted job, normalized request,
-sanitized captured provider binding, expected output contract, and source Asset
-descriptors required by the browser adapter. The server revalidates every
-checkpoint and finalization against its immutable snapshot.
+- authenticates and authorizes organization membership;
+- matches run, job, user, organization, runtime, snapshot, and active lease;
+- uses compare-and-set transitions;
+- accepts bounded normalized metadata only;
+- is idempotent under replay;
+- never returns credentials or managed route secrets.
 
-## Browser Execution Lifecycle
+The browser manifest contains topology/progress data needed to schedule the
+admitted plan. The claimed-job response contains the exact normalized request,
+sanitized captured binding, expected output contract, and short-lived input
+descriptors required for that job.
 
-### 1. Select Browser mode
+## Execution Lifecycle
 
-- Store the non-sensitive preference under a user-scoped localStorage key.
-- Confirm Web Crypto, IndexedDB, fetch, Web Locks, and BroadcastChannel support.
-- Confirm the selected provider credential exists without resolving it into UI
-  state.
-- Request persistent storage with `navigator.storage.persist()` as a best-effort
-  improvement. Never promise that the browser grants it.
+1. Flush Flow autosave and admit the chosen command with the selected runtime.
+2. Seed the shared run query cache from the admission response.
+3. The layout-scoped browser root discovers the active browser run.
+4. Acquire the organization/user Web Lock and the run's server lease.
+5. Load and strictly parse the admitted browser manifest.
+6. Fill available queue capacity with atomically claimed ready jobs.
+7. In live mode, resolve the plaintext key only inside the job runner.
+8. In debug mode, execute the deterministic browser fixture adapter.
+9. Persist normalized provider checkpoints without secret material.
+10. Validate and upload outputs through scoped server-owned grants.
+11. Finalize through existing text/media and canonical Asset paths.
+12. API aggregates the job, node, and run and exposes newly ready work.
+13. Refill until the run is terminal.
+14. Invalidate run/Asset queries and remove confirmed terminal journal rows.
 
-### 2. Admit Run node
+## Output Transfer
 
-- Flush Flow autosave.
-- POST one run admission request with `executionRuntime: 'browser'` and
-  `mode: 'node'`.
-- Do not call a separate planning endpoint from the Run button.
-- Seed the shared run query cache from the admission response.
-- Add the admitted run ID to the local journal and scheduler.
+Text finalizes through the existing text output contract.
 
-### 3. Acquire execution ownership
+Image, video, and audio:
 
-- The root executor attempts the organization/user Web Lock.
-- It creates or renews the server lease with the tab's `executorId`.
-- If another tab owns the server lease, this tab becomes an observer.
-- Observers receive BroadcastChannel hints and refetch authoritative run state.
+- validate count, MIME, size, delivery form, and output indexes;
+- request a grant scoped to run, job, output index, public generated-output
+  bucket policy, media type, and server-owned key;
+- stream when supported;
+- use a bounded Blob fallback only within code-owned memory limits;
+- never persist media or signed URLs in IndexedDB;
+- finalize only after object existence is verified;
+- pass output through the existing canonical Asset ingestion, metadata,
+  thumbnails, provenance, and managed Flow folder policy.
 
-### 4. Load manifest and inputs
+Do not enqueue another job while an output transfer would exceed the browser's
+bounded memory/concurrency policy.
 
-- Fetch and strictly parse the browser manifest.
-- Confirm it has one executable node and one job.
-- Resolve short-lived read grants for private input Assets when needed.
-- Never persist signed URLs.
-- Materialize provider input as URL, Blob, File, bytes, or data URL according to
-  the captured protocol profile.
+## Navigation, Reload, and Multi-Tab Recovery
 
-### 5. Resolve credential and execute provider
+Mount the executor at authenticated dashboard layout scope. Navigating between
+Flows, Assets, and Settings must not stop active work.
 
-- Resolve plaintext through `@talelabs/providers/browser` only inside the job
-  runner immediately before the request.
-- Keep it in the narrowest possible scope.
-- Inject it into the existing provider protocol adapter.
-- Persist only normalized non-secret checkpoints.
+On startup or resume:
 
-Immediate providers continue directly to output handling. Asynchronous
-providers persist the provider job ID locally and through the checkpoint API,
-then poll according to the captured lifecycle. Browser mode does not use
-webhooks.
-
-### 6. Transfer output
-
-Text:
-
-- validate output count and bounds with the shared provider-output validator;
-- finalize through the text endpoint;
-- persist in the existing text output table.
-
-Image, video, or audio:
-
-- validate MIME type, count, and delivery form;
-- request an output grant scoped to run, job, output index, media type, size
-  limit, public generated-output bucket, and server-owned object key;
-- download authenticated provider output in the browser when necessary;
-- stream to R2 when the browser and protocol support it;
-- otherwise use a bounded Blob fallback;
-- finalize only after R2 confirms the object exists;
-- pass the object through existing canonical Asset ingestion and Flow folder
-  policy.
-
-The output grant must never allow arbitrary bucket names, object keys, MIME
-types, or unlimited size.
-
-### 7. Complete and project
-
-- API performs the authoritative terminal job/run transition.
-- Browser invalidates existing run detail and Asset queries.
-- Existing canvas output projection displays the Asset.
-- PostgreSQL and canonical Assets restore the result after refresh.
-- Delete the local checkpoint only after terminal state is confirmed.
-
-## Interruption and Recovery
-
-### Navigation within TaleLabs
-
-Mount the executor under the authenticated dashboard layout, not under the Flow
-canvas. Route navigation must not stop an active browser run.
-
-### Reload or renderer crash
-
-On startup:
-
-1. list active browser runs for the current user and organization;
+1. list active browser runs for current user and organization;
 2. read and validate matching local checkpoints;
-3. obtain the Web Lock and a fresh or renewed server lease;
-4. reconcile API state against the local checkpoint;
-5. resume polling, output transfer, or finalization when safe;
-6. mark the run `credential_required` or `interrupted` when recovery is
+3. acquire Web Lock and server lease;
+4. reconcile each claimed/provider job with authoritative API state;
+5. resume poll, output transfer, finalization, or refill when safe;
+6. mark an honest `credential_required` or `interrupted` state when recovery is
    impossible.
 
-### Browser close, device sleep, or device switch
+On `visibilitychange` to hidden, persist the latest non-secret checkpoint
+immediately. Do not depend on `unload` or `beforeunload` for correctness.
 
-Browser mode cannot promise uninterrupted execution. If the provider accepted
-the request and a provider job ID was persisted, TaleLabs may resume polling
-when the same browser and credential return. Another device cannot resume the
-credential-bearing lifecycle unless the user enters the key there.
-
-### Multiple tabs
-
-- Web Locks selects one local leader.
-- PostgreSQL lease prevents split-brain execution.
-- BroadcastChannel only signals `runChanged` or `leaseReleased`.
-- Receiving tabs refetch via TanStack Query.
-- Never broadcast credentials, manifests, signed URLs, prompts, provider
-  payloads, or output bytes.
+Web Locks elect one local leader. PostgreSQL prevents split-brain execution.
+BroadcastChannel sends only `runChanged` and `leaseReleased` hints; receivers
+refetch with TanStack Query.
 
 ## UX Contract
 
@@ -676,35 +770,40 @@ credential-bearing lifecycle unless the user enters the key there.
 
 Under **Providers -> Secure Store**:
 
-- show Browser and Managed runtime choices;
-- explain Browser mode uses the key stored only in this browser;
-- show Browser mode unavailable when no key is stored;
-- retain the precise security claim from `provider-execution-modes.md`;
-- disclose that closing the browser may interrupt local execution;
-- do not claim managed-grade durability.
+- allow Browser and Managed runtime selection;
+- explain that Browser mode uses keys stored only in this browser;
+- disclose that the browser must remain able to run for reliable progress;
+- show missing-key status for live browser execution;
+- do not resolve plaintext credentials into component state;
+- do not claim Trigger.dev-level durability.
+
+The initial runtime preference is local device state for concept validation.
+Billing/entitlement data may own this choice later.
 
 ### Canvas commands
 
-When Browser mode is selected:
+Do not hide commands merely because Browser mode is selected. Preserve:
 
-- node Run button remains available for browser-eligible nodes;
-- hide or disable Run from here and Run till here;
-- hide or disable Run selection;
-- hide or disable Run all in the main toolbar;
-- do not show a fake billing checkout before billing exists;
-- use localized copy such as “Available with managed execution”;
-- never silently switch runtimes when a command is unavailable.
+```txt
+node toolbar menu       -> Run node, Run from here, Run till here
+selection context menu  -> Run selection
+main canvas action bar  -> Run all
+```
 
-When Managed mode is selected, preserve every currently approved command and
-the existing Trigger.dev behavior.
+Availability depends on the admitted command, debug/live mode, and binding
+eligibility, not a browser-wide node-only rule. An unsupported live binding
+fails before provider spend with localized, actionable copy. Never silently
+switch execution runtime.
 
 ### Progress
 
-Use the existing run and node status presentation. Add browser-specific
-substates only where they answer what is happening or what the user should do:
+Reuse existing run/node state and output UI. Add browser-specific detail only
+when actionable:
 
 ```txt
 waiting for this browser
+waiting for dependencies
+queued in browser
 provider request submitted
 provider is generating
 downloading result
@@ -714,240 +813,189 @@ browser interrupted
 credential required
 ```
 
-Do not add a second progress panel or make the canvas read IndexedDB directly.
+The canvas reads run queries, not IndexedDB or `p-queue` directly.
 
 ## Security Requirements
 
-1. Browser admission never includes a provider key.
-2. The API never returns a managed platform credential.
-3. Credential resolution occurs only inside the browser job runner.
-4. Browser manifests contain no secrets and are strictly parsed.
-5. Lease and job updates are tenant-scoped, state-guarded, and idempotent.
-6. Provider output grants are run/job/output-specific and short-lived.
-7. Prompts, signed URLs, provider payloads, credentials, and media are excluded
-   from logs, analytics, traces, errors, session replay, BroadcastChannel, and
-   local journal storage.
-8. Browser-reported provider cost is informational and untrusted for billing.
-9. Add a strict CSP and audit third-party scripts before release.
-10. Browser eligibility is explicit per captured provider binding.
-11. Browser failure never falls back to managed credentials.
-12. Logout clears the local credential and stops/releases local execution.
+1. Admission and every TaleLabs API request contain no provider key.
+2. Credential resolution occurs only inside the browser job runner.
+3. A managed credential is never returned to browser code.
+4. Manifests and journal records are strictly parsed as untrusted data.
+5. All claims/transitions are tenant-scoped, lease-guarded, and idempotent.
+6. Output grants are short-lived and scoped to exact run/job/output contracts.
+7. Credentials, signed URLs, prompts, payloads, and output bytes never enter
+   logs, analytics, traces, session replay, BroadcastChannel, query keys,
+   Zustand, or the recovery journal.
+8. Browser-reported costs are informational and untrusted for billing.
+9. CSP and third-party script review are release blockers for the local-key
+   security claim.
+10. Logout/key removal stops local execution and releases ownership.
+11. A local failure never falls back to TaleLabs credentials.
+12. Live binding eligibility fails closed.
 
 ## Implementation Phases
 
-### Phase 0 - Reconcile binding documents
+### Phase 0 - Reconcile active contracts
 
-Before implementation, update active documentation to approve Browser execution
-as a second runtime. Replace the stale instruction in
-`docs/mvp-execution-plan.md` that says not to retain a production-shaped
-browser executor.
-
-Update together:
-
-```txt
-docs/assets-flows-mvp-contract.md
-docs/talelabs-product-vision.md
-docs/mvp-execution-plan.md
-docs/flow-nodes-planning.md
-docs/api-design-planning-v2.md
-docs/db-design-planning-v2.md
-docs/provider-execution-modes.md
-```
+Update active binding documents together so none retain the old browser
+node-only boundary. Preserve the five approved command semantics.
 
 Acceptance:
 
-- Browser mode is explicitly Run node only.
-- Managed mode retains every existing run command.
-- `executionRuntime` and `executionMode` are distinct everywhere.
-- No document promises browser durability equivalent to Trigger.dev.
+- runtime and execution mode are separate;
+- both runtimes admit all five commands;
+- browser durability is described honestly;
+- managed Trigger behavior remains unchanged.
 
-### Phase 1 - Contracts and catalog eligibility
+### Phase 1 - Shared contracts and catalog eligibility
 
-1. Add provider-neutral `ExecutionRuntime`.
-2. Add strict browser manifest contracts.
-3. Add explicit browser eligibility to captured provider bindings.
-4. Validate browser/server package boundaries in catalog checks.
-5. Preserve current managed route selection and historical snapshots.
-
-Acceptance:
-
-- Catalog fails closed on incompatible browser bindings.
-- Browser entry points bundle without Node built-ins.
-- No dashboard allowlist duplicates catalog eligibility.
-- No provider credential is part of any contract.
-
-### Phase 2 - Persistence and admission
-
-1. Add `flowRuns.executionRuntime` and the browser lease table.
-2. Extend admission request/response and generated SDK.
-3. Reuse current admission and snapshot code.
-4. Reject non-node commands and multi-job browser plans.
-5. Persist browser runs without Trigger.dev dispatch.
-6. Add tenant-scoped lease operations.
+1. Add `ExecutionRuntime` to shared contracts and snapshots.
+2. Add strict browser run/job manifest schemas.
+3. Add pure shared readiness, transition, and retry policy where existing code
+   does not already own it.
+4. Add browser eligibility to exact provider bindings.
+5. Add deterministic browser debug bindings for text/image/audio/video.
 
 Acceptance:
 
-- Managed admission behavior is unchanged.
-- Browser admission creates the same immutable run spine.
-- A browser run never receives `triggerRunId`.
-- Concurrent tabs cannot both own one run.
-- Existing rows migrate to `managed`.
+- no second planner or catalog exists;
+- browser package gate rejects server imports;
+- every browser-eligible binding resolves to a compatible browser adapter;
+- debug mode requires no credential or paid request.
 
-### Phase 3 - Settings and runtime command binding
+### Phase 2 - Persistence, leases, and browser admission
 
-1. Add Browser/Managed preference under Secure Store.
-2. Store preference locally and scope it by user ID.
-3. Add capability checks for browser APIs and stored credential status.
-4. Pass selected runtime to run admission.
-5. Gate canvas commands without changing managed behavior.
+1. Add `executionRuntime` persistence and snapshot capture.
+2. Add tenant-scoped browser run leases.
+3. Extend existing admission for all five browser commands.
+4. Persist browser runs without Trigger dispatch.
+5. Add claim/manifest/checkpoint/release contracts and generated SDK.
 
 Acceptance:
 
-- No key is resolved by Settings UI.
-- Browser mode cannot run without a local credential.
-- Browser mode exposes Run node only.
-- Managed mode still exposes all approved commands.
-- Copy is translated across all ten supported locales.
+- managed admission is unchanged;
+- browser snapshots are identical in meaning to managed snapshots;
+- concurrent browser admission/claim races cannot duplicate jobs;
+- browser runs have no `triggerRunId`.
 
-### Phase 4 - Browser executor and immediate outputs
+### Phase 3 - Browser scheduler and debug execution
 
 1. Install `idb` and `p-queue`.
-2. Mount the executor at dashboard layout scope.
-3. Implement journal, lock, lease, scheduler, and controller.
-4. Implement one immediate provider lifecycle first.
-5. Finalize text and one small media response through canonical output APIs.
-6. Reuse existing run query projection.
+2. Mount the browser root at dashboard layout scope.
+3. Implement bounded, fair queue filling and job claims.
+4. Implement Web Lock plus server lease ownership.
+5. Implement deterministic browser debug adapters.
+6. Finalize debug outputs through the canonical Asset pipeline.
 
 Acceptance:
 
-- One browser Run node completes without Trigger.dev.
-- The provider sees the credential; TaleLabs traffic does not.
-- Output becomes a canonical Asset.
-- Refresh restores output from server state.
-- Navigating to Assets does not stop the executor.
+- all five browser debug commands execute correctly;
+- disconnected branches and prerequisites behave like managed execution;
+- queue loss/reload reconstructs work from server/journal state;
+- route navigation does not stop the queue;
+- outputs survive refresh.
 
-### Phase 5 - Asynchronous media and recovery
+### Phase 4 - Dual-runtime debug parity gate
 
-1. Support asynchronous submit/poll lifecycles for explicitly eligible routes.
-2. Persist provider job identity and next-poll checkpoint without secrets.
-3. Resume after reload in the same browser.
-4. Implement bounded download/upload for image, audio, and video.
-5. Implement cancel where the provider and binding support it.
-6. Add interruption and credential-required states.
+Run the complete ten-cell matrix from the non-negotiable approval gate. Compare
+the canonical plan summaries and terminal result shape for the same fixtures.
 
 Acceptance:
 
-- A long video can survive route navigation.
-- Reload can resume a persisted provider job when the same key exists.
-- Large outputs respect code-owned size and memory bounds.
-- Closing the browser is reported as interruption, not hidden failure.
-- No webhook is required for browser mode.
+- every matrix cell passes;
+- exact selected node/job sets match command semantics;
+- output multiplicity and lineage match;
+- retry, cancel, partial failure, and refresh hydration pass;
+- no paid request occurs;
+- user completes UI QA before approval.
 
-### Phase 6 - Multi-tab, security, and rollout gate
+### Phase 5 - Live browser providers
 
-1. Add Web Lock leadership and server lease takeover.
-2. Add BroadcastChannel invalidation hints.
-3. Audit telemetry and session replay.
-4. Add CSP suitable for provider calls and required delivery hosts.
-5. Verify logout, key removal, and storage-clear behavior.
-6. Verify every browser-eligible provider protocol independently.
+1. Wire the Secure Store credential resolver into browser lifecycle adapters.
+2. Enable only verified browser-eligible bindings.
+3. Support immediate and async submit/poll/cancel lifecycles.
+4. Honor provider rate limits and `Retry-After`.
+5. Implement bounded media transfer and recovery.
 
 Acceptance:
 
-- Two tabs never submit the same job twice.
-- Lease takeover works after expiry.
-- Credentials do not appear in TaleLabs network requests, logs, browser journal,
-  state devtools, errors, source maps, or analytics.
-- Unsupported browsers and providers fail closed with localized copy.
+- TaleLabs/Trigger traffic never contains the local key;
+- image, video, audio, and text operations work for explicitly eligible routes;
+- reload resumes when provider ID and key remain available;
+- unsupported routes fail before spend;
+- no silent managed fallback exists.
 
-### Phase 7 - User-owned QA
+### Phase 6 - Security and rollout
 
-The user validates:
+1. Audit logs, traces, analytics, source maps, and session replay.
+2. Enforce CSP for enabled provider hosts.
+3. Verify logout, key removal, IndexedDB clearing, tab freeze, and lease expiry.
+4. Verify multi-tab takeover and duplicate-submit prevention.
+5. Add a code-owned rollback flag; do not add an environment variable.
 
-- Settings and security copy;
-- Browser/Managed switching;
-- node-only command behavior;
-- immediate image/text generation;
-- asynchronous video/audio generation;
-- navigation during generation;
-- reload and interruption recovery;
-- cancellation;
-- duplicate-click and multi-tab behavior;
-- output persistence on canvas and in Assets;
-- visual and interaction quality.
+Acceptance:
 
-Automated browser E2E is not an MVP acceptance requirement unless the user
-changes that rule.
+- the browser-only key claim is truthful and verified;
+- active runs remain inspectable/cancelable if Browser mode is hidden;
+- managed execution remains unaffected.
 
-## Verification Matrix
+## Engineering Verification
 
-Engineering verification must cover:
+Required checks:
 
 ```txt
-catalog and browser-eligibility validation
-providers browser-only type and bundle gate
-strict manifest parsing
-managed run regression checks
-browser node-only admission checks
-tenant and lease race smoke checks
-output-grant scope checks
-provider-output validation scenarios
-snapshot and planner scenarios
+dual-runtime debug matrix for all five run modes
+planner and snapshot scenarios
+browser manifest parsing scenarios
+job readiness and transition scenarios
+provider output validation scenarios
+catalog/browser eligibility validation
+providers root/core/browser bundle gate
+tenant lease and duplicate-claim race smoke checks
+bounded queue/backpressure and fair-fill smoke checks
+reload/interruption recovery smoke checks
+output-grant scope and canonical Asset ingestion checks
+managed Trigger run regression and deployment dry run
 SDK generation
-complete workspace type checks
+all workspace type checks
 i18n validation for all locales
 TSDoc validation
 repository lint with zero warnings
 forced production build
-Trigger.dev deployment dry run for managed regression safety
 git diff --check
-no temporary SDK generation directories
+no temporary generated SDK directories
 ```
 
-No verification script may use a real paid provider request unless the user
-explicitly starts paid QA.
+No engineering script may make a paid request unless the user explicitly starts
+paid QA.
 
-## Rollback Strategy
+## Rollback
 
-Browser execution is additive. A code-owned product flag may hide Browser mode
-while preserving encrypted credentials. Do not use an environment variable.
+Browser execution is additive. A code-owned flag may stop new browser
+admissions while preserving:
 
-Rollback must:
+- existing run history and snapshots;
+- cancellation/interruption of active browser runs;
+- canonical outputs already finalized;
+- encrypted local credentials;
+- managed execution behavior.
 
-- stop new browser admissions;
-- leave existing browser runs readable;
-- allow active browser runs to be canceled or marked interrupted;
-- keep canonical outputs already finalized;
-- preserve managed execution unchanged;
-- never reinterpret browser runs as managed runs.
-
-## Future Paid Expansion
-
-After the single-node browser loop is validated, paid managed execution may
-remain the only runtime for:
-
-```txt
-Run from here
-Run till here
-Run selection
-Run all
-durable provider webhooks
-server-side retries and reconciliation
-execution after browser close
-team-visible managed run continuity
-```
-
-If product evidence later supports multi-node browser execution, extend the
-same run model deliberately. Do not prematurely add browser DAG traversal,
-dependency scheduling, iteration, or a durable local workflow engine in V1.
+Never reinterpret an existing browser run as managed.
 
 ## References
 
 - [TaleLabs provider execution modes](./provider-execution-modes.md)
-- [React Flow state management with Zustand](https://reactflow.dev/learn/advanced-use/state-management)
+- [React Flow: state management with Zustand](https://reactflow.dev/learn/advanced-use/state-management)
+- [React Flow: performance](https://reactflow.dev/learn/advanced-use/performance)
+- [`p-queue`: Promise queue with concurrency control](https://www.npmjs.com/package/p-queue)
 - [`idb`: promise-based IndexedDB](https://github.com/jakearchibald/idb)
-- [MDN Web Locks API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Locks_API)
-- [MDN BroadcastChannel API](https://developer.mozilla.org/en-US/docs/Web/API/BroadcastChannel)
-- [MDN IndexedDB API](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API)
-- [MDN persistent storage](https://developer.mozilla.org/en-US/docs/Web/API/StorageManager/persist)
-- [OpenRouter API authentication](https://openrouter.ai/docs/api/reference/authentication)
+- [MDN: Web Locks API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Locks_API)
+- [MDN: Broadcast Channel API](https://developer.mozilla.org/en-US/docs/Web/API/Broadcast_Channel_API)
+- [MDN: using IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API/Using_IndexedDB)
+- [MDN: persistent storage](https://developer.mozilla.org/docs/Web/API/StorageManager/persist)
+- [MDN: storage quotas and eviction](https://developer.mozilla.org/en-US/docs/Web/API/Storage_API/Storage_quotas_and_eviction_criteria)
+- [Chrome: Page Lifecycle API](https://developer.chrome.com/docs/web-platform/page-lifecycle-api)
+- [Trigger.dev: concurrency and queues](https://trigger.dev/docs/queue-concurrency)
+- [Trigger.dev: idempotency](https://trigger.dev/docs/idempotency)
+- [OpenRouter: API authentication](https://openrouter.ai/docs/api/reference/authentication)
+- [OpenRouter: errors and retry behavior](https://openrouter.ai/docs/api/reference/errors-and-debugging)
