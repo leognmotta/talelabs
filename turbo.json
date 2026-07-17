@@ -39,6 +39,14 @@
       "cache": false,
       "persistent": true
     },
+    "dev:e2e": {
+      "cache": false,
+      "persistent": true
+    },
+    "dev:sdk": {
+      "cache": false,
+      "persistent": true
+    },
     "dev:build": {
       "cache": false,
       "persistent": true

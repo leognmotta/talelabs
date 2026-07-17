@@ -8,13 +8,17 @@
   "scripts": {
     "build": "turbo run build",
     "db:migrate": "npm run migrate -w @talelabs/db",
-    "dev": "turbo run dev --concurrency=16",
+    "dev": "turbo run dev --filter=api --filter=dashboard --filter=@talelabs/trigger --concurrency=16",
+    "dev:bootstrap": "npm run dev:prepare && npm run sdk:generate && node packages/trigger/scripts/assert-dev-env.mjs",
+    "dev:e2e": "turbo run dev:e2e --filter=api --filter=dashboard --filter=@talelabs/trigger --concurrency=4",
+    "dev:sdk": "turbo run dev:sdk --filter=@talelabs/sdk",
     "dev:prepare": "turbo run build --filter='api^...'",
     "kubb:mcp": "kubb mcp",
     "lint": "eslint . --ignore-pattern 'docs/**'",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "predev": "npm run dev:prepare && npm run sdk:generate && node packages/trigger/scripts/assert-dev-env.mjs",
+    "predev": "npm run dev:bootstrap",
+    "predev:e2e": "npm run dev:bootstrap",
     "sdk:generate": "npm run generate -w @talelabs/sdk",
     "i18n:check": "npm run i18n:check -w @talelabs/i18n",
     "check-types": "turbo run check-types",
@@ -24,7 +28,7 @@
     "trigger:deploy:check": "trigger deploy --env prod --dry-run --config trigger.config.ts",
     "trigger:deploy:prod": "trigger deploy --env prod --config trigger.config.ts",
     "trigger:dev": "turbo run dev --filter=@talelabs/trigger",
-    "verify:browser-runtime": "npm run verify:browser-runtime -w api"
+    "verify:browser-planner-snapshot": "npm run verify:browser-planner-snapshot -w api"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^9.0.0",
