@@ -14,6 +14,7 @@ export const flowRunSchema = z.object({
     return cuid2Schema;
   },
   executionMode: z.enum(["live", "debug"]),
+  executionRuntime: z.enum(["managed", "browser"]),
   flowId: z.nullable(
     z
       .string()

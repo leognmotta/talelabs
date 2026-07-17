@@ -15,6 +15,14 @@ export const flowRunExecutionModeEnum = {
 export type FlowRunExecutionModeEnumKey =
   (typeof flowRunExecutionModeEnum)[keyof typeof flowRunExecutionModeEnum];
 
+export const flowRunExecutionRuntimeEnum = {
+  managed: "managed",
+  browser: "browser",
+} as const;
+
+export type FlowRunExecutionRuntimeEnumKey =
+  (typeof flowRunExecutionRuntimeEnum)[keyof typeof flowRunExecutionRuntimeEnum];
+
 export const flowRunModeEnum = {
   node: "node",
   downstream: "downstream",
@@ -48,6 +56,10 @@ export type FlowRun = {
    * @type string
    */
   executionMode: FlowRunExecutionModeEnumKey;
+  /**
+   * @type string
+   */
+  executionRuntime: FlowRunExecutionRuntimeEnumKey;
   /**
    * @minLength 2
    * @maxLength 32

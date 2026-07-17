@@ -14,6 +14,14 @@ export const flowRunSummaryExecutionModeEnum = {
 export type FlowRunSummaryExecutionModeEnumKey =
   (typeof flowRunSummaryExecutionModeEnum)[keyof typeof flowRunSummaryExecutionModeEnum];
 
+export const flowRunSummaryExecutionRuntimeEnum = {
+  managed: "managed",
+  browser: "browser",
+} as const;
+
+export type FlowRunSummaryExecutionRuntimeEnumKey =
+  (typeof flowRunSummaryExecutionRuntimeEnum)[keyof typeof flowRunSummaryExecutionRuntimeEnum];
+
 export const flowRunSummaryModeEnum = {
   node: "node",
   downstream: "downstream",
@@ -47,6 +55,10 @@ export type FlowRunSummary = {
    * @type string
    */
   executionMode: FlowRunSummaryExecutionModeEnumKey;
+  /**
+   * @type string
+   */
+  executionRuntime: FlowRunSummaryExecutionRuntimeEnumKey;
   /**
    * @minLength 2
    * @maxLength 32

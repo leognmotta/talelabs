@@ -9,6 +9,14 @@ import type { ErrorResponse } from "./ErrorResponse.ts";
 import type { PaginationLimit } from "./PaginationLimit.ts";
 import type { RunListResponse } from "./RunListResponse.ts";
 
+export const getRunsQueryParamsExecutionRuntimeEnum = {
+  managed: "managed",
+  browser: "browser",
+} as const;
+
+export type GetRunsQueryParamsExecutionRuntimeEnumKey =
+  (typeof getRunsQueryParamsExecutionRuntimeEnum)[keyof typeof getRunsQueryParamsExecutionRuntimeEnum];
+
 export const getRunsQueryParamsStatusEnum = {
   pending: "pending",
   running: "running",
@@ -27,6 +35,10 @@ export type GetRunsQueryParams = {
    * @type string | undefined
    */
   cursor?: Cursor;
+  /**
+   * @type string | undefined
+   */
+  executionRuntime?: GetRunsQueryParamsExecutionRuntimeEnumKey;
   /**
    * @pattern ^[a-z][0-9a-z]+$
    * @type string | undefined

@@ -9,6 +9,9 @@ import { cuid2Schema } from "./cuid2Schema.ts";
 
 export const createFlowRunRequestSchema = z.object({
   executionMode: z.optional(z.enum(["live", "debug"]).default("live")),
+  executionRuntime: z.optional(
+    z.enum(["managed", "browser"]).default("managed"),
+  ),
   expectedPlanHash: z.optional(z.string().regex(/^[0-9a-f]{64}$/)),
   mode: z.enum(["node", "downstream", "upstream", "selection", "all"]),
   expectedFlowRevision: z.int().min(0),

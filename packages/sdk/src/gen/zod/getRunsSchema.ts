@@ -29,6 +29,7 @@ export const getRunsQueryParamsSchema = z
         .describe("Opaque cursor returned by a previous list response")
         .optional();
     },
+    executionRuntime: z.optional(z.enum(["managed", "browser"])),
     get flowId() {
       return cuid2Schema.optional();
     },

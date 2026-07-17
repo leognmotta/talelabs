@@ -8,6 +8,7 @@ import type { RetryRunRequest } from "../types/RetryRunRequest.ts";
 
 export const retryRunRequestSchema = z.object({
   executionMode: z.optional(z.enum(["live", "debug"])),
+  executionRuntime: z.optional(z.enum(["managed", "browser"])),
   expectedRunStatus: z.optional(
     z.enum([
       "pending",

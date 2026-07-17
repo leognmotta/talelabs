@@ -13,6 +13,14 @@ export const createRunRequestExecutionModeEnum = {
 export type CreateRunRequestExecutionModeEnumKey =
   (typeof createRunRequestExecutionModeEnum)[keyof typeof createRunRequestExecutionModeEnum];
 
+export const createRunRequestExecutionRuntimeEnum = {
+  managed: "managed",
+  browser: "browser",
+} as const;
+
+export type CreateRunRequestExecutionRuntimeEnumKey =
+  (typeof createRunRequestExecutionRuntimeEnum)[keyof typeof createRunRequestExecutionRuntimeEnum];
+
 export const createRunRequestModeEnum = {
   node: "node",
   downstream: "downstream",
@@ -30,6 +38,11 @@ export type CreateRunRequest = {
    * @type string | undefined
    */
   executionMode?: CreateRunRequestExecutionModeEnumKey;
+  /**
+   * @default "managed"
+   * @type string | undefined
+   */
+  executionRuntime?: CreateRunRequestExecutionRuntimeEnumKey;
   /**
    * @pattern ^[0-9a-f]{64}$
    * @type string | undefined
