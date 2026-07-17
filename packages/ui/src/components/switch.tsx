@@ -1,7 +1,10 @@
+/** Shared Base UI switch primitive and its interaction states. */
+
 import { Switch as SwitchPrimitive } from '@base-ui/react/switch'
 
 import { cn } from '@talelabs/ui/lib/utils'
 
+/** Renders an accessible binary control with TaleLabs sizing and state styles. */
 function Switch({
   className,
   size = 'default',
@@ -15,8 +18,8 @@ function Switch({
       data-size={size}
       className={cn(
         `
-          peer group/switch relative inline-flex shrink-0 items-center
-          rounded-full border-2 transition-all outline-none
+          peer group/switch relative inline-flex shrink-0 cursor-pointer
+          items-center rounded-full border-2 transition-all outline-none
           after:absolute after:-inset-x-3 after:-inset-y-2
           focus-visible:border-ring focus-visible:ring-3
           focus-visible:ring-ring/30
