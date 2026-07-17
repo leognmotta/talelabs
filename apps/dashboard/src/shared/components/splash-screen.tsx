@@ -15,10 +15,12 @@ export function SplashScreen({
   const { t } = useTranslation()
 
   return (
-    <main className="
-      fixed inset-0 z-50 flex items-center justify-center overflow-hidden
-      bg-background px-6 py-10 text-foreground
-    "
+    <main
+      data-splash-screen
+      className="
+        flex h-svh w-full items-center justify-center overflow-hidden
+        bg-background px-6 py-10 text-foreground
+      "
     >
       <section
         aria-live="polite"
