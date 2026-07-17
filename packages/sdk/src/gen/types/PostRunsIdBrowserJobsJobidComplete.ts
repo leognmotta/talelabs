@@ -19,15 +19,22 @@ export type PostRunsIdBrowserJobsJobidCompletePathParams = {
   jobId: Cuid2;
 };
 
+export const postRunsIdBrowserJobsJobidComplete200StateEnum = {
+  canceled: "canceled",
+  succeeded: "succeeded",
+} as const;
+
+export type PostRunsIdBrowserJobsJobidComplete200StateEnumKey =
+  (typeof postRunsIdBrowserJobsJobidComplete200StateEnum)[keyof typeof postRunsIdBrowserJobsJobidComplete200StateEnum];
+
 /**
  * @description Browser job completed
  */
 export type PostRunsIdBrowserJobsJobidComplete200 = {
   /**
-   * @type string | undefined
+   * @type string
    */
-  state?: string;
-  [key: string]: unknown;
+  state: PostRunsIdBrowserJobsJobidComplete200StateEnumKey;
 };
 
 /**
@@ -72,6 +79,10 @@ export type PostRunsIdBrowserJobsJobidCompleteMutationRequest = {
    * @type string
    */
   executorId: string;
+  /**
+   * @type integer
+   */
+  fenceToken: number;
   /**
    * @type object | undefined
    */

@@ -30,15 +30,11 @@ export const postRunsIdBrowserJobsJobidFinalizeTextPathParamsSchema = z.object({
 }) as unknown as z.ZodType<PostRunsIdBrowserJobsJobidFinalizeTextPathParams>;
 
 /**
- * @description Browser text finalized
+ * @description Canonical browser text finalized
  */
-export const postRunsIdBrowserJobsJobidFinalizeText200Schema = z
-  .object({
-    state: z.optional(z.string()),
-  })
-  .catchall(
-    z.any().nullable(),
-  ) as unknown as z.ZodType<PostRunsIdBrowserJobsJobidFinalizeText200>;
+export const postRunsIdBrowserJobsJobidFinalizeText200Schema = z.object({
+  state: z.enum(["canceled", "succeeded"]),
+}) as unknown as z.ZodType<PostRunsIdBrowserJobsJobidFinalizeText200>;
 
 /**
  * @description Validation error
@@ -92,6 +88,7 @@ export const postRunsIdBrowserJobsJobidFinalizeText500Schema = z.lazy(
 export const postRunsIdBrowserJobsJobidFinalizeTextMutationRequestSchema =
   z.object({
     executorId: z.string().min(16).max(200),
+    fenceToken: z.int().gt(0),
     outputIndex: z.int().min(0),
     text: z.string().max(1000000),
   }) as unknown as z.ZodType<PostRunsIdBrowserJobsJobidFinalizeTextMutationRequest>;

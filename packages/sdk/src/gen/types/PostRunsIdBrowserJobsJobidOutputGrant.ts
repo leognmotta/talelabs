@@ -86,6 +86,10 @@ export type PostRunsIdBrowserJobsJobidOutputGrantMutationRequest = {
    */
   executorId: string;
   /**
+   * @type integer
+   */
+  fenceToken: number;
+  /**
    * @type integer | undefined
    */
   contentLength?: number;

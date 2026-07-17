@@ -19,6 +19,7 @@ import type {
 } from "../types/PostRunsIdBrowserJobsJobidFail.ts";
 import { cuid2Schema } from "./cuid2Schema.ts";
 import { errorResponseSchema } from "./errorResponseSchema.ts";
+import { timestampSchema } from "./timestampSchema.ts";
 
 export const postRunsIdBrowserJobsJobidFailPathParamsSchema = z.object({
   get id() {
@@ -30,15 +31,22 @@ export const postRunsIdBrowserJobsJobidFailPathParamsSchema = z.object({
 }) as unknown as z.ZodType<PostRunsIdBrowserJobsJobidFailPathParams>;
 
 /**
- * @description Browser job failed
+ * @description Browser job failure recorded
  */
-export const postRunsIdBrowserJobsJobidFail200Schema = z
-  .object({
-    state: z.optional(z.string()),
-  })
-  .catchall(
-    z.any().nullable(),
-  ) as unknown as z.ZodType<PostRunsIdBrowserJobsJobidFail200>;
+export const postRunsIdBrowserJobsJobidFail200Schema = z.union([
+  z.object({
+    failed: z.literal(true),
+  }),
+  z.object({
+    state: z.enum(["canceled"]),
+  }),
+  z.object({
+    get nextEligibleAt() {
+      return timestampSchema;
+    },
+    state: z.enum(["retrying"]),
+  }),
+]) as unknown as z.ZodType<PostRunsIdBrowserJobsJobidFail200>;
 
 /**
  * @description Validation error
@@ -91,6 +99,7 @@ export const postRunsIdBrowserJobsJobidFail500Schema = z.lazy(
 
 export const postRunsIdBrowserJobsJobidFailMutationRequestSchema = z.object({
   executorId: z.string().min(16).max(200),
+  fenceToken: z.int().gt(0),
   code: z.enum([
     "invalid_job_request",
     "invalid_snapshot",

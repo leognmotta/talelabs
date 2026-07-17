@@ -6,6 +6,17 @@
 import type { Cuid2 } from "./Cuid2.ts";
 import type { Timestamp } from "./Timestamp.ts";
 
+export const browserExecutionStatusEnum = {
+  ready: "ready",
+  blocked: "blocked",
+  retrying: "retrying",
+  error: "error",
+  canceling: "canceling",
+} as const;
+
+export type BrowserExecutionStatusEnumKey =
+  (typeof browserExecutionStatusEnum)[keyof typeof browserExecutionStatusEnum];
+
 export const flowRunSummaryExecutionModeEnum = {
   live: "live",
   debug: "debug",
@@ -51,6 +62,23 @@ export type FlowRunSummary = {
    * @type string
    */
   id: Cuid2;
+  /**
+   * @type object
+   */
+  browserExecution: {
+    /**
+     * @type string
+     */
+    code: string | null;
+    /**
+     * @type string
+     */
+    status: BrowserExecutionStatusEnumKey;
+    /**
+     * @type string, date-time
+     */
+    updatedAt: string | null;
+  } | null;
   /**
    * @type string
    */

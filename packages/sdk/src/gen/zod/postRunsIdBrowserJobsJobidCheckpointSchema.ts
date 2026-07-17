@@ -19,6 +19,7 @@ import type {
 } from "../types/PostRunsIdBrowserJobsJobidCheckpoint.ts";
 import { cuid2Schema } from "./cuid2Schema.ts";
 import { errorResponseSchema } from "./errorResponseSchema.ts";
+import { timestampSchema } from "./timestampSchema.ts";
 
 export const postRunsIdBrowserJobsJobidCheckpointPathParamsSchema = z.object({
   get id() {
@@ -30,15 +31,13 @@ export const postRunsIdBrowserJobsJobidCheckpointPathParamsSchema = z.object({
 }) as unknown as z.ZodType<PostRunsIdBrowserJobsJobidCheckpointPathParams>;
 
 /**
- * @description Browser job checkpointed
+ * @description Browser provider identity checkpointed
  */
-export const postRunsIdBrowserJobsJobidCheckpoint200Schema = z
-  .object({
-    state: z.optional(z.string()),
-  })
-  .catchall(
-    z.any().nullable(),
-  ) as unknown as z.ZodType<PostRunsIdBrowserJobsJobidCheckpoint200>;
+export const postRunsIdBrowserJobsJobidCheckpoint200Schema = z.object({
+  get checkpointedAt() {
+    return timestampSchema;
+  },
+}) as unknown as z.ZodType<PostRunsIdBrowserJobsJobidCheckpoint200>;
 
 /**
  * @description Validation error
@@ -92,13 +91,13 @@ export const postRunsIdBrowserJobsJobidCheckpoint500Schema = z.lazy(
 export const postRunsIdBrowserJobsJobidCheckpointMutationRequestSchema =
   z.object({
     executorId: z.string().min(16).max(200),
+    fenceToken: z.int().gt(0),
     facts: z.optional(
       z.object({
         providerCostUsd: z.optional(z.number().min(0)),
         providerGenerationId: z.optional(z.string().min(1)),
       }),
     ),
-    phase: z.enum(["submitting", "provider-processing"]),
     providerJobId: z.optional(z.string().min(1)),
   }) as unknown as z.ZodType<PostRunsIdBrowserJobsJobidCheckpointMutationRequest>;
 

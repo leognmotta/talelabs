@@ -5,6 +5,7 @@
 
 import type { Cuid2 } from "./Cuid2.ts";
 import type { ErrorResponse } from "./ErrorResponse.ts";
+import type { Timestamp } from "./Timestamp.ts";
 
 export type PostRunsIdBrowserJobsJobidCheckpointPathParams = {
   /**
@@ -20,14 +21,13 @@ export type PostRunsIdBrowserJobsJobidCheckpointPathParams = {
 };
 
 /**
- * @description Browser job checkpointed
+ * @description Browser provider identity checkpointed
  */
 export type PostRunsIdBrowserJobsJobidCheckpoint200 = {
   /**
-   * @type string | undefined
+   * @type string, date-time
    */
-  state?: string;
-  [key: string]: unknown;
+  checkpointedAt: Timestamp;
 };
 
 /**
@@ -65,14 +65,6 @@ export type PostRunsIdBrowserJobsJobidCheckpoint429 = ErrorResponse;
  */
 export type PostRunsIdBrowserJobsJobidCheckpoint500 = ErrorResponse;
 
-export const postRunsIdBrowserJobsJobidCheckpointMutationRequestPhaseEnum = {
-  submitting: "submitting",
-  "provider-processing": "provider-processing",
-} as const;
-
-export type PostRunsIdBrowserJobsJobidCheckpointMutationRequestPhaseEnumKey =
-  (typeof postRunsIdBrowserJobsJobidCheckpointMutationRequestPhaseEnum)[keyof typeof postRunsIdBrowserJobsJobidCheckpointMutationRequestPhaseEnum];
-
 export type PostRunsIdBrowserJobsJobidCheckpointMutationRequest = {
   /**
    * @minLength 16
@@ -80,6 +72,10 @@ export type PostRunsIdBrowserJobsJobidCheckpointMutationRequest = {
    * @type string
    */
   executorId: string;
+  /**
+   * @type integer
+   */
+  fenceToken: number;
   /**
    * @type object | undefined
    */
@@ -95,10 +91,6 @@ export type PostRunsIdBrowserJobsJobidCheckpointMutationRequest = {
      */
     providerGenerationId?: string;
   };
-  /**
-   * @type string
-   */
-  phase: PostRunsIdBrowserJobsJobidCheckpointMutationRequestPhaseEnumKey;
   /**
    * @minLength 1
    * @type string | undefined

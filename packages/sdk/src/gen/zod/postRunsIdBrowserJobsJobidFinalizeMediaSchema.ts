@@ -32,15 +32,11 @@ export const postRunsIdBrowserJobsJobidFinalizeMediaPathParamsSchema = z.object(
 ) as unknown as z.ZodType<PostRunsIdBrowserJobsJobidFinalizeMediaPathParams>;
 
 /**
- * @description Browser media finalized
+ * @description Canonical browser media finalized
  */
-export const postRunsIdBrowserJobsJobidFinalizeMedia200Schema = z
-  .object({
-    state: z.optional(z.string()),
-  })
-  .catchall(
-    z.any().nullable(),
-  ) as unknown as z.ZodType<PostRunsIdBrowserJobsJobidFinalizeMedia200>;
+export const postRunsIdBrowserJobsJobidFinalizeMedia200Schema = z.object({
+  state: z.enum(["canceled", "succeeded"]),
+}) as unknown as z.ZodType<PostRunsIdBrowserJobsJobidFinalizeMedia200>;
 
 /**
  * @description Validation error
@@ -94,6 +90,7 @@ export const postRunsIdBrowserJobsJobidFinalizeMedia500Schema = z.lazy(
 export const postRunsIdBrowserJobsJobidFinalizeMediaMutationRequestSchema =
   z.object({
     executorId: z.string().min(16).max(200),
+    fenceToken: z.int().gt(0),
     metadata: z.optional(
       z.object({}).catchall(z.union([z.boolean(), z.string(), z.number()])),
     ),

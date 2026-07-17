@@ -12,6 +12,13 @@ export const flowRunSummarySchema = z.object({
   get id() {
     return cuid2Schema;
   },
+  browserExecution: z.nullable(
+    z.object({
+      code: z.nullable(z.string()),
+      status: z.enum(["ready", "blocked", "retrying", "error", "canceling"]),
+      updatedAt: z.nullable(z.iso.datetime()),
+    }),
+  ),
   executionMode: z.enum(["live", "debug"]),
   executionRuntime: z.enum(["managed", "browser"]),
   flowId: z.nullable(

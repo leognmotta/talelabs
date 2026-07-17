@@ -19,15 +19,22 @@ export type PostRunsIdBrowserJobsJobidFinalizeTextPathParams = {
   jobId: Cuid2;
 };
 
+export const postRunsIdBrowserJobsJobidFinalizeText200StateEnum = {
+  canceled: "canceled",
+  succeeded: "succeeded",
+} as const;
+
+export type PostRunsIdBrowserJobsJobidFinalizeText200StateEnumKey =
+  (typeof postRunsIdBrowserJobsJobidFinalizeText200StateEnum)[keyof typeof postRunsIdBrowserJobsJobidFinalizeText200StateEnum];
+
 /**
- * @description Browser text finalized
+ * @description Canonical browser text finalized
  */
 export type PostRunsIdBrowserJobsJobidFinalizeText200 = {
   /**
-   * @type string | undefined
+   * @type string
    */
-  state?: string;
-  [key: string]: unknown;
+  state: PostRunsIdBrowserJobsJobidFinalizeText200StateEnumKey;
 };
 
 /**
@@ -72,6 +79,10 @@ export type PostRunsIdBrowserJobsJobidFinalizeTextMutationRequest = {
    * @type string
    */
   executorId: string;
+  /**
+   * @type integer
+   */
+  fenceToken: number;
   /**
    * @minLength 0
    * @type integer

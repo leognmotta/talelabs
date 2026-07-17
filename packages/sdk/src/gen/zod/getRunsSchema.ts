@@ -23,6 +23,7 @@ import { paginationLimitSchema } from "./paginationLimitSchema.ts";
 import { runListResponseSchema } from "./runListResponseSchema.ts";
 
 export const getRunsQueryParamsSchema = z.object({
+  browserWork: z.optional(z.enum(["pending"])),
   get cursor() {
     return cursorSchema
       .describe("Opaque cursor returned by a previous list response")

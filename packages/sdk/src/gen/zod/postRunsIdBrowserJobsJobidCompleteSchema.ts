@@ -32,13 +32,9 @@ export const postRunsIdBrowserJobsJobidCompletePathParamsSchema = z.object({
 /**
  * @description Browser job completed
  */
-export const postRunsIdBrowserJobsJobidComplete200Schema = z
-  .object({
-    state: z.optional(z.string()),
-  })
-  .catchall(
-    z.any().nullable(),
-  ) as unknown as z.ZodType<PostRunsIdBrowserJobsJobidComplete200>;
+export const postRunsIdBrowserJobsJobidComplete200Schema = z.object({
+  state: z.enum(["canceled", "succeeded"]),
+}) as unknown as z.ZodType<PostRunsIdBrowserJobsJobidComplete200>;
 
 /**
  * @description Validation error
@@ -92,6 +88,7 @@ export const postRunsIdBrowserJobsJobidComplete500Schema = z.lazy(
 export const postRunsIdBrowserJobsJobidCompleteMutationRequestSchema = z.object(
   {
     executorId: z.string().min(16).max(200),
+    fenceToken: z.int().gt(0),
     facts: z.optional(
       z.object({
         providerCostUsd: z.optional(z.number().min(0)),

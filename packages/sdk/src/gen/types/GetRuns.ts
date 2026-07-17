@@ -9,6 +9,13 @@ import type { ErrorResponse } from "./ErrorResponse.ts";
 import type { PaginationLimit } from "./PaginationLimit.ts";
 import type { RunListResponse } from "./RunListResponse.ts";
 
+export const getRunsQueryParamsBrowserWorkEnum = {
+  pending: "pending",
+} as const;
+
+export type GetRunsQueryParamsBrowserWorkEnumKey =
+  (typeof getRunsQueryParamsBrowserWorkEnum)[keyof typeof getRunsQueryParamsBrowserWorkEnum];
+
 export const getRunsQueryParamsExecutionRuntimeEnum = {
   managed: "managed",
   browser: "browser",
@@ -38,6 +45,10 @@ export type GetRunsQueryParamsStatusEnumKey =
   (typeof getRunsQueryParamsStatusEnum)[keyof typeof getRunsQueryParamsStatusEnum];
 
 export type GetRunsQueryParams = {
+  /**
+   * @type string | undefined
+   */
+  browserWork?: GetRunsQueryParamsBrowserWorkEnumKey;
   /**
    * @description Opaque cursor returned by a previous list response
    * @type string | undefined

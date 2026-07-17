@@ -5,6 +5,7 @@
 
 import type { Cuid2 } from "./Cuid2.ts";
 import type { ErrorResponse } from "./ErrorResponse.ts";
+import type { Timestamp } from "./Timestamp.ts";
 
 export type PostRunsIdBrowserJobsJobidFailPathParams = {
   /**
@@ -19,16 +20,53 @@ export type PostRunsIdBrowserJobsJobidFailPathParams = {
   jobId: Cuid2;
 };
 
+export const postRunsIdBrowserJobsJobidFail200FailedEnum = {
+  true: true,
+} as const;
+
+export type PostRunsIdBrowserJobsJobidFail200FailedEnumKey =
+  (typeof postRunsIdBrowserJobsJobidFail200FailedEnum)[keyof typeof postRunsIdBrowserJobsJobidFail200FailedEnum];
+
+export const postRunsIdBrowserJobsJobidFail200StateEnum = {
+  canceled: "canceled",
+} as const;
+
+export type PostRunsIdBrowserJobsJobidFail200StateEnumKey =
+  (typeof postRunsIdBrowserJobsJobidFail200StateEnum)[keyof typeof postRunsIdBrowserJobsJobidFail200StateEnum];
+
+export const postRunsIdBrowserJobsJobidFail200StateEnum2 = {
+  retrying: "retrying",
+} as const;
+
+export type PostRunsIdBrowserJobsJobidFail200StateEnum2Key =
+  (typeof postRunsIdBrowserJobsJobidFail200StateEnum2)[keyof typeof postRunsIdBrowserJobsJobidFail200StateEnum2];
+
 /**
- * @description Browser job failed
+ * @description Browser job failure recorded
  */
-export type PostRunsIdBrowserJobsJobidFail200 = {
-  /**
-   * @type string | undefined
-   */
-  state?: string;
-  [key: string]: unknown;
-};
+export type PostRunsIdBrowserJobsJobidFail200 =
+  | {
+      /**
+       * @type boolean
+       */
+      failed: PostRunsIdBrowserJobsJobidFail200FailedEnumKey;
+    }
+  | {
+      /**
+       * @type string
+       */
+      state: PostRunsIdBrowserJobsJobidFail200StateEnumKey;
+    }
+  | {
+      /**
+       * @type string, date-time
+       */
+      nextEligibleAt: Timestamp;
+      /**
+       * @type string
+       */
+      state: PostRunsIdBrowserJobsJobidFail200StateEnum2Key;
+    };
 
 /**
  * @description Validation error
@@ -90,6 +128,10 @@ export type PostRunsIdBrowserJobsJobidFailMutationRequest = {
    * @type string
    */
   executorId: string;
+  /**
+   * @type integer
+   */
+  fenceToken: number;
   /**
    * @type string
    */

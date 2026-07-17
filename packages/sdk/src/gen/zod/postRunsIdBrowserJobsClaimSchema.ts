@@ -115,14 +115,11 @@ export const postRunsIdBrowserJobsClaim200Schema = z.object({
               source: z.enum(["provider-result"]),
             }),
             executionRuntimes: z.optional(
-              z
-                .array(z.enum(["browser", "managed"]))
-                .min(1)
-                .max(1),
+              z.array(z.enum(["browser", "managed"])).min(1),
             ),
             evidence: z.object({
               reviewedAt: z.iso.date(),
-              sources: z.array(z.url()).min(1).max(1),
+              sources: z.array(z.url()).min(1),
             }),
             lifecycle: z.union([
               z.object({
@@ -133,8 +130,7 @@ export const postRunsIdBrowserJobsClaim200Schema = z.object({
                   .max(1),
                 deliveries: z
                   .array(z.enum(["bytes", "stream", "text", "url"]))
-                  .min(1)
-                  .max(1),
+                  .min(1),
                 submission: z.enum(["immediate"]),
               }),
               z.object({
@@ -159,8 +155,7 @@ export const postRunsIdBrowserJobsClaim200Schema = z.object({
                 ]),
                 deliveries: z
                   .array(z.enum(["bytes", "stream", "text", "url"]))
-                  .min(1)
-                  .max(1),
+                  .min(1),
                 submission: z.enum(["asynchronous"]),
               }),
             ]),
@@ -172,7 +167,7 @@ export const postRunsIdBrowserJobsClaim200Schema = z.object({
             provider: z.enum(["openrouter"]),
             providerTag: z.string().min(1),
             routingPolicy: z.enum(["pinned"]),
-            supportedParameters: z.array(z.string().min(1)).min(1).max(1),
+            supportedParameters: z.array(z.string().min(1)).min(1),
             endpoint: z.enum(["/api/v1/chat/completions"]),
             protocol: z.enum(["chat"]),
             requestProfile: z.object({
@@ -194,14 +189,11 @@ export const postRunsIdBrowserJobsClaim200Schema = z.object({
               source: z.enum(["provider-result"]),
             }),
             executionRuntimes: z.optional(
-              z
-                .array(z.enum(["browser", "managed"]))
-                .min(1)
-                .max(1),
+              z.array(z.enum(["browser", "managed"])).min(1),
             ),
             evidence: z.object({
               reviewedAt: z.iso.date(),
-              sources: z.array(z.url()).min(1).max(1),
+              sources: z.array(z.url()).min(1),
             }),
             lifecycle: z.union([
               z.object({
@@ -212,8 +204,7 @@ export const postRunsIdBrowserJobsClaim200Schema = z.object({
                   .max(1),
                 deliveries: z
                   .array(z.enum(["bytes", "stream", "text", "url"]))
-                  .min(1)
-                  .max(1),
+                  .min(1),
                 submission: z.enum(["immediate"]),
               }),
               z.object({
@@ -238,8 +229,7 @@ export const postRunsIdBrowserJobsClaim200Schema = z.object({
                 ]),
                 deliveries: z
                   .array(z.enum(["bytes", "stream", "text", "url"]))
-                  .min(1)
-                  .max(1),
+                  .min(1),
                 submission: z.enum(["asynchronous"]),
               }),
             ]),
@@ -251,7 +241,7 @@ export const postRunsIdBrowserJobsClaim200Schema = z.object({
             provider: z.enum(["openrouter"]),
             providerTag: z.string().min(1),
             routingPolicy: z.enum(["pinned"]),
-            supportedParameters: z.array(z.string().min(1)).min(1).max(1),
+            supportedParameters: z.array(z.string().min(1)).min(1),
             endpoint: z.enum(["/api/v1/images"]),
             protocol: z.enum(["image"]),
             requestProfile: z.object({
@@ -268,14 +258,11 @@ export const postRunsIdBrowserJobsClaim200Schema = z.object({
               source: z.enum(["provider-result"]),
             }),
             executionRuntimes: z.optional(
-              z
-                .array(z.enum(["browser", "managed"]))
-                .min(1)
-                .max(1),
+              z.array(z.enum(["browser", "managed"])).min(1),
             ),
             evidence: z.object({
               reviewedAt: z.iso.date(),
-              sources: z.array(z.url()).min(1).max(1),
+              sources: z.array(z.url()).min(1),
             }),
             lifecycle: z.union([
               z.object({
@@ -286,8 +273,7 @@ export const postRunsIdBrowserJobsClaim200Schema = z.object({
                   .max(1),
                 deliveries: z
                   .array(z.enum(["bytes", "stream", "text", "url"]))
-                  .min(1)
-                  .max(1),
+                  .min(1),
                 submission: z.enum(["immediate"]),
               }),
               z.object({
@@ -312,8 +298,7 @@ export const postRunsIdBrowserJobsClaim200Schema = z.object({
                 ]),
                 deliveries: z
                   .array(z.enum(["bytes", "stream", "text", "url"]))
-                  .min(1)
-                  .max(1),
+                  .min(1),
                 submission: z.enum(["asynchronous"]),
               }),
             ]),
@@ -325,7 +310,7 @@ export const postRunsIdBrowserJobsClaim200Schema = z.object({
             provider: z.enum(["openrouter"]),
             providerTag: z.string().min(1),
             routingPolicy: z.enum(["pinned"]),
-            supportedParameters: z.array(z.string().min(1)).min(1).max(1),
+            supportedParameters: z.array(z.string().min(1)).min(1),
             endpoint: z.enum(["/api/v1/audio/speech"]),
             protocol: z.enum(["speech"]),
             requestProfile: z.object({
@@ -346,14 +331,11 @@ export const postRunsIdBrowserJobsClaim200Schema = z.object({
               source: z.enum(["provider-result"]),
             }),
             executionRuntimes: z.optional(
-              z
-                .array(z.enum(["browser", "managed"]))
-                .min(1)
-                .max(1),
+              z.array(z.enum(["browser", "managed"])).min(1),
             ),
             evidence: z.object({
               reviewedAt: z.iso.date(),
-              sources: z.array(z.url()).min(1).max(1),
+              sources: z.array(z.url()).min(1),
             }),
             lifecycle: z.union([
               z.object({
@@ -364,8 +346,7 @@ export const postRunsIdBrowserJobsClaim200Schema = z.object({
                   .max(1),
                 deliveries: z
                   .array(z.enum(["bytes", "stream", "text", "url"]))
-                  .min(1)
-                  .max(1),
+                  .min(1),
                 submission: z.enum(["immediate"]),
               }),
               z.object({
@@ -390,8 +371,7 @@ export const postRunsIdBrowserJobsClaim200Schema = z.object({
                 ]),
                 deliveries: z
                   .array(z.enum(["bytes", "stream", "text", "url"]))
-                  .min(1)
-                  .max(1),
+                  .min(1),
                 submission: z.enum(["asynchronous"]),
               }),
             ]),
@@ -403,7 +383,7 @@ export const postRunsIdBrowserJobsClaim200Schema = z.object({
             provider: z.enum(["openrouter"]),
             providerTag: z.string().min(1),
             routingPolicy: z.enum(["pinned"]),
-            supportedParameters: z.array(z.string().min(1)).min(1).max(1),
+            supportedParameters: z.array(z.string().min(1)).min(1),
             endpoint: z.enum(["/api/v1/videos"]),
             protocol: z.enum(["video"]),
             requestProfile: z.object({
@@ -445,6 +425,7 @@ export const postRunsIdBrowserJobsClaim200Schema = z.object({
         nodeId: z.string(),
         providerJobId: z.nullable(z.string()),
         providerSubmittedAt: z.nullable(z.iso.datetime()),
+        submissionState: z.enum(["not_started", "submitting", "submitted"]),
         status: z.enum(["running"]),
       }),
       request: z.object({
@@ -560,6 +541,7 @@ export const postRunsIdBrowserJobsClaim500Schema = z.lazy(
 
 export const postRunsIdBrowserJobsClaimMutationRequestSchema = z.object({
   executorId: z.string().min(16).max(200),
+  fenceToken: z.int().gt(0),
   get activeJobIds() {
     return z.array(cuid2Schema).max(4).optional();
   },

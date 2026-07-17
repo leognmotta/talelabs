@@ -28,12 +28,372 @@ export const getRunsIdBrowserManifestPathParamsSchema = z.object({
 
 export const getRunsIdBrowserManifestQueryParamsSchema = z.object({
   executorId: z.string().min(16).max(200),
+  fenceToken: z.coerce.number().int().gt(0),
 }) as unknown as z.ZodType<GetRunsIdBrowserManifestQueryParams>;
 
 /**
  * @description Authoritative browser recovery manifest
  */
 export const getRunsIdBrowserManifest200Schema = z.object({
+  cancellations: z.array(
+    z.object({
+      cancellation: z.enum(["best-effort", "supported", "unsupported"]),
+      executionContract: z.object({
+        adapterVersion: z.string(),
+        catalogRevision: z.string().regex(/^sha256:[0-9a-f]{64}$/),
+        catalogVersion: z.int().gt(0),
+        modelContractVersion: z.string(),
+        modelId: z.string(),
+        modelRevision: z.int().gt(0),
+        nodeId: z.string(),
+        operationId: z.string(),
+        provider: z.string(),
+        providerEndpoint: z.string(),
+        providerEndpointTag: z.string().min(1),
+        providerLifecycle: z.union([
+          z.object({
+            cancellation: z.enum(["best-effort", "supported", "unsupported"]),
+            completions: z
+              .array(z.enum(["response"]))
+              .min(1)
+              .max(1),
+            deliveries: z
+              .array(z.enum(["bytes", "storage", "stream", "text", "url"]))
+              .min(1)
+              .max(1),
+            submission: z.enum(["immediate"]),
+          }),
+          z.object({
+            cancellation: z.enum(["best-effort", "supported", "unsupported"]),
+            completions: z.union([
+              z
+                .array(z.enum(["poll"]))
+                .min(1)
+                .max(1),
+              z
+                .array(z.enum(["webhook"]))
+                .min(1)
+                .max(1),
+              z
+                .array(z.union([z.enum(["poll"]), z.enum(["webhook"])]))
+                .min(2)
+                .max(2),
+              z
+                .array(z.union([z.enum(["webhook"]), z.enum(["poll"])]))
+                .min(2)
+                .max(2),
+            ]),
+            deliveries: z
+              .array(z.enum(["bytes", "storage", "stream", "text", "url"]))
+              .min(1)
+              .max(1),
+            submission: z.enum(["asynchronous"]),
+          }),
+        ]),
+        providerModel: z.string(),
+        providerBinding: z.union([
+          z.object({
+            adapterVersion: z.string().min(1),
+            costCapture: z.object({
+              creditCost: z.enum(["unknown"]),
+              providerCostUsd: z.enum(["response-or-unknown"]),
+              source: z.enum(["provider-result"]),
+            }),
+            executionRuntimes: z.optional(
+              z.array(z.enum(["browser", "managed"])).min(1),
+            ),
+            evidence: z.object({
+              reviewedAt: z.iso.date(),
+              sources: z.array(z.url()).min(1),
+            }),
+            lifecycle: z.union([
+              z.object({
+                cancellation: z.enum(["supported", "unsupported"]),
+                completions: z
+                  .array(z.enum(["response"]))
+                  .min(1)
+                  .max(1),
+                deliveries: z
+                  .array(z.enum(["bytes", "stream", "text", "url"]))
+                  .min(1),
+                submission: z.enum(["immediate"]),
+              }),
+              z.object({
+                cancellation: z.enum(["supported", "unsupported"]),
+                completions: z.union([
+                  z
+                    .array(z.enum(["poll"]))
+                    .min(1)
+                    .max(1),
+                  z
+                    .array(z.enum(["webhook"]))
+                    .min(1)
+                    .max(1),
+                  z
+                    .array(z.union([z.enum(["poll"]), z.enum(["webhook"])]))
+                    .min(2)
+                    .max(2),
+                  z
+                    .array(z.union([z.enum(["webhook"]), z.enum(["poll"])]))
+                    .min(2)
+                    .max(2),
+                ]),
+                deliveries: z
+                  .array(z.enum(["bytes", "stream", "text", "url"]))
+                  .min(1),
+                submission: z.enum(["asynchronous"]),
+              }),
+            ]),
+            nativeModelId: z.string().regex(/^[^/]+\/.+$/),
+            operationId: z.string().min(1),
+            priority: z.int(),
+            requiresDurableSubmissionBoundary: z.literal(true),
+            routeVersion: z.string().min(1),
+            provider: z.enum(["openrouter"]),
+            providerTag: z.string().min(1),
+            routingPolicy: z.enum(["pinned"]),
+            supportedParameters: z.array(z.string().min(1)).min(1),
+            endpoint: z.enum(["/api/v1/chat/completions"]),
+            protocol: z.enum(["chat"]),
+            requestProfile: z.object({
+              kind: z.enum(["chat"]),
+              maxImageReferences: z.int().min(0),
+              maxTokensParameter: z.enum([
+                "max_completion_tokens",
+                "max_tokens",
+              ]),
+              reasoning: z.boolean(),
+              settingIds: z.array(z.string().min(1)),
+            }),
+          }),
+          z.object({
+            adapterVersion: z.string().min(1),
+            costCapture: z.object({
+              creditCost: z.enum(["unknown"]),
+              providerCostUsd: z.enum(["response-or-unknown"]),
+              source: z.enum(["provider-result"]),
+            }),
+            executionRuntimes: z.optional(
+              z.array(z.enum(["browser", "managed"])).min(1),
+            ),
+            evidence: z.object({
+              reviewedAt: z.iso.date(),
+              sources: z.array(z.url()).min(1),
+            }),
+            lifecycle: z.union([
+              z.object({
+                cancellation: z.enum(["supported", "unsupported"]),
+                completions: z
+                  .array(z.enum(["response"]))
+                  .min(1)
+                  .max(1),
+                deliveries: z
+                  .array(z.enum(["bytes", "stream", "text", "url"]))
+                  .min(1),
+                submission: z.enum(["immediate"]),
+              }),
+              z.object({
+                cancellation: z.enum(["supported", "unsupported"]),
+                completions: z.union([
+                  z
+                    .array(z.enum(["poll"]))
+                    .min(1)
+                    .max(1),
+                  z
+                    .array(z.enum(["webhook"]))
+                    .min(1)
+                    .max(1),
+                  z
+                    .array(z.union([z.enum(["poll"]), z.enum(["webhook"])]))
+                    .min(2)
+                    .max(2),
+                  z
+                    .array(z.union([z.enum(["webhook"]), z.enum(["poll"])]))
+                    .min(2)
+                    .max(2),
+                ]),
+                deliveries: z
+                  .array(z.enum(["bytes", "stream", "text", "url"]))
+                  .min(1),
+                submission: z.enum(["asynchronous"]),
+              }),
+            ]),
+            nativeModelId: z.string().regex(/^[^/]+\/.+$/),
+            operationId: z.string().min(1),
+            priority: z.int(),
+            requiresDurableSubmissionBoundary: z.literal(true),
+            routeVersion: z.string().min(1),
+            provider: z.enum(["openrouter"]),
+            providerTag: z.string().min(1),
+            routingPolicy: z.enum(["pinned"]),
+            supportedParameters: z.array(z.string().min(1)).min(1),
+            endpoint: z.enum(["/api/v1/images"]),
+            protocol: z.enum(["image"]),
+            requestProfile: z.object({
+              kind: z.enum(["image"]),
+              maxReferences: z.int().min(0),
+              settingIds: z.array(z.string().min(1)),
+            }),
+          }),
+          z.object({
+            adapterVersion: z.string().min(1),
+            costCapture: z.object({
+              creditCost: z.enum(["unknown"]),
+              providerCostUsd: z.enum(["response-or-unknown"]),
+              source: z.enum(["provider-result"]),
+            }),
+            executionRuntimes: z.optional(
+              z.array(z.enum(["browser", "managed"])).min(1),
+            ),
+            evidence: z.object({
+              reviewedAt: z.iso.date(),
+              sources: z.array(z.url()).min(1),
+            }),
+            lifecycle: z.union([
+              z.object({
+                cancellation: z.enum(["supported", "unsupported"]),
+                completions: z
+                  .array(z.enum(["response"]))
+                  .min(1)
+                  .max(1),
+                deliveries: z
+                  .array(z.enum(["bytes", "stream", "text", "url"]))
+                  .min(1),
+                submission: z.enum(["immediate"]),
+              }),
+              z.object({
+                cancellation: z.enum(["supported", "unsupported"]),
+                completions: z.union([
+                  z
+                    .array(z.enum(["poll"]))
+                    .min(1)
+                    .max(1),
+                  z
+                    .array(z.enum(["webhook"]))
+                    .min(1)
+                    .max(1),
+                  z
+                    .array(z.union([z.enum(["poll"]), z.enum(["webhook"])]))
+                    .min(2)
+                    .max(2),
+                  z
+                    .array(z.union([z.enum(["webhook"]), z.enum(["poll"])]))
+                    .min(2)
+                    .max(2),
+                ]),
+                deliveries: z
+                  .array(z.enum(["bytes", "stream", "text", "url"]))
+                  .min(1),
+                submission: z.enum(["asynchronous"]),
+              }),
+            ]),
+            nativeModelId: z.string().regex(/^[^/]+\/.+$/),
+            operationId: z.string().min(1),
+            priority: z.int(),
+            requiresDurableSubmissionBoundary: z.literal(true),
+            routeVersion: z.string().min(1),
+            provider: z.enum(["openrouter"]),
+            providerTag: z.string().min(1),
+            routingPolicy: z.enum(["pinned"]),
+            supportedParameters: z.array(z.string().min(1)).min(1),
+            endpoint: z.enum(["/api/v1/audio/speech"]),
+            protocol: z.enum(["speech"]),
+            requestProfile: z.object({
+              kind: z.enum(["speech"]),
+              outputFormats: z
+                .array(z.enum(["mp3"]))
+                .min(1)
+                .max(1),
+              settingIds: z.array(z.string().min(1)),
+              voiceValues: z.object({}).catchall(z.string().min(1)),
+            }),
+          }),
+          z.object({
+            adapterVersion: z.string().min(1),
+            costCapture: z.object({
+              creditCost: z.enum(["unknown"]),
+              providerCostUsd: z.enum(["response-or-unknown"]),
+              source: z.enum(["provider-result"]),
+            }),
+            executionRuntimes: z.optional(
+              z.array(z.enum(["browser", "managed"])).min(1),
+            ),
+            evidence: z.object({
+              reviewedAt: z.iso.date(),
+              sources: z.array(z.url()).min(1),
+            }),
+            lifecycle: z.union([
+              z.object({
+                cancellation: z.enum(["supported", "unsupported"]),
+                completions: z
+                  .array(z.enum(["response"]))
+                  .min(1)
+                  .max(1),
+                deliveries: z
+                  .array(z.enum(["bytes", "stream", "text", "url"]))
+                  .min(1),
+                submission: z.enum(["immediate"]),
+              }),
+              z.object({
+                cancellation: z.enum(["supported", "unsupported"]),
+                completions: z.union([
+                  z
+                    .array(z.enum(["poll"]))
+                    .min(1)
+                    .max(1),
+                  z
+                    .array(z.enum(["webhook"]))
+                    .min(1)
+                    .max(1),
+                  z
+                    .array(z.union([z.enum(["poll"]), z.enum(["webhook"])]))
+                    .min(2)
+                    .max(2),
+                  z
+                    .array(z.union([z.enum(["webhook"]), z.enum(["poll"])]))
+                    .min(2)
+                    .max(2),
+                ]),
+                deliveries: z
+                  .array(z.enum(["bytes", "stream", "text", "url"]))
+                  .min(1),
+                submission: z.enum(["asynchronous"]),
+              }),
+            ]),
+            nativeModelId: z.string().regex(/^[^/]+\/.+$/),
+            operationId: z.string().min(1),
+            priority: z.int(),
+            requiresDurableSubmissionBoundary: z.literal(true),
+            routeVersion: z.string().min(1),
+            provider: z.enum(["openrouter"]),
+            providerTag: z.string().min(1),
+            routingPolicy: z.enum(["pinned"]),
+            supportedParameters: z.array(z.string().min(1)).min(1),
+            endpoint: z.enum(["/api/v1/videos"]),
+            protocol: z.enum(["video"]),
+            requestProfile: z.object({
+              frameMode: z.enum(["first", "first-last", "none"]),
+              generateAudio: z.boolean(),
+              kind: z.enum(["video"]),
+              referenceLimits: z.object({
+                audio: z.int().min(0),
+                image: z.int().min(0),
+                video: z.int().min(0),
+              }),
+              referenceValidationPolicy: z.enum([
+                "none",
+                "seedance-2-reference-v1",
+              ]),
+              settingIds: z.array(z.string().min(1)),
+            }),
+          }),
+        ]),
+        providerRouteVersion: z.string(),
+      }),
+      jobId: z.string(),
+      providerJobId: z.nullable(z.string()),
+    }),
+  ),
   jobs: z.array(
     z.object({
       browserAttemptCount: z.int().min(0),
@@ -47,10 +407,11 @@ export const getRunsIdBrowserManifest200Schema = z.object({
       providerSubmittedAt: z.nullable(z.iso.datetime()),
       requestHash: z.string(),
       requestIndex: z.int().min(0),
+      submissionState: z.enum(["not_started", "submitting", "submitted"]),
       status: z.enum(["pending", "running", "succeeded", "failed", "canceled"]),
     }),
   ),
-  manifestVersion: z.literal(1),
+  manifestVersion: z.literal(2),
   run: z.object({
     executionMode: z.enum(["debug", "live"]),
     executionRuntime: z.enum(["browser"]),

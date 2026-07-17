@@ -66,6 +66,10 @@ export type DeleteRunsIdBrowserLeaseMutationRequest = {
    * @type string
    */
   executorId: string;
+  /**
+   * @type integer
+   */
+  fenceToken: number;
 };
 
 export type DeleteRunsIdBrowserLeaseMutationResponse =

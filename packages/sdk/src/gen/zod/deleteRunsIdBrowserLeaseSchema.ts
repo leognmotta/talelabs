@@ -84,6 +84,7 @@ export const deleteRunsIdBrowserLease500Schema = z.lazy(
 
 export const deleteRunsIdBrowserLeaseMutationRequestSchema = z.object({
   executorId: z.string().min(16).max(200),
+  fenceToken: z.int().gt(0),
 }) as unknown as z.ZodType<DeleteRunsIdBrowserLeaseMutationRequest>;
 
 export const deleteRunsIdBrowserLeaseMutationResponseSchema = z.lazy(

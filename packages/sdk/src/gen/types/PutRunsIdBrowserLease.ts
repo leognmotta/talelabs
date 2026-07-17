@@ -24,6 +24,10 @@ export type PutRunsIdBrowserLease200 = {
    */
   executorId: string;
   /**
+   * @type integer
+   */
+  fenceToken: number;
+  /**
    * @type string, date-time
    */
   leaseExpiresAt: Timestamp;

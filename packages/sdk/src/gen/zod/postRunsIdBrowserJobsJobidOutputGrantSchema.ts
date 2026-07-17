@@ -91,6 +91,7 @@ export const postRunsIdBrowserJobsJobidOutputGrant500Schema = z.lazy(
 export const postRunsIdBrowserJobsJobidOutputGrantMutationRequestSchema =
   z.object({
     executorId: z.string().min(16).max(200),
+    fenceToken: z.int().gt(0),
     contentLength: z.optional(z.int().gt(0)),
     contentMd5: z.optional(z.string().min(24).max(24)),
     mimeType: z.string().min(1).max(255),

@@ -7,6 +7,17 @@ import type { Cuid2 } from "./Cuid2.ts";
 import type { FlowRunNodeState } from "./FlowRunNodeState.ts";
 import type { Timestamp } from "./Timestamp.ts";
 
+export const browserExecutionStatusEnum2 = {
+  ready: "ready",
+  blocked: "blocked",
+  retrying: "retrying",
+  error: "error",
+  canceling: "canceling",
+} as const;
+
+export type BrowserExecutionStatusEnum2Key =
+  (typeof browserExecutionStatusEnum2)[keyof typeof browserExecutionStatusEnum2];
+
 export const flowRunExecutionModeEnum = {
   live: "live",
   debug: "debug",
@@ -52,6 +63,23 @@ export type FlowRun = {
    * @type string
    */
   id: Cuid2;
+  /**
+   * @type object
+   */
+  browserExecution: {
+    /**
+     * @type string
+     */
+    code: string | null;
+    /**
+     * @type string
+     */
+    status: BrowserExecutionStatusEnum2Key;
+    /**
+     * @type string, date-time
+     */
+    updatedAt: string | null;
+  } | null;
   /**
    * @type string
    */

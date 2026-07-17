@@ -32,6 +32,7 @@ export const putRunsIdBrowserLeasePathParamsSchema = z.object({
  */
 export const putRunsIdBrowserLease200Schema = z.object({
   executorId: z.string(),
+  fenceToken: z.int().gt(0),
   get leaseExpiresAt() {
     return timestampSchema;
   },

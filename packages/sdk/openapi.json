@@ -2535,6 +2535,36 @@
           "id": {
             "$ref": "#/components/schemas/Cuid2"
           },
+          "browserExecution": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "code": {
+                "type": "string",
+                "nullable": true
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "ready",
+                  "blocked",
+                  "retrying",
+                  "error",
+                  "canceling"
+                ]
+              },
+              "updatedAt": {
+                "type": "string",
+                "nullable": true,
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "code",
+              "status",
+              "updatedAt"
+            ]
+          },
           "executionMode": {
             "type": "string",
             "enum": [
@@ -2648,6 +2678,7 @@
         },
         "required": [
           "id",
+          "browserExecution",
           "executionMode",
           "executionRuntime",
           "flowId",
@@ -2670,6 +2701,36 @@
         "properties": {
           "id": {
             "$ref": "#/components/schemas/Cuid2"
+          },
+          "browserExecution": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "code": {
+                "type": "string",
+                "nullable": true
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "ready",
+                  "blocked",
+                  "retrying",
+                  "error",
+                  "canceling"
+                ]
+              },
+              "updatedAt": {
+                "type": "string",
+                "nullable": true,
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "code",
+              "status",
+              "updatedAt"
+            ]
           },
           "executionMode": {
             "type": "string",
@@ -2783,6 +2844,7 @@
         },
         "required": [
           "id",
+          "browserExecution",
           "executionMode",
           "executionRuntime",
           "flowId",
@@ -9286,6 +9348,17 @@
         "parameters": [
           {
             "schema": {
+              "type": "string",
+              "enum": [
+                "pending"
+              ]
+            },
+            "required": false,
+            "name": "browserWork",
+            "in": "query"
+          },
+          {
+            "schema": {
               "$ref": "#/components/schemas/Cursor"
             },
             "required": false,
@@ -10191,12 +10264,18 @@
                     "executorId": {
                       "type": "string"
                     },
+                    "fenceToken": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "exclusiveMinimum": true
+                    },
                     "leaseExpiresAt": {
                       "$ref": "#/components/schemas/Timestamp"
                     }
                   },
                   "required": [
                     "executorId",
+                    "fenceToken",
                     "leaseExpiresAt"
                   ]
                 }
@@ -10300,10 +10379,16 @@
                     "type": "string",
                     "minLength": 16,
                     "maxLength": 200
+                  },
+                  "fenceToken": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "exclusiveMinimum": true
                   }
                 },
                 "required": [
-                  "executorId"
+                  "executorId",
+                  "fenceToken"
                 ]
               }
             }
@@ -10424,6 +10509,16 @@
             "required": true,
             "name": "executorId",
             "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "exclusiveMinimum": true
+            },
+            "required": true,
+            "name": "fenceToken",
+            "in": "query"
           }
         ],
         "responses": {
@@ -10434,6 +10529,1692 @@
                 "schema": {
                   "type": "object",
                   "properties": {
+                    "cancellations": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "cancellation": {
+                            "type": "string",
+                            "enum": [
+                              "best-effort",
+                              "supported",
+                              "unsupported"
+                            ]
+                          },
+                          "executionContract": {
+                            "type": "object",
+                            "properties": {
+                              "adapterVersion": {
+                                "type": "string"
+                              },
+                              "catalogRevision": {
+                                "type": "string",
+                                "pattern": "^sha256:[0-9a-f]{64}$"
+                              },
+                              "catalogVersion": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "exclusiveMinimum": true
+                              },
+                              "modelContractVersion": {
+                                "type": "string"
+                              },
+                              "modelId": {
+                                "type": "string"
+                              },
+                              "modelRevision": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "exclusiveMinimum": true
+                              },
+                              "nodeId": {
+                                "type": "string"
+                              },
+                              "operationId": {
+                                "type": "string"
+                              },
+                              "provider": {
+                                "type": "string"
+                              },
+                              "providerEndpoint": {
+                                "type": "string"
+                              },
+                              "providerEndpointTag": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "providerLifecycle": {
+                                "oneOf": [
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "cancellation": {
+                                        "type": "string",
+                                        "enum": [
+                                          "best-effort",
+                                          "supported",
+                                          "unsupported"
+                                        ]
+                                      },
+                                      "completions": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "string",
+                                          "enum": [
+                                            "response"
+                                          ]
+                                        },
+                                        "minItems": 1,
+                                        "maxItems": 1
+                                      },
+                                      "deliveries": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "string",
+                                          "enum": [
+                                            "bytes",
+                                            "storage",
+                                            "stream",
+                                            "text",
+                                            "url"
+                                          ]
+                                        },
+                                        "minItems": 1,
+                                        "maxItems": 1
+                                      },
+                                      "submission": {
+                                        "type": "string",
+                                        "enum": [
+                                          "immediate"
+                                        ]
+                                      }
+                                    },
+                                    "required": [
+                                      "cancellation",
+                                      "completions",
+                                      "deliveries",
+                                      "submission"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "cancellation": {
+                                        "type": "string",
+                                        "enum": [
+                                          "best-effort",
+                                          "supported",
+                                          "unsupported"
+                                        ]
+                                      },
+                                      "completions": {
+                                        "anyOf": [
+                                          {
+                                            "type": "array",
+                                            "items": {
+                                              "type": "string",
+                                              "enum": [
+                                                "poll"
+                                              ]
+                                            },
+                                            "minItems": 1,
+                                            "maxItems": 1
+                                          },
+                                          {
+                                            "type": "array",
+                                            "items": {
+                                              "type": "string",
+                                              "enum": [
+                                                "webhook"
+                                              ]
+                                            },
+                                            "minItems": 1,
+                                            "maxItems": 1
+                                          },
+                                          {
+                                            "type": "array",
+                                            "items": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "poll"
+                                                  ]
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "webhook"
+                                                  ]
+                                                }
+                                              ]
+                                            },
+                                            "minItems": 2,
+                                            "maxItems": 2
+                                          },
+                                          {
+                                            "type": "array",
+                                            "items": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "webhook"
+                                                  ]
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "poll"
+                                                  ]
+                                                }
+                                              ]
+                                            },
+                                            "minItems": 2,
+                                            "maxItems": 2
+                                          }
+                                        ]
+                                      },
+                                      "deliveries": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "string",
+                                          "enum": [
+                                            "bytes",
+                                            "storage",
+                                            "stream",
+                                            "text",
+                                            "url"
+                                          ]
+                                        },
+                                        "minItems": 1,
+                                        "maxItems": 1
+                                      },
+                                      "submission": {
+                                        "type": "string",
+                                        "enum": [
+                                          "asynchronous"
+                                        ]
+                                      }
+                                    },
+                                    "required": [
+                                      "cancellation",
+                                      "completions",
+                                      "deliveries",
+                                      "submission"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                ]
+                              },
+                              "providerModel": {
+                                "type": "string"
+                              },
+                              "providerBinding": {
+                                "oneOf": [
+                                  {
+                                    "oneOf": [
+                                      {
+                                        "type": "object",
+                                        "properties": {
+                                          "adapterVersion": {
+                                            "type": "string",
+                                            "minLength": 1
+                                          },
+                                          "costCapture": {
+                                            "type": "object",
+                                            "properties": {
+                                              "creditCost": {
+                                                "type": "string",
+                                                "enum": [
+                                                  "unknown"
+                                                ]
+                                              },
+                                              "providerCostUsd": {
+                                                "type": "string",
+                                                "enum": [
+                                                  "response-or-unknown"
+                                                ]
+                                              },
+                                              "source": {
+                                                "type": "string",
+                                                "enum": [
+                                                  "provider-result"
+                                                ]
+                                              }
+                                            },
+                                            "required": [
+                                              "creditCost",
+                                              "providerCostUsd",
+                                              "source"
+                                            ],
+                                            "additionalProperties": false
+                                          },
+                                          "executionRuntimes": {
+                                            "type": "array",
+                                            "items": {
+                                              "type": "string",
+                                              "enum": [
+                                                "browser",
+                                                "managed"
+                                              ]
+                                            },
+                                            "minItems": 1,
+                                            "default": [
+                                              "managed"
+                                            ]
+                                          },
+                                          "evidence": {
+                                            "type": "object",
+                                            "properties": {
+                                              "reviewedAt": {
+                                                "type": "string",
+                                                "format": "date"
+                                              },
+                                              "sources": {
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "string",
+                                                  "format": "uri"
+                                                },
+                                                "minItems": 1
+                                              }
+                                            },
+                                            "required": [
+                                              "reviewedAt",
+                                              "sources"
+                                            ],
+                                            "additionalProperties": false
+                                          },
+                                          "lifecycle": {
+                                            "oneOf": [
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "cancellation": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                      "supported",
+                                                      "unsupported"
+                                                    ]
+                                                  },
+                                                  "completions": {
+                                                    "type": "array",
+                                                    "items": {
+                                                      "type": "string",
+                                                      "enum": [
+                                                        "response"
+                                                      ]
+                                                    },
+                                                    "minItems": 1,
+                                                    "maxItems": 1
+                                                  },
+                                                  "deliveries": {
+                                                    "type": "array",
+                                                    "items": {
+                                                      "type": "string",
+                                                      "enum": [
+                                                        "bytes",
+                                                        "stream",
+                                                        "text",
+                                                        "url"
+                                                      ]
+                                                    },
+                                                    "minItems": 1
+                                                  },
+                                                  "submission": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                      "immediate"
+                                                    ]
+                                                  }
+                                                },
+                                                "required": [
+                                                  "cancellation",
+                                                  "completions",
+                                                  "deliveries",
+                                                  "submission"
+                                                ],
+                                                "additionalProperties": false
+                                              },
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "cancellation": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                      "supported",
+                                                      "unsupported"
+                                                    ]
+                                                  },
+                                                  "completions": {
+                                                    "anyOf": [
+                                                      {
+                                                        "type": "array",
+                                                        "items": {
+                                                          "type": "string",
+                                                          "enum": [
+                                                            "poll"
+                                                          ]
+                                                        },
+                                                        "minItems": 1,
+                                                        "maxItems": 1
+                                                      },
+                                                      {
+                                                        "type": "array",
+                                                        "items": {
+                                                          "type": "string",
+                                                          "enum": [
+                                                            "webhook"
+                                                          ]
+                                                        },
+                                                        "minItems": 1,
+                                                        "maxItems": 1
+                                                      },
+                                                      {
+                                                        "type": "array",
+                                                        "items": {
+                                                          "anyOf": [
+                                                            {
+                                                              "type": "string",
+                                                              "enum": [
+                                                                "poll"
+                                                              ]
+                                                            },
+                                                            {
+                                                              "type": "string",
+                                                              "enum": [
+                                                                "webhook"
+                                                              ]
+                                                            }
+                                                          ]
+                                                        },
+                                                        "minItems": 2,
+                                                        "maxItems": 2
+                                                      },
+                                                      {
+                                                        "type": "array",
+                                                        "items": {
+                                                          "anyOf": [
+                                                            {
+                                                              "type": "string",
+                                                              "enum": [
+                                                                "webhook"
+                                                              ]
+                                                            },
+                                                            {
+                                                              "type": "string",
+                                                              "enum": [
+                                                                "poll"
+                                                              ]
+                                                            }
+                                                          ]
+                                                        },
+                                                        "minItems": 2,
+                                                        "maxItems": 2
+                                                      }
+                                                    ]
+                                                  },
+                                                  "deliveries": {
+                                                    "type": "array",
+                                                    "items": {
+                                                      "type": "string",
+                                                      "enum": [
+                                                        "bytes",
+                                                        "stream",
+                                                        "text",
+                                                        "url"
+                                                      ]
+                                                    },
+                                                    "minItems": 1
+                                                  },
+                                                  "submission": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                      "asynchronous"
+                                                    ]
+                                                  }
+                                                },
+                                                "required": [
+                                                  "cancellation",
+                                                  "completions",
+                                                  "deliveries",
+                                                  "submission"
+                                                ],
+                                                "additionalProperties": false
+                                              }
+                                            ]
+                                          },
+                                          "nativeModelId": {
+                                            "type": "string",
+                                            "pattern": "^[^/]+\\/.+$"
+                                          },
+                                          "operationId": {
+                                            "type": "string",
+                                            "minLength": 1
+                                          },
+                                          "priority": {
+                                            "type": "integer"
+                                          },
+                                          "requiresDurableSubmissionBoundary": {
+                                            "type": "boolean",
+                                            "enum": [
+                                              true
+                                            ]
+                                          },
+                                          "routeVersion": {
+                                            "type": "string",
+                                            "minLength": 1
+                                          },
+                                          "provider": {
+                                            "type": "string",
+                                            "enum": [
+                                              "openrouter"
+                                            ]
+                                          },
+                                          "providerTag": {
+                                            "type": "string",
+                                            "minLength": 1
+                                          },
+                                          "routingPolicy": {
+                                            "type": "string",
+                                            "enum": [
+                                              "pinned"
+                                            ]
+                                          },
+                                          "supportedParameters": {
+                                            "type": "array",
+                                            "items": {
+                                              "type": "string",
+                                              "minLength": 1
+                                            },
+                                            "minItems": 1
+                                          },
+                                          "endpoint": {
+                                            "type": "string",
+                                            "enum": [
+                                              "/api/v1/chat/completions"
+                                            ]
+                                          },
+                                          "protocol": {
+                                            "type": "string",
+                                            "enum": [
+                                              "chat"
+                                            ]
+                                          },
+                                          "requestProfile": {
+                                            "type": "object",
+                                            "properties": {
+                                              "kind": {
+                                                "type": "string",
+                                                "enum": [
+                                                  "chat"
+                                                ]
+                                              },
+                                              "maxImageReferences": {
+                                                "type": "integer",
+                                                "minimum": 0
+                                              },
+                                              "maxTokensParameter": {
+                                                "type": "string",
+                                                "enum": [
+                                                  "max_completion_tokens",
+                                                  "max_tokens"
+                                                ]
+                                              },
+                                              "reasoning": {
+                                                "type": "boolean"
+                                              },
+                                              "settingIds": {
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "string",
+                                                  "minLength": 1
+                                                }
+                                              }
+                                            },
+                                            "required": [
+                                              "kind",
+                                              "maxImageReferences",
+                                              "maxTokensParameter",
+                                              "reasoning",
+                                              "settingIds"
+                                            ],
+                                            "additionalProperties": false
+                                          }
+                                        },
+                                        "required": [
+                                          "adapterVersion",
+                                          "costCapture",
+                                          "evidence",
+                                          "lifecycle",
+                                          "nativeModelId",
+                                          "operationId",
+                                          "priority",
+                                          "requiresDurableSubmissionBoundary",
+                                          "routeVersion",
+                                          "provider",
+                                          "providerTag",
+                                          "routingPolicy",
+                                          "supportedParameters",
+                                          "endpoint",
+                                          "protocol",
+                                          "requestProfile"
+                                        ],
+                                        "additionalProperties": false
+                                      },
+                                      {
+                                        "type": "object",
+                                        "properties": {
+                                          "adapterVersion": {
+                                            "type": "string",
+                                            "minLength": 1
+                                          },
+                                          "costCapture": {
+                                            "type": "object",
+                                            "properties": {
+                                              "creditCost": {
+                                                "type": "string",
+                                                "enum": [
+                                                  "unknown"
+                                                ]
+                                              },
+                                              "providerCostUsd": {
+                                                "type": "string",
+                                                "enum": [
+                                                  "response-or-unknown"
+                                                ]
+                                              },
+                                              "source": {
+                                                "type": "string",
+                                                "enum": [
+                                                  "provider-result"
+                                                ]
+                                              }
+                                            },
+                                            "required": [
+                                              "creditCost",
+                                              "providerCostUsd",
+                                              "source"
+                                            ],
+                                            "additionalProperties": false
+                                          },
+                                          "executionRuntimes": {
+                                            "type": "array",
+                                            "items": {
+                                              "type": "string",
+                                              "enum": [
+                                                "browser",
+                                                "managed"
+                                              ]
+                                            },
+                                            "minItems": 1,
+                                            "default": [
+                                              "managed"
+                                            ]
+                                          },
+                                          "evidence": {
+                                            "type": "object",
+                                            "properties": {
+                                              "reviewedAt": {
+                                                "type": "string",
+                                                "format": "date"
+                                              },
+                                              "sources": {
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "string",
+                                                  "format": "uri"
+                                                },
+                                                "minItems": 1
+                                              }
+                                            },
+                                            "required": [
+                                              "reviewedAt",
+                                              "sources"
+                                            ],
+                                            "additionalProperties": false
+                                          },
+                                          "lifecycle": {
+                                            "oneOf": [
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "cancellation": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                      "supported",
+                                                      "unsupported"
+                                                    ]
+                                                  },
+                                                  "completions": {
+                                                    "type": "array",
+                                                    "items": {
+                                                      "type": "string",
+                                                      "enum": [
+                                                        "response"
+                                                      ]
+                                                    },
+                                                    "minItems": 1,
+                                                    "maxItems": 1
+                                                  },
+                                                  "deliveries": {
+                                                    "type": "array",
+                                                    "items": {
+                                                      "type": "string",
+                                                      "enum": [
+                                                        "bytes",
+                                                        "stream",
+                                                        "text",
+                                                        "url"
+                                                      ]
+                                                    },
+                                                    "minItems": 1
+                                                  },
+                                                  "submission": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                      "immediate"
+                                                    ]
+                                                  }
+                                                },
+                                                "required": [
+                                                  "cancellation",
+                                                  "completions",
+                                                  "deliveries",
+                                                  "submission"
+                                                ],
+                                                "additionalProperties": false
+                                              },
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "cancellation": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                      "supported",
+                                                      "unsupported"
+                                                    ]
+                                                  },
+                                                  "completions": {
+                                                    "anyOf": [
+                                                      {
+                                                        "type": "array",
+                                                        "items": {
+                                                          "type": "string",
+                                                          "enum": [
+                                                            "poll"
+                                                          ]
+                                                        },
+                                                        "minItems": 1,
+                                                        "maxItems": 1
+                                                      },
+                                                      {
+                                                        "type": "array",
+                                                        "items": {
+                                                          "type": "string",
+                                                          "enum": [
+                                                            "webhook"
+                                                          ]
+                                                        },
+                                                        "minItems": 1,
+                                                        "maxItems": 1
+                                                      },
+                                                      {
+                                                        "type": "array",
+                                                        "items": {
+                                                          "anyOf": [
+                                                            {
+                                                              "type": "string",
+                                                              "enum": [
+                                                                "poll"
+                                                              ]
+                                                            },
+                                                            {
+                                                              "type": "string",
+                                                              "enum": [
+                                                                "webhook"
+                                                              ]
+                                                            }
+                                                          ]
+                                                        },
+                                                        "minItems": 2,
+                                                        "maxItems": 2
+                                                      },
+                                                      {
+                                                        "type": "array",
+                                                        "items": {
+                                                          "anyOf": [
+                                                            {
+                                                              "type": "string",
+                                                              "enum": [
+                                                                "webhook"
+                                                              ]
+                                                            },
+                                                            {
+                                                              "type": "string",
+                                                              "enum": [
+                                                                "poll"
+                                                              ]
+                                                            }
+                                                          ]
+                                                        },
+                                                        "minItems": 2,
+                                                        "maxItems": 2
+                                                      }
+                                                    ]
+                                                  },
+                                                  "deliveries": {
+                                                    "type": "array",
+                                                    "items": {
+                                                      "type": "string",
+                                                      "enum": [
+                                                        "bytes",
+                                                        "stream",
+                                                        "text",
+                                                        "url"
+                                                      ]
+                                                    },
+                                                    "minItems": 1
+                                                  },
+                                                  "submission": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                      "asynchronous"
+                                                    ]
+                                                  }
+                                                },
+                                                "required": [
+                                                  "cancellation",
+                                                  "completions",
+                                                  "deliveries",
+                                                  "submission"
+                                                ],
+                                                "additionalProperties": false
+                                              }
+                                            ]
+                                          },
+                                          "nativeModelId": {
+                                            "type": "string",
+                                            "pattern": "^[^/]+\\/.+$"
+                                          },
+                                          "operationId": {
+                                            "type": "string",
+                                            "minLength": 1
+                                          },
+                                          "priority": {
+                                            "type": "integer"
+                                          },
+                                          "requiresDurableSubmissionBoundary": {
+                                            "type": "boolean",
+                                            "enum": [
+                                              true
+                                            ]
+                                          },
+                                          "routeVersion": {
+                                            "type": "string",
+                                            "minLength": 1
+                                          },
+                                          "provider": {
+                                            "type": "string",
+                                            "enum": [
+                                              "openrouter"
+                                            ]
+                                          },
+                                          "providerTag": {
+                                            "type": "string",
+                                            "minLength": 1
+                                          },
+                                          "routingPolicy": {
+                                            "type": "string",
+                                            "enum": [
+                                              "pinned"
+                                            ]
+                                          },
+                                          "supportedParameters": {
+                                            "type": "array",
+                                            "items": {
+                                              "type": "string",
+                                              "minLength": 1
+                                            },
+                                            "minItems": 1
+                                          },
+                                          "endpoint": {
+                                            "type": "string",
+                                            "enum": [
+                                              "/api/v1/images"
+                                            ]
+                                          },
+                                          "protocol": {
+                                            "type": "string",
+                                            "enum": [
+                                              "image"
+                                            ]
+                                          },
+                                          "requestProfile": {
+                                            "type": "object",
+                                            "properties": {
+                                              "kind": {
+                                                "type": "string",
+                                                "enum": [
+                                                  "image"
+                                                ]
+                                              },
+                                              "maxReferences": {
+                                                "type": "integer",
+                                                "minimum": 0
+                                              },
+                                              "settingIds": {
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "string",
+                                                  "minLength": 1
+                                                }
+                                              }
+                                            },
+                                            "required": [
+                                              "kind",
+                                              "maxReferences",
+                                              "settingIds"
+                                            ],
+                                            "additionalProperties": false
+                                          }
+                                        },
+                                        "required": [
+                                          "adapterVersion",
+                                          "costCapture",
+                                          "evidence",
+                                          "lifecycle",
+                                          "nativeModelId",
+                                          "operationId",
+                                          "priority",
+                                          "requiresDurableSubmissionBoundary",
+                                          "routeVersion",
+                                          "provider",
+                                          "providerTag",
+                                          "routingPolicy",
+                                          "supportedParameters",
+                                          "endpoint",
+                                          "protocol",
+                                          "requestProfile"
+                                        ],
+                                        "additionalProperties": false
+                                      },
+                                      {
+                                        "type": "object",
+                                        "properties": {
+                                          "adapterVersion": {
+                                            "type": "string",
+                                            "minLength": 1
+                                          },
+                                          "costCapture": {
+                                            "type": "object",
+                                            "properties": {
+                                              "creditCost": {
+                                                "type": "string",
+                                                "enum": [
+                                                  "unknown"
+                                                ]
+                                              },
+                                              "providerCostUsd": {
+                                                "type": "string",
+                                                "enum": [
+                                                  "response-or-unknown"
+                                                ]
+                                              },
+                                              "source": {
+                                                "type": "string",
+                                                "enum": [
+                                                  "provider-result"
+                                                ]
+                                              }
+                                            },
+                                            "required": [
+                                              "creditCost",
+                                              "providerCostUsd",
+                                              "source"
+                                            ],
+                                            "additionalProperties": false
+                                          },
+                                          "executionRuntimes": {
+                                            "type": "array",
+                                            "items": {
+                                              "type": "string",
+                                              "enum": [
+                                                "browser",
+                                                "managed"
+                                              ]
+                                            },
+                                            "minItems": 1,
+                                            "default": [
+                                              "managed"
+                                            ]
+                                          },
+                                          "evidence": {
+                                            "type": "object",
+                                            "properties": {
+                                              "reviewedAt": {
+                                                "type": "string",
+                                                "format": "date"
+                                              },
+                                              "sources": {
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "string",
+                                                  "format": "uri"
+                                                },
+                                                "minItems": 1
+                                              }
+                                            },
+                                            "required": [
+                                              "reviewedAt",
+                                              "sources"
+                                            ],
+                                            "additionalProperties": false
+                                          },
+                                          "lifecycle": {
+                                            "oneOf": [
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "cancellation": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                      "supported",
+                                                      "unsupported"
+                                                    ]
+                                                  },
+                                                  "completions": {
+                                                    "type": "array",
+                                                    "items": {
+                                                      "type": "string",
+                                                      "enum": [
+                                                        "response"
+                                                      ]
+                                                    },
+                                                    "minItems": 1,
+                                                    "maxItems": 1
+                                                  },
+                                                  "deliveries": {
+                                                    "type": "array",
+                                                    "items": {
+                                                      "type": "string",
+                                                      "enum": [
+                                                        "bytes",
+                                                        "stream",
+                                                        "text",
+                                                        "url"
+                                                      ]
+                                                    },
+                                                    "minItems": 1
+                                                  },
+                                                  "submission": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                      "immediate"
+                                                    ]
+                                                  }
+                                                },
+                                                "required": [
+                                                  "cancellation",
+                                                  "completions",
+                                                  "deliveries",
+                                                  "submission"
+                                                ],
+                                                "additionalProperties": false
+                                              },
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "cancellation": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                      "supported",
+                                                      "unsupported"
+                                                    ]
+                                                  },
+                                                  "completions": {
+                                                    "anyOf": [
+                                                      {
+                                                        "type": "array",
+                                                        "items": {
+                                                          "type": "string",
+                                                          "enum": [
+                                                            "poll"
+                                                          ]
+                                                        },
+                                                        "minItems": 1,
+                                                        "maxItems": 1
+                                                      },
+                                                      {
+                                                        "type": "array",
+                                                        "items": {
+                                                          "type": "string",
+                                                          "enum": [
+                                                            "webhook"
+                                                          ]
+                                                        },
+                                                        "minItems": 1,
+                                                        "maxItems": 1
+                                                      },
+                                                      {
+                                                        "type": "array",
+                                                        "items": {
+                                                          "anyOf": [
+                                                            {
+                                                              "type": "string",
+                                                              "enum": [
+                                                                "poll"
+                                                              ]
+                                                            },
+                                                            {
+                                                              "type": "string",
+                                                              "enum": [
+                                                                "webhook"
+                                                              ]
+                                                            }
+                                                          ]
+                                                        },
+                                                        "minItems": 2,
+                                                        "maxItems": 2
+                                                      },
+                                                      {
+                                                        "type": "array",
+                                                        "items": {
+                                                          "anyOf": [
+                                                            {
+                                                              "type": "string",
+                                                              "enum": [
+                                                                "webhook"
+                                                              ]
+                                                            },
+                                                            {
+                                                              "type": "string",
+                                                              "enum": [
+                                                                "poll"
+                                                              ]
+                                                            }
+                                                          ]
+                                                        },
+                                                        "minItems": 2,
+                                                        "maxItems": 2
+                                                      }
+                                                    ]
+                                                  },
+                                                  "deliveries": {
+                                                    "type": "array",
+                                                    "items": {
+                                                      "type": "string",
+                                                      "enum": [
+                                                        "bytes",
+                                                        "stream",
+                                                        "text",
+                                                        "url"
+                                                      ]
+                                                    },
+                                                    "minItems": 1
+                                                  },
+                                                  "submission": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                      "asynchronous"
+                                                    ]
+                                                  }
+                                                },
+                                                "required": [
+                                                  "cancellation",
+                                                  "completions",
+                                                  "deliveries",
+                                                  "submission"
+                                                ],
+                                                "additionalProperties": false
+                                              }
+                                            ]
+                                          },
+                                          "nativeModelId": {
+                                            "type": "string",
+                                            "pattern": "^[^/]+\\/.+$"
+                                          },
+                                          "operationId": {
+                                            "type": "string",
+                                            "minLength": 1
+                                          },
+                                          "priority": {
+                                            "type": "integer"
+                                          },
+                                          "requiresDurableSubmissionBoundary": {
+                                            "type": "boolean",
+                                            "enum": [
+                                              true
+                                            ]
+                                          },
+                                          "routeVersion": {
+                                            "type": "string",
+                                            "minLength": 1
+                                          },
+                                          "provider": {
+                                            "type": "string",
+                                            "enum": [
+                                              "openrouter"
+                                            ]
+                                          },
+                                          "providerTag": {
+                                            "type": "string",
+                                            "minLength": 1
+                                          },
+                                          "routingPolicy": {
+                                            "type": "string",
+                                            "enum": [
+                                              "pinned"
+                                            ]
+                                          },
+                                          "supportedParameters": {
+                                            "type": "array",
+                                            "items": {
+                                              "type": "string",
+                                              "minLength": 1
+                                            },
+                                            "minItems": 1
+                                          },
+                                          "endpoint": {
+                                            "type": "string",
+                                            "enum": [
+                                              "/api/v1/audio/speech"
+                                            ]
+                                          },
+                                          "protocol": {
+                                            "type": "string",
+                                            "enum": [
+                                              "speech"
+                                            ]
+                                          },
+                                          "requestProfile": {
+                                            "type": "object",
+                                            "properties": {
+                                              "kind": {
+                                                "type": "string",
+                                                "enum": [
+                                                  "speech"
+                                                ]
+                                              },
+                                              "outputFormats": {
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "mp3"
+                                                  ]
+                                                },
+                                                "minItems": 1,
+                                                "maxItems": 1
+                                              },
+                                              "settingIds": {
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "string",
+                                                  "minLength": 1
+                                                }
+                                              },
+                                              "voiceValues": {
+                                                "type": "object",
+                                                "additionalProperties": {
+                                                  "type": "string",
+                                                  "minLength": 1
+                                                }
+                                              }
+                                            },
+                                            "required": [
+                                              "kind",
+                                              "outputFormats",
+                                              "settingIds",
+                                              "voiceValues"
+                                            ],
+                                            "additionalProperties": false
+                                          }
+                                        },
+                                        "required": [
+                                          "adapterVersion",
+                                          "costCapture",
+                                          "evidence",
+                                          "lifecycle",
+                                          "nativeModelId",
+                                          "operationId",
+                                          "priority",
+                                          "requiresDurableSubmissionBoundary",
+                                          "routeVersion",
+                                          "provider",
+                                          "providerTag",
+                                          "routingPolicy",
+                                          "supportedParameters",
+                                          "endpoint",
+                                          "protocol",
+                                          "requestProfile"
+                                        ],
+                                        "additionalProperties": false
+                                      },
+                                      {
+                                        "type": "object",
+                                        "properties": {
+                                          "adapterVersion": {
+                                            "type": "string",
+                                            "minLength": 1
+                                          },
+                                          "costCapture": {
+                                            "type": "object",
+                                            "properties": {
+                                              "creditCost": {
+                                                "type": "string",
+                                                "enum": [
+                                                  "unknown"
+                                                ]
+                                              },
+                                              "providerCostUsd": {
+                                                "type": "string",
+                                                "enum": [
+                                                  "response-or-unknown"
+                                                ]
+                                              },
+                                              "source": {
+                                                "type": "string",
+                                                "enum": [
+                                                  "provider-result"
+                                                ]
+                                              }
+                                            },
+                                            "required": [
+                                              "creditCost",
+                                              "providerCostUsd",
+                                              "source"
+                                            ],
+                                            "additionalProperties": false
+                                          },
+                                          "executionRuntimes": {
+                                            "type": "array",
+                                            "items": {
+                                              "type": "string",
+                                              "enum": [
+                                                "browser",
+                                                "managed"
+                                              ]
+                                            },
+                                            "minItems": 1,
+                                            "default": [
+                                              "managed"
+                                            ]
+                                          },
+                                          "evidence": {
+                                            "type": "object",
+                                            "properties": {
+                                              "reviewedAt": {
+                                                "type": "string",
+                                                "format": "date"
+                                              },
+                                              "sources": {
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "string",
+                                                  "format": "uri"
+                                                },
+                                                "minItems": 1
+                                              }
+                                            },
+                                            "required": [
+                                              "reviewedAt",
+                                              "sources"
+                                            ],
+                                            "additionalProperties": false
+                                          },
+                                          "lifecycle": {
+                                            "oneOf": [
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "cancellation": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                      "supported",
+                                                      "unsupported"
+                                                    ]
+                                                  },
+                                                  "completions": {
+                                                    "type": "array",
+                                                    "items": {
+                                                      "type": "string",
+                                                      "enum": [
+                                                        "response"
+                                                      ]
+                                                    },
+                                                    "minItems": 1,
+                                                    "maxItems": 1
+                                                  },
+                                                  "deliveries": {
+                                                    "type": "array",
+                                                    "items": {
+                                                      "type": "string",
+                                                      "enum": [
+                                                        "bytes",
+                                                        "stream",
+                                                        "text",
+                                                        "url"
+                                                      ]
+                                                    },
+                                                    "minItems": 1
+                                                  },
+                                                  "submission": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                      "immediate"
+                                                    ]
+                                                  }
+                                                },
+                                                "required": [
+                                                  "cancellation",
+                                                  "completions",
+                                                  "deliveries",
+                                                  "submission"
+                                                ],
+                                                "additionalProperties": false
+                                              },
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "cancellation": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                      "supported",
+                                                      "unsupported"
+                                                    ]
+                                                  },
+                                                  "completions": {
+                                                    "anyOf": [
+                                                      {
+                                                        "type": "array",
+                                                        "items": {
+                                                          "type": "string",
+                                                          "enum": [
+                                                            "poll"
+                                                          ]
+                                                        },
+                                                        "minItems": 1,
+                                                        "maxItems": 1
+                                                      },
+                                                      {
+                                                        "type": "array",
+                                                        "items": {
+                                                          "type": "string",
+                                                          "enum": [
+                                                            "webhook"
+                                                          ]
+                                                        },
+                                                        "minItems": 1,
+                                                        "maxItems": 1
+                                                      },
+                                                      {
+                                                        "type": "array",
+                                                        "items": {
+                                                          "anyOf": [
+                                                            {
+                                                              "type": "string",
+                                                              "enum": [
+                                                                "poll"
+                                                              ]
+                                                            },
+                                                            {
+                                                              "type": "string",
+                                                              "enum": [
+                                                                "webhook"
+                                                              ]
+                                                            }
+                                                          ]
+                                                        },
+                                                        "minItems": 2,
+                                                        "maxItems": 2
+                                                      },
+                                                      {
+                                                        "type": "array",
+                                                        "items": {
+                                                          "anyOf": [
+                                                            {
+                                                              "type": "string",
+                                                              "enum": [
+                                                                "webhook"
+                                                              ]
+                                                            },
+                                                            {
+                                                              "type": "string",
+                                                              "enum": [
+                                                                "poll"
+                                                              ]
+                                                            }
+                                                          ]
+                                                        },
+                                                        "minItems": 2,
+                                                        "maxItems": 2
+                                                      }
+                                                    ]
+                                                  },
+                                                  "deliveries": {
+                                                    "type": "array",
+                                                    "items": {
+                                                      "type": "string",
+                                                      "enum": [
+                                                        "bytes",
+                                                        "stream",
+                                                        "text",
+                                                        "url"
+                                                      ]
+                                                    },
+                                                    "minItems": 1
+                                                  },
+                                                  "submission": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                      "asynchronous"
+                                                    ]
+                                                  }
+                                                },
+                                                "required": [
+                                                  "cancellation",
+                                                  "completions",
+                                                  "deliveries",
+                                                  "submission"
+                                                ],
+                                                "additionalProperties": false
+                                              }
+                                            ]
+                                          },
+                                          "nativeModelId": {
+                                            "type": "string",
+                                            "pattern": "^[^/]+\\/.+$"
+                                          },
+                                          "operationId": {
+                                            "type": "string",
+                                            "minLength": 1
+                                          },
+                                          "priority": {
+                                            "type": "integer"
+                                          },
+                                          "requiresDurableSubmissionBoundary": {
+                                            "type": "boolean",
+                                            "enum": [
+                                              true
+                                            ]
+                                          },
+                                          "routeVersion": {
+                                            "type": "string",
+                                            "minLength": 1
+                                          },
+                                          "provider": {
+                                            "type": "string",
+                                            "enum": [
+                                              "openrouter"
+                                            ]
+                                          },
+                                          "providerTag": {
+                                            "type": "string",
+                                            "minLength": 1
+                                          },
+                                          "routingPolicy": {
+                                            "type": "string",
+                                            "enum": [
+                                              "pinned"
+                                            ]
+                                          },
+                                          "supportedParameters": {
+                                            "type": "array",
+                                            "items": {
+                                              "type": "string",
+                                              "minLength": 1
+                                            },
+                                            "minItems": 1
+                                          },
+                                          "endpoint": {
+                                            "type": "string",
+                                            "enum": [
+                                              "/api/v1/videos"
+                                            ]
+                                          },
+                                          "protocol": {
+                                            "type": "string",
+                                            "enum": [
+                                              "video"
+                                            ]
+                                          },
+                                          "requestProfile": {
+                                            "type": "object",
+                                            "properties": {
+                                              "frameMode": {
+                                                "type": "string",
+                                                "enum": [
+                                                  "first",
+                                                  "first-last",
+                                                  "none"
+                                                ]
+                                              },
+                                              "generateAudio": {
+                                                "type": "boolean"
+                                              },
+                                              "kind": {
+                                                "type": "string",
+                                                "enum": [
+                                                  "video"
+                                                ]
+                                              },
+                                              "referenceLimits": {
+                                                "type": "object",
+                                                "properties": {
+                                                  "audio": {
+                                                    "type": "integer",
+                                                    "minimum": 0
+                                                  },
+                                                  "image": {
+                                                    "type": "integer",
+                                                    "minimum": 0
+                                                  },
+                                                  "video": {
+                                                    "type": "integer",
+                                                    "minimum": 0
+                                                  }
+                                                },
+                                                "required": [
+                                                  "audio",
+                                                  "image",
+                                                  "video"
+                                                ],
+                                                "additionalProperties": false
+                                              },
+                                              "referenceValidationPolicy": {
+                                                "type": "string",
+                                                "enum": [
+                                                  "none",
+                                                  "seedance-2-reference-v1"
+                                                ]
+                                              },
+                                              "settingIds": {
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "string",
+                                                  "minLength": 1
+                                                }
+                                              }
+                                            },
+                                            "required": [
+                                              "frameMode",
+                                              "generateAudio",
+                                              "kind",
+                                              "referenceLimits",
+                                              "referenceValidationPolicy",
+                                              "settingIds"
+                                            ],
+                                            "additionalProperties": false
+                                          }
+                                        },
+                                        "required": [
+                                          "adapterVersion",
+                                          "costCapture",
+                                          "evidence",
+                                          "lifecycle",
+                                          "nativeModelId",
+                                          "operationId",
+                                          "priority",
+                                          "requiresDurableSubmissionBoundary",
+                                          "routeVersion",
+                                          "provider",
+                                          "providerTag",
+                                          "routingPolicy",
+                                          "supportedParameters",
+                                          "endpoint",
+                                          "protocol",
+                                          "requestProfile"
+                                        ],
+                                        "additionalProperties": false
+                                      }
+                                    ]
+                                  }
+                                ]
+                              },
+                              "providerRouteVersion": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "adapterVersion",
+                              "catalogRevision",
+                              "catalogVersion",
+                              "modelContractVersion",
+                              "modelId",
+                              "modelRevision",
+                              "nodeId",
+                              "operationId",
+                              "provider",
+                              "providerEndpoint",
+                              "providerEndpointTag",
+                              "providerLifecycle",
+                              "providerModel",
+                              "providerBinding",
+                              "providerRouteVersion"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "jobId": {
+                            "type": "string"
+                          },
+                          "providerJobId": {
+                            "type": "string",
+                            "nullable": true
+                          }
+                        },
+                        "required": [
+                          "cancellation",
+                          "executionContract",
+                          "jobId",
+                          "providerJobId"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
                     "jobs": {
                       "type": "array",
                       "items": {
@@ -10487,6 +12268,14 @@
                             "type": "integer",
                             "minimum": 0
                           },
+                          "submissionState": {
+                            "type": "string",
+                            "enum": [
+                              "not_started",
+                              "submitting",
+                              "submitted"
+                            ]
+                          },
                           "status": {
                             "type": "string",
                             "enum": [
@@ -10510,6 +12299,7 @@
                           "providerSubmittedAt",
                           "requestHash",
                           "requestIndex",
+                          "submissionState",
                           "status"
                         ],
                         "additionalProperties": false
@@ -10518,7 +12308,7 @@
                     "manifestVersion": {
                       "type": "number",
                       "enum": [
-                        1
+                        2
                       ]
                     },
                     "run": {
@@ -10575,6 +12365,7 @@
                     }
                   },
                   "required": [
+                    "cancellations",
                     "jobs",
                     "manifestVersion",
                     "run"
@@ -10684,6 +12475,11 @@
                     "minLength": 16,
                     "maxLength": 200
                   },
+                  "fenceToken": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "exclusiveMinimum": true
+                  },
                   "activeJobIds": {
                     "type": "array",
                     "items": {
@@ -10700,7 +12496,8 @@
                   }
                 },
                 "required": [
-                  "executorId"
+                  "executorId",
+                  "fenceToken"
                 ]
               }
             }
@@ -11064,7 +12861,6 @@
                                               ]
                                             },
                                             "minItems": 1,
-                                            "maxItems": 1,
                                             "default": [
                                               "managed"
                                             ]
@@ -11082,8 +12878,7 @@
                                                   "type": "string",
                                                   "format": "uri"
                                                 },
-                                                "minItems": 1,
-                                                "maxItems": 1
+                                                "minItems": 1
                                               }
                                             },
                                             "required": [
@@ -11126,8 +12921,7 @@
                                                         "url"
                                                       ]
                                                     },
-                                                    "minItems": 1,
-                                                    "maxItems": 1
+                                                    "minItems": 1
                                                   },
                                                   "submission": {
                                                     "type": "string",
@@ -11233,8 +13027,7 @@
                                                         "url"
                                                       ]
                                                     },
-                                                    "minItems": 1,
-                                                    "maxItems": 1
+                                                    "minItems": 1
                                                   },
                                                   "submission": {
                                                     "type": "string",
@@ -11296,8 +13089,7 @@
                                               "type": "string",
                                               "minLength": 1
                                             },
-                                            "minItems": 1,
-                                            "maxItems": 1
+                                            "minItems": 1
                                           },
                                           "endpoint": {
                                             "type": "string",
@@ -11418,7 +13210,6 @@
                                               ]
                                             },
                                             "minItems": 1,
-                                            "maxItems": 1,
                                             "default": [
                                               "managed"
                                             ]
@@ -11436,8 +13227,7 @@
                                                   "type": "string",
                                                   "format": "uri"
                                                 },
-                                                "minItems": 1,
-                                                "maxItems": 1
+                                                "minItems": 1
                                               }
                                             },
                                             "required": [
@@ -11480,8 +13270,7 @@
                                                         "url"
                                                       ]
                                                     },
-                                                    "minItems": 1,
-                                                    "maxItems": 1
+                                                    "minItems": 1
                                                   },
                                                   "submission": {
                                                     "type": "string",
@@ -11587,8 +13376,7 @@
                                                         "url"
                                                       ]
                                                     },
-                                                    "minItems": 1,
-                                                    "maxItems": 1
+                                                    "minItems": 1
                                                   },
                                                   "submission": {
                                                     "type": "string",
@@ -11650,8 +13438,7 @@
                                               "type": "string",
                                               "minLength": 1
                                             },
-                                            "minItems": 1,
-                                            "maxItems": 1
+                                            "minItems": 1
                                           },
                                           "endpoint": {
                                             "type": "string",
@@ -11760,7 +13547,6 @@
                                               ]
                                             },
                                             "minItems": 1,
-                                            "maxItems": 1,
                                             "default": [
                                               "managed"
                                             ]
@@ -11778,8 +13564,7 @@
                                                   "type": "string",
                                                   "format": "uri"
                                                 },
-                                                "minItems": 1,
-                                                "maxItems": 1
+                                                "minItems": 1
                                               }
                                             },
                                             "required": [
@@ -11822,8 +13607,7 @@
                                                         "url"
                                                       ]
                                                     },
-                                                    "minItems": 1,
-                                                    "maxItems": 1
+                                                    "minItems": 1
                                                   },
                                                   "submission": {
                                                     "type": "string",
@@ -11929,8 +13713,7 @@
                                                         "url"
                                                       ]
                                                     },
-                                                    "minItems": 1,
-                                                    "maxItems": 1
+                                                    "minItems": 1
                                                   },
                                                   "submission": {
                                                     "type": "string",
@@ -11992,8 +13775,7 @@
                                               "type": "string",
                                               "minLength": 1
                                             },
-                                            "minItems": 1,
-                                            "maxItems": 1
+                                            "minItems": 1
                                           },
                                           "endpoint": {
                                             "type": "string",
@@ -12117,7 +13899,6 @@
                                               ]
                                             },
                                             "minItems": 1,
-                                            "maxItems": 1,
                                             "default": [
                                               "managed"
                                             ]
@@ -12135,8 +13916,7 @@
                                                   "type": "string",
                                                   "format": "uri"
                                                 },
-                                                "minItems": 1,
-                                                "maxItems": 1
+                                                "minItems": 1
                                               }
                                             },
                                             "required": [
@@ -12179,8 +13959,7 @@
                                                         "url"
                                                       ]
                                                     },
-                                                    "minItems": 1,
-                                                    "maxItems": 1
+                                                    "minItems": 1
                                                   },
                                                   "submission": {
                                                     "type": "string",
@@ -12286,8 +14065,7 @@
                                                         "url"
                                                       ]
                                                     },
-                                                    "minItems": 1,
-                                                    "maxItems": 1
+                                                    "minItems": 1
                                                   },
                                                   "submission": {
                                                     "type": "string",
@@ -12349,8 +14127,7 @@
                                               "type": "string",
                                               "minLength": 1
                                             },
-                                            "minItems": 1,
-                                            "maxItems": 1
+                                            "minItems": 1
                                           },
                                           "endpoint": {
                                             "type": "string",
@@ -12565,6 +14342,14 @@
                                 "nullable": true,
                                 "format": "date-time"
                               },
+                              "submissionState": {
+                                "type": "string",
+                                "enum": [
+                                  "not_started",
+                                  "submitting",
+                                  "submitted"
+                                ]
+                              },
                               "status": {
                                 "type": "string",
                                 "enum": [
@@ -12580,6 +14365,7 @@
                               "nodeId",
                               "providerJobId",
                               "providerSubmittedAt",
+                              "submissionState",
                               "status"
                             ],
                             "additionalProperties": false
@@ -12930,6 +14716,151 @@
         }
       }
     },
+    "/runs/{id}/browser-jobs/{jobId}/begin-submission": {
+      "post": {
+        "tags": [
+          "Runs"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "$ref": "#/components/schemas/Cuid2"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "$ref": "#/components/schemas/Cuid2"
+            },
+            "required": true,
+            "name": "jobId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "executorId": {
+                    "type": "string",
+                    "minLength": 16,
+                    "maxLength": 200
+                  },
+                  "fenceToken": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "exclusiveMinimum": true
+                  }
+                },
+                "required": [
+                  "executorId",
+                  "fenceToken"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "One-shot browser provider submission opened",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "submissionExpiresAt": {
+                      "$ref": "#/components/schemas/Timestamp"
+                    },
+                    "submittedAt": {
+                      "$ref": "#/components/schemas/Timestamp"
+                    }
+                  },
+                  "required": [
+                    "submissionExpiresAt",
+                    "submittedAt"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Active organization required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Resource state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Organization request rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/runs/{id}/browser-jobs/{jobId}/checkpoint": {
       "post": {
         "tags": [
@@ -12965,6 +14896,11 @@
                     "minLength": 16,
                     "maxLength": 200
                   },
+                  "fenceToken": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "exclusiveMinimum": true
+                  },
                   "facts": {
                     "type": "object",
                     "properties": {
@@ -12979,13 +14915,6 @@
                     },
                     "additionalProperties": false
                   },
-                  "phase": {
-                    "type": "string",
-                    "enum": [
-                      "submitting",
-                      "provider-processing"
-                    ]
-                  },
                   "providerJobId": {
                     "type": "string",
                     "minLength": 1
@@ -12993,7 +14922,7 @@
                 },
                 "required": [
                   "executorId",
-                  "phase"
+                  "fenceToken"
                 ]
               }
             }
@@ -13001,19 +14930,19 @@
         },
         "responses": {
           "200": {
-            "description": "Browser job checkpointed",
+            "description": "Browser provider identity checkpointed",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "state": {
-                      "type": "string"
+                    "checkpointedAt": {
+                      "$ref": "#/components/schemas/Timestamp"
                     }
                   },
-                  "additionalProperties": {
-                    "nullable": true
-                  }
+                  "required": [
+                    "checkpointedAt"
+                  ]
                 }
               }
             }
@@ -13126,6 +15055,11 @@
                     "minLength": 16,
                     "maxLength": 200
                   },
+                  "fenceToken": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "exclusiveMinimum": true
+                  },
                   "contentLength": {
                     "type": "integer",
                     "minimum": 0,
@@ -13148,6 +15082,7 @@
                 },
                 "required": [
                   "executorId",
+                  "fenceToken",
                   "mimeType",
                   "outputIndex"
                 ]
@@ -13301,6 +15236,11 @@
                     "minLength": 16,
                     "maxLength": 200
                   },
+                  "fenceToken": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "exclusiveMinimum": true
+                  },
                   "metadata": {
                     "type": "object",
                     "additionalProperties": {
@@ -13330,6 +15270,7 @@
                 },
                 "required": [
                   "executorId",
+                  "fenceToken",
                   "mimeType",
                   "outputIndex"
                 ]
@@ -13339,19 +15280,23 @@
         },
         "responses": {
           "200": {
-            "description": "Browser media finalized",
+            "description": "Canonical browser media finalized",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
                     "state": {
-                      "type": "string"
+                      "type": "string",
+                      "enum": [
+                        "canceled",
+                        "succeeded"
+                      ]
                     }
                   },
-                  "additionalProperties": {
-                    "nullable": true
-                  }
+                  "required": [
+                    "state"
+                  ]
                 }
               }
             }
@@ -13464,6 +15409,11 @@
                     "minLength": 16,
                     "maxLength": 200
                   },
+                  "fenceToken": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "exclusiveMinimum": true
+                  },
                   "outputIndex": {
                     "type": "integer",
                     "minimum": 0
@@ -13475,6 +15425,7 @@
                 },
                 "required": [
                   "executorId",
+                  "fenceToken",
                   "outputIndex",
                   "text"
                 ]
@@ -13484,19 +15435,23 @@
         },
         "responses": {
           "200": {
-            "description": "Browser text finalized",
+            "description": "Canonical browser text finalized",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
                     "state": {
-                      "type": "string"
+                      "type": "string",
+                      "enum": [
+                        "canceled",
+                        "succeeded"
+                      ]
                     }
                   },
-                  "additionalProperties": {
-                    "nullable": true
-                  }
+                  "required": [
+                    "state"
+                  ]
                 }
               }
             }
@@ -13609,6 +15564,11 @@
                     "minLength": 16,
                     "maxLength": 200
                   },
+                  "fenceToken": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "exclusiveMinimum": true
+                  },
                   "facts": {
                     "type": "object",
                     "properties": {
@@ -13625,7 +15585,8 @@
                   }
                 },
                 "required": [
-                  "executorId"
+                  "executorId",
+                  "fenceToken"
                 ]
               }
             }
@@ -13640,12 +15601,16 @@
                   "type": "object",
                   "properties": {
                     "state": {
-                      "type": "string"
+                      "type": "string",
+                      "enum": [
+                        "canceled",
+                        "succeeded"
+                      ]
                     }
                   },
-                  "additionalProperties": {
-                    "nullable": true
-                  }
+                  "required": [
+                    "state"
+                  ]
                 }
               }
             }
@@ -13758,6 +15723,11 @@
                     "minLength": 16,
                     "maxLength": 200
                   },
+                  "fenceToken": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "exclusiveMinimum": true
+                  },
                   "code": {
                     "type": "string",
                     "enum": [
@@ -13787,6 +15757,7 @@
                 },
                 "required": [
                   "executorId",
+                  "fenceToken",
                   "code"
                 ]
               }
@@ -13795,19 +15766,399 @@
         },
         "responses": {
           "200": {
-            "description": "Browser job failed",
+            "description": "Browser job failure recorded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "failed": {
+                          "type": "boolean",
+                          "enum": [
+                            true
+                          ]
+                        }
+                      },
+                      "required": [
+                        "failed"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "state": {
+                          "type": "string",
+                          "enum": [
+                            "canceled"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "state"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "nextEligibleAt": {
+                          "$ref": "#/components/schemas/Timestamp"
+                        },
+                        "state": {
+                          "type": "string",
+                          "enum": [
+                            "retrying"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "nextEligibleAt",
+                        "state"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Active organization required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Resource state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Organization request rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/runs/{id}/browser-jobs/{jobId}/cancel-ack": {
+      "post": {
+        "tags": [
+          "Runs"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "$ref": "#/components/schemas/Cuid2"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "$ref": "#/components/schemas/Cuid2"
+            },
+            "required": true,
+            "name": "jobId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "executorId": {
+                    "type": "string",
+                    "minLength": 16,
+                    "maxLength": 200
+                  },
+                  "fenceToken": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "exclusiveMinimum": true
+                  },
+                  "final": {
+                    "type": "boolean"
+                  },
+                  "result": {
+                    "type": "string",
+                    "enum": [
+                      "accepted",
+                      "rejected",
+                      "unavailable",
+                      "unsupported"
+                    ]
+                  }
+                },
+                "required": [
+                  "executorId",
+                  "fenceToken",
+                  "final",
+                  "result"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Browser provider cancellation reconciled",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
+                    "cancellationReconciled": {
+                      "type": "boolean"
+                    },
                     "state": {
-                      "type": "string"
+                      "type": "string",
+                      "enum": [
+                        "canceled"
+                      ]
                     }
                   },
-                  "additionalProperties": {
-                    "nullable": true
+                  "required": [
+                    "cancellationReconciled",
+                    "state"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Active organization required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Resource state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Organization request rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/runs/{id}/browser-executor-status": {
+      "put": {
+        "tags": [
+          "Runs"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "$ref": "#/components/schemas/Cuid2"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "nullable": true,
+                    "enum": [
+                      "browser_api_unavailable",
+                      "browser_authorization_failed",
+                      "browser_executor_failed",
+                      "browser_journal_unavailable",
+                      "browser_locks_unavailable",
+                      "browser_manifest_invalid",
+                      "browser_run_not_found",
+                      "credential_required",
+                      "credential_store_unavailable",
+                      "provider_cancellation_pending",
+                      null
+                    ]
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "blocked",
+                      "canceling",
+                      "error",
+                      "ready",
+                      "retrying"
+                    ]
                   }
+                },
+                "required": [
+                  "code",
+                  "status"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Safe browser executor state persisted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "nullable": true,
+                      "enum": [
+                        "browser_api_unavailable",
+                        "browser_authorization_failed",
+                        "browser_executor_failed",
+                        "browser_journal_unavailable",
+                        "browser_locks_unavailable",
+                        "browser_manifest_invalid",
+                        "browser_run_not_found",
+                        "credential_required",
+                        "credential_store_unavailable",
+                        "provider_cancellation_pending",
+                        null
+                      ]
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "blocked",
+                        "canceling",
+                        "error",
+                        "ready",
+                        "retrying"
+                      ]
+                    },
+                    "updatedAt": {
+                      "$ref": "#/components/schemas/Timestamp"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "status",
+                    "updatedAt"
+                  ]
                 }
               }
             }
