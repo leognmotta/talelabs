@@ -1,8 +1,14 @@
+/** Lazy, validated catalog loading for TaleLabs product surfaces. */
+
 import type { SupportedLocale } from './locales.js'
 
+/** i18next namespace owned by the authenticated dashboard. */
 export const DASHBOARD_NAMESPACE = 'dashboard'
 
-const catalogLoaders: Record<SupportedLocale, () => Promise<unknown>> = {
+/** i18next namespace owned by the public website. */
+export const WEB_NAMESPACE = 'web'
+
+const dashboardCatalogLoaders: Record<SupportedLocale, () => Promise<unknown>> = {
   'de': () => import('./catalogs/de/dashboard.json'),
   'en': () => import('./catalogs/en/dashboard.json'),
   'es': () => import('./catalogs/es/dashboard.json'),
@@ -15,7 +21,24 @@ const catalogLoaders: Record<SupportedLocale, () => Promise<unknown>> = {
   'ro': () => import('./catalogs/ro/dashboard.json'),
 }
 
+const webCatalogLoaders: Record<SupportedLocale, () => Promise<unknown>> = {
+  'de': () => import('./catalogs/de/web.json'),
+  'en': () => import('./catalogs/en/web.json'),
+  'es': () => import('./catalogs/es/web.json'),
+  'fr': () => import('./catalogs/fr/web.json'),
+  'it': () => import('./catalogs/it/web.json'),
+  'nl': () => import('./catalogs/nl/web.json'),
+  'pl': () => import('./catalogs/pl/web.json'),
+  'pt-BR': () => import('./catalogs/pt-BR/web.json'),
+  'pt-PT': () => import('./catalogs/pt-PT/web.json'),
+  'ro': () => import('./catalogs/ro/web.json'),
+}
+
+/** English dashboard catalog shape used for typed translation resources. */
 export type DashboardCatalog = typeof import('./catalogs/en/dashboard.json')
+
+/** English public-site catalog shape used for typed translation resources. */
+export type WebCatalog = typeof import('./catalogs/en/web.json')
 
 interface CatalogModule {
   default: Record<string, unknown>
@@ -46,12 +69,25 @@ function mergeCatalog(
   }))
 }
 
-export async function loadDashboardCatalog(locale: SupportedLocale) {
-  const fallback = await catalogLoaders.en() as CatalogModule
+async function loadCatalog<T>(
+  locale: SupportedLocale,
+  loaders: Record<SupportedLocale, () => Promise<unknown>>,
+) {
+  const fallback = await loaders.en() as CatalogModule
 
   if (locale === 'en')
-    return fallback.default as DashboardCatalog
+    return fallback.default as T
 
-  const localized = await catalogLoaders[locale]() as CatalogModule
-  return mergeCatalog(fallback.default, localized.default) as DashboardCatalog
+  const localized = await loaders[locale]() as CatalogModule
+  return mergeCatalog(fallback.default, localized.default) as T
+}
+
+/** Loads one dashboard catalog with English values as a defensive fallback. */
+export async function loadDashboardCatalog(locale: SupportedLocale) {
+  return await loadCatalog<DashboardCatalog>(locale, dashboardCatalogLoaders)
+}
+
+/** Loads one public website catalog with English values as a defensive fallback. */
+export async function loadWebCatalog(locale: SupportedLocale) {
+  return await loadCatalog<WebCatalog>(locale, webCatalogLoaders)
 }

@@ -26,6 +26,7 @@ export default antfu({
 }, {
   files: [
     'apps/dashboard/**/*.{ts,tsx}',
+    'apps/web/**/*.{ts,tsx}',
     'packages/ui/src/**/*.{ts,tsx}',
   ],
   plugins: {

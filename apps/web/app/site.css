@@ -1,0 +1,44 @@
+/** Website-only composition layered on the shared TaleLabs design tokens. */
+
+[data-public-site] {
+  --site-accent: #e8e3bd;
+  --site-accent-foreground: #171713;
+  --site-background: #0c0c0b;
+  --site-border: rgb(244 243 235 / 18%);
+  --site-foreground: #f4f3eb;
+  --site-muted: #aaa9a1;
+  --site-panel: #161614;
+  --background: var(--site-background);
+  --border: var(--site-border);
+  --card: var(--site-panel);
+  --card-foreground: var(--site-foreground);
+  --foreground: var(--site-foreground);
+  --muted-foreground: var(--site-muted);
+  --primary: var(--site-accent);
+  --primary-foreground: var(--site-accent-foreground);
+  background: var(--site-background);
+  color: var(--site-foreground);
+  color-scheme: dark;
+}
+
+[data-site-hero-scrim] {
+  background:
+    linear-gradient(180deg, rgb(5 5 5 / 18%) 0%, rgb(5 5 5 / 22%) 32%, rgb(5 5 5 / 90%) 100%),
+    linear-gradient(90deg, rgb(5 5 5 / 58%) 0%, transparent 68%);
+}
+
+[data-site-image-scrim] {
+  background: linear-gradient(180deg, transparent 42%, rgb(5 5 5 / 72%) 100%);
+}
+
+@media (max-width: 63.999rem) {
+  [data-site-hero] {
+    min-height: 46rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-public-site] * {
+    scroll-behavior: auto;
+  }
+}

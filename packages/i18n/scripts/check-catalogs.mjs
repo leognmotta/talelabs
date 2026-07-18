@@ -5,10 +5,11 @@ import { fileURLToPath } from 'node:url'
 
 const packageRoot = join(dirname(fileURLToPath(import.meta.url)), '..')
 const locales = ['en', 'pt-BR', 'pt-PT', 'es', 'fr', 'de', 'it', 'nl', 'pl', 'ro']
+const namespaces = ['dashboard', 'web']
 
-function readCatalog(locale) {
+function readCatalog(locale, namespace) {
   return JSON.parse(readFileSync(
-    join(packageRoot, 'src', 'catalogs', locale, 'dashboard.json'),
+    join(packageRoot, 'src', 'catalogs', locale, `${namespace}.json`),
     'utf8',
   ))
 }
@@ -35,7 +36,6 @@ function placeholders(message) {
     .join(',')
 }
 
-const source = flatten(readCatalog('en'))
 let hasError = false
 const invariantMessages = new Map([
   ['common.appName', 'TaleLabs'],
@@ -52,47 +52,53 @@ const localizedTerms = {
   'ro': { 'navigation.assets': 'Fișiere' },
 }
 
-for (const locale of locales.slice(1)) {
-  const catalog = flatten(readCatalog(locale))
+for (const namespace of namespaces) {
+  const source = flatten(readCatalog('en', namespace))
 
-  for (const key of source.keys()) {
-    if (!catalog.has(key)) {
-      console.error(`${locale}: missing key ${key}`)
-      hasError = true
+  for (const locale of locales.slice(1)) {
+    const catalog = flatten(readCatalog(locale, namespace))
+
+    for (const key of source.keys()) {
+      if (!catalog.has(key)) {
+        console.error(`${namespace}/${locale}: missing key ${key}`)
+        hasError = true
+      }
     }
+
+    for (const [key, expected] of invariantMessages) {
+      if (source.has(key) && catalog.get(key) !== expected) {
+        console.error(`${namespace}/${locale}: ${key} must remain exactly ${expected}`)
+        hasError = true
+      }
+    }
+
+    if (namespace === 'dashboard') {
+      for (const [key, expected] of Object.entries(localizedTerms[locale])) {
+        if (catalog.get(key) !== expected) {
+          console.error(`${namespace}/${locale}: ${key} must use the approved term ${expected}`)
+          hasError = true
+        }
+      }
+    }
+
+    for (const [key, message] of catalog) {
+      const sourceMessage = source.get(key)
+
+      if (!sourceMessage) {
+        console.error(`${namespace}/${locale}: unknown key ${key}`)
+        hasError = true
+        continue
+      }
+
+      if (placeholders(message) !== placeholders(sourceMessage)) {
+        console.error(`${namespace}/${locale}: interpolation mismatch at ${key}`)
+        hasError = true
+      }
+    }
+
+    const coverage = Math.round((catalog.size / source.size) * 100)
+    console.log(`${namespace}/${locale}: ${catalog.size}/${source.size} translated (${coverage}%)`)
   }
-
-  for (const [key, expected] of invariantMessages) {
-    if (catalog.get(key) !== expected) {
-      console.error(`${locale}: ${key} must remain exactly ${expected}`)
-      hasError = true
-    }
-  }
-
-  for (const [key, expected] of Object.entries(localizedTerms[locale])) {
-    if (catalog.get(key) !== expected) {
-      console.error(`${locale}: ${key} must use the approved term ${expected}`)
-      hasError = true
-    }
-  }
-
-  for (const [key, message] of catalog) {
-    const sourceMessage = source.get(key)
-
-    if (!sourceMessage) {
-      console.error(`${locale}: unknown key ${key}`)
-      hasError = true
-      continue
-    }
-
-    if (placeholders(message) !== placeholders(sourceMessage)) {
-      console.error(`${locale}: interpolation mismatch at ${key}`)
-      hasError = true
-    }
-  }
-
-  const coverage = Math.round((catalog.size / source.size) * 100)
-  console.log(`${locale}: ${catalog.size}/${source.size} translated (${coverage}%)`)
 }
 
 if (hasError)

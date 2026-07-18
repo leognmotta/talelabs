@@ -1,0 +1,76 @@
+{
+  "common": {
+    "appName": "TaleLabs"
+  },
+  "announcement": {
+    "label": "Nowość",
+    "message": "Nowy cykl twórczy nabiera kształtu."
+  },
+  "metadata": {
+    "title": "TaleLabs - Wizualna przestrzeń kreatywna AI",
+    "description": "Twórz i łącz procesy multimedialne AI. Zachowaj każdy obraz, film i dźwięk do ponownego użycia."
+  },
+  "navigation": {
+    "home": "Strona główna TaleLabs",
+    "label": "Główna nawigacja",
+    "product": "Produkt",
+    "process": "Jak to działa",
+    "signIn": "Zaloguj się"
+  },
+  "hero": {
+    "badge": "Wizualna przestrzeń AI",
+    "title": "Twórz, nie tracąc wątku.",
+    "description": "Łącz prompty, Pliki i modele AI w wizualnych Przepływach pracy. Każdy wynik pozostaje gotowy na kolejny krok.",
+    "primaryAction": "Otwórz TaleLabs",
+    "secondaryAction": "Zobacz, jak to działa",
+    "imageAlt": "Kreatywne multimedia ułożone jako połączony proces wizualny"
+  },
+  "product": {
+    "title": "Twój proces powinien przetrwać prompt.",
+    "description": "TaleLabs to wizualna przestrzeń AI do generowania, organizowania i ponownego używania kreatywnych multimediów.",
+    "detail": "Zachowaj widoczne materiały źródłowe, rozwijaj pomysły w Przepływach pracy i wykorzystuj każdy udany wynik w kolejnej decyzji twórczej."
+  },
+  "process": {
+    "title": "Od pomysłu do multimediów wielokrotnego użytku.",
+    "description": "Bezpośredni cykl sprawia, że praca jest zrozumiała, a wynik użyteczny.",
+    "collect": {
+      "title": "Zbieraj",
+      "description": "Umieść obrazy, filmy i materiały audio w jednej bibliotece Plików."
+    },
+    "connect": {
+      "title": "Łącz",
+      "description": "Buduj wizualne Przepływy pracy z promptów, materiałów źródłowych i generowania dopasowanego do modelu."
+    },
+    "generate": {
+      "title": "Generuj",
+      "description": "Generuj obrazy, filmy i audio z ustawieniami dopasowanymi do modelu, bezpośrednio w Przepływie pracy."
+    },
+    "continue": {
+      "title": "Kontynuuj",
+      "description": "Zachowaj każdy udany wynik jako Plik, gotowy do użycia w następnej gałęzi."
+    }
+  },
+  "workspace": {
+    "title": "Zobacz cały system twórczy.",
+    "description": "Gałęzie pozostają widoczne, materiały źródłowe połączone, a wyniki nie znikają w historii czatu.",
+    "imageAlt": "Osoba układa połączone materiały wizualne na ścianie studia"
+  },
+  "assets": {
+    "title": "Pliki, które nadal pracują.",
+    "description": "Przesłane materiały i wygenerowane multimedia trafiają do jednej biblioteki wielokrotnego użytku z zachowaną historią pochodzenia.",
+    "imageAlt": "Warstwowe formy obrazu, filmu i dźwięku ułożone jako archiwum wielokrotnego użytku",
+    "media": {
+      "image": "Obrazy",
+      "video": "Wideo",
+      "audio": "Audio"
+    }
+  },
+  "closing": {
+    "title": "Niech następny wynik stanie się punktem wyjścia.",
+    "description": "TaleLabs łączy pomysły, multimedia i kolejne iteracje w jednej wizualnej przestrzeni.",
+    "action": "Otwórz TaleLabs"
+  },
+  "footer": {
+    "copyright": "© {{year}} TaleLabs"
+  }
+}

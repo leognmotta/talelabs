@@ -1,0 +1,76 @@
+{
+  "common": {
+    "appName": "TaleLabs"
+  },
+  "announcement": {
+    "label": "New",
+    "message": "A new creative loop is taking shape."
+  },
+  "metadata": {
+    "title": "TaleLabs - Visual AI creative workspace",
+    "description": "Create and connect AI media workflows. Keep every image, video, and audio result ready to reuse."
+  },
+  "navigation": {
+    "home": "TaleLabs home",
+    "label": "Main navigation",
+    "product": "Product",
+    "process": "How it works",
+    "signIn": "Sign in"
+  },
+  "hero": {
+    "badge": "Visual AI workspace",
+    "title": "Create without losing the thread.",
+    "description": "Connect prompts, Assets, and AI models in visual Flows. Every result stays ready for what comes next.",
+    "primaryAction": "Open TaleLabs",
+    "secondaryAction": "See how it works",
+    "imageAlt": "Creative media arranged as a connected visual process"
+  },
+  "product": {
+    "title": "Your process should outlive the prompt.",
+    "description": "TaleLabs is a visual AI workspace for generating, organizing, and reusing creative media.",
+    "detail": "Keep references visible, shape ideas in Flows, and carry every successful output into the next creative decision."
+  },
+  "process": {
+    "title": "From idea to reusable media.",
+    "description": "One direct loop keeps the work understandable and the output useful.",
+    "collect": {
+      "title": "Collect",
+      "description": "Bring image, video, and audio references into one Asset library."
+    },
+    "connect": {
+      "title": "Connect",
+      "description": "Build visual Flows with prompts, references, and model-adaptive generation."
+    },
+    "generate": {
+      "title": "Generate",
+      "description": "Run model-adaptive image, video, and audio generation in place."
+    },
+    "continue": {
+      "title": "Continue",
+      "description": "Keep every successful result as an Asset, ready for the next branch."
+    }
+  },
+  "workspace": {
+    "title": "See the whole creative system.",
+    "description": "Branches stay visible, references stay connected, and outputs do not disappear into a chat history.",
+    "imageAlt": "Creator arranging connected visual references across a studio wall"
+  },
+  "assets": {
+    "title": "Assets that keep working.",
+    "description": "Uploaded references and generated media share one reusable library, with provenance intact.",
+    "imageAlt": "Layered image, film, and audio forms arranged as a reusable archive",
+    "media": {
+      "image": "Images",
+      "video": "Video",
+      "audio": "Audio"
+    }
+  },
+  "closing": {
+    "title": "Make the next result a starting point.",
+    "description": "TaleLabs keeps ideas, media, and iteration in one visual workspace.",
+    "action": "Open TaleLabs"
+  },
+  "footer": {
+    "copyright": "© {{year}} TaleLabs"
+  }
+}

@@ -8,7 +8,7 @@
   "scripts": {
     "build": "turbo run build",
     "db:migrate": "npm run migrate -w @talelabs/db",
-    "dev": "turbo run dev --filter=api --filter=dashboard --filter=@talelabs/trigger --concurrency=16",
+    "dev": "turbo run dev --filter=api --filter=dashboard --filter=web --filter=@talelabs/trigger --concurrency=16",
     "dev:bootstrap": "npm run dev:prepare && npm run sdk:generate && node packages/trigger/scripts/assert-dev-env.mjs",
     "dev:e2e": "turbo run dev:e2e --filter=api --filter=dashboard --filter=@talelabs/trigger --concurrency=4",
     "dev:sdk": "turbo run dev:sdk --filter=@talelabs/sdk",

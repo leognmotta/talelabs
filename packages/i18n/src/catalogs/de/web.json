@@ -1,0 +1,76 @@
+{
+  "common": {
+    "appName": "TaleLabs"
+  },
+  "announcement": {
+    "label": "Neu",
+    "message": "Ein neuer kreativer Kreislauf nimmt Gestalt an."
+  },
+  "metadata": {
+    "title": "TaleLabs - Visueller KI-Kreativarbeitsbereich",
+    "description": "Erstelle und verbinde KI-Medienabläufe. Halte jedes Bild-, Video- und Audioergebnis zur Wiederverwendung bereit."
+  },
+  "navigation": {
+    "home": "TaleLabs Startseite",
+    "label": "Hauptnavigation",
+    "product": "Produkt",
+    "process": "So funktioniert es",
+    "signIn": "Anmelden"
+  },
+  "hero": {
+    "badge": "Visueller KI-Arbeitsbereich",
+    "title": "Erschaffe, ohne den Faden zu verlieren.",
+    "description": "Verbinde Prompts, Dateien und KI-Modelle in visuellen Workflows. Jedes Ergebnis bleibt für den nächsten Schritt bereit.",
+    "primaryAction": "TaleLabs öffnen",
+    "secondaryAction": "So funktioniert es",
+    "imageAlt": "Kreative Medien als verbundener visueller Prozess angeordnet"
+  },
+  "product": {
+    "title": "Dein Prozess sollte den Prompt überdauern.",
+    "description": "TaleLabs ist ein visueller KI-Arbeitsbereich zum Erzeugen, Organisieren und Wiederverwenden kreativer Medien.",
+    "detail": "Behalte Referenzen im Blick, entwickle Ideen in Workflows und nutze jedes erfolgreiche Ergebnis für die nächste kreative Entscheidung."
+  },
+  "process": {
+    "title": "Von der Idee zum wiederverwendbaren Medium.",
+    "description": "Ein direkter Kreislauf hält die Arbeit verständlich und das Ergebnis nützlich.",
+    "collect": {
+      "title": "Sammeln",
+      "description": "Bringe Bild-, Video- und Audioreferenzen in einer einzigen Dateibibliothek zusammen."
+    },
+    "connect": {
+      "title": "Verbinden",
+      "description": "Baue visuelle Workflows mit Prompts, Referenzen und modelladaptiver Generierung."
+    },
+    "generate": {
+      "title": "Generieren",
+      "description": "Erzeuge modelladaptiv Bilder, Videos und Audio direkt im Workflow."
+    },
+    "continue": {
+      "title": "Weiterarbeiten",
+      "description": "Speichere jedes erfolgreiche Ergebnis als Datei, bereit für den nächsten Zweig."
+    }
+  },
+  "workspace": {
+    "title": "Sieh das gesamte kreative System.",
+    "description": "Zweige bleiben sichtbar, Referenzen bleiben verbunden und Ergebnisse verschwinden nicht in einem Chatverlauf.",
+    "imageAlt": "Person ordnet verbundene visuelle Referenzen an einer Studiowand an"
+  },
+  "assets": {
+    "title": "Dateien, die weiterarbeiten.",
+    "description": "Hochgeladene Referenzen und generierte Medien teilen sich eine wiederverwendbare Bibliothek mit intakter Herkunft.",
+    "imageAlt": "Geschichtete Bild-, Film- und Audioformen als wiederverwendbares Archiv angeordnet",
+    "media": {
+      "image": "Bilder",
+      "video": "Video",
+      "audio": "Audio"
+    }
+  },
+  "closing": {
+    "title": "Mach das nächste Ergebnis zum Ausgangspunkt.",
+    "description": "TaleLabs hält Ideen, Medien und Iteration in einem visuellen Arbeitsbereich zusammen.",
+    "action": "TaleLabs öffnen"
+  },
+  "footer": {
+    "copyright": "© {{year}} TaleLabs"
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "common": {
+    "appName": "TaleLabs"
+  },
+  "announcement": {
+    "label": "Nou",
+    "message": "Un nou circuit creativ prinde contur."
+  },
+  "metadata": {
+    "title": "TaleLabs - Spațiu vizual de creație cu IA",
+    "description": "Creați și conectați fluxuri media cu IA. Păstrați fiecare rezultat de imagine, video și audio pregătit pentru reutilizare."
+  },
+  "navigation": {
+    "home": "Pagina principală TaleLabs",
+    "label": "Navigare principală",
+    "product": "Produs",
+    "process": "Cum funcționează",
+    "signIn": "Autentificare"
+  },
+  "hero": {
+    "badge": "Spațiu vizual cu IA",
+    "title": "Creați fără să pierdeți firul.",
+    "description": "Conectați prompturi, Fișiere și modele de IA în Fluxuri de lucru vizuale. Fiecare rezultat rămâne pregătit pentru pasul următor.",
+    "primaryAction": "Deschideți TaleLabs",
+    "secondaryAction": "Vedeți cum funcționează",
+    "imageAlt": "Conținut creativ aranjat ca un proces vizual conectat"
+  },
+  "product": {
+    "title": "Procesul dumneavoastră trebuie să dureze mai mult decât promptul.",
+    "description": "TaleLabs este un spațiu vizual cu IA pentru generarea, organizarea și reutilizarea conținutului creativ.",
+    "detail": "Păstrați referințele vizibile, dezvoltați ideile în Fluxuri de lucru și folosiți fiecare rezultat reușit în următoarea decizie creativă."
+  },
+  "process": {
+    "title": "De la idee la conținut reutilizabil.",
+    "description": "Un circuit direct menține munca ușor de înțeles și rezultatul util.",
+    "collect": {
+      "title": "Colectați",
+      "description": "Aduceți referințele de imagine, video și audio într-o singură bibliotecă de Fișiere."
+    },
+    "connect": {
+      "title": "Conectați",
+      "description": "Construiți Fluxuri de lucru vizuale cu prompturi, referințe și generare adaptată modelului."
+    },
+    "generate": {
+      "title": "Generați",
+      "description": "Generați imagini, video și audio adaptate modelului, direct în Fluxul de lucru."
+    },
+    "continue": {
+      "title": "Continuați",
+      "description": "Păstrați fiecare rezultat reușit ca Fișier, pregătit pentru următoarea ramură."
+    }
+  },
+  "workspace": {
+    "title": "Vedeți întregul sistem creativ.",
+    "description": "Ramurile rămân vizibile, referințele rămân conectate, iar rezultatele nu dispar într-un istoric de conversație.",
+    "imageAlt": "Persoană care aranjează referințe vizuale conectate pe peretele unui studio"
+  },
+  "assets": {
+    "title": "Fișiere care continuă să lucreze.",
+    "description": "Referințele încărcate și conținutul generat folosesc aceeași bibliotecă reutilizabilă, cu proveniența păstrată.",
+    "imageAlt": "Forme stratificate de imagine, film și audio aranjate ca o arhivă reutilizabilă",
+    "media": {
+      "image": "Imagini",
+      "video": "Video",
+      "audio": "Audio"
+    }
+  },
+  "closing": {
+    "title": "Transformați următorul rezultat într-un punct de plecare.",
+    "description": "TaleLabs păstrează ideile, conținutul și iterațiile într-un singur spațiu vizual.",
+    "action": "Deschideți TaleLabs"
+  },
+  "footer": {
+    "copyright": "© {{year}} TaleLabs"
+  }
+}

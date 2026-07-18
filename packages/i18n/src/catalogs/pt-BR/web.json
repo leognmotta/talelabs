@@ -1,0 +1,76 @@
+{
+  "common": {
+    "appName": "TaleLabs"
+  },
+  "announcement": {
+    "label": "Novo",
+    "message": "Um novo ciclo criativo está tomando forma."
+  },
+  "metadata": {
+    "title": "TaleLabs - Workspace visual de criação com IA",
+    "description": "Crie e conecte processos de mídia com IA. Mantenha cada resultado de imagem, vídeo e áudio pronto para reutilizar."
+  },
+  "navigation": {
+    "home": "Início da TaleLabs",
+    "label": "Navegação principal",
+    "product": "Produto",
+    "process": "Como funciona",
+    "signIn": "Entrar"
+  },
+  "hero": {
+    "badge": "Workspace visual de IA",
+    "title": "Crie sem perder o fio.",
+    "description": "Conecte prompts, Arquivos e modelos de IA em Fluxos visuais. Cada resultado fica pronto para o que vem depois.",
+    "primaryAction": "Abrir TaleLabs",
+    "secondaryAction": "Ver como funciona",
+    "imageAlt": "Mídias criativas organizadas como um processo visual conectado"
+  },
+  "product": {
+    "title": "Seu processo deve durar mais que o prompt.",
+    "description": "TaleLabs é um workspace visual de IA para gerar, organizar e reutilizar mídias criativas.",
+    "detail": "Mantenha referências visíveis, desenvolva ideias em Fluxos e leve cada resultado bem-sucedido para a próxima decisão criativa."
+  },
+  "process": {
+    "title": "Da ideia à mídia reutilizável.",
+    "description": "Um ciclo direto mantém o trabalho compreensível e o resultado útil.",
+    "collect": {
+      "title": "Reúna",
+      "description": "Leve referências de imagem, vídeo e áudio para uma única biblioteca de Arquivos."
+    },
+    "connect": {
+      "title": "Conecte",
+      "description": "Crie Fluxos visuais com prompts, referências e geração adaptada ao modelo."
+    },
+    "generate": {
+      "title": "Gere",
+      "description": "Execute gerações de imagem, vídeo e áudio adaptadas a cada modelo, sem sair do Fluxo."
+    },
+    "continue": {
+      "title": "Continue",
+      "description": "Guarde cada resultado bem-sucedido como um Arquivo, pronto para a próxima ramificação."
+    }
+  },
+  "workspace": {
+    "title": "Veja todo o sistema criativo.",
+    "description": "As ramificações continuam visíveis, as referências ficam conectadas e os resultados não desaparecem em um histórico de chat.",
+    "imageAlt": "Pessoa organizando referências visuais conectadas em uma parede de estúdio"
+  },
+  "assets": {
+    "title": "Arquivos que continuam trabalhando.",
+    "description": "Referências enviadas e mídias geradas compartilham uma biblioteca reutilizável, com a procedência preservada.",
+    "imageAlt": "Formas de imagem, filme e áudio em camadas organizadas como um acervo reutilizável",
+    "media": {
+      "image": "Imagens",
+      "video": "Vídeo",
+      "audio": "Áudio"
+    }
+  },
+  "closing": {
+    "title": "Transforme o próximo resultado em um ponto de partida.",
+    "description": "TaleLabs mantém ideias, mídias e iteração em um único workspace visual.",
+    "action": "Abrir TaleLabs"
+  },
+  "footer": {
+    "copyright": "© {{year}} TaleLabs"
+  }
+}

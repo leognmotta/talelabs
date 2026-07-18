@@ -1,0 +1,76 @@
+{
+  "common": {
+    "appName": "TaleLabs"
+  },
+  "announcement": {
+    "label": "Nieuw",
+    "message": "Een nieuwe creatieve cyclus krijgt vorm."
+  },
+  "metadata": {
+    "title": "TaleLabs - Visuele AI-werkruimte voor creatie",
+    "description": "Maak en verbind mediaworkflows met AI. Houd elk beeld-, video- en audioresultaat klaar voor hergebruik."
+  },
+  "navigation": {
+    "home": "TaleLabs home",
+    "label": "Hoofdnavigatie",
+    "product": "Product",
+    "process": "Zo werkt het",
+    "signIn": "Inloggen"
+  },
+  "hero": {
+    "badge": "Visuele AI-werkruimte",
+    "title": "Maak zonder de draad kwijt te raken.",
+    "description": "Verbind prompts, Bestanden en AI-modellen in visuele Workflows. Elk resultaat blijft klaar voor wat hierna komt.",
+    "primaryAction": "TaleLabs openen",
+    "secondaryAction": "Bekijk hoe het werkt",
+    "imageAlt": "Creatieve media gerangschikt als een verbonden visueel proces"
+  },
+  "product": {
+    "title": "Je proces moet langer meegaan dan de prompt.",
+    "description": "TaleLabs is een visuele AI-werkruimte om creatieve media te genereren, organiseren en hergebruiken.",
+    "detail": "Houd referenties zichtbaar, werk ideeën uit in Workflows en neem elk geslaagd resultaat mee naar de volgende creatieve keuze."
+  },
+  "process": {
+    "title": "Van idee naar herbruikbare media.",
+    "description": "Een directe cyclus houdt het werk begrijpelijk en het resultaat bruikbaar.",
+    "collect": {
+      "title": "Verzamel",
+      "description": "Breng beeld-, video- en audioreferenties samen in één bibliotheek met Bestanden."
+    },
+    "connect": {
+      "title": "Verbind",
+      "description": "Bouw visuele Workflows met prompts, referenties en modeladaptieve generatie."
+    },
+    "generate": {
+      "title": "Genereer",
+      "description": "Genereer modeladaptief beelden, video en audio, rechtstreeks in de Workflow."
+    },
+    "continue": {
+      "title": "Ga verder",
+      "description": "Bewaar elk geslaagd resultaat als Bestand, klaar voor de volgende vertakking."
+    }
+  },
+  "workspace": {
+    "title": "Bekijk het hele creatieve systeem.",
+    "description": "Vertakkingen blijven zichtbaar, referenties blijven verbonden en resultaten verdwijnen niet in een chatgeschiedenis.",
+    "imageAlt": "Persoon rangschikt verbonden visuele referenties op een studiowand"
+  },
+  "assets": {
+    "title": "Bestanden die blijven werken.",
+    "description": "Geüploade referenties en gegenereerde media delen één herbruikbare bibliotheek, met intacte herkomst.",
+    "imageAlt": "Gelaagde vormen voor beeld, film en audio gerangschikt als een herbruikbaar archief",
+    "media": {
+      "image": "Afbeeldingen",
+      "video": "Video",
+      "audio": "Audio"
+    }
+  },
+  "closing": {
+    "title": "Maak van het volgende resultaat een beginpunt.",
+    "description": "TaleLabs houdt ideeën, media en iteratie samen in één visuele werkruimte.",
+    "action": "TaleLabs openen"
+  },
+  "footer": {
+    "copyright": "© {{year}} TaleLabs"
+  }
+}

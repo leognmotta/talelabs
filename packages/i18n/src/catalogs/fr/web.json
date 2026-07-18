@@ -1,0 +1,76 @@
+{
+  "common": {
+    "appName": "TaleLabs"
+  },
+  "announcement": {
+    "label": "Nouveau",
+    "message": "Une nouvelle boucle créative prend forme."
+  },
+  "metadata": {
+    "title": "TaleLabs - Espace visuel de création par IA",
+    "description": "Créez et reliez des processus de création par IA. Gardez chaque résultat image, vidéo et audio prêt à être réutilisé."
+  },
+  "navigation": {
+    "home": "Accueil de TaleLabs",
+    "label": "Navigation principale",
+    "product": "Produit",
+    "process": "Fonctionnement",
+    "signIn": "Se connecter"
+  },
+  "hero": {
+    "badge": "Espace visuel avec IA",
+    "title": "Créez sans perdre le fil.",
+    "description": "Reliez prompts, Fichiers et modèles d’IA dans des Flux visuels. Chaque résultat reste prêt pour la suite.",
+    "primaryAction": "Ouvrir TaleLabs",
+    "secondaryAction": "Voir le fonctionnement",
+    "imageAlt": "Médias créatifs organisés comme un processus visuel connecté"
+  },
+  "product": {
+    "title": "Votre processus doit survivre au prompt.",
+    "description": "TaleLabs est un espace visuel avec IA pour générer, organiser et réutiliser des médias créatifs.",
+    "detail": "Gardez les références visibles, développez vos idées dans des Flux et utilisez chaque résultat réussi pour la décision créative suivante."
+  },
+  "process": {
+    "title": "De l’idée au média réutilisable.",
+    "description": "Une boucle directe rend le travail compréhensible et le résultat utile.",
+    "collect": {
+      "title": "Rassemblez",
+      "description": "Réunissez vos références image, vidéo et audio dans une seule bibliothèque de Fichiers."
+    },
+    "connect": {
+      "title": "Reliez",
+      "description": "Créez des Flux visuels avec des prompts, des références et une génération adaptée au modèle."
+    },
+    "generate": {
+      "title": "Générez",
+      "description": "Lancez la génération d’images, de vidéos et de contenus audio adaptée au modèle, directement dans le Flux."
+    },
+    "continue": {
+      "title": "Continuez",
+      "description": "Conservez chaque résultat réussi comme Fichier, prêt pour la branche suivante."
+    }
+  },
+  "workspace": {
+    "title": "Voyez tout le système créatif.",
+    "description": "Les branches restent visibles, les références restent reliées et les résultats ne disparaissent pas dans un historique de discussion.",
+    "imageAlt": "Personne organisant des références visuelles reliées sur le mur d’un studio"
+  },
+  "assets": {
+    "title": "Des Fichiers toujours utiles.",
+    "description": "Les références importées et les médias générés partagent une bibliothèque réutilisable, avec leur provenance intacte.",
+    "imageAlt": "Formes d’image, de film et d’audio superposées dans une archive réutilisable",
+    "media": {
+      "image": "Images",
+      "video": "Vidéo",
+      "audio": "Audio"
+    }
+  },
+  "closing": {
+    "title": "Faites du prochain résultat un point de départ.",
+    "description": "TaleLabs réunit idées, médias et itérations dans un seul espace visuel.",
+    "action": "Ouvrir TaleLabs"
+  },
+  "footer": {
+    "copyright": "© {{year}} TaleLabs"
+  }
+}
