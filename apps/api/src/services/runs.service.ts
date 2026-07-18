@@ -3,6 +3,25 @@
  * `domain/runs`, where each lifecycle concern can evolve independently.
  */
 export { admitFlowRun } from '../domain/runs/admission.service.js'
+export { acknowledgeBrowserJobCancellation } from '../domain/runs/browser-runtime/browser-cancellation.service.js'
+export { updateBrowserExecutorStatus } from '../domain/runs/browser-runtime/browser-executor-status.service.js'
+export {
+  beginBrowserJobSubmission,
+  checkpointBrowserJob,
+  completeBrowserJob,
+  failBrowserJob,
+} from '../domain/runs/browser-runtime/browser-job-transition.service.js'
+export { claimBrowserRunJobs } from '../domain/runs/browser-runtime/browser-job.service.js'
+export {
+  acquireBrowserRunLease,
+  releaseBrowserRunLease,
+} from '../domain/runs/browser-runtime/browser-lease.service.js'
+export { getBrowserRunManifest } from '../domain/runs/browser-runtime/browser-manifest.service.js'
+export {
+  createBrowserOutputGrant,
+  finalizeBrowserMediaOutput,
+  finalizeBrowserTextOutput,
+} from '../domain/runs/browser-runtime/browser-output.service.js'
 export { cancelRun } from '../domain/runs/cancellation.service.js'
 export { preflightFlowRun } from '../domain/runs/planning.service.js'
 export { getRunDetail, listRuns } from '../domain/runs/read.service.js'

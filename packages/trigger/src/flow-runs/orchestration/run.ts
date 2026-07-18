@@ -1,8 +1,14 @@
+/** Durable parent orchestration for one admitted managed Flow run. */
+
 import type { TaskRunContext } from '@trigger.dev/sdk'
 
 import type { FlowRunTaskPayload } from '../../tasks/flow-runs/contracts.js'
 import { db } from '@talelabs/db'
-import { FlowRunSnapshotReadError, readFlowRunSnapshotArtifact } from '@talelabs/flows'
+import {
+  FlowRunSnapshotReadError,
+  readFlowRunExecutionRuntime,
+  readFlowRunSnapshotArtifact,
+} from '@talelabs/flows'
 import { metadata } from '@trigger.dev/sdk'
 
 import { cleanupUncommittedGeneratedOutputObjects } from '../../assets/outputs/generated-storage.js'
@@ -19,6 +25,7 @@ import {
 } from '../persistence/state.js'
 import { skipDescendants } from './graph-failure.js'
 
+/** Executes the admitted managed-runtime plan from its validated snapshot. */
 export async function runFlowRunOrchestrator(
   payload: FlowRunTaskPayload,
   ctx: TaskRunContext,
@@ -49,6 +56,8 @@ export async function runFlowRunOrchestrator(
       .executeTakeFirst()
     return { state: current ? 'already-started' as const : 'missing' as const }
   }
+  if (run.executionRuntime !== 'managed')
+    throw new Error('browser_flow_run_dispatched_to_trigger')
 
   let snapshotArtifact
   try {
@@ -63,6 +72,8 @@ export async function runFlowRunOrchestrator(
       snapshotHash: run.snapshotHash,
       snapshotVersion: run.snapshotVersion,
     })
+    if (readFlowRunExecutionRuntime(snapshotArtifact.snapshot.executionRuntime) !== 'managed')
+      throw new FlowRunSnapshotReadError('snapshot_invalid')
   }
   catch (error) {
     const reason = error instanceof FlowRunSnapshotReadError

@@ -1,3 +1,28 @@
+/**
+ * Public durable run-engine tasks, policies, and narrow execution primitives.
+ *
+ * @packageDocumentation
+ */
+
+export { getGeneratedOutputStorageLocation } from './assets/outputs/generated-storage.js'
+export {
+  assertJobMatchesSnapshotExecutionContract,
+  loadSnapshotExecutionContext,
+} from './flow-runs/contracts/execution.js'
+export { materializeJobInputs } from './flow-runs/execution/inputs/materialize.js'
+export {
+  completeGenerationJob,
+  markJobFailed,
+  persistProviderFacts,
+} from './flow-runs/execution/job/state/index.js'
+export { discardCanceledGenerationResult } from './flow-runs/execution/outputs/canceled-result.js'
+export { finalizeGenerationOutputs } from './flow-runs/execution/outputs/finalizer.js'
+export type {
+  FinalizableGenerationJob,
+  GenerationOutputCommitContext,
+  GenerationOutputCommitGuard,
+} from './flow-runs/execution/outputs/finalizer.js'
+export { skipDescendants } from './flow-runs/orchestration/graph-failure.js'
 export {
   claimFlowRunTriggerParent,
   claimUndispatchedFlowRuns,
@@ -7,7 +32,14 @@ export {
   aggregateGenerationJobState,
 } from './flow-runs/persistence/state.js'
 export { reconcileFlowRunStates } from './flow-runs/reconciliation/reconcile.js'
+export {
+  selectMockGenerationFixture,
+} from './generation/adapters/mock/fixture-catalog.js'
+export {
+  createDeterministicMockTextOutput,
+} from './generation/adapters/mock/text.js'
 export { recordOpenRouterVideoCompletion } from './generation/adapters/openrouter/video/callback.js'
+export { createGenerationAssetResolver } from './generation/inputs/asset-resolver.js'
 export {
   batchTriggerTask,
   flowRunTaskOptions,

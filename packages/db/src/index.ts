@@ -1,3 +1,10 @@
+/**
+ * PostgreSQL pool composition and caller-owned transaction primitives.
+ *
+ * @packageDocumentation
+ */
+
+import type { Transaction } from 'kysely'
 import type { Database } from './schema.js'
 
 import { Kysely, PostgresDialect, sql } from 'kysely'
@@ -15,20 +22,40 @@ if (!connectionString) {
   )
 }
 
+/** Shared bounded PostgreSQL connection pool for TaleLabs server processes. */
 export const pool = new Pool({
   connectionTimeoutMillis: POSTGRES_POOL_CONFIG.connectionTimeoutMillis,
   connectionString: preserveVerifiedSslMode(connectionString),
   max: POSTGRES_POOL_CONFIG.max,
 })
 
+/** Typed Kysely database entry point backed by the shared pool. */
 export const db = new Kysely<Database>({
   dialect: new PostgresDialect({
     pool,
   }),
 })
 
+/** Closes the shared database pool during process or verification teardown. */
 export async function destroyDb() {
   await db.destroy()
+}
+
+/**
+ * Query executor accepted by helpers that must run inside a caller-owned
+ * transaction. Passing an open transaction keeps every statement on the one
+ * pooled connection the caller already holds.
+ */
+export type DatabaseExecutor = Kysely<Database> | Transaction<Database>
+
+/** Runs the operation inside the executor, reusing an already-open transaction. */
+export async function withDatabaseTransaction<Result>(
+  executor: DatabaseExecutor,
+  operation: (trx: Transaction<Database>) => Promise<Result>,
+): Promise<Result> {
+  return executor.isTransaction
+    ? operation(executor as Transaction<Database>)
+    : executor.transaction().execute(operation)
 }
 
 export { sql }

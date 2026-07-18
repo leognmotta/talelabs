@@ -1,3 +1,6 @@
+/** Dependency-aware descendant skipping after one executable node fails. */
+
+import type { DatabaseExecutor } from '@talelabs/db'
 import type { ExecutableFlowRunSnapshot } from '../contracts/snapshot.js'
 
 import { db } from '@talelabs/db'
@@ -37,31 +40,35 @@ function descendantNodeIds(
   return [...descendants].toSorted()
 }
 
-export async function skipDescendants(input: {
-  failedNodeIds: readonly string[]
-  flowRunId: string
-  graphSnapshot: ExecutableFlowRunSnapshot
-  organizationId: string
-}) {
+/** Skips every pending executable descendant of the supplied failed nodes. */
+export async function skipDescendants(
+  input: {
+    failedNodeIds: readonly string[]
+    flowRunId: string
+    graphSnapshot: ExecutableFlowRunSnapshot
+    organizationId: string
+  },
+  database: DatabaseExecutor = db,
+) {
   const nodeIds = descendantNodeIds(input.graphSnapshot, input.failedNodeIds)
   if (nodeIds.length === 0)
     return []
   const now = new Date()
-  await db.updateTable('generationJobs')
+  await database.updateTable('generationJobs')
     .set({ completedAt: now, status: 'canceled' })
     .where('organizationId', '=', input.organizationId)
     .where('flowRunId', '=', input.flowRunId)
     .where('nodeId', 'in', nodeIds)
     .where('status', '=', 'pending')
     .execute()
-  await db.updateTable('flowRunNodeItems')
+  await database.updateTable('flowRunNodeItems')
     .set({ status: 'skipped', updatedAt: now })
     .where('organizationId', '=', input.organizationId)
     .where('flowRunId', '=', input.flowRunId)
     .where('nodeId', 'in', nodeIds)
     .where('status', '=', 'pending')
     .execute()
-  await db.updateTable('flowRunNodes')
+  await database.updateTable('flowRunNodes')
     .set({ status: 'skipped', updatedAt: now })
     .where('organizationId', '=', input.organizationId)
     .where('flowRunId', '=', input.flowRunId)

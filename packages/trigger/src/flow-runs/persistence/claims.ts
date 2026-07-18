@@ -1,3 +1,5 @@
+/** Transactional claims that reserve managed runs and jobs for Trigger workers. */
+
 import type { FlowRunStatus } from '@talelabs/db'
 
 import { db, sql } from '@talelabs/db'
@@ -21,6 +23,7 @@ export async function claimFlowRunTriggerParent(input: {
     .where('organizationId', '=', input.organizationId)
     .where('id', '=', input.flowRunId)
     .where('status', 'in', ACTIVE_DOMAIN_STATUSES)
+    .where('executionRuntime', '=', 'managed')
     .where(eb => eb.or([
       eb('triggerRunId', 'is', null),
       eb('triggerRunId', '=', input.triggerRunId),
@@ -48,6 +51,7 @@ export async function claimUndispatchedFlowRuns(input: {
       select run."organizationId", run."id"
       from "flowRuns" as run
       where run."status" = 'pending'
+        and run."executionRuntime" = 'managed'
         and run."triggerRunId" is null
         ${organizationClause}
       order by

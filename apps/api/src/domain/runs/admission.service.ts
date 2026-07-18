@@ -14,6 +14,7 @@ import type { RunMode } from './contracts.js'
 import { createId } from '@paralleldrive/cuid2'
 import { db } from '@talelabs/db'
 import {
+  BROWSER_EXECUTION_ENABLED,
   CANONICAL_SERIALIZER_VERSION,
   createFlowRunSnapshotArtifact,
   FLOW_RUN_LIMITS,
@@ -44,6 +45,7 @@ import { getRunDetail } from './read.service.js'
 export async function admitFlowRun(input: {
   body: {
     executionMode?: 'debug' | 'live'
+    executionRuntime?: 'browser' | 'managed'
     expectedFlowRevision: number
     expectedPlanHash?: string
     flowId: string
@@ -56,10 +58,17 @@ export async function admitFlowRun(input: {
   userId: string
 }) {
   const executionMode = input.body.executionMode ?? 'live'
+  const executionRuntime = input.body.executionRuntime ?? 'managed'
+  if (executionRuntime === 'browser' && !BROWSER_EXECUTION_ENABLED)
+    throw new HttpError(409, 'invalid_execution_runtime', 'Browser execution is unavailable.')
   if (!input.idempotencyKey)
     throw new HttpError(400, 'idempotency_key_required', 'Idempotency-Key is required.')
 
-  const requestHash = hashFlowRunRequest({ ...input.body, executionMode })
+  const requestHash = hashFlowRunRequest({
+    ...input.body,
+    executionMode,
+    executionRuntime,
+  })
   const existing = await db.selectFrom('flowRuns')
     .select(['id', 'requestHash'])
     .where('organizationId', '=', input.organizationId)
@@ -90,7 +99,7 @@ export async function admitFlowRun(input: {
     )
   }
 
-  const contracts = generationExecutionContracts(plan)
+  const contracts = generationExecutionContracts(plan, executionRuntime, executionMode)
   const contractsByNode = new Map(contracts.map(contract => [contract.nodeId, contract]))
   const artifact = createFlowRunSnapshotArtifact({
     adapterContractVersion: 'normalized-generation-v3',
@@ -98,6 +107,7 @@ export async function admitFlowRun(input: {
     catalogRevision: GENERATION_CATALOG_REVISION,
     executionContracts: contracts,
     executionMode,
+    executionRuntime,
     executorVersion: FLOW_RUN_EXECUTOR_CONTRACT_VERSION,
     plan,
     plannerVersion: plan.plannerVersion,
@@ -221,9 +231,12 @@ export async function admitFlowRun(input: {
     }
 
     await trx.insertInto('flowRuns').values({
+      browserExecutorStatus: executionRuntime === 'browser' ? 'ready' : null,
+      browserExecutorUpdatedAt: executionRuntime === 'browser' ? new Date() : null,
       createdBy,
       executorVersion: FLOW_RUN_EXECUTOR_CONTRACT_VERSION,
       flowId: input.body.flowId,
+      executionRuntime,
       graphSnapshot: artifact.snapshot as unknown as JsonValue,
       id: runId,
       idempotencyKey: input.idempotencyKey!,
@@ -348,7 +361,7 @@ export async function admitFlowRun(input: {
     })
   })
 
-  if (admittedRunId === runId) {
+  if (admittedRunId === runId && executionRuntime === 'managed') {
     await dispatchFlowRun({
       eventPrefix: 'flow_run.admission',
       flowId: input.body.flowId,

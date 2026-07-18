@@ -1,4 +1,7 @@
+/** Same-run input materialization and immutable source/input provenance writes. */
+
 import type {
+  DatabaseExecutor,
   GenerationJobInputTable,
   GenerationJobSourceTable,
 } from '@talelabs/db'
@@ -9,7 +12,7 @@ import type {
 import type { Insertable } from 'kysely'
 
 import { createId } from '@paralleldrive/cuid2'
-import { db } from '@talelabs/db'
+import { db, withDatabaseTransaction } from '@talelabs/db'
 
 import { logRunEngine } from '../../observability/logging.js'
 import {
@@ -18,12 +21,15 @@ import {
 } from './runtime-value.js'
 
 /** Resolves same-run placeholders and persists exact source/input provenance. */
-export async function materializeJobInputs(input: {
-  flowRunId: string
-  jobId: string
-  organizationId: string
-  requestPayload: PlannedJobRequestPayload
-}): Promise<PlannedJobRequestPayload> {
+export async function materializeJobInputs(
+  input: {
+    flowRunId: string
+    jobId: string
+    organizationId: string
+    requestPayload: PlannedJobRequestPayload
+  },
+  database: DatabaseExecutor = db,
+): Promise<PlannedJobRequestPayload> {
   let sortOrder = 0
   let inputSortOrder = 0
   const insertedInputKeys = new Set<string>()
@@ -38,7 +44,7 @@ export async function materializeJobInputs(input: {
         flowRunId: input.flowRunId,
         organizationId: input.organizationId,
         value: runtimeItem.value,
-      })
+      }, database)
       const materializedItem = { ...runtimeItem, value: materializedValue }
       materializedItems.push(materializedItem)
       const sourceId = createId()
@@ -90,7 +96,7 @@ export async function materializeJobInputs(input: {
     materializedRequestInputs.push({ ...plannedInput, items: materializedItems })
   }
 
-  await db.transaction().execute(async (trx) => {
+  await withDatabaseTransaction(database, async (trx) => {
     await trx.deleteFrom('generationJobInputs')
       .where('organizationId', '=', input.organizationId)
       .where('jobId', '=', input.jobId)

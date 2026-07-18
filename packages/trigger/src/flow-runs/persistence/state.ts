@@ -1,6 +1,13 @@
-import type { Database, FlowRunStatus, Transaction } from '@talelabs/db'
+/** Transactional item, node, and run aggregation for durable execution state. */
 
-import { db, sql } from '@talelabs/db'
+import type {
+  Database,
+  DatabaseExecutor,
+  FlowRunStatus,
+  Transaction,
+} from '@talelabs/db'
+
+import { db, sql, withDatabaseTransaction } from '@talelabs/db'
 import { recomputeFlowRunProviderCost } from './costs.js'
 
 async function updateRunStatus(
@@ -66,13 +73,16 @@ async function updateRunStatus(
  * Incrementally repairs only the completed job's item and node before deriving
  * the small run summary. This is the normal child-completion path.
  */
-export async function aggregateGenerationJobState(input: {
-  flowRunId: string
-  itemKey: string
-  nodeId: string
-  organizationId: string
-}) {
-  return db.transaction().execute(async (trx) => {
+export async function aggregateGenerationJobState(
+  input: {
+    flowRunId: string
+    itemKey: string
+    nodeId: string
+    organizationId: string
+  },
+  database: DatabaseExecutor = db,
+) {
+  return withDatabaseTransaction(database, async (trx) => {
     const now = new Date()
     await sql`
       with item_status as (
@@ -193,8 +203,9 @@ export async function aggregateGenerationJobState(input: {
 export async function aggregateFlowRunState(
   organizationId: string,
   flowRunId: string,
+  database: DatabaseExecutor = db,
 ) {
-  return db.transaction().execute(async (trx) => {
+  return withDatabaseTransaction(database, async (trx) => {
     const run = await trx.selectFrom('flowRuns')
       .select('status')
       .where('organizationId', '=', organizationId)

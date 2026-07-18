@@ -5,6 +5,7 @@ import type { JsonValue } from '@talelabs/db'
 import { createId } from '@paralleldrive/cuid2'
 import { db } from '@talelabs/db'
 import {
+  BROWSER_EXECUTION_ENABLED,
   createFlowRunSnapshotArtifact,
   FLOW_RUN_LIMITS,
   FlowRunSnapshotReadError,
@@ -28,6 +29,7 @@ import { getRunDetail } from './read.service.js'
 /** Admits a durable retry while preserving or explicitly replacing execution mode. */
 export async function retryRun(input: {
   executionMode?: 'debug' | 'live'
+  executionRuntime?: 'browser' | 'managed'
   expectedRunStatus?: 'canceled' | 'failed' | 'partial' | 'pending' | 'running' | 'succeeded'
   idempotencyKey: string | null
   isSystemAdmin: boolean
@@ -39,6 +41,7 @@ export async function retryRun(input: {
     throw new HttpError(400, 'idempotency_key_required', 'Idempotency-Key is required.')
   const requestHash = hashFlowRunRequest({
     executionMode: input.executionMode ?? null,
+    executionRuntime: input.executionRuntime ?? null,
     expectedRunStatus: input.expectedRunStatus ?? null,
     organizationId: input.organizationId,
     requestType: 'flow-run-retry',
@@ -97,6 +100,9 @@ export async function retryRun(input: {
       throw new TenantResourceNotFoundError()
     const executionMode = input.executionMode
       ?? executionModeFromSnapshot(original.graphSnapshot)
+    const executionRuntime = input.executionRuntime ?? original.executionRuntime
+    if (executionRuntime === 'browser' && !BROWSER_EXECUTION_ENABLED)
+      throw new HttpError(409, 'invalid_execution_runtime', 'Browser execution is unavailable.')
     assertFlowRunExecutionModeAuthorized(executionMode, input.isSystemAdmin)
     flowId = original.flowId
     if (input.expectedRunStatus && original.status !== input.expectedRunStatus) {
@@ -165,8 +171,21 @@ export async function retryRun(input: {
     const retrySnapshot = createFlowRunSnapshotArtifact({
       ...sourceSnapshot.snapshot,
       executionMode,
+      executionRuntime,
       executorVersion: FLOW_RUN_EXECUTOR_CONTRACT_VERSION,
     })
+    if (
+      executionMode === 'live'
+      && sourceSnapshot.snapshot.executionContracts.some(contract => (
+        !contract.providerBinding.executionRuntimes.includes(executionRuntime)
+      ))
+    ) {
+      throw new HttpError(
+        409,
+        'generation_provider_route_unavailable',
+        'The captured provider route does not support the selected runtime.',
+      )
+    }
 
     const activeRunCount = await trx.selectFrom('flowRuns')
       .select(eb => eb.fn.countAll<number>().as('count'))
@@ -222,9 +241,12 @@ export async function retryRun(input: {
     }
 
     await trx.insertInto('flowRuns').values({
+      browserExecutorStatus: executionRuntime === 'browser' ? 'ready' : null,
+      browserExecutorUpdatedAt: executionRuntime === 'browser' ? new Date() : null,
       createdBy,
       executorVersion: FLOW_RUN_EXECUTOR_CONTRACT_VERSION,
       flowId: original.flowId,
+      executionRuntime,
       graphSnapshot: retrySnapshot.snapshot as unknown as JsonValue,
       id: retryRunId,
       idempotencyKey: input.idempotencyKey!,
@@ -246,7 +268,12 @@ export async function retryRun(input: {
     })
   })
 
-  if (admittedRunId === retryRunId) {
+  const admittedRuntime = await db.selectFrom('flowRuns')
+    .select('executionRuntime')
+    .where('organizationId', '=', input.organizationId)
+    .where('id', '=', admittedRunId)
+    .executeTakeFirst()
+  if (admittedRunId === retryRunId && admittedRuntime?.executionRuntime === 'managed') {
     await dispatchFlowRun({
       eventPrefix: 'flow_run.retry',
       flowId,

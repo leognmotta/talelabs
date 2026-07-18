@@ -1,3 +1,7 @@
+/** Deterministic generated-output coordinates and orphan cleanup policy. */
+
+import type { DatabaseExecutor } from '@talelabs/db'
+
 import { createHash } from 'node:crypto'
 
 import { db } from '@talelabs/db'
@@ -44,11 +48,14 @@ export function getGeneratedOutputStorageLocation(input: {
  * Deletes deterministic media objects only when no canonical Asset owns the
  * exact job/output slot. Terminal callers may safely replay this cleanup.
  */
-export async function cleanupUncommittedGeneratedOutputObjects(input: {
-  generationJobId: string
-  organizationId: string
-}) {
-  const job = await db.selectFrom('generationJobs')
+export async function cleanupUncommittedGeneratedOutputObjects(
+  input: {
+    generationJobId: string
+    organizationId: string
+  },
+  database: DatabaseExecutor = db,
+) {
+  const job = await database.selectFrom('generationJobs')
     .select(['mediaType', 'requestHash', 'requestPayload', 'status'])
     .where('organizationId', '=', input.organizationId)
     .where('id', '=', input.generationJobId)
@@ -65,7 +72,7 @@ export async function cleanupUncommittedGeneratedOutputObjects(input: {
     requestHash: job.requestHash,
     requestPayload: job.requestPayload,
   })
-  const checkpointOutputs = await db.selectFrom('generationProviderOutputs')
+  const checkpointOutputs = await database.selectFrom('generationProviderOutputs')
     .select(['outputIndex', 'storageBucket', 'storageKey'])
     .where('organizationId', '=', input.organizationId)
     .where('jobId', '=', input.generationJobId)
@@ -86,7 +93,7 @@ export async function cleanupUncommittedGeneratedOutputObjects(input: {
     ))
     if (activeCheckpoint)
       continue
-    const committedAsset = await db.selectFrom('assets')
+    const committedAsset = await database.selectFrom('assets')
       .select('id')
       .where('organizationId', '=', input.organizationId)
       .where('generationJobId', '=', input.generationJobId)

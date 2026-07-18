@@ -1,27 +1,42 @@
+/** Authoritative managed and browser Flow-run cancellation transitions. */
+
 import { db } from '@talelabs/db'
 import { toSafeRunFailure, runs as triggerRuns } from '@talelabs/trigger'
 
-import { HttpError, TenantResourceNotFoundError } from '../../middleware/error.js'
+import {
+  HttpError,
+  TenantResourceNotFoundError,
+} from '../../middleware/error.js'
+import { lockBrowserRunFence } from './browser-runtime/browser-runtime-policy.js'
 import { logRunEngine } from './logging.js'
 import { getRunDetail } from './read.service.js'
 
+/** Cancels active jobs and records runtime-specific provider settlement intent. */
 export async function cancelRun(input: {
   organizationId: string
   runId: string
 }) {
   const now = new Date()
   const cancellation = await db.transaction().execute(async (trx) => {
-    const run = await trx.selectFrom('flowRuns')
-      .select(['id', 'status', 'triggerRunId'])
+    await lockBrowserRunFence(trx, input)
+    const run = await trx
+      .selectFrom('flowRuns')
+      .select(['executionRuntime', 'id', 'status', 'triggerRunId'])
       .where('organizationId', '=', input.organizationId)
       .where('id', '=', input.runId)
       .forUpdate()
       .executeTakeFirst()
     if (!run)
       throw new TenantResourceNotFoundError()
-    if (!['pending', 'running'].includes(run.status))
-      throw new HttpError(409, 'invalid_state', 'Only active runs can be canceled.')
-    await trx.updateTable('generationJobs')
+    if (!['pending', 'running'].includes(run.status)) {
+      throw new HttpError(
+        409,
+        'invalid_state',
+        'Only active runs can be canceled.',
+      )
+    }
+    await trx
+      .updateTable('generationJobs')
       .set({
         completedAt: now,
         providerSettlementResolvedAt: null,
@@ -33,7 +48,8 @@ export async function cancelRun(input: {
       .where('status', 'in', ['pending', 'running'])
       .where('providerSubmittedAt', 'is', null)
       .execute()
-    const submitted = await trx.selectFrom('generationJobs')
+    const submitted = await trx
+      .selectFrom('generationJobs')
       .select(eb => eb.fn.countAll<number>().as('count'))
       .where('organizationId', '=', input.organizationId)
       .where('flowRunId', '=', input.runId)
@@ -41,22 +57,59 @@ export async function cancelRun(input: {
       .where('providerSubmittedAt', 'is not', null)
       .executeTakeFirst()
     const submittedJobCount = Number(submitted?.count ?? 0)
-    await trx.updateTable('flowRunNodeItems')
+    if (run.executionRuntime === 'browser') {
+      await trx
+        .updateTable('generationJobs')
+        .set({
+          browserCancelRequestedAt: now,
+          completedAt: now,
+          providerSettlementResolvedAt: now,
+          providerSettlementStatus: 'unknown',
+          status: 'canceled',
+        })
+        .where('organizationId', '=', input.organizationId)
+        .where('flowRunId', '=', input.runId)
+        .where('status', 'in', ['pending', 'running'])
+        .where('providerSubmittedAt', 'is not', null)
+        .execute()
+    }
+    await trx
+      .updateTable('flowRunNodeItems')
       .set({ status: 'canceled', updatedAt: now })
       .where('organizationId', '=', input.organizationId)
       .where('flowRunId', '=', input.runId)
       .where('status', 'in', ['pending', 'running'])
       .execute()
-    await trx.updateTable('flowRunNodes')
+    await trx
+      .updateTable('flowRunNodes')
       .set({ status: 'canceled', updatedAt: now })
       .where('organizationId', '=', input.organizationId)
       .where('flowRunId', '=', input.runId)
       .where('status', 'in', ['pending', 'running'])
       .execute()
-    await trx.updateTable('flowRuns')
+    await trx
+      .updateTable('flowRuns')
       .set({
+        browserExecutorCode:
+          run.executionRuntime === 'browser' && submittedJobCount > 0
+            ? 'provider_cancellation_pending'
+            : null,
+        browserExecutorStatus:
+          run.executionRuntime === 'browser'
+            ? submittedJobCount > 0
+              ? 'canceling'
+              : 'ready'
+            : null,
+        browserExecutorUpdatedAt:
+          run.executionRuntime === 'browser' ? now : null,
         cancellationReconciledAt:
-          run.triggerRunId || submittedJobCount > 0 ? null : now,
+          run.executionRuntime === 'browser'
+            ? submittedJobCount > 0
+              ? null
+              : now
+            : run.triggerRunId || submittedJobCount > 0
+              ? null
+              : now,
         completedAt: now,
         status: 'canceled',
       })

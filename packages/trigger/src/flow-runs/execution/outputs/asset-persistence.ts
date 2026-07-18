@@ -1,5 +1,10 @@
+/** Canonical Asset persistence and ingestion dispatch for generated media outputs. */
+
 import type { AssetVisibility } from '@talelabs/storage'
-import type { FinalizableGenerationJob } from './finalizer.js'
+import type {
+  FinalizableGenerationJob,
+  GenerationOutputCommitGuard,
+} from './finalizer.js'
 
 import { db } from '@talelabs/db'
 import { idempotencyKeys } from '@trigger.dev/sdk'
@@ -8,8 +13,10 @@ import { ensureFlowOutputFolder } from '../../../assets/outputs/folders.js'
 import { assetIngestTask } from '../../../tasks/assets/ingest.task.js'
 import { logRunEngine } from '../../observability/logging.js'
 
+/** Creates or reuses one canonical Asset while the owning run and job remain writable. */
 export async function persistAssetOutputIfJobRunning(input: {
   assetId: string
+  commitGuard?: GenerationOutputCommitGuard
   job: FinalizableGenerationJob & { mediaType: 'audio' | 'image' | 'video' }
   key: string
   metadata?: Readonly<Record<string, boolean | number | string>>
@@ -18,7 +25,13 @@ export async function persistAssetOutputIfJobRunning(input: {
   visibility: AssetVisibility
 }) {
   return db.transaction().execute(async (trx) => {
-    const run = await trx.selectFrom('flowRuns')
+    await input.commitGuard?.({
+      job: input.job,
+      outputIndex: input.outputIndex,
+      trx,
+    })
+    const run = await trx
+      .selectFrom('flowRuns')
       .select('status')
       .where('organizationId', '=', input.job.organizationId)
       .where('id', '=', input.job.flowRunId)
@@ -26,7 +39,8 @@ export async function persistAssetOutputIfJobRunning(input: {
       .executeTakeFirst()
     if (run?.status === 'canceled')
       return { persisted: false as const }
-    const job = await trx.updateTable('generationJobs')
+    const job = await trx
+      .updateTable('generationJobs')
       .set({ status: 'running' })
       .where('organizationId', '=', input.job.organizationId)
       .where('id', '=', input.job.id)
@@ -41,7 +55,8 @@ export async function persistAssetOutputIfJobRunning(input: {
       flowId: input.job.flowId,
       organizationId: input.job.organizationId,
     })
-    const folderId = outputFolder.status === 'ready' ? outputFolder.folderId : null
+    const folderId
+      = outputFolder.status === 'ready' ? outputFolder.folderId : null
     if (outputFolder.status !== 'ready') {
       logRunEngine('warn', 'generation_job.asset_output.folder_unavailable', {
         flowId: input.job.flowId,
@@ -52,7 +67,8 @@ export async function persistAssetOutputIfJobRunning(input: {
       })
     }
 
-    const existingAsset = await trx.selectFrom('assets')
+    const existingAsset = await trx
+      .selectFrom('assets')
       .select(['folderId', 'id', 'processingState'])
       .where('organizationId', '=', input.job.organizationId)
       .where('generationJobId', '=', input.job.id)
@@ -60,7 +76,8 @@ export async function persistAssetOutputIfJobRunning(input: {
       .executeTakeFirst()
     if (existingAsset) {
       if (existingAsset.folderId === null && folderId !== null) {
-        await trx.updateTable('assets')
+        await trx
+          .updateTable('assets')
           .set({ folderId })
           .where('organizationId', '=', input.job.organizationId)
           .where('id', '=', existingAsset.id)
@@ -75,7 +92,8 @@ export async function persistAssetOutputIfJobRunning(input: {
       }
     }
 
-    await trx.insertInto('assets')
+    await trx
+      .insertInto('assets')
       .values({
         createdBy: input.job.createdBy,
         folderId,
@@ -102,11 +120,13 @@ export async function persistAssetOutputIfJobRunning(input: {
   })
 }
 
+/** Returns whether the tenant-owned Asset is live and ready for downstream use. */
 export async function isAssetAlreadyReady(input: {
   assetId: string
   organizationId: string
 }) {
-  const asset = await db.selectFrom('assets')
+  const asset = await db
+    .selectFrom('assets')
     .select('id')
     .where('organizationId', '=', input.organizationId)
     .where('id', '=', input.assetId)
@@ -118,24 +138,49 @@ export async function isAssetAlreadyReady(input: {
   return Boolean(asset)
 }
 
+/** Dispatches canonical Asset ingestion from either a Trigger task or API driver. */
 export async function ingestCommittedAssetOutput(input: {
   assetId: string
+  dispatch?: 'api' | 'task'
   job: FinalizableGenerationJob
   outputIndex: number
 }) {
-  const idempotencyKey = await idempotencyKeys.create(input.assetId, { scope: 'global' })
-  const ingest = await assetIngestTask.triggerAndWait({
-    assetId: input.assetId,
-    organizationId: input.job.organizationId,
-  }, { idempotencyKey })
-  if (!ingest.ok)
-    throw new Error('generation_asset_ingest_failed')
-  const ready = ingest.output.state === 'ready'
-    || (ingest.output.state === 'skipped'
-      && await isAssetAlreadyReady({
+  const idempotencyKey = await idempotencyKeys.create(input.assetId, {
+    scope: 'global',
+  })
+  if (input.dispatch === 'api') {
+    await assetIngestTask.trigger(
+      {
         assetId: input.assetId,
         organizationId: input.job.organizationId,
-      }))
+      },
+      { idempotencyKey },
+    )
+    logRunEngine('info', 'generation_job.asset_ingest.dispatched', {
+      assetId: input.assetId,
+      generationJobId: input.job.id,
+      organizationId: input.job.organizationId,
+      outputIndex: input.outputIndex,
+      runId: input.job.flowRunId,
+    })
+    return
+  }
+  const ingest = await assetIngestTask.triggerAndWait(
+    {
+      assetId: input.assetId,
+      organizationId: input.job.organizationId,
+    },
+    { idempotencyKey },
+  )
+  if (!ingest.ok)
+    throw new Error('generation_asset_ingest_failed')
+  const ready
+    = ingest.output.state === 'ready'
+      || (ingest.output.state === 'skipped'
+        && (await isAssetAlreadyReady({
+          assetId: input.assetId,
+          organizationId: input.job.organizationId,
+        })))
   if (!ready)
     throw new Error(`generation_asset_ingest_not_ready:${ingest.output.state}`)
   logRunEngine('info', 'generation_job.asset_ingest.succeeded', {

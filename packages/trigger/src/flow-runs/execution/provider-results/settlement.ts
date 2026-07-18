@@ -1,7 +1,11 @@
+/** Durable provider-settlement transitions independent of output retention. */
+
+import type { DatabaseExecutor } from '@talelabs/db'
 import type { SafeRunFailure } from '../../../shared/failures/run-failure.js'
 
 import { db, sql } from '@talelabs/db'
 
+/** Settles a provider-reported failure without creating canonical output. */
 export async function markProviderSettlementFailed(input: {
   jobId: string
   organizationId: string
@@ -24,6 +28,7 @@ export async function markProviderSettlementFailed(input: {
     .execute()
 }
 
+/** Closes bounded recovery when provider settlement cannot be established. */
 export async function markProviderSettlementUnknown(input: {
   jobId: string
   organizationId: string
@@ -39,12 +44,16 @@ export async function markProviderSettlementUnknown(input: {
     .execute()
 }
 
-export async function cancelGenerationJobAfterSettlement(input: {
-  failure?: SafeRunFailure
-  jobId: string
-  organizationId: string
-}) {
-  await db.updateTable('generationJobs')
+/** Makes a settled submitted job user-terminal after its run was canceled. */
+export async function cancelGenerationJobAfterSettlement(
+  input: {
+    failure?: SafeRunFailure
+    jobId: string
+    organizationId: string
+  },
+  database: DatabaseExecutor = db,
+) {
+  await database.updateTable('generationJobs')
     .set({
       completedAt: new Date(),
       errorCode: input.failure?.code ?? null,

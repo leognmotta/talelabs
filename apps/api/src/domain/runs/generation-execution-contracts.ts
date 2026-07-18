@@ -27,6 +27,8 @@ import { flowRunPlanValidationError } from './planning-error.js'
  */
 export function generationExecutionContracts(
   plan: FlowRunPlan,
+  executionRuntime: 'browser' | 'managed' = 'managed',
+  executionMode: 'debug' | 'live' = 'live',
 ): FlowRunSnapshotExecutionContract[] {
   return plan.executionNodes.map((node) => {
     const model = getCatalogModel(node.modelId)
@@ -37,6 +39,8 @@ export function generationExecutionContracts(
       || node.catalogRevision !== MODEL_CATALOG.catalogRevision
       || node.catalogVersion !== MODEL_CATALOG.catalogVersion
       || node.modelRevision !== model.revision
+      || (executionMode === 'live'
+        && !binding.executionRuntimes.includes(executionRuntime))
     ) {
       throw flowRunPlanValidationError([{
         code: 'generation_provider_route_unavailable',

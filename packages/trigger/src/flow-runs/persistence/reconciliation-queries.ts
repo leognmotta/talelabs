@@ -1,3 +1,5 @@
+/** Bounded managed-runtime claims used by Trigger reconciliation passes. */
+
 import type { FlowRunStatus } from '@talelabs/db'
 
 import { db, sql } from '@talelabs/db'
@@ -10,6 +12,7 @@ function organizationFilter(organizationId?: string) {
     : sql``
 }
 
+/** Claims managed runs whose Trigger parent state must be reconciled. */
 export async function claimDispatchedFlowRuns(input: {
   limit: number
   organizationId?: string
@@ -24,6 +27,7 @@ export async function claimDispatchedFlowRuns(input: {
       select run."organizationId", run."id"
       from "flowRuns" as run
       where run."triggerRunId" is not null
+        and run."executionRuntime" = 'managed'
         and (
           run."status" in ('pending', 'running')
           or (
@@ -53,6 +57,7 @@ export async function claimDispatchedFlowRuns(input: {
   return result.rows
 }
 
+/** Claims stale managed jobs whose Trigger child state must be reconciled. */
 export async function claimStaleGenerationJobs(input: {
   limit: number
   organizationId?: string
@@ -80,6 +85,7 @@ export async function claimStaleGenerationJobs(input: {
         on run."organizationId" = job."organizationId"
         and run."id" = job."flowRunId"
       where job."status" = 'running'
+        and run."executionRuntime" = 'managed'
         and job."startedAt" < ${staleBefore}
         and (
           run."status" in ('pending', 'running')

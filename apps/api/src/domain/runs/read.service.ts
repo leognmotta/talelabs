@@ -2,7 +2,10 @@
 
 import { db } from '@talelabs/db'
 
-import { HttpError, TenantResourceNotFoundError } from '../../middleware/error.js'
+import {
+  HttpError,
+  TenantResourceNotFoundError,
+} from '../../middleware/error.js'
 import {
   buildCursorPage,
   parseIsoTimestampCursorValue,
@@ -13,9 +16,31 @@ import { executionModeFromSnapshot } from './execution-mode.js'
 import { extractPlanSummary } from './plan-summary.js'
 import { safeFailureFields } from './response-safety.js'
 
+function browserExecutionFromRun(run: {
+  browserExecutorCode: string | null
+  browserExecutorStatus:
+    | 'blocked'
+    | 'canceling'
+    | 'error'
+    | 'ready'
+    | 'retrying'
+    | null
+  browserExecutorUpdatedAt: Date | null
+  executionRuntime: 'browser' | 'managed'
+}) {
+  if (run.executionRuntime !== 'browser' || !run.browserExecutorStatus)
+    return null
+  return {
+    code: run.browserExecutorCode,
+    status: run.browserExecutorStatus,
+    updatedAt: run.browserExecutorUpdatedAt?.toISOString() ?? null,
+  }
+}
+
 /** Reads one tenant-scoped run with its durable nodes, jobs, and outputs. */
 export async function getRunDetail(organizationId: string, runId: string) {
-  const run = await db.selectFrom('flowRuns')
+  const run = await db
+    .selectFrom('flowRuns')
     .selectAll()
     .where('organizationId', '=', organizationId)
     .where('id', '=', runId)
@@ -24,29 +49,68 @@ export async function getRunDetail(organizationId: string, runId: string) {
     throw new TenantResourceNotFoundError()
 
   const [nodes, items, jobs, assets, texts] = await Promise.all([
-    db.selectFrom('flowRunNodes').selectAll().where('organizationId', '=', organizationId).where('flowRunId', '=', runId).orderBy('createdAt').orderBy('nodeId').execute(),
-    db.selectFrom('flowRunNodeItems').selectAll().where('organizationId', '=', organizationId).where('flowRunId', '=', runId).orderBy('sortOrder').execute(),
-    db.selectFrom('generationJobs').selectAll().where('organizationId', '=', organizationId).where('flowRunId', '=', runId).orderBy('createdAt').orderBy('id').execute(),
-    db.selectFrom('assets').selectAll().where('organizationId', '=', organizationId).where('generationJobId', 'in', eb => eb.selectFrom('generationJobs')
-      .select('id')
+    db
+      .selectFrom('flowRunNodes')
+      .selectAll()
       .where('organizationId', '=', organizationId)
-      .where('flowRunId', '=', runId)).orderBy('outputIndex').execute(),
-    db.selectFrom('generationJobTextOutputs').selectAll().where('organizationId', '=', organizationId).where('jobId', 'in', eb => eb.selectFrom('generationJobs')
-      .select('id')
+      .where('flowRunId', '=', runId)
+      .orderBy('createdAt')
+      .orderBy('nodeId')
+      .execute(),
+    db
+      .selectFrom('flowRunNodeItems')
+      .selectAll()
       .where('organizationId', '=', organizationId)
-      .where('flowRunId', '=', runId)).orderBy('outputIndex').execute(),
+      .where('flowRunId', '=', runId)
+      .orderBy('sortOrder')
+      .execute(),
+    db
+      .selectFrom('generationJobs')
+      .selectAll()
+      .where('organizationId', '=', organizationId)
+      .where('flowRunId', '=', runId)
+      .orderBy('createdAt')
+      .orderBy('id')
+      .execute(),
+    db
+      .selectFrom('assets')
+      .selectAll()
+      .where('organizationId', '=', organizationId)
+      .where('generationJobId', 'in', eb =>
+        eb
+          .selectFrom('generationJobs')
+          .select('id')
+          .where('organizationId', '=', organizationId)
+          .where('flowRunId', '=', runId))
+      .orderBy('outputIndex')
+      .execute(),
+    db
+      .selectFrom('generationJobTextOutputs')
+      .selectAll()
+      .where('organizationId', '=', organizationId)
+      .where('jobId', 'in', eb =>
+        eb
+          .selectFrom('generationJobs')
+          .select('id')
+          .where('organizationId', '=', organizationId)
+          .where('flowRunId', '=', runId))
+      .orderBy('outputIndex')
+      .execute(),
   ])
   const assetsByJob = new Map<string, typeof assets>()
   for (const asset of assets) {
-    assetsByJob.set(
-      asset.generationJobId!,
-      [...(assetsByJob.get(asset.generationJobId!) ?? []), asset],
-    )
+    assetsByJob.set(asset.generationJobId!, [
+      ...(assetsByJob.get(asset.generationJobId!) ?? []),
+      asset,
+    ])
   }
   const textsByJob = new Map<string, typeof texts>()
   for (const text of texts)
     textsByJob.set(text.jobId, [...(textsByJob.get(text.jobId) ?? []), text])
-  const presentedAssets = new Map<string, Awaited<ReturnType<typeof presentAsset>>[]>()
+  const presentedAssets = new Map<
+    string,
+    Awaited<ReturnType<typeof presentAsset>>[]
+  >()
   for (const [jobId, jobAssets] of assetsByJob) {
     presentedAssets.set(
       jobId,
@@ -54,15 +118,21 @@ export async function getRunDetail(organizationId: string, runId: string) {
     )
   }
   const itemsByNode = new Map<string, typeof items>()
-  for (const item of items)
-    itemsByNode.set(item.nodeId, [...(itemsByNode.get(item.nodeId) ?? []), item])
+  for (const item of items) {
+    itemsByNode.set(item.nodeId, [
+      ...(itemsByNode.get(item.nodeId) ?? []),
+      item,
+    ])
+  }
   const jobsByNode = new Map<string, typeof jobs>()
   for (const job of jobs)
     jobsByNode.set(job.nodeId, [...(jobsByNode.get(job.nodeId) ?? []), job])
 
   return {
     id: run.id,
+    browserExecution: browserExecutionFromRun(run),
     executionMode: executionModeFromSnapshot(run.graphSnapshot),
+    executionRuntime: run.executionRuntime,
     flowId: run.flowId,
     mode: run.mode as 'all' | 'downstream' | 'node' | 'selection' | 'upstream',
     targetNodeId: run.targetNodeId,
@@ -117,11 +187,20 @@ export async function getRunDetail(organizationId: string, runId: string) {
 
 /** Lists tenant-scoped run summaries using stable cursor pagination. */
 export async function listRuns(input: {
+  browserWorkPending?: boolean
+  createdBy?: string
   cursor?: string
+  executionRuntime?: 'browser' | 'managed'
   flowId?: string
   limit: number
   organizationId: string
-  status?: 'canceled' | 'failed' | 'partial' | 'pending' | 'running' | 'succeeded'
+  status?:
+    | 'canceled'
+    | 'failed'
+    | 'partial'
+    | 'pending'
+    | 'running'
+    | 'succeeded'
 }) {
   const pagination = resolvePagination(
     { cursor: input.cursor, limit: input.limit },
@@ -139,20 +218,43 @@ export async function listRuns(input: {
       pagination.details,
     )
   }
-  let query = db.selectFrom('flowRuns')
+  let query = db
+    .selectFrom('flowRuns')
     .selectAll()
     .where('organizationId', '=', input.organizationId)
+  if (input.createdBy)
+    query = query.where('createdBy', '=', input.createdBy)
   if (input.flowId)
     query = query.where('flowId', '=', input.flowId)
+  if (input.executionRuntime)
+    query = query.where('executionRuntime', '=', input.executionRuntime)
+  if (input.browserWorkPending) {
+    query = query
+      .where('executionRuntime', '=', 'browser')
+      .where(eb =>
+        eb.or([
+          eb('status', 'in', ['pending', 'running']),
+          eb.and([
+            eb('status', '=', 'canceled'),
+            eb('cancellationReconciledAt', 'is', null),
+          ]),
+        ]),
+      )
+  }
   if (input.status)
     query = query.where('status', '=', input.status)
   if (pagination.value.cursor) {
     const cursor = pagination.value.cursor
     const cursorCreatedAt = new Date(String(cursor.sortValue))
-    query = query.where(eb => eb.or([
-      eb('createdAt', '<', cursorCreatedAt),
-      eb.and([eb('createdAt', '=', cursorCreatedAt), eb('id', '<', cursor.id)]),
-    ]))
+    query = query.where(eb =>
+      eb.or([
+        eb('createdAt', '<', cursorCreatedAt),
+        eb.and([
+          eb('createdAt', '=', cursorCreatedAt),
+          eb('id', '<', cursor.id),
+        ]),
+      ]),
+    )
   }
   const rows = await query
     .orderBy('createdAt', 'desc')
@@ -171,15 +273,17 @@ export async function listRuns(input: {
     serialize: run => run,
   })
   const runIds = page.pageRows.map(run => run.id)
-  const nodeCounts = runIds.length > 0
-    ? await db.selectFrom('flowRunNodes')
-        .select(['flowRunId', 'status'])
-        .select(eb => eb.fn.countAll<number>().as('count'))
-        .where('organizationId', '=', input.organizationId)
-        .where('flowRunId', 'in', runIds)
-        .groupBy(['flowRunId', 'status'])
-        .execute()
-    : []
+  const nodeCounts
+    = runIds.length > 0
+      ? await db
+          .selectFrom('flowRunNodes')
+          .select(['flowRunId', 'status'])
+          .select(eb => eb.fn.countAll<number>().as('count'))
+          .where('organizationId', '=', input.organizationId)
+          .where('flowRunId', 'in', runIds)
+          .groupBy(['flowRunId', 'status'])
+          .execute()
+      : []
   const nodeCountsByRun = new Map<string, Record<string, number>>()
   for (const count of nodeCounts) {
     nodeCountsByRun.set(count.flowRunId, {
@@ -190,9 +294,16 @@ export async function listRuns(input: {
   return {
     data: page.pageRows.map(run => ({
       id: run.id,
+      browserExecution: browserExecutionFromRun(run),
       executionMode: executionModeFromSnapshot(run.graphSnapshot),
+      executionRuntime: run.executionRuntime,
       flowId: run.flowId,
-      mode: run.mode as 'all' | 'downstream' | 'node' | 'selection' | 'upstream',
+      mode: run.mode as
+      | 'all'
+      | 'downstream'
+      | 'node'
+      | 'selection'
+      | 'upstream',
       targetNodeId: run.targetNodeId,
       status: run.status,
       planHash: ((run.graphSnapshot as any)?.plan?.planHash ?? '') as string,

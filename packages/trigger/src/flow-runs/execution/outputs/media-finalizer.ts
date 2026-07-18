@@ -1,6 +1,11 @@
+/** Media-output storage, canonical Asset creation, and cleanup coordination. */
+
 import type { NormalizedGenerationOutput } from '@talelabs/flows'
 import type { AssetVisibility } from '@talelabs/storage'
-import type { FinalizableGenerationJob } from './finalizer.js'
+import type {
+  FinalizableGenerationJob,
+  GenerationOutputCommitGuard,
+} from './finalizer.js'
 
 import { db } from '@talelabs/db'
 import {
@@ -49,9 +54,12 @@ async function deleteGeneratedObjectIfUncommitted(input: {
   }
 }
 
+/** Materializes one normalized media output and completes canonical Asset ingestion. */
 export async function finalizeMediaOutput(
   job: FinalizableGenerationJob & { mediaType: 'audio' | 'image' | 'video' },
   output: NormalizedGenerationOutput,
+  assetIngestion: 'api' | 'task' = 'task',
+  commitGuard?: GenerationOutputCommitGuard,
 ) {
   if (
     output.payload.delivery !== 'bytes'
@@ -100,6 +108,7 @@ export async function finalizeMediaOutput(
   }
   const persisted = await persistAssetOutputIfJobRunning({
     assetId,
+    commitGuard,
     job,
     key: storage.key,
     metadata: output.metadata,
@@ -132,6 +141,7 @@ export async function finalizeMediaOutput(
   }
   await ingestCommittedAssetOutput({
     assetId: persisted.assetId,
+    dispatch: assetIngestion,
     job,
     outputIndex: output.outputIndex,
   })

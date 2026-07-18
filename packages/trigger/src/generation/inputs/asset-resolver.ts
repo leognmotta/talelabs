@@ -2,6 +2,7 @@
  * Server resolution of tenant-owned Assets into short-lived provider inputs.
  */
 
+import type { DatabaseExecutor } from '@talelabs/db'
 import type { NormalizedGenerationMediaAsset } from '@talelabs/flows'
 
 import { db } from '@talelabs/db'
@@ -33,11 +34,14 @@ export interface ResolvedGenerationAsset {
 }
 
 /** Revalidates one tenant-owned Asset immediately before provider materialization. */
-export function createGenerationAssetResolver(organizationId: string) {
+export function createGenerationAssetResolver(
+  organizationId: string,
+  database: DatabaseExecutor = db,
+) {
   return async (
     reference: NormalizedGenerationMediaAsset,
   ): Promise<ResolvedGenerationAsset> => {
-    const asset = await db
+    const asset = await database
       .selectFrom('assets')
       .select([
         'durationSeconds',

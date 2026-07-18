@@ -1,22 +1,32 @@
+/** Resolution of persisted runtime values into exact same-run outputs. */
+
+import type { DatabaseExecutor } from '@talelabs/db'
 import type {
   FlowRuntimeValue,
   RuntimeAssetReference,
 } from '@talelabs/flows'
+
+import { db } from '@talelabs/db'
 
 import {
   resolveSameRunAsset,
   resolveSameRunText,
 } from './same-run-outputs.js'
 
+/** Returns the ordered Asset references carried by a non-text runtime value. */
 export function assetReferencesFromValue(value: FlowRuntimeValue) {
   return value.kind === 'text' ? [] : value.assets
 }
 
-export async function materializeRuntimeValue(input: {
-  flowRunId: string
-  organizationId: string
-  value: FlowRuntimeValue
-}): Promise<FlowRuntimeValue> {
+/** Replaces same-run placeholders with immutable prior-output references. */
+export async function materializeRuntimeValue(
+  input: {
+    flowRunId: string
+    organizationId: string
+    value: FlowRuntimeValue
+  },
+  database: DatabaseExecutor = db,
+): Promise<FlowRuntimeValue> {
   if (input.value.kind === 'text') {
     if (input.value.origin.source !== 'sameRunOutput')
       return input.value
@@ -25,7 +35,7 @@ export async function materializeRuntimeValue(input: {
       itemKey: input.value.origin.itemKey,
       nodeId: input.value.origin.nodeId,
       organizationId: input.organizationId,
-    })
+    }, database)
     return {
       ...input.value,
       origin: {
@@ -49,7 +59,7 @@ export async function materializeRuntimeValue(input: {
       nodeId: assetRef.nodeId,
       organizationId: input.organizationId,
       outputIndex: assetRef.outputIndex,
-    })
+    }, database)
     if (asset.mediaType === 'document')
       throw new Error('same_run_generated_document_not_supported')
     assets.push({

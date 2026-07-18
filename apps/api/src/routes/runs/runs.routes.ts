@@ -16,6 +16,7 @@ import {
   retryRun,
 } from '../../services/runs.service.js'
 import { commonErrorResponses } from '../product.responses.js'
+import { registerBrowserRunRoutes } from './browser-runs.routes.js'
 import {
   CreateFlowRunRequestSchema,
   CreateRunRequestSchema,
@@ -34,7 +35,10 @@ const listRunsRoute = createRoute({
   tags: ['Runs'],
   request: { query: RunListQuerySchema },
   responses: {
-    200: { description: 'Run list', content: { 'application/json': { schema: RunListResponseSchema } } },
+    200: {
+      description: 'Run list',
+      content: { 'application/json': { schema: RunListResponseSchema } },
+    },
     ...commonErrorResponses,
   },
 })
@@ -44,10 +48,16 @@ const createRunRoute = createRoute({
   path: '/runs',
   tags: ['Runs'],
   request: {
-    body: { required: true, content: { 'application/json': { schema: CreateRunRequestSchema } } },
+    body: {
+      required: true,
+      content: { 'application/json': { schema: CreateRunRequestSchema } },
+    },
   },
   responses: {
-    202: { description: 'Run admitted', content: { 'application/json': { schema: FlowRunSchema } } },
+    202: {
+      description: 'Run admitted',
+      content: { 'application/json': { schema: FlowRunSchema } },
+    },
     ...commonErrorResponses,
   },
 })
@@ -58,10 +68,16 @@ const createFlowRunRoute = createRoute({
   tags: ['Runs'],
   request: {
     params: FlowRunParamsSchema,
-    body: { required: true, content: { 'application/json': { schema: CreateFlowRunRequestSchema } } },
+    body: {
+      required: true,
+      content: { 'application/json': { schema: CreateFlowRunRequestSchema } },
+    },
   },
   responses: {
-    202: { description: 'Run admitted', content: { 'application/json': { schema: FlowRunSchema } } },
+    202: {
+      description: 'Run admitted',
+      content: { 'application/json': { schema: FlowRunSchema } },
+    },
     ...commonErrorResponses,
   },
 })
@@ -72,7 +88,10 @@ const getRunRoute = createRoute({
   tags: ['Runs'],
   request: { params: RunParamsSchema },
   responses: {
-    200: { description: 'Run detail', content: { 'application/json': { schema: FlowRunSchema } } },
+    200: {
+      description: 'Run detail',
+      content: { 'application/json': { schema: FlowRunSchema } },
+    },
     ...commonErrorResponses,
   },
 })
@@ -83,7 +102,10 @@ const cancelRunRoute = createRoute({
   tags: ['Runs'],
   request: { params: RunParamsSchema },
   responses: {
-    202: { description: 'Run cancellation requested', content: { 'application/json': { schema: FlowRunSchema } } },
+    202: {
+      description: 'Run cancellation requested',
+      content: { 'application/json': { schema: FlowRunSchema } },
+    },
     ...commonErrorResponses,
   },
 })
@@ -100,7 +122,10 @@ const retryRunRoute = createRoute({
     },
   },
   responses: {
-    202: { description: 'Run retry admitted', content: { 'application/json': { schema: FlowRunSchema } } },
+    202: {
+      description: 'Run retry admitted',
+      content: { 'application/json': { schema: FlowRunSchema } },
+    },
     ...commonErrorResponses,
   },
 })
@@ -111,7 +136,10 @@ const createRunRealtimeTokenRoute = createRoute({
   tags: ['Runs'],
   request: { params: RunParamsSchema },
   responses: {
-    200: { description: 'Run-scoped Trigger.dev realtime token', content: { 'application/json': { schema: RunRealtimeTokenSchema } } },
+    200: {
+      description: 'Run-scoped Trigger.dev realtime token',
+      content: { 'application/json': { schema: RunRealtimeTokenSchema } },
+    },
     ...commonErrorResponses,
   },
 })
@@ -123,7 +151,11 @@ const reconcileRunsRoute = createRoute({
   responses: {
     200: {
       description: 'Run dispatch reconciliation result',
-      content: { 'application/json': { schema: z.object({ dispatched: z.number().int().nonnegative() }) } },
+      content: {
+        'application/json': {
+          schema: z.object({ dispatched: z.number().int().nonnegative() }),
+        },
+      },
     },
     ...commonErrorResponses,
   },
@@ -132,49 +164,74 @@ const reconcileRunsRoute = createRoute({
 /** Registers tenant-scoped durable Flow run endpoints. */
 export function registerRunRoutes(app: OpenAPIHono<ApiEnv>) {
   app.openapi(listRunsRoute, async (c) => {
-    return c.json(await listRuns({
-      ...c.req.valid('query'),
-      organizationId: c.var.organizationId,
-    }), 200)
+    const query = c.req.valid('query')
+    return c.json(
+      await listRuns({
+        browserWorkPending: query.browserWork === 'pending',
+        createdBy: query.scope === 'mine' ? c.var.userId : undefined,
+        cursor: query.cursor,
+        executionRuntime: query.executionRuntime,
+        flowId: query.flowId,
+        limit: query.limit,
+        organizationId: c.var.organizationId,
+        status: query.status,
+      }),
+      200,
+    )
   })
 
   app.openapi(createRunRoute, async (c) => {
     const body = c.req.valid('json')
-    assertFlowRunExecutionModeAuthorized(body.executionMode, c.var.isSystemAdmin)
-    return c.json(await admitFlowRun({
-      body,
-      idempotencyKey: c.req.header('Idempotency-Key') ?? null,
-      organizationId: c.var.organizationId,
-      userId: c.var.userId,
-    }), 202)
+    assertFlowRunExecutionModeAuthorized(
+      body.executionMode,
+      c.var.isSystemAdmin,
+    )
+    return c.json(
+      await admitFlowRun({
+        body,
+        idempotencyKey: c.req.header('Idempotency-Key') ?? null,
+        organizationId: c.var.organizationId,
+        userId: c.var.userId,
+      }),
+      202,
+    )
   })
 
   app.openapi(createFlowRunRoute, async (c) => {
     const body = c.req.valid('json')
-    assertFlowRunExecutionModeAuthorized(body.executionMode, c.var.isSystemAdmin)
-    return c.json(await admitFlowRun({
-      body: {
-        ...body,
-        flowId: c.req.valid('param').flowId,
-      },
-      idempotencyKey: c.req.header('Idempotency-Key') ?? null,
-      organizationId: c.var.organizationId,
-      userId: c.var.userId,
-    }), 202)
+    assertFlowRunExecutionModeAuthorized(
+      body.executionMode,
+      c.var.isSystemAdmin,
+    )
+    return c.json(
+      await admitFlowRun({
+        body: {
+          ...body,
+          flowId: c.req.valid('param').flowId,
+        },
+        idempotencyKey: c.req.header('Idempotency-Key') ?? null,
+        organizationId: c.var.organizationId,
+        userId: c.var.userId,
+      }),
+      202,
+    )
   })
 
   app.openapi(getRunRoute, async (c) => {
-    return c.json(await getRunDetail(
-      c.var.organizationId,
-      c.req.valid('param').id,
-    ), 200)
+    return c.json(
+      await getRunDetail(c.var.organizationId, c.req.valid('param').id),
+      200,
+    )
   })
 
   app.openapi(cancelRunRoute, async (c) => {
-    return c.json(await cancelRun({
-      organizationId: c.var.organizationId,
-      runId: c.req.valid('param').id,
-    }), 202)
+    return c.json(
+      await cancelRun({
+        organizationId: c.var.organizationId,
+        runId: c.req.valid('param').id,
+      }),
+      202,
+    )
   })
 
   app.openapi(retryRunRoute, async (c) => {
@@ -185,25 +242,33 @@ export function registerRunRoutes(app: OpenAPIHono<ApiEnv>) {
         c.var.isSystemAdmin,
       )
     }
-    return c.json(await retryRun({
-      executionMode: body?.executionMode,
-      expectedRunStatus: body?.expectedRunStatus,
-      idempotencyKey: c.req.header('Idempotency-Key') ?? null,
-      isSystemAdmin: c.var.isSystemAdmin,
-      organizationId: c.var.organizationId,
-      runId: c.req.valid('param').id,
-      userId: c.var.userId,
-    }), 202)
+    return c.json(
+      await retryRun({
+        executionMode: body?.executionMode,
+        executionRuntime: body?.executionRuntime,
+        expectedRunStatus: body?.expectedRunStatus,
+        idempotencyKey: c.req.header('Idempotency-Key') ?? null,
+        isSystemAdmin: c.var.isSystemAdmin,
+        organizationId: c.var.organizationId,
+        runId: c.req.valid('param').id,
+        userId: c.var.userId,
+      }),
+      202,
+    )
   })
 
   app.openapi(createRunRealtimeTokenRoute, async (c) => {
-    return c.json(await createRunRealtimeToken({
-      organizationId: c.var.organizationId,
-      runId: c.req.valid('param').id,
-    }), 200)
+    return c.json(
+      await createRunRealtimeToken({
+        organizationId: c.var.organizationId,
+        runId: c.req.valid('param').id,
+      }),
+      200,
+    )
   })
 
   app.openapi(reconcileRunsRoute, async (c) => {
     return c.json(await reconcileRuns(c.var.organizationId), 200)
   })
+  registerBrowserRunRoutes(app)
 }

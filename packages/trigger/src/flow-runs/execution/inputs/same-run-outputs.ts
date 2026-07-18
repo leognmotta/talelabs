@@ -1,12 +1,20 @@
+/** Tenant-scoped lookup of lineage-compatible text and Asset outputs. */
+
+import type { DatabaseExecutor } from '@talelabs/db'
+
 import { db } from '@talelabs/db'
 
-export async function resolveSameRunText(input: {
-  flowRunId: string
-  itemKey: string
-  nodeId: string
-  organizationId: string
-}) {
-  const row = await db.selectFrom('generationJobs as job')
+/** Resolves the first ordered succeeded text output for one lineage item. */
+export async function resolveSameRunText(
+  input: {
+    flowRunId: string
+    itemKey: string
+    nodeId: string
+    organizationId: string
+  },
+  database: DatabaseExecutor = db,
+) {
+  const row = await database.selectFrom('generationJobs as job')
     .innerJoin('generationJobTextOutputs as output', join => join
       .onRef('output.jobId', '=', 'job.id')
       .onRef('output.organizationId', '=', 'job.organizationId'))
@@ -25,14 +33,18 @@ export async function resolveSameRunText(input: {
   return row
 }
 
-export async function resolveSameRunAsset(input: {
-  flowRunId: string
-  itemKey: string
-  nodeId: string
-  organizationId: string
-  outputIndex: number
-}) {
-  const row = await db.selectFrom('generationJobs as job')
+/** Resolves one exact ready Asset output within the same run and lineage item. */
+export async function resolveSameRunAsset(
+  input: {
+    flowRunId: string
+    itemKey: string
+    nodeId: string
+    organizationId: string
+    outputIndex: number
+  },
+  database: DatabaseExecutor = db,
+) {
+  const row = await database.selectFrom('generationJobs as job')
     .innerJoin('assets as asset', join => join
       .onRef('asset.generationJobId', '=', 'job.id')
       .onRef('asset.organizationId', '=', 'job.organizationId'))
