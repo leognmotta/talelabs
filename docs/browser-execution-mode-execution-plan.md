@@ -27,9 +27,11 @@ driver for the same admitted plan.
 
 ## Product Outcome
 
-Users can choose **Browser mode** under **Providers -> Secure Store** and run a
-Flow with the provider key stored in that browser. TaleLabs and Trigger.dev do
-not receive the plaintext key.
+Flows currently use **Browser mode** with the provider key stored in that
+browser. TaleLabs and Trigger.dev do not receive the plaintext key. The managed
+runtime selector remains hidden until its complete credential and product
+contract is supported; the managed execution driver remains available beneath
+the shared admission and snapshot architecture.
 
 Browser mode must support the same approved commands as managed execution:
 
@@ -643,6 +645,10 @@ Rules:
 2. Add `browser` only after verifying the exact endpoint's CORS, authentication,
    request body, media input delivery, polling, cancellation, output delivery,
    and browser-safe imports.
+   Each enabled binding carries a dated verification profile and a deterministic
+   hash over its exact endpoint, model, operation, lifecycle, request profile,
+   route version, and adapter. Catalog verification rejects a missing or stale
+   hash before live admission; protocol shape alone never authorizes spend.
 3. Browser eligibility is operation/binding-specific, not inferred from a model
    being present in the catalog.
 4. Admission captures the exact binding and runtime policy.
@@ -748,8 +754,10 @@ descriptors required for that job.
 8. In debug mode, execute the deterministic browser fixture adapter.
 9. Persist normalized provider checkpoints without secret material.
 10. Validate and upload outputs through scoped server-owned grants.
-11. Finalize through existing text/media and canonical Asset paths.
-12. API aggregates the job, node, and run and exposes newly ready work.
+11. Persist canonical media Assets, dispatch durable ingestion, and return a
+    processing result without holding the API request open.
+12. Lease reconciliation observes ready or failed Assets before completing the
+    job, aggregating the run, and exposing newly ready work.
 13. Refill until the run is terminal.
 14. Invalidate run/Asset queries and remove confirmed terminal journal rows.
 
@@ -769,6 +777,11 @@ Image, video, and audio:
 - pass output through the existing canonical Asset ingestion, metadata,
   thumbnails, provenance, and managed Flow folder policy.
 
+An ordinary browser-finalization API request dispatches Asset ingestion and
+returns immediately. It never polls PostgreSQL for readiness. The next fenced
+claim/reconciliation pass completes the job only after all planned Assets are
+ready, and fails it if ingestion reaches a durable failed state.
+
 Do not enqueue another job while an output transfer would exceed the browser's
 bounded memory/concurrency policy.
 
@@ -787,8 +800,18 @@ On startup or resume:
 6. mark an honest `credential_required` or `interrupted` state when recovery is
    impossible.
 
+The startup list begins recovery discovery and is refreshed authoritatively at
+least once every 60 seconds, including while the known active-run set is empty.
+Successful browser admission or retry still primes the user-scoped TanStack
+Query cache and emits an in-window plus BroadcastChannel hint so the elected tab
+starts immediately. Hints and IndexedDB checkpoints reduce latency but are never
+required for eventual discovery. Timed reconciliation runs more frequently only
+while a known run needs lease renewal, retry, provider polling, or cancellation.
+
 On `visibilitychange` to hidden, persist the latest non-secret checkpoint
 immediately. Do not depend on `unload` or `beforeunload` for correctness.
+Returning online or visible wakes the coordinator only when it already knows
+about active work.
 
 Web Locks elect one local leader. PostgreSQL prevents split-brain execution.
 BroadcastChannel sends only `runChanged` and `leaseReleased` hints; receivers
@@ -800,15 +823,18 @@ refetch with TanStack Query.
 
 Under **Providers -> Secure Store**:
 
-- allow Browser and Managed runtime selection;
+- hide managed runtime selection until its complete credential-sync product is
+  supported;
+- ignore legacy local managed preferences while the selector is hidden so the
+  effective canvas runtime remains Browser;
 - explain that Browser mode uses keys stored only in this browser;
 - disclose that the browser must remain able to run for reliable progress;
 - show missing-key status for live browser execution;
 - do not resolve plaintext credentials into component state;
 - do not claim Trigger.dev-level durability.
 
-The initial runtime preference is local device state for concept validation.
-Billing/entitlement data may own this choice later.
+The dormant runtime preference remains local device state for future concept
+validation. Billing/entitlement data may own this choice later.
 
 ### Canvas commands
 
