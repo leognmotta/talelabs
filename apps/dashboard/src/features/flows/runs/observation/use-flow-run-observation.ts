@@ -5,7 +5,10 @@
 
 import type { FlowLatestResult, FlowRun } from '@talelabs/sdk'
 import type { TFunction } from 'i18next'
-import type { CanvasEdge, FlowGenerationPreview } from '../../editor/flow-canvas-types'
+import type {
+  CanvasEdge,
+  FlowGenerationPreview,
+} from '../../editor/flow-canvas-types'
 
 import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useMemo, useReducer, useRef } from 'react'
@@ -21,9 +24,7 @@ import {
 import { activeRunNodeIdsFromRun } from './flow-run-active-selection'
 import { activeRunIdsReducer, stableRunIds } from './flow-run-active-state'
 import { useFlowRunDetailQueries } from './flow-run-detail.queries'
-import {
-  previewFromOutputJobs,
-} from './flow-run-preview-projection'
+import { previewFromOutputJobs } from './flow-run-preview-projection'
 import { isActiveRunStatus, isRetryableRunStatus } from './flow-run-status'
 
 /** Observes active runs and projects their progress and outputs onto the canvas. */
@@ -32,6 +33,7 @@ export function useFlowRunObservation(input: {
   flowId: string
   initialActiveRunIds: readonly string[]
   initialLatestResults: readonly FlowLatestResult[]
+  openSecureStore: () => void
   organizationId: string
   t: TFunction
 }) {
@@ -40,10 +42,13 @@ export function useFlowRunObservation(input: {
     flowId,
     initialActiveRunIds,
     initialLatestResults,
+    openSecureStore,
     organizationId,
     t,
   } = input
-  const initialPreviewsRef = useRef<Readonly<Record<string, FlowGenerationPreview>> | null>(null)
+  const initialPreviewsRef = useRef<Readonly<
+    Record<string, FlowGenerationPreview>
+  > | null>(null)
   if (initialPreviewsRef.current === null) {
     initialPreviewsRef.current = initialPreviewsFromLatestResults(
       initialLatestResults,
@@ -69,176 +74,239 @@ export function useFlowRunObservation(input: {
   const terminalRunIdsRef = useRef(new Set<string>())
   const refreshedTerminalRunIdsRef = useRef(new Set<string>())
   const notifiedTerminalFailureRunIdsRef = useRef(new Set<string>())
+  const notifiedBrowserConditionsRef = useRef(new Set<string>())
 
-  const updatePreview = useCallback((
-    nodeId: string,
-    preview: FlowGenerationPreview,
-  ) => {
-    const current = previewsRef.current[nodeId]
-    if (current && areGenerationPreviewsEqual(current, preview))
-      return
-    const next = { ...previewsRef.current, [nodeId]: preview }
-    previewsRef.current = next
-    for (const listener of previewListenersRef.current)
-      listener()
-  }, [])
+  const updatePreview = useCallback(
+    (nodeId: string, preview: FlowGenerationPreview) => {
+      const current = previewsRef.current[nodeId]
+      if (current && areGenerationPreviewsEqual(current, preview))
+        return
+      const next = { ...previewsRef.current, [nodeId]: preview }
+      previewsRef.current = next
+      for (const listener of previewListenersRef.current) listener()
+    },
+    [],
+  )
 
-  const updateRunStatePreview = useCallback((
-    nodeId: string,
-    fingerprint: string,
-    status: 'pending' | 'queued',
-  ) => {
-    const current = previewsRef.current[nodeId]
-    updatePreview(nodeId, {
-      fingerprint,
-      ...generationPreviewHistory(current),
-      status,
-    })
-  }, [updatePreview])
-
-  const updateFromRun = useCallback((run: FlowRun) => {
-    const terminal = !isActiveRunStatus(run.status)
-    if (terminalRunIdsRef.current.has(run.id) && !terminal)
-      return
-    if (terminal)
-      terminalRunIdsRef.current.add(run.id)
-    if (run.mode === 'all') {
-      dispatchRunAllRunIds({
-        runId: run.id,
-        type: terminal ? 'remove' : 'add',
-      })
-    }
-
-    const failedJob = run.nodes
-      .flatMap(node => node.jobs)
-      .find(job => job.status === 'failed')
-    const terminalFailure = terminal && (
-      run.status === 'failed'
-      || run.status === 'partial'
-      || Boolean(failedJob)
-    )
-    if (
-      terminalFailure
-      && !notifiedTerminalFailureRunIdsRef.current.has(run.id)
-    ) {
-      notifiedTerminalFailureRunIdsRef.current.add(run.id)
-      const errorCode = failedJob?.errorCode ?? run.errorCode
-      const fallbackMessage = failedJob?.errorMessage
-        ?? run.errorMessage
-        ?? t('flows.runStatus.failed')
-      const message = errorCode === 'provider_insufficient_balance'
-        ? t('errors.provider_insufficient_balance')
-        : errorCode?.startsWith('provider_')
-          ? fallbackMessage
-          : errorCode
-            ? t(`errors.${errorCode}` as 'errors.internal_error', {
-                defaultValue: fallbackMessage,
-              })
-            : fallbackMessage
-      toast.error(message, { id: `flow-run-failure-${run.id}` })
-    }
-
-    const activeNodeIds = activeRunNodeIdsFromRun({
-      edges: getEdges(),
-      run,
-    })
-    for (const node of run.nodes) {
-      const fingerprint = run.planHash || run.id
-      const preview = previewFromOutputJobs({
+  const updateRunStatePreview = useCallback(
+    (nodeId: string, fingerprint: string, status: 'pending' | 'queued') => {
+      const current = previewsRef.current[nodeId]
+      updatePreview(nodeId, {
         fingerprint,
-        jobs: node.jobs
-          .filter(job => job.status === 'succeeded')
-          .map(job => ({
-            assetOutputs: job.assetOutputs,
-            itemKey: job.itemKey,
-            jobId: job.id,
-            textOutputs: job.textOutputs,
-          })),
-        nodeId: node.nodeId,
-        t,
+        ...generationPreviewHistory(current),
+        status,
       })
-      if (!preview) {
-        if (node.status === 'pending' || node.status === 'running') {
-          updateRunStatePreview(
-            node.nodeId,
-            fingerprint,
-            activeNodeIds.has(node.nodeId) ? 'pending' : 'queued',
-          )
-        }
-        else if (['failed', 'canceled', 'skipped'].includes(node.status)) {
-          const current = previewsRef.current[node.nodeId]
-          updatePreview(node.nodeId, {
-            fingerprint,
-            ...generationPreviewHistory(current),
-            ...(terminal && isRetryableRunStatus(run.status)
-              ? { retrySource: { runId: run.id, status: run.status } }
+    },
+    [updatePreview],
+  )
+
+  const updateFromRun = useCallback(
+    (run: FlowRun) => {
+      const terminal = !isActiveRunStatus(run.status)
+      if (terminalRunIdsRef.current.has(run.id) && !terminal)
+        return
+      if (terminal)
+        terminalRunIdsRef.current.add(run.id)
+      if (run.mode === 'all') {
+        dispatchRunAllRunIds({
+          runId: run.id,
+          type: terminal ? 'remove' : 'add',
+        })
+      }
+
+      const browserCondition = run.browserExecution
+      if (
+        browserCondition
+        && !['canceling', 'ready'].includes(browserCondition.status)
+      ) {
+        const conditionId = `${run.id}:${browserCondition.status}:${browserCondition.code}`
+        if (!notifiedBrowserConditionsRef.current.has(conditionId)) {
+          notifiedBrowserConditionsRef.current.add(conditionId)
+          const needsCredential
+            = browserCondition.code === 'credential_required'
+              || browserCondition.code === 'credential_store_unavailable'
+          const message = needsCredential
+            ? t(
+                `flows.browserExecution.${browserCondition.code}` as 'flows.browserExecution.credential_required',
+              )
+            : browserCondition.status === 'retrying'
+              ? t('flows.browserExecution.retrying')
+              : t('flows.browserExecution.failed')
+          toast.error(message, {
+            id: `flow-browser-execution-${conditionId}`,
+            ...(needsCredential
+              ? {
+                  action: {
+                    label: t('flows.browserExecution.openSecureStore'),
+                    onClick: openSecureStore,
+                  },
+                }
               : {}),
+          })
+        }
+        const activeNodeIds = activeRunNodeIdsFromRun({
+          edges: getEdges(),
+          run,
+        })
+        for (const nodeId of activeNodeIds) {
+          const current = previewsRef.current[nodeId]
+          updatePreview(nodeId, {
+            fingerprint: run.planHash || run.id,
+            ...generationPreviewHistory(current),
             status: 'error',
           })
         }
-        continue
+        return
       }
-      const mountedPreview = preserveMountedMediaOutputs(
-        previewsRef.current[node.nodeId],
-        preview,
-      )
-      updatePreview(node.nodeId, terminal && node.status !== 'succeeded'
-        ? {
-            ...mountedPreview,
-            ...(isRetryableRunStatus(run.status)
-              ? { retrySource: { runId: run.id, status: run.status } }
-              : {}),
-            status: 'error',
+
+      const failedJob = run.nodes
+        .flatMap(node => node.jobs)
+        .find(job => job.status === 'failed')
+      const terminalFailure
+        = terminal
+          && (run.status === 'failed'
+            || run.status === 'partial'
+            || Boolean(failedJob))
+      if (
+        terminalFailure
+        && !notifiedTerminalFailureRunIdsRef.current.has(run.id)
+      ) {
+        notifiedTerminalFailureRunIdsRef.current.add(run.id)
+        const errorCode = failedJob?.errorCode ?? run.errorCode
+        const fallbackMessage
+          = failedJob?.errorMessage
+            ?? run.errorMessage
+            ?? t('flows.runStatus.failed')
+        const message
+          = errorCode === 'provider_insufficient_balance'
+            ? run.executionRuntime === 'browser'
+              ? t('errors.browser_openrouter_insufficient_balance')
+              : t('errors.provider_insufficient_balance')
+            : errorCode?.startsWith('provider_')
+              ? fallbackMessage
+              : errorCode
+                ? t(`errors.${errorCode}` as 'errors.internal_error', {
+                    defaultValue: fallbackMessage,
+                  })
+                : fallbackMessage
+        toast.error(message, { id: `flow-run-failure-${run.id}` })
+      }
+
+      const activeNodeIds = activeRunNodeIdsFromRun({
+        edges: getEdges(),
+        run,
+      })
+      for (const node of run.nodes) {
+        const fingerprint = run.planHash || run.id
+        const preview = previewFromOutputJobs({
+          fingerprint,
+          jobs: node.jobs
+            .filter(job => job.status === 'succeeded')
+            .map(job => ({
+              assetOutputs: job.assetOutputs,
+              itemKey: job.itemKey,
+              jobId: job.id,
+              textOutputs: job.textOutputs,
+            })),
+          nodeId: node.nodeId,
+          t,
+        })
+        if (!preview) {
+          if (node.status === 'pending' || node.status === 'running') {
+            updateRunStatePreview(
+              node.nodeId,
+              fingerprint,
+              activeNodeIds.has(node.nodeId) ? 'pending' : 'queued',
+            )
           }
-        : mountedPreview)
-    }
-    if (terminal) {
-      dispatchActiveRunIds({ runId: run.id, type: 'remove' })
-      terminalRunIdsRef.current.delete(run.id)
-      if (!refreshedTerminalRunIdsRef.current.has(run.id)) {
-        refreshedTerminalRunIdsRef.current.add(run.id)
-        void Promise.all([
-          queryClient.invalidateQueries({
-            exact: true,
-            queryKey: flowQueryKeys.graph(organizationId, flowId),
-          }),
-          queryClient.invalidateQueries({
-            exact: true,
-            queryKey: flowQueryKeys.references(organizationId, flowId),
-          }),
-        ])
+          else if (['failed', 'canceled', 'skipped'].includes(node.status)) {
+            const current = previewsRef.current[node.nodeId]
+            updatePreview(node.nodeId, {
+              fingerprint,
+              ...generationPreviewHistory(current),
+              ...(terminal && isRetryableRunStatus(run.status)
+                ? { retrySource: { runId: run.id, status: run.status } }
+                : {}),
+              status: 'error',
+            })
+          }
+          continue
+        }
+        const mountedPreview = preserveMountedMediaOutputs(
+          previewsRef.current[node.nodeId],
+          preview,
+        )
+        updatePreview(
+          node.nodeId,
+          terminal && node.status !== 'succeeded'
+            ? {
+                ...mountedPreview,
+                ...(isRetryableRunStatus(run.status)
+                  ? { retrySource: { runId: run.id, status: run.status } }
+                  : {}),
+                status: 'error',
+              }
+            : mountedPreview,
+        )
       }
-    }
-  }, [
-    flowId,
-    getEdges,
-    organizationId,
-    queryClient,
-    t,
-    updatePreview,
-    updateRunStatePreview,
-  ])
+      if (terminal) {
+        dispatchActiveRunIds({ runId: run.id, type: 'remove' })
+        terminalRunIdsRef.current.delete(run.id)
+        if (!refreshedTerminalRunIdsRef.current.has(run.id)) {
+          refreshedTerminalRunIdsRef.current.add(run.id)
+          void Promise.all([
+            queryClient.invalidateQueries({
+              exact: true,
+              queryKey: flowQueryKeys.graph(organizationId, flowId),
+            }),
+            queryClient.invalidateQueries({
+              exact: true,
+              queryKey: flowQueryKeys.references(organizationId, flowId),
+            }),
+          ])
+        }
+      }
+    },
+    [
+      flowId,
+      getEdges,
+      organizationId,
+      openSecureStore,
+      queryClient,
+      t,
+      updatePreview,
+      updateRunStatePreview,
+    ],
+  )
 
-  const observeRun = useCallback((run: FlowRun) => {
-    updateFromRun(run)
-    queryClient.setQueryData(flowQueryKeys.run(organizationId, run.id), run)
-    void queryClient.invalidateQueries({
-      queryKey: flowQueryKeys.activeRuns(organizationId),
-    })
-    if (isActiveRunStatus(run.status))
-      dispatchActiveRunIds({ runId: run.id, type: 'add' })
-  }, [organizationId, queryClient, updateFromRun])
-
-  const projection = useMemo(() => ({
-    runs: runDetailQueries
-      .map(query => query.data)
-      .filter((run): run is FlowRun => Boolean(run)),
-    signature: runDetailQueries.map(query => query.dataUpdatedAt).join(':'),
-  }), [runDetailQueries])
-  useEffect(() => {
-    for (const run of projection.runs)
+  const observeRun = useCallback(
+    (run: FlowRun) => {
       updateFromRun(run)
-  // eslint-disable-next-line react/exhaustive-deps -- dataUpdatedAt is the stable useQueries projection boundary.
+      queryClient.setQueryData(flowQueryKeys.run(organizationId, run.id), run)
+      if (run.executionRuntime === 'managed') {
+        void queryClient.invalidateQueries({
+          exact: true,
+          queryKey: flowQueryKeys.activeRuns(organizationId),
+        })
+      }
+      if (isActiveRunStatus(run.status))
+        dispatchActiveRunIds({ runId: run.id, type: 'add' })
+    },
+    [organizationId, queryClient, updateFromRun],
+  )
+
+  const projection = useMemo(
+    () => ({
+      runs: runDetailQueries
+        .map(query => query.data)
+        .filter((run): run is FlowRun => Boolean(run)),
+      signature: runDetailQueries.map(query => query.dataUpdatedAt).join(':'),
+    }),
+    [runDetailQueries],
+  )
+  useEffect(() => {
+    for (const run of projection.runs) updateFromRun(run)
+    // eslint-disable-next-line react/exhaustive-deps -- dataUpdatedAt is the stable useQueries projection boundary.
   }, [projection.signature, updateFromRun])
 
   const setRunAllAdmissionRunning = useCallback((running: boolean) => {

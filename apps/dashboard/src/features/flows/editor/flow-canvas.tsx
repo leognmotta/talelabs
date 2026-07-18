@@ -22,10 +22,16 @@ import { useQueryState } from 'nuqs'
 import { useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ACCEPTED_ASSET_MEDIA } from '../../assets/upload/asset-upload-files'
+import { useSession } from '../../auth/auth-client'
+import { useExecutionRuntimePreference } from '../../settings/execution-runtime-preference'
 import { FLOW_REACT_NODE_TYPES } from '../nodes/flow-dashboard-node-registry'
 import { useFlowRunAvailability } from '../runs/admission/use-flow-run-availability'
 import { useFlowMockRunOrchestration } from '../runs/mock-runtime/use-flow-mock-run-orchestration'
-import { CanvasStoreProvider, useCanvasStore, useCanvasStoreApi } from './canvas-state/canvas-store-context'
+import {
+  CanvasStoreProvider,
+  useCanvasStore,
+  useCanvasStoreApi,
+} from './canvas-state/canvas-store-context'
 import { FlowCanvasDebugIndicator } from './flow-canvas-debug-indicator'
 import { FlowCanvasOverlays } from './flow-canvas-overlays'
 import {
@@ -64,11 +70,17 @@ function FlowCanvasInner({
   references,
 }: FlowCanvasProps) {
   const { i18n, t } = useTranslation()
+  const session = useSession()
+  const [executionRuntime] = useExecutionRuntimePreference(
+    session.data?.user.id,
+  )
   const store = useCanvasStoreApi()
   const nodes = useCanvasStore(state => state.nodes)
   const edges = useCanvasStore(state => state.edges)
   const wrapperRef = useRef<HTMLDivElement>(null)
-  const referenceDataRef = useRef<ReturnType<typeof useFlowReferenceData>>(null!)
+  const referenceDataRef = useRef<ReturnType<typeof useFlowReferenceData>>(
+    null!,
+  )
   const allowNavigationRef = useRef(false)
   const reactFlow = useReactFlow<CanvasNode, CanvasEdge>()
   const shortcutLabels = useMemo(getFlowCanvasShortcutLabels, [])
@@ -104,6 +116,7 @@ function FlowCanvasInner({
   referenceDataRef.current = referenceData
   const runs = useFlowMockRunOrchestration({
     executionMode: debugMode ? 'debug' : 'live',
+    executionRuntime,
     flowId: flow.id,
     initialActiveRunIds: graph.activeRuns.map(run => run.runId),
     initialLatestResults: graph.latestResults,
@@ -113,6 +126,7 @@ function FlowCanvasInner({
     saveNow: autosave.saveNow,
     store,
     t,
+    userId: session.data?.user.id,
   })
   const {
     getExecutableInputCount,
@@ -124,29 +138,32 @@ function FlowCanvasInner({
     runGenerationSelectionPreview,
     subscribeGenerationPreviews,
   } = runs
-  const runtime = useMemo(() => ({
-    generationConfig,
-    getAssetUpload: assetUploads.getUpload,
-    getExecutableInputCount,
-    getGenerationPreview,
-    getGenerationPreviewFingerprint,
-    referenceData,
-    retryGenerationRun,
-    runGenerationPreview,
-    subscribeAssetUploads: assetUploads.subscribeUploads,
-    subscribeGenerationPreviews,
-  }), [
-    assetUploads.getUpload,
-    assetUploads.subscribeUploads,
-    generationConfig,
-    referenceData,
-    getExecutableInputCount,
-    getGenerationPreview,
-    getGenerationPreviewFingerprint,
-    retryGenerationRun,
-    runGenerationPreview,
-    subscribeGenerationPreviews,
-  ])
+  const runtime = useMemo(
+    () => ({
+      generationConfig,
+      getAssetUpload: assetUploads.getUpload,
+      getExecutableInputCount,
+      getGenerationPreview,
+      getGenerationPreviewFingerprint,
+      referenceData,
+      retryGenerationRun,
+      runGenerationPreview,
+      subscribeAssetUploads: assetUploads.subscribeUploads,
+      subscribeGenerationPreviews,
+    }),
+    [
+      assetUploads.getUpload,
+      assetUploads.subscribeUploads,
+      generationConfig,
+      referenceData,
+      getExecutableInputCount,
+      getGenerationPreview,
+      getGenerationPreviewFingerprint,
+      retryGenerationRun,
+      runGenerationPreview,
+      subscribeGenerationPreviews,
+    ],
+  )
   const lifecycle = useFlowCanvasLifecycle({
     allowNavigationRef,
     defaultViewport: flow.viewport,
@@ -243,7 +260,12 @@ function FlowCanvasInner({
               onSelectionChange={reactFlowHandlers.onSelectionChange}
               onSelectionContextMenu={reactFlowHandlers.onSelectionContextMenu}
             >
-              <Background color="var(--flow-dot)" gap={20} size={1.4} variant={BackgroundVariant.Dots} />
+              <Background
+                color="var(--flow-dot)"
+                gap={20}
+                size={1.4}
+                variant={BackgroundVariant.Dots}
+              />
               <Controls
                 position="bottom-left"
                 showInteractive={false}
@@ -273,7 +295,10 @@ function FlowCanvasInner({
                 canUseDebugMode={canUseDebugMode}
                 debugMode={debugMode}
                 isRunAllRunning={runs.isRunAllRunning}
-                runAllDisabled={runs.isRunAllRunning || runAvailability.hasUnavailableGenerationNode}
+                runAllDisabled={
+                  runs.isRunAllRunning
+                  || runAvailability.hasUnavailableGenerationNode
+                }
                 shortcutLabels={shortcutLabels}
                 status={autosave.status}
                 onAddNode={commands.addNode}

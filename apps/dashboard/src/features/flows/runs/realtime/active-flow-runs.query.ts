@@ -17,14 +17,14 @@ export function useActiveFlowRunsQuery() {
     queryFn: async ({ signal }) => {
       const [pending, running] = await Promise.all([
         getRuns(
-          { params: { limit: 100, status: 'pending' } },
+          { params: { executionRuntime: 'managed', limit: 100, status: 'pending' } },
           {
             headers: getOrganizationRequestHeaders(organizationId!),
             signal,
           },
         ),
         getRuns(
-          { params: { limit: 100, status: 'running' } },
+          { params: { executionRuntime: 'managed', limit: 100, status: 'running' } },
           {
             headers: getOrganizationRequestHeaders(organizationId!),
             signal,
@@ -37,9 +37,11 @@ export function useActiveFlowRunsQuery() {
       ])
     },
     enabled: Boolean(organizationId),
-    refetchInterval: RUN_FALLBACK_REFRESH_INTERVAL_MS,
-    refetchOnReconnect: true,
-    refetchOnWindowFocus: true,
-    staleTime: 0,
+    refetchInterval: query => query.state.data?.length
+      ? RUN_FALLBACK_REFRESH_INTERVAL_MS
+      : false,
+    refetchOnReconnect: query => Boolean(query.state.data?.length),
+    refetchOnWindowFocus: query => Boolean(query.state.data?.length),
+    staleTime: Infinity,
   })
 }

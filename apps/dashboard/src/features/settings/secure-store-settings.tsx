@@ -7,15 +7,13 @@ import {
   listCredentialStatuses,
   removeCredential,
 } from '@talelabs/providers/browser'
-import {
-  Alert,
-  AlertDescription,
-} from '@talelabs/ui/components/alert'
+import { Alert, AlertDescription } from '@talelabs/ui/components/alert'
 import { Separator } from '@talelabs/ui/components/separator'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { useSession } from '../auth/auth-client'
+import { notifyBrowserCredentialsChanged } from './execution-runtime-preference'
 import { SecureStoreCredentialDialog } from './secure-store-credential-dialog'
 import { SecureStoreProviderRow } from './secure-store-provider-row'
 
@@ -24,19 +22,23 @@ export function SecureStoreSettings() {
   const { t } = useTranslation()
   const session = useSession()
   const userId = session.data?.user.id
-  const [dialogMode, setDialogMode] = useState<SecureStoreDialogMode | null>(null)
+  const [dialogMode, setDialogMode] = useState<SecureStoreDialogMode | null>(
+    null,
+  )
   const [isRemoving, setIsRemoving] = useState(false)
   const [credentialState, setCredentialState] = useState<{
     status: 'loading' | 'ready' | 'unavailable'
     stored: boolean
     userId: string | undefined
   }>({ status: 'loading', stored: false, userId })
-  const currentCredentialState = credentialState.userId === userId
-    ? credentialState
-    : { status: 'loading' as const, stored: false, userId }
+  const currentCredentialState
+    = credentialState.userId === userId
+      ? credentialState
+      : { status: 'loading' as const, stored: false, userId }
   const isLoading = currentCredentialState.status === 'loading'
   const stored = currentCredentialState.stored
-  const unavailable = currentCredentialState.status === 'unavailable' || !userId
+  const unavailable
+    = currentCredentialState.status === 'unavailable' || !userId
 
   useEffect(() => {
     let active = true
@@ -48,7 +50,9 @@ export function SecureStoreSettings() {
         if (active) {
           setCredentialState({
             status: 'ready',
-            stored: statuses.some(status => status.providerId === 'openrouter'),
+            stored: statuses.some(
+              status => status.providerId === 'openrouter',
+            ),
             userId,
           })
         }
@@ -76,6 +80,7 @@ export function SecureStoreSettings() {
     try {
       await removeCredential({ providerId: 'openrouter', userId })
       setCredentialState({ status: 'ready', stored: false, userId })
+      notifyBrowserCredentialsChanged()
     }
     catch {
       toast.error(t('secureStore.couldNotRemove'))
@@ -120,6 +125,7 @@ export function SecureStoreSettings() {
           }}
           onStored={() => {
             setCredentialState({ status: 'ready', stored: true, userId })
+            notifyBrowserCredentialsChanged()
           }}
           open
           userId={userId}

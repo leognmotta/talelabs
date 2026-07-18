@@ -25,6 +25,7 @@ import {
   storeCookiePreferences,
 } from '../features/cookies/cookie-preferences'
 import { CookiePreferencesDialog } from '../features/cookies/cookie-preferences-dialog'
+import { clearUserBrowserRunJournal } from '../features/flows/runs/browser-runtime/browser-run-journal'
 import { AcceptInvitationScreen } from '../features/organizations/accept-invitation-screen'
 import { CreateOrganizationScreen } from '../features/organizations/create-organization-screen'
 import {
@@ -117,6 +118,7 @@ export function DashboardRoutes() {
     if (userId) {
       try {
         await clearUserCredentials({ userId })
+        await clearUserBrowserRunJournal(userId)
       }
       catch {
         toast.error(t('secureStore.signOutCleanupFailed'))
@@ -344,6 +346,7 @@ export function DashboardRoutes() {
                 <DashboardLayout
                   activeOrganizationId={organization.activeWorkspaceId}
                   currentSessionId={session.data?.session.id}
+                  currentUserId={session.data?.user.id}
                   email={session.data?.user.email}
                   language={language.preference}
                   name={session.data?.user.name}

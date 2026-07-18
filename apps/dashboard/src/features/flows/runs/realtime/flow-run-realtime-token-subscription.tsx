@@ -89,6 +89,7 @@ export function FlowRunRealtimeTokenSubscription({
       queryKey: flowQueryKeys.run(organizationId, runId),
     })
     void queryClient.invalidateQueries({
+      exact: true,
       queryKey: flowQueryKeys.activeRuns(organizationId),
     })
   }, [organizationId, queryClient, runId, tokenQuery.isError])

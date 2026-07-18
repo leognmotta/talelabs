@@ -15,6 +15,20 @@ export function flowActiveRuns(organizationId: null | string) {
   return [...flowScope(organizationId), 'runs', 'active'] as const
 }
 
+/** Key for active browser-driver runs discovered from PostgreSQL. */
+export function flowActiveBrowserRuns(
+  organizationId: null | string,
+  userId: null | string,
+) {
+  return [
+    ...flowScope(organizationId),
+    'runs',
+    'active',
+    'browser',
+    userId,
+  ] as const
+}
+
 /** Key for one durable run detail and its jobs. */
 export function flowRun(
   organizationId: null | string,

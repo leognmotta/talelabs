@@ -1,6 +1,9 @@
 /** Canvas command orchestration for durable live and debug Flow runs. */
 
-import type { FlowRunExecutionMode } from '@talelabs/flows'
+import type {
+  FlowRunExecutionMode,
+  FlowRunExecutionRuntime,
+} from '@talelabs/flows'
 import type { FlowLatestResult } from '@talelabs/sdk'
 import type { TFunction } from 'i18next'
 import type { RefObject } from 'react'
@@ -10,13 +13,16 @@ import type { FlowGenerationPreviewScope } from './flow-mock-runtime-node-scope'
 
 import { isGenerationNodeType } from '@talelabs/flows'
 import { postRunsIdRetry } from '@talelabs/sdk'
+import { useQueryClient } from '@tanstack/react-query'
 import { useCallback } from 'react'
 import { toast } from 'sonner'
 
 import { getApiErrorMessage } from '../../../../shared/lib/api-error'
 import { getOrganizationRequestHeaders } from '../../../../shared/lib/organization-request'
+import { useSettingsTabState } from '../../../settings/settings-state'
 import { generationPreviewHistory } from '../../generation/flow-generation-preview-history'
 import { useFlowRunAdmission } from '../admission/use-flow-run-admission'
+import { publishBrowserRunHint, rememberActiveBrowserRun } from '../browser-runtime/browser-run-hints'
 import { activePreviewNodeIdsFromClosure } from '../observation/flow-run-active-selection'
 import { isActiveRunStatus } from '../observation/flow-run-status'
 import { useFlowRunObservation } from '../observation/use-flow-run-observation'
@@ -25,18 +31,23 @@ import { createFlowMockRuntimePlanner } from './flow-mock-runtime-planner'
 /** Coordinates canvas commands while admission, observation, and projection stay isolated. */
 export function useFlowMockRunOrchestration(input: {
   executionMode: FlowRunExecutionMode
+  executionRuntime: FlowRunExecutionRuntime
   flowId: string
   initialActiveRunIds: readonly string[]
   initialLatestResults: readonly FlowLatestResult[]
   locale: string
   organizationId: string
   referenceDataRef: RefObject<FlowReferenceData>
-  saveNow: (options?: { reconcileWithServer?: boolean }) => Promise<null | number>
+  saveNow: (options?: {
+    reconcileWithServer?: boolean
+  }) => Promise<null | number>
   store: CanvasStore
   t: TFunction
+  userId: string | undefined
 }) {
   const {
     executionMode,
+    executionRuntime,
     flowId,
     initialActiveRunIds,
     initialLatestResults,
@@ -46,7 +57,13 @@ export function useFlowMockRunOrchestration(input: {
     saveNow,
     store,
     t,
+    userId,
   } = input
+  const [, setSettingsTab] = useSettingsTabState()
+  const queryClient = useQueryClient()
+  const openSecureStore = useCallback(() => {
+    void setSettingsTab('secureStore')
+  }, [setSettingsTab])
   const getEdges = useCallback(() => store.getState().edges, [store])
   const observation = useFlowRunObservation({
     getEdges,
@@ -54,6 +71,7 @@ export function useFlowMockRunOrchestration(input: {
     initialActiveRunIds,
     initialLatestResults,
     organizationId,
+    openSecureStore,
     t,
   })
   const {
@@ -66,133 +84,202 @@ export function useFlowMockRunOrchestration(input: {
     updatePreview,
     updateRunStatePreview,
   } = observation
-  const createCurrentPlanner = useCallback(() => createFlowMockRuntimePlanner({
-    edges: store.getState().edges,
-    locale,
-    nodes: store.getState().nodes,
-    previews: previewsRef.current,
-    referenceData: referenceDataRef.current,
-  }), [
-    locale,
-    previewsRef,
-    referenceDataRef,
-    store,
-  ])
+  const createCurrentPlanner = useCallback(
+    () =>
+      createFlowMockRuntimePlanner({
+        edges: store.getState().edges,
+        locale,
+        nodes: store.getState().nodes,
+        previews: previewsRef.current,
+        referenceData: referenceDataRef.current,
+      }),
+    [locale, previewsRef, referenceDataRef, store],
+  )
   const admitRun = useFlowRunAdmission({
     executionMode,
+    executionRuntime,
     flowId,
     observeRun,
     organizationId,
     saveNow,
+    userId,
   })
 
-  const markPreviewScope = useCallback((nodeIds: readonly string[]) => {
-    const activeNodeIds = activePreviewNodeIdsFromClosure({
-      edges: store.getState().edges,
-      nodes: store.getState().nodes,
-      previewNodeIds: nodeIds,
-    })
-    const currentPlanner = createCurrentPlanner()
-    for (const nodeId of nodeIds) {
-      const node = store.getState().nodes.find(item => item.id === nodeId)
-      if (!node || !isGenerationNodeType(node.type))
-        continue
-      updateRunStatePreview(
-        nodeId,
-        currentPlanner.getFingerprint(nodeId) ?? nodeId,
-        activeNodeIds.has(nodeId) ? 'pending' : 'queued',
+  const markPreviewScope = useCallback(
+    (nodeIds: readonly string[]) => {
+      const activeNodeIds = activePreviewNodeIdsFromClosure({
+        edges: store.getState().edges,
+        nodes: store.getState().nodes,
+        previewNodeIds: nodeIds,
+      })
+      const currentPlanner = createCurrentPlanner()
+      for (const nodeId of nodeIds) {
+        const node = store.getState().nodes.find(item => item.id === nodeId)
+        if (!node || !isGenerationNodeType(node.type))
+          continue
+        updateRunStatePreview(
+          nodeId,
+          currentPlanner.getFingerprint(nodeId) ?? nodeId,
+          activeNodeIds.has(nodeId) ? 'pending' : 'queued',
+        )
+      }
+    },
+    [createCurrentPlanner, store, updateRunStatePreview],
+  )
+
+  const markPreviewScopeFailed = useCallback(
+    (nodeIds: readonly string[]) => {
+      const currentPlanner = createCurrentPlanner()
+      for (const nodeId of nodeIds) {
+        const current = previewsRef.current[nodeId]
+        updatePreview(nodeId, {
+          fingerprint: currentPlanner.getFingerprint(nodeId) ?? nodeId,
+          ...generationPreviewHistory(current),
+          status: 'error',
+        })
+      }
+    },
+    [createCurrentPlanner, previewsRef, updatePreview],
+  )
+
+  const handleAdmissionFailure = useCallback(
+    (
+      reason:
+        | 'credential_required'
+        | 'credential_store_unavailable'
+        | 'save_failed'
+        | undefined,
+      nodeIds: readonly string[],
+    ) => {
+      if (!reason)
+        return false
+      markPreviewScopeFailed(nodeIds)
+      if (reason === 'save_failed') {
+        toast.error(t('flows.saveStatus.error'))
+        return true
+      }
+      openSecureStore()
+      toast.error(
+        t(
+          `flows.browserExecution.${reason}` as 'flows.browserExecution.credential_required',
+        ),
       )
-    }
-  }, [createCurrentPlanner, store, updateRunStatePreview])
+      return true
+    },
+    [markPreviewScopeFailed, openSecureStore, t],
+  )
 
-  const markPreviewScopeFailed = useCallback((nodeIds: readonly string[]) => {
-    const currentPlanner = createCurrentPlanner()
-    for (const nodeId of nodeIds) {
-      const current = previewsRef.current[nodeId]
-      updatePreview(nodeId, {
-        fingerprint: currentPlanner.getFingerprint(nodeId) ?? nodeId,
-        ...generationPreviewHistory(current),
-        status: 'error',
-      })
-    }
-  }, [createCurrentPlanner, previewsRef, updatePreview])
-
-  const retryGenerationRun = useCallback(async (nodeId: string) => {
-    const previous = previewsRef.current[nodeId]
-    if (!previous?.retrySource)
-      return
-    updateRunStatePreview(nodeId, previous.fingerprint, 'pending')
-    try {
-      const run = await postRunsIdRetry({
-        data: {
-          executionMode,
-          expectedRunStatus: previous.retrySource.status,
-        },
-        id: previous.retrySource.runId,
-      }, {
-        headers: {
-          ...getOrganizationRequestHeaders(organizationId),
-          'Idempotency-Key': globalThis.crypto.randomUUID(),
-        },
-      })
-      observeRun(run)
-    }
-    catch (error) {
-      updatePreview(nodeId, previous)
-      toast.error(getApiErrorMessage(error, t('flows.runStatus.failed')))
-    }
-  }, [executionMode, observeRun, organizationId, previewsRef, t, updatePreview, updateRunStatePreview])
-
-  const runGenerationPreview = useCallback(async (
-    nodeId: string,
-    scope: FlowGenerationPreviewScope = 'node',
-  ) => {
-    const mode = scope === 'fromHere'
-      ? 'downstream'
-      : scope === 'tillHere' ? 'upstream' : 'node'
-    const nodeIds = createCurrentPlanner().getPreviewNodeIds(nodeId, scope)
-    markPreviewScope(nodeIds)
-    try {
-      const result = await admitRun({ mode, targetNodeId: nodeId })
-      if (result.reason === 'save_failed') {
-        markPreviewScopeFailed(nodeIds)
-        toast.error(t('flows.saveStatus.error'))
+  const retryGenerationRun = useCallback(
+    async (nodeId: string) => {
+      const previous = previewsRef.current[nodeId]
+      if (!previous?.retrySource)
+        return
+      updateRunStatePreview(nodeId, previous.fingerprint, 'pending')
+      try {
+        const run = await postRunsIdRetry(
+          {
+            data: {
+              executionMode,
+              expectedRunStatus: previous.retrySource.status,
+            },
+            id: previous.retrySource.runId,
+          },
+          {
+            headers: {
+              ...getOrganizationRequestHeaders(organizationId),
+              'Idempotency-Key': globalThis.crypto.randomUUID(),
+            },
+          },
+        )
+        observeRun(run)
+        if (run.executionRuntime === 'browser' && userId) {
+          rememberActiveBrowserRun(queryClient, organizationId, userId, run.id)
+          publishBrowserRunHint(organizationId, userId, run.id)
+        }
       }
-    }
-    catch (error) {
-      markPreviewScopeFailed(nodeIds)
-      toast.error(getApiErrorMessage(error, t('flows.runStatus.failed')))
-    }
-  }, [admitRun, createCurrentPlanner, markPreviewScope, markPreviewScopeFailed, t])
-
-  const runGenerationSelectionPreview = useCallback(async (
-    selectedNodeIds: readonly string[],
-  ) => {
-    const nodeIds = [...new Set(selectedNodeIds)]
-    markPreviewScope(nodeIds)
-    try {
-      const result = await admitRun({ mode: 'selection', selectedNodeIds: nodeIds })
-      if (result.reason === 'save_failed') {
-        markPreviewScopeFailed(nodeIds)
-        toast.error(t('flows.saveStatus.error'))
+      catch (error) {
+        updatePreview(nodeId, previous)
+        toast.error(getApiErrorMessage(error, t('flows.runStatus.failed')))
       }
-    }
-    catch (error) {
-      markPreviewScopeFailed(nodeIds)
-      toast.error(getApiErrorMessage(error, t('flows.runStatus.failed')))
-    }
-  }, [admitRun, markPreviewScope, markPreviewScopeFailed, t])
+    },
+    [
+      executionMode,
+      observeRun,
+      organizationId,
+      previewsRef,
+      queryClient,
+      t,
+      updatePreview,
+      updateRunStatePreview,
+      userId,
+    ],
+  )
+
+  const runGenerationPreview = useCallback(
+    async (nodeId: string, scope: FlowGenerationPreviewScope = 'node') => {
+      const mode
+        = scope === 'fromHere'
+          ? 'downstream'
+          : scope === 'tillHere'
+            ? 'upstream'
+            : 'node'
+      const nodeIds = createCurrentPlanner().getPreviewNodeIds(nodeId, scope)
+      markPreviewScope(nodeIds)
+      try {
+        const result = await admitRun({ mode, targetNodeId: nodeId })
+        handleAdmissionFailure(result.reason, nodeIds)
+      }
+      catch (error) {
+        markPreviewScopeFailed(nodeIds)
+        toast.error(getApiErrorMessage(error, t('flows.runStatus.failed')))
+      }
+    },
+    [
+      admitRun,
+      createCurrentPlanner,
+      handleAdmissionFailure,
+      markPreviewScope,
+      markPreviewScopeFailed,
+      t,
+    ],
+  )
+
+  const runGenerationSelectionPreview = useCallback(
+    async (selectedNodeIds: readonly string[]) => {
+      const nodeIds = [...new Set(selectedNodeIds)]
+      markPreviewScope(nodeIds)
+      try {
+        const result = await admitRun({
+          mode: 'selection',
+          selectedNodeIds: nodeIds,
+        })
+        handleAdmissionFailure(result.reason, nodeIds)
+      }
+      catch (error) {
+        markPreviewScopeFailed(nodeIds)
+        toast.error(getApiErrorMessage(error, t('flows.runStatus.failed')))
+      }
+    },
+    [
+      admitRun,
+      handleAdmissionFailure,
+      markPreviewScope,
+      markPreviewScopeFailed,
+      t,
+    ],
+  )
 
   const runAll = useCallback(async () => {
     setRunAllAdmissionRunning(true)
-    const nodeIds = store.getState().nodes.filter(node => isGenerationNodeType(node.type)).map(node => node.id)
+    const nodeIds = store
+      .getState()
+      .nodes
+      .filter(node => isGenerationNodeType(node.type))
+      .map(node => node.id)
     markPreviewScope(nodeIds)
     try {
       const result = await admitRun({ mode: 'all' })
-      if (result.reason === 'save_failed') {
-        markPreviewScopeFailed(nodeIds)
-        toast.error(t('flows.saveStatus.error'))
-      }
+      handleAdmissionFailure(result.reason, nodeIds)
       if (result.run && !isActiveRunStatus(result.run.status))
         setRunAllAdmissionRunning(false)
     }
@@ -203,7 +290,15 @@ export function useFlowMockRunOrchestration(input: {
     finally {
       setRunAllAdmissionRunning(false)
     }
-  }, [admitRun, markPreviewScope, markPreviewScopeFailed, setRunAllAdmissionRunning, store, t])
+  }, [
+    admitRun,
+    handleAdmissionFailure,
+    markPreviewScope,
+    markPreviewScopeFailed,
+    setRunAllAdmissionRunning,
+    store,
+    t,
+  ])
   const getGenerationPreviewFingerprint = useCallback(
     (nodeId: string) => createCurrentPlanner().getFingerprint(nodeId),
     [createCurrentPlanner],

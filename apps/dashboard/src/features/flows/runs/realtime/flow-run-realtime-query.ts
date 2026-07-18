@@ -24,6 +24,7 @@ export function invalidateFlowRunAndActiveQueries(
   return Promise.allSettled([
     invalidateFlowRunQuery(queryClient, organizationId, runId),
     queryClient.invalidateQueries({
+      exact: true,
       queryKey: flowQueryKeys.activeRuns(organizationId),
     }),
   ])

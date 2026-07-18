@@ -1,12 +1,18 @@
 /** Autosave-aware admission of one immutable Flow run command. */
 
-import type { FlowRunExecutionMode } from '@talelabs/flows'
+import type {
+  FlowRunExecutionMode,
+  FlowRunExecutionRuntime,
+} from '@talelabs/flows'
 import type { FlowRun } from '@talelabs/sdk'
 
+import { listCredentialStatuses } from '@talelabs/providers/browser'
 import apiClient from '@talelabs/sdk/client'
+import { useQueryClient } from '@tanstack/react-query'
 import { useCallback } from 'react'
 
 import { getOrganizationRequestHeaders } from '../../../../shared/lib/organization-request'
+import { publishBrowserRunHint, rememberActiveBrowserRun } from '../browser-runtime/browser-run-hints'
 
 /** Client graph-selection command admitted as an immutable Flow run. */
 export interface FlowRunCommandRequest {
@@ -18,33 +24,83 @@ export interface FlowRunCommandRequest {
 /** Saves current graph edits before admitting and observing a Flow run. */
 export function useFlowRunAdmission(input: {
   executionMode: FlowRunExecutionMode
+  executionRuntime: FlowRunExecutionRuntime
   flowId: string
   observeRun: (run: FlowRun) => void
   organizationId: string
-  saveNow: (options?: { reconcileWithServer?: boolean }) => Promise<null | number>
+  saveNow: (options?: {
+    reconcileWithServer?: boolean
+  }) => Promise<null | number>
+  userId: string | undefined
 }) {
-  const { executionMode, flowId, observeRun, organizationId, saveNow } = input
-  return useCallback(async (command: FlowRunCommandRequest) => {
-    const revision = await saveNow()
-    if (revision === null)
-      return { reason: 'save_failed' as const }
-    const response = await apiClient<FlowRun>({
-      data: {
-        executionMode,
-        expectedFlowRevision: revision,
-        mode: command.mode,
-        ...(command.mode === 'selection'
-          ? { selectedNodeIds: command.selectedNodeIds }
-          : command.mode === 'all' ? {} : { targetNodeId: command.targetNodeId }),
-      },
-      headers: {
-        ...getOrganizationRequestHeaders(organizationId),
-        'Idempotency-Key': globalThis.crypto.randomUUID(),
-      },
-      method: 'POST',
-      url: `/flows/${flowId}/runs`,
-    })
-    observeRun(response.data)
-    return { run: response.data }
-  }, [executionMode, flowId, observeRun, organizationId, saveNow])
+  const queryClient = useQueryClient()
+  const {
+    executionMode,
+    executionRuntime,
+    flowId,
+    observeRun,
+    organizationId,
+    saveNow,
+    userId,
+  } = input
+  return useCallback(
+    async (command: FlowRunCommandRequest) => {
+      if (executionMode === 'live' && executionRuntime === 'browser') {
+        if (!userId)
+          return { reason: 'credential_store_unavailable' as const }
+        let credentials
+        try {
+          credentials = await listCredentialStatuses({ userId })
+        }
+        catch {
+          return { reason: 'credential_store_unavailable' as const }
+        }
+        if (!credentials.some(status => status.providerId === 'openrouter'))
+          return { reason: 'credential_required' as const }
+      }
+      const revision = await saveNow()
+      if (revision === null)
+        return { reason: 'save_failed' as const }
+      const response = await apiClient<FlowRun>({
+        data: {
+          executionMode,
+          executionRuntime,
+          expectedFlowRevision: revision,
+          mode: command.mode,
+          ...(command.mode === 'selection'
+            ? { selectedNodeIds: command.selectedNodeIds }
+            : command.mode === 'all'
+              ? {}
+              : { targetNodeId: command.targetNodeId }),
+        },
+        headers: {
+          ...getOrganizationRequestHeaders(organizationId),
+          'Idempotency-Key': globalThis.crypto.randomUUID(),
+        },
+        method: 'POST',
+        url: `/flows/${flowId}/runs`,
+      })
+      observeRun(response.data)
+      if (response.data.executionRuntime === 'browser' && userId) {
+        rememberActiveBrowserRun(
+          queryClient,
+          organizationId,
+          userId,
+          response.data.id,
+        )
+        publishBrowserRunHint(organizationId, userId, response.data.id)
+      }
+      return { run: response.data }
+    },
+    [
+      executionMode,
+      executionRuntime,
+      flowId,
+      observeRun,
+      organizationId,
+      queryClient,
+      saveNow,
+      userId,
+    ],
+  )
 }

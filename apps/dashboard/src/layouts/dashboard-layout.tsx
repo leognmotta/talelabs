@@ -29,6 +29,7 @@ import { useTranslation } from 'react-i18next'
 import { Outlet, useMatch } from 'react-router'
 import { AssetViewerDialog } from '../features/assets/viewer/asset-viewer-dialog'
 import { useAssetViewerUrlState } from '../features/assets/viewer/use-asset-viewer-url-state'
+import { BrowserRunRoot } from '../features/flows/runs/browser-runtime/browser-run-root'
 import { FlowRunRealtimeSubscriptions } from '../features/flows/runs/realtime/flow-run-realtime-subscriptions'
 import { OrganizationScopeProvider } from '../features/organizations/organization-scope'
 import { SettingsDialog } from '../features/settings/settings-dialog'
@@ -50,6 +51,7 @@ const AssetLibraryDialog = lazy(async () => ({
 export function DashboardLayout({
   activeOrganizationId,
   currentSessionId,
+  currentUserId,
   email,
   language,
   name,
@@ -64,6 +66,7 @@ export function DashboardLayout({
 }: {
   activeOrganizationId: string | null
   currentSessionId: string | undefined
+  currentUserId: string | undefined
   email: string | undefined
   language: LanguagePreference
   name: string | undefined
@@ -138,6 +141,9 @@ export function DashboardLayout({
             {activeOrganizationId && (
               <FlowRunRealtimeSubscriptions organizationId={activeOrganizationId} />
             )}
+            {activeOrganizationId && currentUserId && (
+              <BrowserRunRoot organizationId={activeOrganizationId} userId={currentUserId} />
+            )}
             <main className="
               flex h-svh min-h-0 flex-col overflow-hidden text-foreground
             "
@@ -157,6 +163,9 @@ export function DashboardLayout({
         <TooltipProvider>
           {activeOrganizationId && (
             <FlowRunRealtimeSubscriptions organizationId={activeOrganizationId} />
+          )}
+          {activeOrganizationId && currentUserId && (
+            <BrowserRunRoot organizationId={activeOrganizationId} userId={currentUserId} />
           )}
           <SidebarProvider className="h-svh min-h-0 overflow-hidden">
             <AppSidebar
