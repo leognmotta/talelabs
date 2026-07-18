@@ -6,7 +6,10 @@ import type { CatalogModelRecord } from '../schema.js'
 import type { CatalogProviderBindingCommon } from './contracts.js'
 
 import { z } from 'zod'
-import { CatalogProviderBindingCommonSchema } from './contracts.js'
+import {
+  CatalogProviderBindingCommonSchema,
+  CatalogProviderLifecycleSchema,
+} from './contracts.js'
 
 /** Wire protocols implemented by the OpenRouter provider boundary. */
 export type CatalogOpenRouterProtocol = 'chat' | 'image' | 'speech' | 'video'
@@ -172,10 +175,15 @@ const openRouterBindingBaseSchema = CatalogProviderBindingCommonSchema.extend({
   provider: z.literal('openrouter'),
   providerTag: z.string().min(1),
   routingPolicy: z.literal('pinned'),
-  supportedParameters: z.tuple(
-    [z.string().min(1)],
-    z.string().min(1),
-  ),
+  supportedParameters: z
+    .array(z.string().min(1))
+    .min(1)
+    .transform((values): [string, ...string[]] => {
+      const [first, ...rest] = values
+      if (first === undefined)
+        throw new Error('Expected supported OpenRouter parameters.')
+      return [first, ...rest]
+    }),
 })
 
 /** Strict provider-specific schema for every OpenRouter protocol binding. */
@@ -204,6 +212,123 @@ export const CatalogOpenRouterProviderBindingSchema = z.discriminatedUnion(
     }).strict(),
   ],
 ) satisfies z.ZodType<CatalogOpenRouterProviderBinding>
+
+/** Binding facts the browser adapter needs; excludes review and policy fields. */
+type BrowserOpenRouterBindingKeys
+  = | 'endpoint'
+    | 'lifecycle'
+    | 'nativeModelId'
+    | 'operationId'
+    | 'protocol'
+    | 'provider'
+    | 'providerTag'
+    | 'requestProfile'
+
+/** Narrow chat binding disclosed to the browser execution driver. */
+export type BrowserOpenRouterChatBinding = Pick<
+  CatalogOpenRouterChatBinding,
+  BrowserOpenRouterBindingKeys
+>
+/** Narrow image binding disclosed to the browser execution driver. */
+export type BrowserOpenRouterImageBinding = Pick<
+  CatalogOpenRouterImageBinding,
+  BrowserOpenRouterBindingKeys
+>
+/** Narrow speech binding disclosed to the browser execution driver. */
+export type BrowserOpenRouterSpeechBinding = Pick<
+  CatalogOpenRouterSpeechBinding,
+  BrowserOpenRouterBindingKeys
+>
+/** Narrow video binding disclosed to the browser execution driver. */
+export type BrowserOpenRouterVideoBinding = Pick<
+  CatalogOpenRouterVideoBinding,
+  BrowserOpenRouterBindingKeys
+>
+
+/** Every narrow OpenRouter binding variant a browser lease may receive. */
+export type BrowserOpenRouterProviderBinding
+  = | BrowserOpenRouterChatBinding
+    | BrowserOpenRouterImageBinding
+    | BrowserOpenRouterSpeechBinding
+    | BrowserOpenRouterVideoBinding
+
+const browserBindingBaseSchema = z.object({
+  lifecycle: CatalogProviderLifecycleSchema,
+  nativeModelId: z.string().regex(/^[^/]+\/.+$/),
+  operationId: z.string().min(1),
+  provider: z.literal('openrouter'),
+  providerTag: z.string().min(1),
+})
+
+/** Strict wire schema for the narrow browser-disclosed OpenRouter binding. */
+export const BrowserOpenRouterProviderBindingSchema = z.discriminatedUnion(
+  'protocol',
+  [
+    browserBindingBaseSchema.extend({
+      endpoint: z.literal('/api/v1/chat/completions'),
+      protocol: z.literal('chat'),
+      requestProfile: requestProfileSchemas.chat,
+    }).strict(),
+    browserBindingBaseSchema.extend({
+      endpoint: z.literal('/api/v1/images'),
+      protocol: z.literal('image'),
+      requestProfile: requestProfileSchemas.image,
+    }).strict(),
+    browserBindingBaseSchema.extend({
+      endpoint: z.literal('/api/v1/audio/speech'),
+      protocol: z.literal('speech'),
+      requestProfile: requestProfileSchemas.speech,
+    }).strict(),
+    browserBindingBaseSchema.extend({
+      endpoint: z.literal('/api/v1/videos'),
+      protocol: z.literal('video'),
+      requestProfile: requestProfileSchemas.video,
+    }).strict(),
+  ],
+) satisfies z.ZodType<BrowserOpenRouterProviderBinding>
+
+/** Projects one reviewed binding onto its narrow browser-disclosed form. */
+export function toBrowserOpenRouterProviderBinding(
+  binding: CatalogOpenRouterProviderBinding,
+): BrowserOpenRouterProviderBinding {
+  const common = {
+    lifecycle: binding.lifecycle,
+    nativeModelId: binding.nativeModelId,
+    operationId: binding.operationId,
+    provider: binding.provider,
+    providerTag: binding.providerTag,
+  }
+  switch (binding.protocol) {
+    case 'chat':
+      return {
+        ...common,
+        endpoint: binding.endpoint,
+        protocol: binding.protocol,
+        requestProfile: binding.requestProfile,
+      }
+    case 'image':
+      return {
+        ...common,
+        endpoint: binding.endpoint,
+        protocol: binding.protocol,
+        requestProfile: binding.requestProfile,
+      }
+    case 'speech':
+      return {
+        ...common,
+        endpoint: binding.endpoint,
+        protocol: binding.protocol,
+        requestProfile: binding.requestProfile,
+      }
+    case 'video':
+      return {
+        ...common,
+        endpoint: binding.endpoint,
+        protocol: binding.protocol,
+        requestProfile: binding.requestProfile,
+      }
+  }
+}
 
 /** Validates OpenRouter protocol policy against one catalog operation. */
 export function validateOpenRouterBindingCompatibility(

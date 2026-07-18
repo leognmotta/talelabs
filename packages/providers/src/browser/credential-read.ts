@@ -23,7 +23,7 @@ import {
   assertBrowserCredentialUserId,
 } from './credential-scope.js'
 
-/** Resolves plaintext only for the future browser-local provider executor. */
+/** Resolves plaintext only inside the browser-local provider executor. */
 export async function resolveCredential(
   scope: BrowserCredentialScope,
 ): Promise<string | null> {

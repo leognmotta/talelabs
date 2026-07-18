@@ -31,6 +31,9 @@ export const FLOW_RUN_SNAPSHOT_VERSION = 3 as const
 /** Selects whether an admitted run may cross a paid provider boundary. */
 export type FlowRunExecutionMode = 'debug' | 'live'
 
+/** Selects the environment that performs admitted provider lifecycle work. */
+export type FlowRunExecutionRuntime = 'browser' | 'managed'
+
 /** Private provider execution facts frozen for one planned node. */
 export interface FlowRunSnapshotExecutionContract {
   adapterVersion: string
@@ -62,6 +65,8 @@ export interface FlowRunSnapshot<Plan extends object = object> {
   executionContracts: readonly FlowRunSnapshotExecutionContract[]
   /** Missing only on historical snapshots, where it is interpreted as live. */
   executionMode?: FlowRunExecutionMode
+  /** Missing on historical snapshots, where it is interpreted as managed. */
+  executionRuntime?: FlowRunExecutionRuntime
   executorVersion: string
   plan: Plan
   plannerVersion: typeof FLOW_RUN_PLANNER_VERSION

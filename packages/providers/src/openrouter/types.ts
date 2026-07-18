@@ -4,10 +4,10 @@
  */
 
 import type {
-  CatalogOpenRouterChatBinding,
-  CatalogOpenRouterImageBinding,
-  CatalogOpenRouterSpeechBinding,
-  CatalogOpenRouterVideoBinding,
+  BrowserOpenRouterChatBinding,
+  BrowserOpenRouterImageBinding,
+  BrowserOpenRouterSpeechBinding,
+  BrowserOpenRouterVideoBinding,
 } from '@talelabs/models-catalog'
 import type {
   ProviderAssetResolver,
@@ -22,14 +22,14 @@ export type ResolvedOpenRouterAsset = ResolvedProviderAsset
 /** Tenant-aware resolver injected by Trigger without leaking database access. */
 export type OpenRouterAssetResolver = ProviderAssetResolver
 
-/** Immutable image binding captured in an admitted run snapshot. */
-export type OpenRouterImageBinding = CatalogOpenRouterImageBinding
+/** Narrow image binding facts disclosed to either execution driver. */
+export type OpenRouterImageBinding = BrowserOpenRouterImageBinding
 
-/** Immutable video binding captured in an admitted run snapshot. */
-export type OpenRouterVideoBinding = CatalogOpenRouterVideoBinding
+/** Narrow video binding facts disclosed to either execution driver. */
+export type OpenRouterVideoBinding = BrowserOpenRouterVideoBinding
 
-/** Immutable speech binding captured in an admitted run snapshot. */
-export type OpenRouterSpeechBinding = CatalogOpenRouterSpeechBinding
+/** Narrow speech binding facts disclosed to either execution driver. */
+export type OpenRouterSpeechBinding = BrowserOpenRouterSpeechBinding
 
-/** Immutable chat binding captured in an admitted run snapshot. */
-export type OpenRouterChatBinding = CatalogOpenRouterChatBinding
+/** Narrow chat binding facts disclosed to either execution driver. */
+export type OpenRouterChatBinding = BrowserOpenRouterChatBinding

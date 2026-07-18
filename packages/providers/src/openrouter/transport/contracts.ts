@@ -106,8 +106,12 @@ export interface OpenRouterHttpRequest {
 export interface OpenRouterHttpClientOptions {
   /** Optional fake or alternate OpenRouter origin used by verification. */
   baseUrl?: string
-  /** Non-serializable API-key resolver supplied by server composition. */
+  /** Non-serializable API-key resolver supplied by the selected runtime. */
   credential: OpenRouterRuntimeCredential
   /** Optional fake fetch implementation used by offline verification. */
   fetch?: typeof globalThis.fetch
+  /** Runtime-wide binary/stream response cap in bytes. */
+  maxMediaResponseBytes?: number
+  /** Runtime-wide cancellation signal, such as browser leadership loss. */
+  signal?: AbortSignal
 }

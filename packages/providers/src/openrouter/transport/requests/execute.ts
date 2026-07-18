@@ -56,9 +56,9 @@ export function createOpenRouterRequestExecutor(
     const timeoutSignal = AbortSignal.timeout(
       input.timeoutMs ?? OPENROUTER_HTTP_TIMEOUT_MS,
     )
-    const signal = input.signal
-      ? AbortSignal.any([input.signal, timeoutSignal])
-      : timeoutSignal
+    const signals = [input.signal, options.signal, timeoutSignal]
+      .filter((signal): signal is AbortSignal => signal !== undefined)
+    const signal = signals.length === 1 ? signals[0]! : AbortSignal.any(signals)
     try {
       const response = await fetchImplementation(`${baseUrl}${input.path}`, {
         body,

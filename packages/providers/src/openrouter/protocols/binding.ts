@@ -5,8 +5,8 @@
 
 import type { NormalizedGenerationRequest } from '@talelabs/flows'
 import type {
+  BrowserOpenRouterProviderBinding,
   CatalogOpenRouterProtocol,
-  CatalogOpenRouterProviderBinding,
 } from '@talelabs/models-catalog'
 
 import { throwProviderResponseInvalid } from '../errors.js'
@@ -14,7 +14,7 @@ import { throwProviderResponseInvalid } from '../errors.js'
 /** Validates request identity against the exact admitted provider binding. */
 export function assertRequestMatchesBinding(
   request: NormalizedGenerationRequest,
-  binding: CatalogOpenRouterProviderBinding,
+  binding: BrowserOpenRouterProviderBinding,
   protocol: CatalogOpenRouterProtocol,
 ) {
   if (
@@ -29,7 +29,7 @@ export function assertRequestMatchesBinding(
 
 /** Builds pinned OpenRouter routing policy with fallbacks disabled. */
 export function pinnedOpenRouterProvider(
-  binding: CatalogOpenRouterProviderBinding,
+  binding: BrowserOpenRouterProviderBinding,
   requireParameters = false,
 ) {
   return {

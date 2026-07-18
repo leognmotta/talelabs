@@ -261,6 +261,36 @@ export async function headObject(
   }))
 }
 
+/** Whether a storage error means the exact object is confirmed absent. */
+export function isObjectNotFoundError(error: unknown) {
+  const candidate = error as {
+    $metadata?: { httpStatusCode?: number }
+    name?: string
+  } | null
+  return candidate?.name === 'NotFound'
+    || candidate?.name === 'NoSuchKey'
+    || candidate?.$metadata?.httpStatusCode === 404
+}
+
+/**
+ * Reads object metadata, mapping only a confirmed 404 to null. Credential,
+ * network, and storage-service failures keep propagating so callers never
+ * mistake an unavailable store for a missing object.
+ */
+export async function headObjectIfExists(
+  input: HeadObjectInput,
+  client = r2Client,
+) {
+  try {
+    return await headObject(input, client)
+  }
+  catch (error) {
+    if (isObjectNotFoundError(error))
+      return null
+    throw error
+  }
+}
+
 /** Downloads one exact object through the server storage client. */
 export async function getObject(
   input: ObjectStorageObjectInput,

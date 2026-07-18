@@ -1,3 +1,6 @@
+/** Public provider-neutral contracts for Flow planning, snapshots, and execution. */
+
+export * from './browser/contracts.js'
 export * from './planning/collect.js'
 export * from './planning/input-coordinates.js'
 export * from './planning/iterators.js'

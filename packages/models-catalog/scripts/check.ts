@@ -29,7 +29,37 @@ function canonicalJson(value: unknown): string {
   return JSON.stringify(value)
 }
 
+function browserVerificationHash(binding: Record<string, unknown>) {
+  const {
+    browserVerification: _browserVerification,
+    costCapture: _costCapture,
+    evidence: _evidence,
+    executionRuntimes: _executionRuntimes,
+    priority: _priority,
+    ...browserExecutionFacts
+  } = binding
+  return `sha256:${createHash('sha256')
+    .update(canonicalJson(browserExecutionFacts))
+    .digest('hex')}`
+}
+
 const errors = validateModelCatalog(MODEL_CATALOG)
+let browserBindingCount = 0
+for (const model of MODEL_CATALOG.models) {
+  for (const binding of model.bindings) {
+    if (!binding.executionRuntimes.includes('browser'))
+      continue
+    browserBindingCount += 1
+    const expectedHash = browserVerificationHash(
+      binding as unknown as Record<string, unknown>,
+    )
+    if (binding.browserVerification?.bindingHash !== expectedHash) {
+      errors.push(
+        `${model.id}/${binding.operationId}: browser verification hash must be ${expectedHash}`,
+      )
+    }
+  }
+}
 const { catalogRevision: _declaredRevision, ...revisionSource }
   = RAW_MODEL_CATALOG
 const expectedCatalogRevision = `sha256:${createHash('sha256')
@@ -44,6 +74,7 @@ const publicJson = JSON.stringify(PUBLIC_MODEL_CATALOG)
 for (const privateField of [
   'adapterVersion',
   'bindings',
+  'browserVerification',
   'endpoint',
   'nativeModelId',
   'providerTag',
@@ -66,5 +97,5 @@ const operationCount = MODEL_CATALOG.models.reduce(
   0,
 )
 console.log(
-  `Validated ${MODEL_CATALOG.models.length} models, ${operationCount} operations, and sanitized public projection.`,
+  `Validated ${MODEL_CATALOG.models.length} models, ${operationCount} operations, ${browserBindingCount} exact browser bindings, and sanitized public projection.`,
 )

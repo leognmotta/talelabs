@@ -22,6 +22,15 @@ async function rateLimitedFetch() {
   })
 }
 
+async function binaryFetch() {
+  return new Response(new Uint8Array([1, 2]), {
+    headers: {
+      'content-length': '2',
+      'content-type': 'application/octet-stream',
+    },
+  })
+}
+
 /** Verifies malformed and rate-limited responses without external network I/O. */
 export async function verifyHttpBoundary() {
   const schema = z.object({ ok: z.literal(true) })
@@ -56,5 +65,21 @@ export async function verifyHttpBoundary() {
     (error: unknown) => error instanceof OpenRouterHttpError
       && error.code === 'rate_limited'
       && error.retryAfterMs === 2_000,
+  )
+  const browserBounded = createOpenRouterHttpClient({
+    credential: {
+      provider: 'openrouter',
+      resolveApiKey: () => 'verification-key',
+    },
+    fetch: binaryFetch,
+    maxMediaResponseBytes: 1,
+  })
+  await assert.rejects(
+    () => browserBounded.requestBytes({
+      method: 'GET',
+      path: '/api/v1/verification',
+    }),
+    (error: unknown) => error instanceof OpenRouterHttpError
+      && error.code === 'response_too_large',
   )
 }

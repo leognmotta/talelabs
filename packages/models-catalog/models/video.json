@@ -298,7 +298,16 @@
           "provider",
           "resolution",
           "generate_audio"
-        ]
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:0182233038a69acfc42298d7186e60eda3866f37a49d1655f285d335165cbb99",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-17"
+        }
       },
       {
         "adapterVersion": "openrouter-video-v1",
@@ -362,7 +371,16 @@
           "resolution",
           "generate_audio",
           "frame_images"
-        ]
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:55dfc76b01911b4911687c38532261fcb44312f29c3dc9f48e15ae23ad07ae95",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-17"
+        }
       }
     ]
   },
@@ -661,7 +679,16 @@
           "provider",
           "resolution",
           "generate_audio"
-        ]
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:819389abf2e94d0c94f2eb456ec95b606ac1f81d1c7ea068d284c45d204f72aa",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-17"
+        }
       },
       {
         "adapterVersion": "openrouter-video-v1",
@@ -725,7 +752,16 @@
           "resolution",
           "generate_audio",
           "frame_images"
-        ]
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:b10fcc1af8fe806f7e0610557c7cf112df9d01ef60d4c8240d4a9dcece1a364a",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-17"
+        }
       }
     ]
   },
@@ -1101,7 +1137,16 @@
           "prompt",
           "provider",
           "resolution"
-        ]
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:cf57dd98f23562ec7ffece05bb7ea4ad533aee85dab29f196127a781a7bf9bd2",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-17"
+        }
       },
       {
         "adapterVersion": "openrouter-video-v1",
@@ -1163,7 +1208,16 @@
           "provider",
           "resolution",
           "frame_images"
-        ]
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:6eb018bc5d186abb5d3f451302ee883d6afb5a1d409f2ba65f9683ec227efc29",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-17"
+        }
       },
       {
         "adapterVersion": "openrouter-video-v1",
@@ -1225,7 +1279,16 @@
           "provider",
           "resolution",
           "input_references"
-        ]
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:c18f2c4051c9dbd65855b7d9ac5fa4cbe0d505e54c51e9e53ba406886c73471c",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-17"
+        }
       }
     ]
   },
@@ -1737,7 +1800,16 @@
           "provider",
           "resolution",
           "generate_audio"
-        ]
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:12df71e24c08c43dc4c72a12059339b401344f8183d7fc5cd0b4cbdf510747b6",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-17"
+        }
       },
       {
         "adapterVersion": "openrouter-video-v1",
@@ -1801,7 +1873,16 @@
           "resolution",
           "generate_audio",
           "frame_images"
-        ]
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:6bdd782f6bd673b36680f428212b2a5f53a735568d4f78a4813e137da64b837c",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-17"
+        }
       },
       {
         "adapterVersion": "openrouter-video-v1",
@@ -1865,7 +1946,16 @@
           "resolution",
           "generate_audio",
           "input_references"
-        ]
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:50e65999adacda146b74047abb03e16b2d558483f6de67084bbf231db33ee522",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-17"
+        }
       }
     ]
   },
@@ -2204,7 +2294,16 @@
           "provider",
           "resolution",
           "generate_audio"
-        ]
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:62670f2f1b241158253db24e74c0e1586ebc30f00015554ac637200ed1930720",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-17"
+        }
       },
       {
         "adapterVersion": "openrouter-video-v1",
@@ -2268,7 +2367,16 @@
           "resolution",
           "generate_audio",
           "frame_images"
-        ]
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:bf8cb0657858fc0caf092b3d2f90990439173b5d9e3c8abc51b4ca129728fcf9",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-17"
+        }
       }
     ]
   },
@@ -2607,7 +2715,16 @@
           "provider",
           "resolution",
           "generate_audio"
-        ]
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:660b30002b659d7d513dd438f308395425a3349a71091d18c4afbf7def2d6e38",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-17"
+        }
       },
       {
         "adapterVersion": "openrouter-video-v1",
@@ -2671,7 +2788,16 @@
           "resolution",
           "generate_audio",
           "frame_images"
-        ]
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:255b22d8abc2f1c10aa104c9f3e9e6fd1754cac1d94c848d64c5229f1fe68a49",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-17"
+        }
       }
     ]
   },
@@ -2966,7 +3092,16 @@
           "provider",
           "resolution",
           "generate_audio"
-        ]
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:26fd79a3de2b919fe19e16e3334d4283c2a6bd8ee1f560ed3850b158408432f9",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-17"
+        }
       },
       {
         "adapterVersion": "openrouter-video-v1",
@@ -3030,7 +3165,16 @@
           "resolution",
           "generate_audio",
           "frame_images"
-        ]
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:c2b38ff6f5b69d017ee7256fbcff09776377e7bcf64db17c96bcd99af3aa2fb0",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-17"
+        }
       }
     ]
   },
@@ -3365,7 +3509,16 @@
           "provider",
           "resolution",
           "generate_audio"
-        ]
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:bacdf174033b56b401239af6d376cb4f12eadd60ffaae290d9db15484380c777",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-17"
+        }
       },
       {
         "adapterVersion": "openrouter-video-v1",
@@ -3429,7 +3582,16 @@
           "resolution",
           "generate_audio",
           "frame_images"
-        ]
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:0f2b7b8efef62492c34822543dba13a065e83e396a72381007fa1c8dfd78d237",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-17"
+        }
       }
     ]
   },
@@ -3677,7 +3839,16 @@
           "provider",
           "resolution",
           "generate_audio"
-        ]
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:4e0f98cc80dff3a6ee07d9dbb65406b6c8b6c8900dd518d9dba946976c57f131",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-17"
+        }
       },
       {
         "adapterVersion": "openrouter-video-v1",
@@ -3741,7 +3912,16 @@
           "resolution",
           "generate_audio",
           "frame_images"
-        ]
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:720dfb17cb558446a8a9b7f34d720bfbf635d9424f08c3f79886406df72cb983",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-17"
+        }
       }
     ]
   },
@@ -3971,7 +4151,16 @@
           "prompt",
           "provider",
           "resolution"
-        ]
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:84b2febe1c890fa9c5bc96fed69d78c2ccc0f32d154dc49ba25eddbb4f4c7c17",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-17"
+        }
       },
       {
         "adapterVersion": "openrouter-video-v1",
@@ -4033,7 +4222,16 @@
           "provider",
           "resolution",
           "frame_images"
-        ]
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:3f8558aeca42073a67a4a38c862bab238e3260102882afbb36b6c9e8d37e0377",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-17"
+        }
       }
     ]
   },
@@ -4229,7 +4427,16 @@
           "provider",
           "resolution",
           "generate_audio"
-        ]
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:8980ef7d872d401e1f8a495aa5b12b667beb477cb3b8a381c1d19cdd49a9142d",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-17"
+        }
       }
     ]
   },
@@ -4532,7 +4739,16 @@
           "provider",
           "resolution",
           "generate_audio"
-        ]
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:a3a160773f81e3bd15fa992078fccc0d7d8496f166b852ce8b877f07e6953b67",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-17"
+        }
       },
       {
         "adapterVersion": "openrouter-video-v1",
@@ -4596,7 +4812,16 @@
           "resolution",
           "generate_audio",
           "frame_images"
-        ]
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:dae139853b1d83ae0a9408d0b2ae6d96c49a220a5d58d847b23eaab55ee1b434",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-17"
+        }
       }
     ]
   },
@@ -4951,7 +5176,16 @@
           "provider",
           "resolution",
           "generate_audio"
-        ]
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:7586d9870323aade47efada98ace09dbd1cf27f1ebfc6e70f5c1da91e8ba0513",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-17"
+        }
       },
       {
         "adapterVersion": "openrouter-video-v1",
@@ -5015,7 +5249,16 @@
           "resolution",
           "generate_audio",
           "frame_images"
-        ]
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:ad2a98c2b88dee7f836787edb3f602b039d60642cce5f6abed6a33f8900df65d",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-17"
+        }
       }
     ]
   },
@@ -5317,7 +5560,16 @@
           "prompt",
           "provider",
           "resolution"
-        ]
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:c4493056187c7b1b314727f8dc5b4302e5a2ab9c3f7458eb27367a67b5e12fc8",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-17"
+        }
       },
       {
         "adapterVersion": "openrouter-video-v1",
@@ -5379,7 +5631,16 @@
           "provider",
           "resolution",
           "frame_images"
-        ]
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:b9901faab74614170346eac5d753cbfe8ad1f0b7de059f833a7193697b441824",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-17"
+        }
       }
     ]
   }

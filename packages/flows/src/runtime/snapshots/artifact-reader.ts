@@ -2,6 +2,7 @@
 
 import type {
   FlowRunExecutionMode,
+  FlowRunExecutionRuntime,
   FlowRunSnapshot,
   FlowRunSnapshotArtifact,
   ReadableFlowRunPlanSnapshot,
@@ -33,6 +34,15 @@ export function readFlowRunExecutionMode(value: unknown): FlowRunExecutionMode {
     return 'live'
   if (value === 'debug')
     return 'debug'
+  throw new FlowRunSnapshotReadError('snapshot_invalid')
+}
+
+/** Reads the run driver while preserving managed semantics for old snapshots. */
+export function readFlowRunExecutionRuntime(value: unknown): FlowRunExecutionRuntime {
+  if (value === undefined || value === 'managed')
+    return 'managed'
+  if (value === 'browser')
+    return 'browser'
   throw new FlowRunSnapshotReadError('snapshot_invalid')
 }
 
@@ -71,6 +81,7 @@ export function readFlowRunSnapshotArtifact(input: {
     throw new FlowRunSnapshotReadError('snapshot_invalid')
   }
   readFlowRunExecutionMode(input.graphSnapshot.executionMode)
+  readFlowRunExecutionRuntime(input.graphSnapshot.executionRuntime)
 
   const executionContracts = z.array(executionContractSchema)
     .safeParse(input.graphSnapshot.executionContracts)

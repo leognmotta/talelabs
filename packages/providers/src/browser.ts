@@ -16,3 +16,4 @@ export {
   storeCredential,
 } from './browser/credential-write.js'
 export * from './core.js'
+export { createOpenRouterBrowserProviderAdapter } from './openrouter/browser-adapter.js'

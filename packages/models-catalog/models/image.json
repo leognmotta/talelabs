@@ -237,7 +237,16 @@
           "prompt",
           "provider",
           "aspect_ratio"
-        ]
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:42c9814e581bb4719ca81f0d05e75dcb4856bd9054a89d0278603e4f92ad3ebf",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-17"
+        }
       },
       {
         "adapterVersion": "openrouter-image-v1",
@@ -288,7 +297,16 @@
           "provider",
           "input_references",
           "aspect_ratio"
-        ]
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:c0f7b4e1aff0fcd6827fcdf80654b2d32d3e7ab681047d11bf48a3efaa118054",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-17"
+        }
       }
     ]
   },
@@ -558,7 +576,16 @@
           "provider",
           "aspect_ratio",
           "resolution"
-        ]
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:2c7ea42082f24c7fb3110790ee7302b63620a97aa654c483198d1605554ebf16",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-17"
+        }
       },
       {
         "adapterVersion": "openrouter-image-v1",
@@ -611,7 +638,16 @@
           "input_references",
           "aspect_ratio",
           "resolution"
-        ]
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:6d9ecdf3f92ef9c00a8598c9e0be896a49daab0da68425c402bce5c2d11d21ce",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-17"
+        }
       }
     ]
   },
@@ -861,7 +897,16 @@
           "provider",
           "aspect_ratio",
           "resolution"
-        ]
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:73cccd0320e3f8601dbf445d6acc494a9e75a80c65a7a8b1a53ba6c984250cf3",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-17"
+        }
       },
       {
         "adapterVersion": "openrouter-image-v1",
@@ -914,7 +959,16 @@
           "input_references",
           "aspect_ratio",
           "resolution"
-        ]
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:81d38d631ca97b528fce0220efd01e782a2b78aa82b809799c7f704d96799cb9",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-17"
+        }
       }
     ]
   },
@@ -1137,7 +1191,16 @@
           "provider",
           "quality",
           "background"
-        ]
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:f6f2cc8ac7b6935f8ffe4c26036d64f97e8ffa872517acd28fc9771fefc79008",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-17"
+        }
       },
       {
         "adapterVersion": "openrouter-image-v1",
@@ -1190,7 +1253,16 @@
           "input_references",
           "quality",
           "background"
-        ]
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:936df15b75ccc1fd94c540415f32e769b29b0e76c60e1e53dd19d6c9cc1b85dd",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-17"
+        }
       }
     ]
   },
@@ -1464,7 +1536,16 @@
           "provider",
           "aspect_ratio",
           "resolution"
-        ]
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:3afe6fdb51109bbcf80797cb2f395ea15c517e76ad4dcb424bc79137f0d351be",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-17"
+        }
       },
       {
         "adapterVersion": "openrouter-image-v1",
@@ -1517,7 +1598,16 @@
           "input_references",
           "aspect_ratio",
           "resolution"
-        ]
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:13c8fb674c3174d3a713e3e0f67279662331fd3a5530e137827efa5f464a7d7a",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-17"
+        }
       }
     ]
   },
@@ -1712,7 +1802,16 @@
           "prompt",
           "provider",
           "output_format"
-        ]
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:0d0b71a1ebb4bff2a0f0b9efc62fe27c737f8aaaa301679486484fd12c8d5488",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-17"
+        }
       },
       {
         "adapterVersion": "openrouter-image-v1",
@@ -1763,7 +1862,16 @@
           "provider",
           "input_references",
           "output_format"
-        ]
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:fb7a0548585fe7c9e864c784ee965ab5e09691eb1d2dd1d6b685811f7e89c596",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-17"
+        }
       }
     ]
   },
@@ -1933,7 +2041,16 @@
           "n",
           "prompt",
           "provider"
-        ]
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:e105db632108bc49e96ad91ea12c17881a05d40abaaa09b7805fa58cf6663222",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-17"
+        }
       },
       {
         "adapterVersion": "openrouter-image-v1",
@@ -1981,7 +2098,16 @@
           "prompt",
           "provider",
           "input_references"
-        ]
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:3eac0324e58dd1093af8ec35e50ecc8b061bc90d64ae49da309e09a52c6b1851",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-17"
+        }
       }
     ]
   },
@@ -2204,7 +2330,16 @@
           "provider",
           "quality",
           "background"
-        ]
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:29a242885c3c5944bc8542edcd25edf4ac8e1f7f8fc82552bed28b73b20f3126",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-17"
+        }
       },
       {
         "adapterVersion": "openrouter-image-v1",
@@ -2257,7 +2392,16 @@
           "input_references",
           "quality",
           "background"
-        ]
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:52e08978909f7c5e6cebc10ad78d284ec3fd9d43b24140466b1ea8be866b823c",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-17"
+        }
       }
     ]
   },
@@ -2475,7 +2619,16 @@
           "prompt",
           "provider",
           "aspect_ratio"
-        ]
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:1be8ead4f359d5d628cd81e7097f146959fe0efed37f5858773868617a4c58be",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-17"
+        }
       },
       {
         "adapterVersion": "openrouter-image-v1",
@@ -2526,7 +2679,16 @@
           "provider",
           "input_references",
           "aspect_ratio"
-        ]
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:c9a289dd73f3c1ca3e8883b6100a1031d93bda4a74419bfd18318520876a0b4f",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-17"
+        }
       }
     ]
   },
@@ -2788,7 +2950,16 @@
           "provider",
           "aspect_ratio",
           "resolution"
-        ]
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:a74a51b947b90d0f9af0c970e6376e002943fc7282a8efec6162f8b7406bca95",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-17"
+        }
       },
       {
         "adapterVersion": "openrouter-image-v1",
@@ -2841,7 +3012,16 @@
           "input_references",
           "aspect_ratio",
           "resolution"
-        ]
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:53d07bdac394ca50da2a2857042fa2b69895fa64ddb24eda79ded5148ba728c5",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-17"
+        }
       }
     ]
   },
@@ -3036,7 +3216,16 @@
           "prompt",
           "provider",
           "output_format"
-        ]
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:352620c7330b28a446c9cc7b2a00d5d8a58957c725f5e5d2165f8fe7db9a6fb2",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-17"
+        }
       },
       {
         "adapterVersion": "openrouter-image-v1",
@@ -3087,7 +3276,16 @@
           "provider",
           "input_references",
           "output_format"
-        ]
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:9c99b79e53fa4a521144628543dd9260e4b2f5f46353dce2300679e685b986fd",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-17"
+        }
       }
     ]
   },
@@ -3257,7 +3455,16 @@
           "n",
           "prompt",
           "provider"
-        ]
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:b833594e6dd52e36f87e566b5590c93fba07e0ec2f80c0ce7e51f6ad9831d13b",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-17"
+        }
       },
       {
         "adapterVersion": "openrouter-image-v1",
@@ -3305,7 +3512,16 @@
           "prompt",
           "provider",
           "input_references"
-        ]
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:a567768ab52686226ebd21860101b818310e7755a65d183d7f7a1b25e9ee5656",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-17"
+        }
       }
     ]
   }

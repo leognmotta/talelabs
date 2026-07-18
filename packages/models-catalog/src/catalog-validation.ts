@@ -10,6 +10,7 @@ import type {
   CatalogModelRecord,
   ModelCatalog,
 } from './schema.js'
+import { browserBindingIncompatibilities } from './providers/browser-compat.js'
 import { validateProviderBinding } from './providers/validation.js'
 
 function validateModel(model: CatalogModelRecord): string[] {
@@ -58,6 +59,13 @@ function validateModel(model: CatalogModelRecord): string[] {
       continue
     }
     errors.push(...validateProviderBinding(model, binding))
+    if (binding.executionRuntimes.includes('browser')) {
+      errors.push(
+        ...browserBindingIncompatibilities(binding).map(reason =>
+          `${model.id}/${binding.operationId}: browser runtime — ${reason}`,
+        ),
+      )
+    }
   }
   return errors
 }

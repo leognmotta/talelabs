@@ -142,7 +142,16 @@
           "model",
           "response_format",
           "voice"
-        ]
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:5493c9cf22c2273cab356f78c41b60f85e1104512fcee742f944ceb5d69c2bc6",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-17"
+        }
       }
     ]
   }
