@@ -41,6 +41,13 @@ export const postRunsIdBrowserJobsJobidFail200StateEnum2 = {
 export type PostRunsIdBrowserJobsJobidFail200StateEnum2Key =
   (typeof postRunsIdBrowserJobsJobidFail200StateEnum2)[keyof typeof postRunsIdBrowserJobsJobidFail200StateEnum2];
 
+export const postRunsIdBrowserJobsJobidFail200StateEnum3 = {
+  superseded: "superseded",
+} as const;
+
+export type PostRunsIdBrowserJobsJobidFail200StateEnum3Key =
+  (typeof postRunsIdBrowserJobsJobidFail200StateEnum3)[keyof typeof postRunsIdBrowserJobsJobidFail200StateEnum3];
+
 /**
  * @description Browser job failure recorded
  */
@@ -66,6 +73,12 @@ export type PostRunsIdBrowserJobsJobidFail200 =
        * @type string
        */
       state: PostRunsIdBrowserJobsJobidFail200StateEnum2Key;
+    }
+  | {
+      /**
+       * @type string
+       */
+      state: PostRunsIdBrowserJobsJobidFail200StateEnum3Key;
     };
 
 /**

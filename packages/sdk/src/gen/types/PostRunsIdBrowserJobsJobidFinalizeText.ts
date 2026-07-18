@@ -21,6 +21,7 @@ export type PostRunsIdBrowserJobsJobidFinalizeTextPathParams = {
 
 export const postRunsIdBrowserJobsJobidFinalizeText200StateEnum = {
   canceled: "canceled",
+  processing: "processing",
   succeeded: "succeeded",
 } as const;
 

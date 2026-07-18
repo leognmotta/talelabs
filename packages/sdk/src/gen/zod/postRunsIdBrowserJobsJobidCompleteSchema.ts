@@ -30,10 +30,10 @@ export const postRunsIdBrowserJobsJobidCompletePathParamsSchema = z.object({
 }) as unknown as z.ZodType<PostRunsIdBrowserJobsJobidCompletePathParams>;
 
 /**
- * @description Browser job completed
+ * @description Browser job completed or awaiting Asset readiness
  */
 export const postRunsIdBrowserJobsJobidComplete200Schema = z.object({
-  state: z.enum(["canceled", "succeeded"]),
+  state: z.enum(["canceled", "processing", "succeeded"]),
 }) as unknown as z.ZodType<PostRunsIdBrowserJobsJobidComplete200>;
 
 /**

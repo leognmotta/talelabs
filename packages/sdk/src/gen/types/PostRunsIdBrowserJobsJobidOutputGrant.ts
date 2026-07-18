@@ -90,9 +90,10 @@ export type PostRunsIdBrowserJobsJobidOutputGrantMutationRequest = {
    */
   fenceToken: number;
   /**
-   * @type integer | undefined
+   * @maxLength 67108864
+   * @type integer
    */
-  contentLength?: number;
+  contentLength: number;
   /**
    * @minLength 24
    * @maxLength 24

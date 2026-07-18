@@ -46,6 +46,9 @@ export const postRunsIdBrowserJobsJobidFail200Schema = z.union([
     },
     state: z.enum(["retrying"]),
   }),
+  z.object({
+    state: z.enum(["superseded"]),
+  }),
 ]) as unknown as z.ZodType<PostRunsIdBrowserJobsJobidFail200>;
 
 /**

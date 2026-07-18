@@ -32,10 +32,10 @@ export const postRunsIdBrowserJobsJobidFinalizeMediaPathParamsSchema = z.object(
 ) as unknown as z.ZodType<PostRunsIdBrowserJobsJobidFinalizeMediaPathParams>;
 
 /**
- * @description Canonical browser media finalized
+ * @description Canonical browser media persisted and ingestion dispatched
  */
 export const postRunsIdBrowserJobsJobidFinalizeMedia200Schema = z.object({
-  state: z.enum(["canceled", "succeeded"]),
+  state: z.enum(["canceled", "processing", "succeeded"]),
 }) as unknown as z.ZodType<PostRunsIdBrowserJobsJobidFinalizeMedia200>;
 
 /**

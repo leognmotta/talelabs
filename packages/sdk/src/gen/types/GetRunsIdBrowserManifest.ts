@@ -36,90 +36,6 @@ export const cancellationsCancellationEnum = {
 export type CancellationsCancellationEnumKey =
   (typeof cancellationsCancellationEnum)[keyof typeof cancellationsCancellationEnum];
 
-export const providerLifecycleCancellationEnum = {
-  "best-effort": "best-effort",
-  supported: "supported",
-  unsupported: "unsupported",
-} as const;
-
-export type ProviderLifecycleCancellationEnumKey =
-  (typeof providerLifecycleCancellationEnum)[keyof typeof providerLifecycleCancellationEnum];
-
-export const providerLifecycleCompletionsEnum = {
-  response: "response",
-} as const;
-
-export type ProviderLifecycleCompletionsEnumKey =
-  (typeof providerLifecycleCompletionsEnum)[keyof typeof providerLifecycleCompletionsEnum];
-
-export const providerLifecycleDeliveriesEnum = {
-  bytes: "bytes",
-  storage: "storage",
-  stream: "stream",
-  text: "text",
-  url: "url",
-} as const;
-
-export type ProviderLifecycleDeliveriesEnumKey =
-  (typeof providerLifecycleDeliveriesEnum)[keyof typeof providerLifecycleDeliveriesEnum];
-
-export const providerLifecycleSubmissionEnum = {
-  immediate: "immediate",
-} as const;
-
-export type ProviderLifecycleSubmissionEnumKey =
-  (typeof providerLifecycleSubmissionEnum)[keyof typeof providerLifecycleSubmissionEnum];
-
-export const providerLifecycleCompletionsEnum2 = {
-  poll: "poll",
-} as const;
-
-export type ProviderLifecycleCompletionsEnum2Key =
-  (typeof providerLifecycleCompletionsEnum2)[keyof typeof providerLifecycleCompletionsEnum2];
-
-export const providerLifecycleCompletionsEnum3 = {
-  webhook: "webhook",
-} as const;
-
-export type ProviderLifecycleCompletionsEnum3Key =
-  (typeof providerLifecycleCompletionsEnum3)[keyof typeof providerLifecycleCompletionsEnum3];
-
-export const providerLifecycleSubmissionEnum2 = {
-  asynchronous: "asynchronous",
-} as const;
-
-export type ProviderLifecycleSubmissionEnum2Key =
-  (typeof providerLifecycleSubmissionEnum2)[keyof typeof providerLifecycleSubmissionEnum2];
-
-export const costCaptureCreditCostEnum = {
-  unknown: "unknown",
-} as const;
-
-export type CostCaptureCreditCostEnumKey =
-  (typeof costCaptureCreditCostEnum)[keyof typeof costCaptureCreditCostEnum];
-
-export const costCaptureProviderCostUsdEnum = {
-  "response-or-unknown": "response-or-unknown",
-} as const;
-
-export type CostCaptureProviderCostUsdEnumKey =
-  (typeof costCaptureProviderCostUsdEnum)[keyof typeof costCaptureProviderCostUsdEnum];
-
-export const costCaptureSourceEnum = {
-  "provider-result": "provider-result",
-} as const;
-
-export type CostCaptureSourceEnumKey =
-  (typeof costCaptureSourceEnum)[keyof typeof costCaptureSourceEnum];
-
-export const providerBindingExecutionRuntimesEnum = {
-  browser: "browser",
-  managed: "managed",
-} as const;
-
-export type ProviderBindingExecutionRuntimesEnumKey =
-  (typeof providerBindingExecutionRuntimesEnum)[keyof typeof providerBindingExecutionRuntimesEnum];
-
 export const lifecycleCancellationEnum = {
   supported: "supported",
   unsupported: "unsupported",
@@ -173,26 +89,12 @@ export const lifecycleSubmissionEnum2 = {
 export type LifecycleSubmissionEnum2Key =
   (typeof lifecycleSubmissionEnum2)[keyof typeof lifecycleSubmissionEnum2];
 
-export const providerBindingRequiresDurableSubmissionBoundaryEnum = {
-  true: true,
-} as const;
-
-export type ProviderBindingRequiresDurableSubmissionBoundaryEnumKey =
-  (typeof providerBindingRequiresDurableSubmissionBoundaryEnum)[keyof typeof providerBindingRequiresDurableSubmissionBoundaryEnum];
-
 export const providerBindingProviderEnum = {
   openrouter: "openrouter",
 } as const;
 
 export type ProviderBindingProviderEnumKey =
   (typeof providerBindingProviderEnum)[keyof typeof providerBindingProviderEnum];
-
-export const providerBindingRoutingPolicyEnum = {
-  pinned: "pinned",
-} as const;
-
-export type ProviderBindingRoutingPolicyEnumKey =
-  (typeof providerBindingRoutingPolicyEnum)[keyof typeof providerBindingRoutingPolicyEnum];
 
 export const providerBindingEndpointEnum = {
   "/api/v1/chat/completions": "/api/v1/chat/completions",
@@ -393,28 +295,7 @@ export type GetRunsIdBrowserManifest200 = {
       /**
        * @type string
        */
-      adapterVersion: string;
-      /**
-       * @pattern ^sha256:[0-9a-f]{64}$
-       * @type string
-       */
-      catalogRevision: string;
-      /**
-       * @type integer
-       */
-      catalogVersion: number;
-      /**
-       * @type string
-       */
-      modelContractVersion: string;
-      /**
-       * @type string
-       */
       modelId: string;
-      /**
-       * @type integer
-       */
-      modelRevision: number;
       /**
        * @type string
        */
@@ -423,108 +304,8 @@ export type GetRunsIdBrowserManifest200 = {
        * @type string
        */
       operationId: string;
-      /**
-       * @type string
-       */
-      provider: string;
-      /**
-       * @type string
-       */
-      providerEndpoint: string;
-      /**
-       * @minLength 1
-       * @type string
-       */
-      providerEndpointTag: string;
-      providerLifecycle:
-        | {
-            /**
-             * @type string
-             */
-            cancellation: ProviderLifecycleCancellationEnumKey;
-            /**
-             * @type array
-             */
-            completions: ProviderLifecycleCompletionsEnumKey[];
-            /**
-             * @type array
-             */
-            deliveries: ProviderLifecycleDeliveriesEnumKey[];
-            /**
-             * @type string
-             */
-            submission: ProviderLifecycleSubmissionEnumKey;
-          }
-        | {
-            /**
-             * @type string
-             */
-            cancellation: ProviderLifecycleCancellationEnumKey;
-            completions:
-              | ProviderLifecycleCompletionsEnum2Key[]
-              | ProviderLifecycleCompletionsEnum3Key[]
-              | (
-                  | ProviderLifecycleCompletionsEnum2Key
-                  | ProviderLifecycleCompletionsEnum3Key
-                )[]
-              | (
-                  | ProviderLifecycleCompletionsEnum3Key
-                  | ProviderLifecycleCompletionsEnum2Key
-                )[];
-            /**
-             * @type array
-             */
-            deliveries: ProviderLifecycleDeliveriesEnumKey[];
-            /**
-             * @type string
-             */
-            submission: ProviderLifecycleSubmissionEnum2Key;
-          };
-      /**
-       * @type string
-       */
-      providerModel: string;
       providerBinding:
         | {
-            /**
-             * @minLength 1
-             * @type string
-             */
-            adapterVersion: string;
-            /**
-             * @type object
-             */
-            costCapture: {
-              /**
-               * @type string
-               */
-              creditCost: CostCaptureCreditCostEnumKey;
-              /**
-               * @type string
-               */
-              providerCostUsd: CostCaptureProviderCostUsdEnumKey;
-              /**
-               * @type string
-               */
-              source: CostCaptureSourceEnumKey;
-            };
-            /**
-             * @type array | undefined
-             */
-            executionRuntimes?: ProviderBindingExecutionRuntimesEnumKey[];
-            /**
-             * @type object
-             */
-            evidence: {
-              /**
-               * @type string, date
-               */
-              reviewedAt: string;
-              /**
-               * @type array
-               */
-              sources: string[];
-            };
             lifecycle:
               | {
                   /**
@@ -580,19 +361,6 @@ export type GetRunsIdBrowserManifest200 = {
              */
             operationId: string;
             /**
-             * @type integer
-             */
-            priority: number;
-            /**
-             * @type boolean
-             */
-            requiresDurableSubmissionBoundary: ProviderBindingRequiresDurableSubmissionBoundaryEnumKey;
-            /**
-             * @minLength 1
-             * @type string
-             */
-            routeVersion: string;
-            /**
              * @type string
              */
             provider: ProviderBindingProviderEnumKey;
@@ -601,14 +369,6 @@ export type GetRunsIdBrowserManifest200 = {
              * @type string
              */
             providerTag: string;
-            /**
-             * @type string
-             */
-            routingPolicy: ProviderBindingRoutingPolicyEnumKey;
-            /**
-             * @type array
-             */
-            supportedParameters: string[];
             /**
              * @type string
              */
@@ -645,45 +405,6 @@ export type GetRunsIdBrowserManifest200 = {
             };
           }
         | {
-            /**
-             * @minLength 1
-             * @type string
-             */
-            adapterVersion: string;
-            /**
-             * @type object
-             */
-            costCapture: {
-              /**
-               * @type string
-               */
-              creditCost: CostCaptureCreditCostEnumKey;
-              /**
-               * @type string
-               */
-              providerCostUsd: CostCaptureProviderCostUsdEnumKey;
-              /**
-               * @type string
-               */
-              source: CostCaptureSourceEnumKey;
-            };
-            /**
-             * @type array | undefined
-             */
-            executionRuntimes?: ProviderBindingExecutionRuntimesEnumKey[];
-            /**
-             * @type object
-             */
-            evidence: {
-              /**
-               * @type string, date
-               */
-              reviewedAt: string;
-              /**
-               * @type array
-               */
-              sources: string[];
-            };
             lifecycle:
               | {
                   /**
@@ -739,19 +460,6 @@ export type GetRunsIdBrowserManifest200 = {
              */
             operationId: string;
             /**
-             * @type integer
-             */
-            priority: number;
-            /**
-             * @type boolean
-             */
-            requiresDurableSubmissionBoundary: ProviderBindingRequiresDurableSubmissionBoundaryEnumKey;
-            /**
-             * @minLength 1
-             * @type string
-             */
-            routeVersion: string;
-            /**
              * @type string
              */
             provider: ProviderBindingProviderEnumKey;
@@ -760,14 +468,6 @@ export type GetRunsIdBrowserManifest200 = {
              * @type string
              */
             providerTag: string;
-            /**
-             * @type string
-             */
-            routingPolicy: ProviderBindingRoutingPolicyEnumKey;
-            /**
-             * @type array
-             */
-            supportedParameters: string[];
             /**
              * @type string
              */
@@ -796,45 +496,6 @@ export type GetRunsIdBrowserManifest200 = {
             };
           }
         | {
-            /**
-             * @minLength 1
-             * @type string
-             */
-            adapterVersion: string;
-            /**
-             * @type object
-             */
-            costCapture: {
-              /**
-               * @type string
-               */
-              creditCost: CostCaptureCreditCostEnumKey;
-              /**
-               * @type string
-               */
-              providerCostUsd: CostCaptureProviderCostUsdEnumKey;
-              /**
-               * @type string
-               */
-              source: CostCaptureSourceEnumKey;
-            };
-            /**
-             * @type array | undefined
-             */
-            executionRuntimes?: ProviderBindingExecutionRuntimesEnumKey[];
-            /**
-             * @type object
-             */
-            evidence: {
-              /**
-               * @type string, date
-               */
-              reviewedAt: string;
-              /**
-               * @type array
-               */
-              sources: string[];
-            };
             lifecycle:
               | {
                   /**
@@ -890,19 +551,6 @@ export type GetRunsIdBrowserManifest200 = {
              */
             operationId: string;
             /**
-             * @type integer
-             */
-            priority: number;
-            /**
-             * @type boolean
-             */
-            requiresDurableSubmissionBoundary: ProviderBindingRequiresDurableSubmissionBoundaryEnumKey;
-            /**
-             * @minLength 1
-             * @type string
-             */
-            routeVersion: string;
-            /**
              * @type string
              */
             provider: ProviderBindingProviderEnumKey;
@@ -911,14 +559,6 @@ export type GetRunsIdBrowserManifest200 = {
              * @type string
              */
             providerTag: string;
-            /**
-             * @type string
-             */
-            routingPolicy: ProviderBindingRoutingPolicyEnumKey;
-            /**
-             * @type array
-             */
-            supportedParameters: string[];
             /**
              * @type string
              */
@@ -952,45 +592,6 @@ export type GetRunsIdBrowserManifest200 = {
             };
           }
         | {
-            /**
-             * @minLength 1
-             * @type string
-             */
-            adapterVersion: string;
-            /**
-             * @type object
-             */
-            costCapture: {
-              /**
-               * @type string
-               */
-              creditCost: CostCaptureCreditCostEnumKey;
-              /**
-               * @type string
-               */
-              providerCostUsd: CostCaptureProviderCostUsdEnumKey;
-              /**
-               * @type string
-               */
-              source: CostCaptureSourceEnumKey;
-            };
-            /**
-             * @type array | undefined
-             */
-            executionRuntimes?: ProviderBindingExecutionRuntimesEnumKey[];
-            /**
-             * @type object
-             */
-            evidence: {
-              /**
-               * @type string, date
-               */
-              reviewedAt: string;
-              /**
-               * @type array
-               */
-              sources: string[];
-            };
             lifecycle:
               | {
                   /**
@@ -1046,19 +647,6 @@ export type GetRunsIdBrowserManifest200 = {
              */
             operationId: string;
             /**
-             * @type integer
-             */
-            priority: number;
-            /**
-             * @type boolean
-             */
-            requiresDurableSubmissionBoundary: ProviderBindingRequiresDurableSubmissionBoundaryEnumKey;
-            /**
-             * @minLength 1
-             * @type string
-             */
-            routeVersion: string;
-            /**
              * @type string
              */
             provider: ProviderBindingProviderEnumKey;
@@ -1067,14 +655,6 @@ export type GetRunsIdBrowserManifest200 = {
              * @type string
              */
             providerTag: string;
-            /**
-             * @type string
-             */
-            routingPolicy: ProviderBindingRoutingPolicyEnumKey;
-            /**
-             * @type array
-             */
-            supportedParameters: string[];
             /**
              * @type string
              */
@@ -1129,10 +709,6 @@ export type GetRunsIdBrowserManifest200 = {
               settingIds: string[];
             };
           };
-      /**
-       * @type string
-       */
-      providerRouteVersion: string;
     };
     /**
      * @type string

@@ -35,90 +35,6 @@ export const debugOutputsDeliveryEnum2 = {
 export type DebugOutputsDeliveryEnum2Key =
   (typeof debugOutputsDeliveryEnum2)[keyof typeof debugOutputsDeliveryEnum2];
 
-export const providerLifecycleCancellationEnum2 = {
-  "best-effort": "best-effort",
-  supported: "supported",
-  unsupported: "unsupported",
-} as const;
-
-export type ProviderLifecycleCancellationEnum2Key =
-  (typeof providerLifecycleCancellationEnum2)[keyof typeof providerLifecycleCancellationEnum2];
-
-export const providerLifecycleCompletionsEnum4 = {
-  response: "response",
-} as const;
-
-export type ProviderLifecycleCompletionsEnum4Key =
-  (typeof providerLifecycleCompletionsEnum4)[keyof typeof providerLifecycleCompletionsEnum4];
-
-export const providerLifecycleDeliveriesEnum2 = {
-  bytes: "bytes",
-  storage: "storage",
-  stream: "stream",
-  text: "text",
-  url: "url",
-} as const;
-
-export type ProviderLifecycleDeliveriesEnum2Key =
-  (typeof providerLifecycleDeliveriesEnum2)[keyof typeof providerLifecycleDeliveriesEnum2];
-
-export const providerLifecycleSubmissionEnum3 = {
-  immediate: "immediate",
-} as const;
-
-export type ProviderLifecycleSubmissionEnum3Key =
-  (typeof providerLifecycleSubmissionEnum3)[keyof typeof providerLifecycleSubmissionEnum3];
-
-export const providerLifecycleCompletionsEnum5 = {
-  poll: "poll",
-} as const;
-
-export type ProviderLifecycleCompletionsEnum5Key =
-  (typeof providerLifecycleCompletionsEnum5)[keyof typeof providerLifecycleCompletionsEnum5];
-
-export const providerLifecycleCompletionsEnum6 = {
-  webhook: "webhook",
-} as const;
-
-export type ProviderLifecycleCompletionsEnum6Key =
-  (typeof providerLifecycleCompletionsEnum6)[keyof typeof providerLifecycleCompletionsEnum6];
-
-export const providerLifecycleSubmissionEnum4 = {
-  asynchronous: "asynchronous",
-} as const;
-
-export type ProviderLifecycleSubmissionEnum4Key =
-  (typeof providerLifecycleSubmissionEnum4)[keyof typeof providerLifecycleSubmissionEnum4];
-
-export const costCaptureCreditCostEnum2 = {
-  unknown: "unknown",
-} as const;
-
-export type CostCaptureCreditCostEnum2Key =
-  (typeof costCaptureCreditCostEnum2)[keyof typeof costCaptureCreditCostEnum2];
-
-export const costCaptureProviderCostUsdEnum2 = {
-  "response-or-unknown": "response-or-unknown",
-} as const;
-
-export type CostCaptureProviderCostUsdEnum2Key =
-  (typeof costCaptureProviderCostUsdEnum2)[keyof typeof costCaptureProviderCostUsdEnum2];
-
-export const costCaptureSourceEnum2 = {
-  "provider-result": "provider-result",
-} as const;
-
-export type CostCaptureSourceEnum2Key =
-  (typeof costCaptureSourceEnum2)[keyof typeof costCaptureSourceEnum2];
-
-export const providerBindingExecutionRuntimesEnum2 = {
-  browser: "browser",
-  managed: "managed",
-} as const;
-
-export type ProviderBindingExecutionRuntimesEnum2Key =
-  (typeof providerBindingExecutionRuntimesEnum2)[keyof typeof providerBindingExecutionRuntimesEnum2];
-
 export const lifecycleCancellationEnum2 = {
   supported: "supported",
   unsupported: "unsupported",
@@ -172,26 +88,12 @@ export const lifecycleSubmissionEnum4 = {
 export type LifecycleSubmissionEnum4Key =
   (typeof lifecycleSubmissionEnum4)[keyof typeof lifecycleSubmissionEnum4];
 
-export const providerBindingRequiresDurableSubmissionBoundaryEnum2 = {
-  true: true,
-} as const;
-
-export type ProviderBindingRequiresDurableSubmissionBoundaryEnum2Key =
-  (typeof providerBindingRequiresDurableSubmissionBoundaryEnum2)[keyof typeof providerBindingRequiresDurableSubmissionBoundaryEnum2];
-
 export const providerBindingProviderEnum2 = {
   openrouter: "openrouter",
 } as const;
 
 export type ProviderBindingProviderEnum2Key =
   (typeof providerBindingProviderEnum2)[keyof typeof providerBindingProviderEnum2];
-
-export const providerBindingRoutingPolicyEnum2 = {
-  pinned: "pinned",
-} as const;
-
-export type ProviderBindingRoutingPolicyEnum2Key =
-  (typeof providerBindingRoutingPolicyEnum2)[keyof typeof providerBindingRoutingPolicyEnum2];
 
 export const providerBindingEndpointEnum5 = {
   "/api/v1/chat/completions": "/api/v1/chat/completions",
@@ -442,28 +344,7 @@ export type PostRunsIdBrowserJobsClaim200 = {
       /**
        * @type string
        */
-      adapterVersion: string;
-      /**
-       * @pattern ^sha256:[0-9a-f]{64}$
-       * @type string
-       */
-      catalogRevision: string;
-      /**
-       * @type integer
-       */
-      catalogVersion: number;
-      /**
-       * @type string
-       */
-      modelContractVersion: string;
-      /**
-       * @type string
-       */
       modelId: string;
-      /**
-       * @type integer
-       */
-      modelRevision: number;
       /**
        * @type string
        */
@@ -472,108 +353,8 @@ export type PostRunsIdBrowserJobsClaim200 = {
        * @type string
        */
       operationId: string;
-      /**
-       * @type string
-       */
-      provider: string;
-      /**
-       * @type string
-       */
-      providerEndpoint: string;
-      /**
-       * @minLength 1
-       * @type string
-       */
-      providerEndpointTag: string;
-      providerLifecycle:
-        | {
-            /**
-             * @type string
-             */
-            cancellation: ProviderLifecycleCancellationEnum2Key;
-            /**
-             * @type array
-             */
-            completions: ProviderLifecycleCompletionsEnum4Key[];
-            /**
-             * @type array
-             */
-            deliveries: ProviderLifecycleDeliveriesEnum2Key[];
-            /**
-             * @type string
-             */
-            submission: ProviderLifecycleSubmissionEnum3Key;
-          }
-        | {
-            /**
-             * @type string
-             */
-            cancellation: ProviderLifecycleCancellationEnum2Key;
-            completions:
-              | ProviderLifecycleCompletionsEnum5Key[]
-              | ProviderLifecycleCompletionsEnum6Key[]
-              | (
-                  | ProviderLifecycleCompletionsEnum5Key
-                  | ProviderLifecycleCompletionsEnum6Key
-                )[]
-              | (
-                  | ProviderLifecycleCompletionsEnum6Key
-                  | ProviderLifecycleCompletionsEnum5Key
-                )[];
-            /**
-             * @type array
-             */
-            deliveries: ProviderLifecycleDeliveriesEnum2Key[];
-            /**
-             * @type string
-             */
-            submission: ProviderLifecycleSubmissionEnum4Key;
-          };
-      /**
-       * @type string
-       */
-      providerModel: string;
       providerBinding:
         | {
-            /**
-             * @minLength 1
-             * @type string
-             */
-            adapterVersion: string;
-            /**
-             * @type object
-             */
-            costCapture: {
-              /**
-               * @type string
-               */
-              creditCost: CostCaptureCreditCostEnum2Key;
-              /**
-               * @type string
-               */
-              providerCostUsd: CostCaptureProviderCostUsdEnum2Key;
-              /**
-               * @type string
-               */
-              source: CostCaptureSourceEnum2Key;
-            };
-            /**
-             * @type array | undefined
-             */
-            executionRuntimes?: ProviderBindingExecutionRuntimesEnum2Key[];
-            /**
-             * @type object
-             */
-            evidence: {
-              /**
-               * @type string, date
-               */
-              reviewedAt: string;
-              /**
-               * @type array
-               */
-              sources: string[];
-            };
             lifecycle:
               | {
                   /**
@@ -629,19 +410,6 @@ export type PostRunsIdBrowserJobsClaim200 = {
              */
             operationId: string;
             /**
-             * @type integer
-             */
-            priority: number;
-            /**
-             * @type boolean
-             */
-            requiresDurableSubmissionBoundary: ProviderBindingRequiresDurableSubmissionBoundaryEnum2Key;
-            /**
-             * @minLength 1
-             * @type string
-             */
-            routeVersion: string;
-            /**
              * @type string
              */
             provider: ProviderBindingProviderEnum2Key;
@@ -650,14 +418,6 @@ export type PostRunsIdBrowserJobsClaim200 = {
              * @type string
              */
             providerTag: string;
-            /**
-             * @type string
-             */
-            routingPolicy: ProviderBindingRoutingPolicyEnum2Key;
-            /**
-             * @type array
-             */
-            supportedParameters: string[];
             /**
              * @type string
              */
@@ -694,45 +454,6 @@ export type PostRunsIdBrowserJobsClaim200 = {
             };
           }
         | {
-            /**
-             * @minLength 1
-             * @type string
-             */
-            adapterVersion: string;
-            /**
-             * @type object
-             */
-            costCapture: {
-              /**
-               * @type string
-               */
-              creditCost: CostCaptureCreditCostEnum2Key;
-              /**
-               * @type string
-               */
-              providerCostUsd: CostCaptureProviderCostUsdEnum2Key;
-              /**
-               * @type string
-               */
-              source: CostCaptureSourceEnum2Key;
-            };
-            /**
-             * @type array | undefined
-             */
-            executionRuntimes?: ProviderBindingExecutionRuntimesEnum2Key[];
-            /**
-             * @type object
-             */
-            evidence: {
-              /**
-               * @type string, date
-               */
-              reviewedAt: string;
-              /**
-               * @type array
-               */
-              sources: string[];
-            };
             lifecycle:
               | {
                   /**
@@ -788,19 +509,6 @@ export type PostRunsIdBrowserJobsClaim200 = {
              */
             operationId: string;
             /**
-             * @type integer
-             */
-            priority: number;
-            /**
-             * @type boolean
-             */
-            requiresDurableSubmissionBoundary: ProviderBindingRequiresDurableSubmissionBoundaryEnum2Key;
-            /**
-             * @minLength 1
-             * @type string
-             */
-            routeVersion: string;
-            /**
              * @type string
              */
             provider: ProviderBindingProviderEnum2Key;
@@ -809,14 +517,6 @@ export type PostRunsIdBrowserJobsClaim200 = {
              * @type string
              */
             providerTag: string;
-            /**
-             * @type string
-             */
-            routingPolicy: ProviderBindingRoutingPolicyEnum2Key;
-            /**
-             * @type array
-             */
-            supportedParameters: string[];
             /**
              * @type string
              */
@@ -845,45 +545,6 @@ export type PostRunsIdBrowserJobsClaim200 = {
             };
           }
         | {
-            /**
-             * @minLength 1
-             * @type string
-             */
-            adapterVersion: string;
-            /**
-             * @type object
-             */
-            costCapture: {
-              /**
-               * @type string
-               */
-              creditCost: CostCaptureCreditCostEnum2Key;
-              /**
-               * @type string
-               */
-              providerCostUsd: CostCaptureProviderCostUsdEnum2Key;
-              /**
-               * @type string
-               */
-              source: CostCaptureSourceEnum2Key;
-            };
-            /**
-             * @type array | undefined
-             */
-            executionRuntimes?: ProviderBindingExecutionRuntimesEnum2Key[];
-            /**
-             * @type object
-             */
-            evidence: {
-              /**
-               * @type string, date
-               */
-              reviewedAt: string;
-              /**
-               * @type array
-               */
-              sources: string[];
-            };
             lifecycle:
               | {
                   /**
@@ -939,19 +600,6 @@ export type PostRunsIdBrowserJobsClaim200 = {
              */
             operationId: string;
             /**
-             * @type integer
-             */
-            priority: number;
-            /**
-             * @type boolean
-             */
-            requiresDurableSubmissionBoundary: ProviderBindingRequiresDurableSubmissionBoundaryEnum2Key;
-            /**
-             * @minLength 1
-             * @type string
-             */
-            routeVersion: string;
-            /**
              * @type string
              */
             provider: ProviderBindingProviderEnum2Key;
@@ -960,14 +608,6 @@ export type PostRunsIdBrowserJobsClaim200 = {
              * @type string
              */
             providerTag: string;
-            /**
-             * @type string
-             */
-            routingPolicy: ProviderBindingRoutingPolicyEnum2Key;
-            /**
-             * @type array
-             */
-            supportedParameters: string[];
             /**
              * @type string
              */
@@ -1001,45 +641,6 @@ export type PostRunsIdBrowserJobsClaim200 = {
             };
           }
         | {
-            /**
-             * @minLength 1
-             * @type string
-             */
-            adapterVersion: string;
-            /**
-             * @type object
-             */
-            costCapture: {
-              /**
-               * @type string
-               */
-              creditCost: CostCaptureCreditCostEnum2Key;
-              /**
-               * @type string
-               */
-              providerCostUsd: CostCaptureProviderCostUsdEnum2Key;
-              /**
-               * @type string
-               */
-              source: CostCaptureSourceEnum2Key;
-            };
-            /**
-             * @type array | undefined
-             */
-            executionRuntimes?: ProviderBindingExecutionRuntimesEnum2Key[];
-            /**
-             * @type object
-             */
-            evidence: {
-              /**
-               * @type string, date
-               */
-              reviewedAt: string;
-              /**
-               * @type array
-               */
-              sources: string[];
-            };
             lifecycle:
               | {
                   /**
@@ -1095,19 +696,6 @@ export type PostRunsIdBrowserJobsClaim200 = {
              */
             operationId: string;
             /**
-             * @type integer
-             */
-            priority: number;
-            /**
-             * @type boolean
-             */
-            requiresDurableSubmissionBoundary: ProviderBindingRequiresDurableSubmissionBoundaryEnum2Key;
-            /**
-             * @minLength 1
-             * @type string
-             */
-            routeVersion: string;
-            /**
              * @type string
              */
             provider: ProviderBindingProviderEnum2Key;
@@ -1116,14 +704,6 @@ export type PostRunsIdBrowserJobsClaim200 = {
              * @type string
              */
             providerTag: string;
-            /**
-             * @type string
-             */
-            routingPolicy: ProviderBindingRoutingPolicyEnum2Key;
-            /**
-             * @type array
-             */
-            supportedParameters: string[];
             /**
              * @type string
              */
@@ -1178,10 +758,6 @@ export type PostRunsIdBrowserJobsClaim200 = {
               settingIds: string[];
             };
           };
-      /**
-       * @type string
-       */
-      providerRouteVersion: string;
     };
     /**
      * @type string

@@ -21,6 +21,7 @@ export type PostRunsIdBrowserJobsJobidCompletePathParams = {
 
 export const postRunsIdBrowserJobsJobidComplete200StateEnum = {
   canceled: "canceled",
+  processing: "processing",
   succeeded: "succeeded",
 } as const;
 
@@ -28,7 +29,7 @@ export type PostRunsIdBrowserJobsJobidComplete200StateEnumKey =
   (typeof postRunsIdBrowserJobsJobidComplete200StateEnum)[keyof typeof postRunsIdBrowserJobsJobidComplete200StateEnum];
 
 /**
- * @description Browser job completed
+ * @description Browser job completed or awaiting Asset readiness
  */
 export type PostRunsIdBrowserJobsJobidComplete200 = {
   /**

@@ -33,7 +33,7 @@ export const postRunsIdBrowserJobsJobidFinalizeTextPathParamsSchema = z.object({
  * @description Canonical browser text finalized
  */
 export const postRunsIdBrowserJobsJobidFinalizeText200Schema = z.object({
-  state: z.enum(["canceled", "succeeded"]),
+  state: z.enum(["canceled", "processing", "succeeded"]),
 }) as unknown as z.ZodType<PostRunsIdBrowserJobsJobidFinalizeText200>;
 
 /**

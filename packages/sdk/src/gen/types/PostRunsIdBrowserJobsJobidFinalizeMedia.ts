@@ -21,6 +21,7 @@ export type PostRunsIdBrowserJobsJobidFinalizeMediaPathParams = {
 
 export const postRunsIdBrowserJobsJobidFinalizeMedia200StateEnum = {
   canceled: "canceled",
+  processing: "processing",
   succeeded: "succeeded",
 } as const;
 
@@ -28,7 +29,7 @@ export type PostRunsIdBrowserJobsJobidFinalizeMedia200StateEnumKey =
   (typeof postRunsIdBrowserJobsJobidFinalizeMedia200StateEnum)[keyof typeof postRunsIdBrowserJobsJobidFinalizeMedia200StateEnum];
 
 /**
- * @description Canonical browser media finalized
+ * @description Canonical browser media persisted and ingestion dispatched
  */
 export type PostRunsIdBrowserJobsJobidFinalizeMedia200 = {
   /**
