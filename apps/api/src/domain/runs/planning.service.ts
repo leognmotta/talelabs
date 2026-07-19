@@ -7,8 +7,9 @@ import {
   planFlowRun,
 } from '@talelabs/flows'
 import { listPriorOutputs } from '../../data/flow-run-planning.data.js'
-import { getFlowGraphRows, listFlowGraphReferenceRows } from '../../data/flows.data.js'
+import { getFlowGraphRows } from '../../data/flows.data.js'
 import { HttpError, TenantResourceNotFoundError } from '../../middleware/error.js'
+import { buildFlowGraphValidationContext } from '../../services/flow-graph-reference.service.js'
 import { getFlowGraph } from '../../services/flows.service.js'
 import { toFlowRunCommand } from './contracts.js'
 import { logRunEngine } from './logging.js'
@@ -34,19 +35,14 @@ export async function loadFlowRunPlan(input: {
   }
 
   const wireGraph = await getFlowGraph(input.organizationId, input.flowId)
-  const assetIds = [...new Set(wireGraph.nodes.flatMap(node =>
-    node.assetId ? [node.assetId] : []))]
-  const references = await listFlowGraphReferenceRows(db as any, {
-    assetIds,
+  const context = await buildFlowGraphValidationContext({
+    executor: db as any,
+    nodes: wireGraph.nodes,
     organizationId: input.organizationId,
   })
   const result = planFlowRun({
     command: toFlowRunCommand(input.command),
-    context: {
-      assetTypesById: Object.fromEntries(
-        references.assets.map(asset => [asset.id, asset.type]),
-      ),
-    },
+    context,
     flow: {
       edges: wireGraph.edges,
       id: input.flowId,

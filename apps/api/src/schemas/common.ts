@@ -1,6 +1,9 @@
+/** Shared API schemas: ids, cursors, pagination, and error envelopes. */
+
 import { z } from '@hono/zod-openapi'
 import { isCuid } from '@paralleldrive/cuid2'
 
+/** A cuid2 identifier. */
 export const Cuid2Schema = z.string()
   .refine(value => isCuid(value), { message: 'Invalid cuid2 identifier' })
   .openapi('Cuid2', {
@@ -12,25 +15,30 @@ export const Cuid2Schema = z.string()
 
 // Keep nullable IDs inline in OpenAPI. Referencing Cuid2 and then applying
 // nullable produces an allOf shape that some generators cannot emit correctly.
+/** A nullable cuid2 identifier, kept inline for OpenAPI generator compatibility. */
 export const NullableCuid2Schema = z.string()
   .regex(/^[a-z][0-9a-z]+$/)
   .min(2)
   .max(32)
   .nullable()
 
+/** An opaque user identifier. */
 export const UserIdSchema = z.string()
   .min(1)
   .max(255)
   .openapi('UserId', { example: 'user_123' })
 
+/** An ISO-8601 UTC timestamp. */
 export const TimestampSchema = z.iso.datetime().openapi('Timestamp', {
   example: '2026-07-10T12:00:00.000Z',
 })
 
+/** An opaque pagination cursor from a prior list response. */
 export const CursorSchema = z.string().trim().min(1).max(2048).openapi('Cursor', {
   description: 'Opaque cursor returned by a previous list response',
 })
 
+/** Page size, 1–200, defaulting to 50. */
 export const PaginationLimitSchema = z.coerce.number()
   .int()
   .min(1)
@@ -40,22 +48,26 @@ export const PaginationLimitSchema = z.coerce.number()
     example: 50,
   })
 
+/** Ascending or descending sort order. */
 export const SortOrderSchema = z.enum(['asc', 'desc']).openapi('SortOrder', {
   example: 'desc',
 })
 
+/** Standard cursor/limit/order pagination query. */
 export const PaginationQuerySchema = z.object({
   cursor: CursorSchema.optional(),
   limit: PaginationLimitSchema,
   order: SortOrderSchema.optional(),
 }).openapi('PaginationQuery')
 
+/** Generatable media family. */
 export const MediaTypeSchema = z.enum([
   'image',
   'video',
   'audio',
 ]).openapi('MediaType')
 
+/** Asset media type, including non-generatable documents. */
 export const AssetTypeSchema = z.enum([
   'image',
   'video',
@@ -63,16 +75,19 @@ export const AssetTypeSchema = z.enum([
   'document',
 ]).openapi('AssetType')
 
+/** How an Asset originated: user upload or generation output. */
 export const AssetSourceSchema = z.enum([
   'upload',
   'generation',
 ]).openapi('AssetSource')
 
+/** Asset storage visibility. */
 export const AssetVisibilitySchema = z.enum([
   'private',
   'public',
 ]).openapi('AssetVisibility')
 
+/** Asset lifecycle state from live through purged. */
 export const AssetLifecycleSchema = z.enum([
   'live',
   'archived',
@@ -80,12 +95,14 @@ export const AssetLifecycleSchema = z.enum([
   'purged',
 ]).openapi('AssetLifecycle')
 
+/** Ingestion processing state of an Asset. */
 export const AssetProcessingStateSchema = z.enum([
   'processing',
   'ready',
   'failed',
 ]).openapi('AssetProcessingState')
 
+/** Flow run command scope. */
 export const RunModeSchema = z.enum([
   'node',
   'downstream',
@@ -93,6 +110,7 @@ export const RunModeSchema = z.enum([
   'tool',
 ]).openapi('RunMode')
 
+/** Aggregate status of a Flow run. */
 export const RunStatusSchema = z.enum([
   'pending',
   'running',
@@ -102,6 +120,7 @@ export const RunStatusSchema = z.enum([
   'canceled',
 ]).openapi('RunStatus')
 
+/** Status of one generation job. */
 export const JobStatusSchema = z.enum([
   'pending',
   'running',
@@ -110,6 +129,7 @@ export const JobStatusSchema = z.enum([
   'canceled',
 ]).openapi('JobStatus')
 
+/** Stable machine-readable product error codes clients may translate. */
 export const ProductErrorCodeSchema = z.enum([
   'validation_error',
   'unauthenticated',
@@ -118,14 +138,8 @@ export const ProductErrorCodeSchema = z.enum([
   'not_found',
   'conflict',
   'asset_not_available',
-  'element_asset_already_attached',
-  'element_asset_media_type_not_accepted',
-  'element_asset_role_capacity_reached',
-  'element_asset_role_not_found',
-  'element_master_role_capacity_reached',
-  'element_reference_metadata_invalid',
-  'element_source_capacity_reached',
-  'element_source_primary_invalid',
+  'element_reference_limit_reached',
+  'element_reference_not_image',
   'revision_conflict',
   'invalid_state',
   'unsupported_by_model',
@@ -134,6 +148,7 @@ export const ProductErrorCodeSchema = z.enum([
   'internal_error',
 ]).openapi('ProductErrorCode')
 
+/** One field-level error detail with a stable code and params. */
 export const ErrorDetailSchema = z.object({
   code: z.string(),
   field: z.string(),
@@ -144,6 +159,7 @@ export const ErrorDetailSchema = z.object({
   ).optional(),
 }).openapi('ErrorDetail')
 
+/** Standard error envelope for API responses. */
 export const ErrorResponseSchema = z.object({
   error: z.object({
     code: z.string().openapi({ example: 'validation_error' }),
@@ -152,8 +168,10 @@ export const ErrorResponseSchema = z.object({
   }),
 }).openapi('ErrorResponse')
 
+/** Alias for a resource cuid2 id. */
 export const ResourceIdSchema = Cuid2Schema
 
+/** Wraps an item schema in the standard `{ data, nextCursor }` list envelope. */
 export function createListResponseSchema<Item extends z.ZodType>(item: Item) {
   return z.object({
     data: z.array(item),

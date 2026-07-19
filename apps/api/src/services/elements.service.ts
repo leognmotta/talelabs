@@ -1,541 +1,281 @@
-import type { JsonValue } from '@talelabs/db'
+/**
+ * Element workflows: list, create, read, update, delete, and atomic
+ * reference mutation. Elements reuse canonical Assets; no upload, folder,
+ * or provider behavior lives here.
+ */
+
+import type { ElementKind } from '@talelabs/assets'
+import type { AssetRecord } from '../data/assets.data.js'
 import type {
-  ElementReadinessReference,
-  ElementReferenceKind,
-  ElementType,
-} from '@talelabs/elements'
-import type { ZodError } from 'zod'
+  ElementListRow,
+  ElementRecord,
+} from '../data/elements.data.js'
 
 import { createId } from '@paralleldrive/cuid2'
-import {
-  evaluateElementReadiness,
-  getElementAssetRoles,
-  getElementTypeDefinition,
-  isElementType,
-  parseElementData,
-  upcastElementData,
-} from '@talelabs/elements'
+import { MAX_ELEMENT_REFERENCES } from '@talelabs/assets'
 
 import {
-  createElementAssetLinkRow,
-  deleteElementAssetLinkRow,
-  updateElementAssetLinkRow,
-} from '../data/element-asset-links.data.js'
-import {
-  countElementAssetsByRole,
   deleteElementRow,
-  findElementById,
-  getElementUsageRows,
-  insertElementWithAssetFolderRow,
-  listElementAssetRows,
-  listElementPreviewAssets,
-  listElementReadinessRows,
+  findElementRow,
+  insertElementRowWithReferences,
+  listElementCoverAssetRows,
+  listElementReferenceAssetRows,
   listElementRows,
-  updateElementRow,
+  mutateElementReferenceRows,
+  updateElementRowWithReferences,
 } from '../data/elements.data.js'
-import {
-  createElementAssetMediaTypeNotAcceptedError,
-  createElementAssetRoleNotFoundError,
-  requireElementAssetRole,
-} from '../domain/elements/element-asset-role-policy.js'
-import { ELEMENT_PREVIEW_ROLES } from '../domain/elements/element-preview-roles.js'
 import { HttpError, TenantResourceNotFoundError } from '../middleware/error.js'
 import {
   buildCursorPage,
   parseIsoTimestampCursorValue,
   resolvePagination,
 } from '../pagination/pagination.js'
-import { createAssetThumbnailUrl, toWireJsonObject } from './asset-presenter.js'
-import { presentAssetsForUser } from './assets.service.js'
-import {
-  createElementMasterRoleCapacityError,
-  createElementReferenceMetadataError,
-  createElementSourceCapacityError,
-  createElementSourcePrimaryError,
-} from './element-asset-limit-error.js'
-import { assertElementFlowReferenceBudgets } from './flow-reference-budget.js'
+import { presentAsset } from './asset-presenter.js'
 
-function validationDetails(error: ZodError, prefix = 'data') {
-  return error.issues.map(issue => ({
-    code: issue.code,
-    field: [prefix, ...issue.path.map(String)].filter(Boolean).join('.'),
-    message: issue.message,
-  }))
+const elementPaginationConfig = {
+  cursorValueParsers: { updatedAt: parseIsoTimestampCursorValue },
+  defaultOrder: 'desc' as const,
+  defaultSort: 'updatedAt' as const,
 }
 
-function parseData(type: ElementType, data: unknown, schemaVersion?: number) {
-  try {
-    return schemaVersion === undefined
-      ? parseElementData(type, data)
-      : upcastElementData(type, schemaVersion, data).data
-  }
-  catch (error) {
-    if (error && typeof error === 'object' && 'issues' in error) {
-      throw new HttpError(
-        400,
-        'validation_error',
-        'The Element data could not be validated.',
-        validationDetails(error as ZodError),
-      )
-    }
-    throw error
+/** Projects one reference Asset row into the Element API shape. */
+async function presentReferenceAsset(row: AssetRecord) {
+  const presented = await presentAsset(row, undefined, {
+    includeOriginalUrl: true,
+  })
+  return {
+    id: presented.id,
+    name: presented.name,
+    type: presented.type,
+    mimeType: presented.mimeType,
+    width: presented.width,
+    height: presented.height,
+    lifecycle: presented.lifecycle,
+    processingState: presented.processingState,
+    url: presented.url,
+    thumbnailUrl: presented.thumbnailUrl,
+    createdAt: presented.createdAt,
   }
 }
 
-function requireStoredElementType(type: string): ElementType {
-  if (!isElementType(type))
-    throw new Error(`Stored Element type is not registered: ${type}`)
-  return type
-}
-
-export function presentElement(element: NonNullable<Awaited<ReturnType<typeof findElementById>>>) {
-  const type = requireStoredElementType(element.type)
-  const upcasted = upcastElementData(type, element.schemaVersion, element.data)
-
+function presentElement(
+  element: ElementRecord,
+  referenceCount: number,
+  coverAsset: Awaited<ReturnType<typeof presentReferenceAsset>> | null,
+) {
   return {
     id: element.id,
-    type,
     name: element.name,
-    assetFolderId: element.assetFolderId,
-    instructions: element.instructions,
-    data: toWireJsonObject(upcasted.data),
-    schemaVersion: upcasted.schemaVersion,
-    createdBy: element.createdBy,
+    kind: element.kind as ElementKind,
+    description: element.description,
+    referenceCount,
+    coverAsset,
     createdAt: element.createdAt.toISOString(),
     updatedAt: element.updatedAt.toISOString(),
   }
 }
 
-function deriveElementReadiness(
-  element: NonNullable<Awaited<ReturnType<typeof findElementById>>>,
-  rows: Awaited<ReturnType<typeof listElementReadinessRows>>,
-) {
-  const type = requireStoredElementType(element.type)
-  const upcasted = upcastElementData(type, element.schemaVersion, element.data)
-  const references: ElementReadinessReference[] = rows.map(row => ({
-    isUsable: row.processingState === 'ready',
-    referenceKind: row.referenceKind,
-    referenceMetadata: row.referenceMetadata,
-    role: row.role,
-  }))
-  return evaluateElementReadiness(type, references, upcasted.data)
+async function presentElementDetail(element: ElementRecord) {
+  const referenceRows = await listElementReferenceAssetRows(
+    element.organizationId,
+    element.id,
+  )
+  const references = await Promise.all(referenceRows.map(presentReferenceAsset))
+  return {
+    ...presentElement(element, references.length, references[0] ?? null),
+    references,
+  }
 }
 
+async function presentListRows(
+  organizationId: string,
+  rows: ElementListRow[],
+) {
+  const covers = await listElementCoverAssetRows(
+    organizationId,
+    rows.filter(row => row.referenceCount > 0).map(row => row.id),
+  )
+  const coversByElement = new Map(covers.map(cover => [cover.elementId, cover]))
+  return Promise.all(rows.map(async (row) => {
+    const cover = coversByElement.get(row.id)
+    return presentElement(
+      row,
+      row.referenceCount,
+      cover ? await presentReferenceAsset(cover) : null,
+    )
+  }))
+}
+
+/** Lists Elements for one organization as a cursor page with batched covers. */
 export async function listElements(input: {
+  assetId?: string
   cursor?: string
+  kind?: ElementKind
   limit: number
   organizationId: string
   search?: string
-  type?: ElementType
 }) {
   const pagination = resolvePagination({
     cursor: input.cursor,
     limit: input.limit,
-  }, {
-    cursorValueParsers: { updatedAt: parseIsoTimestampCursorValue },
-    defaultOrder: 'desc',
-    defaultSort: 'updatedAt',
-  })
-  if (!pagination.ok)
-    throw new HttpError(400, 'validation_error', 'The pagination options are invalid.', pagination.details)
+    order: 'desc',
+    sort: 'updatedAt',
+  }, elementPaginationConfig)
+  if (!pagination.ok) {
+    throw new HttpError(
+      400,
+      'validation_error',
+      'The pagination options are invalid.',
+      pagination.details,
+    )
+  }
 
   const rows = await listElementRows({
-    ...input,
+    assetId: input.assetId,
     cursor: pagination.value.cursor,
+    kind: input.kind,
     limit: pagination.value.limit,
+    order: pagination.value.order,
+    organizationId: input.organizationId,
+    search: input.search,
   })
   const page = buildCursorPage({
     rows,
     limit: pagination.value.limit,
     cursorFromRow: row => ({
       id: row.id,
-      order: 'desc',
-      sort: 'updatedAt' as const,
+      order: pagination.value.order,
+      sort: 'updatedAt',
       sortValue: row.updatedAt.toISOString(),
     }),
     serialize: row => row,
   })
-  const elementIds = page.data.map(element => element.id)
-  // Observe pending state before the ready-only preview query. Since ingestion
-  // transitions are terminal, this order cannot report no pending work while
-  // returning a preview captured before the same Asset became ready.
-  const readinessRows = await listElementReadinessRows({
-    elementIds,
-    organizationId: input.organizationId,
-  })
-  const previewRows = await listElementPreviewAssets({
-    elementIds,
-    organizationId: input.organizationId,
-    previewRoles: ELEMENT_PREVIEW_ROLES,
-  })
-  const previews = new Map(await Promise.all(previewRows.map(async asset => [
-    asset.elementId,
-    await createAssetThumbnailUrl(asset),
-  ] as const)))
-  const readinessRowsByElement = new Map<string, typeof readinessRows>()
-  for (const row of readinessRows) {
-    const rows = readinessRowsByElement.get(row.elementId) ?? []
-    rows.push(row)
-    readinessRowsByElement.set(row.elementId, rows)
-  }
 
   return {
-    data: page.data.map((element) => {
-      const elementReadinessRows
-        = readinessRowsByElement.get(element.id) ?? []
-
-      return {
-        ...presentElement(element),
-        hasProcessingReferences: elementReadinessRows.some(
-          row => row.processingState === 'processing',
-        ),
-        previewThumbnailUrl: previews.get(element.id) ?? null,
-        readiness: deriveElementReadiness(element, elementReadinessRows),
-      }
-    }),
+    data: await presentListRows(input.organizationId, page.pageRows),
     nextCursor: page.nextCursor,
   }
 }
 
+function assertReferenceInput(assetIds: readonly string[]) {
+  if (assetIds.length > MAX_ELEMENT_REFERENCES) {
+    throw new HttpError(400, 'element_reference_limit_reached', 'An Element holds a limited number of references.', [{
+      code: 'element_reference_limit_reached',
+      field: 'assetIds',
+      message: `Use at most ${MAX_ELEMENT_REFERENCES} reference images.`,
+      params: { maximum: MAX_ELEMENT_REFERENCES },
+    }])
+  }
+  if (new Set(assetIds).size !== assetIds.length) {
+    throw new HttpError(400, 'validation_error', 'Reference Assets must be unique.', [{
+      code: 'duplicate_reference_asset',
+      field: 'assetIds',
+      message: 'Each Asset can be referenced once per Element.',
+    }])
+  }
+}
+
+function throwReferenceReplacementError(
+  result: { invalidAssetIds: string[], status: 'asset_not_available' | 'not_image' },
+): never {
+  if (result.status === 'not_image') {
+    throw new HttpError(400, 'element_reference_not_image', 'Element references must be images.', [{
+      code: 'element_reference_not_image',
+      field: 'assetIds',
+      message: 'Only image Assets can be Element references.',
+    }])
+  }
+  throw new HttpError(400, 'asset_not_available', 'A selected Asset is not available.', [{
+    code: 'asset_not_available',
+    field: 'assetIds',
+    message: 'Remove unavailable Assets from the selection.',
+  }])
+}
+
+/** Creates an Element with its references in one transaction. */
 export async function createElement(input: {
-  createdBy: string
-  data?: Record<string, unknown>
-  instructions?: string
+  assetIds: readonly string[]
+  description: string
+  kind: ElementKind
   name: string
   organizationId: string
-  type: ElementType
+  userId: string
 }) {
-  if (input.type !== 'other' && input.instructions?.trim()) {
-    throw new HttpError(400, 'validation_error', 'Specialized Elements use their Guidelines field.', [{
-      code: 'invalid_field',
-      field: 'instructions',
-      message: 'Use data.description for specialized Element guidelines.',
-    }])
-  }
-  const definition = getElementTypeDefinition(input.type)
-  const data = parseData(input.type, input.data ?? {})
-  const created = await insertElementWithAssetFolderRow({
-    createdBy: input.createdBy,
-    data: data as JsonValue,
+  assertReferenceInput(input.assetIds)
+
+  const result = await insertElementRowWithReferences({
+    assetIds: input.assetIds,
+    createdBy: input.userId,
+    description: input.description,
     id: createId(),
-    instructions: input.type === 'other' ? input.instructions || null : null,
+    kind: input.kind,
     name: input.name,
     organizationId: input.organizationId,
-    schemaVersion: definition.currentVersion,
-    type: input.type,
   })
-  if (created.status !== 'created') {
-    throw new HttpError(400, 'validation_error', 'The Element folder could not be created.', [{
-      code: created.status === 'limit' ? 'folder_limit' : 'folder_depth',
-      field: 'name',
-      message: created.status === 'limit'
-        ? 'This workspace has reached its folder limit.'
-        : 'The workspace Elements folder cannot contain another nested folder.',
-    }])
-  }
-  if (!created.element.assetFolderId)
-    throw new Error('A created Element must have an associated Asset folder.')
-  return {
-    ...presentElement(created.element),
-    assetFolderId: created.element.assetFolderId,
-  }
+  if (result.status !== 'created')
+    throwReferenceReplacementError(result)
+  return presentElementDetail(result.element)
 }
 
+/** Loads one Element with its ordered, presented references. */
 export async function getElementDetail(organizationId: string, id: string) {
-  const element = await findElementById(organizationId, id)
+  const element = await findElementRow(organizationId, id)
   if (!element)
     throw new TenantResourceNotFoundError()
-
-  const [counts, readinessRows] = await Promise.all([
-    countElementAssetsByRole(organizationId, id),
-    listElementReadinessRows({ elementIds: [id], organizationId }),
-  ])
-  return {
-    ...presentElement(element),
-    assetCounts: Object.fromEntries(counts.map(row => [row.role, Number(row.count)])),
-    readiness: deriveElementReadiness(element, readinessRows),
-  }
+  return presentElementDetail(element)
 }
 
+/**
+ * Updates metadata and, when `assetIds` is provided, the complete ordered
+ * reference list — one transaction, so one Save is one atomic operation.
+ */
 export async function updateElement(input: {
-  data?: Record<string, unknown>
+  assetIds?: readonly string[]
+  description?: string
   id: string
-  instructions?: null | string
+  kind?: ElementKind
   name?: string
   organizationId: string
 }) {
-  const updated = await updateElementRow({
-    id: input.id,
-    organizationId: input.organizationId,
-    prepare: (element, linkedRoles) => {
-      const type = requireStoredElementType(element.type)
-      const stored = upcastElementData(type, element.schemaVersion, element.data)
-      const data = input.data === undefined
-        ? stored.data
-        : parseData(type, input.data)
+  if (input.assetIds !== undefined)
+    assertReferenceInput(input.assetIds)
 
-      if (type !== 'other' && input.instructions?.trim()) {
-        throw new HttpError(400, 'validation_error', 'Specialized Elements use their Guidelines field.', [{
-          code: 'invalid_field',
-          field: 'instructions',
-          message: 'Use data.description for specialized Element guidelines.',
-        }])
-      }
-
-      if (type === 'other' && input.data !== undefined) {
-        const previousRoles = new Map(
-          getElementAssetRoles(type, stored.data)
-            .map(role => [role.id, role.accepts[0]]),
-        )
-        const retainedRoles = new Map(
-          getElementAssetRoles(type, data)
-            .map(role => [role.id, role.accepts[0]]),
-        )
-        if (linkedRoles.some(link =>
-          !retainedRoles.has(link.role)
-          || retainedRoles.get(link.role) !== previousRoles.get(link.role))) {
-          throw new HttpError(409, 'invalid_state', 'An Asset role is still in use.', [{
-            code: 'invalid_state',
-            field: 'data.assetRoles',
-            message: 'Unlink Assets from the role before renaming, removing, or changing its media type.',
-          }])
-        }
-      }
-
-      return {
-        data: data as JsonValue,
-        instructions: type === 'other'
-          ? input.instructions === '' ? null : input.instructions
-          : null,
-        name: input.name,
-        schemaVersion: stored.schemaVersion,
-      }
-    },
-  })
-  if (!updated)
-    throw new TenantResourceNotFoundError()
-  return presentElement(updated)
-}
-
-export async function deleteElement(organizationId: string, id: string) {
-  if (!(await deleteElementRow(organizationId, id)))
-    throw new TenantResourceNotFoundError()
-}
-
-async function requireElement(organizationId: string, elementId: string) {
-  const element = await findElementById(organizationId, elementId)
-  if (!element)
-    throw new TenantResourceNotFoundError()
-  const type = requireStoredElementType(element.type)
-  const parsed = upcastElementData(type, element.schemaVersion, element.data)
-  return { data: parsed.data, element, type }
-}
-
-export async function listElementAssets(input: {
-  elementId: string
-  organizationId: string
-  referenceKind?: ElementReferenceKind
-  role?: string
-  userId: string
-}) {
-  const { data, type } = await requireElement(input.organizationId, input.elementId)
-  if (input.role)
-    requireElementAssetRole(type, input.role, data)
-
-  const rows = await listElementAssetRows(input)
-  const assets = await presentAssetsForUser({
-    assets: rows,
-    organizationId: input.organizationId,
-    userId: input.userId,
-  })
-  return {
-    data: rows.map((row, index) => {
-      const role = requireElementAssetRole(type, row.role, data)
-      const metadata = role.referenceMetadataSchema.safeParse(
-        row.referenceMetadata,
-      )
-      if (!metadata.success) {
-        throw new Error(
-          `Stored Element reference metadata is invalid for role ${row.role}`,
-        )
-      }
-      return {
-        assetId: row.assetId,
-        role: row.role,
-        sortOrder: row.sortOrder,
-        isPrimary: row.isPrimary,
-        referenceKind: row.referenceKind,
-        referenceMetadata: metadata.data,
-        asset: assets[index]!,
-      }
-    }),
-    nextCursor: null,
-  }
-}
-
-export async function attachElementAsset(input: {
-  assetId: string
-  elementId: string
-  isPrimary: boolean
-  organizationId: string
-  referenceKind: ElementReferenceKind
-  referenceMetadata: unknown
-  role: string
-  sortOrder?: number
-  userId: string
-}) {
-  const result = await createElementAssetLinkRow({
-    ...input,
-    validateFlowReferenceBudgets: executor => assertElementFlowReferenceBudgets(
-      executor,
-      {
-        elementId: input.elementId,
-        organizationId: input.organizationId,
-      },
-    ),
-  })
+  const result = await updateElementRowWithReferences(input)
   if (result.status === 'element_not_found')
     throw new TenantResourceNotFoundError()
-  if (result.status === 'asset_not_found')
-    throw new TenantResourceNotFoundError('assetId')
-  if (result.status === 'asset_not_available') {
-    throw new HttpError(409, 'asset_not_available', 'The Asset is not available.', [{
-      code: 'asset_not_available',
-      field: 'assetId',
-      message: 'The Asset is archived or pending deletion.',
-    }])
-  }
-  if (result.status === 'role_not_found')
-    throw createElementAssetRoleNotFoundError(input.role)
-  if (result.status === 'incompatible_asset') {
-    throw createElementAssetMediaTypeNotAcceptedError(
-      input.role,
-      result.mediaType,
-      'assetId',
-    )
-  }
-  if (result.status === 'element_master_role_capacity_reached')
-    throw createElementMasterRoleCapacityError('assetId', result)
-  if (result.status === 'element_source_capacity_reached')
-    throw createElementSourceCapacityError('assetId', result.maximum)
-  if (result.status === 'invalid_reference_metadata')
-    throw createElementReferenceMetadataError()
-  if (result.status === 'source_primary_invalid')
-    throw createElementSourcePrimaryError()
-  if (result.status === 'conflict') {
-    throw new HttpError(409, 'element_asset_already_attached', 'The Asset is already attached.', [{
-      code: 'element_asset_already_attached',
-      field: 'assetId',
-      message: 'The Asset is already attached to this Element role.',
-      params: { role: input.role },
-    }])
-  }
-
-  return getElementAssetLink({ ...input, role: input.role })
-}
-
-async function getElementAssetLink(input: {
-  assetId: string
-  elementId: string
-  organizationId: string
-  role: string
-  userId: string
-}) {
-  const list = await listElementAssets({
-    elementId: input.elementId,
-    organizationId: input.organizationId,
-    role: input.role,
-    userId: input.userId,
-  })
-  const link = list.data.find(item => item.assetId === input.assetId)
-  if (!link)
-    throw new TenantResourceNotFoundError()
-  return link
-}
-
-export async function updateElementAsset(input: {
-  assetId: string
-  elementId: string
-  isPrimary?: boolean
-  organizationId: string
-  referenceKind?: ElementReferenceKind
-  referenceMetadata?: unknown
-  role: string
-  sortOrder?: number
-  targetRole?: string
-  userId: string
-}) {
-  const result = await updateElementAssetLinkRow({
-    ...input,
-    validateFlowReferenceBudgets: executor => assertElementFlowReferenceBudgets(
-      executor,
-      {
-        elementId: input.elementId,
-        organizationId: input.organizationId,
-      },
-    ),
-  })
-  if (result.status === 'element_not_found' || result.status === 'link_not_found')
-    throw new TenantResourceNotFoundError()
-  if (result.status === 'asset_not_found')
-    throw new TenantResourceNotFoundError('assetId')
-  if (result.status === 'role_not_found')
-    throw createElementAssetRoleNotFoundError(input.targetRole ?? input.role)
-  if (result.status === 'incompatible_asset') {
-    throw createElementAssetMediaTypeNotAcceptedError(
-      input.targetRole ?? input.role,
-      result.mediaType,
-      'role',
-    )
-  }
-  if (result.status === 'element_master_role_capacity_reached')
-    throw createElementMasterRoleCapacityError('role', result)
-  if (result.status === 'element_source_capacity_reached')
-    throw createElementSourceCapacityError('role', result.maximum)
-  if (result.status === 'invalid_reference_metadata')
-    throw createElementReferenceMetadataError()
-  if (result.status === 'source_primary_invalid')
-    throw createElementSourcePrimaryError()
-  if (result.status === 'asset_not_available') {
-    throw new HttpError(409, 'asset_not_available', 'The Asset is not available.')
-  }
-  if (result.status === 'conflict') {
-    throw new HttpError(409, 'element_asset_already_attached', 'The Asset is already attached.', [{
-      code: 'element_asset_already_attached',
-      field: 'targetRole',
-      message: 'The Asset is already attached to the target Element role.',
-      params: { role: input.targetRole ?? input.role },
-    }])
-  }
   if (result.status !== 'updated')
-    throw new Error(`Unhandled Element Asset link result: ${result.status}`)
-  return getElementAssetLink({
-    ...input,
-    role: result.role,
-  })
+    throwReferenceReplacementError(result)
+  return presentElementDetail(result.element)
 }
 
-export async function unlinkElementAsset(input: {
-  assetId: string
-  elementId: string
-  organizationId: string
-  role: string
-}) {
-  if (!(await deleteElementAssetLinkRow(input)))
+/** Deletes one Element; canonical Assets are never touched. */
+export async function deleteElement(organizationId: string, id: string) {
+  const deleted = await deleteElementRow(organizationId, id)
+  if (!deleted)
     throw new TenantResourceNotFoundError()
 }
 
-export async function getElementUsage(organizationId: string, elementId: string) {
-  await requireElement(organizationId, elementId)
-  const usage = await getElementUsageRows(organizationId, elementId)
+/**
+ * Atomic append/remove against the current server-side reference list, used
+ * by capture flows and their Undo so concurrent additions never overwrite
+ * each other. Returns the detail plus exactly which Assets changed.
+ */
+export async function mutateElementReferences(input: {
+  addAssetIds: readonly string[]
+  elementId: string
+  organizationId: string
+  removeAssetIds: readonly string[]
+}) {
+  const result = await mutateElementReferenceRows(input)
+  if (result.status === 'element_not_found')
+    throw new TenantResourceNotFoundError()
+  if (result.status !== 'mutated')
+    throwReferenceReplacementError(result)
+
+  const detail = await presentElementDetail(result.element)
   return {
-    flowCount: Number(usage.flowSummary.count),
-    flows: usage.flows.map(flow => ({
-      flowId: flow.flowId,
-      flowName: flow.flowName,
-      nodeCount: Number(flow.nodeCount),
-    })),
-    runCount: Number(usage.runSummary.count),
-    lastUsedAt: usage.runSummary.lastUsedAt?.toISOString() ?? null,
+    ...detail,
+    addedAssetIds: result.addedAssetIds,
+    removedAssetIds: result.removedAssetIds,
   }
 }

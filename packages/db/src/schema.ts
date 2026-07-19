@@ -53,8 +53,6 @@ export type AssetSource = 'generation' | 'upload'
 export type AssetVisibility = 'private' | 'public'
 /** Canonical Asset processing lifecycle. */
 export type AssetProcessingState = 'failed' | 'processing' | 'ready'
-/** Legacy Element-to-Asset relationship kinds. */
-export type ElementReferenceKind = 'master' | 'source'
 /** Supported Flow graph-selection run modes. */
 export type FlowRunMode
   = | 'all'
@@ -477,31 +475,31 @@ export interface AssetTagTable {
   createdAt: GeneratedTimestamp
 }
 
-/** Dormant Element table contract retained for compatibility. */
+/**
+ * Element table contract. An Element is a named, reusable collection of
+ * reference image Assets; `kind` is a presentation label owned by the code
+ * registry and is never constrained by the database.
+ */
 export interface ElementTable {
   id: string
   organizationId: string
   createdBy: string | null
-  assetFolderId: Generated<string | null>
-  type: string
+  kind: string
   name: string
-  instructions: string | null
-  data: GeneratedJsonColumn
-  schemaVersion: Generated<number>
+  description: Generated<string>
   createdAt: GeneratedTimestamp
   updatedAt: GeneratedTimestamp
 }
 
-/** Dormant Element-to-Asset relationship table contract. */
-export interface ElementAssetTable {
+/**
+ * Element-to-Asset reference table contract. Rows are ordered by `sortOrder`;
+ * the first reference is the Element's cover image.
+ */
+export interface ElementReferenceTable {
   organizationId: string
   elementId: string
   assetId: string
-  role: string
   sortOrder: Generated<number>
-  isPrimary: Generated<boolean>
-  referenceKind: Generated<ElementReferenceKind>
-  referenceMetadata: GeneratedJsonColumn
   createdAt: GeneratedTimestamp
 }
 
@@ -561,7 +559,7 @@ export interface Database {
   assetFavorites: AssetFavoriteTable
   assetTags: AssetTagTable
   assets: AssetTable
-  elementAssets: ElementAssetTable
+  elementReferences: ElementReferenceTable
   elements: ElementTable
   flowEdges: FlowEdgeTable
   flowNodes: FlowNodeTable

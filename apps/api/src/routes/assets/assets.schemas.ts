@@ -1,3 +1,5 @@
+/** Request and response contracts for the Assets API. */
+
 import { z } from '@hono/zod-openapi'
 
 import {
@@ -15,14 +17,11 @@ import {
   TimestampSchema,
   UserIdSchema,
 } from '../../schemas/common.js'
-import {
-  ElementReferenceKindSchema,
-  ElementReferenceMetadataSchema,
-} from '../../schemas/element-reference.js'
 import { TagSchema } from '../tags/tags.schemas.js'
 
 const NullableTimestampSchema = z.iso.datetime().nullable()
 
+/** Canonical Asset representation returned across the API. */
 export const AssetSchema = z.object({
   id: Cuid2Schema,
   name: z.string(),
@@ -49,6 +48,7 @@ export const AssetSchema = z.object({
   updatedAt: TimestampSchema,
 }).openapi('Asset')
 
+/** One provenance source of a generation job (text/asset/element/nodeOutput). */
 export const GenerationJobSourceSchema = z.object({
   sortOrder: z.number().int().nonnegative(),
   sourceType: z.enum(['text', 'element', 'asset', 'nodeOutput']),
@@ -59,6 +59,7 @@ export const GenerationJobSourceSchema = z.object({
   snapshot: z.record(z.string(), z.any()),
 }).openapi('GenerationJobSource')
 
+/** Immutable generation provenance for a generated Asset. */
 export const GenerationProvenanceSchema = z.object({
   jobId: Cuid2Schema,
   runId: Cuid2Schema,
@@ -78,34 +79,31 @@ export const GenerationProvenanceSchema = z.object({
   completedAt: NullableTimestampSchema,
 }).openapi('GenerationProvenance')
 
+/** Render-complete Asset detail with metadata and provenance. */
 export const AssetDetailSchema = AssetSchema.extend({
   metadata: z.record(z.string(), z.any()),
-  elementLinks: z.array(z.object({
-    elementId: Cuid2Schema,
-    role: z.string(),
-    isPrimary: z.boolean(),
-    referenceKind: ElementReferenceKindSchema,
-    referenceMetadata: ElementReferenceMetadataSchema,
-  })),
   generation: GenerationProvenanceSchema.nullable(),
   usedAsInputCount: z.number().int().nonnegative(),
 }).openapi('AssetDetail')
 
+/** Cursor page of Assets. */
 export const AssetListResponseSchema = createListResponseSchema(AssetSchema)
   .openapi('AssetListResponse')
 
+/** Path parameter carrying one Asset id. */
 export const AssetParamsSchema = z.object({ id: Cuid2Schema })
 
+/** Path parameters for an Asset/tag pair. */
 export const AssetTagParamsSchema = AssetParamsSchema.extend({
   tagId: Cuid2Schema,
 })
 
+/** Filters, sort, and pagination for the Asset list. */
 export const AssetListQuerySchema = z.object({
   type: z.union([AssetTypeSchema, z.array(AssetTypeSchema)]).optional(),
   source: AssetSourceSchema.optional(),
   folderId: z.union([Cuid2Schema, z.literal('root')]).optional(),
   elementId: Cuid2Schema.optional(),
-  role: z.string().trim().min(1).max(64).optional(),
   favorite: z.stringbool().optional().openapi({ type: 'boolean' }),
   tagId: z.union([Cuid2Schema, z.array(Cuid2Schema)]).optional(),
   search: z.string().trim().max(200).optional(),
@@ -114,34 +112,16 @@ export const AssetListQuerySchema = z.object({
   order: SortOrderSchema.default('desc'),
   limit: PaginationLimitSchema,
   cursor: CursorSchema.optional(),
-}).refine(value => !value.role || value.elementId, {
-  message: 'elementId is required when filtering by role',
-  path: ['elementId'],
 })
 
+/** Registers an uploaded object as a canonical Asset. */
 export const RegisterAssetRequestSchema = z.object({
   uploadId: z.string().min(1).max(8192),
   name: z.string().trim().min(1).max(255).optional(),
   folderId: Cuid2Schema.optional(),
-  elementId: Cuid2Schema.optional(),
-  role: z.string().trim().min(1).max(64).optional(),
-  sortOrder: z.number().int().nonnegative().optional(),
-  isPrimary: z.boolean().optional(),
-  referenceKind: ElementReferenceKindSchema.optional(),
-  referenceMetadata: ElementReferenceMetadataSchema.optional(),
-}).refine(value => !value.role || Boolean(value.elementId), {
-  message: 'elementId is required when role is provided',
-  path: ['elementId'],
-}).refine(value => value.role || (
-  value.sortOrder === undefined
-  && value.isPrimary === undefined
-  && value.referenceKind === undefined
-  && value.referenceMetadata === undefined
-), {
-  message: 'role is required for Element link metadata',
-  path: ['role'],
 }).openapi('RegisterAssetRequest')
 
+/** Updates an Asset name and/or folder. */
 export const UpdateAssetRequestSchema = z.object({
   name: z.string().trim().min(1).max(255).optional(),
   folderId: NullableCuid2Schema.optional(),
@@ -149,6 +129,7 @@ export const UpdateAssetRequestSchema = z.object({
   message: 'At least one field is required',
 }).openapi('UpdateAssetRequest')
 
+/** Bulk-moves up to 100 unique Assets into one folder. */
 export const MoveAssetsRequestSchema = z.object({
   assetIds: z.array(Cuid2Schema)
     .min(1)
@@ -159,10 +140,12 @@ export const MoveAssetsRequestSchema = z.object({
   folderId: NullableCuid2Schema,
 }).openapi('MoveAssetsRequest')
 
+/** The moved Assets after a bulk move. */
 export const MoveAssetsResponseSchema = z.object({
   data: z.array(AssetSchema),
 }).openapi('MoveAssetsResponse')
 
+/** One job/run that consumed an Asset as input. */
 export const AssetUsageSchema = z.object({
   jobId: Cuid2Schema,
   runId: Cuid2Schema,
@@ -170,14 +153,17 @@ export const AssetUsageSchema = z.object({
   createdAt: TimestampSchema,
 }).openapi('AssetUsage')
 
+/** Cursor page of Asset usage records. */
 export const AssetUsageListResponseSchema = createListResponseSchema(AssetUsageSchema)
   .openapi('AssetUsageListResponse')
 
+/** Pagination for the Asset usage list. */
 export const AssetUsageQuerySchema = z.object({
   limit: PaginationLimitSchema,
   cursor: CursorSchema.optional(),
 })
 
+/** A signed download URL for one Asset. */
 export const AssetDownloadResponseSchema = z.object({
   url: z.url(),
 }).openapi('AssetDownloadResponse')

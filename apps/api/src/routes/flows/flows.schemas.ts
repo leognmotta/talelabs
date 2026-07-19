@@ -1,3 +1,5 @@
+/** Request and response contracts for the Flows API. */
+
 import { z } from '@hono/zod-openapi'
 import { FLOW_GRAPH_LIMITS, FLOW_NODE_TYPES } from '@talelabs/flows'
 
@@ -16,12 +18,14 @@ import {
   UserIdSchema,
 } from '../../schemas/common.js'
 
+/** Canvas viewport position and zoom. */
 export const FlowViewportSchema = z.object({
   x: z.number().finite(),
   y: z.number().finite(),
   zoom: z.number().finite().min(0.05).max(8),
 }).openapi('FlowViewport')
 
+/** Flow summary representation. */
 export const FlowSchema = z.object({
   id: Cuid2Schema,
   name: z.string(),
@@ -32,21 +36,26 @@ export const FlowSchema = z.object({
   updatedAt: TimestampSchema,
 }).openapi('Flow')
 
+/** Cursor page of Flows. */
 export const FlowListResponseSchema = createListResponseSchema(FlowSchema)
   .openapi('FlowListResponse')
 
+/** Search and pagination for the Flow list. */
 export const FlowListQuerySchema = z.object({
   cursor: CursorSchema.optional(),
   limit: PaginationLimitSchema,
   search: z.string().trim().min(1).max(100).optional(),
 })
 
+/** Path parameter carrying one Flow id. */
 export const FlowParamsSchema = z.object({ id: Cuid2Schema })
 
+/** Create-Flow payload. */
 export const CreateFlowRequestSchema = z.object({
   name: z.string().trim().min(1).max(255),
 }).openapi('CreateFlowRequest')
 
+/** Update-Flow payload: name and/or viewport. */
 export const UpdateFlowRequestSchema = z.object({
   name: z.string().trim().min(1).max(255).optional(),
   viewport: FlowViewportSchema.optional(),
@@ -56,6 +65,7 @@ export const UpdateFlowRequestSchema = z.object({
 
 const NodeDataSchema = z.record(z.string(), z.any())
 
+/** One graph node in wire form. */
 export const FlowNodeSchema = z.object({
   id: Cuid2Schema,
   type: z.enum(FLOW_NODE_TYPES),
@@ -66,6 +76,7 @@ export const FlowNodeSchema = z.object({
   schemaVersion: z.number().int().positive(),
 }).openapi('FlowNode')
 
+/** One graph edge in wire form. */
 export const FlowEdgeSchema = z.object({
   createdAt: TimestampSchema,
   id: Cuid2Schema,
@@ -123,6 +134,7 @@ const FlowLatestResultSchema = z.object({
   jobs: z.array(FlowLatestResultJobSchema),
 }).openapi('FlowLatestResult')
 
+/** A referenced Asset hydrated for the canvas. */
 export const FlowReferenceAssetSchema = z.object({
   id: Cuid2Schema,
   name: z.string(),
@@ -143,10 +155,21 @@ export const FlowReferenceAssetSchema = z.object({
   generationModel: z.string().nullable(),
 }).openapi('FlowReferenceAsset')
 
+/** A referenced Element hydrated for the canvas. */
+export const FlowReferenceElementSchema = z.object({
+  id: Cuid2Schema,
+  name: z.string(),
+  kind: z.string(),
+  referenceAssetIds: z.array(Cuid2Schema),
+}).openapi('FlowReferenceElement')
+
+/** Assets and Elements a Flow graph references. */
 export const FlowGraphReferencesSchema = z.object({
   assets: z.array(FlowReferenceAssetSchema).max(FLOW_GRAPH_LIMITS.referenceAssets),
+  elements: z.array(FlowReferenceElementSchema),
 }).openapi('FlowGraphReferences')
 
+/** Full graph read: nodes, edges, active runs, latest results. */
 export const FlowGraphResponseSchema = z.object({
   revision: z.number().int().nonnegative(),
   nodes: z.array(FlowNodeSchema),
@@ -164,6 +187,7 @@ function hasDuplicates(values: readonly string[]) {
   return new Set(values).size !== values.length
 }
 
+/** Revision-checked graph mutation batch (upsert/delete nodes and edges). */
 export const FlowGraphSyncRequestSchema = z.object({
   baseRevision: z.number().int().nonnegative(),
   upsertNodes: z.array(FlowNodeSchema)
@@ -209,6 +233,7 @@ export const FlowGraphSyncRequestSchema = z.object({
   }
 }).openapi('FlowGraphSyncRequest')
 
+/** New revision after a successful graph sync. */
 export const FlowGraphSyncResponseSchema = z.object({
   revision: z.number().int().nonnegative(),
 }).openapi('FlowGraphSyncResponse')
@@ -221,6 +246,7 @@ const FlowRunModeSchema = z.enum([
   'all',
 ])
 
+/** Run-plan preflight request discriminated by run mode. */
 export const FlowRunPlanRequestSchema = z.object({
   command: z.discriminatedUnion('mode', [
     z.object({
@@ -250,6 +276,7 @@ export const FlowRunPlanRequestSchema = z.object({
   ]),
 }).openapi('FlowRunPlanRequest')
 
+/** Run-plan preview: hashes and planned counts. */
 export const FlowRunPlanResponseSchema = z.object({
   flowId: Cuid2Schema,
   flowRevision: z.number().int().nonnegative(),

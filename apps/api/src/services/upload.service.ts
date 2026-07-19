@@ -1,4 +1,4 @@
-import type { ElementReferenceKind } from '@talelabs/elements'
+/** Upload grant issuance: policy validation and signed object URLs. */
 
 import { Buffer } from 'node:buffer'
 
@@ -15,10 +15,10 @@ import { idempotencyKeys, triggerTask } from '@talelabs/trigger'
 import { findAssetByUploadId, findFolderById } from '../data/assets.data.js'
 import { getUploadRegistrationGrantTtlSeconds } from '../domain/assets/asset-policy.js'
 import { HttpError, TenantResourceNotFoundError } from '../middleware/error.js'
-import { reconcileElementUploadLink } from './upload-element-link.service.js'
 import { createUploadGrant, verifyUploadGrant } from './upload-grant.service.js'
 import { persistUploadedAssetRegistration } from './upload-registration-persistence.service.js'
 
+/** Issues a policy-validated upload grant and signed object URL. */
 export async function createUpload(input: {
   checksum: { algorithm: 'md5', value: string }
   filename: string
@@ -93,16 +93,11 @@ async function dispatchIngestion(organizationId: string, assetId: string) {
   }
 }
 
+/** Registers the uploaded object as a canonical Asset, idempotently per grant. */
 export async function registerUploadedAsset(input: {
-  elementId?: string
   folderId?: string
-  isPrimary?: boolean
   name?: string
   organizationId: string
-  referenceKind?: ElementReferenceKind
-  referenceMetadata?: unknown
-  role?: string
-  sortOrder?: number
   uploadId: string
   userId: string
 }) {
@@ -122,17 +117,10 @@ export async function registerUploadedAsset(input: {
 
   const existing = await findAssetByUploadId(input.organizationId, grant.grantId)
 
-  if (existing) {
-    await reconcileElementUploadLink({
-      assetId: existing.id,
-      ...input,
-    })
+  if (existing)
     return { asset: existing, replay: true }
-  }
 
-  // For Element uploads the stored association is authoritative. A stale client
-  // folder ID is ignored and a deleted association is recreated transactionally.
-  if (!input.elementId && input.folderId && !(await findFolderById(input.organizationId, input.folderId)))
+  if (input.folderId && !(await findFolderById(input.organizationId, input.folderId)))
     throw new TenantResourceNotFoundError('folderId')
 
   let object
@@ -169,17 +157,11 @@ export async function registerUploadedAsset(input: {
 
   const result = await persistUploadedAssetRegistration({
     createdBy: input.userId,
-    elementId: input.elementId,
     folderId: input.folderId ?? null,
-    isPrimary: input.isPrimary,
     mimeType: grant.mimeType,
     name: input.name ?? grant.filename,
     organizationId: input.organizationId,
-    referenceKind: input.referenceKind,
-    referenceMetadata: input.referenceMetadata,
-    role: input.role,
     sizeBytes: grant.sizeBytes,
-    sortOrder: input.sortOrder,
     storageKey: grant.key,
     type: policy.type,
     uploadId: grant.grantId,

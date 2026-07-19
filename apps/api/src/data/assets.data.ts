@@ -1,3 +1,5 @@
+/** Kysely data access for Assets: library queries, lifecycle, and purge. */
+
 import type {
   AssetSource,
   AssetTable,
@@ -5,24 +7,19 @@ import type {
   Database,
   JsonValue,
 } from '@talelabs/db'
-import type { ElementReferenceKind } from '@talelabs/elements'
 import type { Selectable, Transaction } from 'kysely'
 import type { PageCursor, SortOrder } from '../pagination/cursor.js'
 
 import { db, sql } from '@talelabs/db'
-import {
-  insertPreparedElementAssetAttachment,
-  prepareElementAssetAttachment,
-} from './element-asset-links.data.js'
-import {
-  lockFolderStructure,
-  provisionElementAssetFolderRow,
-} from './folders.data.js'
 
+/** One persisted Asset row. */
 export type AssetRecord = Selectable<AssetTable>
+/** Asset list row with its case-insensitive name sort key. */
 export type AssetListRow = AssetRecord & { nameSortValue: string }
+/** Sortable Asset list columns. */
 export type AssetSort = 'createdAt' | 'name' | 'sizeBytes'
 
+/** Filters, cursor, and page size for the Asset library query. */
 export interface ListAssetRowsInput {
   archived: boolean
   cursor: PageCursor<AssetSort> | null
@@ -32,7 +29,6 @@ export interface ListAssetRowsInput {
   limit: number
   order: SortOrder
   organizationId: string
-  role?: string
   search?: string
   sort: AssetSort
   source?: AssetSource
@@ -98,6 +94,7 @@ function assetOrderBy(sort: AssetSort, order: SortOrder) {
   return sql`a."createdAt" ${direction}, a."id" ${direction}`
 }
 
+/** Lists Asset rows for the library, `limit + 1` for paging. */
 export async function listAssetRows(input: ListAssetRowsInput) {
   const conditions = [
     sql<boolean>`a."organizationId" = ${input.organizationId}`,
@@ -146,11 +143,10 @@ export async function listAssetRows(input: ListAssetRowsInput) {
 
   if (input.elementId) {
     conditions.push(sql<boolean>`exists (
-      select 1 from "elementAssets" ea
-      where ea."organizationId" = ${input.organizationId}
-        and ea."elementId" = ${input.elementId}
-        and ea."assetId" = a."id"
-        ${input.role ? sql`and ea."role" = ${input.role}` : sql``}
+      select 1 from "elementReferences" reference
+      where reference."organizationId" = ${input.organizationId}
+        and reference."elementId" = ${input.elementId}
+        and reference."assetId" = a."id"
     )`)
   }
 
@@ -168,6 +164,7 @@ export async function listAssetRows(input: ListAssetRowsInput) {
   return result.rows
 }
 
+/** Loads one tenant-scoped Asset row, or undefined. */
 export function findAssetById(organizationId: string, id: string) {
   return db.selectFrom('assets')
     .selectAll()
@@ -176,6 +173,7 @@ export function findAssetById(organizationId: string, id: string) {
     .executeTakeFirst()
 }
 
+/** Loads the Asset registered for one upload, or undefined. */
 export function findAssetByUploadId(organizationId: string, uploadId: string) {
   return db.selectFrom('assets')
     .selectAll()
@@ -184,6 +182,7 @@ export function findAssetByUploadId(organizationId: string, uploadId: string) {
     .executeTakeFirst()
 }
 
+/** Confirms a tenant-scoped folder exists. */
 export function findFolderById(organizationId: string, id: string) {
   return db.selectFrom('folders')
     .select(['id'])
@@ -192,6 +191,7 @@ export function findFolderById(organizationId: string, id: string) {
     .executeTakeFirst()
 }
 
+/** Registers one uploaded Asset in the processing state. */
 export async function insertUploadedAsset(input: {
   createdBy: string
   folderId: null | string
@@ -203,99 +203,11 @@ export async function insertUploadedAsset(input: {
   storageKey: string
   type: AssetType
   uploadId: string
-  elementId?: string
-  isPrimary?: boolean
-  referenceKind?: ElementReferenceKind
-  referenceMetadata?: unknown
-  role?: string
-  sortOrder?: number
-  validateFlowReferenceBudgets: (
-    executor: Transaction<Database>,
-  ) => Promise<void>
 }) {
   return db.transaction().execute(async (trx) => {
-    let folderId = input.folderId
-    const createsElementLink = input.elementId !== undefined && input.role !== undefined
-    const referenceKind = input.referenceKind ?? 'master'
-    let preparedLink: Awaited<ReturnType<typeof prepareElementAssetAttachment>> | undefined
-
-    if (createsElementLink) {
-      preparedLink = await prepareElementAssetAttachment(trx, {
-        assetId: input.id,
-        assetType: input.type,
-        elementId: input.elementId!,
-        isPrimary: input.isPrimary ?? false,
-        lockFolder: true,
-        organizationId: input.organizationId,
-        referenceKind,
-        referenceMetadata: input.referenceMetadata ?? {},
-        role: input.role!,
-      })
-      if (preparedLink.status !== 'prepared')
-        return preparedLink
-    }
-
-    if (input.elementId) {
-      // Folder deletion takes the same advisory lock before its FK action updates
-      // Elements. Keep this lock order consistent to avoid an Element/folder
-      // deadlock while lazily recreating an association.
-      if (!createsElementLink)
-        await lockFolderStructure(trx, input.organizationId)
-      const element = preparedLink?.status === 'prepared'
-        ? preparedLink.element
-        : await trx.selectFrom('elements')
-            .select([
-              'assetFolderId',
-              'data',
-              'id',
-              'name',
-              'schemaVersion',
-              'type',
-            ])
-            .where('organizationId', '=', input.organizationId)
-            .where('id', '=', input.elementId)
-            .forUpdate()
-            .executeTakeFirst()
-      if (!element)
-        return { status: 'element_not_found' as const }
-
-      if (element.assetFolderId) {
-        folderId = element.assetFolderId
-      }
-      else {
-        const provisioned = await provisionElementAssetFolderRow(trx, {
-          elementName: element.name,
-          organizationId: input.organizationId,
-        })
-        if (provisioned.status === 'limit')
-          return { status: 'folder_limit' as const }
-        if (provisioned.status === 'depth')
-          return { status: 'folder_depth' as const }
-
-        folderId = provisioned.folderId
-        await trx.updateTable('elements')
-          .set({ assetFolderId: folderId, updatedAt: new Date() })
-          .where('organizationId', '=', input.organizationId)
-          .where('id', '=', input.elementId)
-          .executeTakeFirstOrThrow()
-      }
-    }
-
-    const {
-      elementId: _elementId,
-      folderId: _folderId,
-      isPrimary: _isPrimary,
-      referenceKind: _referenceKind,
-      referenceMetadata: _referenceMetadata,
-      role: _role,
-      sortOrder: _sortOrder,
-      validateFlowReferenceBudgets: _validateFlowReferenceBudgets,
-      ...assetInput
-    } = input
     const asset = await trx.insertInto('assets')
       .values({
-        ...assetInput,
-        folderId,
+        ...input,
         source: 'upload',
         visibility: 'private',
         processingState: 'processing',
@@ -303,21 +215,11 @@ export async function insertUploadedAsset(input: {
       .returningAll()
       .executeTakeFirstOrThrow()
 
-    if (input.elementId && input.role && preparedLink?.status === 'prepared') {
-      await insertPreparedElementAssetAttachment(trx, {
-        assetId: asset.id,
-        elementId: input.elementId,
-        organizationId: input.organizationId,
-        prepared: preparedLink,
-        sortOrder: input.sortOrder,
-        validateFlowReferenceBudgets: input.validateFlowReferenceBudgets,
-      })
-    }
-
     return { asset, status: 'created' as const }
   })
 }
 
+/** Updates name/folder of one Asset unless it is being purged. */
 export async function updateAssetRow(input: {
   folderId?: null | string
   id: string
@@ -337,11 +239,13 @@ export async function updateAssetRow(input: {
     .executeTakeFirst()
 }
 
+/** Outcome of the transactional bulk move. */
 export type MoveAssetRowsResult
   = | { assets: AssetRecord[], status: 'moved' }
     | { field?: 'assetIds' | 'folderId', status: 'not_found' }
     | { status: 'invalid_state' }
 
+/** Moves Assets into a folder transactionally, rejecting purging rows. */
 export function moveAssetRows(input: {
   assetIds: string[]
   folderId: null | string
@@ -391,6 +295,7 @@ export function moveAssetRows(input: {
   })
 }
 
+/** Archives one Asset (reversible) unless it is being purged. */
 export async function archiveAssetRow(organizationId: string, id: string) {
   return db.updateTable('assets')
     .set({ deletedAt: new Date(), updatedAt: new Date() })
@@ -401,6 +306,7 @@ export async function archiveAssetRow(organizationId: string, id: string) {
     .executeTakeFirst()
 }
 
+/** Un-archives one Asset; guarded against purge-in-progress. */
 export async function restoreAssetRow(organizationId: string, id: string) {
   return db.updateTable('assets')
     .set({ deletedAt: null, updatedAt: new Date() })
@@ -411,11 +317,16 @@ export async function restoreAssetRow(organizationId: string, id: string) {
     .executeTakeFirst()
 }
 
+/** Outcome of requesting a permanent Asset purge. */
 export type PurgeRequestResult
   = | { asset: AssetRecord, status: 'already_requested' | 'requested' }
     | { status: 'active_generation' }
     | { status: 'not_found' }
 
+/**
+ * Marks one Asset for permanent purge inside `trx`: archives it, rejects if
+ * an active generation consumes it, and detaches it from every Element.
+ */
 export async function requestAssetPurgeInTransaction(
   trx: Transaction<Database>,
   organizationId: string,
@@ -459,9 +370,45 @@ export async function requestAssetPurgeInTransaction(
     .returningAll()
     .executeTakeFirstOrThrow()
 
+  // Purged Assets are tombstoned, not row-deleted, so the Element reference
+  // FK cascade never fires; detach them here or they linger in Elements.
+  // Lock the affected Element rows (id order) BEFORE deleting reference rows,
+  // so purge and Element reference mutation share one global lock order —
+  // Asset → Element → elementReferences — and can never deadlock. The Asset
+  // is already locked, so no new reference to it can appear meanwhile.
+  const referencingRows = await trx.selectFrom('elementReferences')
+    .select('elementId')
+    .where('organizationId', '=', organizationId)
+    .where('assetId', '=', id)
+    .execute()
+  const affectedElementIds = [...new Set(referencingRows.map(r => r.elementId))]
+    .sort()
+
+  if (affectedElementIds.length > 0) {
+    await trx.selectFrom('elements')
+      .select('id')
+      .where('organizationId', '=', organizationId)
+      .where('id', 'in', affectedElementIds)
+      .orderBy('id')
+      .forUpdate()
+      .execute()
+
+    await trx.deleteFrom('elementReferences')
+      .where('organizationId', '=', organizationId)
+      .where('assetId', '=', id)
+      .execute()
+
+    await trx.updateTable('elements')
+      .set({ updatedAt: now })
+      .where('organizationId', '=', organizationId)
+      .where('id', 'in', affectedElementIds)
+      .execute()
+  }
+
   return { asset: updated, status: 'requested' }
 }
 
+/** Requests a purge in its own transaction. */
 export async function requestAssetPurge(
   organizationId: string,
   id: string,
@@ -471,28 +418,12 @@ export async function requestAssetPurge(
   ))
 }
 
+/** Loads the provenance and usage relations for one Asset detail. */
 export async function getAssetDetailRelations(
   organizationId: string,
   asset: AssetRecord,
 ) {
-  const [elementLinks, usedAsInput, generation] = await Promise.all([
-    db.selectFrom('elementAssets as link')
-      .innerJoin('elements as element', join => join
-        .onRef('element.id', '=', 'link.elementId')
-        .onRef('element.organizationId', '=', 'link.organizationId'))
-      .select([
-        'link.elementId',
-        'link.role',
-        'link.isPrimary',
-        'link.referenceKind',
-        'link.referenceMetadata',
-        'element.type as elementType',
-        'element.data as elementData',
-        'element.schemaVersion as elementSchemaVersion',
-      ])
-      .where('link.organizationId', '=', organizationId)
-      .where('link.assetId', '=', asset.id)
-      .execute(),
+  const [usedAsInput, generation] = await Promise.all([
     db.selectFrom('generationJobInputs')
       .select(({ fn }) => fn.countAll<number>().as('count'))
       .where('organizationId', '=', organizationId)
@@ -504,7 +435,6 @@ export async function getAssetDetailRelations(
   ])
 
   return {
-    elementLinks,
     generation,
     usedAsInputCount: Number(usedAsInput.count),
   }
@@ -557,6 +487,7 @@ async function getGenerationProvenance(organizationId: string, jobId: string) {
   return { job, sources, inputs }
 }
 
+/** Pages the Flows and jobs that reference one Asset. */
 export async function listAssetUsageRows(input: {
   assetId: string
   cursor: PageCursor<'createdAt'> | null
@@ -594,6 +525,7 @@ export async function listAssetUsageRows(input: {
     .execute()
 }
 
+/** Records a processing failure with its error code. */
 export function markAssetProcessingFailed(input: {
   assetId: string
   error: string
@@ -612,6 +544,7 @@ export function markAssetProcessingFailed(input: {
     .executeTakeFirst()
 }
 
+/** Marks processing complete with measured media metadata. */
 export function markAssetProcessingReady(input: {
   assetId: string
   durationSeconds: null | number
@@ -639,6 +572,7 @@ export function markAssetProcessingReady(input: {
     .executeTakeFirst()
 }
 
+/** Finds stale processing Assets for the ingestion sweep. */
 export function listAssetsAwaitingIngestion(olderThan: Date, limit = 100) {
   return db.selectFrom('assets')
     .select(['id', 'organizationId'])
@@ -650,6 +584,7 @@ export function listAssetsAwaitingIngestion(olderThan: Date, limit = 100) {
     .execute()
 }
 
+/** Finds stale purge-requested Assets for the purge sweep. */
 export function listAssetsAwaitingPurge(olderThan: Date, limit = 100) {
   return db.selectFrom('assets')
     .select(['id', 'organizationId'])
@@ -661,6 +596,7 @@ export function listAssetsAwaitingPurge(olderThan: Date, limit = 100) {
     .execute()
 }
 
+/** Stamps `purgedAt` after storage deletion actually succeeded. */
 export async function completeAssetPurge(input: {
   assetId: string
   organizationId: string
@@ -674,6 +610,7 @@ export async function completeAssetPurge(input: {
     .executeTakeFirst()
 }
 
+/** Runs `fn` inside one database transaction. */
 export async function withAssetTransaction<T>(
   callback: (transaction: Transaction<Database>) => Promise<T>,
 ) {

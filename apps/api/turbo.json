@@ -6,7 +6,6 @@
         "@talelabs/assets#dev:build",
         "@talelabs/auth#dev:build",
         "@talelabs/db#dev:build",
-        "@talelabs/elements#dev:build",
         "@talelabs/email#dev:build",
         "@talelabs/flows#dev:build",
         "@talelabs/i18n#dev:build",

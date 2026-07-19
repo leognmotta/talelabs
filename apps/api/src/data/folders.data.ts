@@ -1,9 +1,9 @@
+/** Kysely data access for folders: tree reads, moves, depth/limit guards. */
+
 import type { AssetType, AssetVisibility, FolderTable } from '@talelabs/db'
 import type { Selectable } from 'kysely'
 
-import { createId } from '@paralleldrive/cuid2'
 import {
-  availableFolderName,
   db,
   lockFolderStructure,
   MAX_FOLDER_DEPTH,
@@ -11,8 +11,8 @@ import {
   sql,
 } from '@talelabs/db'
 
+/** Cover thumbnails sampled per folder for the library grid. */
 export const MAX_FOLDER_THUMBNAILS = 4
-export const ELEMENTS_ROOT_SYSTEM_ROLE = 'elements_root'
 
 export {
   lockFolderStructure,
@@ -20,12 +20,14 @@ export {
   MAX_FOLDERS_PER_ORGANIZATION,
 }
 
+/** A folder row with derived item counts and total size. */
 export type FolderContentRow = Selectable<FolderTable> & {
   itemCount: number
   processingItemCount: number
   totalSizeBytes: string
 }
 
+/** One preview Asset used to build a folder cover collage. */
 export interface FolderThumbnailRow {
   folderId: string
   mimeType: string
@@ -33,103 +35,6 @@ export interface FolderThumbnailRow {
   thumbnailKey: null | string
   type: AssetType
   visibility: AssetVisibility
-}
-
-async function countFolders(executor: typeof db, organizationId: string) {
-  const row = await executor.selectFrom('folders')
-    .select(({ fn }) => fn.countAll<number>().as('count'))
-    .where('organizationId', '=', organizationId)
-    .executeTakeFirstOrThrow()
-  return Number(row.count)
-}
-
-export type ProvisionElementAssetFolderResult
-  = | { folderId: string, status: 'provisioned' }
-    | { status: 'depth' }
-    | { status: 'limit' }
-
-/**
- * Provisions the stable folder used by one Element. The advisory lock serializes
- * this with ordinary folder creates, moves, and deletes, so collision suffixes
- * and the single workspace Elements root remain deterministic.
- */
-export async function provisionElementAssetFolderRow(
-  executor: typeof db,
-  input: { elementName: string, organizationId: string },
-): Promise<ProvisionElementAssetFolderResult> {
-  await lockFolderStructure(executor, input.organizationId)
-
-  let root = await executor.selectFrom('folders')
-    .select(['id', 'parentId'])
-    .where('organizationId', '=', input.organizationId)
-    .where('systemRole', '=', ELEMENTS_ROOT_SYSTEM_ROLE)
-    .executeTakeFirst()
-
-  if (!root) {
-    const existingRoot = await executor.selectFrom('folders')
-      .select(['id', 'parentId'])
-      .where('organizationId', '=', input.organizationId)
-      .where('parentId', 'is', null)
-      .where(sql<boolean>`lower("name") = lower(${'Elements'})`)
-      .orderBy('id')
-      .executeTakeFirst()
-
-    if (existingRoot) {
-      root = await executor.updateTable('folders')
-        .set({ systemRole: ELEMENTS_ROOT_SYSTEM_ROLE, updatedAt: new Date() })
-        .where('organizationId', '=', input.organizationId)
-        .where('id', '=', existingRoot.id)
-        .returning(['id', 'parentId'])
-        .executeTakeFirstOrThrow()
-    }
-    else {
-      if (await countFolders(executor, input.organizationId) >= MAX_FOLDERS_PER_ORGANIZATION)
-        return { status: 'limit' }
-
-      const rootNames = await executor.selectFrom('folders')
-        .select('name')
-        .where('organizationId', '=', input.organizationId)
-        .where('parentId', 'is', null)
-        .execute()
-      root = await executor.insertInto('folders')
-        .values({
-          id: createId(),
-          name: availableFolderName('Elements', rootNames.map(folder => folder.name)),
-          organizationId: input.organizationId,
-          parentId: null,
-          systemRole: ELEMENTS_ROOT_SYSTEM_ROLE,
-        })
-        .returning(['id', 'parentId'])
-        .executeTakeFirstOrThrow()
-    }
-  }
-
-  if (await countFolders(executor, input.organizationId) >= MAX_FOLDERS_PER_ORGANIZATION)
-    return { status: 'limit' }
-
-  const rootDepth = await getFolderDepth(executor, input.organizationId, root.id)
-  if (rootDepth === null || rootDepth >= MAX_FOLDER_DEPTH)
-    return { status: 'depth' }
-
-  const siblings = await executor.selectFrom('folders')
-    .select('name')
-    .where('organizationId', '=', input.organizationId)
-    .where('parentId', '=', root.id)
-    .execute()
-  const folder = await executor.insertInto('folders')
-    .values({
-      id: createId(),
-      name: availableFolderName(
-        input.elementName,
-        siblings.map(sibling => sibling.name),
-      ),
-      organizationId: input.organizationId,
-      parentId: root.id,
-    })
-    .returning('id')
-    .executeTakeFirstOrThrow()
-
-  return { folderId: folder.id, status: 'provisioned' }
 }
 
 async function getFolderRows(organizationId: string, id?: string) {
@@ -201,14 +106,17 @@ async function getFolderRows(organizationId: string, id?: string) {
   return result.rows
 }
 
+/** Lists all folders for one organization with content aggregates. */
 export function listFolderRows(organizationId: string) {
   return getFolderRows(organizationId)
 }
 
+/** Loads one folder with its content aggregates, or undefined. */
 export async function findFolderRow(organizationId: string, id: string) {
   return (await getFolderRows(organizationId, id))[0]
 }
 
+/** Loads the newest preview Assets per folder for cover collages. */
 export async function listFolderThumbnailRows(
   organizationId: string,
   folderIds?: string[],
@@ -255,6 +163,7 @@ export async function listFolderThumbnailRows(
   return result.rows
 }
 
+/** Creates a folder transactionally, enforcing count and depth limits. */
 export async function createFolderRow(input: {
   id: string
   name: string
@@ -291,6 +200,7 @@ export async function createFolderRow(input: {
   })
 }
 
+/** Renames/moves a folder transactionally, rejecting cycles and depth overflow. */
 export async function updateFolderRow(input: {
   id: string
   name?: string
@@ -358,6 +268,7 @@ export async function updateFolderRow(input: {
   })
 }
 
+/** Deletes a folder subtree, locking affected Flows and Assets in order. */
 export async function deleteFolderRow(organizationId: string, id: string) {
   return db.transaction().execute(async (trx) => {
     await lockFolderStructure(trx, organizationId)
@@ -383,17 +294,10 @@ export async function deleteFolderRow(organizationId: string, id: string) {
     if (folderIds.length === 0)
       return undefined
 
-    // The FK actions clear Flow/Element associations and Asset locations. Lock
-    // affected rows explicitly in the shared folder -> Flow/Element -> Asset
+    // The FK actions clear Flow associations and Asset locations. Lock
+    // affected rows explicitly in the shared folder -> Flow -> Asset
     // order used by output materialization and link mutations.
     await trx.selectFrom('flows')
-      .select('id')
-      .where('organizationId', '=', organizationId)
-      .where('assetFolderId', 'in', folderIds)
-      .orderBy('id')
-      .forUpdate()
-      .execute()
-    await trx.selectFrom('elements')
       .select('id')
       .where('organizationId', '=', organizationId)
       .where('assetFolderId', 'in', folderIds)
@@ -416,6 +320,7 @@ export async function deleteFolderRow(organizationId: string, id: string) {
   })
 }
 
+/** Returns the 1-based ancestor depth of a folder, or null if absent. */
 export async function getFolderDepth(
   executor: Parameters<typeof getSubtreeDepth>[0],
   organizationId: string,

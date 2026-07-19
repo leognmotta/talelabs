@@ -1,15 +1,17 @@
+/**
+ * Flow CRUD, graph read/sync, and latest-result presentation. Graph-reference
+ * hydration and validation-context construction live in
+ * `flow-graph-reference.service.ts`.
+ */
+
 import type {
-  AssetSource,
   AssetType,
   AssetVisibility,
   JsonValue,
 } from '@talelabs/db'
 import type {
-  FlowAssetType,
   FlowGraphEdge,
   FlowGraphNode,
-  FlowGraphValidationContext,
-  FlowNodeType,
 } from '@talelabs/flows'
 
 import { createId } from '@paralleldrive/cuid2'
@@ -17,8 +19,6 @@ import { db } from '@talelabs/db'
 import {
   compareFlowEdgesByPriority,
   FLOW_GRAPH_LIMITS,
-  isFlowNodeType,
-  parseAndUpcastFlowNodeData,
   validateFlowGraphDraft,
 } from '@talelabs/flows'
 
@@ -27,8 +27,6 @@ import {
   findFlowById,
   getFlowGraphRows,
   insertFlowRow,
-  listFlowGraphHydrationRows,
-  listFlowGraphReferenceRows,
   listFlowRows,
   syncFlowGraphRows,
   updateFlowRow,
@@ -39,31 +37,13 @@ import {
   parseIsoTimestampCursorValue,
   resolvePagination,
 } from '../pagination/pagination.js'
-import { presentAsset, toWireJsonObject } from './asset-presenter.js'
-
-interface FlowReferenceAssetResponse {
-  createdAt: string
-  durationSeconds: null | number
-  generationModel: null | string
-  height: null | number
-  id: string
-  lifecycle: 'archived' | 'live' | 'purged' | 'purging'
-  mimeType: string
-  name: string
-  processingError: null | string
-  processingState: 'failed' | 'processing' | 'ready'
-  sizeBytes: null | number
-  source: AssetSource
-  visibility: AssetVisibility
-  thumbnailUrl: null | string
-  type: AssetType
-  url: null | string
-  width: null | number
-}
-
-interface FlowReferencesResponse {
-  assets: FlowReferenceAssetResponse[]
-}
+import { presentAsset } from './asset-presenter.js'
+import {
+  flowGraphValidationError,
+  getValidationContext,
+  presentEdge,
+  presentNode,
+} from './flow-graph-reference.service.js'
 
 interface FlowLatestResultAssetOutput {
   assetId: string
@@ -114,58 +94,6 @@ function presentFlow(flow: NonNullable<Awaited<ReturnType<typeof findFlowById>>>
     createdBy: flow.createdBy,
     createdAt: flow.createdAt.toISOString(),
     updatedAt: flow.updatedAt.toISOString(),
-  }
-}
-
-function presentNode(node: {
-  assetId: null | string
-  data: JsonValue
-  id: string
-  positionX: number
-  positionY: number
-  schemaVersion: number
-  type: string
-}): {
-  assetId: null | string
-  data: Record<string, any>
-  id: string
-  positionX: number
-  positionY: number
-  schemaVersion: number
-  type: FlowNodeType
-} {
-  if (!isFlowNodeType(node.type))
-    throw new Error(`Stored Flow node type is not registered: ${node.type}`)
-  const parsed = parseAndUpcastFlowNodeData(node)
-
-  return {
-    id: node.id,
-    type: parsed.type,
-    positionX: node.positionX,
-    positionY: node.positionY,
-    assetId: node.assetId,
-    data: toWireJsonObject(parsed.data),
-    schemaVersion: parsed.schemaVersion,
-  }
-}
-
-function presentEdge(edge: {
-  createdAt: Date | string
-  id: string
-  sourceHandle: null | string
-  sourceNodeId: string
-  targetHandle: null | string
-  targetNodeId: string
-}) {
-  return {
-    createdAt: edge.createdAt instanceof Date
-      ? edge.createdAt.toISOString()
-      : edge.createdAt,
-    id: edge.id,
-    sourceNodeId: edge.sourceNodeId,
-    targetNodeId: edge.targetNodeId,
-    sourceHandle: edge.sourceHandle,
-    targetHandle: edge.targetHandle,
   }
 }
 
@@ -295,46 +223,7 @@ async function listFlowLatestResults(input: {
   }))
 }
 
-async function getValidationContext(input: {
-  executor: Parameters<typeof listFlowGraphReferenceRows>[0]
-  nodes: FlowGraphNode[]
-  organizationId: string
-}): Promise<FlowGraphValidationContext> {
-  const assetIds = [...new Set(input.nodes.flatMap(node => node.assetId ? [node.assetId] : []))]
-  const rows = await listFlowGraphReferenceRows(input.executor, {
-    assetIds,
-    organizationId: input.organizationId,
-  })
-  const assetsById = new Map(rows.assets.map(asset => [asset.id, asset]))
-
-  for (const node of input.nodes) {
-    if (node.assetId && !assetsById.has(node.assetId))
-      throw new TenantResourceNotFoundError(`nodes.${node.id}.assetId`)
-  }
-
-  return {
-    assetTypesById: Object.fromEntries(
-      rows.assets.map(asset => [asset.id, asset.type as FlowAssetType]),
-    ),
-  }
-}
-
-function validationError(issues: Array<{
-  code: string
-  field: string
-  params?: Record<string, boolean | number | string>
-}>) {
-  return new HttpError(
-    400,
-    'validation_error',
-    'The Flow graph could not be validated.',
-    issues.map(item => ({
-      ...item,
-      message: item.code,
-    })),
-  )
-}
-
+/** Lists Flows for one organization as a cursor page. */
 export async function listFlows(input: {
   cursor?: string
   limit: number
@@ -380,6 +269,7 @@ export async function listFlows(input: {
   }
 }
 
+/** Creates an empty Flow at revision 0. */
 export async function createFlow(input: {
   createdBy: string
   name: string
@@ -388,6 +278,7 @@ export async function createFlow(input: {
   return presentFlow(await insertFlowRow({ ...input, id: createId() }))
 }
 
+/** Loads one Flow summary, or throws when absent. */
 export async function getFlow(organizationId: string, id: string) {
   const flow = await findFlowById(organizationId, id)
   if (!flow)
@@ -395,6 +286,7 @@ export async function getFlow(organizationId: string, id: string) {
   return presentFlow(flow)
 }
 
+/** Updates Flow name and/or viewport. */
 export async function updateFlow(input: {
   id: string
   name?: string
@@ -407,11 +299,13 @@ export async function updateFlow(input: {
   return presentFlow(flow)
 }
 
+/** Deletes one Flow and its graph. */
 export async function deleteFlow(organizationId: string, id: string) {
   if (!await deleteFlowRow(organizationId, id))
     throw new TenantResourceNotFoundError()
 }
 
+/** Loads the full wire graph: nodes, edges, active runs, latest results. */
 export async function getFlowGraph(organizationId: string, flowId: string) {
   const graph = await getFlowGraphRows(
     db,
@@ -441,56 +335,7 @@ export async function getFlowGraph(organizationId: string, flowId: string) {
   }
 }
 
-export async function getFlowReferences(
-  organizationId: string,
-  flowId: string,
-): Promise<FlowReferencesResponse> {
-  const graph = await getFlowGraphRows(db, organizationId, flowId)
-  if (!graph)
-    throw new TenantResourceNotFoundError()
-  const nodes = graph.nodes.map(presentNode)
-  const assetIds = [...new Set(nodes.flatMap(node => (
-    node.assetId ? [node.assetId] : []
-  )))]
-  const hydration = await listFlowGraphHydrationRows({
-    assetLimit: FLOW_GRAPH_LIMITS.referenceAssets,
-    assetIds,
-    organizationId,
-  })
-  if (hydration.limitExceeded) {
-    throw validationError([{
-      code: 'reference_asset_limit',
-      field: 'assets',
-      params: { maximum: FLOW_GRAPH_LIMITS.referenceAssets },
-    }])
-  }
-  const presentedAssets = await Promise.all(hydration.assets.map(asset => (
-    presentAsset(asset, undefined, { includeOriginalUrl: false })
-  )))
-
-  return {
-    assets: presentedAssets.map((asset, index) => ({
-      id: asset.id,
-      name: asset.name,
-      type: asset.type,
-      source: asset.source,
-      visibility: asset.visibility,
-      mimeType: asset.mimeType,
-      sizeBytes: asset.sizeBytes,
-      width: asset.width,
-      height: asset.height,
-      durationSeconds: asset.durationSeconds,
-      lifecycle: asset.lifecycle,
-      processingState: asset.processingState,
-      processingError: asset.processingError,
-      url: asset.url,
-      thumbnailUrl: asset.thumbnailUrl,
-      createdAt: asset.createdAt,
-      generationModel: hydration.assets[index]?.generationModel ?? null,
-    })),
-  }
-}
-
+/** Applies a revision-checked graph delta and returns the new graph. */
 export async function syncFlowGraph(input: {
   baseRevision: number
   deleteEdgeIds?: string[]
@@ -507,7 +352,7 @@ export async function syncFlowGraph(input: {
   const mutationCount = upsertNodes.length + upsertEdges.length
     + deleteNodeIds.length + deleteEdgeIds.length
   if (mutationCount > FLOW_GRAPH_LIMITS.mutationsPerRequest) {
-    throw validationError([{
+    throw flowGraphValidationError([{
       code: 'mutation_limit',
       field: '',
       params: { maximum: FLOW_GRAPH_LIMITS.mutationsPerRequest },
@@ -566,7 +411,7 @@ export async function syncFlowGraph(input: {
         nodes: nodeValues,
       })
       if (!validation.valid)
-        throw validationError(validation.issues)
+        throw flowGraphValidationError(validation.issues)
 
       return {
         edges: edgeValues,

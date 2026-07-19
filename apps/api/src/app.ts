@@ -1,3 +1,5 @@
+/** Composes the API Hono app: middleware, auth, and product route mounts. */
+
 import type { OrganizationSessionResolver } from './middleware/organization.js'
 import type { RateLimitStore } from './rate-limit/rate-limit-store.js'
 import type { ProductRouteRegistrar } from './routes/product.routes.js'
@@ -78,29 +80,21 @@ function getValidationIssueDetails(issue: {
   }
 }
 
+/** Injectable composition options for the API app. */
 export interface CreateApiAppOptions {
+  /** Resolver mapping a session to its active organization. */
   organizationSessionResolver?: OrganizationSessionResolver
+  /** Product route registrars mounted under the authenticated API. */
   productRouteRegistrars?: readonly ProductRouteRegistrar[]
+  /** Backing store for rate-limit admission control. */
   rateLimitStore?: RateLimitStore
 }
 
+/** Builds and wires the API Hono app from injected composition options. */
 export function createApiApp(options: CreateApiAppOptions = {}) {
   const app = new OpenAPIHono<ApiEnv>({
     defaultHook: (result, c) => {
       if (!result.success) {
-        const referenceMetadataIssues = result.error.issues.filter(issue =>
-          issue.path.includes('referenceMetadata'))
-        if (referenceMetadataIssues.length) {
-          return c.json(apiError(
-            'element_reference_metadata_invalid',
-            'Element reference metadata is invalid.',
-            referenceMetadataIssues.map(issue => ({
-              code: 'element_reference_metadata_invalid',
-              field: issue.path.map(String).join('.'),
-              message: issue.message,
-            })),
-          ), 400)
-        }
         return c.json(apiError(
           'validation_error',
           'The request could not be validated.',

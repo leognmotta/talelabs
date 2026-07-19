@@ -1,8 +1,4 @@
-import {
-  getElementAssetRole,
-  isElementType,
-  upcastElementData,
-} from '@talelabs/elements'
+/** Assembles render-complete Asset detail: metadata, tags, and provenance. */
 
 import {
   listAssetTagRows,
@@ -19,6 +15,7 @@ import {
   toWireJsonObject,
 } from './asset-presenter.js'
 
+/** Presents Assets with the user's favorite and tag state attached. */
 export async function presentAssetsForUser(input: {
   assets: NonNullable<Awaited<ReturnType<typeof findAssetById>>>[]
   organizationId: string
@@ -53,6 +50,7 @@ export async function presentAssetsForUser(input: {
   })))
 }
 
+/** Presents one Asset with the user's favorite and tag state attached. */
 export async function presentAssetForUser(input: {
   asset: NonNullable<Awaited<ReturnType<typeof findAssetById>>>
   organizationId: string
@@ -66,6 +64,7 @@ export async function presentAssetForUser(input: {
   return assets[0]!
 }
 
+/** Assembles render-complete Asset detail: metadata, tags, and provenance. */
 export async function getAssetDetail(
   organizationId: string,
   userId: string,
@@ -80,39 +79,10 @@ export async function getAssetDetail(
     getAssetDetailRelations(organizationId, asset),
   ])
   const presented = presentedAssets[0]!
-  const elementLinks = relations.elementLinks.map((link) => {
-    if (!isElementType(link.elementType)) {
-      throw new Error(
-        `Stored Element type is not registered: ${link.elementType}`,
-      )
-    }
-    const elementData = upcastElementData(
-      link.elementType,
-      link.elementSchemaVersion,
-      link.elementData,
-    ).data
-    const role = getElementAssetRole(link.elementType, link.role, elementData)
-    const metadata = role?.referenceMetadataSchema.safeParse(
-      link.referenceMetadata,
-    )
-    if (!metadata?.success) {
-      throw new Error(
-        `Stored Element reference metadata is invalid for role ${link.role}`,
-      )
-    }
-    return {
-      elementId: link.elementId,
-      isPrimary: link.isPrimary,
-      referenceKind: link.referenceKind,
-      referenceMetadata: metadata.data,
-      role: link.role,
-    }
-  })
 
   return {
     ...presented,
     metadata: toWireJsonObject(asset.metadata),
-    elementLinks,
     generation: relations.generation
       ? presentGenerationProvenance(relations.generation)
       : null,

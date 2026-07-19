@@ -14,10 +14,7 @@ import { SELECTABLE_CATALOG_MODELS } from '@talelabs/models-catalog'
 
 import { commonErrorResponses } from '../product.responses.js'
 import { GenerationConfigResponseSchema } from './config.schemas.js'
-import {
-  serializeActiveFlowValueTypes,
-  serializeGenerationCondition,
-} from './generation-config-serialization.js'
+import { serializeGenerationCondition } from './generation-config-serialization.js'
 
 const getGenerationConfigRoute = createRoute({
   method: 'get',
@@ -115,7 +112,7 @@ const generationConfig = {
         }
       }),
       inputSlots: model.inputSlots.map((slot) => {
-        const valueTypes = serializeActiveFlowValueTypes(slot.accepts)
+        const valueTypes = [...slot.accepts]
         return {
           role: slot.id,
           labelKey: slot.labelKey,

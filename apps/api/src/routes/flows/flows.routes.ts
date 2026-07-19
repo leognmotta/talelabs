@@ -1,3 +1,5 @@
+/** HTTP routes for Flow CRUD, graph sync, references, and run preflight. */
+
 import type { OpenAPIHono } from '@hono/zod-openapi'
 import type { ApiEnv } from '../../types.js'
 
@@ -6,12 +8,12 @@ import { FLOW_GRAPH_LIMITS } from '@talelabs/flows'
 import { bodyLimit } from 'hono/body-limit'
 
 import { apiError } from '../../middleware/error.js'
+import { getFlowReferences } from '../../services/flow-graph-reference.service.js'
 import {
   createFlow,
   deleteFlow,
   getFlow,
   getFlowGraph,
-  getFlowReferences,
   listFlows,
   syncFlowGraph,
   updateFlow,
@@ -141,6 +143,7 @@ const preflightRunRoute = createRoute({
   },
 })
 
+/** Mounts every Flow route on the product API. */
 export function registerFlowRoutes(app: OpenAPIHono<ApiEnv>) {
   app.use('/flows/:id/graph', bodyLimit({
     maxSize: FLOW_GRAPH_LIMITS.requestBodyBytes,

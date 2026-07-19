@@ -1,3 +1,5 @@
+/** Asset list and usage workflows: filtering, pagination, and presentation. */
+
 import type { AssetSource, AssetType } from '@talelabs/db'
 
 import {
@@ -25,6 +27,7 @@ const assetPaginationConfig = {
   defaultSort: 'createdAt' as const,
 }
 
+/** Lists Assets for one organization as a cursor page with presentation. */
 export async function listAssets(input: {
   archived: boolean
   cursor?: string
@@ -34,7 +37,6 @@ export async function listAssets(input: {
   limit: number
   order: 'asc' | 'desc'
   organizationId: string
-  role?: string
   search?: string
   sort: 'createdAt' | 'name' | 'sizeBytes'
   source?: AssetSource
@@ -94,6 +96,7 @@ export async function listAssets(input: {
   }
 }
 
+/** Pages the Flows and jobs that reference one Asset. */
 export async function listAssetUsage(input: {
   assetId: string
   cursor?: string
