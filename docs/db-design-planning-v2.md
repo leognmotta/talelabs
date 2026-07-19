@@ -1,12 +1,11 @@
 # TaleLabs — Database Design v2 (PostgreSQL)
 
-> **Active MVP override (2026-07-14):** the runtime product spine is
-> **Assets → Flows → Generated Assets → Continued Iteration**. Standalone
-> Element tables are preserved as dormant historical work, but `flowNodes` no
-> longer carries `elementId` and active execution must not hydrate Element
-> context. M5 implements five provider-independent run modes with deterministic
-> mocks; M6 replaces only the adapter boundary with real providers. See
-> `assets-flows-mvp-contract.md`.
+> **Active MVP override (2026-07-18):** the runtime product spine is
+> **Assets → Flows → Generated Assets → Continued Iteration**, with simplified
+> Elements as reusable reference collections. Migration
+> `027_reset_elements` dropped the failed multi-role Element schema and data;
+> sections 5–6 below describe the current v2 tables. See
+> `assets-flows-mvp-contract.md` and `elements.md`.
 
 Supersedes `db-design-planning.md`. The active MVP is designed around **Assets → Flows → Generated Assets → Continued Iteration**.
 
@@ -23,9 +22,11 @@ planning document: `credits-planning.md`.
 
 Retired from v1 — these do not return: `brands`, `products`, `characters`,
 `brand_characters`, `project_*` tables, job-level `character_id`, `credit_source`,
-and `featured_at`. The later Element experiment remains dormant and is not an
-MVP dependency. Flows are the creative document; Tags, folders, and favorites
-provide lightweight Asset-library organization.
+and `featured_at`. The retired multi-role Element **experiment** does not return
+either (dropped by migration `027_reset_elements`); simplified Elements —
+`elements` + `elementReferences`, sections 5–6 — did ship and are an active MVP
+entity (`docs/elements.md`). Flows are the creative document; Tags, folders, and
+favorites provide lightweight Asset-library organization.
 
 Requires PostgreSQL 15+ (`unique nulls not distinct`, column-targeted `on delete set null`).
 
@@ -120,7 +121,7 @@ contract is at-most-once with explicit uncertainty.
 - `timestamptz` everywhere; `"createdAt"`/`"updatedAt"` on mutable tables.
 - Archive (`"deletedAt"`) and purge (`"purgedAt"`) exist **only on `assets`** — see the two-tier deletion note there. Everything else hard-deletes.
 - Enum-like values: `text` + `check` — except where the vocabulary is owned by a **code registry** (element types, node types, provider input roles), which get no check so a registry change never requires a migration. App-layer validation against the registry is the contract there.
-- Migration order: `folders` → `flows` → `flowRuns` → `generationJobs` → `flowRunNodes` → `assets` → `elements` → `elementAssets` → `flowNodes` → `flowEdges` → `generationJobSources` → `generationJobInputs`.
+- Migration order: `folders` → `flows` → `flowRuns` → `generationJobs` → `flowRunNodes` → `assets` → `elements` → `elementReferences` → `flowNodes` → `flowEdges` → `generationJobSources` → `generationJobInputs`.
 
 ---
 
@@ -478,7 +479,7 @@ create index "assetsNameSearchIdx"
 
 Notes:
 
-- **Two-tier deletion, and rows are never hard-deleted.** Archive sets `"deletedAt"` (reversible). Permanent deletion — the vision's explicit-confirmation action — is a **durable purge task with honest ordering**: mark `"purgeRequestedAt"` (also archiving if still live, so the library's partial indexes already exclude it), the task deletes the R2 objects with retries, and `"purgedAt"` is set **only after storage deletion succeeds** — the database never claims destruction that hasn't happened. The result is a tombstone row. Purge gets the same crash-window protection as job dispatch: initial dispatch and reconciliation use the same explicitly global Trigger.dev idempotency key derived from `assetId`; the sweep re-triggers any asset stuck in `"purgeRequestedAt" is not null and "purgedAt" is null` (served by `"assetsPurgePendingIdx"`), and **restore is guarded** — un-archiving requires `"purgeRequestedAt" is null`, so a user can never restore an asset whose storage is being destroyed. **Purge also coordinates with active generations** through row locks with fixed ordering (asset row first, always): purge locks the asset and rejects if `generationJobInputs` references it from a `pending`/`running` job; run creation locks its selected input assets (ordered by id) and rejects purging/purged ones — the race serializes to exactly one of two clean rejections. Multi-node runs, which create downstream jobs later, will need run-level input leases or copied static references — a seam for that phase, deliberately not built now. This is what reconciles "permanent deletion" with "immutable generation provenance": the media is genuinely gone, but `generationJobInputs`, `elementAssets`, and `flowNodes` references stay intact and render as a tombstone placeholder instead of silently vanishing from history. Because rows persist, no cascade ever erases provenance; `generationJobInputs."assetId"` deliberately has **no** `on delete cascade`, so an accidental hard `DELETE` fails loudly on the FK instead of quietly rewriting job history.
+- **Two-tier deletion, and rows are never hard-deleted.** Archive sets `"deletedAt"` (reversible). Permanent deletion — the vision's explicit-confirmation action — is a **durable purge task with honest ordering**: mark `"purgeRequestedAt"` (also archiving if still live, so the library's partial indexes already exclude it), the task deletes the R2 objects with retries, and `"purgedAt"` is set **only after storage deletion succeeds** — the database never claims destruction that hasn't happened. The result is a tombstone row. Purge gets the same crash-window protection as job dispatch: initial dispatch and reconciliation use the same explicitly global Trigger.dev idempotency key derived from `assetId`; the sweep re-triggers any asset stuck in `"purgeRequestedAt" is not null and "purgedAt" is null` (served by `"assetsPurgePendingIdx"`), and **restore is guarded** — un-archiving requires `"purgeRequestedAt" is null`, so a user can never restore an asset whose storage is being destroyed. **Purge also coordinates with active generations** through row locks with fixed ordering (asset row first, always): purge locks the asset and rejects if `generationJobInputs` references it from a `pending`/`running` job; run creation locks its selected input assets (ordered by id) and rejects purging/purged ones — the race serializes to exactly one of two clean rejections. Multi-node runs, which create downstream jobs later, will need run-level input leases or copied static references — a seam for that phase, deliberately not built now. This is what reconciles "permanent deletion" with "immutable generation provenance": the media is genuinely gone, but `generationJobInputs` and `flowNodes` references stay intact and render as a tombstone placeholder instead of silently vanishing from history. Because rows persist, no cascade ever erases provenance; `generationJobInputs."assetId"` deliberately has **no** `on delete cascade`, so an accidental hard `DELETE` fails loudly on the FK instead of quietly rewriting job history.
 - `"generationJobId"` on the asset (not `outputAssetId` on the job): one run can produce multiple outputs; uploads have `null`. Full provenance (model, settings, resolved prompt, inputs, elements) is one join away — never duplicated onto the asset. The `check` makes the link mandatory for `source = 'generation'` — a generated asset without its job is a contract violation, not a nullable edge case.
 - `"visibility"` is a write-time policy snapshot, never inferred later from
   `source`. Existing rows and uploads remain `private`; the current temporary
@@ -554,151 +555,65 @@ create index "assetTagsOrgTagIdx"
 
 Tag names are normalized in the application with Unicode NFKC normalization, collapsed whitespace, and case folding before the organization-level unique constraint is evaluated. Assigning a favorite or tag is idempotent. Deleting a tag removes its Asset assignments, never the Assets themselves.
 
-### 5. Deferred Elements — dormant historical schema
+### 5. Elements — simplified reusable reference collections
 
-The following tables preserve the completed experiment for possible
-reconsideration after the billable Assets + Canvas loop. They are not part of
-Flow schemas, reference hydration, run admission, M5 acceptance, or M6 provider
-integration. Do not add new active runtime dependencies on them.
-
-One generic table for all element types. The framework-neutral **type registry lives in code** and contains versioned validation schemas plus structural Asset-role metadata. Dedicated React forms live in the dashboard and dedicated `buildContext` implementations live in the API. The DB stores the registry key and type-shaped validated payload, and deliberately does not constrain the key, so shipping a new type is a code-registry change, not a migration.
-
-**`"type"` is immutable after creation.** Changing a character into a product would orphan its `data` payload and asset roles; the product action for "wrong type" is creating a new element. Enforce in the app layer (no `update` path for the column).
-
-`"schemaVersion"` records which version of the registry's schema wrote `"data"`. Registry schemas will evolve; the version lets the app upcast old payloads deterministically instead of guessing shape. Each type retains a schema for every supported stored version and a sequential migration for every version transition. Reads validate with the stored-version schema before migrating, then validate the current result. Creates and updates write only the current version; reads may upcast without immediately rewriting the row.
-
-M4.5 adds the shared identity block through code-registry version bumps, not a
-JSONB rewrite: Character, Product, Location, Object, Vehicle, and Voice advance
-from v1 to v2; Brand and Other advance from v2 to v3 while retaining their
-earlier v1-to-v2 migrations. Every new transition validates the historical
-shape, initializes `{ summary: '', mustKeep: [], mayVary: [], avoid: [] }`, and
-then validates the new current schema. Unknown future versions and migration
-gaps continue to fail closed.
+One generic table for all Element kinds. `kind` is owned by the code registry
+(`ELEMENT_KINDS` in `@talelabs/assets`) and deliberately unconstrained in the
+database, so adding a kind is never a migration. `kind` and every other field
+share one behavior; there is no typed JSONB payload and no `schemaVersion`.
 
 ```sql
 create table "elements" (
   "id" text primary key,
   "organizationId" text not null references "organization"("id") on delete cascade,
   "createdBy" text references "user"("id") on delete set null,
-  "assetFolderId" text,
-  "type" text not null,               -- registry key: 'character', 'product', later 'location', ...
-                                      -- no check: vocabulary owned by the code registry, validated app-side
+  "kind" text not null,
   "name" text not null,
-  "instructions" text,                -- description / generation instructions (the shared field)
-  "data" jsonb not null default '{}', -- type-specific fields, validated by the registry's Zod schema
-  "schemaVersion" smallint not null default 1,
+  "description" text not null default '',
   "createdAt" timestamptz not null default now(),
   "updatedAt" timestamptz not null default now(),
-  unique ("id", "organizationId"),    -- composite target for org-scoped FKs
-  foreign key ("assetFolderId", "organizationId")
-    references "folders" ("id", "organizationId") on delete set null ("assetFolderId")
+  unique ("id", "organizationId")
 );
-
-create index "elementsOrgTypeIdx" on "elements" ("organizationId", "type");
+create index "elementsOrgKindIdx" on "elements" ("organizationId", "kind");
 create index "elementsOrgUpdatedIdx"
-  on "elements" ("organizationId", "updatedAt" desc, "id" desc);  -- element list cursor pagination
-create unique index "elementsAssetFolderIdx"
-  on "elements" ("assetFolderId") where "assetFolderId" is not null;
+  on "elements" ("organizationId", "updatedAt" desc, "id" desc);
 ```
 
-The dormant Element schema intentionally has no `elements.revision` column.
-M5 does not add one because active run admission does not read or snapshot
-Elements. If Elements return later, revision and snapshot semantics must be
-designed against the then-current run engine.
+### 6. Element ↔ Asset — ordered references only
 
-`folders.systemRole = 'elements_root'` identifies the one workspace Elements root without relying on its mutable name or path. Element creation provisions a collision-safe child folder and stores its ID in `assetFolderId` in the same transaction. The FK makes folder moves/renames harmless and clears the association if the folder is deleted. Element deletion deliberately has no effect on the referenced folder. A later Element upload recreates a missing association before inserting the new Asset; existing-Asset links never alter `assets.folderId`.
-
-### 6. Element ↔ Asset — the relationship that carries meaning
-
-Role, ordering, approved-reference state, primary priority, and relationship-specific metadata, exactly as the vision specifies. Roles and metadata are validated app-side against the registry for the Element type (including accepted media types, e.g. `voice` accepts only `audio`).
+The relationship carries order and nothing else. The first reference is the
+cover. Reference writes replace the complete ordered list in one transaction;
+app-layer validation enforces image-only Assets and `MAX_ELEMENT_REFERENCES`.
 
 ```sql
-create table "elementAssets" (
+create table "elementReferences" (
   "organizationId" text not null references "organization"("id") on delete cascade,
   "elementId" text not null,
   "assetId" text not null,
-  "role" text not null,               -- registry-defined per element type: 'appearance', 'packshot', ...
-  "referenceKind" text not null default 'master'
-    constraint "elementAssetsReferenceKindCheck"
-      check ("referenceKind" in ('source', 'master')),
-  "referenceMetadata" jsonb not null default '{}'::jsonb,
   "sortOrder" smallint not null default 0,
-  "isPrimary" boolean not null default false,
   "createdAt" timestamptz not null default now(),
-  primary key ("elementId", "assetId", "role"),
+  primary key ("elementId", "assetId"),
   foreign key ("elementId", "organizationId")
     references "elements" ("id", "organizationId") on delete cascade,
   foreign key ("assetId", "organizationId")
-    references "assets" ("id", "organizationId") on delete cascade,
-  constraint "elementAssetsSourceNotPrimaryCheck"
-    check ("referenceKind" <> 'source' or not "isPrimary")
+    references "assets" ("id", "organizationId") on delete cascade
 );
-
-create index "elementAssetsAssetIdx" on "elementAssets" ("assetId");
-create unique index "elementAssetsPrimaryIdx"
-  on "elementAssets" ("elementId", "role") where "isPrimary";
-create index "elementAssetsMasterElementIdx"
-  on "elementAssets" (
-    "organizationId", "elementId", "role", "sortOrder", "assetId"
-  )
-  where "referenceKind" = 'master';
+create index "elementReferencesAssetIdx" on "elementReferences" ("assetId");
+create index "elementReferencesOrderIdx"
+  on "elementReferences" ("organizationId", "elementId", "sortOrder", "assetId");
 ```
 
-The row check and partial unique index make "primary" mean one approved master:
-at most one primary master per role per Element, enforced by the database rather
-than UI discipline. Existing rows migrate to `master` without changing behavior.
-
-These M4.5 fields ship additively in `008_element_consistency`: both columns are
-`not null`, their server defaults backfill every existing relationship as
-`master` with `{}` metadata, and the two named checks are installed in the same
-migration. The partial `elementAssetsMasterElementIdx` serves the hot
-organization-scoped, master-only Element preview/context/Flow reads while
-excluding source evidence from the index. The down migration drops that index,
-the named checks, and then the two columns; it is for disposable databases only.
-
-Master capacity remains registry-owned per role. Sources use a separate bounded
-Element-wide abuse cap of 50 from shared code configuration. Application
-ordering is independent inside each
-`(organizationId, elementId, role, referenceKind)` sequence so hidden sources
-cannot reorder visible masters. The global mutation-lock order is organization
-Flow-reference budget, folder structure when an Element upload may provision a
-folder, Element, role, then the existing Asset row for attachment or relationship
-updates. Source-cap mutations take the Element lock;
-master-cap mutations take the role lock and first take the organization budget
-lock when they can increase executable references. Promotion takes the budget,
-Element, role, and Asset locks; upload registration also takes the folder lock in
-its fixed position. The organization-scoped Asset lock uses `FOR UPDATE` and
-rechecks `purgeRequestedAt` and `purgedAt` after waiting. Fresh atomic upload
-registration has no existing Asset row at that point and inserts it later in the
-same transaction. Each mutation acquires only the locks it needs, always in that
-order. Folder-tree deletion first takes the folder-structure lock, resolves the
-tenant-owned subtree, and locks associated Element rows and then Asset rows in
-stable ID order before issuing the delete and its foreign-key actions.
-
-`referenceMetadata` contains registry-validated interpretation of the
-relationship (for example view, framing, background, or variant). Intrinsic media
-facts remain on `assets.metadata`. Unknown relationship keys are rejected and
-signed URLs/provider IDs never belong in either Element data or link metadata.
-Every current fixed and custom role uses the same strict common schema:
-`view` is `front | threeQuarter | profile | rear`, `framing` is
-`portrait | halfBody | fullBody | detail`, `background` is
-`clean | environment`, and `variant` is an optional bounded string. The schema
-is still owned through each registry role so a later role can evolve through a
-reviewed contract rather than accepting arbitrary JSON.
-
-Removing a row never deletes the asset; deleting an element cascades only the rows. `/elements/:id/assets` is the global asset library filtered through this table — one asset system.
-
-All relationship writes use one transactional mutation boundary. Existing-Asset
-attachment, promotion/demotion, role changes, kind-specific reorder, primary and
-metadata changes, detach, and future generated-Asset attachment cannot bypass
-the same validation and locks. Upload registration invokes that boundary inside
-the Asset transaction: Asset insertion, relationship insertion, affected
-persisted-Flow budget validation, and any folder provisioning commit or roll
-back together.
-
-No `elements.revision` migration is part of M5. If Elements return later, their
-snapshot and revision strategy must be designed against the then-current run
-engine instead of being inferred from this dormant schema.
+Deleting an Element cascades only its reference rows; canonical Assets are
+untouched. Purging an Asset is a **tombstone, not a row delete**, so the
+`elementReferences` FK cascade never fires: the purge-request transaction
+**explicitly deletes** the Asset's `elementReferences` rows (after locking the
+affected Element rows in id order — see the Asset → Element → reference lock
+order in §5's deletion notes) and bumps those Elements' `updatedAt`.
+`generationJobSources."elementId"` re-points at this table with
+`on delete set null`, so run provenance can record which Element supplied a
+source without blocking Element deletion. Element nodes store `elementId`
+inside `flowNodes.data`; there is deliberately no `flowNodes.elementId`
+column, and an unresolved Element only invalidates runs that consume it.
 
 ### 7. Flow nodes — normalized graph, half relational, half document
 
@@ -1194,9 +1109,11 @@ The service layer still owns _authorization_ (is this caller allowed to touch th
 Seams that exist without speculative tables:
 
 - **Video/audio generation nodes:** already absorbed — `generationJobs."mediaType"`, the same sources/inputs model, and code-registry node types. Audio uses `speechGeneration`, `musicGeneration`, `soundEffectGeneration`, `voiceChanger`, and `voiceIsolation`; sharing `AudioSet` does not collapse their persisted intent. Known legacy `audioGeneration` payloads upcast through the node registry and persist on the next graph save. Zero database migrations.
-- **Dormant Elements:** new Element types and relationship behavior are frozen
-  until after the billable loop. Any revival starts from measured product need
-  and the then-current M5/M6 snapshot contract.
+- **Elements shipped (2026-07-18):** simplified reference collections
+  (`elements` + `elementReferences`, sections 5–6). The retired multi-role
+  Element schema (roles, source/master, readiness) stays frozen and deleted;
+  any revival of *that* starts from measured product need and the then-current
+  M5/M6 snapshot contract.
 - **Registry schema evolution:** `"schemaVersion"` on active `flowNodes` lets node
   schemas upcast old payloads deterministically. Released versions and migrations
   remain gap-free and immutable.
@@ -1234,7 +1151,8 @@ Seams that exist without speculative tables:
 ## Appendix — base features exercised against the schema
 
 Every query the active build order (Assets → Flows → generation loop) needs,
-written out. Dormant Element queries remain below only as historical reference.
+written out. Any retired multi-role Element queries below remain only as
+historical reference (the shipped Element queries live in `apps/api`).
 If an active base feature required a query this schema could not serve from an
 index, that would be a design bug. `$n` are bind parameters; all queries carry
 the session's `"organizationId"`.
@@ -1277,44 +1195,6 @@ update "assets" set "purgedAt" = now(), "updatedAt" = now() where "id" = $1;
 --    (assetsPurgePendingIdx; idempotent trigger makes re-firing safe)
 ```
 
-### Deferred Element query examples (historical, not a build step)
-
-```sql
--- Element list with card preview (primary asset of the registry's preview role)
-select e.*, a."thumbnailKey"
-from "elements" e
-left join "elementAssets" ea
-  on ea."organizationId" = e."organizationId"
-  and ea."elementId" = e."id" and ea."referenceKind" = 'master'
-  and ea."isPrimary" and ea."role" = $2  -- preview role per type, from the registry
-left join "assets" a
-  on a."organizationId" = e."organizationId"
-  and a."id" = ea."assetId" and a."purgedAt" is null
-where e."organizationId" = $1
-order by e."updatedAt" desc, e."id" desc;
-
--- Element assets tab = the global library filtered through the link table
-select a.*, ea."role", ea."referenceKind", ea."referenceMetadata",
-       ea."sortOrder", ea."isPrimary"
-from "elementAssets" ea
-join "assets" a
-  on a."organizationId" = ea."organizationId" and a."id" = ea."assetId"
-where ea."organizationId" = $1 and ea."elementId" = $2
-  and ($3::text is null or ea."referenceKind" = $3)
-order by ea."referenceKind", ea."role", ea."sortOrder", a."id";
-
--- Attach / set primary / reorder / detach: writes on "elementAssets"
--- (partial unique index enforces one primary per role; app validates role against the registry)
-
--- Historical provenance only. Active flowNodes have no elementId column.
-select j."flowId"
-from "generationJobSources" s
-join "generationJobs" j
-  on j."organizationId" = s."organizationId" and j."id" = s."jobId"
-where s."organizationId" = $1 and s."elementId" = $2
-  and j."flowId" is not null;
-```
-
 ### Flows (build step 3)
 
 ```sql
@@ -1347,8 +1227,9 @@ from "flowEdges" e
 join "flowNodes" n on n."id" = e."sourceNodeId"
 where e."flowId" = $1 and e."targetNodeId" = $2
 order by e."createdAt", e."id";
--- then per element node: same-organization elementAssets rows filtered to
--- referenceKind = 'master'; per nodeOutput source: resolution rules in
+-- then per element node: same-organization elementReferences rows in
+-- sortOrder, intersected with the node's selectedAssetIds; per nodeOutput
+-- source: resolution rules in
 -- section 9 (run-scoped inside multi-node runs, latest-succeeded across runs); compose
 -- resolvedPrompt; insert run + run-node + job + sources + inputs in one transaction;
 -- dispatch (integration contract steps 2-4)

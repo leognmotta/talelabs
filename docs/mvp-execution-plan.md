@@ -6,6 +6,14 @@ This plan implements the binding scope in
 `docs/assets-flows-mvp-contract.md`. It replaces the former Elements-first and
 run-engine-first milestone sequence.
 
+> **Elements update (2026-07-18):** after the Assets + Flows loop shipped,
+> Elements were re-introduced as a simplified reusable reference collection
+> with a single-output Element node (`docs/elements.md` is the source of
+> truth). Statements below that Elements are deferred, that the Element node
+> is removed, or that the graph contains no Element node (including the E-030
+> acceptance list) describe the earlier Assets-only milestone and are
+> **historically accurate but superseded** — they are not current constraints.
+
 Read before starting any task:
 
 ```txt
@@ -33,15 +41,20 @@ upload or find an Asset
 -> reuse the output in the same or another Flow
 ```
 
-The active MVP entities are only:
+The active MVP entities are:
 
 ```txt
 Assets
 Flows
+Elements   (shipped 2026-07-18 — simplified reference collections)
 ```
 
-Elements are deferred. Existing standalone Element code and data may remain
-dormant, but no active milestone may expose, extend, or depend on them.
+Elements shipped after the M4 Assets + Canvas loop as a simplified reusable
+reference collection with a single-output (`references → ImageSet`) Element
+node — see `docs/elements.md`. The earlier deferral applied only to the retired
+multi-role Element experiment, which was deleted (migration
+`027_reset_elements`); do not reintroduce roles, source/master kinds, readiness,
+or multi-output Element nodes.
 
 ## Mandatory Build Order
 
@@ -66,7 +79,7 @@ OpenRouter/provider calls, credit charging, and Tool execution are not.
 The following are not MVP acceptance requirements:
 
 ```txt
-Elements or reusable-context packs
+Multi-role Element / reusable-context packs (the retired experiment; simplified Elements did ship)
 Tools and public API/MCP execution
 Recipes or community templates
 Storyboard
@@ -160,10 +173,15 @@ typed handles and connection validation
 model capability registry
 ```
 
-Legacy Element nodes, Flow references, routes, and graph persistence have been
-removed from the active product. Migration `009_remove_elements_from_flows`
-removes legacy Element graph nodes and the `flowNodes.elementId` column while
-preserving standalone Element records and Assets.
+Legacy Element nodes, Flow references, routes, and graph persistence were
+removed from the active product for the M4 Assets-only boundary. Migration
+`009_remove_elements_from_flows` removed the legacy Element graph nodes and the
+`flowNodes.elementId` column while preserving standalone Element records and
+Assets. **Superseded (2026-07-18):** Elements later shipped as a simplified
+reference collection with a registered single-output Element node that stores
+`elementId` inside `flowNodes.data` (still no `flowNodes.elementId` column) —
+see `docs/elements.md`. The E-030 acceptance list below is the historical M4
+boundary, not a current constraint.
 
 ### E-030 - Verify The Assets-Only Graph Boundary
 
@@ -506,8 +524,9 @@ Add:
   the rendered source of truth.
 
 In React Flow terminology, this command operates on selected nodes. Do not
-reintroduce the TaleLabs Element product or call selected nodes “Elements” in
-user-facing copy.
+reintroduce the retired multi-role Element product or call run-selected nodes
+“Elements” in user-facing copy (the shipped Element node is a distinct concept —
+`docs/elements.md`).
 
 ### E-057 - M5 Engineering Verification
 
@@ -593,8 +612,9 @@ production build and contract checks
 user-owned end-to-end acceptance
 ```
 
-Credits, subscriptions, public API/MCP, Elements, Tools, Recipes, and other
-expansion layers require separate plans after this gate.
+Credits, subscriptions, public API/MCP, Tools, Recipes, and other expansion
+layers require separate plans after this gate. (Simplified Elements already
+shipped — `docs/elements.md`.)
 
 ## Standard Verification
 

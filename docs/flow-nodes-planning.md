@@ -2,10 +2,16 @@
 
 > **MVP scope notice (2026-07-14):** `assets-flows-mvp-contract.md` supersedes
 > every Element-specific graph and runtime requirement in this document. The
-> active graph accepts Text, canonical Assets, and prior node outputs only.
-> Element sections remain historical design research and are not implementation
-> requirements. The adaptive canvas UX is approved; M5 now implements the
-> provider-independent durable engine described by the active sections below.
+> adaptive canvas UX is approved; M5 now implements the provider-independent
+> durable engine described by the active sections below.
+>
+> **Elements update (2026-07-18):** Elements shipped as a simplified reusable
+> reference collection with a single-output Element node — see the active
+> "### Element" section below and `docs/elements.md`, which is the source of
+> truth. Every mention in this document of an unregistered Element node, of
+> multi-role/source-master handles, or of an `ElementContext` value is
+> **retired historical research** and describes a design that was deleted;
+> it is not an implementation instruction.
 
 **Purpose:** define one durable mental model for the TaleLabs Flow canvas and
 execution engine. This document explains what nodes and wires represent, how
@@ -916,29 +922,25 @@ output:
 
 The output contains one item and normally one Asset reference.
 
-### Deferred Element node (historical, not registered)
-
-The active graph registry has no Element node and M5 must not resolve this
-contract. The following shape is retained only as prior research for a possible
-post-billable-loop redesign:
+### Element
 
 ```txt
-elementId: relational FK
-outputs:
-  context       -> PortValue<ElementContext>
-  role:<roleId> -> PortValue<ImageSet | VideoSet | AudioSet>
+data: { elementId, locked, selectedAssetIds }
+output:
+  references -> PortValue<ImageSet>
 ```
 
-The Element has one stable handle per current registered role. Five roles mean
-five reusable media outputs. Each role output is one runtime item containing its
-ordered, ready, non-purging **master** Assets. Raw Element source evidence is not
-part of the role value, does not count against model limits, and never reaches a
-provider through an Element edge.
+The Element node is registered and active; `docs/elements.md` is its source of
+truth. It stores the chosen `elementId` and the explicit ordered subset of that
+Element's references the node emits (`selectedAssetIds`), and exposes exactly
+**one** output handle — `references → ImageSet` — that connects wherever an
+image Asset output connects. There are no per-role handles, no `ElementContext`
+value, and no `context` output.
 
-`context` remains `ElementContext`, not plain Text. This preserves semantic
-origin, the upcasted Element identity contract, structured metadata, and
-provenance. The planner composes its resolved text into the provider prompt when
-appropriate.
+Run admission resolves the emitted references to exact ordered Asset IDs and
+locks them into the immutable snapshot as static Asset inputs, so the graph a
+run executes is Asset-only. The retired multi-role/source-master/`ElementContext`
+design (five reusable role outputs) is gone and must not be reintroduced.
 
 ### Image Generation
 
@@ -1486,21 +1488,20 @@ documents.
 
 The engine model should make the UI clearer, not expose implementation details.
 
-### Deferred Element node research
+### Element node (shipped)
 
-This section is historical product research. Elements are not active MVP nodes,
-run inputs, or dependencies.
+Elements shipped as a simplified reusable reference collection — see the active
+`### Element` section above and `docs/elements.md`. The Element node has one
+output, `references → ImageSet`, carrying the explicit ordered subset of the
+Element's up-to-8 reference images the node emits.
 
 ```txt
 Character: Maya
-  Context       -> structured instructions
-  Appearance    -> 8 images
-  Expressions   -> 4 images
-  Motion        -> 1 video
-  Voice         -> 1 audio
+  references -> ImageSet   (chosen subset of up to 8 images)
 ```
 
-One role has one handle. Do not render one handle per Asset.
+The retired multi-role research below (Appearance/Expressions/Motion/Voice as
+separate handles, one handle per role) is **deleted** and must not be revived.
 
 ### Generation input
 
@@ -1510,8 +1511,8 @@ Subject references
 Selection: Automatic | Manual
 ```
 
-The consumer selects a model-compatible subset. The Element node remains a
-stable reusable collection.
+The consuming slot selects a model-compatible subset from the node's emitted
+references. The Element remains a stable reusable collection.
 
 ### Batch preview
 
@@ -1554,9 +1555,9 @@ M4  Canvas foundation
     autosave and conflict handling
     approved adaptive node UX
 
-Deferred Element experiment
-    retained outside navigation, search, graph schemas, hydration, and execution
-    reconsidered only after the Assets + Canvas billable loop works
+Elements (shipped after the M4 Assets + Canvas loop, 2026-07-18)
+    simplified reusable reference collection; one references -> ImageSet output
+    see docs/elements.md — the retired multi-role experiment was deleted
 
 M5  Provider-independent engine
     direct Asset and same-run upstream-output resolution

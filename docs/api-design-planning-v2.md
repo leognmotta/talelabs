@@ -1,10 +1,12 @@
 # TaleLabs — API Design v2
 
 > **Active MVP override (2026-07-14):** the product API used by the dashboard is
-> Assets + Flows. Standalone Element endpoints may remain dormant, but Elements
-> are excluded from navigation, global search, Flow graph schemas, Flow
-> reference hydration, run planning, and MVP acceptance. See
-> `assets-flows-mvp-contract.md`.
+> Assets + Flows. See `assets-flows-mvp-contract.md`.
+>
+> **Elements note (2026-07-18):** every Element contract that appeared in this
+> document (source/master kinds, roles, readiness, dormant endpoints) is
+> retired and was deleted by migration `027_reset_elements`. The shipped
+> Elements feature is specified only in `docs/elements.md`.
 
 Supersedes `api-design-planning.md` (deprecated). Companion to `db-design-planning-v2.md` — every endpoint here maps onto that schema and its contracts; nothing is invented API-side that the DB doc doesn't back.
 
@@ -80,11 +82,10 @@ type ApiError = {
 | 404  | `not_found`                            | missing resource **or** another org's resource                               |
 | 409  | `conflict`                             | duplicate where uniqueness matters (idempotency key reuse, edge duplicates)  |
 | 409  | `revision_conflict`                    | graph sync CAS lost — refetch graph and replay                               |
-| 409  | `invalid_state`                        | canceling a finished run, restoring a purging asset, editing element type    |
-| 409  | `element_master_role_capacity_reached` | a master attachment/promotion exceeds the registry role capacity             |
-| 409  | `element_source_capacity_reached`      | a source attachment/demotion exceeds the Element-wide source cap             |
-| 400  | `element_reference_metadata_invalid`   | relationship metadata fails the registry role's strict schema                |
-| 400  | `element_source_primary_invalid`       | a request attempts to make a source relationship primary                     |
+| 409  | `invalid_state`                        | canceling a finished run, restoring a purging asset                          |
+| 400  | `element_reference_limit_reached`      | an Element reference write exceeds the 8-reference maximum                    |
+| 400  | `element_reference_not_image`          | an Element reference Asset is not an image                                    |
+| 400  | `asset_not_available`                  | an Element reference Asset is missing or being purged                         |
 | 422  | `unsupported_by_model`                 | settings/inputs the selected model cannot accept                             |
 | 429  | `rate_limited`                         | admission control (runs) or abuse limits; includes `Retry-After`             |
 | 402  | `insufficient_credits`                 | **Phase 2 only** — documented so clients handle it from day one              |
@@ -108,11 +109,12 @@ type ApiError = {
 | Folders  | `GET /folders` · `POST /folders` · `PATCH /folders/:id` · `DELETE /folders/:id`                                                                                                                                                                                                                                 |
 | Tags     | `GET /tags` · `POST /tags` · `DELETE /tags/:id`                                                                                                                                                                                                                                                                 |
 | Flows    | `GET /flows` · `POST /flows` · `GET /flows/:id` · `PATCH /flows/:id` · `DELETE /flows/:id` · `GET /flows/:id/graph` · `GET /flows/:id/references` · `POST /flows/:id/graph` · `GET /flows/:id/nodes/:nodeId/results`                                                                                            |
+| Elements | `GET /elements` · `POST /elements` · `GET /elements/:id` · `PATCH /elements/:id` · `DELETE /elements/:id` · `PATCH /elements/:id/references`                                                                                                                                                                     |
 | Runs     | `POST /flows/:id/run-plans` · `POST /runs` · `GET /runs` · `GET /runs/:id` · `POST /runs/:id/cancel` · `POST /runs/:id/retry` · `POST /runs/:id/realtime-token`                                                                                                                                                         |
 | Config   | `GET /config/generation`                                                                                                                                                                                                                                                                                        |
 
-Dormant Element endpoints are documented in their deferred section for
-preservation only. They are intentionally absent from this active MVP index.
+Elements shipped as simplified reference collections (`docs/elements.md`). The
+retired multi-role Element endpoints were deleted, not deferred.
 
 ---
 
@@ -174,13 +176,9 @@ type Asset = {
 // detail shape — render-complete for the asset panel
 type AssetDetail = Asset & {
   metadata: Record<string, unknown>;
-  elementLinks: {
-    elementId: string;
-    role: string;
-    referenceKind: "source" | "master";
-    referenceMetadata: Record<string, unknown>;
-    isPrimary: boolean;
-  }[];
+  // Element membership is not embedded here; the dashboard reads it from
+  // GET /elements?assetId= (see docs/elements.md). The retired per-role
+  // source/master `elementLinks` array is deleted.
   generation: GenerationProvenance | null; // null for uploads
   usedAsInputCount: number; // reverse provenance is unbounded — paginated at GET /assets/:id/usage
 };
@@ -211,44 +209,38 @@ type JobSource = {
   snapshot: Record<string, unknown>; // frozen candidates/exclusions, display-only
 };
 
+// Elements shipped simplified — see docs/elements.md (the source of truth).
+// The retired shapes below (typed `data`/`schemaVersion`, readiness, roles,
+// source/master reference kinds, per-role asset links) are deleted and MUST
+// NOT be implemented. The active shapes:
+
 type Element = {
   id: string;
-  type: string; // registry key: 'character' | 'product' | ... — immutable after create
+  kind: "character" | "prop" | "location" | "style" | "other"; // label only
   name: string;
-  assetFolderId: string | null;
-  instructions: string | null;
-  data: Record<string, unknown>; // shape defined by the registry schema for `type`
-  schemaVersion: number;
-  createdBy: string | null;
+  description: string;
+  referenceCount: number;
+  coverAsset: ElementReferenceAsset | null;
   createdAt: string;
   updatedAt: string;
 };
 
-type ElementReadiness = {
-  state: "empty" | "usable" | "strong";
-  missing: string[]; // stable localization/diagnostic IDs, never stored status
-  recommendations: string[]; // stable localization/diagnostic IDs
-};
-
-type ElementListItem = Element & {
-  hasProcessingReferences: boolean; // derived from eligible master links; drives bounded list polling
-  previewThumbnailUrl: string | null;
-  readiness: ElementReadiness;
+type ElementReferenceAsset = {
+  id: string;
+  name: string;
+  type: string;
+  mimeType: string;
+  width: number | null;
+  height: number | null;
+  lifecycle: string;
+  processingState: string;
+  url: string | null;
+  thumbnailUrl: string | null;
+  createdAt: string;
 };
 
 type ElementDetail = Element & {
-  assetCounts: Record<string, number>; // master-link counts by role
-  readiness: ElementReadiness;
-};
-
-type ElementAssetLink = {
-  assetId: string;
-  role: string; // fixed registry role, or a validated custom role stored by an Other Element
-  referenceKind: "source" | "master";
-  referenceMetadata: Record<string, unknown>; // registry-validated link interpretation
-  sortOrder: number;
-  isPrimary: boolean;
-  asset: Asset; // embedded — the element assets tab renders in one call
+  references: ElementReferenceAsset[]; // ordered, 0–8; first is the cover
 };
 
 type Flow = {
@@ -453,34 +445,23 @@ Request:
   uploadId: string
   name?: string      // defaults to original filename
   folderId?: string
-  elementId?: string // convenience: also attach to an element on registration
-  role?: string      //   requires elementId; validated against fixed or stored custom roles
-  referenceKind?: "source" | "master" // defaults to master; requires elementId + role
-  referenceMetadata?: Record<string, unknown> // defaults to {}; requires elementId + role
-  sortOrder?: number //   optional link position; requires elementId + role
-  isPrimary?: boolean //  optional role preview priority; requires elementId + role
 }
 ```
 
-Order of operations: verify grant signature + expiry → `HEAD` the object, confirm existence and that actual size/content-type/**checksum** match the grant → derive `type` from verified mime → validate relationship kind/metadata and acquire the same source/master capacity locks used by the Element subresource → insert the Asset **and the optional Element link in one transaction**. When the link is a master, affected persisted-Flow reference budgets are validated before commit. A capacity, metadata, tenancy, or budget failure rolls back both rows, so a crash or rejection cannot produce an attached-but-unregistered or registered-but-unattached half-state.
+Upload registration takes **no Element parameters**. The retired atomic
+"upload-and-link-to-Element" path (`elementId`/`role`/`referenceKind`/
+`referenceMetadata`/`sortOrder`/`isPrimary`, the Element `assetFolderId` root,
+and the source/master capacity locks) is deleted. Elements now reference
+canonical Assets after the fact via `PATCH /elements/:id/references`
+(`docs/elements.md`); the reference picker uploads through this plain
+`POST /assets` and then attaches the resulting Asset.
 
-When `elementId` is present, the Element's stored `assetFolderId` is authoritative and the request's `folderId` is only a client hint. The transaction places the newly uploaded Asset in that folder; if the association was cleared because the folder was deleted, it provisions a new collision-safe child under the workspace's internally identified Elements root and updates the Element first. Linking an existing Asset through the Element reference endpoint never moves or copies that Asset.
+Order of operations: verify grant signature + expiry → `HEAD` the object, confirm existence and that actual size/content-type/**checksum** match the grant → derive `type` from verified mime → insert the Asset. A tenancy failure rolls back, so a crash or rejection cannot produce a registered-but-unusable half-state.
 
 Flow identity is deliberately absent from upload registration. Uploading from a
 canvas does not imply a folder move: ordinary uploads use the explicit
 `folderId` supplied by the user. Only successful generated media outputs are
 placed automatically under `Flow/<Flow name>` by the durable worker.
-
-The dashboard's global Zustand upload queue uses the atomic path for fresh
-Element uploads: it sends `elementId`, `role`, order, and primary intent in this
-`POST /assets` request and relies on the server's `master`/`{}` defaults. The
-local `registering` and `linking` labels do not represent two server commits. The
-queue retains the upload grant and returned Asset ID only as recovery
-checkpoints. A lost-response retry can replay the grant and reconcile the
-expected link without uploading bytes or registering another Asset. Supplying
-`elementId` without `role` remains
-available for folder-only registration and backward-compatible recovery, but it
-is not the normal Element creation path.
 
 **Ingestion is durable, not fire-and-forget.** Uploads register as `processingState: 'processing'`; a Trigger.dev task (an explicitly global `idempotencyKey` derived from `assetId` for both initial dispatch and reconciliation) probes dimensions/duration, generates the thumbnail, fills `metadata`, and flips to `'ready'` — or to `'failed'` with a safe `processingError` for invalid/corrupt media. A reconciliation sweep redispatches assets stuck in `'processing'` (same pattern as job dispatch and purge — the crash window between insert and trigger is covered, nothing sits with null metadata forever). Generation outputs skip all of this: the generate task already probed and uploaded them, so they insert directly as `'ready'`.
 
@@ -490,32 +471,18 @@ is not the normal Element creation path.
 
 Registration is **idempotent per grant** (`uploadId` unique index), and replay
 returns the original canonical Asset with `200`; it never creates a second Asset
-or reapplies name/folder decoration. When the replay includes `elementId` and
-`role`, the service also treats it as a recovery checkpoint: it accepts an
-already-present link of the expected kind or creates a missing link through the
-same centralized capacity, metadata, lock, and Flow-budget policy. An existing
-link whose kind no longer matches the replay fails with `409 invalid_state`
-instead of silently changing curation state. Replay does not promise to rewrite
-metadata/order/primary on an already-present compatible link; intentional
-changes use the Element link `PATCH` endpoint.
+or reapplies name/folder decoration.
 
-Concurrent registrations for the same grant converge on that same checkpoint:
-the unique-index loser returns replay success only after its requested compatible
-Element link already exists or has been reconciled through the centralized link
-policy.
+Concurrent registrations for the same grant converge on that same canonical
+Asset via the unique index.
 
-Response: `201` → `Asset` (`200` on replay). Grant invalid/expired/object missing → `400`. Registration that also links to an Element may return
-`409 element_master_role_capacity_reached`,
-`409 element_source_capacity_reached`,
-`400 element_reference_metadata_invalid`, or
-`400 element_source_primary_invalid` under the same policy as the Element
-subresource.
+Response: `201` → `Asset` (`200` on replay). Grant invalid/expired/object missing → `400`.
 
 ---
 
 ## Assets
 
-**One canonical listing endpoint.** The global library, the canvas asset picker, and the reference selector are all `GET /assets` + filters — no per-surface variants. The one deliberate companion is `GET /elements/:id/assets`, which serves a different concern: **reference management** (role, source/master kind, relationship metadata, order, and primary state — link metadata, not asset browsing). Picker and filter use cases stay here; managing an Element's references uses the subresource.
+**One canonical listing endpoint.** The global library, the canvas asset picker, and the reference selector are all `GET /assets` + filters — no per-surface variants. `?assetId=` on `GET /elements` answers Element membership; managing an Element's references uses `PATCH /elements/:id/references` (`docs/elements.md`). There is no `GET /elements/:id/assets` role-management subresource.
 
 ### `GET /assets`
 
@@ -524,8 +491,6 @@ subresource.
 | `type`      | `AssetType` (repeatable)             | `?type=image&type=video`                       |
 | `source`    | `AssetSource`                        |                                                |
 | `folderId`  | string \| `'root'`                   | `'root'` = no folder                           |
-| `elementId` | string                               | via `elementAssets`; combine with `role`       |
-| `role`      | string                               | only with `elementId`                          |
 | `favorite`  | boolean                              | current user's favorites only                  |
 | `tagId`     | string (repeatable)                  | any selected tag                               |
 | `search`    | string                               | `ilike` on name (pg_trgm later; same contract) |
@@ -635,159 +600,19 @@ DELETE /folders/:id                      -> 204
 
 ---
 
-## Deferred Elements (not part of the active MVP)
+## Elements (retired contract removed)
 
-These endpoints document the dormant experiment and may remain implemented for
-future reconsideration. The dashboard, global search, Flow graph, run planner,
-M5 acceptance, and M6 provider integration must not depend on them.
+This document previously specified a standalone Element API with
+source/master reference kinds, registry roles, relationship metadata,
+readiness scoring, and per-type schemas. That design was retired and its
+tables were dropped by migration `027_reset_elements`; none of it may be
+implemented or consumed.
 
-### `GET /elements`
-
-Query: `?type=&search=&limit=&cursor=` — sorted `updatedAt desc`.
-
-Response: `200 ListResponse<ElementListItem>` — preview = a usable master from the type's registry-designated preview role, with primary/role/order/Asset-ID fallback. Types with validated custom roles use the same deterministic master selection from their custom role set. `readiness` and `hasProcessingReferences` are derived in a batched master-link query; neither is persisted. The dashboard polls a mounted list only while a currently loaded page reports pending master references, so background ingestion completion refreshes previews/readiness without permanent list polling.
-
-### `POST /elements`
-
-```ts
-{
-  type: string // must exist in the registry
-  name: string
-  instructions?: string
-  data?: Record<string, unknown> // validated by the registry's Zod schema for `type`
-}
-```
-
-Response: `201 CreatedElement`, which is the full Element representation with a required `assetFolderId: string`. Unknown type or `data` failing the type schema → `400` with field details. The server stamps `schemaVersion` from the current registry.
-
-Creation lazily creates or reuses the internally identified workspace Elements root, creates a non-conflicting child folder from the Element name, and stores its ID as `assetFolderId` in the same transaction as the Element. Two Elements may share a name; their folder names receive deterministic numeric suffixes. Renaming an Element does not rename its folder.
-
-The generic API never trusts dashboard form validation: it selects the registered current Zod schema from `type`, validates the complete `data` payload independently, and persists only the parsed JSONB representation. Dashboard localization and dedicated React form layout are not part of this contract.
-
-### `GET /elements/:id`
-
-Response: `200 ElementDetail` — `assetCounts` contains master-link counts per role so the current References UI does not count hidden sources. `readiness` derives from current usable masters and registry rules; missing/recommendation values are stable localization IDs rather than stored English copy.
-
-### `PATCH /elements/:id`
-
-```ts
-{ name?: string; instructions?: string | null; data?: Record<string, unknown> }
-```
-
-`type` is **immutable** — its presence in a PATCH body → `409 invalid_state` (the product action for "wrong type" is creating a new element). `data`, when present, is full-replacement and re-validated; the server re-stamps `schemaVersion`.
-
-Response: `200 Element`.
-
-### `DELETE /elements/:id` → `204`
-
-Kit links cascade; Assets and the associated folder survive. Active Flow nodes
-cannot reference Elements. Historical provenance rows, if any, retain their
-snapshot-compatible nullable Element identifier.
-
-### Element assets — the kit subresource
-
-```
-GET    /elements/:id/assets?role=&referenceKind=       -> 200 ListResponse<ElementAssetLink>
-POST   /elements/:id/assets                            -> 201 ElementAssetLink
-PATCH  /elements/:id/assets/:assetId                   -> 200 ElementAssetLink
-DELETE /elements/:id/assets/:assetId?role=<role>       -> 204
-```
-
-`POST` body:
-
-```ts
-{
-  assetId: string;
-  role: string;
-  referenceKind?: "source" | "master"; // defaults to master
-  referenceMetadata?: Record<string, unknown>; // defaults to {}
-  sortOrder?: number;
-  isPrimary?: boolean;
-}
-```
-
-`PATCH` body:
-
-```ts
-{
-  role: string; // identifies the current link in the element+asset+role PK
-  targetRole?: string; // moves the link to another validated role atomically
-  referenceKind?: "source" | "master";
-  referenceMetadata?: Record<string, unknown>;
-  sortOrder?: number;
-  isPrimary?: boolean;
-}
-```
-
-Omitted mutable fields preserve their current values. Ordering is normalized
-independently within `(organizationId, elementId, role, referenceKind)`; a
-role/kind change removes the old sequence gap and inserts at the requested
-destination order or at the end. Demoting a primary master clears primary in the
-same transaction. Promoting to master validates destination capacity and every
-affected persisted Flow budget before commit.
-
-Validation: role must exist in the registry for this Element's type or in the validated custom-role list stored by an `other` Element; relationship metadata must match the registry-owned strict schema; the Asset's media type must be accepted by that role (`voice` → audio only, `other` custom roles → image/video/audio); same-org (else `404`). Every current role accepts the same bounded common shape — optional `view`, `framing`, `background`, and `variant` fields — through its registry-owned schema. Unknown keys and invalid enum values are rejected. Omitted kind/metadata preserve current behavior as `master`/`{}`.
-
-Capacity has two independent policies. Master capacity is enforced per role: by default an image role accepts up to eight masters, while a video or audio role accepts one. Sources use one bounded Element-wide abuse cap. These are reusable-context limits rather than provider/model input limits; Flow consumers select a compatible subset of masters at execution time. Existing-Asset attachment, upload registration, link updates, detach, and future generated-Asset attachment use one centralized transactional policy. The global lock order is organization Flow-reference budget, folder structure when an Element upload may provision a folder, Element, role, then an existing Asset row when attaching or updating it. A mutation acquires only the locks it needs: source-cap mutations lock the Element; master-cap mutations lock the role and first take the organization budget lock when they can increase executable references; promotion takes budget, Element, destination-role, and Asset locks. Existing-Asset attachment and updates read tenant-scoped lifecycle state with `FOR UPDATE` and reject purging or purged Assets after any concurrent purge wait. Upload registration takes the folder lock in its fixed position and keeps Asset insertion, link insertion, budget validation, and rollback atomic; its new Asset row does not exist to lock before insertion. Folder-tree deletion resolves the subtree after taking the folder lock and explicitly locks associated Elements before Assets so foreign-key cleanup follows the same order. Exceeding a limit returns `element_source_capacity_reached` or `element_master_role_capacity_reached`; invalid strict metadata returns `element_reference_metadata_invalid`. A source can never be primary in application policy or PostgreSQL, and an attempt returns `element_source_primary_invalid`. Setting a master `isPrimary: true` atomically clears the previous primary for that role. Duplicate (asset, role) pair → `409 conflict`. Detach never deletes the Asset.
-
-### `GET /elements/:id/usage` — "where is this used?"
-
-Response `200`:
-
-```ts
-type ElementUsageFlow = { flowId: string; flowName: string; nodeCount: number };
-
-type ElementUsage = {
-  flowCount: number; // the truth — unbounded, so the list below is a bounded preview
-  flows: ElementUsageFlow[]; // 20 most recently updated flows using this element
-  runCount: number;
-  lastUsedAt: string | null;
-};
-```
-
-If a full paginated usage browser ever proves necessary, it becomes `GET /elements/:id/usage/flows` with the standard `ListResponse` — additive, not a reshape.
-
-### Server-only Element context contract (dormant)
-
-The dormant implementation retains an internal
-`buildElementContext(elementId)` service. It is not a public endpoint, is not
-called by M5/M6, and does not return browser presentation URLs:
-
-```ts
-type BuiltElementContext = {
-  elementId: string;
-  type: string;
-  schemaVersion: number;
-  text: string;
-  assets: {
-    assetId: string;
-    role: string;
-    sortOrder: number;
-    isPrimary: boolean;
-    referenceMetadata: Record<string, unknown>;
-    mediaType: "image" | "video" | "audio";
-    mimeType: string;
-  }[];
-};
-```
-
-The retained service validates and sequentially upcasts stored Element
-identity/data, resolves same-organization master links in deterministic
-primary/role/order/ID order, and excludes sources plus non-ready or non-readable
-Assets. The result contains stable IDs and relationship metadata only: never R2
-storage keys and never signed URLs. No active Flow node carries this reference,
-and M5 admission resolves only direct Assets, Text, and eligible node outputs.
-
-The authoritative context, preview, budget, graph-validation, and hydration
-queries predicate the Element, relationship, and Asset joins by the active
-`organizationId` as well as IDs. They never load a broad link set and filter
-tenancy or `referenceKind` afterward. A cross-organization identifier behaves as
-missing. Context, readiness, and Element-link presentation revalidate stored
-role/metadata and fail closed; Flow hydration does not interpret or return
-relationship metadata in M4.5 and relies on the centralized validated write
-boundary while still enforcing organization, master-kind, and Asset-usability
-filters itself. This paragraph describes the dormant implementation only; it is
-not an active Flow hydration contract.
+The shipped Elements contract — a named ordered collection of up to 8
+reference image Assets with atomic reference mutation — is specified in
+`docs/elements.md`, which is the only source of truth for Elements.
+Element-related compatibility fields or error codes still mentioned
+elsewhere in this document are historical and equally retired.
 
 ---
 
@@ -1274,7 +1099,7 @@ pinning.
 
 ## Cross-cutting design notes
 
-1. **One asset list for browsing, one subresource for reference management.** Library, pickers, and filters are all `GET /assets` + params; `GET /elements/:id/assets` exists for the distinct concern of managing link metadata (role, source/master kind, relationship metadata, order, and primary). Two purposes, two endpoints, zero shape divergence within each.
+1. **One asset list for browsing; Element references managed atomically.** Library, pickers, and filters are all `GET /assets` + params; `?assetId=` on `GET /elements` answers membership. An Element's references are edited through `PATCH /elements/:id/references` (`docs/elements.md`). The retired `GET /elements/:id/assets` role/source-master subresource is deleted.
 2. **Detail endpoints are render-complete; list endpoints are lean.** `GET /assets/:id` carries full provenance; `GET /runs/:id` carries outputs. No screen needs a second round trip; no grid pays for detail weight.
 3. **The graph sync is the only stateful client contract.** Mutations within the request limit remain atomic. Larger client diffs advance through revision-CAS batches in dependency order (delete edges, delete nodes, upsert nodes, upsert edges); each accepted batch becomes the next replay baseline. `409 revision_conflict` still means refetch-and-replay. This is also the exact seam a future collaboration layer replaces — nothing else about the API changes.
 4. **Results are derived, never duplicated.** Node results come from `/nodes/:nodeId/results` (jobs + assets), not from node `data` — matching the DB rule that draft and provenance never share storage.

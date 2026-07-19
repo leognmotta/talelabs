@@ -28,10 +28,16 @@ explicitly changes it:
 8. Real provider integration
 ```
 
-Elements are deferred and are not a prerequisite for the canvas, generation
-nodes, mocked output, or the first real provider loop. Existing Element code may
-remain dormant, but active product work must not expose it, depend on it, or
-expand it. The active Flow graph and reference APIs are Asset-only.
+Elements are an active product entity since 2026-07-18: an Element is a
+named, ordered collection of reference image Assets with a presentation-only
+kind label, and its Flow node exposes exactly one `references → ImageSet`
+output driven by an explicit per-node reference choice. The retired
+multi-role/consistency Element experiment was deleted (code and data) by
+migration `027_reset_elements`. `docs/elements.md` is the binding Element
+design; never reintroduce per-kind schemas, asset roles, source/master kinds,
+readiness rules, or multi-output Element nodes without a new explicit product
+decision. Do not describe Elements with version labels — there is one
+Elements feature, in active development.
 
 The user approved the generation-node product design and M5 run-engine scope on
 2026-07-14. M5 may implement Trigger.dev orchestration, immutable run snapshots,
@@ -46,6 +52,7 @@ Source-of-truth design documents:
 ```txt
 docs/assets-flows-mvp-contract.md = binding active MVP boundary
 docs/talelabs-product-vision.md   = product direction and scope
+docs/elements.md                  = binding Elements design
 docs/flow-nodes-planning.md       = Flow node, runtime-value, batching, execution, and Tool semantics
 docs/db-design-planning-v2.md     = database schema (PostgreSQL, Kysely, camelCase)
 docs/api-design-planning-v2.md    = API contract for the base features
@@ -62,11 +69,13 @@ Before planning or implementing a researched capability, read its file under
 database/API designs, and execution plan. Adding a research document must not
 silently add the feature to an MVP milestone.
 
-Deprecated documents — do not implement from these; they describe the retired Generate/Projects/Brands/Products/Characters architecture:
+Deprecated documents — do not implement from these; they describe retired architectures (the Generate/Projects/Brands/Products/Characters era and the failed multi-role Element experiment):
 
 ```txt
 docs/db-design-planning.md
 docs/api-design-planning.md
+docs/elements-consistency-planning.md
+docs/elements-consistency-implementation-prompt.md
 ```
 
 Execution rules for the active Flow runtime:

@@ -2,10 +2,8 @@
 
 This document is the source of truth for what TaleLabs is trying to become and what the first sellable product loop must prove. Read it before planning product work, designing UI, creating database models, defining APIs, or integrating AI providers.
 
-> **Active MVP boundary:** read `assets-flows-mvp-contract.md` first. Elements
-> are deferred. Any Element-specific material retained later in this document
-> is historical research only and must not shape navigation, Flow contracts,
-> execution, provider integration, or MVP acceptance.
+> **Active MVP boundary:** read `assets-flows-mvp-contract.md` first.
+> Elements are active; `docs/elements.md` is the binding Element design.
 
 This document defines product direction and scope. It intentionally does not prescribe the database schema or API contract. Those documents must be redesigned separately after this vision is accepted.
 
@@ -35,9 +33,9 @@ Assets = media the user owns and can reuse
 Flows  = the visual environment where users create
 ```
 
-Elements remain an implemented experiment and a possible later reusable-context
-feature. They are not part of the active product sequence and must not shape or
-block the first Asset-to-Flow generation loop.
+Elements are the third product entity since 2026-07-18: named, ordered
+collections of reference image Assets that accelerate reuse without ever
+blocking the Asset-to-Flow generation loop.
 
 The adaptive canvas, generation-node UX, and provider-independent M5 run engine
 were approved on 2026-07-14. The active product goal is M6 provider-integration
@@ -52,6 +50,7 @@ The initial navigation is deliberately narrow:
 ```txt
 Flows
 Assets
+Elements
 ```
 
 ## Build Order
@@ -256,428 +255,47 @@ The initial asset system should not expand into a complete Google Drive replacem
 
 ## Elements
 
-**Deferred from the active product sequence.** The detailed Element design in
-this section is retained as implemented architecture and future research. It is
-not a prerequisite for Assets, Flows, generation nodes, mocked canvas behavior,
-or the first provider integration. New canvas work must remain fully usable with
-raw Assets and must not add new Element requirements unless the user explicitly
-reactivates this feature.
+**Active since 2026-07-18.** The binding design is `docs/elements.md`. The earlier detailed Element
+architecture that previously lived in this section (typed schemas with
+versioned migrations, per-role asset kits, source/master reference kinds,
+readiness derivation, custom roles, reference budgets, and the multi-output
+Element node) was implemented, judged too complex to use, and deleted with its
+data by migration `027_reset_elements`. Do not reintroduce it.
 
-Elements are reusable creative context.
-
-An Element combines a durable identity or concept with instructions and reference Assets. It allows users to reuse the same subject, object, place, style, or identity without rebuilding its context in every prompt.
-
-Examples include:
+An Element is a named, ordered collection of reference image Assets — a
+character, a prop, a location, a style — saved once and reused in any Flow:
 
 ```txt
-a recurring character
-a physical product or prop
-a location or environment
-a visual style
-a brand identity
-a color palette
-a wardrobe or object
+name          "Maya", "Acme Bottle", "Neo-Tokyo Alley"
+kind          character | prop | location | style | other   (label only)
+description   optional prose; not sent to providers
+references    1–8 ordered image Assets; the first is the cover
 ```
 
-The initial Element concept should remain generic. It should not recreate separate product systems for Brands, Products, and Characters.
+Kinds are presentation only: they choose an icon and a library filter and
+never change validation, forms, or behavior. All Elements share one dialog,
+one API shape, and one node contract.
 
-An Element initially needs:
+On the canvas an Element is one node with exactly one output:
 
 ```txt
-name
-type
-description or generation instructions
-reference Assets
-optional labels or lightweight metadata when proven necessary
+Character: Maya                       Image Generation
+┌───────────────────┐                ┌────────────────────────┐
+│ [img][img][img]+3 │                │ image references       │
+│ 6 references   ● ─┼───────────────►│ prompt                 │
+└───────────────────┘                └────────────────────────┘
+        references → ImageSet
 ```
 
-The first implemented types should be:
-
-```txt
-Character
-Product
-```
-
-Later types may include:
-
-```txt
-Object
-Location
-Style
-Brand
-```
-
-Types help presentation and selection, but all Elements share the same core behavior: they provide text context and reference media to generation nodes.
-
-### Element Type Registry
-
-Element behavior should be defined through typed runtime registries in code. Selecting an Element type changes its validation, form, supported asset roles, and the server-only function that turns its stored information into generation context. Keep these as three explicit boundaries: shared framework-neutral definitions, dashboard-only React forms, and API-only context builders. React components and server builders must never be combined in one registry object.
-
-The initial direction is:
-
-```ts
-const elementTypes = {
-  character: {
-    currentVersion: 1,
-    schemas: { 1: characterSchemaV1 },
-    migrations: {},
-    assetRoles: [
-      { id: "appearance", accepts: ["image"] },
-      { id: "expression", accepts: ["image"] },
-      { id: "motion", accepts: ["video"] },
-      { id: "voice", accepts: ["audio"] },
-    ],
-  },
-
-  product: {
-    currentVersion: 1,
-    schemas: { 1: productSchemaV1 },
-    migrations: {},
-    assetRoles: [
-      { id: "packshot", accepts: ["image"] },
-      { id: "detail", accepts: ["image"] },
-      { id: "lifestyle", accepts: ["image", "video"] },
-      { id: "demonstration", accepts: ["video"] },
-    ],
-  },
-};
-
-const elementForms = {
-  character: CharacterElementForm,
-  product: ProductElementForm,
-};
-
-const elementContextBuilders = {
-  character: buildCharacterContext,
-  product: buildProductContext,
-};
-```
-
-The registry is product-controlled runtime configuration. Do not put Element type definitions in the database or build an admin UI for them during the MVP.
-
-Each registry entry owns:
-
-```txt
-stable type ID
-version-specific validation schemas and sequential migrations
-supported asset roles and media types
-preview role
-```
-
-The shared registry is deliberately not a form-definition language. Every Element type has a dedicated React form in the dashboard and a dedicated server context builder in the API. The shared registry owns only schemas, schema evolution, and structural Asset-role metadata; the dashboard form registry owns React components; the API context-builder registry owns context composition.
-
-```txt
-Dedicated React form
-        ↓
-Shared versioned Zod schema
-        ↓
-Generic Element API validation
-        ↓
-Type-specific JSONB data
-        ↓
-Dedicated server context builder
-```
-
-Shared Element definitions must not contain user-facing English display copy. Type names, type descriptions, field labels/help text, and Asset-role labels/descriptions are localized by the dashboard from stable type, field, and role IDs (or stable translation keys). For example, the `character` / `personality` pair resolves to a dashboard catalog key such as `elements.types.character.fields.personality.label`. The shared package must not import React, `react-i18next`, or dashboard catalogs; the dashboard calls `t(...)` at the rendering boundary. Every supported locale must receive the same Element keys and pass catalog validation. Server-generated model context is a separate concern and must not reuse UI translations implicitly.
-
-### Element Schema Evolution
-
-`schemaVersion` is an active runtime contract, not decorative metadata. Every Element type retains the schemas needed to validate supported stored versions and an explicit migration for every sequential transition:
-
-```ts
-const characterDefinition = {
-  currentVersion: 2,
-  schemas: {
-    1: characterSchemaV1,
-    2: characterSchemaV2,
-  },
-  migrations: {
-    1: migrateCharacterV1ToV2,
-  },
-};
-```
-
-Reading an Element validates the stored payload with the schema matching its stored version, applies migrations sequentially (`v1 -> v2 -> v3`), and validates the final current shape. Unknown future versions, missing schemas, migration gaps, and invalid historical payloads fail safely. Creates and updates persist only the current version; reads may upcast in memory without rewriting the row, while the next successful save persists the current representation.
-
-Required-field additions, renames, removals, type changes, and semantic changes require a version increment and migration. Historical schema definitions must not be mutated after production data uses them. Asset-role changes require equal care: removing or renaming a role needs a link migration or a deprecation window because existing `elementAssets` rows carry that role.
-
-Use dedicated typed form components rather than a generic form renderer, schema-driven field language, or field-definition DSL. Reuse ordinary controls and layout components only when multiple forms exhibit the same concrete behavior. Each form may evolve its validation-bound controls, layout, help text, and specialized interactions independently while the API continues to validate its shared Zod schema.
-
-### Element Consistency Contract
-
-Elements are not merely categorized Asset collections. They are
-provider-independent consistency sources of truth:
-
-```txt
-Element
-├── versioned identity guidance
-├── source evidence
-└── approved master references
-```
-
-Every current Element schema, including `Other`, carries a shared identity block
-with a prose summary plus structured must-keep, may-vary, and avoid guidance. The current UI
-exposes only one optional `Consistency notes` prose field. Structured arrays are
-initialized safely and remain an internal seam for a later AI assistant; users
-must not maintain a taxonomy or complete a wizard.
-
-`elementAssets.referenceKind` distinguishes raw `source` evidence from approved
-`master` references. Existing and current ordinary uploads become masters by
-default, preserving the simple creation path. Sources remain canonical Assets but
-never appear in normal Element role outputs, never count against consuming model
-limits, and never silently reach a provider. Promotion from source to master is
-the approval action; no parallel approval-status state machine exists.
-
-The user vocabulary is deliberately smaller than the internal model:
-
-```txt
-References
-Consistency notes
-Improve consistency  (only when the assistant really exists)
-```
-
-Readiness is derived from current identity and usable masters. It is never a
-persisted status and never blocks creation. One usable reference is enough to use
-an Element. Provider reference limits and benchmarked selection policies belong
-to the consuming generation slot, not the Element.
-
-Element creation has two consistent sections: `Data` and `Assets`. Data asks only for the small set of guidelines that materially improves reuse for that type. Assets renders one role-aware drop zone per registered Asset role. Dropped `File` objects and preview object URLs stay only in the creation page's local memory until the Element and its Asset folder are created successfully; creation failure uploads nothing.
-
-After creation, the files and their structured intent transfer to a non-persisted, dashboard-level Zustand queue. Each intent retains the `File`, `assetFolderId`, Element ID, role, order, and primary state across SPA navigation, but is never serialized to browser storage. The bounded worker owns only the local transfer and registration lifecycle: `queued -> hashing -> uploading -> registering -> linking -> completed`, with `failed` retaining the failed stage. It uploads to R2, then sends the upload grant and complete Element-link intent to `POST /assets`. Asset insertion, Element-link insertion, affected persisted-Flow budget validation, and rollback are one server transaction; `registering` and `linking` remain useful local progress labels, not separate server mutations. Trigger.dev media processing continues independently after registration; its feedback comes from organization-scoped Asset queries rather than the local upload manager. Retrying reuses the same upload grant and cannot create a duplicate Asset or a half-linked registration. Browser refresh or closure may still lose unfinished local files; resumable uploads are deferred.
-
-Each Element Asset role has its own **master** capacity, determined by the role's media family: image roles accept up to eight masters, while video and audio roles accept one master by default. Sources use a separate bounded element-wide abuse cap. These are reusable-context limits, not provider/model input limits. An Element may therefore retain richer reusable collections across several roles; the consuming Flow node later selects a model-compatible subset of approved masters. The dashboard prevents excess pending selections, while existing-Asset attachment, upload registration, promotion, and demotion enforce the same policies transactionally with one global lock order: organization Flow-reference budget when executable references can increase, then folder structure when an Element upload may provision a folder, then Element, then role, then an existing Asset row when attaching or updating it. Mutations acquire only the locks they need and never reverse that order; the final tenant-scoped Asset lock rejects permanent-deletion lifecycle state after any concurrent purge wait. Folder-tree deletion resolves affected rows under the folder lock and locks Elements before Assets so its foreign-key cleanup follows the same order.
-
-The `Other` Element is the deliberate escape hatch for reusable context that does not fit a product-controlled type. It keeps Data to name and instructions, and lets the user define up to three custom Asset-role names. Those names are validated and stored in the Element's versioned data before any Asset upload begins, then persisted as the role on each Element-to-Asset relationship. Other accepts image, video, and audio references without weakening the fixed role contracts of specialized Element types.
-
-### Element Details And Assets
-
-Every Element detail page should have two primary surfaces:
-
-```txt
-Details
-References
-```
-
-`Details` renders the dedicated type-specific form selected by the dashboard form registry. Shared fields such as name and type remain consistent, while each type composes its own context fields explicitly.
-
-`References` reuses the same asset-library components and behavior as the global Assets page, with a fixed filter for the current Element. It is not a second media library.
-
-In the current product stage this tab presents approved masters simply as
-`References`. Raw sources remain hidden until the consistency assistant can offer
-a real curation workflow; internal source/master terminology must not leak into
-ordinary creation or editing.
-
-Conceptually:
-
-```txt
-/assets                     = all workspace Assets
-/assets?elementId=:id       = global Assets filtered by Element
-/elements/:elementId/assets = the same filtered asset experience
-```
-
-From the Element References section, users should be able to:
-
-```txt
-upload a new Asset and attach it automatically
-attach an existing Asset
-filter by image, video, and audio
-assign an allowed role
-set ordering or primary-reference priority
-remove the Element relationship
-open the canonical Asset detail
-```
-
-Every Element supports zero or more related Assets. An Element does not need to contain every media type and may be created before references are available.
-
-The Element-to-Asset relationship carries meaning beyond membership:
-
-```txt
-role
-position
-primary or reference priority
-reference kind: source or master
-registry-validated relationship metadata
-```
-
-One Asset may be related to multiple Elements. Removing an Asset from an Element must not delete it, and deleting an Element must not delete its canonical Assets.
-
-New Element uploads receive automatic folder organization without changing the semantic model. The workspace has one lazily provisioned, internally identified `Elements` root folder, and each Element stores the stable ID of its own child folder. Duplicate Element names receive collision-safe folder names such as `Maya 2`; later Element renames do not rename user-customized folders. Moving or renaming a folder is safe because the association uses its ID, never a reconstructed path.
-
-Only files uploaded from an Element surface are placed into that associated folder. Linking an existing canonical Asset never moves or copies it. Deleting an Element leaves its folder and Assets intact. Deleting the associated folder clears the Element's folder reference through the database relationship, and the next new upload provisions a replacement lazily.
-
-Elements provide a semantic filter for Assets, but they do not replace folders:
-
-```txt
-Folder  = where the user manually organizes an Asset
-Element = why the Asset is reusable as AI context
-```
-
-### Element Flow Node
-
-An Element can be placed in a Flow as a reusable context node. It exposes its resolved text context and one typed collection output for each registered Asset role:
-
-```txt
-context                 -> ElementContext
-appearance              -> ImageSet
-expression              -> ImageSet
-motion                  -> VideoSet
-voice                   -> AudioSet
-```
-
-The role output is a collection, not one handle per Asset. For example, a Character's `appearance` role has one handle that can resolve to as many as eight candidate images. This keeps the canvas stable when Assets are added, removed, reordered, or reprioritized inside the Element.
-
-The complete Element context resolves to a bundle containing approved masters
-only:
-
-```txt
-Element identity and type
-text context produced by buildContext
-approved master Asset IDs
-Asset media types, roles, and priority
-relationship metadata used for deterministic ranking
-```
-
-The server contract is deliberately provider-independent:
-
-```ts
-type BuiltElementContext = {
-  elementId: string;
-  type: string;
-  schemaVersion: number;
-  text: string;
-  assets: {
-    assetId: string;
-    role: string;
-    sortOrder: number;
-    isPrimary: boolean;
-    referenceMetadata: Record<string, unknown>;
-    mediaType: "image" | "video" | "audio";
-    mimeType: string;
-  }[];
-};
-
-const context = await buildElementContext(elementId);
-```
-
-`buildElementContext` upcasts and validates Element identity/data, composes stable text, resolves master Assets in deterministic primary/role/order/id order, and excludes sources plus processing, failed, purging, and purged Assets from executable context. It returns stable IDs and relationship metadata, never signed URLs or storage keys. Signed URLs expire; provider-specific URLs or uploads are resolved only at execution time and must never be stored in graph or generation snapshots.
-
-A generation node can receive multiple Element nodes, Element role collections, and raw Asset nodes. Role handles are generated from the product-controlled Element registry and remain stable IDs; the node never creates one dynamic handle per Asset.
-
-### Consumer-Owned Reference Selection
-
-Reference selection does not happen inside the Element node and never modifies the Element's reusable master set. The Element offers an ordered collection of approved master candidates; the consuming generation node chooses which compatible members of that collection it will use for that specific node. Raw sources never enter this candidate set.
-
-Conceptually:
-
-```txt
-Character: Maya                         Veo 3.1
-┌─────────────────────┐                ┌────────────────────────┐
-│ Appearance       ●  ├───────────────►│ Subject references     │
-│ 8 images            │                │ [img][img][img]  3 refs│
-│ Expressions       ● │                │                        │
-└─────────────────────┘                └────────────────────────┘
-```
-
-The interaction is:
-
-```txt
-connect one Element role handle to a compatible generation input
--> resolve the role's ordered candidate collection
--> select primary references first, then role order
--> show selected count versus candidates and model limit
--> click the generation input to inspect or change its selection
-```
-
-The canvas node stays compact. It shows a thumbnail stack, a concise selected-reference count, and validation state. It does not expose selection-strategy terminology or a persistent `Change selection` button. The connected input row itself is the inspector affordance.
-
-Selection uses progressive disclosure. Connecting a compatible collection is immediately runnable and requires no confirmation step. Detailed selection appears only when the user clicks the consuming input:
-
-```txt
-Subject references
-3 selected
-8 available · Veo 3.1 accepts up to 3 images
-
-[1] Maya front           Primary
-[2] Maya profile
-[3] Maya full body
-[ ] Maya smiling
-[ ] Maya seated
-[ ] Maya outdoors
-
-Using Element defaults                         Customize
-```
-
-The product language is deliberately `Using Element defaults`, `Customize`, `Custom references`, and `Reset to Element defaults` — never an exposed `Automatic / Manual` mode toggle. Clicking `Customize` or changing any candidate implicitly creates a custom selection. Selected candidates receive visible order numbers because provider payload order may affect the result. `Reset to Element defaults` discards only the local override and returns to deterministic primary and role ordering.
-
-Internally, defaults map to `auto` and a customized choice maps to `manual`. Incoming React Flow edges remain the sole source of graph topology; generation-node `data` stores only the per-input selection policy, without duplicating source node IDs or handles:
-
-```ts
-type InputSelection = { mode: "auto" } | { mode: "manual"; assetIds: string[] };
-
-type GenerationNodeInputSelections = Record<string, InputSelection>;
-```
-
-At graph validation and run creation, every manually selected Asset ID must still be a compatible member of the candidate set resolved from the input's incoming edges. A stale, removed, unavailable, or incompatible manual selection makes the input visibly invalid; the system must not silently replace it.
-
-The consuming input has four product states:
-
-```txt
-Unconnected  -> Add references
-Default      -> 3 references
-Customized   -> 3 custom references
-Invalid      -> Select no more than 3
-```
-
-When several Element or Asset sources feed the same input, the inspector groups candidates by source while applying one aggregate input limit:
-
-```txt
-Maya · Appearance
-[1] Front
-[2] Profile
-[ ] Full body
-
-Acme Bottle · Packshot
-[3] Front package
-[ ] Side package
-
-3 selected · maximum 3
-```
-
-Model limits apply to the consuming input, across all connected sources combined. If two Element collections contribute twelve candidate images to an input whose selected model accepts three, the input can select no more than three in total. Connecting a collection to a singular semantic slot such as `firstFrame` requires selecting exactly one candidate.
-
-Changing models or candidate collections revalidates the input according to who owns the decision:
-
-```txt
-Element defaults -> recompute automatically from the current compatible candidates and model limit
-Custom references -> preserve the explicit choice; show an actionable error if it becomes stale or exceeds the limit
-```
-
-If a model change reduces the maximum below a custom selection, TaleLabs preserves the user's selection, displays an actionable overflow error, and blocks execution until the user reduces it. If a selected custom Asset is removed, unavailable, or incompatible, it remains visibly unresolved until the user replaces it or resets to Element defaults. TaleLabs must never truncate or replace a custom selection silently.
-
-Singular semantic inputs use the same model with less ceremony. Connecting an `ImageSet` to `firstFrame` selects one default candidate and shows one thumbnail; clicking it opens the same inspector constrained to one selection.
-
-The generation node is responsible for showing which compatible references will be used. Models have different media support and input limits, so a connected Element does not imply that every related Asset will be sent to the provider.
-
-This was the proposed Element execution contract before the Assets + Flows
-reset. It is not active in M5: current runs do not resolve Element data, expose
-Element role handles, or snapshot Element references. If Elements are
-reconsidered after the billable loop works, their execution contract must be
-redesigned against the then-current run engine rather than copied from this
-historical proposal.
-
-Users should be able to:
-
-```txt
-create an Element from existing Assets
-upload Assets while creating an Element
-add or remove reference Assets
-edit its instructions
-find and select it from a Flow
-inspect where it is used later
-save a useful generated result back to an Element
-```
-
-Elements are optional accelerators. A user must still be able to connect raw Assets directly to a generation node without first creating an Element.
+The output is the same `ImageSet` value an image Asset node emits, so it
+connects everywhere Assets already connect. Model input limits and the
+auto/manual selection inspector are owned by the consuming generation slot,
+exactly as with multiple raw Asset sources. Run admission expands the Element
+to its exact ordered Asset IDs inside the immutable snapshot, so later Element
+edits never rewrite an admitted run.
+
+Elements are optional accelerators. A user must still be able to connect raw
+Assets directly to a generation node without first creating an Element.
 
 ## Flows
 
@@ -1298,7 +916,7 @@ Credits belong in the header, account, usage, and billing experiences rather tha
 4. Approve model-adaptive node UX with deterministic mocks before designing the run engine.
 5. Persist every successful output as a reusable Asset.
 6. Keep Assets canonical and globally reusable within a workspace.
-7. Treat Elements as a deferred optional accelerator, not a core-loop dependency.
+7. Treat Elements as optional accelerators with one output, never a core-loop dependency.
 8. Treat multiple connected context sources as a core generation capability, not a later migration.
 9. Preserve immutable generation provenance when execution work resumes.
 10. Add new surfaces only when they extend the core loop and have evidence behind them.

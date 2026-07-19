@@ -35,39 +35,26 @@ The primary navigation is exactly:
 ```txt
 Flows
 Assets
+Elements
 ```
 
-## Elements Are Deferred
+## Elements Are Active
 
-Elements are not part of the MVP. They must not appear in:
+The simplified Elements feature was approved on 2026-07-18.
+An Element is a named, ordered collection of up to 8 reference image Assets
+with a presentation-only kind label (`character`, `prop`, `location`, `style`,
+`other`) and an optional description. Its Flow node exposes exactly one
+`references → ImageSet` output; run admission expands it to exact Asset IDs so
+snapshots stay Asset-only and Trigger/provider layers remain untouched.
 
-```txt
-navigation
-dashboard routes
-global search
-the node picker
-Flow node types
-Flow graph request or response schemas
-Flow reference hydration
-graph validation
-mock planning or execution
-provider payload planning
-new run snapshots
-MVP acceptance criteria
-```
+`docs/elements.md` is the binding Element design. The retired
+multi-role/consistency Element architecture (typed schemas, asset roles,
+source/master kinds, readiness, custom roles, reference budgets, multi-output
+nodes) was deleted with its data in migration `027_reset_elements` and must
+not return without a new explicit product decision.
 
-Existing standalone Element tables, API modules, SDK endpoints, and historical
-research may remain dormant. Preserving that work is not permission to expose
-or extend it. Active product code must not import Element data to make an Asset
-or Flow operation succeed.
-
-Historical generation contracts may retain `ElementContext` so persisted
-snapshots remain readable. The current generation catalog and newly created
-nodes must not expose an Element-context input.
-
-Reintroducing reusable context requires a new explicit product decision after
-the Asset-to-Flow generation loop works with real providers. It is not an
-implicit next task.
+Elements remain optional accelerators: every Flow must stay fully usable with
+raw Assets connected directly to generation nodes.
 
 ## Active Flow Node Families
 
@@ -76,6 +63,7 @@ MVP inputs:
 ```txt
 Text
 Asset
+Element
 prior node output
 ```
 
