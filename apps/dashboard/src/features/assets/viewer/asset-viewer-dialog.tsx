@@ -12,6 +12,8 @@ import {
 import { Separator } from '@talelabs/ui/components/separator'
 import { Skeleton } from '@talelabs/ui/components/skeleton'
 import { useTranslation } from 'react-i18next'
+import { AddToElementDialog } from '../../elements/add-to-element-dialog'
+import { ElementMembershipBadges } from '../../elements/element-membership-badges'
 import { useAssetDetailQuery } from '../data/asset-queries'
 import { MoveToFolderDialog } from '../folders/move-to-folder-dialog'
 import { formatAssetSize, formatDuration } from '../media/asset-formatters'
@@ -136,6 +138,7 @@ export function AssetViewerDialog() {
                     </DialogHeader>
 
                     <AssetTagBadges tags={asset.tags} />
+                    <ElementMembershipBadges assetId={asset.id} />
                     <Separator />
 
                     <dl className="grid grid-cols-2 gap-4 text-sm">
@@ -208,6 +211,14 @@ export function AssetViewerDialog() {
           pending={controller.mutations.update.isPending}
           submitLabel={t('common.save')}
           title={t('assets.rename')}
+        />
+        <AddToElementDialog
+          assetIds={controller.dialogs.addToElementAsset
+            ? [controller.dialogs.addToElementAsset.id]
+            : []}
+          open={Boolean(controller.dialogs.addToElementAsset)}
+          onOpenChange={open =>
+            !open && controller.dialogs.setAddToElementAsset(null)}
         />
       </DialogContent>
     </Dialog>

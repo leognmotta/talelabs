@@ -8,6 +8,7 @@ import type { useAssetLibraryActions } from './use-asset-library-actions'
 
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { AddToElementDialog } from '../../elements/add-to-element-dialog'
 import { useActiveOrganizationId } from '../../organizations/organization-scope-context'
 import {
   cancelFolderUploads,
@@ -41,11 +42,13 @@ export function AssetLibraryDialogs({
   const organizationId = useActiveOrganizationId()
   const [cancelingFolderUploads, setCancelingFolderUploads] = useState(false)
   const {
+    addToElementAssetIds,
     deleteFolder,
     moveTarget,
     nameDialog,
     purgeAsset,
     runAction,
+    setAddToElementAssetIds,
     setDeleteFolder,
     setMoveTarget,
     setNameDialog,
@@ -221,6 +224,11 @@ export function AssetLibraryDialogs({
             ? t('assets.newFolder')
             : t('assets.rename')
         }
+      />
+      <AddToElementDialog
+        assetIds={addToElementAssetIds ?? []}
+        open={addToElementAssetIds !== null}
+        onOpenChange={open => !open && setAddToElementAssetIds(null)}
       />
     </>
   )

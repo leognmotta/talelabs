@@ -100,6 +100,56 @@ export function getFlowInputState(input: {
       })
       continue
     }
+
+    if (sourceNode.type === 'element') {
+      const elementId = typeof sourceNode.data.elementId === 'string'
+        ? sourceNode.data.elementId
+        : null
+      const element = elementId
+        ? input.referenceData.elementsById.get(elementId)
+        : undefined
+      if (!element)
+        continue
+      const rawSelected = sourceNode.data.selectedAssetIds
+      const chosenIds = new Set<string>(
+        Array.isArray(rawSelected)
+          ? rawSelected.filter(
+              (item: unknown): item is string => typeof item === 'string',
+            )
+          : [],
+      )
+      if (
+        [...chosenIds].some(assetId =>
+          !element.referenceAssetIds.includes(assetId))
+      ) {
+        invalidDirectAssetConnection = true
+      }
+      const emittedAssetIds = element.referenceAssetIds
+        .filter(assetId => chosenIds.has(assetId))
+      for (const [index, assetId] of emittedAssetIds.entries()) {
+        const asset = input.referenceData.assetsById.get(assetId)
+        if (
+          !asset
+          || !acceptedTypes.has(asset.type)
+          || !isUsableReferenceAsset(asset)
+          || seenAssetIds.has(asset.id)
+        ) {
+          continue
+        }
+        seenAssetIds.add(asset.id)
+        candidates.push({
+          assetId: asset.id,
+          isPrimary: index === 0,
+          mediaType: asset.type,
+          name: asset.name,
+          sourceId: sourceNode.id,
+          sourceName: element.name,
+          sortOrder: index,
+          thumbnailUrl: asset.thumbnailUrl,
+        })
+      }
+      continue
+    }
   }
 
   const selections = targetNode.data.inputSelections

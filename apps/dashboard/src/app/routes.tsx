@@ -68,6 +68,11 @@ const FlowsScreen = lazy(async () => {
   return { default: module.FlowsScreen }
 })
 
+const ElementsScreen = lazy(async () => {
+  const module = await import('../features/elements/elements-screen')
+  return { default: module.ElementsScreen }
+})
+
 const FlowEditorScreen = lazy(async () => {
   const module = await import('../features/flows/editor/flow-editor-screen')
   return { default: module.FlowEditorScreen }
@@ -393,6 +398,22 @@ export function DashboardRoutes() {
                 )}
               >
                 <FlowsScreen />
+              </ErrorBoundary>
+            )}
+          />
+          <Route
+            path="elements"
+            element={(
+              <ErrorBoundary
+                fallback={({ resetErrorBoundary }) => (
+                  <ErrorFallback
+                    description={t('elements.couldNotLoadDescription')}
+                    onRetry={resetErrorBoundary}
+                    title={t('elements.couldNotLoad')}
+                  />
+                )}
+              >
+                <ElementsScreen />
               </ErrorBoundary>
             )}
           />

@@ -4,7 +4,6 @@ import type { IconSparkles } from '@tabler/icons-react'
 import type { FlowValueType } from '@talelabs/flows'
 
 import {
-  IconComponents,
   IconFile,
   IconHeadphones,
   IconPhoto,
@@ -17,7 +16,6 @@ import { FirstFrameIcon, LastFrameIcon } from './frame-boundary-icons'
 export const HANDLE_ICONS_BY_ID = {
   audio: IconHeadphones,
   audioReferences: IconHeadphones,
-  context: IconComponents,
   firstFrame: FirstFrameIcon,
   imageReferences: IconPhoto,
   images: IconPhoto,
@@ -30,7 +28,6 @@ export const HANDLE_ICONS_BY_ID = {
 export const HANDLE_ICONS_BY_VALUE_TYPE = {
   Asset: IconFile,
   AudioSet: IconHeadphones,
-  ElementContext: IconComponents,
   ImageSet: IconPhoto,
   Text: IconTextCaption,
   VideoSet: IconVideo,

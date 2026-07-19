@@ -22,7 +22,6 @@ const STAGE_KEYS: Record<UploadStatus, string> = {
   completed: 'uploads.stages.completed',
   failed: 'uploads.stages.failed',
   hashing: 'uploads.stages.hashing',
-  linking: 'uploads.stages.linking',
   queued: 'uploads.stages.queued',
   registering: 'uploads.stages.registering',
   uploading: 'uploads.stages.uploading',
@@ -32,19 +31,21 @@ const STAGE_KEYS: Record<UploadStatus, string> = {
 export function UploadItemRow({ item }: { item: UploadItemState }) {
   const { i18n, t } = useTranslation()
   const percentage = useMemo(
-    () => new Intl.NumberFormat(i18n.resolvedLanguage ?? 'en', {
-      maximumFractionDigits: 0,
-      style: 'percent',
-    }).format(item.progress),
+    () =>
+      new Intl.NumberFormat(i18n.resolvedLanguage ?? 'en', {
+        maximumFractionDigits: 0,
+        style: 'percent',
+      }).format(item.progress),
     [i18n.resolvedLanguage, item.progress],
   )
   const active = isActiveUploadStatus(item.status)
 
   return (
-    <article className="
-      flex flex-col gap-2 border-b px-5 py-4
-      last:border-b-0
-    "
+    <article
+      className="
+        flex flex-col gap-2 border-b px-5 py-4
+        last:border-b-0
+      "
     >
       <div className="flex items-start gap-3">
         <div className="mt-0.5 flex size-5 shrink-0 items-center justify-center">
@@ -52,14 +53,17 @@ export function UploadItemRow({ item }: { item: UploadItemState }) {
         </div>
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-medium">{item.filename}</p>
-          <div className="
-            mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs
-            text-muted-foreground
-          "
+          <div
+            className="
+              mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs
+              text-muted-foreground
+            "
           >
             <span>{t(STAGE_KEYS[item.status] as never)}</span>
             <span aria-hidden="true">·</span>
-            <span>{formatAssetSize(item.sizeBytes, i18n.resolvedLanguage ?? 'en')}</span>
+            <span>
+              {formatAssetSize(item.sizeBytes, i18n.resolvedLanguage ?? 'en')}
+            </span>
             {item.destinationLabel && (
               <>
                 <span aria-hidden="true">·</span>
@@ -112,9 +116,10 @@ export function UploadItemRow({ item }: { item: UploadItemState }) {
       {active && (
         <div className="flex items-center gap-3 pl-8">
           <Progress className="flex-1" value={item.progress * 100} />
-          <span className="
-            w-10 text-right text-xs text-muted-foreground tabular-nums
-          "
+          <span
+            className="
+              w-10 text-right text-xs text-muted-foreground tabular-nums
+            "
           >
             {percentage}
           </span>

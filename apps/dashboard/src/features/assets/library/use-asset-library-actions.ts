@@ -41,6 +41,8 @@ export function useAssetLibraryActions({
   const [deleteFolder, setDeleteFolder] = useState<Folder | null>(null)
   const [moveTarget, setMoveTarget] = useState<MoveDialogTarget | null>(null)
   const [nameDialog, setNameDialog] = useState<AssetNameDialogState>(null)
+  const [addToElementAssetIds, setAddToElementAssetIds]
+    = useState<null | string[]>(null)
 
   async function runAction(action: () => Promise<unknown>, successKey: string) {
     try {
@@ -62,6 +64,16 @@ export function useAssetLibraryActions({
 
   const assetActions: AssetActions = {
     favoritePending: assetMutations.favorite.isPending,
+    onAddToElement: (asset) => {
+      const imageIds = getSelectedAssets(asset)
+        .filter(item => item.type === 'image' && item.lifecycle === 'live')
+        .map(item => item.id)
+      if (imageIds.length === 0) {
+        toast.error(t('elements.onlyImagesCanBeReferences'))
+        return
+      }
+      setAddToElementAssetIds(imageIds)
+    },
     onArchive: asset =>
       void runAction(
         () => assetMutations.archive.mutateAsync({
@@ -153,6 +165,7 @@ export function useAssetLibraryActions({
   }
 
   return {
+    addToElementAssetIds,
     assetActions,
     deleteFolder,
     folderActions,
@@ -160,6 +173,7 @@ export function useAssetLibraryActions({
     nameDialog,
     purgeAsset,
     runAction,
+    setAddToElementAssetIds,
     setDeleteFolder,
     setMoveTarget,
     setNameDialog,

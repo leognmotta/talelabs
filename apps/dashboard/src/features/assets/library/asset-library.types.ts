@@ -29,11 +29,15 @@ export interface AssetLibraryProps {
   filters?: AssetLibraryFilters
   folderId?: null | string
   initialFolderId?: null | string
+  /** Localized reason an Asset cannot be selected right now, or null. */
+  isAssetDisabled?: (asset: Asset) => null | string
   mode?: 'manage' | 'select'
   onFiltersChange?: (filters: AssetLibraryFilters) => void
   onFolderChange?: (folderId: null | string) => void
   onOpenAsset?: (asset: Asset) => void
   onSelect?: (asset: Asset) => void
+  /** Reports each upload batch started from this library instance. */
+  onUploadBatch?: (batchId: string) => void
   onViewChange?: (view: AssetLibraryView) => void
   presentation?: AssetLibraryPresentation
   selectedAssetIds?: string[]
@@ -53,6 +57,7 @@ export interface AssetLibraryInteractions {
   folders: Folder[]
   getAssetDragData: (asset: Asset) => AssetDragData
   getFolderDragData: (folder: Folder) => FolderDragData
+  isAssetDisabled?: (asset: Asset) => null | string
   onAssetOpen: (asset: Asset) => void
   onAssetSelect: (asset: Asset, input: SelectionInput) => void
   onFolderOpen: (folder: Folder) => void

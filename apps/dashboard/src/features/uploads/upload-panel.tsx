@@ -85,9 +85,7 @@ export function UploadPanel({ organizationId }: { organizationId: string }) {
                   >
                     <div className="flex min-w-0 items-center gap-2">
                       <p className="truncate text-xs font-medium">
-                        {batch.kind === 'element'
-                          ? t('uploads.elementBatch')
-                          : t('uploads.assetBatch')}
+                        {t('uploads.assetBatch')}
                       </p>
                       <Badge variant="outline">{batchItems.length}</Badge>
                     </div>

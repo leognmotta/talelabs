@@ -48,7 +48,6 @@ export function valueTypeLabel(valueType: FlowValueType, t: TFunction) {
   const keys = {
     Asset: 'flows.outputs.asset',
     AudioSet: 'assets.types.audio',
-    ElementContext: 'flows.outputs.elementContext',
     ImageSet: 'assets.types.image',
     Text: 'flows.outputs.text',
     VideoSet: 'assets.types.video',

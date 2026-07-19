@@ -8,6 +8,7 @@ import { useAssetDownload } from '../../../../assets/viewer/use-asset-download'
 import { useCanvasStore, useCanvasStoreApi } from '../../../editor/canvas-state/canvas-store-context'
 import { useFlowGenerationPreview } from '../../../editor/flow-canvas-runtime-context'
 import { downloadFile } from './download-file'
+import { FlowAddToElementToolbarAction } from './flow-add-to-element-toolbar-action'
 import { FlowCopyOutputToolbarAction } from './flow-copy-output-toolbar-action'
 import { FlowDownloadToolbarAction } from './flow-download-toolbar-action'
 import { FlowToolbarButton } from './flow-toolbar-button'
@@ -43,6 +44,21 @@ export function FlowGenerationOutputToolbarActions({
       ? () => downloadFile(output.download)
       : undefined
   return actions.map((action) => {
+    if (action === 'addToElement') {
+      if (
+        output?.kind !== 'media'
+        || output.mediaType !== 'image'
+        || !outputAssetId
+      ) {
+        return null
+      }
+      return (
+        <FlowAddToElementToolbarAction
+          assetId={outputAssetId}
+          key={action}
+        />
+      )
+    }
     if (action === 'copyOutput') {
       return (
         <FlowCopyOutputToolbarAction

@@ -1,4 +1,4 @@
-/** Executes one queued file through upload, registration, linking, and cleanup. */
+/** Executes one queued file through upload, registration, and cleanup. */
 
 import type { RuntimeUploadBatch, RuntimeUploadItem } from '../upload-runtime'
 
@@ -6,16 +6,12 @@ import { uploadAsset } from '../../assets/upload/asset-upload'
 import {
   shouldRestartUploadAfterRegistrationError,
 } from '../../assets/upload/asset-upload-error'
-import { linkElementUploadTarget } from '../element-upload-target'
 import {
   assertUploadActive,
   isUploadOrganizationActive,
 } from '../queue/upload-queue-activity'
 import { uploadQueueState } from '../queue/upload-queue-state'
-import {
-  refreshElementLinkCache,
-  refreshRegisteredAssetCache,
-} from '../upload-cache-reconciliation'
+import { refreshRegisteredAssetCache } from '../upload-cache-reconciliation'
 import { removeUploadRuntimeItem } from '../upload-runtime-actions'
 import { uploadStore } from '../upload-store'
 import {
@@ -63,30 +59,13 @@ export async function executeUploadItem(
 
   try {
     assertUploadActive(batch, controller.signal)
-    let assetId = initialItem.assetId
-    const recoveringElementLink = Boolean(
-      runtime.target.kind === 'element'
-      && (assetId || runtime.registrationUploadId),
-    )
-    if (!assetId) {
+    if (!initialItem.assetId) {
       const asset = await uploadAsset({
-        elementId: runtime.target.kind === 'element'
-          ? runtime.target.elementId
-          : undefined,
         file: runtime.file,
         folderId: initialItem.destinationFolderId,
-        isPrimary: runtime.target.kind === 'element'
-          ? runtime.target.isPrimary
-          : undefined,
         organizationId: batch.organizationId,
         registrationUploadId: runtime.registrationUploadId,
-        role: runtime.target.kind === 'element'
-          ? runtime.target.role
-          : undefined,
         signal: controller.signal,
-        sortOrder: runtime.target.kind === 'element'
-          ? runtime.target.sortOrder
-          : undefined,
         onProgress: progress => updateUploadProgress(itemId, runtime, progress),
         onRegistrationReady: (uploadId) => {
           runtime.registrationUploadId = uploadId
@@ -100,36 +79,8 @@ export async function executeUploadItem(
         }),
       })
       assertUploadActive(batch, controller.signal)
-      assetId = asset.id
-      uploadStore.getState().patchItem(itemId, { assetId, progress: 1 })
+      uploadStore.getState().patchItem(itemId, { assetId: asset.id, progress: 1 })
       await refreshRegisteredAssetCache(batch, asset)
-      assertUploadActive(batch, controller.signal)
-      if (runtime.target.kind === 'element') {
-        await refreshElementLinkCache(
-          batch,
-          runtime.target.elementId,
-          asset.id,
-        )
-        assertUploadActive(batch, controller.signal)
-      }
-    }
-
-    // Existing Asset IDs and retried registration grants may predate atomic
-    // registration or a response may have been lost after commit. Reconcile
-    // only those recovery paths; fresh uploads were linked by POST /assets.
-    if (runtime.target.kind === 'element' && recoveringElementLink) {
-      uploadStore.getState().patchItem(itemId, {
-        progress: 1,
-        status: 'linking',
-      })
-      await linkElementUploadTarget(
-        runtime.target,
-        assetId,
-        batch.organizationId,
-        controller.signal,
-      )
-      assertUploadActive(batch, controller.signal)
-      await refreshElementLinkCache(batch, runtime.target.elementId, assetId)
       assertUploadActive(batch, controller.signal)
     }
 

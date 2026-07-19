@@ -80,10 +80,6 @@ export default defineConfig(({ mode }) => {
           replacement: fileURLToPath(new URL('../../packages/assets/src/index.ts', import.meta.url)),
         },
         {
-          find: '@talelabs/elements',
-          replacement: fileURLToPath(new URL('../../packages/elements/src/index.ts', import.meta.url)),
-        },
-        {
           find: '@talelabs/flows',
           replacement: fileURLToPath(new URL('../../packages/flows/src/index.ts', import.meta.url)),
         },

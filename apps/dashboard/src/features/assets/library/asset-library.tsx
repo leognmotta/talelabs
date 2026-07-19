@@ -58,11 +58,13 @@ export function AssetLibrary({
   filters: controlledFilters,
   folderId: controlledFolderId,
   initialFolderId = null,
+  isAssetDisabled,
   mode = 'manage',
   onFiltersChange,
   onFolderChange,
   onOpenAsset = () => {},
   onSelect = () => {},
+  onUploadBatch,
   onViewChange,
   presentation = 'page',
   selectedAssetIds,
@@ -108,6 +110,7 @@ export function AssetLibrary({
   const upload = useAssetLibraryUpload({
     folderId,
     folders,
+    onBatchEnqueued: onUploadBatch,
   })
   const tags = useMemo(
     () => tagsQuery.data?.data ?? [],
@@ -191,6 +194,7 @@ export function AssetLibrary({
     folders,
     getAssetDragData: selection.getAssetDragData,
     getFolderDragData: move.getFolderDragData,
+    isAssetDisabled,
     mode,
     onAssetOpen: asset =>
       mode === 'manage' ? onOpenAsset(asset) : onSelect(asset),

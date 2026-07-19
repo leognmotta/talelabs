@@ -18,9 +18,12 @@ import { useAssetUploadPolicyDescription } from '../upload/use-asset-upload-poli
 export function useAssetLibraryUpload({
   folderId,
   folders,
+  onBatchEnqueued,
 }: {
   folderId: null | string
   folders: Folder[]
+  /** Reports each enqueued batch so callers can track their own uploads. */
+  onBatchEnqueued?: (batchId: string) => void
 }) {
   const { t } = useTranslation()
   const organizationId = useActiveOrganizationId()
@@ -53,8 +56,11 @@ export function useAssetLibraryUpload({
       organizationId,
       parentFolderId: folderId,
     })
-    if (!batchId)
+    if (!batchId) {
       toast.error(t('errors.organization_context_changed'))
+      return
+    }
+    onBatchEnqueued?.(batchId)
   }
 
   function uploadFiles(files: FileList | File[]) {

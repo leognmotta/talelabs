@@ -1,45 +1,27 @@
+/** Element cache invalidation shared by Element and Asset mutations. */
+
 import type { QueryClient } from '@tanstack/react-query'
 
+import { flowQueryKeys } from '../flows/data/query-keys/flow-query-keys'
 import { elementQueryKeys } from './element-query-keys'
 
-interface InvalidateElementCacheOptions {
-  elementId?: string
-  includeKit?: boolean
-}
-
 /**
- * Invalidates Element data whose server response is derived from Asset links.
- * Omitting an Element ID invalidates the complete organization-scoped Element
- * cache, which is required when the affected relationships are not known.
+ * Invalidates every read that renders Element state after any mutation that
+ * can change an Element's references or cover: the Element library and
+ * detail queries, and the Flow canvas reference hydration that Element nodes
+ * are drawn from — otherwise open canvases keep stale reference lists until
+ * a manual refresh.
  */
 export function invalidateElementCache(
   queryClient: QueryClient,
   organizationId: string,
-  options: InvalidateElementCacheOptions = {},
 ) {
-  const { elementId, includeKit = true } = options
-
-  if (!elementId && includeKit) {
-    return queryClient.invalidateQueries({
-      queryKey: elementQueryKeys.scope(organizationId),
-    })
-  }
-
   return Promise.all([
     queryClient.invalidateQueries({
-      queryKey: elementId
-        ? elementQueryKeys.detail(organizationId, elementId)
-        : elementQueryKeys.details(organizationId),
+      queryKey: elementQueryKeys.all(organizationId),
     }),
     queryClient.invalidateQueries({
-      queryKey: elementQueryKeys.lists(organizationId),
+      queryKey: flowQueryKeys.allReferences(organizationId),
     }),
-    ...(includeKit
-      ? [queryClient.invalidateQueries({
-          queryKey: elementId
-            ? elementQueryKeys.kit(organizationId, elementId)
-            : elementQueryKeys.kits(organizationId),
-        })]
-      : []),
-  ]).then(() => undefined)
+  ])
 }

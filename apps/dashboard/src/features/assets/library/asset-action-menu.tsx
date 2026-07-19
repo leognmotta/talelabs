@@ -10,6 +10,7 @@ import {
   IconEye,
   IconFolderSymlink,
   IconPencil,
+  IconPuzzle,
   IconRestore,
   IconTrash,
 } from '@tabler/icons-react'
@@ -72,6 +73,14 @@ export function AssetActionMenu({ asset, actions, triggerClassName, viewDetails 
                   <IconFolderSymlink />
                   {t('assets.moveToFolder')}
                 </DropdownMenuItem>
+                {asset.type === 'image' && (
+                  <DropdownMenuItem
+                    onClick={() => actions.onAddToElement(asset)}
+                  >
+                    <IconPuzzle />
+                    {t('elements.addToElementAction')}
+                  </DropdownMenuItem>
+                )}
               </>
             )}
           </DropdownMenuGroup>

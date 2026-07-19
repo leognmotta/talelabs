@@ -1,3 +1,5 @@
+/** Dashboard navigation sidebar: primary sections and account controls. */
+
 import type { ComponentProps } from 'react'
 import type { SettingsTab } from '../features/settings/settings-state'
 
@@ -5,6 +7,7 @@ import {
   IconFolderOpen,
   IconGitBranch,
   IconLogout,
+  IconPuzzle,
 } from '@tabler/icons-react'
 import {
   Sidebar,
@@ -19,6 +22,7 @@ import { TaleLabsLogo } from '../shared/components/talelabs-logo'
 import { NavMain } from './nav-main'
 import { NavUser } from './nav-user'
 
+/** Dashboard navigation sidebar: primary sections, org switcher, account menu. */
 export function AppSidebar({
   activeOrganizationId,
   email,
@@ -85,6 +89,11 @@ export function AppSidebar({
               title: t('navigation.assets'),
               url: '/assets',
               icon: <IconFolderOpen />,
+            },
+            {
+              title: t('navigation.elements'),
+              url: '/elements',
+              icon: <IconPuzzle />,
             },
           ]}
         />

@@ -1,24 +1,28 @@
+/** Client-side upload queue types: item/batch state and status. */
+
 import type { Folder } from '@talelabs/sdk'
 
+/** Lifecycle status of one queued upload item. */
 export type UploadStatus
   = | 'canceled'
     | 'completed'
     | 'failed'
     | 'hashing'
-    | 'linking'
     | 'queued'
     | 'registering'
     | 'uploading'
 
-export type UploadBatchKind = 'assets' | 'element'
+/** Kind of upload batch; only Asset uploads today. */
+export type UploadBatchKind = 'assets'
 
+/** The stage at which an upload failed. */
 export type UploadFailureStage
   = | 'folder'
     | 'hashing'
-    | 'linking'
     | 'registering'
     | 'uploading'
 
+/** State of one enqueued upload batch. */
 export interface UploadBatchState {
   createdAt: number
   destinationLabel: null | string
@@ -28,12 +32,12 @@ export interface UploadBatchState {
   organizationId: string
 }
 
+/** State of one upload item within a batch. */
 export interface UploadItemState {
   assetId?: string
   batchId: string
   destinationFolderId: null | string
   destinationLabel: null | string
-  elementId?: string
   errorCode?: string
   failedStage?: UploadFailureStage
   filename: string
@@ -42,16 +46,17 @@ export interface UploadItemState {
   organizationId: string
   progress: number
   relativePath: null | string
-  role?: string
   sizeBytes: number
   status: UploadStatus
 }
 
+/** One selected file plus its relative path within a dropped folder. */
 export interface AssetUploadInput {
   file: File
   relativePath: null | string
 }
 
+/** Inputs to enqueue an Asset upload batch into the queue. */
 export interface EnqueueAssetUploadBatchInput {
   destinationLabel: null | string
   files: AssetUploadInput[]
@@ -60,34 +65,20 @@ export interface EnqueueAssetUploadBatchInput {
   parentFolderId: null | string
 }
 
-export interface ElementAssetUploadInput {
-  clientId?: string
-  file: File
-  isPrimary: boolean
-  role: string
-  sortOrder: number
-}
-
-export interface EnqueueElementUploadBatchInput {
-  destinationLabel: null | string
-  elementId: string
-  files: ElementAssetUploadInput[]
-  folderId: null | string
-  organizationId: string
-}
-
+/** Upload statuses that count as in-flight. */
 export const ACTIVE_UPLOAD_STATUSES = new Set<UploadStatus>([
   'queued',
   'hashing',
   'uploading',
   'registering',
-  'linking',
 ])
 
+/** Whether an upload status is still in flight. */
 export function isActiveUploadStatus(status: UploadStatus) {
   return ACTIVE_UPLOAD_STATUSES.has(status)
 }
 
+/** Whether an upload status is terminal (canceled/completed/failed). */
 export function isSettledUploadStatus(status: UploadStatus) {
   return status === 'canceled' || status === 'completed' || status === 'failed'
 }

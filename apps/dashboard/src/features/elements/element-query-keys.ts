@@ -1,54 +1,9 @@
-import type { ElementType, GetElementsQueryParams } from '@talelabs/sdk'
-import { organizationQueryKeys } from '../organizations/organization-query-keys'
-
-function elementScope(organizationId: null | string) {
-  return [
-    ...organizationQueryKeys.scope(organizationId),
-    'elements',
-  ] as const
-}
+/** TanStack Query key factory for organization-scoped Element reads. */
 
 export const elementQueryKeys = {
-  scope: elementScope,
-  lists: (organizationId: null | string) => [
-    ...elementScope(organizationId),
-    'list',
-  ] as const,
-  list: (
-    organizationId: null | string,
-    params: GetElementsQueryParams,
-  ) => [
-    ...elementScope(organizationId),
-    'list',
-    params,
-  ] as const,
-  details: (organizationId: null | string) => [
-    ...elementScope(organizationId),
-    'detail',
-  ] as const,
-  detail: (organizationId: null | string, elementId: null | string) => [
-    ...elementScope(organizationId),
-    'detail',
-    elementId,
-  ] as const,
-  kits: (organizationId: null | string) => [
-    ...elementScope(organizationId),
-    'kit',
-  ] as const,
-  kit: (organizationId: null | string, elementId: null | string) => [
-    ...elementScope(organizationId),
-    'kit',
-    elementId,
-    { referenceKind: 'master' as const },
-  ] as const,
-  usage: (organizationId: null | string, elementId: null | string) => [
-    ...elementScope(organizationId),
-    'usage',
-    elementId,
-  ] as const,
-  byType: (organizationId: null | string, type: ElementType) => [
-    ...elementScope(organizationId),
-    'type',
-    type,
-  ] as const,
+  all: (organizationId: string) => ['elements', organizationId] as const,
+  detail: (organizationId: string, elementId: string) =>
+    ['elements', organizationId, 'detail', elementId] as const,
+  list: (organizationId: string, filters?: Record<string, unknown>) =>
+    ['elements', organizationId, 'list', filters ?? {}] as const,
 }

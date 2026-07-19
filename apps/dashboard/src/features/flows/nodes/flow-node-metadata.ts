@@ -12,6 +12,7 @@ import {
   IconMusic,
   IconPhoto,
   IconPhotoSpark,
+  IconPuzzle,
   IconSparkles,
   IconTextCaption,
   IconVideo,
@@ -19,7 +20,11 @@ import {
 import { AssetIcon } from '../../../shared/domain-icons'
 
 /** Output actions supported by a generation node's selected-state toolbar. */
-export type FlowGenerationToolbarAction = 'copyOutput' | 'crop' | 'download'
+export type FlowGenerationToolbarAction
+  = | 'addToElement'
+    | 'copyOutput'
+    | 'crop'
+    | 'download'
 
 /** Shared settings renderer selected by generation-node metadata. */
 export type FlowGenerationSettingsKind
@@ -160,6 +165,16 @@ export const FLOW_NODE_METADATA: Record<FlowNodeType, FlowNodeMetadata> = {
     toolbarActions: ['download'],
     type: 'audioGeneration',
   },
+  element: {
+    descriptionKey: 'flows.nodePicker.descriptions.element',
+    icon: IconPuzzle,
+    labelKey: 'flows.nodes.element',
+    pickerCategory: 'inputs',
+    pickerGroup: 'inputs',
+    pickerOrder: 30,
+    pickerVisible: true,
+    type: 'element',
+  },
   imageGeneration: {
     descriptionKey: 'flows.nodePicker.descriptions.imageGeneration',
     icon: IconPhotoSpark,
@@ -170,7 +185,7 @@ export const FLOW_NODE_METADATA: Record<FlowNodeType, FlowNodeMetadata> = {
     pickerGroup: 'generation',
     pickerOrder: 10,
     pickerVisible: true,
-    toolbarActions: ['crop', 'download'],
+    toolbarActions: ['crop', 'download', 'addToElement'],
     type: 'imageGeneration',
   },
   llm: {

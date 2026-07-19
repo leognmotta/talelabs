@@ -204,8 +204,12 @@ Assets -> Flows -> Generated Assets -> Continued Iteration
   settings supported by the selected model.
 - Every successful generation output becomes a canonical Asset and remains
   visible after canvas reload.
-- Elements are deferred. Existing dormant code must not drive new dashboard
-  architecture or become a dependency of active Flow work.
+- Elements are an active dashboard feature (shipped 2026-07-18): a named,
+  ordered collection of reference image Assets whose Flow node exposes exactly
+  one `references → ImageSet` output. `docs/elements.md` is the source of truth.
+  Never reintroduce the retired multi-role/consistency Element architecture
+  (asset roles, source/master kinds, readiness, per-kind schemas, or
+  multi-output Element nodes) without a new explicit product decision.
 
 The dashboard opens into the usable Flow workspace, not a marketing page or the
 retired Generate/Projects product.

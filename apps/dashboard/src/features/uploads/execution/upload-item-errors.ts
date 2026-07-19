@@ -23,7 +23,7 @@ export function getUploadErrorCode(error: unknown) {
 export function getUploadFailureStage(
   status: UploadItemState['status'],
 ): UploadFailureStage {
-  if (status === 'linking' || status === 'registering' || status === 'uploading')
+  if (status === 'registering' || status === 'uploading')
     return status
   return 'hashing'
 }

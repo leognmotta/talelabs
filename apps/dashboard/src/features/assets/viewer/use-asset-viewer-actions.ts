@@ -27,6 +27,7 @@ export function useAssetViewerActions({
   const tagMutations = useTagMutations()
   const foldersQuery = useFoldersQuery(Boolean(asset))
   const tagsQuery = useTagsQuery(Boolean(asset))
+  const [addToElementAsset, setAddToElementAsset] = useState<Asset | null>(null)
   const [moveAsset, setMoveAsset] = useState<Asset | null>(null)
   const [purgeAsset, setPurgeAsset] = useState<Asset | null>(null)
   const [renameAsset, setRenameAsset] = useState<Asset | null>(null)
@@ -89,6 +90,13 @@ export function useAssetViewerActions({
         toast.error(getApiErrorMessage(error, 'assets.actionFailed'))
       }
     },
+    onAddToElement: (item) => {
+      if (item.type !== 'image' || item.lifecycle !== 'live') {
+        toast.error(t('elements.onlyImagesCanBeReferences'))
+        return
+      }
+      setAddToElementAsset(item)
+    },
     onDetails: () => {},
     onDownload: item =>
       void runAction(
@@ -147,9 +155,11 @@ export function useAssetViewerActions({
   return {
     actions,
     dialogs: {
+      addToElementAsset,
       moveAsset,
       purgeAsset,
       renameAsset,
+      setAddToElementAsset,
       setMoveAsset,
       setPurgeAsset,
       setRenameAsset,

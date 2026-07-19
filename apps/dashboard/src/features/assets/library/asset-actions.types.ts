@@ -4,6 +4,7 @@ import type { Asset, Folder, Tag } from '@talelabs/sdk'
 
 /** User commands available for an Asset from cards, rows, and the viewer. */
 export interface AssetActions {
+  onAddToElement: (asset: Asset) => void
   onArchive: (asset: Asset) => void
   onDetails: (asset: Asset) => void
   onDownload: (asset: Asset) => void

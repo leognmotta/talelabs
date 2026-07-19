@@ -1,14 +1,11 @@
+/** Maps upload error codes to localized user-facing messages. */
+
 import type { TFunction } from 'i18next'
 import type { UploadItemState } from './upload.types'
 
+/** Resolves a localized message for one failed upload item's error code. */
 export function getUploadErrorMessage(t: TFunction, item: UploadItemState) {
-  if (item.failedStage === 'linking')
-    return t('elements.assetLinkFailedDescription')
-
   switch (item.errorCode) {
-    case 'element_asset_role_capacity_reached':
-    case 'element_master_role_capacity_reached':
-      return t('uploads.errors.elementLimit')
     case 'file_too_large':
       return t('uploads.errors.fileTooLarge')
     case 'folder_creation_failed':

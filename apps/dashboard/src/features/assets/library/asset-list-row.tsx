@@ -41,6 +41,9 @@ export function AssetListRow({
     asset.type === 'video' && Boolean(asset.url),
   )
   const selected = interactions.selectedAssetIds.has(asset.id)
+  const disabledReason = selected
+    ? null
+    : interactions.isAssetDisabled?.(asset) ?? null
   const dragData = interactions.getAssetDragData(asset)
   const drag = useDraggableAsset({
     elementRef,
@@ -55,12 +58,16 @@ export function AssetListRow({
   return (
     <TableRow
       ref={elementRef}
-      className={cn('group select-none', drag.isDragging && 'opacity-40')}
+      className={cn(
+        'group select-none',
+        (drag.isDragging || disabledReason) && 'opacity-40',
+      )}
       data-state={selected ? 'selected' : undefined}
+      title={disabledReason ?? undefined}
       onBlur={videoPreview.onBlur}
       onClick={(event) => {
         event.stopPropagation()
-        if (!drag.shouldIgnoreClick())
+        if (!disabledReason && !drag.shouldIgnoreClick())
           interactions.onAssetSelect(asset, event)
       }}
       onDoubleClick={(event) => {

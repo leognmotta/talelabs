@@ -3,6 +3,7 @@
 import type { Asset } from '@talelabs/sdk'
 import type { MouseEventHandler, ReactNode, Ref } from 'react'
 
+import { IconCheck } from '@tabler/icons-react'
 import { cn } from '@talelabs/ui/lib/utils'
 import { useTranslation } from 'react-i18next'
 import {
@@ -21,6 +22,7 @@ export function AssetMediaCard({
   asset,
   badges,
   className,
+  disabledReason,
   onClick,
   onDoubleClick,
   previewAriaLabel,
@@ -35,6 +37,8 @@ export function AssetMediaCard({
   asset: Asset
   badges?: ReactNode
   className?: string
+  /** Localized reason the card cannot be selected; dims and blocks clicks. */
+  disabledReason?: null | string
   onClick?: MouseEventHandler<HTMLElement>
   onDoubleClick?: MouseEventHandler<HTMLElement>
   previewAriaLabel: string
@@ -55,10 +59,15 @@ export function AssetMediaCard({
   return (
     <article
       ref={articleRef}
-      className={cn('group min-w-0 select-none', className)}
+      className={cn(
+        'group min-w-0 select-none',
+        disabledReason && 'opacity-45',
+        className,
+      )}
+      title={disabledReason ?? undefined}
       onBlur={videoPreview.onBlur}
-      onClick={onClick}
-      onDoubleClick={onDoubleClick}
+      onClick={disabledReason ? undefined : onClick}
+      onDoubleClick={disabledReason ? undefined : onDoubleClick}
       onFocus={videoPreview.onFocus}
       onMouseEnter={videoPreview.onMouseEnter}
       onMouseLeave={videoPreview.onMouseLeave}
@@ -66,7 +75,8 @@ export function AssetMediaCard({
       <MediaLibraryCardPreview selected={selected}>
         <button
           ref={previewRef}
-          aria-label={previewAriaLabel}
+          aria-disabled={disabledReason ? true : undefined}
+          aria-label={disabledReason ?? previewAriaLabel}
           aria-pressed={previewAriaPressed}
           className={cn(
             'flex size-full items-center justify-center',
@@ -80,6 +90,16 @@ export function AssetMediaCard({
             videoRef={videoPreview.videoRef}
           />
         </button>
+        {selected && (
+          <span className="
+            pointer-events-none absolute bottom-2 left-2 flex size-5
+            items-center justify-center rounded-full bg-primary
+            text-primary-foreground shadow-sm
+          "
+          >
+            <IconCheck aria-hidden className="size-3.5" />
+          </span>
+        )}
         <div className="
           pointer-events-none absolute inset-x-2 top-2 flex items-start
           justify-between gap-2

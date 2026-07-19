@@ -1,12 +1,24 @@
 /** Scoped client-owned state for one editable Flow canvas. */
 
-import type { FlowGraphResponse } from '@talelabs/sdk'
+import type {
+  FlowGraphResponse,
+  FlowReferenceAsset,
+  FlowReferenceElement,
+} from '@talelabs/sdk'
 import type { StoreApi } from 'zustand'
 import type { CanvasEdge, CanvasNode } from '../flow-canvas-types'
 
 import { createStore } from 'zustand/vanilla'
 import { toCanvasEdges } from '../persistence/flow-edge-serialization'
 import { toCanvasNodes } from '../persistence/flow-node-serialization'
+
+/** One freshly picked Element bridged until server hydration includes it. */
+export interface TransientElementData {
+  /** Reference Assets projected into the canonical reference-asset shape. */
+  assets: FlowReferenceAsset[]
+  /** The Element identity and its ordered reference IDs. */
+  element: FlowReferenceElement
+}
 
 /** A graph snapshot retained by the bounded canvas undo history. */
 export interface CanvasHistorySnapshot {
@@ -34,6 +46,14 @@ export interface CanvasContextTarget {
 export interface CanvasState {
   /** Node whose Asset picker dialog is open, or null when closed. */
   assetPickerNodeId: null | string
+  /** Node whose Element picker dialog is open, or null when closed. */
+  elementPickerNodeId: null | string
+  /**
+   * Elements picked this session that server reference hydration may not
+   * contain yet, keyed by Element ID. Canonical references always win once
+   * they arrive; these only bridge the gap until the next refetch.
+   */
+  transientElementData: Record<string, TransientElementData>
   /** Current canvas context-menu target. */
   contextTarget: CanvasContextTarget
   /** Editable React Flow edges for this Flow. */
@@ -77,6 +97,8 @@ export function createCanvasStore(input: {
   const initialRevision = input.graph.revision
   return createStore<CanvasState>()(() => ({
     assetPickerNodeId: null,
+    elementPickerNodeId: null,
+    transientElementData: {},
     contextTarget: {
       edgeIds: [],
       mode: 'pane',

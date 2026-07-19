@@ -3,7 +3,6 @@
 import type { PortPreviewItem } from './flow-node-port-preview'
 
 import {
-  IconComponents,
   IconFile,
   IconHeadphones,
   IconPhoto,
@@ -21,7 +20,5 @@ export function FlowNodePortIcon({ item }: { item: PortPreviewItem }) {
     return <IconVideo aria-hidden className="size-4" />
   if (item.valueType === 'Text')
     return <IconTextCaption aria-hidden className="size-4" />
-  if (item.valueType === 'ElementContext')
-    return <IconComponents aria-hidden className="size-4" />
   return <IconFile aria-hidden className="size-4" />
 }

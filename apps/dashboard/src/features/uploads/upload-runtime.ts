@@ -1,7 +1,6 @@
 /** Non-serializable Files, controllers, and retry metadata for queued uploads. */
 
 import type { Folder } from '@talelabs/sdk'
-import type { UploadTarget } from './element-upload-target'
 
 /** File and retry data retained only while an item may still execute. */
 export interface RuntimeUploadItem {
@@ -11,8 +10,6 @@ export interface RuntimeUploadItem {
   lastProgressPercentage: number
   /** Registration grant retained when a retry can skip hashing and transfer. */
   registrationUploadId?: string
-  /** Asset-only or dormant Element-link intent applied after registration. */
-  target: UploadTarget
 }
 
 /** Abort and folder-preparation state shared by every item in one batch. */

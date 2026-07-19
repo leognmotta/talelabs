@@ -27,6 +27,9 @@ export function AssetCard({
   const elementRef = useRef<HTMLElement>(null)
   const dragHandleRef = useRef<HTMLButtonElement>(null)
   const selected = interactions.selectedAssetIds.has(asset.id)
+  const disabledReason = selected
+    ? null
+    : interactions.isAssetDisabled?.(asset) ?? null
   const dragData = interactions.getAssetDragData(asset)
   const drag = useDraggableAsset({
     elementRef,
@@ -44,6 +47,7 @@ export function AssetCard({
         articleRef={elementRef}
         asset={asset}
         className={drag.isDragging ? 'opacity-40' : undefined}
+        disabledReason={disabledReason}
         previewAriaLabel={t('assets.selectAsset', { name: asset.name })}
         previewAriaPressed={selected}
         previewClassName="cursor-grab active:cursor-grabbing"

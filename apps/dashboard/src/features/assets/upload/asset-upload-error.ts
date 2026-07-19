@@ -10,9 +10,7 @@ const RESTART_UPLOAD_REGISTRATION_ERROR_CODES = new Set([
 
 /** Stable upload errors translated by queue and feature-level UI. */
 export type AssetUploadErrorCode
-  = | 'element_asset_role_capacity_reached'
-    | 'element_master_role_capacity_reached'
-    | 'file_too_large'
+  = | 'file_too_large'
     | 'storage_request_blocked'
     | 'storage_upload_rejected'
     | 'unsupported_file_type'

@@ -1,60 +1,114 @@
-import type { ElementListItem } from '@talelabs/sdk'
+/** Element summary card with cover, kind, and caller-owned commands. */
 
+import type { Element } from '@talelabs/sdk'
+
+import { IconDots, IconEdit, IconTrash } from '@tabler/icons-react'
 import { Badge } from '@talelabs/ui/components/badge'
+import { Button } from '@talelabs/ui/components/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@talelabs/ui/components/dropdown-menu'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router'
+
 import {
   MediaLibraryCardDetails,
   MediaLibraryCardPreview,
 } from '../../shared/components/media-library-card'
-import { elementTypeTranslationKey } from './element-i18n'
-import { ELEMENT_TYPE_ICONS } from './element-type-icons'
+import { ELEMENT_KIND_ICONS, elementKindLabelKey } from './element-kind-meta'
 
-export function ElementCard({ element }: { element: ElementListItem }) {
+/** Presents one Element without loading its full reference list. */
+export function ElementCard({
+  element,
+  onDelete,
+  onOpen,
+}: {
+  element: Element
+  onDelete: (element: Element) => void
+  onOpen: (element: Element) => void
+}) {
   const { t } = useTranslation()
-  const Icon = ELEMENT_TYPE_ICONS[element.type]
+  const KindIcon = ELEMENT_KIND_ICONS[element.kind]
+  const coverUrl = element.coverAsset?.thumbnailUrl ?? element.coverAsset?.url
 
   return (
-    <Link
-      className="
-        group min-w-0 rounded-xl outline-none
-        focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
-        focus-visible:ring-offset-background
-      "
-      to={`/elements/${element.id}`}
-    >
-      <MediaLibraryCardPreview
+    <article className="group min-w-0">
+      <button
+        aria-label={t('elements.open', { name: element.name })}
         className="
-          flex items-center justify-center
-          group-hover:ring-foreground/30
+          block w-full rounded-xl text-left outline-none
+          focus-visible:ring-2 focus-visible:ring-ring
+          focus-visible:ring-offset-2 focus-visible:ring-offset-background
         "
+        type="button"
+        onClick={() => onOpen(element)}
       >
-        {element.previewThumbnailUrl
-          ? (
-              <img
-                alt=""
-                className="size-full object-contain"
-                draggable={false}
-                loading="lazy"
-                src={element.previewThumbnailUrl}
-              />
-            )
-          : <Icon aria-hidden className="size-10 text-muted-foreground" />}
-      </MediaLibraryCardPreview>
+        <MediaLibraryCardPreview className="group-hover:ring-foreground/30">
+          {coverUrl
+            ? (
+                <img
+                  alt=""
+                  className="absolute inset-0 size-full object-cover"
+                  loading="lazy"
+                  src={coverUrl}
+                />
+              )
+            : (
+                <div
+                  className="
+                    absolute inset-0 flex items-center justify-center
+                    text-muted-foreground
+                  "
+                >
+                  <KindIcon aria-hidden className="size-8" />
+                </div>
+              )}
+        </MediaLibraryCardPreview>
+      </button>
       <MediaLibraryCardDetails
         trailing={(
-          <Badge variant="secondary">
-            {t(elementTypeTranslationKey(element.type, 'label'))}
-          </Badge>
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              aria-label={t('elements.actions', { name: element.name })}
+              render={<Button size="icon-sm" type="button" variant="ghost" />}
+            >
+              <IconDots aria-hidden />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuGroup>
+                <DropdownMenuItem onSelect={() => onOpen(element)}>
+                  <IconEdit aria-hidden />
+                  {t('common.edit')}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  variant="destructive"
+                  onSelect={() => onDelete(element)}
+                >
+                  <IconTrash aria-hidden />
+                  {t('common.delete')}
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
         )}
       >
-        <p className="truncate text-sm font-medium" title={element.name}>
-          {element.name}
-        </p>
-        <p className="truncate text-xs text-muted-foreground">
-          {t(elementTypeTranslationKey(element.type, 'description'))}
+        <p className="truncate text-sm font-medium">{element.name}</p>
+        <p
+          className="
+            mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground
+          "
+        >
+          <Badge variant="outline">
+            {t(elementKindLabelKey(element.kind))}
+          </Badge>
+          <span>
+            {t('elements.referenceCount', { count: element.referenceCount })}
+          </span>
         </p>
       </MediaLibraryCardDetails>
-    </Link>
+    </article>
   )
 }

@@ -9,6 +9,7 @@ import { useCanvasStore, useCanvasStoreApi } from '../../../editor/canvas-state/
 import { useFlowCanvasRuntime } from '../../../editor/flow-canvas-runtime-context'
 import { FLOW_NODE_METADATA } from '../../flow-node-metadata'
 import { FlowAssetToolbarActions } from './flow-asset-toolbar-actions'
+import { FlowElementToolbarActions } from './flow-element-toolbar-actions'
 import { FlowGenerationOutputToolbarActions } from './flow-generation-output-toolbar-actions'
 import { FlowGenerationToolbarActions } from './flow-generation-toolbar-actions'
 import { FlowNodeToolbarActions } from './flow-node-toolbar-actions'
@@ -59,6 +60,9 @@ export function FlowNodeToolbar({
           </>
         )}
         {node.type === 'asset' && <FlowAssetToolbarActions nodeId={nodeId} />}
+        {node.type === 'element' && (
+          <FlowElementToolbarActions nodeId={nodeId} />
+        )}
       </FlowNodeToolbarActions>
       <FlowToolbarButton
         icon={locked ? IconLockOpen : IconLock}

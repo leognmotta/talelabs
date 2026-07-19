@@ -23,7 +23,10 @@
     "saving": "Enregistrement...",
     "signOut": "Se déconnecter",
     "workspaceMember": "Membre de l'espace de travail",
-    "talelabsUser": "Utilisateur de TaleLabs"
+    "talelabsUser": "Utilisateur de TaleLabs",
+    "add": "Ajouter",
+    "undo": "Annuler",
+    "back": "Retour"
   },
   "navigation": {
     "assets": "Fichiers",
@@ -136,7 +139,6 @@
     "changeAsset": "Changer d’Asset",
     "chooseElement": "Choisir un Élément",
     "chooseElementDescription": "Sélectionnez un contexte créatif réutilisable.",
-    "changeElement": "Changer d’Élément",
     "assetCount_one": "{{count}} Asset",
     "assetCount_other": "{{count}} Assets",
     "nodes": {
@@ -188,18 +190,17 @@
     "outputs": {
       "text": "Texte",
       "asset": "Asset",
-      "elementContext": "Contexte",
       "images": "Images",
       "videos": "Vidéos",
-      "audio": "Audio"
+      "audio": "Audio",
+      "references": "Références"
     },
     "handles": {
       "textOutput": "Sortie texte",
       "assetOutput": "Sortie Asset",
-      "elementContextOutput": "Sortie de contexte de l’Élément",
-      "elementRoleOutput": "Sortie {{role}}",
       "input": "Entrée {{input}}",
-      "output": "Sortie {{output}}"
+      "output": "Sortie {{output}}",
+      "elementOutput": "Sortie de références"
     },
     "models": {
       "gpt54Image2": "GPT-5.4 Image 2",
@@ -582,16 +583,6 @@
       "title": "Commencez à façonner votre Flux",
       "description": "Ajoutez un nœud, puis reliez des connecteurs compatibles pour construire le graphe."
     },
-    "elementPicker": {
-      "title": "Choisir un Élément",
-      "description": "Ajoutez un Élément existant comme contexte réutilisable dans ce Flux.",
-      "couldNotLoad": "Impossible de charger les Éléments",
-      "couldNotLoadDescription": "Vérifiez votre connexion et réessayez.",
-      "search": "Rechercher des Éléments",
-      "searchPlaceholder": "Rechercher des Éléments...",
-      "noResults": "Aucun Élément trouvé",
-      "noResultsDescription": "Essayez un autre terme ou créez d’abord un Élément."
-    },
     "a11y": {
       "canvas": "Éditeur de graphe du Flux",
       "controls": "Commandes du canevas",
@@ -834,364 +825,78 @@
     }
   },
   "elements": {
-    "assetLimits": {
-      "countLabel": "{{current}} fichiers sur {{maximum}} dans ce rôle",
-      "exceeded": "Ce rôle a atteint sa limite de fichiers. Retirez un fichier de ce rôle avant d’en ajouter un autre.",
-      "guidance": "Selon son type, chaque rôle accepte jusqu’à 8 images, 1 vidéo ou 1 fichier audio.",
-      "summary": "Par rôle : jusqu’à 8 images, 1 vidéo ou 1 fichier audio."
-    },
-    "actionFailed": "Impossible d’effectuer l’action sur l’Élément.",
-    "addExisting": "Ajouter un fichier existant",
-    "addReference": "Ajouter une référence",
-    "allTypes": "Tous les types",
-    "alreadyLinked": "Ce fichier est déjà associé à ce rôle.",
-    "assetAttached": "Fichier associé",
-    "assetUnlinked": "Fichier dissocié",
-    "assetUpdated": "Kit de fichiers mis à jour",
-    "backToElement": "Retour à l’élément",
-    "backToElements": "Retour aux Éléments",
-    "chooseType": "Choisissez le type de contexte réutilisable à créer.",
-    "consistencyNotes": {
-      "description": "Qu’est-ce qui doit toujours rester reconnaissable ?",
-      "label": "Notes de cohérence"
-    },
-    "couldNotLoad": "Impossible de charger les Éléments",
-    "couldNotLoadAssets": "Impossible de charger ce kit de fichiers.",
-    "couldNotLoadDescription": "Vérifiez votre connexion et réessayez.",
-    "create": "Créer un Élément",
-    "createDescription": "Ajoutez des informations réutilisables et des fichiers de référence.",
-    "createEditor": {
-      "description": "Ajoutez des informations réutilisables et des fichiers de référence.",
-      "sectionNavigation": "Sections de création",
-      "sections": {
-        "details": {
-          "description": "Identité et informations structurées.",
-          "label": "Informations"
-        }
-      }
-    },
-    "createAssets": {
-      "description": "Ajoutez des références par rôle. Les fichiers ne seront importés qu’après la création de l’Élément.",
-      "invalidFiles": "Certains fichiers n’ont pas pu être ajoutés, car leur type ou leur taille n’est pas compatible avec ce rôle.",
-      "dropNow": "Déposez les fichiers ici",
-      "chooseFiles": "Ajouter des fichiers",
-      "removeFile": "Retirer {{name}}",
-      "dropzoneDescription": "Déposez ici des fichiers compatibles ou utilisez le bouton pour les sélectionner.",
-      "selectedCount_one": "{{count}} fichier sélectionné",
-      "selectedCount_other": "{{count}} fichiers sélectionnés",
-      "addRole": "Ajouter un rôle de fichiers",
-      "confirmRole": "Ajouter le rôle",
-      "customRoleDescription": "Références regroupées sous ce rôle personnalisé.",
-      "customRoleErrors": {
-        "duplicate": "Utilisez un autre nom de rôle.",
-        "required": "Saisissez un nom de rôle."
-      },
-      "customRoleName": "Nom du rôle",
-      "customRolePlaceholder": "Par exemple, Planche d’inspiration",
-      "noCustomRoles": "Aucun rôle de fichiers pour le moment",
-      "noCustomRolesDescription": "Ajoutez jusqu’à {{count}} rôles, puis ajoutez des fichiers à chacun.",
-      "removeRole": "Supprimer le rôle {{name}}"
-    },
-    "customRoles": {
-      "title": "Rôles de fichier personnalisés",
-      "description": "Ajoutez jusqu’à {{count}} rôles pour organiser les références de cet Élément.",
-      "edit": "Renommer {{name}}",
-      "remove": "Supprimer {{name}}",
-      "inUse": "Dissociez les fichiers et annulez ou masquez les transferts avant de modifier ce rôle.",
-      "updated": "Rôles de fichier mis à jour"
-    },
-    "createType": "Créer un élément : {{type}}",
-    "created": "Élément créé",
-    "dataTab": "Données",
-    "delete": "Supprimer l’Élément",
-    "deleteDescription": "Supprimer {{name}} ? Les fichiers associés resteront dans la bibliothèque.",
-    "deleted": "Élément supprimé",
-    "deleting": "Suppression...",
-    "emptyDescription": "Créez un Personnage ou un Produit pour réutiliser son contexte dans les Flux.",
-    "emptyTitle": "Créez votre premier Élément",
-    "editAssetsDescription": "Gérez les références par rôle. Les nouveaux imports démarrent immédiatement.",
-    "editType": "Modifier {{type}}",
-    "filterByType": "Filtrer par type d’Élément",
+    "libraryDescription": "Personnages, accessoires, lieux et styles réutilisables pour vos Flows.",
     "loadMore": "Charger plus",
-    "moveDown": "Descendre {{name}}",
-    "moveUp": "Monter {{name}}",
-    "noResults": "Aucun Élément correspondant",
-    "noResultsDescription": "Essayez une autre recherche ou un autre filtre de type.",
-    "notFound": "Élément introuvable",
-    "noReferences": "Aucune référence pour le moment",
-    "noReferencesDescription": "Ajoutez des images, des vidéos ou de l’audio pour préserver l’identité de cet Élément.",
-    "readiness": {
-      "readyToUse": "Prêt à l’emploi"
+    "create": "Créer un Élément",
+    "edit": "Modifier l’Élément",
+    "editorDescription": "Nommez-le, choisissez un type et ajoutez des images de référence.",
+    "name": "Nom",
+    "namePlaceholder": "p. ex. Maya",
+    "kind": "Type",
+    "kinds": {
+      "character": "Personnage",
+      "prop": "Accessoire",
+      "location": "Lieu",
+      "style": "Style",
+      "other": "Autre"
     },
+    "description": "Description",
+    "descriptionPlaceholder": "Notes facultatives sur cet Élément.",
     "references": "Références",
-    "referenceCount": "Références : {{count}}",
-    "referenceUploadHint": "Des références nettes, bien éclairées et centrées sur un seul sujet donnent de meilleurs résultats.",
-    "roleEmpty": "Aucun fichier pour ce rôle.",
+    "referenceProgress": "{{count}} sur {{maximum}}",
+    "referenceLimit": "Un Élément peut contenir jusqu’à {{maximum}} images de référence.",
+    "referenceCount_one": "{{count}} référence",
+    "referenceCount_other": "{{count}} références",
+    "cover": "Couverture",
+    "addReferences": "Ajouter des images de référence",
+    "moveEarlier": "Avancer {{name}}",
+    "moveLater": "Reculer {{name}}",
+    "removeReference": "Retirer {{name}}",
+    "created": "Élément créé",
+    "updated": "Élément mis à jour",
+    "saveFailed": "L’Élément n’a pas pu être enregistré. Réessayez.",
+    "deleted": "Élément supprimé",
+    "deleteFailed": "L’Élément n’a pas pu être supprimé. Réessayez.",
+    "deleteTitle": "Supprimer {{name}} ?",
+    "deleteDescription": "L’Élément est retiré de votre bibliothèque. Ses images restent dans vos fichiers.",
+    "open": "Ouvrir {{name}}",
+    "actions": "Actions pour {{name}}",
+    "allKinds": "Tous",
     "search": "Rechercher des Éléments",
     "searchPlaceholder": "Rechercher des Éléments...",
-    "makeThumbnail": "Utiliser comme miniature",
-    "setPrimary": "Définir {{name}} comme principal",
-    "unlink": "Dissocier {{name}}",
-    "updated": "Élément mis à jour",
-    "uploadAndAttach": "Importer et associer",
-    "uploadAttached": "Fichier importé et associé",
-    "linkingAsset": "Association à l’Élément…",
-    "assetLinkFailedDescription": "Le fichier a été importé, mais n’a pas pu être associé. Réessayez de l’associer sans l’importer à nouveau.",
-    "types": {
-      "character": {
-        "label": "Personnage",
-        "description": "Une personne ou une identité récurrente.",
-        "fields": {
-          "description": {
-            "label": "Consignes"
-          },
-          "personality": {
-            "label": "Personnalité"
-          }
-        },
-        "assetRoles": {
-          "appearance": {
-            "label": "Apparence",
-            "description": "Références visuelles principales du personnage."
-          },
-          "expression": {
-            "label": "Expressions",
-            "description": "Références d’expressions faciales et d’émotions."
-          },
-          "motion": {
-            "label": "Mouvement",
-            "description": "Références de mouvement et d’interprétation."
-          },
-          "voice": {
-            "label": "Voix",
-            "description": "Références de parole, de ton et de voix."
-          }
-        }
-      },
-      "product": {
-        "label": "Produit",
-        "description": "Un produit physique ou un accessoire.",
-        "fields": {
-          "description": {
-            "label": "Consignes"
-          },
-          "sellingPoints": {
-            "label": "Arguments de vente",
-            "description": "Ajoutez jusqu’à {{count}} avantages ou éléments différenciants concis.",
-            "add": "Ajouter un argument",
-            "empty": "Aucun argument de vente ajouté.",
-            "placeholder": "Ex. : fabriqué en aluminium recyclé",
-            "remove": "Supprimer l’argument {{index}}",
-            "value": "Argument de vente {{index}}"
-          }
-        },
-        "assetRoles": {
-          "packshot": {
-            "label": "Photos produit",
-            "description": "Vues nettes du produit et références principales."
-          },
-          "detail": {
-            "label": "Détails",
-            "description": "Gros plans sur les matières, finitions et fonctions."
-          },
-          "lifestyle": {
-            "label": "Mises en situation",
-            "description": "Le produit dans un environnement réel ou aspirationnel."
-          },
-          "demonstration": {
-            "label": "Démonstrations",
-            "description": "Le produit manipulé ou utilisé."
-          }
-        }
-      },
-      "brand": {
-        "label": "Marque",
-        "description": "Une identité visuelle et éditoriale réutilisable.",
-        "fields": {
-          "description": {
-            "label": "Consignes"
-          },
-          "communicationStyle": {
-            "label": "Style de communication"
-          },
-          "colors": {
-            "label": "Couleurs de la marque",
-            "description": "Ajoutez jusqu’à {{count}} couleurs HEX utilisées par la marque.",
-            "add": "Ajouter une couleur",
-            "empty": "Aucune couleur ajoutée",
-            "pick": "Choisir la couleur {{index}}",
-            "value": "Valeur HEX de la couleur {{index}}",
-            "remove": "Supprimer {{color}}"
-          }
-        },
-        "assetRoles": {
-          "primaryLogo": {
-            "label": "Logo principal",
-            "description": "Le logo principal qui identifie la marque."
-          },
-          "alternateLogo": {
-            "label": "Logos alternatifs",
-            "description": "Variantes approuvées pour différents formats et fonds."
-          },
-          "icon": {
-            "label": "Icônes",
-            "description": "Symboles et signes compacts de la marque."
-          },
-          "typography": {
-            "label": "Typographie",
-            "description": "Polices, hiérarchie et traitements approuvés."
-          },
-          "palette": {
-            "label": "Palette de couleurs",
-            "description": "Couleurs approuvées et leurs usages."
-          },
-          "referenceCampaign": {
-            "label": "Campagnes de référence",
-            "description": "Campagnes montrant la marque en situation."
-          }
-        }
-      },
-      "location": {
-        "label": "Lieu",
-        "description": "Un lieu ou environnement réutilisable.",
-        "fields": {
-          "description": {
-            "label": "Consignes"
-          },
-          "atmosphere": {
-            "label": "Atmosphère"
-          }
-        },
-        "assetRoles": {
-          "exterior": {
-            "label": "Extérieurs",
-            "description": "Vues extérieures larges permettant d’identifier le lieu."
-          },
-          "interior": {
-            "label": "Intérieurs",
-            "description": "Espaces et agencements intérieurs reconnaissables."
-          },
-          "detail": {
-            "label": "Détails",
-            "description": "Matériaux, équipements et particularités en gros plan."
-          },
-          "atmosphere": {
-            "label": "Atmosphère",
-            "description": "Références de lumière, météo, heure et ambiance."
-          },
-          "referenceVideo": {
-            "label": "Vidéos de référence",
-            "description": "Déplacements dans le lieu et continuité spatiale."
-          }
-        }
-      },
-      "object": {
-        "label": "Objet",
-        "description": "Un accessoire réutilisable qui n’est pas un produit commercial.",
-        "fields": {
-          "description": {
-            "label": "Consignes"
-          },
-          "interactionGuidance": {
-            "label": "Consignes d’interaction"
-          }
-        },
-        "assetRoles": {
-          "appearance": {
-            "label": "Apparence",
-            "description": "Vues principales définissant l’identité de l’objet."
-          },
-          "detail": {
-            "label": "Détails",
-            "description": "Matériaux, fabrication et particularités en gros plan."
-          },
-          "interaction": {
-            "label": "Interaction",
-            "description": "Façon dont les personnes ou objets le manipulent."
-          },
-          "motion": {
-            "label": "Mouvement",
-            "description": "Façon dont l’objet bouge, s’ouvre ou réagit."
-          }
-        }
-      },
-      "other": {
-        "label": "Autre",
-        "description": "Un contexte flexible qui ne correspond à aucun autre type d’Élément.",
-        "fields": {
-          "instructions": {
-            "label": "Instructions",
-            "description": "Décrivez ce que TaleLabs doit comprendre et préserver.",
-            "placeholder": "Ajoutez du contexte réutilisable, des contraintes ou des consignes."
-          }
-        }
-      },
-      "vehicle": {
-        "label": "Véhicule",
-        "description": "Un véhicule réutilisable à l’identité et aux mouvements cohérents.",
-        "fields": {
-          "description": {
-            "label": "Consignes"
-          },
-          "motionGuidance": {
-            "label": "Consignes de déplacement"
-          }
-        },
-        "assetRoles": {
-          "exterior": {
-            "label": "Extérieurs",
-            "description": "Silhouette, couleur et signes extérieurs distinctifs."
-          },
-          "interior": {
-            "label": "Intérieurs",
-            "description": "Agencement, matériaux, commandes et sièges."
-          },
-          "detail": {
-            "label": "Détails",
-            "description": "Design, mécanique et marque en gros plan."
-          },
-          "movement": {
-            "label": "Mouvement",
-            "description": "Références de conduite, vol ou autres déplacements."
-          }
-        }
-      },
-      "voice": {
-        "label": "Voix",
-        "description": "Une voix réutilisable pour des personnages ou une narration.",
-        "fields": {
-          "description": {
-            "label": "Consignes"
-          },
-          "languageAccent": {
-            "label": "Langue et accent",
-            "placeholder": "Rechercher une langue ou un accent…",
-            "empty": "Aucune langue ni aucun accent correspondant."
-          },
-          "tone": {
-            "label": "Ton"
-          }
-        },
-        "assetRoles": {
-          "cleanSample": {
-            "label": "Échantillons propres",
-            "description": "Enregistrements clairs et isolés définissant la voix."
-          },
-          "emotionalSample": {
-            "label": "Échantillons émotionnels",
-            "description": "Enregistrements illustrant l’étendue émotionnelle."
-          },
-          "pronunciation": {
-            "label": "Prononciation",
-            "description": "Exemples de noms, termes et phrases difficiles."
-          },
-          "performanceReference": {
-            "label": "Références d’interprétation",
-            "description": "Rythme, débit, personnage et narration."
-          }
-        }
-      }
-    }
+    "noResults": "Aucun Élément trouvé",
+    "noResultsDescription": "Essayez un autre terme de recherche ou un autre filtre.",
+    "emptyTitle": "Aucun Élément pour l’instant",
+    "emptyDescription": "Enregistrez un personnage, un accessoire, un lieu ou un style une fois et réutilisez-le dans n’importe quel Flow.",
+    "couldNotLoad": "Impossible de charger les Éléments",
+    "couldNotLoadDescription": "Vérifiez votre connexion et réessayez.",
+    "choose": "Choisir un Élément",
+    "chooseDescription": "Réutilisez une collection enregistrée d’images de référence.",
+    "change": "Changer {{name}}",
+    "emptyNodeDescription": "Cet Élément n’a pas encore d’images de référence.",
+    "includeReference": "Inclure {{name}}",
+    "excludeReference": "Exclure {{name}}",
+    "selectionSummary": "{{count}} sur {{total}} sélectionnées",
+    "staleSelection_one": "{{count}} image sélectionnée n’existe plus",
+    "staleSelection_other": "{{count}} images sélectionnées n’existent plus",
+    "pickerSelectedCount": "{{count}} sur {{maximum}} sélectionnées",
+    "pickerAtCapacity": "Cet Élément est plein ({{maximum}} références). Retirez-en une pour en ajouter une autre.",
+    "pickerConfirm_one": "Utiliser {{count}} image",
+    "pickerConfirm_other": "Utiliser {{count}} images",
+    "addToElement_one": "Ajouter {{count}} image à un Élément",
+    "addToElement_other": "Ajouter {{count}} images à un Élément",
+    "addToElementAction": "Ajouter à un Élément",
+    "addToElementDescription": "Conservez ces images dans un Élément réutilisable.",
+    "addedToElement_one": "{{count}} image ajoutée à {{name}} · {{total}} sur {{maximum}} références",
+    "addedToElement_other": "{{count}} images ajoutées à {{name}} · {{total}} sur {{maximum}} références",
+    "alreadyInElement": "Ces images sont déjà dans {{name}}.",
+    "capacity": "{{count}} sur {{maximum}} références",
+    "newElement": "Nouvel Élément...",
+    "memberOf": "Dans les Éléments :",
+    "onlyImagesCanBeReferences": "Seuls les fichiers image actifs peuvent devenir des références d’Élément.",
+    "pickReferencesTitle": "Choisissez quoi utiliser",
+    "pickReferencesDescription": "Choisissez les références que ce nœud transmet.",
+    "switchElement": "Changer d’Élément"
   },
   "workspace": {
     "accessUnavailable": "Accès à l'organisation indisponible",
@@ -1432,14 +1137,6 @@
     "conflict": "Ce changement entre en conflit avec l’état actuel. Actualisez et réessayez.",
     "email_delivery_failed": "L'e-mail n'a pas pu être livré. Réessayez plus tard.",
     "asset_not_available": "Ce fichier est archivé ou en attente de suppression.",
-    "element_asset_already_attached": "Ce fichier est déjà associé à ce rôle.",
-    "element_asset_media_type_not_accepted": "Choisissez un type de fichier accepté par ce rôle.",
-    "element_asset_role_capacity_reached": "Ce rôle a atteint sa limite de fichiers. Retirez un fichier associé à ce rôle avant d’en ajouter un autre.",
-    "element_master_role_capacity_reached": "Ce rôle a atteint sa limite de références. Retirez une référence de ce rôle avant d’en ajouter une autre.",
-    "element_reference_metadata_invalid": "Cette référence n’a pas pu être mise à jour. Réessayez.",
-    "element_source_capacity_reached": "Cet Élément a atteint sa limite de références. Retirez une référence avant d’en ajouter une autre.",
-    "element_source_primary_invalid": "Cette référence ne peut pas servir de miniature à l’Élément.",
-    "element_asset_role_not_found": "Choisissez un rôle de fichier disponible pour cet Élément.",
     "internal_error": "Une erreur est survenue. Réessayez.",
     "generation_provider_route_unavailable": "Ce modèle ou mode de génération n’est pas encore disponible à l’exécution.",
     "provider_authentication": "Le fournisseur de génération n’a pas pu être authentifié.",
@@ -1458,7 +1155,9 @@
     "unauthenticated": "Connectez-vous pour continuer.",
     "unexpectedDescription": "Une erreur inattendue s’est produite. Réessayez ou rechargez la page.",
     "unexpectedTitle": "Un problème est survenu",
-    "validation_error": "Vérifiez les champs indiqués et réessayez."
+    "validation_error": "Vérifiez les champs indiqués et réessayez.",
+    "element_reference_limit_reached": "Cet Élément a atteint sa limite de références.",
+    "element_reference_not_image": "Les références d’un Élément doivent être des images."
   },
   "uploads": {
     "title": "Téléversements",
@@ -1476,7 +1175,6 @@
     "clearFinished": "Effacer les terminés",
     "empty": "Aucun téléversement pour le moment.",
     "assetBatch": "Téléversement de fichiers",
-    "elementBatch": "Fichiers de l’Élément",
     "cancelBatch": "Annuler le lot",
     "retryFailed": "Réessayer les échecs",
     "retryFile": "Réessayer le téléversement de {{name}}",
@@ -1493,7 +1191,6 @@
       "canceled": "Annulé"
     },
     "errors": {
-      "elementLimit": "Ce rôle a atteint sa limite de fichiers.",
       "fileTooLarge": "Ce fichier dépasse la taille autorisée.",
       "folderCreation": "La structure de dossiers n’a pas pu être créée.",
       "storageBlocked": "La requête vers le stockage a été bloquée.",

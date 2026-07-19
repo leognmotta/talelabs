@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 import { useAssetDownload } from '../../../../assets/viewer/use-asset-download'
 import { useCanvasStore, useCanvasStoreApi } from '../../../editor/canvas-state/canvas-store-context'
 import { useFlowCanvasRuntime } from '../../../editor/flow-canvas-runtime-context'
+import { FlowAddToElementToolbarAction } from './flow-add-to-element-toolbar-action'
 import { FlowToolbarButton } from './flow-toolbar-button'
 
 /** Renders media tools for one Asset node without observing the graph array. */
@@ -64,6 +65,9 @@ export function FlowAssetToolbarActions({ nodeId }: { nodeId: string }) {
         label={t('assets.download')}
         onClick={() => void downloadAsset(asset.id)}
       />
+      {asset.type === 'image' && (
+        <FlowAddToElementToolbarAction assetId={asset.id} />
+      )}
       <FlowToolbarButton
         icon={IconArrowsMaximize}
         label={t('flows.nodeToolbar.fullscreen')}

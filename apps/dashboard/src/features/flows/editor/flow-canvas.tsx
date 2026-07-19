@@ -111,9 +111,13 @@ function FlowCanvasInner({
     store,
     wrapperRef,
   })
+  const transientElementData = useCanvasStore(
+    state => state.transientElementData,
+  )
   const referenceData = useFlowReferenceData(
     references,
     assetUploads.transientAssets,
+    transientElementData,
   )
   referenceDataRef.current = referenceData
   const runs = useFlowMockRunOrchestration({

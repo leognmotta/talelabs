@@ -23,7 +23,10 @@
     "saving": "Salvando...",
     "signOut": "Sair",
     "workspaceMember": "Membro do workspace",
-    "talelabsUser": "Usuário do TaleLabs"
+    "talelabsUser": "Usuário do TaleLabs",
+    "add": "Adicionar",
+    "undo": "Desfazer",
+    "back": "Voltar"
   },
   "navigation": {
     "assets": "Arquivos",
@@ -136,7 +139,6 @@
     "changeAsset": "Trocar Asset",
     "chooseElement": "Escolher Elemento",
     "chooseElementDescription": "Selecione um contexto criativo reutilizável.",
-    "changeElement": "Trocar Elemento",
     "assetCount_one": "{{count}} Asset",
     "assetCount_other": "{{count}} Assets",
     "nodes": {
@@ -188,18 +190,17 @@
     "outputs": {
       "text": "Texto",
       "asset": "Asset",
-      "elementContext": "Contexto",
       "images": "Imagens",
       "videos": "Vídeos",
-      "audio": "Áudio"
+      "audio": "Áudio",
+      "references": "Referências"
     },
     "handles": {
       "textOutput": "Saída de texto",
       "assetOutput": "Saída de Asset",
-      "elementContextOutput": "Saída de contexto do Elemento",
-      "elementRoleOutput": "Saída de {{role}}",
       "input": "Entrada de {{input}}",
-      "output": "Saída de {{output}}"
+      "output": "Saída de {{output}}",
+      "elementOutput": "Saída de referências"
     },
     "models": {
       "gpt54Image2": "GPT-5.4 Image 2",
@@ -582,16 +583,6 @@
       "title": "Comece a montar seu Fluxo",
       "description": "Adicione um nó e conecte pontos compatíveis para criar o grafo."
     },
-    "elementPicker": {
-      "title": "Escolher Elemento",
-      "description": "Adicione um Elemento existente como contexto reutilizável neste Fluxo.",
-      "couldNotLoad": "Não foi possível carregar os Elementos",
-      "couldNotLoadDescription": "Verifique sua conexão e tente novamente.",
-      "search": "Buscar Elementos",
-      "searchPlaceholder": "Buscar Elementos...",
-      "noResults": "Nenhum Elemento encontrado",
-      "noResultsDescription": "Tente outro termo ou crie um Elemento primeiro."
-    },
     "a11y": {
       "canvas": "Editor de grafo do Fluxo",
       "controls": "Controles da tela",
@@ -834,364 +825,78 @@
     }
   },
   "elements": {
-    "assetLimits": {
-      "countLabel": "{{current}} de {{maximum}} arquivos nesta função",
-      "exceeded": "Esta função atingiu o limite de arquivos. Remova um arquivo desta função antes de adicionar outro.",
-      "guidance": "Dependendo do tipo, cada função aceita até 8 imagens, 1 vídeo ou 1 arquivo de áudio.",
-      "summary": "Por função: até 8 imagens, 1 vídeo ou 1 arquivo de áudio."
-    },
-    "actionFailed": "Não foi possível concluir a ação no Elemento.",
-    "addExisting": "Adicionar existente",
-    "addReference": "Adicionar referência",
-    "allTypes": "Todos os tipos",
-    "alreadyLinked": "Este arquivo já está vinculado a esta função.",
-    "assetAttached": "Arquivo anexado",
-    "assetUnlinked": "Arquivo desvinculado",
-    "assetUpdated": "Kit de arquivos atualizado",
-    "backToElement": "Voltar ao Elemento",
-    "backToElements": "Voltar aos Elementos",
-    "chooseType": "Escolha o tipo de contexto reutilizável que deseja criar.",
-    "consistencyNotes": {
-      "description": "O que deve permanecer sempre reconhecível?",
-      "label": "Notas de consistência"
-    },
-    "couldNotLoad": "Não foi possível carregar os Elementos",
-    "couldNotLoadAssets": "Não foi possível carregar este kit de arquivos.",
-    "couldNotLoadDescription": "Verifique sua conexão e tente novamente.",
-    "create": "Criar Elemento",
-    "createDescription": "Adicione detalhes reutilizáveis e arquivos de referência.",
-    "createEditor": {
-      "description": "Adicione detalhes reutilizáveis e arquivos de referência.",
-      "sectionNavigation": "Seções de criação",
-      "sections": {
-        "details": {
-          "description": "Identidade e informações estruturadas.",
-          "label": "Dados principais"
-        }
-      }
-    },
-    "createAssets": {
-      "description": "Adicione referências por função. Os arquivos só serão enviados após a criação do Elemento.",
-      "invalidFiles": "Alguns arquivos não puderam ser adicionados porque o tipo ou tamanho não é compatível com esta função.",
-      "dropNow": "Solte os arquivos aqui",
-      "chooseFiles": "Adicionar arquivos",
-      "removeFile": "Remover {{name}}",
-      "dropzoneDescription": "Solte arquivos compatíveis aqui ou use o botão para selecioná-los.",
-      "selectedCount_one": "{{count}} arquivo selecionado",
-      "selectedCount_other": "{{count}} arquivos selecionados",
-      "addRole": "Adicionar função de arquivos",
-      "confirmRole": "Adicionar função",
-      "customRoleDescription": "Referências agrupadas nesta função personalizada.",
-      "customRoleErrors": {
-        "duplicate": "Use um nome diferente para a função.",
-        "required": "Digite um nome para a função."
-      },
-      "customRoleName": "Nome da função",
-      "customRolePlaceholder": "Por exemplo, Painel de referências",
-      "noCustomRoles": "Nenhuma função de arquivos ainda",
-      "noCustomRolesDescription": "Adicione até {{count}} funções e depois inclua arquivos em cada uma.",
-      "removeRole": "Remover a função {{name}}"
-    },
-    "customRoles": {
-      "title": "Funções personalizadas dos arquivos",
-      "description": "Adicione até {{count}} funções para organizar as referências deste Elemento.",
-      "edit": "Renomear {{name}}",
-      "remove": "Remover {{name}}",
-      "inUse": "Desvincule os arquivos e cancele ou descarte os envios antes de alterar esta função.",
-      "updated": "Funções dos arquivos atualizadas"
-    },
-    "createType": "Criar {{type}}",
-    "created": "Elemento criado",
-    "dataTab": "Dados",
-    "delete": "Excluir Elemento",
-    "deleteDescription": "Excluir {{name}}? Os arquivos vinculados continuarão na biblioteca.",
-    "deleted": "Elemento excluído",
-    "deleting": "Excluindo...",
-    "emptyDescription": "Crie um Personagem ou Produto para reutilizar seu contexto nos Fluxos.",
-    "emptyTitle": "Crie seu primeiro Elemento",
-    "editAssetsDescription": "Gerencie as referências por função. Novos uploads começam imediatamente.",
-    "editType": "Editar {{type}}",
-    "filterByType": "Filtrar por tipo de Elemento",
+    "libraryDescription": "Personagens, adereços, lugares e estilos reutilizáveis para seus Flows.",
     "loadMore": "Carregar mais",
-    "moveDown": "Mover {{name}} para baixo",
-    "moveUp": "Mover {{name}} para cima",
-    "noResults": "Nenhum Elemento encontrado",
-    "noResultsDescription": "Tente outra busca ou outro filtro de tipo.",
-    "notFound": "Elemento não encontrado",
-    "noReferences": "Nenhuma referência ainda",
-    "noReferencesDescription": "Adicione imagens, vídeos ou áudios que ajudem a preservar a identidade deste Elemento.",
-    "readiness": {
-      "readyToUse": "Pronto para usar"
+    "create": "Criar Elemento",
+    "edit": "Editar Elemento",
+    "editorDescription": "Dê um nome, escolha um tipo e adicione imagens de referência.",
+    "name": "Nome",
+    "namePlaceholder": "ex.: Maya",
+    "kind": "Tipo",
+    "kinds": {
+      "character": "Personagem",
+      "prop": "Adereço",
+      "location": "Local",
+      "style": "Estilo",
+      "other": "Outro"
     },
+    "description": "Descrição",
+    "descriptionPlaceholder": "Notas opcionais sobre este Elemento.",
     "references": "Referências",
-    "referenceCount": "Referências: {{count}}",
-    "referenceUploadHint": "Referências nítidas, bem iluminadas e com um único assunto bem definido funcionam melhor.",
-    "roleEmpty": "Nenhum arquivo nesta função.",
+    "referenceProgress": "{{count}} de {{maximum}}",
+    "referenceLimit": "Um Elemento pode ter até {{maximum}} imagens de referência.",
+    "referenceCount_one": "{{count}} referência",
+    "referenceCount_other": "{{count}} referências",
+    "cover": "Capa",
+    "addReferences": "Adicionar imagens de referência",
+    "moveEarlier": "Mover {{name}} para frente",
+    "moveLater": "Mover {{name}} para trás",
+    "removeReference": "Remover {{name}}",
+    "created": "Elemento criado",
+    "updated": "Elemento atualizado",
+    "saveFailed": "Não foi possível salvar o Elemento. Tente novamente.",
+    "deleted": "Elemento excluído",
+    "deleteFailed": "Não foi possível excluir o Elemento. Tente novamente.",
+    "deleteTitle": "Excluir {{name}}?",
+    "deleteDescription": "O Elemento é removido da sua biblioteca. As imagens continuam nos seus arquivos.",
+    "open": "Abrir {{name}}",
+    "actions": "Ações de {{name}}",
+    "allKinds": "Todos",
     "search": "Buscar Elementos",
     "searchPlaceholder": "Buscar Elementos...",
-    "makeThumbnail": "Definir como miniatura",
-    "setPrimary": "Definir {{name}} como principal",
-    "unlink": "Desvincular {{name}}",
-    "updated": "Elemento atualizado",
-    "uploadAndAttach": "Enviar e anexar",
-    "uploadAttached": "Arquivo enviado e anexado",
-    "linkingAsset": "Vinculando ao Elemento...",
-    "assetLinkFailedDescription": "O arquivo foi enviado, mas não foi possível anexá-lo. Tente anexar novamente sem fazer outro upload.",
-    "types": {
-      "character": {
-        "label": "Personagem",
-        "description": "Uma pessoa ou persona recorrente.",
-        "fields": {
-          "description": {
-            "label": "Orientações"
-          },
-          "personality": {
-            "label": "Personalidade"
-          }
-        },
-        "assetRoles": {
-          "appearance": {
-            "label": "Aparência",
-            "description": "Referências visuais principais do personagem."
-          },
-          "expression": {
-            "label": "Expressões",
-            "description": "Referências de expressões faciais e emoções."
-          },
-          "motion": {
-            "label": "Movimento",
-            "description": "Referências de movimento e atuação."
-          },
-          "voice": {
-            "label": "Voz",
-            "description": "Referências de fala, tom e voz."
-          }
-        }
-      },
-      "product": {
-        "label": "Produto",
-        "description": "Um produto físico ou objeto de cena.",
-        "fields": {
-          "description": {
-            "label": "Orientações"
-          },
-          "sellingPoints": {
-            "label": "Pontos de venda",
-            "description": "Adicione até {{count}} benefícios ou diferenciais curtos.",
-            "add": "Adicionar ponto de venda",
-            "empty": "Nenhum ponto de venda adicionado.",
-            "placeholder": "Ex.: Feito com alumínio reciclado",
-            "remove": "Remover ponto de venda {{index}}",
-            "value": "Ponto de venda {{index}}"
-          }
-        },
-        "assetRoles": {
-          "packshot": {
-            "label": "Fotos de produto",
-            "description": "Vistas limpas do produto e referências principais."
-          },
-          "detail": {
-            "label": "Detalhes",
-            "description": "Materiais, acabamentos e recursos em close."
-          },
-          "lifestyle": {
-            "label": "Contexto de uso",
-            "description": "O produto em um ambiente real ou aspiracional."
-          },
-          "demonstration": {
-            "label": "Demonstrações",
-            "description": "O produto sendo manuseado ou usado."
-          }
-        }
-      },
-      "brand": {
-        "label": "Marca",
-        "description": "Uma identidade visual e de comunicação reutilizável.",
-        "fields": {
-          "description": {
-            "label": "Orientações"
-          },
-          "communicationStyle": {
-            "label": "Estilo de comunicação"
-          },
-          "colors": {
-            "label": "Cores da marca",
-            "description": "Adicione até {{count}} cores HEX usadas pela marca.",
-            "add": "Adicionar cor",
-            "empty": "Nenhuma cor adicionada",
-            "pick": "Escolher a cor {{index}}",
-            "value": "Valor HEX da cor {{index}}",
-            "remove": "Remover {{color}}"
-          }
-        },
-        "assetRoles": {
-          "primaryLogo": {
-            "label": "Logo principal",
-            "description": "O logo principal usado para identificar a marca."
-          },
-          "alternateLogo": {
-            "label": "Logos alternativos",
-            "description": "Variações aprovadas do logo para diferentes layouts e fundos."
-          },
-          "icon": {
-            "label": "Ícones",
-            "description": "Símbolos compactos da marca, marcas gráficas e ícones de aplicativo."
-          },
-          "typography": {
-            "label": "Tipografia",
-            "description": "Fontes, hierarquia e tratamentos de texto aprovados."
-          },
-          "palette": {
-            "label": "Paleta de cores",
-            "description": "Cores aprovadas e suas formas de uso."
-          },
-          "referenceCampaign": {
-            "label": "Campanhas de referência",
-            "description": "Campanhas que mostram a marca aplicada na prática."
-          }
-        }
-      },
-      "location": {
-        "label": "Local",
-        "description": "Um lugar ou ambiente reutilizável.",
-        "fields": {
-          "description": {
-            "label": "Orientações"
-          },
-          "atmosphere": {
-            "label": "Atmosfera"
-          }
-        },
-        "assetRoles": {
-          "exterior": {
-            "label": "Áreas externas",
-            "description": "Vistas amplas e identificáveis do local pelo lado de fora."
-          },
-          "interior": {
-            "label": "Áreas internas",
-            "description": "Ambientes, layouts e vistas internas que identificam o local."
-          },
-          "detail": {
-            "label": "Detalhes",
-            "description": "Materiais, acabamentos e características do local em close."
-          },
-          "atmosphere": {
-            "label": "Atmosfera",
-            "description": "Referências de iluminação, clima, horário e sensação do ambiente."
-          },
-          "referenceVideo": {
-            "label": "Vídeos de referência",
-            "description": "Deslocamento pelo local e continuidade espacial."
-          }
-        }
-      },
-      "object": {
-        "label": "Objeto",
-        "description": "Um objeto de cena reutilizável que não é um produto comercial.",
-        "fields": {
-          "description": {
-            "label": "Orientações"
-          },
-          "interactionGuidance": {
-            "label": "Orientações de interação"
-          }
-        },
-        "assetRoles": {
-          "appearance": {
-            "label": "Aparência",
-            "description": "Vistas principais que estabelecem a identidade do objeto."
-          },
-          "detail": {
-            "label": "Detalhes",
-            "description": "Materiais, construção e características marcantes em close."
-          },
-          "interaction": {
-            "label": "Interação",
-            "description": "Como pessoas ou outros objetos manipulam e usam o item."
-          },
-          "motion": {
-            "label": "Movimento",
-            "description": "Como o objeto se move, abre, transforma ou reage."
-          }
-        }
-      },
-      "other": {
-        "label": "Outro",
-        "description": "Contexto flexível que não se encaixa em outro tipo de Elemento.",
-        "fields": {
-          "instructions": {
-            "label": "Instruções",
-            "description": "Descreva o que o TaleLabs deve entender e preservar.",
-            "placeholder": "Adicione contexto reutilizável, restrições ou orientações."
-          }
-        }
-      },
-      "vehicle": {
-        "label": "Veículo",
-        "description": "Um veículo reutilizável com identidade e movimento consistentes.",
-        "fields": {
-          "description": {
-            "label": "Orientações"
-          },
-          "motionGuidance": {
-            "label": "Orientações de deslocamento"
-          }
-        },
-        "assetRoles": {
-          "exterior": {
-            "label": "Exterior",
-            "description": "Vistas externas completas, silhueta, cor e características marcantes."
-          },
-          "interior": {
-            "label": "Interior",
-            "description": "Layout da cabine, materiais, controles e assentos."
-          },
-          "detail": {
-            "label": "Detalhes",
-            "description": "Design, mecânica e elementos de marca em close."
-          },
-          "movement": {
-            "label": "Movimento",
-            "description": "Referências de condução, pilotagem, voo ou outros deslocamentos."
-          }
-        }
-      },
-      "voice": {
-        "label": "Voz",
-        "description": "Uma voz reutilizável para personagens ou narração.",
-        "fields": {
-          "description": {
-            "label": "Orientações"
-          },
-          "languageAccent": {
-            "label": "Idioma e sotaque",
-            "placeholder": "Buscar idiomas e sotaques...",
-            "empty": "Nenhum idioma ou sotaque encontrado."
-          },
-          "tone": {
-            "label": "Tom"
-          }
-        },
-        "assetRoles": {
-          "cleanSample": {
-            "label": "Amostras limpas",
-            "description": "Gravações claras e isoladas que estabelecem a voz."
-          },
-          "emotionalSample": {
-            "label": "Amostras emocionais",
-            "description": "Gravações que demonstram variação emocional e intensidade."
-          },
-          "pronunciation": {
-            "label": "Pronúncia",
-            "description": "Exemplos de nomes, termos, sotaques e frases difíceis."
-          },
-          "performanceReference": {
-            "label": "Referências de interpretação",
-            "description": "Referências de ritmo, entrega, personagem e narração."
-          }
-        }
-      }
-    }
+    "noResults": "Nenhum Elemento encontrado",
+    "noResultsDescription": "Tente outro termo de busca ou filtro.",
+    "emptyTitle": "Nenhum Elemento ainda",
+    "emptyDescription": "Salve um personagem, adereço, lugar ou estilo uma vez e reutilize em qualquer Flow.",
+    "couldNotLoad": "Não foi possível carregar os Elementos",
+    "couldNotLoadDescription": "Verifique sua conexão e tente novamente.",
+    "choose": "Escolher um Elemento",
+    "chooseDescription": "Reutilize uma coleção salva de imagens de referência.",
+    "change": "Trocar {{name}}",
+    "emptyNodeDescription": "Este Elemento ainda não tem imagens de referência.",
+    "includeReference": "Incluir {{name}}",
+    "excludeReference": "Excluir {{name}}",
+    "selectionSummary": "{{count}} de {{total}} selecionadas",
+    "staleSelection_one": "{{count}} imagem selecionada não existe mais",
+    "staleSelection_other": "{{count}} imagens selecionadas não existem mais",
+    "pickerSelectedCount": "{{count}} de {{maximum}} selecionadas",
+    "pickerAtCapacity": "Este Elemento está cheio ({{maximum}} referências). Remova uma para adicionar outra.",
+    "pickerConfirm_one": "Usar {{count}} imagem",
+    "pickerConfirm_other": "Usar {{count}} imagens",
+    "addToElement_one": "Adicionar {{count}} imagem a um Elemento",
+    "addToElement_other": "Adicionar {{count}} imagens a um Elemento",
+    "addToElementAction": "Adicionar ao Elemento",
+    "addToElementDescription": "Guarde estas imagens em um Elemento reutilizável.",
+    "addedToElement_one": "{{count}} imagem adicionada a {{name}} · {{total}} de {{maximum}} referências",
+    "addedToElement_other": "{{count}} imagens adicionadas a {{name}} · {{total}} de {{maximum}} referências",
+    "alreadyInElement": "Estas imagens já estão em {{name}}.",
+    "capacity": "{{count}} de {{maximum}} referências",
+    "newElement": "Novo Elemento...",
+    "memberOf": "Em Elementos:",
+    "onlyImagesCanBeReferences": "Apenas arquivos de imagem ativos podem ser referências de Elementos.",
+    "pickReferencesTitle": "Escolha o que usar",
+    "pickReferencesDescription": "Escolha quais referências este nó envia adiante.",
+    "switchElement": "Trocar Elemento"
   },
   "workspace": {
     "accessUnavailable": "Acesso à organização indisponível",
@@ -1432,14 +1137,6 @@
     "conflict": "Essa mudança entra em conflito com o estado atual. Atualize e tente novamente.",
     "email_delivery_failed": "O e-mail não pôde ser entregue. Tente novamente mais tarde.",
     "asset_not_available": "Este arquivo está arquivado ou aguardando exclusão.",
-    "element_asset_already_attached": "Este arquivo já está vinculado a essa função.",
-    "element_asset_media_type_not_accepted": "Escolha um tipo de arquivo aceito por esta função.",
-    "element_asset_role_capacity_reached": "Esta função atingiu o limite de arquivos. Remova um arquivo vinculado desta função antes de adicionar outro.",
-    "element_master_role_capacity_reached": "Esta função atingiu o limite de referências. Remova uma referência desta função antes de adicionar outra.",
-    "element_reference_metadata_invalid": "Não foi possível atualizar esta referência. Tente novamente.",
-    "element_source_capacity_reached": "Este Elemento atingiu o limite de referências. Remova uma referência antes de adicionar outra.",
-    "element_source_primary_invalid": "Esta referência não pode ser usada como miniatura do Elemento.",
-    "element_asset_role_not_found": "Escolha uma função de arquivo disponível para este Elemento.",
     "internal_error": "Algo deu errado. Tente novamente.",
     "generation_provider_route_unavailable": "Este modelo ou modo de geração ainda não está disponível para execução.",
     "provider_authentication": "Não foi possível autenticar o provedor de geração.",
@@ -1458,7 +1155,9 @@
     "unauthenticated": "Entre para continuar.",
     "unexpectedDescription": "Ocorreu um erro inesperado. Tente novamente ou recarregue a página.",
     "unexpectedTitle": "Algo deu errado",
-    "validation_error": "Revise os campos destacados e tente novamente."
+    "validation_error": "Revise os campos destacados e tente novamente.",
+    "element_reference_limit_reached": "Este Elemento atingiu o limite de referências.",
+    "element_reference_not_image": "As referências de um Elemento devem ser imagens."
   },
   "uploads": {
     "title": "Uploads",
@@ -1476,7 +1175,6 @@
     "clearFinished": "Limpar concluídos",
     "empty": "Nenhum upload ainda.",
     "assetBatch": "Upload de arquivos",
-    "elementBatch": "Arquivos do Elemento",
     "cancelBatch": "Cancelar lote",
     "retryFailed": "Tentar falhas novamente",
     "retryFile": "Tentar novamente o upload de {{name}}",
@@ -1493,7 +1191,6 @@
       "canceled": "Cancelado"
     },
     "errors": {
-      "elementLimit": "Esta função atingiu o limite de arquivos.",
       "fileTooLarge": "Este arquivo excede o limite de tamanho.",
       "folderCreation": "Não foi possível criar a estrutura de pastas.",
       "storageBlocked": "A solicitação ao armazenamento foi bloqueada.",

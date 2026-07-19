@@ -18,6 +18,7 @@ import { FLOW_NODE_METADATA } from './flow-node-metadata'
 import { ImageGenerationFlowNode } from './image-generation/image-generation-flow-node'
 import { ImageGenerationSettingsCard } from './image-generation/image-generation-settings-card'
 import { AssetFlowNode } from './inputs/asset-flow-node'
+import { ElementFlowNode } from './inputs/element-flow-node'
 import { TextFlowNode } from './inputs/text-flow-node'
 import { LlmFlowNode } from './llm/llm-flow-node'
 import { LlmSettingsCard } from './llm/llm-settings-card'
@@ -37,6 +38,7 @@ export interface FlowDashboardNodeDefinition extends FlowNodeMetadata {
 const FLOW_REACT_NODE_COMPONENTS = {
   asset: AssetFlowNode,
   audioGeneration: GenerationFlowNode,
+  element: ElementFlowNode,
   imageGeneration: ImageGenerationFlowNode,
   llm: LlmFlowNode,
   musicGeneration: MusicGenerationFlowNode,

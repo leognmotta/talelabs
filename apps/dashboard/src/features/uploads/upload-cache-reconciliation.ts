@@ -27,27 +27,3 @@ export async function refreshRegisteredAssetCache(
     })
   }
 }
-
-/** Refreshes Element, Asset, and Flow reference views after a link commits. */
-export async function refreshElementLinkCache(
-  batch: RuntimeUploadBatch,
-  elementId: string,
-  assetId: string,
-) {
-  if (!uploadQueueState.cache || !isUploadOrganizationActive(batch.organizationId))
-    return
-  try {
-    await uploadQueueState.cache.elementLinked(
-      batch.organizationId,
-      elementId,
-      assetId,
-    )
-  }
-  catch (error) {
-    console.error('Element Asset cache refresh failed.', {
-      elementId,
-      error,
-      organizationId: batch.organizationId,
-    })
-  }
-}

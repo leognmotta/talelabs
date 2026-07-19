@@ -5,6 +5,7 @@ import type {
   FlowEdge,
   FlowNode,
   FlowReferenceAsset,
+  FlowReferenceElement,
 } from '@talelabs/sdk'
 import type {
   Edge,
@@ -59,6 +60,8 @@ export type FlowSaveStatus
 export interface FlowReferenceData extends FlowGraphValidationContext {
   /** Canonical Flow reference Assets keyed by id for node and inspector reads. */
   assetsById: ReadonlyMap<string, FlowReferenceAsset>
+  /** Hydrated Elements keyed by id for Element-node and candidate reads. */
+  elementsById: ReadonlyMap<string, FlowReferenceElement>
 }
 
 /** One upstream Asset candidate available to a generation input slot. */

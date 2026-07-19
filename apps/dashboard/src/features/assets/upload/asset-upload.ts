@@ -4,7 +4,6 @@ import type { Asset } from '@talelabs/sdk'
 
 import { getAssetUploadValidationError } from '@talelabs/assets'
 import { postAssets, postUploads } from '@talelabs/sdk'
-import { getApiErrorCode } from '../../../shared/lib/api-error'
 import { getOrganizationRequestHeaders } from '../../../shared/lib/organization-request'
 import { AssetUploadError } from './asset-upload-error'
 import { calculateAssetUploadMd5 } from './asset-upload-hash'
@@ -20,18 +19,14 @@ function throwIfAborted(signal: AbortSignal) {
  * resumable registration id and existing progress-stage semantics.
  */
 export async function uploadAsset(input: {
-  elementId?: string
   file: File
   folderId: null | string
-  isPrimary?: boolean
   onProgress: (progress: number) => void
   onRegistrationReady?: (uploadId: string) => void
   onStageChange?: (state: 'hashing' | 'registering' | 'uploading') => void
   organizationId: string
   registrationUploadId?: string
-  role?: string
   signal: AbortSignal
-  sortOrder?: number
 }): Promise<Asset> {
   const validationError = getAssetUploadValidationError({
     mimeType: input.file.type,
@@ -86,38 +81,18 @@ export async function uploadAsset(input: {
   }
 
   input.onStageChange?.('registering')
-  let asset
-  try {
-    asset = await postAssets(
-      {
-        data: {
-          uploadId: registrationUploadId,
-          elementId: input.elementId,
-          folderId: input.folderId ?? undefined,
-          isPrimary: input.isPrimary,
-          role: input.role,
-          sortOrder: input.sortOrder,
-        },
+  const asset = await postAssets(
+    {
+      data: {
+        uploadId: registrationUploadId,
+        folderId: input.folderId ?? undefined,
       },
-      {
-        headers: getOrganizationRequestHeaders(input.organizationId),
-        signal: input.signal,
-      },
-    )
-  }
-  catch (error) {
-    const code = getApiErrorCode(error)
-    if (
-      code === 'element_asset_role_capacity_reached'
-      || code === 'element_master_role_capacity_reached'
-    ) {
-      throw new AssetUploadError(
-        'The Element Asset role has reached its capacity.',
-        code,
-      )
-    }
-    throw error
-  }
+    },
+    {
+      headers: getOrganizationRequestHeaders(input.organizationId),
+      signal: input.signal,
+    },
+  )
   input.onProgress(1)
   return asset
 }

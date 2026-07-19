@@ -11,7 +11,6 @@ import { canvasNodeToGraphNode } from '../persistence/flow-node-serialization'
 const FLOW_VALUE_COLORS = {
   Asset: 'var(--flow-type-asset)',
   AudioSet: 'var(--flow-type-audio)',
-  ElementContext: 'var(--flow-type-element)',
   ImageSet: 'var(--flow-type-image)',
   Text: 'var(--flow-type-text)',
   VideoSet: 'var(--flow-type-video)',
