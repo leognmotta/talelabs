@@ -14,6 +14,7 @@ export default antfu({
     '**/.turbo',
     '**/node_modules',
     '**/*.tsbuildinfo',
+    '**/next-env.d.ts',
     'packages/models-catalog/models/*.json',
     'packages/sdk/openapi.json',
     'packages/sdk/src/gen',
