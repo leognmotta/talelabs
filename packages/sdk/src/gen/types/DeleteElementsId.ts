@@ -15,7 +15,7 @@ export type DeleteElementsIdPathParams = {
 };
 
 /**
- * @description Element deleted; canonical Assets survive
+ * @description Element deleted; canonical Assets are untouched
  */
 export type DeleteElementsId204 = any;
 

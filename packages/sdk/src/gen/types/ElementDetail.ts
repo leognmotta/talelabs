@@ -4,17 +4,11 @@
  */
 
 import type { Element } from "./Element.ts";
-import type { ElementReadiness } from "./ElementReadiness.ts";
+import type { ElementReferenceAsset } from "./ElementReferenceAsset.ts";
 
 export type ElementDetail = Element & {
   /**
-   * @type object
+   * @type array
    */
-  assetCounts: {
-    [key: string]: number;
-  };
-  /**
-   * @type object
-   */
-  readiness: ElementReadiness;
+  references: ElementReferenceAsset[];
 };

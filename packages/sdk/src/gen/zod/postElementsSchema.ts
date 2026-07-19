@@ -17,14 +17,14 @@ import type {
   PostElementsMutationResponse,
 } from "../types/PostElements.ts";
 import { createElementRequestSchema } from "./createElementRequestSchema.ts";
-import { createdElementSchema } from "./createdElementSchema.ts";
+import { elementDetailSchema } from "./elementDetailSchema.ts";
 import { errorResponseSchema } from "./errorResponseSchema.ts";
 
 /**
- * @description Element and Asset folder created
+ * @description Element created
  */
 export const postElements201Schema = z.lazy(
-  () => createdElementSchema,
+  () => elementDetailSchema,
 ) as unknown as z.ZodType<PostElements201>;
 
 /**

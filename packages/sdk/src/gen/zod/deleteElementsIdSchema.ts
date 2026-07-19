@@ -26,7 +26,7 @@ export const deleteElementsIdPathParamsSchema = z.object({
 }) as unknown as z.ZodType<DeleteElementsIdPathParams>;
 
 /**
- * @description Element deleted; canonical Assets survive
+ * @description Element deleted; canonical Assets are untouched
  */
 export const deleteElementsId204Schema =
   z.any() as unknown as z.ZodType<DeleteElementsId204>;

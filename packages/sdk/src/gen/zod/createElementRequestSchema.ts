@@ -5,16 +5,16 @@
 
 import * as z from "zod";
 import type { CreateElementRequest } from "../types/CreateElementRequest.ts";
-import { elementDataSchema } from "./elementDataSchema.ts";
-import { elementTypeSchema } from "./elementTypeSchema.ts";
+import { cuid2Schema } from "./cuid2Schema.ts";
+import { elementKindSchema } from "./elementKindSchema.ts";
 
 export const createElementRequestSchema = z.object({
-  get type() {
-    return elementTypeSchema;
+  name: z.string().min(1).max(120),
+  get kind() {
+    return elementKindSchema;
   },
-  name: z.string().min(1).max(255),
-  instructions: z.optional(z.string().max(10000)),
-  get data() {
-    return elementDataSchema.optional();
+  description: z.optional(z.string().max(2000)),
+  get assetIds() {
+    return z.array(cuid2Schema).max(8).optional();
   },
 }) as unknown as z.ZodType<CreateElementRequest>;

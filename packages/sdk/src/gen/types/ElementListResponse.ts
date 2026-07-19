@@ -3,13 +3,13 @@
  * Do not edit manually.
  */
 
-import type { ElementListItem } from "./ElementListItem.ts";
+import type { Element } from "./Element.ts";
 
 export type ElementListResponse = {
   /**
    * @type array
    */
-  data: ElementListItem[];
+  data: Element[];
   /**
    * @minLength 1
    * @maxLength 2048

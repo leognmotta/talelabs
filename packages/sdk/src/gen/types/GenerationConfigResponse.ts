@@ -340,6 +340,7 @@ export type ForbidOperatorEnum3Key =
 
 export const generationConfigResponseNodeTypesEnum = {
   asset: "asset",
+  element: "element",
   imageGeneration: "imageGeneration",
   llm: "llm",
   speechGeneration: "speechGeneration",

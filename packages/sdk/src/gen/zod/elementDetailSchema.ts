@@ -5,16 +5,15 @@
 
 import * as z from "zod";
 import type { ElementDetail } from "../types/ElementDetail.ts";
-import { elementReadinessSchema } from "./elementReadinessSchema.ts";
+import { elementReferenceAssetSchema } from "./elementReferenceAssetSchema.ts";
 import { elementSchema } from "./elementSchema.ts";
 
 export const elementDetailSchema = z
   .lazy(() => elementSchema)
   .and(
     z.object({
-      assetCounts: z.object({}).catchall(z.int().min(0)),
-      get readiness() {
-        return elementReadinessSchema;
+      get references() {
+        return z.array(elementReferenceAssetSchema.nullable()).max(8);
       },
     }),
   ) as unknown as z.ZodType<ElementDetail>;

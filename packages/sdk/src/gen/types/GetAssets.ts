@@ -41,12 +41,6 @@ export type GetAssetsQueryParams = {
    */
   elementId?: Cuid2;
   /**
-   * @minLength 1
-   * @maxLength 64
-   * @type string | undefined
-   */
-  role?: string;
-  /**
    * @type boolean | undefined
    */
   favorite?: boolean;

@@ -6,33 +6,22 @@
 import * as z from "zod";
 import type { Element } from "../types/Element.ts";
 import { cuid2Schema } from "./cuid2Schema.ts";
-import { elementDataSchema } from "./elementDataSchema.ts";
-import { elementTypeSchema } from "./elementTypeSchema.ts";
+import { elementKindSchema } from "./elementKindSchema.ts";
+import { elementReferenceAssetSchema } from "./elementReferenceAssetSchema.ts";
 import { timestampSchema } from "./timestampSchema.ts";
-import { userIdSchema } from "./userIdSchema.ts";
 
 export const elementSchema = z.object({
   get id() {
     return cuid2Schema;
   },
-  get type() {
-    return elementTypeSchema;
-  },
   name: z.string(),
-  assetFolderId: z.nullable(
-    z
-      .string()
-      .min(2)
-      .max(32)
-      .regex(/^[a-z][0-9a-z]+$/),
-  ),
-  instructions: z.nullable(z.string()),
-  get data() {
-    return elementDataSchema;
+  get kind() {
+    return elementKindSchema;
   },
-  schemaVersion: z.int().gt(0),
-  get createdBy() {
-    return userIdSchema.nullable();
+  description: z.string(),
+  referenceCount: z.int().min(0),
+  get coverAsset() {
+    return elementReferenceAssetSchema.nullable();
   },
   get createdAt() {
     return timestampSchema;

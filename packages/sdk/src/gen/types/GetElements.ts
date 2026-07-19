@@ -3,9 +3,10 @@
  * Do not edit manually.
  */
 
+import type { Cuid2 } from "./Cuid2.ts";
 import type { Cursor } from "./Cursor.ts";
+import type { ElementKind } from "./ElementKind.ts";
 import type { ElementListResponse } from "./ElementListResponse.ts";
-import type { ElementType } from "./ElementType.ts";
 import type { ErrorResponse } from "./ErrorResponse.ts";
 import type { PaginationLimit } from "./PaginationLimit.ts";
 
@@ -13,12 +14,17 @@ export type GetElementsQueryParams = {
   /**
    * @type string | undefined
    */
-  type?: ElementType;
+  kind?: ElementKind;
   /**
    * @maxLength 200
    * @type string | undefined
    */
   search?: string;
+  /**
+   * @pattern ^[a-z][0-9a-z]+$
+   * @type string | undefined
+   */
+  assetId?: Cuid2;
   /**
    * @default 50
    * @type integer | undefined
@@ -32,7 +38,7 @@ export type GetElementsQueryParams = {
 };
 
 /**
- * @description Element list page
+ * @description Organization Elements
  */
 export type GetElements200 = ElementListResponse;
 

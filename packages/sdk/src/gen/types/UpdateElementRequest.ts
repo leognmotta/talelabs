@@ -3,22 +3,27 @@
  * Do not edit manually.
  */
 
-import type { ElementData } from "./ElementData.ts";
+import type { Cuid2 } from "./Cuid2.ts";
+import type { ElementKind } from "./ElementKind.ts";
 
 export type UpdateElementRequest = {
   /**
    * @minLength 1
-   * @maxLength 255
+   * @maxLength 120
    * @type string | undefined
    */
   name?: string;
   /**
-   * @maxLength 10000
-   * @type string
+   * @type string | undefined
    */
-  instructions?: string | null;
+  kind?: ElementKind;
   /**
-   * @type object | undefined
+   * @maxLength 2000
+   * @type string | undefined
    */
-  data?: ElementData;
+  description?: string;
+  /**
+   * @type array | undefined
+   */
+  assetIds?: (Cuid2 | string)[];
 };

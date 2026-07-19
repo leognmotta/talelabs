@@ -8,6 +8,7 @@ import type { Cuid2 } from "./Cuid2.ts";
 export const flowNodeTypeEnum = {
   asset: "asset",
   audioGeneration: "audioGeneration",
+  element: "element",
   imageGeneration: "imageGeneration",
   llm: "llm",
   musicGeneration: "musicGeneration",

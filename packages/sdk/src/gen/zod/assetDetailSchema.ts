@@ -6,9 +6,6 @@
 import * as z from "zod";
 import type { AssetDetail } from "../types/AssetDetail.ts";
 import { assetSchema } from "./assetSchema.ts";
-import { cuid2Schema } from "./cuid2Schema.ts";
-import { elementReferenceKindSchema } from "./elementReferenceKindSchema.ts";
-import { elementReferenceMetadataSchema } from "./elementReferenceMetadataSchema.ts";
 import { generationProvenanceSchema } from "./generationProvenanceSchema.ts";
 
 export const assetDetailSchema = z
@@ -16,21 +13,6 @@ export const assetDetailSchema = z
   .and(
     z.object({
       metadata: z.object({}).catchall(z.any().nullable()),
-      elementLinks: z.array(
-        z.object({
-          get elementId() {
-            return cuid2Schema;
-          },
-          role: z.string(),
-          isPrimary: z.boolean(),
-          get referenceKind() {
-            return elementReferenceKindSchema;
-          },
-          get referenceMetadata() {
-            return elementReferenceMetadataSchema;
-          },
-        }),
-      ),
       get generation() {
         return generationProvenanceSchema.nullable();
       },

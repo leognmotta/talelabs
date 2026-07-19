@@ -4,13 +4,13 @@
  */
 
 import type { CreateElementRequest } from "./CreateElementRequest.ts";
-import type { CreatedElement } from "./CreatedElement.ts";
+import type { ElementDetail } from "./ElementDetail.ts";
 import type { ErrorResponse } from "./ErrorResponse.ts";
 
 /**
- * @description Element and Asset folder created
+ * @description Element created
  */
-export type PostElements201 = CreatedElement;
+export type PostElements201 = ElementDetail;
 
 /**
  * @description Validation error

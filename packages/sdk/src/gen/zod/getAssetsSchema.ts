@@ -38,7 +38,6 @@ export const getAssetsQueryParamsSchema = z.object({
   get elementId() {
     return cuid2Schema.optional();
   },
-  role: z.optional(z.string().min(1).max(64)),
   favorite: z.optional(z.boolean()),
   get tagId() {
     return z.union([cuid2Schema, z.array(cuid2Schema)]).optional();

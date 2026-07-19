@@ -16,18 +16,22 @@ import type {
   GetElementsQueryParams,
   GetElementsQueryResponse,
 } from "../types/GetElements.ts";
+import { cuid2Schema } from "./cuid2Schema.ts";
 import { cursorSchema } from "./cursorSchema.ts";
+import { elementKindSchema } from "./elementKindSchema.ts";
 import { elementListResponseSchema } from "./elementListResponseSchema.ts";
-import { elementTypeSchema } from "./elementTypeSchema.ts";
 import { errorResponseSchema } from "./errorResponseSchema.ts";
 import { paginationLimitSchema } from "./paginationLimitSchema.ts";
 
 export const getElementsQueryParamsSchema = z
   .object({
-    get type() {
-      return elementTypeSchema.optional();
+    get kind() {
+      return elementKindSchema.optional();
     },
     search: z.optional(z.string().max(200)),
+    get assetId() {
+      return cuid2Schema.optional();
+    },
     get limit() {
       return paginationLimitSchema.default(50).optional();
     },
@@ -40,7 +44,7 @@ export const getElementsQueryParamsSchema = z
   .optional() as unknown as z.ZodType<GetElementsQueryParams>;
 
 /**
- * @description Element list page
+ * @description Organization Elements
  */
 export const getElements200Schema = z.lazy(
   () => elementListResponseSchema,

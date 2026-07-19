@@ -116,14 +116,8 @@
           "not_found",
           "conflict",
           "asset_not_available",
-          "element_asset_already_attached",
-          "element_asset_media_type_not_accepted",
-          "element_asset_role_capacity_reached",
-          "element_asset_role_not_found",
-          "element_master_role_capacity_reached",
-          "element_reference_metadata_invalid",
-          "element_source_capacity_reached",
-          "element_source_primary_invalid",
+          "element_reference_limit_reached",
+          "element_reference_not_image",
           "revision_conflict",
           "invalid_state",
           "unsupported_by_model",
@@ -936,75 +930,11 @@
           },
           "folderId": {
             "$ref": "#/components/schemas/Cuid2"
-          },
-          "elementId": {
-            "$ref": "#/components/schemas/Cuid2"
-          },
-          "role": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 64
-          },
-          "sortOrder": {
-            "type": "integer",
-            "minimum": 0
-          },
-          "isPrimary": {
-            "type": "boolean"
-          },
-          "referenceKind": {
-            "$ref": "#/components/schemas/ElementReferenceKind"
-          },
-          "referenceMetadata": {
-            "$ref": "#/components/schemas/ElementReferenceMetadata"
           }
         },
         "required": [
           "uploadId"
         ]
-      },
-      "ElementReferenceKind": {
-        "type": "string",
-        "enum": [
-          "source",
-          "master"
-        ]
-      },
-      "ElementReferenceMetadata": {
-        "type": "object",
-        "properties": {
-          "view": {
-            "type": "string",
-            "enum": [
-              "front",
-              "threeQuarter",
-              "profile",
-              "rear"
-            ]
-          },
-          "framing": {
-            "type": "string",
-            "enum": [
-              "portrait",
-              "halfBody",
-              "fullBody",
-              "detail"
-            ]
-          },
-          "background": {
-            "type": "string",
-            "enum": [
-              "clean",
-              "environment"
-            ]
-          },
-          "variant": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 120
-          }
-        },
-        "additionalProperties": false
       },
       "MoveAssetsResponse": {
         "type": "object",
@@ -1058,36 +988,6 @@
                   "nullable": true
                 }
               },
-              "elementLinks": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "elementId": {
-                      "$ref": "#/components/schemas/Cuid2"
-                    },
-                    "role": {
-                      "type": "string"
-                    },
-                    "isPrimary": {
-                      "type": "boolean"
-                    },
-                    "referenceKind": {
-                      "$ref": "#/components/schemas/ElementReferenceKind"
-                    },
-                    "referenceMetadata": {
-                      "$ref": "#/components/schemas/ElementReferenceMetadata"
-                    }
-                  },
-                  "required": [
-                    "elementId",
-                    "role",
-                    "isPrimary",
-                    "referenceKind",
-                    "referenceMetadata"
-                  ]
-                }
-              },
               "generation": {
                 "$ref": "#/components/schemas/GenerationProvenance"
               },
@@ -1098,7 +998,6 @@
             },
             "required": [
               "metadata",
-              "elementLinks",
               "generation",
               "usedAsInputCount"
             ]
@@ -1329,7 +1228,7 @@
           "data": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/ElementListItem"
+              "$ref": "#/components/schemas/Element"
             }
           },
           "nextCursor": {
@@ -1344,118 +1243,27 @@
           "nextCursor"
         ]
       },
-      "ElementListItem": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/Element"
-          },
-          {
-            "type": "object",
-            "properties": {
-              "hasProcessingReferences": {
-                "type": "boolean"
-              },
-              "previewThumbnailUrl": {
-                "type": "string",
-                "nullable": true,
-                "format": "uri"
-              },
-              "readiness": {
-                "$ref": "#/components/schemas/ElementReadiness"
-              }
-            },
-            "required": [
-              "hasProcessingReferences",
-              "previewThumbnailUrl",
-              "readiness"
-            ]
-          }
-        ]
-      },
-      "ElementType": {
-        "type": "string",
-        "enum": [
-          "brand",
-          "character",
-          "location",
-          "object",
-          "product",
-          "vehicle",
-          "voice",
-          "other"
-        ]
-      },
-      "ElementData": {
-        "type": "object",
-        "additionalProperties": {
-          "nullable": true
-        }
-      },
-      "ElementReadiness": {
-        "type": "object",
-        "properties": {
-          "state": {
-            "type": "string",
-            "enum": [
-              "empty",
-              "usable",
-              "strong"
-            ]
-          },
-          "missing": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "maxItems": 32
-          },
-          "recommendations": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "maxItems": 32
-          }
-        },
-        "required": [
-          "state",
-          "missing",
-          "recommendations"
-        ]
-      },
       "Element": {
         "type": "object",
         "properties": {
           "id": {
             "$ref": "#/components/schemas/Cuid2"
           },
-          "type": {
-            "$ref": "#/components/schemas/ElementType"
-          },
           "name": {
             "type": "string"
           },
-          "assetFolderId": {
-            "type": "string",
-            "nullable": true,
-            "minLength": 2,
-            "maxLength": 32,
-            "pattern": "^[a-z][0-9a-z]+$"
+          "kind": {
+            "$ref": "#/components/schemas/ElementKind"
           },
-          "instructions": {
-            "type": "string",
-            "nullable": true
+          "description": {
+            "type": "string"
           },
-          "data": {
-            "$ref": "#/components/schemas/ElementData"
-          },
-          "schemaVersion": {
+          "referenceCount": {
             "type": "integer",
-            "minimum": 0,
-            "exclusiveMinimum": true
+            "minimum": 0
           },
-          "createdBy": {
-            "$ref": "#/components/schemas/UserId"
+          "coverAsset": {
+            "$ref": "#/components/schemas/ElementReferenceAsset"
           },
           "createdAt": {
             "$ref": "#/components/schemas/Timestamp"
@@ -1466,89 +1274,85 @@
         },
         "required": [
           "id",
-          "type",
           "name",
-          "assetFolderId",
-          "instructions",
-          "data",
-          "schemaVersion",
-          "createdBy",
+          "kind",
+          "description",
+          "referenceCount",
+          "coverAsset",
           "createdAt",
           "updatedAt"
         ]
       },
-      "CreatedElement": {
+      "ElementKind": {
+        "type": "string",
+        "enum": [
+          "character",
+          "prop",
+          "location",
+          "style",
+          "other"
+        ]
+      },
+      "ElementReferenceAsset": {
         "type": "object",
+        "nullable": true,
         "properties": {
           "id": {
             "$ref": "#/components/schemas/Cuid2"
           },
-          "type": {
-            "$ref": "#/components/schemas/ElementType"
-          },
           "name": {
             "type": "string"
           },
-          "assetFolderId": {
-            "$ref": "#/components/schemas/Cuid2"
+          "type": {
+            "$ref": "#/components/schemas/AssetType"
           },
-          "instructions": {
-            "type": "string",
-            "nullable": true
+          "mimeType": {
+            "type": "string"
           },
-          "data": {
-            "$ref": "#/components/schemas/ElementData"
-          },
-          "schemaVersion": {
+          "width": {
             "type": "integer",
+            "nullable": true,
             "minimum": 0,
             "exclusiveMinimum": true
           },
-          "createdBy": {
-            "$ref": "#/components/schemas/UserId"
+          "height": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": 0,
+            "exclusiveMinimum": true
+          },
+          "lifecycle": {
+            "$ref": "#/components/schemas/AssetLifecycle"
+          },
+          "processingState": {
+            "$ref": "#/components/schemas/AssetProcessingState"
+          },
+          "url": {
+            "type": "string",
+            "nullable": true,
+            "format": "uri"
+          },
+          "thumbnailUrl": {
+            "type": "string",
+            "nullable": true,
+            "format": "uri"
           },
           "createdAt": {
-            "$ref": "#/components/schemas/Timestamp"
-          },
-          "updatedAt": {
             "$ref": "#/components/schemas/Timestamp"
           }
         },
         "required": [
           "id",
-          "type",
           "name",
-          "assetFolderId",
-          "instructions",
-          "data",
-          "schemaVersion",
-          "createdBy",
-          "createdAt",
-          "updatedAt"
-        ]
-      },
-      "CreateElementRequest": {
-        "type": "object",
-        "properties": {
-          "type": {
-            "$ref": "#/components/schemas/ElementType"
-          },
-          "name": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 255
-          },
-          "instructions": {
-            "type": "string",
-            "maxLength": 10000
-          },
-          "data": {
-            "$ref": "#/components/schemas/ElementData"
-          }
-        },
-        "required": [
           "type",
-          "name"
+          "mimeType",
+          "width",
+          "height",
+          "lifecycle",
+          "processingState",
+          "url",
+          "thumbnailUrl",
+          "createdAt"
         ]
       },
       "ElementDetail": {
@@ -1559,22 +1363,46 @@
           {
             "type": "object",
             "properties": {
-              "assetCounts": {
-                "type": "object",
-                "additionalProperties": {
-                  "type": "integer",
-                  "minimum": 0
-                }
-              },
-              "readiness": {
-                "$ref": "#/components/schemas/ElementReadiness"
+              "references": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ElementReferenceAsset"
+                },
+                "maxItems": 8
               }
             },
             "required": [
-              "assetCounts",
-              "readiness"
+              "references"
             ]
           }
+        ]
+      },
+      "CreateElementRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "kind": {
+            "$ref": "#/components/schemas/ElementKind"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "assetIds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Cuid2"
+            },
+            "maxItems": 8
+          }
+        },
+        "required": [
+          "name",
+          "kind"
         ]
       },
       "UpdateElementRequest": {
@@ -1583,189 +1411,70 @@
           "name": {
             "type": "string",
             "minLength": 1,
-            "maxLength": 255
+            "maxLength": 120
           },
-          "instructions": {
+          "kind": {
+            "$ref": "#/components/schemas/ElementKind"
+          },
+          "description": {
             "type": "string",
-            "nullable": true,
-            "maxLength": 10000
+            "maxLength": 2000
           },
-          "data": {
-            "$ref": "#/components/schemas/ElementData"
+          "assetIds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Cuid2"
+            },
+            "maxItems": 8
           }
         }
       },
-      "ElementAssetListResponse": {
-        "type": "object",
-        "properties": {
-          "data": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ElementAssetLink"
-            }
+      "ElementReferenceMutation": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ElementDetail"
           },
-          "nextCursor": {
-            "type": "string",
-            "nullable": true,
-            "minLength": 1,
-            "maxLength": 2048
-          }
-        },
-        "required": [
-          "data",
-          "nextCursor"
-        ]
-      },
-      "ElementAssetLink": {
-        "type": "object",
-        "properties": {
-          "assetId": {
-            "$ref": "#/components/schemas/Cuid2"
-          },
-          "role": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 64
-          },
-          "sortOrder": {
-            "type": "integer",
-            "minimum": 0
-          },
-          "isPrimary": {
-            "type": "boolean"
-          },
-          "referenceKind": {
-            "$ref": "#/components/schemas/ElementReferenceKind"
-          },
-          "referenceMetadata": {
-            "$ref": "#/components/schemas/ElementReferenceMetadata"
-          },
-          "asset": {
-            "$ref": "#/components/schemas/Asset"
-          }
-        },
-        "required": [
-          "assetId",
-          "role",
-          "sortOrder",
-          "isPrimary",
-          "referenceKind",
-          "referenceMetadata",
-          "asset"
-        ]
-      },
-      "CreateElementAssetRequest": {
-        "type": "object",
-        "properties": {
-          "assetId": {
-            "$ref": "#/components/schemas/Cuid2"
-          },
-          "role": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 64
-          },
-          "sortOrder": {
-            "type": "integer",
-            "minimum": 0
-          },
-          "isPrimary": {
-            "type": "boolean",
-            "default": false
-          },
-          "referenceKind": {
-            "$ref": "#/components/schemas/ElementReferenceKind"
-          },
-          "referenceMetadata": {
-            "$ref": "#/components/schemas/ElementReferenceMetadata"
-          }
-        },
-        "required": [
-          "assetId",
-          "role"
-        ]
-      },
-      "UpdateElementAssetRequest": {
-        "type": "object",
-        "properties": {
-          "role": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 64
-          },
-          "targetRole": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 64
-          },
-          "sortOrder": {
-            "type": "integer",
-            "minimum": 0
-          },
-          "isPrimary": {
-            "type": "boolean"
-          },
-          "referenceKind": {
-            "$ref": "#/components/schemas/ElementReferenceKind"
-          },
-          "referenceMetadata": {
-            "$ref": "#/components/schemas/ElementReferenceMetadata"
-          }
-        },
-        "required": [
-          "role"
-        ]
-      },
-      "ElementUsage": {
-        "type": "object",
-        "properties": {
-          "flowCount": {
-            "type": "integer",
-            "minimum": 0
-          },
-          "flows": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ElementUsageFlow"
+          {
+            "type": "object",
+            "properties": {
+              "addedAssetIds": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Cuid2"
+                }
+              },
+              "removedAssetIds": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Cuid2"
+                }
+              }
             },
-            "maxItems": 20
-          },
-          "runCount": {
-            "type": "integer",
-            "minimum": 0
-          },
-          "lastUsedAt": {
-            "type": "string",
-            "nullable": true,
-            "format": "date-time"
+            "required": [
+              "addedAssetIds",
+              "removedAssetIds"
+            ]
           }
-        },
-        "required": [
-          "flowCount",
-          "flows",
-          "runCount",
-          "lastUsedAt"
         ]
       },
-      "ElementUsageFlow": {
+      "MutateElementReferencesRequest": {
         "type": "object",
         "properties": {
-          "flowId": {
-            "$ref": "#/components/schemas/Cuid2"
+          "add": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Cuid2"
+            },
+            "maxItems": 8
           },
-          "flowName": {
-            "type": "string"
-          },
-          "nodeCount": {
-            "type": "integer",
-            "minimum": 0
+          "remove": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Cuid2"
+            },
+            "maxItems": 8
           }
-        },
-        "required": [
-          "flowId",
-          "flowName",
-          "nodeCount"
-        ]
+        }
       },
       "FlowListResponse": {
         "type": "object",
@@ -1960,6 +1669,7 @@
             "enum": [
               "asset",
               "audioGeneration",
+              "element",
               "imageGeneration",
               "llm",
               "musicGeneration",
@@ -2173,10 +1883,17 @@
               "$ref": "#/components/schemas/FlowReferenceAsset"
             },
             "maxItems": 5000
+          },
+          "elements": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FlowReferenceElement"
+            }
           }
         },
         "required": [
-          "assets"
+          "assets",
+          "elements"
         ]
       },
       "FlowReferenceAsset": {
@@ -2268,6 +1985,32 @@
           "thumbnailUrl",
           "createdAt",
           "generationModel"
+        ]
+      },
+      "FlowReferenceElement": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Cuid2"
+          },
+          "name": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "referenceAssetIds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Cuid2"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "kind",
+          "referenceAssetIds"
         ]
       },
       "FlowGraphSyncResponse": {
@@ -4900,6 +4643,7 @@
               "type": "string",
               "enum": [
                 "asset",
+                "element",
                 "imageGeneration",
                 "llm",
                 "speechGeneration",
@@ -5865,16 +5609,6 @@
             },
             "required": false,
             "name": "elementId",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 64
-            },
-            "required": false,
-            "name": "role",
             "in": "query"
           },
           {
@@ -7357,10 +7091,10 @@
         "parameters": [
           {
             "schema": {
-              "$ref": "#/components/schemas/ElementType"
+              "$ref": "#/components/schemas/ElementKind"
             },
             "required": false,
-            "name": "type",
+            "name": "kind",
             "in": "query"
           },
           {
@@ -7370,6 +7104,14 @@
             },
             "required": false,
             "name": "search",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "$ref": "#/components/schemas/Cuid2"
+            },
+            "required": false,
+            "name": "assetId",
             "in": "query"
           },
           {
@@ -7392,7 +7134,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Element list page",
+            "description": "Organization Elements",
             "content": {
               "application/json": {
                 "schema": {
@@ -7489,11 +7231,11 @@
         },
         "responses": {
           "201": {
-            "description": "Element and Asset folder created",
+            "description": "Element created",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CreatedElement"
+                  "$ref": "#/components/schemas/ElementDetail"
                 }
               }
             }
@@ -7588,7 +7330,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Element detail",
+            "description": "Element detail with ordered references",
             "content": {
               "application/json": {
                 "schema": {
@@ -7699,7 +7441,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Element"
+                  "$ref": "#/components/schemas/ElementDetail"
                 }
               }
             }
@@ -7792,7 +7534,7 @@
         ],
         "responses": {
           "204": {
-            "description": "Element deleted; canonical Assets survive"
+            "description": "Element deleted; canonical Assets are untouched"
           },
           "400": {
             "description": "Validation error",
@@ -7867,231 +7609,7 @@
         }
       }
     },
-    "/elements/{id}/assets": {
-      "get": {
-        "tags": [
-          "Elements"
-        ],
-        "parameters": [
-          {
-            "schema": {
-              "$ref": "#/components/schemas/Cuid2"
-            },
-            "required": true,
-            "name": "id",
-            "in": "path"
-          },
-          {
-            "schema": {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 64
-            },
-            "required": false,
-            "name": "role",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "$ref": "#/components/schemas/ElementReferenceKind"
-            },
-            "required": false,
-            "name": "referenceKind",
-            "in": "query"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Element Asset kit",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ElementAssetListResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Validation error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Authentication required",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Active organization required",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Resource not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Resource state conflict",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "429": {
-            "description": "Organization request rate limit exceeded",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "tags": [
-          "Elements"
-        ],
-        "parameters": [
-          {
-            "schema": {
-              "$ref": "#/components/schemas/Cuid2"
-            },
-            "required": true,
-            "name": "id",
-            "in": "path"
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateElementAssetRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Canonical Asset attached to Element",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ElementAssetLink"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Validation error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Authentication required",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Active organization required",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Resource not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Resource state conflict",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "429": {
-            "description": "Organization request rate limit exceeded",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/elements/{id}/assets/{assetId}": {
+    "/elements/{id}/references": {
       "patch": {
         "tags": [
           "Elements"
@@ -8104,14 +7622,6 @@
             "required": true,
             "name": "id",
             "in": "path"
-          },
-          {
-            "schema": {
-              "$ref": "#/components/schemas/Cuid2"
-            },
-            "required": true,
-            "name": "assetId",
-            "in": "path"
           }
         ],
         "requestBody": {
@@ -8119,225 +7629,18 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateElementAssetRequest"
+                "$ref": "#/components/schemas/MutateElementReferencesRequest"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Element Asset link updated",
+            "description": "References added/removed against current server state",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ElementAssetLink"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Validation error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Authentication required",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Active organization required",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Resource not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Resource state conflict",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "429": {
-            "description": "Organization request rate limit exceeded",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "Elements"
-        ],
-        "parameters": [
-          {
-            "schema": {
-              "$ref": "#/components/schemas/Cuid2"
-            },
-            "required": true,
-            "name": "id",
-            "in": "path"
-          },
-          {
-            "schema": {
-              "$ref": "#/components/schemas/Cuid2"
-            },
-            "required": true,
-            "name": "assetId",
-            "in": "path"
-          },
-          {
-            "schema": {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 64
-            },
-            "required": true,
-            "name": "role",
-            "in": "query"
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Element link removed; canonical Asset survives"
-          },
-          "400": {
-            "description": "Validation error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Authentication required",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Active organization required",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Resource not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Resource state conflict",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "429": {
-            "description": "Organization request rate limit exceeded",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/elements/{id}/usage": {
-      "get": {
-        "tags": [
-          "Elements"
-        ],
-        "parameters": [
-          {
-            "schema": {
-              "$ref": "#/components/schemas/Cuid2"
-            },
-            "required": true,
-            "name": "id",
-            "in": "path"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Bounded Element usage summary",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ElementUsage"
+                  "$ref": "#/components/schemas/ElementReferenceMutation"
                 }
               }
             }

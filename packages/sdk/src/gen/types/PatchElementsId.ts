@@ -4,7 +4,7 @@
  */
 
 import type { Cuid2 } from "./Cuid2.ts";
-import type { Element } from "./Element.ts";
+import type { ElementDetail } from "./ElementDetail.ts";
 import type { ErrorResponse } from "./ErrorResponse.ts";
 import type { UpdateElementRequest } from "./UpdateElementRequest.ts";
 
@@ -19,7 +19,7 @@ export type PatchElementsIdPathParams = {
 /**
  * @description Element updated
  */
-export type PatchElementsId200 = Element;
+export type PatchElementsId200 = ElementDetail;
 
 /**
  * @description Validation error

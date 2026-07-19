@@ -16,7 +16,7 @@ export type GetElementsIdPathParams = {
 };
 
 /**
- * @description Element detail
+ * @description Element detail with ordered references
  */
 export type GetElementsId200 = ElementDetail;
 

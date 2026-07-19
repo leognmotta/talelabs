@@ -27,7 +27,7 @@ export const getElementsIdPathParamsSchema = z.object({
 }) as unknown as z.ZodType<GetElementsIdPathParams>;
 
 /**
- * @description Element detail
+ * @description Element detail with ordered references
  */
 export const getElementsId200Schema = z.lazy(
   () => elementDetailSchema,

@@ -5,19 +5,22 @@
 
 import type { Cuid2 } from "./Cuid2.ts";
 
-export type ElementUsageFlow = {
+export type FlowReferenceElement = {
   /**
    * @pattern ^[a-z][0-9a-z]+$
    * @type string
    */
-  flowId: Cuid2;
+  id: Cuid2;
   /**
    * @type string
    */
-  flowName: string;
+  name: string;
   /**
-   * @minLength 0
-   * @type integer
+   * @type string
    */
-  nodeCount: number;
+  kind: string;
+  /**
+   * @type array
+   */
+  referenceAssetIds: (Cuid2 | string)[];
 };

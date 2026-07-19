@@ -14,6 +14,7 @@ export const flowNodeSchema = z.object({
   type: z.enum([
     "asset",
     "audioGeneration",
+    "element",
     "imageGeneration",
     "llm",
     "musicGeneration",

@@ -4,10 +4,9 @@
  */
 
 import type { Cuid2 } from "./Cuid2.ts";
-import type { ElementData } from "./ElementData.ts";
-import type { ElementType } from "./ElementType.ts";
+import type { ElementKind } from "./ElementKind.ts";
+import type { ElementReferenceAsset } from "./ElementReferenceAsset.ts";
 import type { Timestamp } from "./Timestamp.ts";
-import type { UserId } from "./UserId.ts";
 
 export type Element = {
   /**
@@ -18,34 +17,24 @@ export type Element = {
   /**
    * @type string
    */
-  type: ElementType;
-  /**
-   * @type string
-   */
   name: string;
   /**
-   * @minLength 2
-   * @maxLength 32
-   * @pattern ^[a-z][0-9a-z]+$
    * @type string
    */
-  assetFolderId: string | null;
+  kind: ElementKind;
   /**
    * @type string
    */
-  instructions: string | null;
+  description: string;
+  /**
+   * @minLength 0
+   * @type integer
+   */
+  referenceCount: number;
   /**
    * @type object
    */
-  data: ElementData;
-  /**
-   * @type integer
-   */
-  schemaVersion: number;
-  /**
-   * @type string
-   */
-  createdBy: UserId | null;
+  coverAsset: ElementReferenceAsset | null;
   /**
    * @type string, date-time
    */

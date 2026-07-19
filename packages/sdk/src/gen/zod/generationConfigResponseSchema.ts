@@ -451,6 +451,7 @@ export const generationConfigResponseSchema = z.object({
   nodeTypes: z.array(
     z.enum([
       "asset",
+      "element",
       "imageGeneration",
       "llm",
       "speechGeneration",

@@ -5,11 +5,11 @@
 
 import * as z from "zod";
 import type { ElementListResponse } from "../types/ElementListResponse.ts";
-import { elementListItemSchema } from "./elementListItemSchema.ts";
+import { elementSchema } from "./elementSchema.ts";
 
 export const elementListResponseSchema = z.object({
   get data() {
-    return z.array(elementListItemSchema);
+    return z.array(elementSchema);
   },
   nextCursor: z.nullable(z.string().min(1).max(2048)),
 }) as unknown as z.ZodType<ElementListResponse>;

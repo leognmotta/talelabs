@@ -18,7 +18,7 @@ import type {
   PatchElementsIdPathParams,
 } from "../types/PatchElementsId.ts";
 import { cuid2Schema } from "./cuid2Schema.ts";
-import { elementSchema } from "./elementSchema.ts";
+import { elementDetailSchema } from "./elementDetailSchema.ts";
 import { errorResponseSchema } from "./errorResponseSchema.ts";
 import { updateElementRequestSchema } from "./updateElementRequestSchema.ts";
 
@@ -32,7 +32,7 @@ export const patchElementsIdPathParamsSchema = z.object({
  * @description Element updated
  */
 export const patchElementsId200Schema = z.lazy(
-  () => elementSchema,
+  () => elementDetailSchema,
 ) as unknown as z.ZodType<PatchElementsId200>;
 
 /**
