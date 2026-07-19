@@ -24,8 +24,16 @@ export type CanvasNode = Node<Record<string, any>, FlowNodeType> & {
   }
 }
 
-/** React Flow edge retaining creation time for deterministic graph priority. */
-export type CanvasEdge = Edge<{ createdAt: string }>
+/** Persisted and client-only presentation data carried by one canvas edge. */
+export interface CanvasEdgeData extends Record<string, unknown> {
+  /** Persisted creation time used for deterministic graph priority. */
+  createdAt: string
+  /** Client-only token that starts one elastic release after a successful connection. */
+  releaseAnimationId?: number
+}
+
+/** React Flow edge retaining persistence priority and transient presentation data. */
+export type CanvasEdge = Edge<CanvasEdgeData>
 
 /** Ephemeral upload progress associated with a transient canvas Asset node. */
 export interface FlowCanvasAssetUpload {

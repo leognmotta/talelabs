@@ -146,13 +146,22 @@ export function connectCanvasEdge(
   const state = input.store.getState()
   captureCanvasHistory(input.store)
   latestEdgeCreatedAt = Math.max(Date.now(), latestEdgeCreatedAt + 1)
+  const createdAt = new Date(latestEdgeCreatedAt).toISOString()
+  const releaseAnimationId = latestEdgeCreatedAt
   const edges = edge
-    ? reconnectEdge(edge, connection, state.edges, {
+    ? reconnectEdge({
+        ...edge,
+        data: {
+          ...edge.data,
+          createdAt: edge.data?.createdAt ?? createdAt,
+          releaseAnimationId,
+        },
+      }, connection, state.edges, {
         shouldReplaceId: false,
       })
     : addEdge({
         ...connection,
-        data: { createdAt: new Date(latestEdgeCreatedAt).toISOString() },
+        data: { createdAt, releaseAnimationId },
         id: createId(),
       }, state.edges)
   input.store.setState({
