@@ -156,6 +156,15 @@
     "nodePicker": {
       "searchPlaceholder": "Rechercher des nœuds",
       "noResults": "Aucun nœud trouvé",
+      "categoryFilterLabel": "Filtrer les catégories de nœuds",
+      "categories": {
+        "all": "Tous les nœuds",
+        "inputs": "Entrées",
+        "image": "Image",
+        "video": "Vidéo",
+        "text": "Texte",
+        "audio": "Audio"
+      },
       "groups": {
         "inputs": "Entrées",
         "generation": "Génération",
@@ -163,7 +172,7 @@
       },
       "descriptions": {
         "text": "Rédigez un prompt réutilisable.",
-        "asset": "Ajoutez des images, des vidéos, de l’audio ou des documents.",
+        "asset": "Ajoutez des images, des vidéos ou de l’audio.",
         "element": "Ajoutez un contexte créatif réutilisable.",
         "imageGeneration": "Configurez une étape de génération d’image.",
         "llm": "Transformez du texte et analysez des images avec un LLM.",

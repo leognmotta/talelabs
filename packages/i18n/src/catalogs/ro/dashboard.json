@@ -156,6 +156,15 @@
     "nodePicker": {
       "searchPlaceholder": "Caută noduri",
       "noResults": "Nu s-au găsit noduri",
+      "categoryFilterLabel": "Filtrează categoriile de noduri",
+      "categories": {
+        "all": "Toate nodurile",
+        "inputs": "Intrări",
+        "image": "Imagine",
+        "video": "Video",
+        "text": "Text",
+        "audio": "Audio"
+      },
       "groups": {
         "inputs": "Intrări",
         "generation": "Generare",
@@ -163,7 +172,7 @@
       },
       "descriptions": {
         "text": "Scrie un prompt reutilizabil.",
-        "asset": "Adaugă imagini, videoclipuri, audio sau documente.",
+        "asset": "Adăugați imagini, videoclipuri sau fișiere audio.",
         "element": "Adaugă context creativ reutilizabil.",
         "imageGeneration": "Configurează un pas de generare a imaginilor.",
         "llm": "Transformă text și analizează imagini cu un LLM.",

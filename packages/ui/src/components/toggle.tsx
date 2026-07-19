@@ -24,6 +24,17 @@ const toggleVariants = cva(
     variants: {
       variant: {
         default: 'bg-transparent',
+        filled: `
+          border border-transparent bg-transparent text-muted-foreground
+          aria-pressed:border-primary aria-pressed:bg-primary
+          aria-pressed:text-primary-foreground aria-pressed:shadow-sm
+          aria-pressed:hover:bg-primary
+          aria-pressed:hover:text-primary-foreground
+          data-pressed:border-primary data-pressed:bg-primary
+          data-pressed:text-primary-foreground data-pressed:shadow-sm
+          data-pressed:hover:bg-primary
+          data-pressed:hover:text-primary-foreground
+        `,
         outline: `
           border border-input bg-transparent
           hover:bg-muted

@@ -156,6 +156,15 @@
     "nodePicker": {
       "searchPlaceholder": "Knoten suchen",
       "noResults": "Keine Knoten gefunden",
+      "categoryFilterLabel": "Knotenkategorien filtern",
+      "categories": {
+        "all": "Alle Knoten",
+        "inputs": "Eingaben",
+        "image": "Bild",
+        "video": "Video",
+        "text": "Text",
+        "audio": "Audio"
+      },
       "groups": {
         "inputs": "Eingaben",
         "generation": "Generierung",
@@ -163,7 +172,7 @@
       },
       "descriptions": {
         "text": "Verfasse einen wiederverwendbaren Prompt.",
-        "asset": "Füge Bilder, Videos, Audio oder Dokumente hinzu.",
+        "asset": "Füge Bilder, Videos oder Audio hinzu.",
         "element": "Füge wiederverwendbaren kreativen Kontext hinzu.",
         "imageGeneration": "Konfiguriere einen Schritt zur Bildgenerierung.",
         "llm": "Verarbeite Text und analysiere Bilder mit einem LLM.",

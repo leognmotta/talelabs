@@ -61,13 +61,15 @@ function ComboboxInput({
   disabled = false,
   showTrigger = true,
   showClear = false,
+  variant = 'default',
   ...props
 }: ComboboxPrimitive.Input.Props & {
   showTrigger?: boolean
   showClear?: boolean
+  variant?: 'default' | 'outline'
 }) {
   return (
-    <InputGroup className={cn('w-auto', className)}>
+    <InputGroup className={cn('w-auto', className)} variant={variant}>
       <ComboboxPrimitive.Input
         render={<InputGroupInput disabled={disabled} />}
         {...props}
@@ -135,9 +137,9 @@ function ComboboxContent({
             data-[side=top]:slide-in-from-bottom-2
             *:data-[slot=input-group]:m-1.5 *:data-[slot=input-group]:mb-0
             *:data-[slot=input-group]:h-8
-            *:data-[slot=input-group]:border-input/30
-            *:data-[slot=input-group]:bg-input/50
-            *:data-[slot=input-group]:shadow-none
+            *:data-[slot=input-group]:not-data-[variant=outline]:border-input/30
+            *:data-[slot=input-group]:not-data-[variant=outline]:bg-input/50
+            *:data-[slot=input-group]:not-data-[variant=outline]:shadow-none
             dark:ring-foreground/10
             data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95
             data-closed:animate-out data-closed:fade-out-0
@@ -178,7 +180,7 @@ function ComboboxItem({
       data-slot="combobox-item"
       className={cn(
         `
-          relative flex w-full cursor-default items-center gap-2.5 rounded-2xl
+          relative flex w-full cursor-pointer items-center gap-2.5 rounded-2xl
           py-2 pr-8 pl-3 text-sm font-medium outline-hidden select-none
           data-highlighted:bg-accent data-highlighted:text-accent-foreground
           not-data-[variant=destructive]:data-highlighted:**:text-accent-foreground

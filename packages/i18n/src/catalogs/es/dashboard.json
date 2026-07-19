@@ -156,6 +156,15 @@
     "nodePicker": {
       "searchPlaceholder": "Buscar nodos",
       "noResults": "No se encontraron nodos",
+      "categoryFilterLabel": "Filtrar categorías de nodos",
+      "categories": {
+        "all": "Todos los nodos",
+        "inputs": "Entradas",
+        "image": "Imagen",
+        "video": "Vídeo",
+        "text": "Texto",
+        "audio": "Audio"
+      },
       "groups": {
         "inputs": "Entradas",
         "generation": "Generación",
@@ -163,7 +172,7 @@
       },
       "descriptions": {
         "text": "Escribe un prompt reutilizable.",
-        "asset": "Añade imágenes, vídeo, audio o documentos.",
+        "asset": "Añade imágenes, vídeos o audio.",
         "element": "Añade contexto creativo reutilizable.",
         "imageGeneration": "Configura un paso de generación de imágenes.",
         "llm": "Transforma texto y analiza imágenes con un LLM.",

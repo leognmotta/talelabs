@@ -156,6 +156,15 @@
     "nodePicker": {
       "searchPlaceholder": "Szukaj węzłów",
       "noResults": "Nie znaleziono węzłów",
+      "categoryFilterLabel": "Filtruj kategorie węzłów",
+      "categories": {
+        "all": "Wszystkie węzły",
+        "inputs": "Dane wejściowe",
+        "image": "Obraz",
+        "video": "Wideo",
+        "text": "Tekst",
+        "audio": "Dźwięk"
+      },
       "groups": {
         "inputs": "Dane wejściowe",
         "generation": "Generowanie",
@@ -163,7 +172,7 @@
       },
       "descriptions": {
         "text": "Napisz prompt do ponownego użycia.",
-        "asset": "Dodaj obrazy, filmy, dźwięk lub dokumenty.",
+        "asset": "Dodaj obrazy, filmy lub dźwięk.",
         "element": "Dodaj kontekst kreatywny wielokrotnego użytku.",
         "imageGeneration": "Skonfiguruj etap generowania obrazu.",
         "llm": "Przekształcaj tekst i analizuj obrazy za pomocą LLM.",

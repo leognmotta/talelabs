@@ -5,8 +5,12 @@ import type { FlowNodeType } from '@talelabs/flows'
 import {
   IconArrowsExchange,
   IconFilter,
+  IconInputSpark,
+  IconLayoutGrid,
+  IconLetterT,
   IconMicrophone,
   IconMusic,
+  IconPhoto,
   IconPhotoSpark,
   IconSparkles,
   IconTextCaption,
@@ -28,6 +32,17 @@ export type FlowGenerationSettingsKind
 /** Product grouping used by picker and canvas-context-menu projections. */
 export type FlowNodePickerGroup = 'generation' | 'inputs' | 'transform'
 
+/** User-selectable category that narrows the add-node picker by creative medium. */
+export type FlowNodePickerCategory
+  = | 'audio'
+    | 'image'
+    | 'inputs'
+    | 'text'
+    | 'video'
+
+/** Add-node picker filter, including the unfiltered category. */
+export type FlowNodePickerFilter = 'all' | FlowNodePickerCategory
+
 /**
  * Canonical presentation and capability metadata for one Flow node type.
  * React node and settings components are attached separately to avoid cycles
@@ -46,6 +61,8 @@ export interface FlowNodeMetadata {
   labelKey: string
   /** Product group containing the node in add-node surfaces. */
   pickerGroup: FlowNodePickerGroup
+  /** Creative category used by the add-node picker's quick filters. */
+  pickerCategory: FlowNodePickerCategory
   /** Stable order within the node's picker group. */
   pickerOrder: number
   /** Whether users may currently add this node from picker surfaces. */
@@ -75,6 +92,44 @@ export const FLOW_NODE_PICKER_GROUPS = [
   labelKey: string
 }[]
 
+/** Category order, labels, and icons for the add-node picker's quick filters. */
+export const FLOW_NODE_PICKER_CATEGORIES = [
+  {
+    icon: IconLayoutGrid,
+    id: 'all',
+    labelKey: 'flows.nodePicker.categories.all',
+  },
+  {
+    icon: IconInputSpark,
+    id: 'inputs',
+    labelKey: 'flows.nodePicker.categories.inputs',
+  },
+  {
+    icon: IconPhoto,
+    id: 'image',
+    labelKey: 'flows.nodePicker.categories.image',
+  },
+  {
+    icon: IconVideo,
+    id: 'video',
+    labelKey: 'flows.nodePicker.categories.video',
+  },
+  {
+    icon: IconLetterT,
+    id: 'text',
+    labelKey: 'flows.nodePicker.categories.text',
+  },
+  {
+    icon: IconMusic,
+    id: 'audio',
+    labelKey: 'flows.nodePicker.categories.audio',
+  },
+] as const satisfies readonly {
+  icon: typeof IconTextCaption
+  id: FlowNodePickerFilter
+  labelKey: string
+}[]
+
 /**
  * Authoritative dashboard metadata keyed by persisted Flow node type.
  * Picker visibility, inspector ownership, and toolbar capabilities must be
@@ -86,6 +141,7 @@ export const FLOW_NODE_METADATA: Record<FlowNodeType, FlowNodeMetadata> = {
     icon: AssetIcon,
     inspector: 'assetMetadata',
     labelKey: 'flows.nodes.asset',
+    pickerCategory: 'inputs',
     pickerGroup: 'inputs',
     pickerOrder: 20,
     pickerVisible: true,
@@ -97,6 +153,7 @@ export const FLOW_NODE_METADATA: Record<FlowNodeType, FlowNodeMetadata> = {
     generationSettingsKind: 'standard',
     inspector: 'generationSettings',
     labelKey: 'flows.nodes.audioGeneration',
+    pickerCategory: 'audio',
     pickerGroup: 'generation',
     pickerOrder: 999,
     pickerVisible: false,
@@ -109,6 +166,7 @@ export const FLOW_NODE_METADATA: Record<FlowNodeType, FlowNodeMetadata> = {
     generationSettingsKind: 'image',
     inspector: 'generationSettings',
     labelKey: 'flows.nodes.imageGeneration',
+    pickerCategory: 'image',
     pickerGroup: 'generation',
     pickerOrder: 10,
     pickerVisible: true,
@@ -121,6 +179,7 @@ export const FLOW_NODE_METADATA: Record<FlowNodeType, FlowNodeMetadata> = {
     generationSettingsKind: 'llm',
     inspector: 'generationSettings',
     labelKey: 'flows.nodes.llm',
+    pickerCategory: 'text',
     pickerGroup: 'generation',
     pickerOrder: 60,
     pickerVisible: true,
@@ -133,6 +192,7 @@ export const FLOW_NODE_METADATA: Record<FlowNodeType, FlowNodeMetadata> = {
     generationSettingsKind: 'audio',
     inspector: 'generationSettings',
     labelKey: 'flows.nodes.musicGeneration',
+    pickerCategory: 'audio',
     pickerGroup: 'generation',
     pickerOrder: 40,
     pickerVisible: true,
@@ -145,6 +205,7 @@ export const FLOW_NODE_METADATA: Record<FlowNodeType, FlowNodeMetadata> = {
     generationSettingsKind: 'audio',
     inspector: 'generationSettings',
     labelKey: 'flows.nodes.soundEffectGeneration',
+    pickerCategory: 'audio',
     pickerGroup: 'generation',
     pickerOrder: 50,
     pickerVisible: true,
@@ -157,6 +218,7 @@ export const FLOW_NODE_METADATA: Record<FlowNodeType, FlowNodeMetadata> = {
     generationSettingsKind: 'audio',
     inspector: 'generationSettings',
     labelKey: 'flows.nodes.speechGeneration',
+    pickerCategory: 'audio',
     pickerGroup: 'generation',
     pickerOrder: 30,
     pickerVisible: true,
@@ -167,6 +229,7 @@ export const FLOW_NODE_METADATA: Record<FlowNodeType, FlowNodeMetadata> = {
     descriptionKey: 'flows.nodePicker.descriptions.text',
     icon: IconTextCaption,
     labelKey: 'flows.nodes.text',
+    pickerCategory: 'inputs',
     pickerGroup: 'inputs',
     pickerOrder: 10,
     pickerVisible: true,
@@ -178,6 +241,7 @@ export const FLOW_NODE_METADATA: Record<FlowNodeType, FlowNodeMetadata> = {
     generationSettingsKind: 'video',
     inspector: 'generationSettings',
     labelKey: 'flows.nodes.videoGeneration',
+    pickerCategory: 'video',
     pickerGroup: 'generation',
     pickerOrder: 20,
     pickerVisible: true,
@@ -190,6 +254,7 @@ export const FLOW_NODE_METADATA: Record<FlowNodeType, FlowNodeMetadata> = {
     generationSettingsKind: 'audio',
     inspector: 'generationSettings',
     labelKey: 'flows.nodes.voiceChanger',
+    pickerCategory: 'audio',
     pickerGroup: 'transform',
     pickerOrder: 10,
     pickerVisible: true,
@@ -202,6 +267,7 @@ export const FLOW_NODE_METADATA: Record<FlowNodeType, FlowNodeMetadata> = {
     generationSettingsKind: 'audio',
     inspector: 'generationSettings',
     labelKey: 'flows.nodes.voiceIsolation',
+    pickerCategory: 'audio',
     pickerGroup: 'transform',
     pickerOrder: 20,
     pickerVisible: true,

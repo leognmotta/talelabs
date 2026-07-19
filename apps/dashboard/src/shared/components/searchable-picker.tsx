@@ -1,3 +1,5 @@
+/** Shared searchable picker composition for grouped dashboard option lists. */
+
 import type { ReactElement, ReactNode } from 'react'
 
 import {
@@ -22,24 +24,36 @@ import { Fragment, useCallback, useLayoutEffect, useState } from 'react'
 
 const COMBOBOX_OPTION_SELECTOR = '[role="option"]'
 
+/** One selectable option in a searchable picker group. */
 export interface SearchablePickerItem {
+  /** Rich option content rendered inside the combobox item. */
   content: ReactNode
+  /** Whether the option is visible but unavailable for selection. */
   disabled?: boolean
+  /** Stable value returned when the option is selected. */
   id: string
+  /** Localized plain text matched by the combobox search. */
   searchValue: string
 }
 
+/** One ordered, labelled section of searchable picker options. */
 export interface SearchablePickerGroup {
+  /** Stable identity for the option section. */
   id: string
+  /** Options rendered in the section's canonical order. */
   items: SearchablePickerItem[]
+  /** Localized section label shown above its options. */
   label: string
+  /** Whether a visual divider precedes this section. */
   separatorBefore?: boolean
 }
 
+/** Renders a searchable, grouped combobox with optional picker-specific controls. */
 export function SearchablePicker({
   align = 'start',
   ariaLabel,
   contentClassName,
+  controls,
   emptyMessage,
   groups,
   searchAriaLabel,
@@ -57,6 +71,7 @@ export function SearchablePicker({
   align?: 'center' | 'end' | 'start'
   ariaLabel: string
   contentClassName?: string
+  controls?: ReactNode
   emptyMessage: string
   groups: SearchablePickerGroup[]
   searchAriaLabel: string
@@ -122,9 +137,7 @@ export function SearchablePicker({
             w-[min(22rem,calc(100vw-2rem))] min-w-0 rounded-2xl border
             border-border/90 shadow-2xl
             *:data-[slot=input-group]:m-2 *:data-[slot=input-group]:mb-0
-            *:data-[slot=input-group]:h-10 *:data-[slot=input-group]:border-0
-            *:data-[slot=input-group]:bg-transparent
-            *:data-[slot=input-group]:shadow-none
+            *:data-[slot=input-group]:h-10
           `,
           contentClassName,
         )}
@@ -136,7 +149,9 @@ export function SearchablePicker({
           aria-label={searchAriaLabel}
           placeholder={searchPlaceholder}
           showTrigger={false}
+          variant="outline"
         />
+        {controls}
         <ComboboxEmpty>{emptyMessage}</ComboboxEmpty>
         <div className="relative mt-1 overflow-hidden">
           <ComboboxList

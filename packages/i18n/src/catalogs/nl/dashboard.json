@@ -156,6 +156,15 @@
     "nodePicker": {
       "searchPlaceholder": "Knopen zoeken",
       "noResults": "Geen knopen gevonden",
+      "categoryFilterLabel": "Knooppuntcategorieën filteren",
+      "categories": {
+        "all": "Alle knooppunten",
+        "inputs": "Invoer",
+        "image": "Afbeelding",
+        "video": "Video",
+        "text": "Tekst",
+        "audio": "Audio"
+      },
       "groups": {
         "inputs": "Invoer",
         "generation": "Generatie",
@@ -163,7 +172,7 @@
       },
       "descriptions": {
         "text": "Schrijf een herbruikbare prompt.",
-        "asset": "Voeg afbeeldingen, video, audio of documenten toe.",
+        "asset": "Voeg afbeeldingen, video of audio toe.",
         "element": "Voeg herbruikbare creatieve context toe.",
         "imageGeneration": "Configureer een stap voor afbeeldingsgeneratie.",
         "llm": "Transformeer tekst en analyseer afbeeldingen met een LLM.",

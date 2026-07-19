@@ -1,14 +1,27 @@
 /** Add-node picker derived from canonical node presentation metadata. */
 
 import type { FlowNodeType } from '@talelabs/flows'
+import type { FlowNodePickerFilter } from '../../nodes/flow-node-metadata'
 
 import { IconPlus } from '@tabler/icons-react'
 import { isFlowNodeType } from '@talelabs/flows'
 import { Badge } from '@talelabs/ui/components/badge'
 import { Button } from '@talelabs/ui/components/button'
+import { Separator } from '@talelabs/ui/components/separator'
+import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from '@talelabs/ui/components/toggle-group'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@talelabs/ui/components/tooltip'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { SearchablePicker } from '../../../../shared/components/searchable-picker'
 import {
+  FLOW_NODE_PICKER_CATEGORIES,
   FLOW_NODE_PICKER_DEFINITIONS,
   FLOW_NODE_PICKER_GROUPS,
   getFlowNodeMetadata,
@@ -20,9 +33,16 @@ export function FlowCanvasNodePicker(input: {
   onAddNode: (nodeType: FlowNodeType) => void
 }) {
   const { t } = useTranslation()
-  const groups = FLOW_NODE_PICKER_GROUPS.map((group, groupIndex) => ({
+  const [category, setCategory] = useState<FlowNodePickerFilter>('all')
+  const visibleDefinitions
+    = category === 'all'
+      ? FLOW_NODE_PICKER_DEFINITIONS
+      : FLOW_NODE_PICKER_DEFINITIONS.filter(
+          definition => definition.pickerCategory === category,
+        )
+  const groups = FLOW_NODE_PICKER_GROUPS.map(group => ({
     id: group.id,
-    items: FLOW_NODE_PICKER_DEFINITIONS
+    items: visibleDefinitions
       .filter(definition => definition.pickerGroup === group.id)
       .map((definition) => {
         const {
@@ -71,16 +91,66 @@ export function FlowCanvasNodePicker(input: {
             t(labelKey),
             t(descriptionKey),
             t(group.labelKey),
+            t(
+              FLOW_NODE_PICKER_CATEGORIES.find(
+                categoryDefinition =>
+                  categoryDefinition.id === definition.pickerCategory,
+              )?.labelKey ?? group.labelKey,
+            ),
             disabled ? t('flows.modelPicker.unavailable') : '',
           ].join(' '),
         }
       }),
     label: t(group.labelKey),
-    separatorBefore: groupIndex > 0,
   }))
+    .filter(group => group.items.length > 0)
+    .map((group, groupIndex) => ({
+      ...group,
+      separatorBefore: groupIndex > 0,
+    }))
   return (
     <SearchablePicker
       ariaLabel={t('flows.addNode')}
+      controls={(
+        <>
+          <ToggleGroup
+            aria-label={t('flows.nodePicker.categoryFilterLabel')}
+            className="mx-2 mt-2"
+            size="sm"
+            value={[category]}
+            variant="filled"
+            onValueChange={(values) => {
+              const nextCategory = values.at(-1)
+              const matchedCategory = FLOW_NODE_PICKER_CATEGORIES.find(
+                definition => definition.id === nextCategory,
+              )
+              if (matchedCategory)
+                setCategory(matchedCategory.id)
+            }}
+          >
+            {FLOW_NODE_PICKER_CATEGORIES.map((definition) => {
+              const CategoryIcon = definition.icon
+              const label = t(definition.labelKey)
+              return (
+                <Tooltip key={definition.id}>
+                  <TooltipTrigger
+                    render={(
+                      <ToggleGroupItem
+                        aria-label={label}
+                        value={definition.id}
+                      />
+                    )}
+                  >
+                    <CategoryIcon aria-hidden />
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">{label}</TooltipContent>
+                </Tooltip>
+              )
+            })}
+          </ToggleGroup>
+          <Separator className="mt-2" />
+        </>
+      )}
       emptyMessage={t('flows.nodePicker.noResults')}
       groups={groups}
       searchAriaLabel={t('flows.nodePicker.searchPlaceholder')}

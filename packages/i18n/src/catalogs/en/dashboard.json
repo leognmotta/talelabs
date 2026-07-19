@@ -156,6 +156,15 @@
     "nodePicker": {
       "searchPlaceholder": "Search nodes",
       "noResults": "No matching nodes",
+      "categoryFilterLabel": "Filter node categories",
+      "categories": {
+        "all": "All nodes",
+        "inputs": "Inputs",
+        "image": "Image",
+        "video": "Video",
+        "text": "Text",
+        "audio": "Audio"
+      },
       "groups": {
         "inputs": "Inputs",
         "generation": "Generation",
@@ -163,7 +172,7 @@
       },
       "descriptions": {
         "text": "Write a reusable prompt.",
-        "asset": "Add image, video, audio, or documents.",
+        "asset": "Add images, videos, or audio.",
         "element": "Add reusable creative context.",
         "imageGeneration": "Configure an image generation step.",
         "llm": "Transform text and analyze images with an LLM.",
