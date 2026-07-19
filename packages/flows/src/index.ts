@@ -22,7 +22,6 @@ export * from './generation/resolution/image-input-aliases.js'
 export * from './generation/resolution/image.js'
 export * from './generation/resolution/llm.js'
 export * from './generation/resolution/music.js'
-export * from './generation/resolution/reference-budget.js'
 export * from './generation/resolution/setting-requirements.js'
 export * from './generation/resolution/sound-effect.js'
 export * from './generation/resolution/speech.js'
@@ -37,6 +36,12 @@ export * from './graph/limits.js'
 export * from './graph/ordering/edges.js'
 export * from './graph/ordering/stable.js'
 export * from './graph/types.js'
+export {
+  getElementNodeElementId,
+  getElementNodeSelectedAssetIds,
+  resolveElementNodeReferences,
+  sourceCandidateAssetIds,
+} from './graph/validation-nodes.js'
 export * from './graph/validation.js'
 export * from './nodes/registry/index.js'
 export * from './runtime/index.js'

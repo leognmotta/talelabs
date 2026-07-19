@@ -51,6 +51,20 @@ export const AssetNodeDataSchemaV3 = LockedNodeDataSchema.extend({
   crop: FlowImageCropSchema.optional(),
 })
 
+/** Mirrors MAX_ELEMENT_REFERENCES in @talelabs/assets (not a dependency here). */
+const MAX_ELEMENT_NODE_REFERENCES = 8
+
+/**
+ * Persisted data schema for Element source nodes. The node stores the
+ * referenced Element ID plus the explicit ordered subset of its references
+ * the node emits; picking an Element always chooses what to use, and the
+ * choice is never silently repaired when the Element changes later.
+ */
+export const ElementNodeDataSchema = LockedNodeDataSchema.extend({
+  elementId: z.string().nullable(),
+  selectedAssetIds: z.array(z.string()).max(MAX_ELEMENT_NODE_REFERENCES),
+})
+
 /** Legacy text-node data accepted during deterministic migration. */
 export const TextNodeDataSchemaV1 = z.strictObject({
   text: z.string().max(16_000),
@@ -250,7 +264,7 @@ export function createGenerationNodeDataSchema(mediaType: GenerationOutputType) 
 export function createIntentGenerationNodeDataSchema(
   nodeType: Exclude<
     FlowNodeType,
-    'asset' | 'audioGeneration' | 'text'
+    'asset' | 'audioGeneration' | 'element' | 'text'
   >,
   fields: Record<string, z.ZodType> = {},
 ) {

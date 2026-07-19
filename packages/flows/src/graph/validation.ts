@@ -1,3 +1,5 @@
+/** Whole-graph validation producing run-blocking and advisory issues. */
+
 import type {
   FlowGraphIssue,
   FlowGraphValidationResult,
@@ -13,7 +15,11 @@ import {
   addFlowGraphIssue,
   flowNodeDataByteLength,
 } from './validation-issues.js'
-import { normalizeFlowGraphNodes } from './validation-nodes.js'
+import {
+  getElementNodeElementId,
+  normalizeFlowGraphNodes,
+  resolveElementNodeReferences,
+} from './validation-nodes.js'
 
 function validateGraph(
   input: ValidateGraphInput,
@@ -128,6 +134,39 @@ function validateGraph(
     const outgoingKey = `${sourceNode.id}:${sourceHandle.id}`
     incomingCounts.set(incomingKey, (incomingCounts.get(incomingKey) ?? 0) + 1)
     outgoingCounts.set(outgoingKey, (outgoingCounts.get(outgoingKey) ?? 0) + 1)
+  }
+
+  // A deleted Element or a stale custom selection never blocks draft
+  // persistence; both only invalidate runs that would consume the node.
+  const flaggedElementNodeIds = new Set<string>()
+  for (const edge of input.edges) {
+    if (!requiredNodeIds?.has(edge.targetNodeId))
+      continue
+    const sourceNode = nodesById.get(edge.sourceNodeId)
+    if (!sourceNode || flaggedElementNodeIds.has(sourceNode.id))
+      continue
+    const elementId = getElementNodeElementId(sourceNode)
+    if (!elementId)
+      continue
+    if (!input.context.elementReferencesById[elementId]) {
+      flaggedElementNodeIds.add(sourceNode.id)
+      addFlowGraphIssue(
+        issues,
+        'unresolved_element_reference',
+        `nodes.${sourceNode.id}.data.elementId`,
+      )
+      continue
+    }
+    const resolved = resolveElementNodeReferences(sourceNode, input.context)
+    if (resolved.stale.length > 0) {
+      flaggedElementNodeIds.add(sourceNode.id)
+      addFlowGraphIssue(
+        issues,
+        'stale_element_selection',
+        `nodes.${sourceNode.id}.data.selectedAssetIds`,
+        { count: resolved.stale.length },
+      )
+    }
   }
 
   for (const node of nodesById.values()) {

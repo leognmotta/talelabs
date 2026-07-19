@@ -148,7 +148,7 @@ export function validateGenerationContractCapabilityScenarios() {
   }
 
   const emptyConnectedTextResult = validateExecutableFlowGraph({
-    context: { assetTypesById: {} },
+    context: { assetTypesById: {}, elementReferencesById: {} },
     edges: [
       {
         createdAt: '2026-07-14T00:00:00.000Z',

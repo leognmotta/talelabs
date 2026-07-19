@@ -26,6 +26,7 @@ import {
   isGenerationNodeType,
 } from '../../generation/registry/index.js'
 import { getFlowNodeHandles } from '../../graph/handles.js'
+import { resolveElementNodeReferences } from '../../graph/validation-nodes.js'
 import { createStaticAssetItem } from '../values/runtime-collections.js'
 import { createStaticTextItem } from '../values/runtime-text.js'
 import {
@@ -152,6 +153,25 @@ export function materializeFlowRunExecution(
               nodeId: sourceNode.id,
             })
           }
+        }
+        else if (sourceNode.type === 'element') {
+          const referenceAssetIds
+            = resolveElementNodeReferences(sourceNode, input.context).assetIds
+          items = referenceAssetIds.flatMap((assetId) => {
+            const mediaType = input.context.assetTypesById[assetId]
+            if (mediaType !== 'image')
+              return []
+            staticAssets.set(assetId, {
+              assetId,
+              mediaType,
+              nodeId: sourceNode.id,
+            })
+            return [createStaticAssetItem({
+              assetId,
+              mediaType,
+              nodeId: sourceNode.id,
+            })]
+          })
         }
         else if (isGenerationNodeType(sourceNode.type)) {
           const sourceHandle = getFlowNodeHandles(sourceNode, input.context)

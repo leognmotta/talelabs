@@ -1,3 +1,5 @@
+/** Per-node-type validation helpers and Element reference resolution. */
+
 import type {
   FlowGraphIssue,
   FlowGraphNode,
@@ -13,6 +15,7 @@ import {
 import { assetTypeToValueType } from './asset-value-types.js'
 import { addFlowGraphIssue } from './validation-issues.js'
 
+/** Validates raw nodes against their registry schemas, collecting issues. */
 export function normalizeFlowGraphNodes(
   nodes: readonly FlowGraphNode[],
   issues: FlowGraphIssue[],
@@ -46,6 +49,49 @@ export function normalizeFlowGraphNodes(
   return { nodes: normalizedNodes, validNodeIds }
 }
 
+/** Reads the Element reference stored in an element node's data payload. */
+export function getElementNodeElementId(node: FlowGraphNode) {
+  if (node.type !== 'element')
+    return null
+  const elementId = node.data.elementId
+  return typeof elementId === 'string' && elementId.length > 0
+    ? elementId
+    : null
+}
+
+/** Reads the explicit reference subset an element node was configured with. */
+export function getElementNodeSelectedAssetIds(node: FlowGraphNode) {
+  if (node.type !== 'element')
+    return []
+  const selectedAssetIds = node.data.selectedAssetIds
+  return Array.isArray(selectedAssetIds)
+    ? selectedAssetIds.filter((id): id is string => typeof id === 'string')
+    : []
+}
+
+/**
+ * Resolves the ordered references an element node emits. The node's explicit
+ * choice intersects the Element's current references in Element order;
+ * `stale` lists chosen Assets the Element no longer references — they
+ * invalidate runs instead of vanishing silently.
+ */
+export function resolveElementNodeReferences(
+  node: FlowGraphNode,
+  context: FlowGraphValidationContext,
+) {
+  const elementId = getElementNodeElementId(node)
+  const references = elementId
+    ? context.elementReferencesById[elementId] ?? []
+    : []
+  const selected = new Set(getElementNodeSelectedAssetIds(node))
+  return {
+    assetIds: references.filter(assetId => selected.has(assetId)),
+    stale: getElementNodeSelectedAssetIds(node)
+      .filter(assetId => !references.includes(assetId)),
+  }
+}
+
+/** Candidate Asset IDs one source node can feed into a consuming slot. */
 export function sourceCandidateAssetIds(
   node: FlowGraphNode,
   context: FlowGraphValidationContext,
@@ -58,9 +104,15 @@ export function sourceCandidateAssetIds(
       : []
   }
 
+  const elementId = getElementNodeElementId(node)
+  if (elementId && acceptedTypes.includes('ImageSet')) {
+    return resolveElementNodeReferences(node, context).assetIds.filter(assetId => context.assetTypesById[assetId] === 'image')
+  }
+
   return []
 }
 
+/** How many runtime items a source node emits for limit checks. */
 export function sourceRuntimeItemCount(node: FlowGraphNode) {
   if (node.type === 'text')
     return String(node.data.text ?? '').trim().length > 0 ? 1 : 0

@@ -1,3 +1,5 @@
+/** Node registry contracts: versioned data schemas, migrations, handles. */
+
 import type {
   FlowHandleDefinition,
   FlowNodeType,
@@ -12,6 +14,7 @@ import {
   AssetNodeDataSchemaV3,
   AudioGenerationNodeDataSchemaV1,
   AudioGenerationNodeDataSchemaV2,
+  ElementNodeDataSchema,
   EmptyNodeDataSchema,
   ImageGenerationNodeDataSchemaV1,
   ImageGenerationNodeDataSchemaV2,
@@ -94,6 +97,17 @@ const audioGenerationOutputHandles = Object.freeze([
   },
 ] as const satisfies readonly FlowHandleDefinition[])
 
+const elementOutputHandles = Object.freeze([
+  {
+    direction: 'output',
+    id: 'references',
+    maxConnections: null,
+    minConnections: 0,
+    valueTypes: ['ImageSet'],
+  },
+] as const satisfies readonly FlowHandleDefinition[])
+
+/** Canonical registry: schema versions, migrations, and handles per type. */
 export const FLOW_NODE_TYPE_REGISTRY = Object.freeze({
   asset: {
     currentVersion: 3,
@@ -120,6 +134,14 @@ export const FLOW_NODE_TYPE_REGISTRY = Object.freeze({
       2: AudioGenerationNodeDataSchemaV2,
     },
     staticHandles: audioGenerationOutputHandles,
+  },
+  element: {
+    currentVersion: 1,
+    id: 'element',
+    migrations: {},
+    reference: 'none',
+    schemas: { 1: ElementNodeDataSchema },
+    staticHandles: elementOutputHandles,
   },
   imageGeneration: {
     currentVersion: 7,
@@ -235,10 +257,12 @@ export const SELECTABLE_FLOW_NODE_TYPES = Object.freeze(
   }),
 )
 
+/** Whether a value names a registered Flow node type. */
 export function isFlowNodeType(value: unknown): value is FlowNodeType {
   return typeof value === 'string' && value in FLOW_NODE_TYPE_REGISTRY
 }
 
+/** Registry definition for one node type. */
 export function getFlowNodeTypeDefinition(type: FlowNodeType) {
   return FLOW_NODE_TYPE_REGISTRY[type] as FlowNodeTypeDefinition
 }

@@ -1,3 +1,5 @@
+/** Test fixtures constructing Flow run-planner inputs. */
+
 import type {
   FlowRunPlannerInput,
   PriorNodeOutputDescriptor,
@@ -5,12 +7,14 @@ import type {
 
 import { createRuntimeItem } from '../src/index.js'
 
+/** Builds a planner input with an empty validation context for tests. */
 export function plannerInput(
   input: Omit<FlowRunPlannerInput, 'context'>,
 ): FlowRunPlannerInput {
-  return { ...input, context: { assetTypesById: {} } }
+  return { ...input, context: { assetTypesById: {}, elementReferencesById: {} } }
 }
 
+/** Builds a prior text-output descriptor for one node for tests. */
 export function priorTextOutput(
   nodeId: string,
   itemInputs: readonly {
