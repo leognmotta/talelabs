@@ -1,9 +1,17 @@
 /** Referentially stable React Flow registries, defaults, and connection options. */
 
 import type { EdgeTypes } from '@xyflow/react'
+import type { CSSProperties } from 'react'
 
 import { FlowCanvasEdge } from './flow-canvas-edge'
 
+/** Visual treatment for the temporary wire shown during connection gestures. */
+export const FLOW_CANVAS_CONNECTION_LINE_STYLE = {
+  stroke: 'var(--flow-connection-stroke, var(--flow-edge-selected))',
+  strokeDasharray: '7 5',
+  strokeLinecap: 'round',
+  strokeWidth: 2.25,
+} satisfies CSSProperties
 /** Module-stable default edge options passed to React Flow. */
 export const FLOW_CANVAS_DEFAULT_EDGE_OPTIONS = {
   animated: false,

@@ -9,6 +9,7 @@ import {
   TooltipTrigger,
 } from '@talelabs/ui/components/tooltip'
 import { Handle, Position } from '@xyflow/react'
+import { useEffect, useRef, useState } from 'react'
 import {
   HANDLE_ICONS_BY_ID,
   HANDLE_ICONS_BY_VALUE_TYPE,
@@ -36,13 +37,40 @@ export function FlowHandle({
   tooltip?: string
   valueType: FlowValueType
 }) {
+  const previousConnectionCountRef = useRef(connectionCount)
+  const [connectionAccepted, setConnectionAccepted] = useState(false)
   const Icon = HANDLE_ICONS_BY_ID[id as keyof typeof HANDLE_ICONS_BY_ID]
     ?? HANDLE_ICONS_BY_VALUE_TYPE[valueType]
     ?? IconSparkles
+
+  useEffect(() => {
+    const previousConnectionCount = previousConnectionCountRef.current
+    previousConnectionCountRef.current = connectionCount
+    if (side !== 'input' || connectionCount <= previousConnectionCount)
+      return
+    let startFrame: number | undefined
+    let resetTimer: number | undefined
+    const clearFrame = requestAnimationFrame(() => {
+      setConnectionAccepted(false)
+      startFrame = requestAnimationFrame(() => {
+        setConnectionAccepted(true)
+        resetTimer = window.setTimeout(setConnectionAccepted, 400, false)
+      })
+    })
+    return () => {
+      cancelAnimationFrame(clearFrame)
+      if (startFrame !== undefined)
+        cancelAnimationFrame(startFrame)
+      if (resetTimer !== undefined)
+        window.clearTimeout(resetTimer)
+    }
+  }, [connectionCount, side])
+
   const handle = (
     <Handle
       aria-label={ariaLabel}
       aria-disabled={disabled}
+      data-connection-accepted={connectionAccepted || undefined}
       data-flow-handle
       data-connected={connectionCount > 0 || undefined}
       data-disabled={disabled || undefined}
@@ -57,8 +85,7 @@ export function FlowHandle({
       className="
         pointer-events-auto! flex! size-8! items-center! justify-center!
         rounded-full! border-2! border-(--flow-node-surface)!
-        transition-[transform,opacity,box-shadow]
-        data-connectionindicator:hover:scale-110
+        transition-[transform,scale,opacity,box-shadow]
         data-[disabled=true]:cursor-not-allowed data-[disabled=true]:opacity-35
       "
       style={side === 'input'

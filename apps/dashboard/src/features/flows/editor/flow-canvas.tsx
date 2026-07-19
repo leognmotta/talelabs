@@ -32,6 +32,7 @@ import {
   useCanvasStore,
   useCanvasStoreApi,
 } from './canvas-state/canvas-store-context'
+import { FlowCanvasConnectionLine } from './flow-canvas-connection-line'
 import { FlowCanvasDebugIndicator } from './flow-canvas-debug-indicator'
 import { FlowCanvasOverlays } from './flow-canvas-overlays'
 import {
@@ -40,6 +41,7 @@ import {
   FlowCanvasToolbarPanel,
 } from './flow-canvas-panels'
 import {
+  FLOW_CANVAS_CONNECTION_LINE_STYLE,
   FLOW_CANVAS_DEFAULT_EDGE_OPTIONS,
   FLOW_CANVAS_DELETE_KEY_CODE,
   FLOW_CANVAS_EDGE_TYPES,
@@ -233,6 +235,8 @@ function FlowCanvasInner({
             <ReactFlow
               aria-label={t('flows.a11y.canvas')}
               ariaLabelConfig={lifecycle.ariaLabelConfig}
+              connectionLineComponent={FlowCanvasConnectionLine}
+              connectionLineStyle={FLOW_CANVAS_CONNECTION_LINE_STYLE}
               defaultEdgeOptions={FLOW_CANVAS_DEFAULT_EDGE_OPTIONS}
               defaultViewport={lifecycle.defaultViewport}
               deleteKeyCode={FLOW_CANVAS_DELETE_KEY_CODE}

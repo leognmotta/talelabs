@@ -307,6 +307,39 @@
     }
   }
 
+  @keyframes talelabs-flow-connection-dash {
+    to {
+      stroke-dashoffset: -12;
+    }
+  }
+
+  @keyframes talelabs-flow-handle-accept {
+    0%,
+    100% {
+      scale: 1;
+    }
+
+    45% {
+      scale: 1.18;
+    }
+
+    72% {
+      scale: 0.97;
+    }
+  }
+
+  @keyframes talelabs-flow-handle-halo {
+    from {
+      opacity: 0.72;
+      scale: 0.78;
+    }
+
+    to {
+      opacity: 0;
+      scale: 1.65;
+    }
+  }
+
   [data-auth-screen] {
     background:
       radial-gradient(
@@ -424,6 +457,32 @@
       stroke-width 140ms ease;
   }
 
+  .react-flow__connection {
+    --flow-connection-stroke: var(--flow-edge-selected);
+  }
+
+  .react-flow__connection.valid {
+    --flow-connection-stroke: var(--success);
+  }
+
+  .react-flow__connection.invalid {
+    --flow-connection-stroke: var(--destructive);
+  }
+
+  .react-flow__connection-path {
+    animation: talelabs-flow-connection-dash 600ms linear infinite;
+  }
+
+  .react-flow__connection.valid .react-flow__connection-path {
+    filter: drop-shadow(
+      0 0 3px color-mix(in oklab, var(--success) 45%, transparent)
+    );
+  }
+
+  .react-flow__connection.invalid .react-flow__connection-path {
+    opacity: 0.68;
+  }
+
   [data-flow-handle] {
     --flow-value-color: var(--brand-dune);
   }
@@ -452,6 +511,61 @@
           transparent
         ),
       0 5px 14px var(--flow-handle-shadow);
+  }
+
+  [data-flow-handle].connectionindicator:hover {
+    scale: 1.1;
+  }
+
+  [data-flow-handle].connectingto.valid {
+    scale: 1.12;
+    box-shadow:
+      0 0 0 3px
+        color-mix(in oklab, var(--success) 38%, transparent),
+      0 8px 20px var(--flow-handle-connected-shadow);
+  }
+
+  [data-flow-handle].connectingto:not(.valid) {
+    opacity: 0.7;
+    box-shadow:
+      0 0 0 3px
+        color-mix(in oklab, var(--destructive) 32%, transparent),
+      0 5px 14px var(--flow-handle-shadow);
+  }
+
+  [data-flow-handle][data-connection-accepted="true"] {
+    animation: talelabs-flow-handle-accept 360ms ease-out;
+  }
+
+  [data-flow-handle][data-connection-accepted="true"]::after {
+    position: absolute;
+    inset: -4px;
+    border: 2px solid var(--flow-handle-color);
+    border-radius: inherit;
+    animation: talelabs-flow-handle-halo 360ms ease-out both;
+    content: "";
+    pointer-events: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .react-flow__connection-path,
+    [data-flow-handle][data-connection-accepted="true"],
+    [data-flow-handle][data-connection-accepted="true"]::after {
+      animation: none;
+    }
+
+    [data-flow-handle][data-connection-accepted="true"]::after {
+      display: none;
+    }
+
+    [data-flow-handle] {
+      transition: none;
+    }
+
+    [data-flow-handle].connectionindicator:hover,
+    [data-flow-handle].connectingto.valid {
+      scale: 1;
+    }
   }
 
   [data-flow-handle][data-value-type="Text"] {
