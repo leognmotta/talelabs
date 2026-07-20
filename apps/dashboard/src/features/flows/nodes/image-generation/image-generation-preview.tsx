@@ -7,6 +7,7 @@ import { Spinner } from '@talelabs/ui/components/spinner'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { readAspectRatio } from '../shared/flow-node-aspect-ratio'
+import { GenerationPreviewEmptyState } from '../shared/generation-node/generation-preview-empty-state'
 import { GenerationPreviewStage } from '../shared/generation-node/generation-preview-stage'
 import { CroppedImagePreview } from '../shared/media/cropped-image-preview'
 import { imageCropAspectRatio } from '../shared/media/image-crop-geometry'
@@ -111,14 +112,13 @@ export function ImageGenerationPreview({
                   )
             )
           : (
-              <IconPhotoSpark
-                aria-hidden
-                className="size-10 text-foreground/30"
-                stroke={1.25}
+              <GenerationPreviewEmptyState
+                icon={IconPhotoSpark}
+                message={readinessMessage}
               />
             )}
       </div>
-      {pending && previewUrl && (
+      {pending && (
         <div
           className="
             absolute inset-0 z-10 flex items-center justify-center

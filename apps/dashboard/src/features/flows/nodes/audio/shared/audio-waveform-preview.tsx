@@ -70,23 +70,29 @@ export function AudioWaveformPreview({
               />
             )
           : (
-              <div className="
-                flex h-24 w-full items-center justify-center gap-1 rounded-xl
-                border border-border/55 bg-card/35 px-6 shadow-inner
-              "
-              >
-                {WAVEFORM_HEIGHTS.map(height => (
-                  <span
-                    className="w-1 rounded-full bg-muted-foreground/35"
-                    key={height}
-                    style={{ height: `${height}%` }}
+              <div className="flex w-full flex-col items-center gap-2">
+                <div className="
+                  relative flex h-24 w-full items-center justify-center gap-1
+                  rounded-xl border border-border/55 bg-card/35 px-6
+                  shadow-inner
+                "
+                >
+                  {WAVEFORM_HEIGHTS.map(height => (
+                    <span
+                      className="w-1 rounded-full bg-muted-foreground/35"
+                      key={height}
+                      style={{ height: `${height}%` }}
+                    />
+                  ))}
+                  <IconWaveSine
+                    aria-hidden
+                    className="absolute size-10 text-foreground/12"
+                    stroke={1.25}
                   />
-                ))}
-                <IconWaveSine
-                  aria-hidden
-                  className="absolute size-10 text-foreground/12"
-                  stroke={1.25}
-                />
+                </div>
+                <span className="text-center text-[11px] text-muted-foreground">
+                  {readinessMessage}
+                </span>
               </div>
             )}
       </div>

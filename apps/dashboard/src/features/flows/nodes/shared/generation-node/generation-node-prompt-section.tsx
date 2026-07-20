@@ -4,5 +4,5 @@ import type { ReactNode } from 'react'
 
 /** Provides consistent spacing and connected-state treatment for prompt controls. */
 export function GenerationNodePromptSection({ children }: { children: ReactNode }) {
-  return <div className="border-t border-border/70 p-3">{children}</div>
+  return <div className="border-t border-border/50 p-3">{children}</div>
 }

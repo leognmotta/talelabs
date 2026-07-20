@@ -3,12 +3,11 @@
 import type { FlowGenerationPreview } from '../../editor/flow-canvas-types'
 /* eslint-disable better-tailwindcss/no-unknown-classes -- React Flow uses these interaction classes as behavior hooks. */
 
-import { IconCopy, IconTextCaption } from '@tabler/icons-react'
-import { Button } from '@talelabs/ui/components/button'
+import { IconTextCaption } from '@tabler/icons-react'
 import { cn } from '@talelabs/ui/lib/utils'
 import { useTranslation } from 'react-i18next'
+import { GenerationPreviewEmptyState } from '../shared/generation-node/generation-preview-empty-state'
 import { GenerationPreviewStage } from '../shared/generation-node/generation-preview-stage'
-import { useCopyOutputText } from '../shared/toolbars/use-copy-output-text'
 
 /** Renders the latest canonical LLM output and its active run state. */
 export function LlmOutputPreview({
@@ -45,7 +44,6 @@ export function LlmOutputPreview({
       ? t('flows.llm.preview.stale')
       : output ?? ''
   const readinessMessage = t(readinessMessageKey)
-  const copyOutputText = useCopyOutputText(output)
 
   return (
     <GenerationPreviewStage
@@ -69,25 +67,6 @@ export function LlmOutputPreview({
         }
       }}
     >
-      {output && (
-        <Button
-          className="
-            absolute top-3 right-3 z-10 border-border/75 bg-card/78 shadow-sm
-            backdrop-blur-sm
-          "
-          aria-label={t('flows.llm.preview.copy')}
-          size="icon-xs"
-          title={t('flows.llm.preview.copy')}
-          type="button"
-          variant="ghost"
-          onClick={(event) => {
-            event.stopPropagation()
-            void copyOutputText()
-          }}
-        >
-          <IconCopy />
-        </Button>
-      )}
       {showPreviewState
         ? (
             <div
@@ -102,7 +81,6 @@ export function LlmOutputPreview({
                     line-clamp-10 text-sm/relaxed whitespace-pre-wrap
                     text-foreground/85
                   `,
-                  output && 'pr-7',
                   !output && 'text-muted-foreground',
                   stale && `text-warning`,
                 )}
@@ -113,10 +91,9 @@ export function LlmOutputPreview({
           )
         : (
             <div className="absolute inset-0 flex items-center justify-center">
-              <IconTextCaption
-                aria-hidden
-                className="size-10 text-foreground/30"
-                stroke={1.25}
+              <GenerationPreviewEmptyState
+                icon={IconTextCaption}
+                message={readinessMessage}
               />
             </div>
           )}

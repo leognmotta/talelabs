@@ -38,9 +38,15 @@ export function GenerationPromptField({
         <FlowNodeTextarea
           aria-describedby={externalPromptConnected ? helpId : undefined}
           className="
-            min-h-20 rounded-lg border-border/65 bg-background/78 p-2.5
-            text-xs/relaxed
+            rounded-lg border-transparent bg-muted/40 p-2.5 text-xs/relaxed
+            transition-[height,background-color,border-color]
+            duration-(--flow-motion-fast) ease-(--flow-motion-ease)
+            hover:bg-muted/55
+            focus-visible:border-(--flow-node-accent,var(--ring))
+            focus-visible:bg-background/80
+            motion-reduce:transition-none
           "
+          collapsible
           disabled={externalPromptConnected}
           id={textareaId}
           maxLength={16_000}

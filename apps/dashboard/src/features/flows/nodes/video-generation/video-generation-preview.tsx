@@ -2,9 +2,10 @@
 
 import type { VideoGenerationState } from '@talelabs/flows'
 
-import { IconPlayerPlayFilled } from '@tabler/icons-react'
+import { IconVideo } from '@tabler/icons-react'
 import { Spinner } from '@talelabs/ui/components/spinner'
 import { useTranslation } from 'react-i18next'
+import { GenerationPreviewEmptyState } from '../shared/generation-node/generation-preview-empty-state'
 import { GenerationPreviewStage } from '../shared/generation-node/generation-preview-stage'
 
 /** Displays the latest generated video, loading state, or empty output stage. */
@@ -44,17 +45,13 @@ export function VideoGenerationPreview({
               />
             )
           : (
-              <span className="
-                flex size-12 items-center justify-center rounded-full border
-                border-border/75 bg-card/72 text-foreground/65 shadow-sm
-                backdrop-blur-sm
-              "
-              >
-                <IconPlayerPlayFilled aria-hidden className="ml-0.5 size-5" />
-              </span>
+              <GenerationPreviewEmptyState
+                icon={IconVideo}
+                message={readinessMessage}
+              />
             )}
       </div>
-      {pending && previewUrl && (
+      {pending && (
         <div
           className="
             absolute inset-0 z-10 flex items-center justify-center

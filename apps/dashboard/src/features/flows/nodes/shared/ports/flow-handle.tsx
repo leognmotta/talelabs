@@ -86,6 +86,7 @@ export function FlowHandle({
         pointer-events-auto! flex! size-8! items-center! justify-center!
         rounded-full! border-2! border-(--flow-node-surface)!
         transition-[transform,scale,opacity,box-shadow]
+        duration-(--flow-motion-fast) ease-(--flow-motion-ease)
         data-[disabled=true]:cursor-not-allowed data-[disabled=true]:opacity-35
       "
       style={side === 'input'

@@ -1,13 +1,20 @@
 /** Core Flow node rendering primitives shared by current node families. */
 
-import type { ChangeEventHandler, ComponentProps } from 'react'
+import type { ChangeEventHandler, ComponentProps, FocusEventHandler } from 'react'
 /* eslint-disable better-tailwindcss/no-unknown-classes -- React Flow uses these interaction classes as behavior hooks. */
 
 import { Textarea } from '@talelabs/ui/components/textarea'
 import { cn } from '@talelabs/ui/lib/utils'
-import { useLayoutEffect, useRef } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 
-type FlowNodeTextareaProps = Omit<ComponentProps<'textarea'>, 'ref'>
+type FlowNodeTextareaProps = Omit<ComponentProps<'textarea'>, 'ref'> & {
+  /**
+   * When true, the field rests at a single line and expands to auto-size while
+   * focused, so an unfocused node stays compact but the full prompt is visible
+   * during editing.
+   */
+  collapsible?: boolean
+}
 
 interface PendingSelection {
   direction: 'backward' | 'forward' | 'none' | null
@@ -16,15 +23,33 @@ interface PendingSelection {
   value: string
 }
 
+/** Computes the collapsed single-line height from resolved box metrics. */
+function measureSingleLineHeight(styles: CSSStyleDeclaration): number {
+  const lineHeight = Number.parseFloat(styles.lineHeight)
+  const paddingY = Number.parseFloat(styles.paddingTop)
+    + Number.parseFloat(styles.paddingBottom)
+  const borderY = Number.parseFloat(styles.borderTopWidth)
+    + Number.parseFloat(styles.borderBottomWidth)
+  const resolvedLineHeight = Number.isFinite(lineHeight)
+    ? lineHeight
+    : Number.parseFloat(styles.fontSize) * 1.5
+  return resolvedLineHeight + paddingY + borderY
+}
+
 /** Provides the nodrag auto-sizing textarea used by editable node prompts. */
 export function FlowNodeTextarea({
   className,
+  collapsible = false,
+  onBlur,
   onChange,
+  onFocus,
   value,
   ...props
 }: FlowNodeTextareaProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const pendingSelectionRef = useRef<PendingSelection | null>(null)
+  const [focused, setFocused] = useState(false)
+  const collapsed = collapsible && !focused
 
   useLayoutEffect(() => {
     const textarea = textareaRef.current
@@ -32,8 +57,16 @@ export function FlowNodeTextarea({
       return
 
     const styles = window.getComputedStyle(textarea)
-    const minimumHeight = Number.parseFloat(styles.minHeight)
+
+    if (collapsed) {
+      textarea.style.height = `${measureSingleLineHeight(styles)}px`
+      textarea.style.overflowY = 'hidden'
+      return
+    }
+
+    const minimumHeight = Number.parseFloat(styles.minHeight) || 0
     const maximumHeight = Number.parseFloat(styles.maxHeight)
+      || Number.POSITIVE_INFINITY
     textarea.style.height = '0px'
     const contentHeight = textarea.scrollHeight
     const height = Math.min(
@@ -58,7 +91,7 @@ export function FlowNodeTextarea({
       pendingSelection.end,
       pendingSelection.direction ?? undefined,
     )
-  }, [value])
+  }, [collapsed, value])
 
   const handleChange: ChangeEventHandler<HTMLTextAreaElement> = (event) => {
     const nativeEvent = event.nativeEvent
@@ -74,6 +107,16 @@ export function FlowNodeTextarea({
     onChange?.(event)
   }
 
+  const handleFocus: FocusEventHandler<HTMLTextAreaElement> = (event) => {
+    setFocused(true)
+    onFocus?.(event)
+  }
+
+  const handleBlur: FocusEventHandler<HTMLTextAreaElement> = (event) => {
+    setFocused(false)
+    onBlur?.(event)
+  }
+
   return (
     <Textarea
       ref={textareaRef}
@@ -84,8 +127,11 @@ export function FlowNodeTextarea({
         `,
         className,
       )}
+      rows={1}
       value={value}
+      onBlur={handleBlur}
       onChange={handleChange}
+      onFocus={handleFocus}
       {...props}
     />
   )
