@@ -139,10 +139,17 @@ Run selection  = execute selected executable nodes only, reusing prior upstream 
 Run all        = execute every executable node in the Flow
 ```
 
-`Run all` belongs on the main canvas action bar. `Run selection` belongs in the
-selection context menu and is available only when the selection contains at
-least one executable node. Text and Asset nodes contribute immutable inputs but
-do not create jobs. Connecting nodes never starts execution automatically.
+Command placement (user decision 2026-07-19 — supersedes the earlier floating
+node toolbar): there is no per-node floating toolbar. `Run node` and the
+`Run from here` / `Run till here` dropdown live in the node's output footer as
+a compact run control. Output commands (download, crop, copy, add to Element,
+fullscreen) are hover actions on the node's media preview, also revealed by
+selection and keyboard focus. Delete, lock, and Element switching live in the
+node context menu. `Run all` belongs on the main canvas action bar.
+`Run selection` belongs in the selection context menu and is available only
+when the selection contains at least one executable node. Text and Asset nodes
+contribute immutable inputs but do not create jobs. Connecting nodes never
+starts execution automatically.
 
 ## Build Sequence
 

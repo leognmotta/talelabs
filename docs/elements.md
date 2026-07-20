@@ -106,8 +106,9 @@ max 8; duplicates rejected. List covers resolve in one batched
   different subsets (the multi-outfit case).
 - The node body behaves like the Asset node: the cover renders at its
   natural aspect ratio and is drag surface, not a button. Switching or
-  re-configuring the Element happens through the node toolbar action, which
-  reopens the same two-step modal.
+  re-configuring the Element happens through the node context menu's
+  *Switch element* command (placement revised 2026-07-19 with the retirement
+  of the floating node toolbar), which reopens the same two-step modal.
 - A custom-selected reference later removed from the Element becomes a
   `stale_element_selection` run issue with a visible warning on the node fixed through the same modal
   — never a silent drop. Like `unresolved_element_reference`, it only
@@ -125,8 +126,8 @@ max 8; duplicates rejected. List covers resolve in one batched
 ## Capture loops
 
 - **From generation outputs:** image-output generation nodes and image Asset
-  nodes expose an *Add to Element* toolbar action (the LTX "Save as Element"
-  pattern) opening the shared Add to Element dialog: search existing Elements
+  nodes expose an *Add to Element* preview hover action (the LTX "Save as
+  Element" pattern) opening the shared Add to Element dialog: search existing Elements
   (with visible n/8 capacity), or create a new one inline. Adds go through
   the atomic `PATCH /elements/:id/references`; success confirms with the
   server-reported counts, and Undo removes only the Assets that call added.

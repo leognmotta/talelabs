@@ -1124,8 +1124,10 @@ all         Run all        every executable node in the saved Flow
 `Run selection` must not regenerate unselected ancestors. Missing required prior
 outputs reject preflight/admission instead of silently adding dependency jobs.
 Selected edges and non-executable nodes alone do not make the command available.
-The node toolbar owns `node`, `downstream`, and `upstream`; the main canvas
-action bar owns `all`; the selection context menu owns `selection`.
+The node's footer run control owns `node`, `downstream`, and `upstream`
+(placement revised by user decision 2026-07-19 — the floating node toolbar is
+retired); the main canvas action bar owns `all`; the selection context menu
+owns `selection`.
 
 Planning stages:
 

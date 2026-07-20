@@ -231,8 +231,8 @@ preserving image-specific contracts such as text-only models, editing/reference
 models, output count, aspect ratio, resolution, quality, and format.
 
 Reuse the shared node frame, preview stage, prompt section, settings controls,
-input rail, inspector, actions toolbar, and model-transition behavior. Do not
-rebuild equivalent UI per node.
+input rail, inspector, footer run controls, preview output actions, and
+model-transition behavior. Do not rebuild equivalent UI per node.
 
 ### E-042 - LLM Node
 
@@ -267,7 +267,7 @@ prompt editing
 model picker and model transitions
 settings rendering
 input/output inspector
-actions toolbar
+footer run controls and preview output actions
 download and copy actions
 connection badges and disabled/conflict states
 keyboard behavior
@@ -502,11 +502,13 @@ UX. Polling is the fallback and recovery path.
 
 ### E-056 - Run UX
 
-Preserve the approved node toolbar:
+Preserve the approved per-node run commands. Placement was revised by user
+decision on 2026-07-19 (the floating node toolbar is retired):
 
 ```txt
-primary Run button = Run node
-dropdown           = Run from here / Run till here
+node footer run control = Run node (primary) + Run from here / Run till here dropdown
+preview hover actions   = download / crop / copy / add to Element / fullscreen
+node context menu       = switch element / duplicate / lock / delete
 ```
 
 Add:
