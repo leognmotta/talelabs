@@ -87,7 +87,7 @@ export const VideoGenerationFlowNode = memo(({
       selected={selected}
       title={t('flows.nodes.videoGeneration')}
     >
-      <GenerationNodePreviewArea>
+      <GenerationNodePreviewArea nodeId={id}>
         <VideoGenerationInputRail
           ariaLabel={t('flows.video.inputs.railLabel')}
           inputState={video.inputState}

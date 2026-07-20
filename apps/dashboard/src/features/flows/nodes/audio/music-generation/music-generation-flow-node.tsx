@@ -78,7 +78,7 @@ export const MusicGenerationFlowNode = memo(({
       selected={selected}
       title={t('flows.nodes.musicGeneration')}
     >
-      <GenerationNodePreviewArea>
+      <GenerationNodePreviewArea nodeId={id}>
         <AudioInputRail
           ariaLabel={t('flows.audio.inputs.railLabel')}
           inputState={music.inputState}

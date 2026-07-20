@@ -63,7 +63,7 @@ export const VoiceIsolationFlowNode = memo(({
       selected={selected}
       title={t('flows.nodes.voiceIsolation')}
     >
-      <GenerationNodePreviewArea>
+      <GenerationNodePreviewArea nodeId={id}>
         <AudioInputRail
           ariaLabel={t('flows.audio.inputs.railLabel')}
           inputState={isolation.inputState}

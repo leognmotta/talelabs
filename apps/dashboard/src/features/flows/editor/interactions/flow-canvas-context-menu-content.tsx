@@ -3,16 +3,9 @@
 import type { FlowNodeType } from '@talelabs/flows'
 import type { CanvasContextTarget } from '../canvas-state/canvas-store'
 
-import { IconCopy, IconTrash } from '@tabler/icons-react'
-import {
-  ContextMenuContent,
-  ContextMenuGroup,
-  ContextMenuItem,
-  ContextMenuSeparator,
-  ContextMenuShortcut,
-} from '@talelabs/ui/components/context-menu'
+import { ContextMenuContent } from '@talelabs/ui/components/context-menu'
 import { memo } from 'react'
-import { useTranslation } from 'react-i18next'
+import { FlowCanvasNodeContextMenu } from './flow-canvas-node-context-menu'
 import { FlowCanvasPaneContextMenu } from './flow-canvas-pane-context-menu'
 import { FlowCanvasSelectionContextMenu } from './flow-canvas-selection-context-menu'
 
@@ -39,7 +32,6 @@ export const FlowCanvasContextMenuContent = memo((input: {
   onSelectAll: () => void
   onUploadAssets: (position: null | { x: number, y: number }) => void
 }) => {
-  const { t } = useTranslation()
   const target = input.contextTarget
   return (
     <ContextMenuContent
@@ -48,30 +40,12 @@ export const FlowCanvasContextMenuContent = memo((input: {
     >
       {target.mode === 'nodeActions' && target.nodeIds.length === 1
         ? (
-            <>
-              <ContextMenuGroup>
-                <ContextMenuItem onClick={() => input.onDuplicate(target.nodeIds)}>
-                  <IconCopy />
-                  {t('flows.duplicateNode')}
-                  <ContextMenuShortcut>
-                    {input.shortcutLabels.duplicate}
-                  </ContextMenuShortcut>
-                </ContextMenuItem>
-              </ContextMenuGroup>
-              <ContextMenuSeparator />
-              <ContextMenuGroup>
-                <ContextMenuItem
-                  variant="destructive"
-                  onClick={() => input.onDeleteNodeIds(target.nodeIds)}
-                >
-                  <IconTrash />
-                  {t('flows.deleteNode')}
-                  <ContextMenuShortcut>
-                    {input.shortcutLabels.delete}
-                  </ContextMenuShortcut>
-                </ContextMenuItem>
-              </ContextMenuGroup>
-            </>
+            <FlowCanvasNodeContextMenu
+              nodeId={target.nodeIds[0]!}
+              shortcutLabels={input.shortcutLabels}
+              onDeleteNodeIds={input.onDeleteNodeIds}
+              onDuplicate={input.onDuplicate}
+            />
           )
         : target.nodeIds.length > 0 || target.edgeIds.length > 0
           ? (

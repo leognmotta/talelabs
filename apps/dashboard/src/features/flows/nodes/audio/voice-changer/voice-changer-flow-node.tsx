@@ -63,7 +63,7 @@ export const VoiceChangerFlowNode = memo(({
       selected={selected}
       title={t('flows.nodes.voiceChanger')}
     >
-      <GenerationNodePreviewArea>
+      <GenerationNodePreviewArea nodeId={id}>
         <AudioInputRail
           ariaLabel={t('flows.audio.inputs.railLabel')}
           inputState={voiceChanger.inputState}

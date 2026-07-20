@@ -24,6 +24,7 @@ export const TextFlowNode = memo(({
 
   return (
     <FlowNodeShell
+      accentValueType="Text"
       className="w-90"
       footer={(
         <FlowNodeOutputFooter

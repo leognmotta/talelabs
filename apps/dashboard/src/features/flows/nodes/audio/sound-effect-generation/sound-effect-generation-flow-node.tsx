@@ -77,7 +77,7 @@ export const SoundEffectGenerationFlowNode = memo(({
       selected={selected}
       title={t('flows.nodes.soundEffectGeneration')}
     >
-      <GenerationNodePreviewArea>
+      <GenerationNodePreviewArea nodeId={id}>
         <AudioPreview
           readinessMessageKey={readinessMessageKey}
           resolution={soundEffect.resolution}

@@ -94,7 +94,7 @@ export const ImageGenerationFlowNode = memo(
         selected={selected}
         title={t('flows.nodes.imageGeneration')}
       >
-        <GenerationNodePreviewArea>
+        <GenerationNodePreviewArea nodeId={id}>
           <ImageGenerationInputRail
             ariaLabel={t('flows.image.inputs.railLabel')}
             inputState={image.inputState}

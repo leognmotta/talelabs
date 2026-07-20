@@ -5,8 +5,9 @@ import type { ComponentType, ReactNode } from 'react'
 
 import { FlowNodeShell } from '../flow-node-shell'
 import { FlowNodeOutputFooter } from '../media/flow-node-output-footer'
+import { GenerationRunControls } from './generation-run-controls'
 
-/** Composes the common generation shell, input rail, prompt, preview, and toolbar. */
+/** Composes the common generation shell, input rail, prompt, preview, and run footer. */
 export function GenerationNodeFrame({
   children,
   icon,
@@ -36,17 +37,24 @@ export function GenerationNodeFrame({
 }) {
   return (
     <FlowNodeShell
+      accentValueType={outputValueType}
       className="w-96"
       contentClassName="gap-0 p-0"
       footer={(
         <FlowNodeOutputFooter
+          action={(
+            <GenerationRunControls
+              canRun={readiness === 'ready'}
+              nodeId={nodeId}
+            />
+          )}
           ariaLabel={outputAriaLabel}
           handleId={outputHandleId}
           label={outputLabel}
+          showLabel={false}
           valueType={outputValueType}
         />
       )}
-      generationReadiness={readiness}
       icon={icon}
       nodeId={nodeId}
       selected={selected}

@@ -85,7 +85,7 @@ export const SpeechGenerationFlowNode = memo(({
       selected={selected}
       title={t('flows.nodes.speechGeneration')}
     >
-      <GenerationNodePreviewArea>
+      <GenerationNodePreviewArea nodeId={id}>
         <AudioPreview
           pending={preview?.status === 'pending'}
           previewUrl={audioPreviewUrl}

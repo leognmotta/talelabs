@@ -29,6 +29,7 @@ import { FlowNodeUploadProgress } from '../shared/media/flow-node-upload-progres
 import { readImageCrop } from '../shared/media/image-crop'
 import { FlowActionTooltip } from '../shared/toolbars/flow-action-tooltip'
 import { AssetImageCropMode } from './asset-image-crop-mode'
+import { AssetPreviewActions } from './asset-preview-actions'
 
 /** Renders one memoized Asset node and only its own Asset and crop state. */
 export const AssetFlowNode = memo(({
@@ -107,6 +108,7 @@ export const AssetFlowNode = memo(({
 
   return (
     <FlowNodeShell
+      accentValueType={valueType}
       className="w-96"
       contentClassName="gap-0 p-0"
       footer={asset
@@ -244,6 +246,7 @@ export const AssetFlowNode = memo(({
                     progress={assetUpload.progress}
                   />
                 )}
+                <AssetPreviewActions nodeId={id} />
               </FlowNodePreviewStage>
             )
         : (

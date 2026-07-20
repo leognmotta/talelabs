@@ -1,6 +1,7 @@
-/** Durable run and retry commands rendered in a generation-node toolbar. */
+/** Durable run and retry commands rendered in a generation node's footer. */
+/* eslint-disable better-tailwindcss/no-unknown-classes -- React Flow uses these interaction classes as behavior hooks. */
 
-import { IconChevronDown } from '@tabler/icons-react'
+import { IconChevronDown, IconPlayerPlayFilled } from '@tabler/icons-react'
 import { Button } from '@talelabs/ui/components/button'
 import {
   DropdownMenu,
@@ -12,10 +13,10 @@ import {
 import { Spinner } from '@talelabs/ui/components/spinner'
 import { useTranslation } from 'react-i18next'
 import { useFlowCanvasRuntime, useFlowGenerationPreview } from '../../../editor/flow-canvas-runtime-context'
-import { FlowActionTooltip } from './flow-action-tooltip'
+import { FlowActionTooltip } from '../toolbars/flow-action-tooltip'
 
 /** Renders run, scoped-run, and retry commands for one generation node. */
-export function FlowGenerationToolbarActions({
+export function GenerationRunControls({
   canRun,
   nodeId,
 }: {
@@ -38,17 +39,19 @@ export function FlowGenerationToolbarActions({
   const optionsDisabled = runDisabled && !retryAvailable
 
   return (
-    <div className="flex items-stretch" data-flow-run-actions>
+    <div className="nodrag nopan flex items-stretch" data-flow-run-actions>
       <FlowActionTooltip disabled={runDisabled} label={label}>
         <Button
           aria-busy={running}
           className="rounded-r-none border-r-primary-foreground/20"
           disabled={runDisabled}
-          size="sm"
+          size="xs"
           type="button"
           onClick={() => void runtime.runGenerationPreview(nodeId)}
         >
-          {running && <Spinner aria-hidden="true" className="size-3.5" />}
+          {running
+            ? <Spinner aria-hidden="true" className="size-3" />
+            : <IconPlayerPlayFilled aria-hidden="true" />}
           {label}
         </Button>
       </FlowActionTooltip>
@@ -61,7 +64,7 @@ export function FlowGenerationToolbarActions({
                 aria-label={optionsLabel}
                 className="rounded-l-none border-l-0"
                 disabled={optionsDisabled}
-                size="icon-sm"
+                size="icon-xs"
                 type="button"
               >
                 <IconChevronDown />

@@ -109,7 +109,7 @@ export const GenerationFlowNode = memo(({
       selected={selected}
       title={t('flows.nodes.audioGeneration')}
     >
-      <GenerationNodePreviewArea>
+      <GenerationNodePreviewArea nodeId={id}>
         <GenerationInputRail ariaLabel={t('flows.audio.inputs.railLabel')}>
           {activeSlots.map((slot) => {
             const connectionCount = connectionCountFor(slot)

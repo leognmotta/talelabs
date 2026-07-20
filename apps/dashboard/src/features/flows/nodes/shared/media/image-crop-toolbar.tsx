@@ -29,13 +29,12 @@ export function ImageCropToolbar({
 
   return (
     <NodeToolbar
-      className="
-        nodrag nopan flex items-center gap-1 rounded-xl border border-border/90
-        bg-card/96 p-1 shadow-xl backdrop-blur-sm
-      "
+      className="nodrag nopan flex items-center gap-1 rounded-full p-1"
+      data-flow-chrome
+      data-flow-chrome-enter
       isVisible
       nodeId={nodeId}
-      offset={10}
+      offset={12}
       position={Position.Bottom}
     >
       <FlowActionTooltip

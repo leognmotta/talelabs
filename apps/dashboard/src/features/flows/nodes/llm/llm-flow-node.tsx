@@ -75,7 +75,7 @@ export const LlmFlowNode = memo(({
       selected={selected}
       title={t('flows.nodes.llm')}
     >
-      <GenerationNodePreviewArea>
+      <GenerationNodePreviewArea nodeId={id}>
         <LlmInputRail
           ariaLabel={t('flows.llm.inputs.railLabel')}
           inputState={llm.inputState}

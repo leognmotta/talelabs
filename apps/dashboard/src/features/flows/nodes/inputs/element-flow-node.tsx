@@ -69,6 +69,7 @@ export const ElementFlowNode = memo(({
 
   return (
     <FlowNodeShell
+      accentValueType="ImageSet"
       className="w-96"
       contentClassName="gap-0 p-0"
       footer={element
