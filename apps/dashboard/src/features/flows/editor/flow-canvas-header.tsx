@@ -1,6 +1,7 @@
 /** Flow identity, navigation, history, and document commands above the canvas. */
 
 import type { Flow } from '@talelabs/sdk'
+import type { FlowSaveStatus } from './flow-canvas-types'
 /* eslint-disable better-tailwindcss/no-unknown-classes -- React Flow uses these interaction classes as behavior hooks. */
 
 import {
@@ -31,6 +32,7 @@ import { useSettingsTabState } from '../../settings/settings-state'
 import { CreateFlowDialog } from '../browse/create-flow-dialog'
 import { DeleteFlowDialog } from '../browse/delete-flow-dialog'
 import { RenameFlowDialog } from '../browse/rename-flow-dialog'
+import { FlowCanvasSaveStatus } from './flow-canvas-save-status'
 import { getFlowCanvasShortcutLabels } from './interactions/flow-canvas-shortcuts'
 
 /** Renders Flow navigation, identity, document commands, and history controls. */
@@ -38,15 +40,19 @@ export const FlowCanvasHeader = memo(({
   canRedo,
   canUndo,
   flow,
+  saveStatus,
   onFlowDeleted,
   onRedo,
+  onRetrySave,
   onUndo,
 }: {
   canRedo: boolean
   canUndo: boolean
   flow: Flow
+  saveStatus: FlowSaveStatus
   onFlowDeleted: () => void
   onRedo: () => void
+  onRetrySave: () => void
   onUndo: () => void
 }) => {
   const { t } = useTranslation()
@@ -64,10 +70,11 @@ export const FlowCanvasHeader = memo(({
 
   return (
     <>
-      <div className="
-        nodrag nopan flex h-11 min-w-0 items-center overflow-hidden rounded-xl
-        border border-border/90 bg-card/95 shadow-lg backdrop-blur-sm
-      "
+      <div
+        className="
+          nodrag nopan flex h-11 min-w-0 items-center overflow-hidden rounded-xl
+        "
+        data-flow-chrome
       >
         <DropdownMenu>
           <DropdownMenuTrigger
@@ -139,6 +146,13 @@ export const FlowCanvasHeader = memo(({
         >
           {flow.name}
         </p>
+        <span aria-hidden className="h-5 w-px shrink-0 bg-border/80" />
+        <div className="shrink-0 pr-1.5 pl-1">
+          <FlowCanvasSaveStatus
+            status={saveStatus}
+            onRetrySave={onRetrySave}
+          />
+        </div>
       </div>
       <CreateFlowDialog open={createOpen} onOpenChange={setCreateOpen} />
       <RenameFlowDialog

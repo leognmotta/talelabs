@@ -1,6 +1,7 @@
 /** Add-node picker derived from canonical node presentation metadata. */
 
 import type { FlowNodeType } from '@talelabs/flows'
+import type { ReactElement, ReactNode } from 'react'
 import type { FlowNodePickerFilter } from '../../nodes/flow-node-metadata'
 
 import { IconPlus } from '@tabler/icons-react'
@@ -31,6 +32,10 @@ import {
 export function FlowCanvasNodePicker(input: {
   canAddNodeType: (nodeType: FlowNodeType) => boolean
   onAddNode: (nodeType: FlowNodeType) => void
+  /** Trigger element override; defaults to the compact toolbar icon button. */
+  trigger?: ReactElement
+  /** Trigger content override rendered inside the trigger element. */
+  triggerContent?: ReactNode
 }) {
   const { t } = useTranslation()
   const [category, setCategory] = useState<FlowNodePickerFilter>('all')
@@ -159,7 +164,7 @@ export function FlowCanvasNodePicker(input: {
       showOverflowAffordance
       side="top"
       sideOffset={12}
-      trigger={(
+      trigger={input.trigger ?? (
         <Button
           aria-label={t('flows.addNode')}
           size="icon-sm"
@@ -167,7 +172,7 @@ export function FlowCanvasNodePicker(input: {
           variant="ghost"
         />
       )}
-      triggerContent={<IconPlus />}
+      triggerContent={input.triggerContent ?? <IconPlus />}
       onSelect={(nodeType) => {
         const definition = isFlowNodeType(nodeType)
           ? getFlowNodeMetadata(nodeType)

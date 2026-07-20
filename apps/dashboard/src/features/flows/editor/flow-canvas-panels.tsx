@@ -20,7 +20,9 @@ const INSPECTOR_POSITION = { x: 0, y: 0 }
 /** Renders history-aware Flow navigation without observing graph collections. */
 export const FlowCanvasHeaderPanel = memo((input: {
   flow: Flow
+  status: FlowSaveStatus
   onFlowDeleted: () => void
+  onRetrySave: () => void
 }) => {
   const store = useCanvasStoreApi()
   const canUndo = useCanvasStore(state => state.past.length > 0)
@@ -31,8 +33,10 @@ export const FlowCanvasHeaderPanel = memo((input: {
         canRedo={canRedo}
         canUndo={canUndo}
         flow={input.flow}
+        saveStatus={input.status}
         onFlowDeleted={input.onFlowDeleted}
         onRedo={() => restoreCanvasHistory(store, 'redo')}
+        onRetrySave={input.onRetrySave}
         onUndo={() => restoreCanvasHistory(store, 'undo')}
       />
     </Panel>
@@ -73,17 +77,19 @@ export const FlowCanvasInspectorPanelSlot = memo(() => {
     return null
   return (
     <Panel className="m-5!" position="top-right">
-      <FlowCanvasInspectorPanel
-        edges={edges}
-        selectedAsset={selectedAsset}
-        selectedGenerationNode={selectedGenerationNode}
-        selectedNode={selectedNode}
-      />
+      <div data-flow-chrome-enter key={selectedNode.id}>
+        <FlowCanvasInspectorPanel
+          edges={edges}
+          selectedAsset={selectedAsset}
+          selectedGenerationNode={selectedGenerationNode}
+          selectedNode={selectedNode}
+        />
+      </div>
     </Panel>
   )
 })
 
-/** Renders canvas commands from selection IDs and scalar UI state only. */
+/** Renders canvas commands from history and scalar UI state only. */
 export const FlowCanvasToolbarPanel = memo((input: {
   canAddNodeType: (nodeType: FlowNodeType) => boolean
   canUseDebugMode: boolean
@@ -91,23 +97,15 @@ export const FlowCanvasToolbarPanel = memo((input: {
   isRunAllRunning: boolean
   onAddNode: (nodeType: FlowNodeType) => void
   onDebugModeChange: (enabled: boolean) => void
-  onDelete: () => void
-  onDuplicate: (nodeIds: readonly string[]) => void
   onFitView: () => void
-  onRetrySave: () => void
   onRunAll: () => void
   runAllDisabled: boolean
   shortcutLabels: Readonly<{
-    delete: string
-    duplicate: string
     redo: string
     undo: string
   }>
-  status: FlowSaveStatus
 }) => {
   const store = useCanvasStoreApi()
-  const selectedNodeIds = useCanvasStore(state => state.selectedNodeIds)
-  const selectedEdgeIds = useCanvasStore(state => state.selectedEdgeIds)
   const canUndo = useCanvasStore(state => state.past.length > 0)
   const canRedo = useCanvasStore(state => state.future.length > 0)
   return (
@@ -118,19 +116,13 @@ export const FlowCanvasToolbarPanel = memo((input: {
         canUndo={canUndo}
         canUseDebugMode={input.canUseDebugMode}
         debugMode={input.debugMode}
-        hasSelection={selectedNodeIds.length > 0 || selectedEdgeIds.length > 0}
         isRunAllRunning={input.isRunAllRunning}
         runAllDisabled={input.runAllDisabled}
-        selectedNodeIds={selectedNodeIds}
         shortcutLabels={input.shortcutLabels}
-        status={input.status}
         onAddNode={input.onAddNode}
         onDebugModeChange={input.onDebugModeChange}
-        onDelete={input.onDelete}
-        onDuplicate={input.onDuplicate}
         onFitView={input.onFitView}
         onRedo={() => restoreCanvasHistory(store, 'redo')}
-        onRetrySave={input.onRetrySave}
         onRunAll={input.onRunAll}
         onUndo={() => restoreCanvasHistory(store, 'undo')}
       />
