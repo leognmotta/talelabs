@@ -69,6 +69,7 @@
     "addFirstNode": "Aggiungi il primo nodo",
     "nodeTypes": "Tipi di nodo",
     "nodeActions": "Azioni del nodo",
+    "nodeLocked": "Bloccato",
     "duplicateNode": "Duplica nodo",
     "deleteNode": "Elimina nodo",
     "duplicateSelection": "Duplica selezione",
@@ -84,6 +85,11 @@
     "undo": "Annulla",
     "redo": "Ripeti",
     "fitView": "Adatta vista",
+    "zoomIn": "Ingrandisci",
+    "zoomOut": "Riduci",
+    "zoomReset": "Reimposta zoom",
+    "minimapShow": "Mostra minimappa",
+    "minimapHide": "Nascondi minimappa",
     "focusSelection": "Centra sulla selezione",
     "autoFormat": "Disponi automaticamente",
     "selectAll": "Seleziona tutto",
@@ -581,7 +587,11 @@
     },
     "emptyCanvas": {
       "title": "Inizia a costruire il tuo Flusso",
-      "description": "Aggiungi un nodo e collega connettori compatibili per creare il grafo."
+      "description": "Aggiungi un nodo e collega connettori compatibili per creare il grafo.",
+      "hint": "Fai clic con il tasto destro sull'area di lavoro o trascina file per iniziare."
+    },
+    "dropAssets": {
+      "title": "Trascina i file per aggiungerli al tuo Flow"
     },
     "a11y": {
       "canvas": "Editor del grafo del Flusso",

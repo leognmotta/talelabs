@@ -69,6 +69,7 @@
     "addFirstNode": "Ajouter le premier nœud",
     "nodeTypes": "Types de nœuds",
     "nodeActions": "Actions du nœud",
+    "nodeLocked": "Verrouillé",
     "duplicateNode": "Dupliquer le nœud",
     "deleteNode": "Supprimer le nœud",
     "duplicateSelection": "Dupliquer la sélection",
@@ -84,6 +85,11 @@
     "undo": "Annuler",
     "redo": "Rétablir",
     "fitView": "Ajuster la vue",
+    "zoomIn": "Zoom avant",
+    "zoomOut": "Zoom arrière",
+    "zoomReset": "Réinitialiser le zoom",
+    "minimapShow": "Afficher la minicarte",
+    "minimapHide": "Masquer la minicarte",
     "focusSelection": "Centrer sur la sélection",
     "autoFormat": "Organiser automatiquement",
     "selectAll": "Tout sélectionner",
@@ -581,7 +587,11 @@
     },
     "emptyCanvas": {
       "title": "Commencez à façonner votre Flux",
-      "description": "Ajoutez un nœud, puis reliez des connecteurs compatibles pour construire le graphe."
+      "description": "Ajoutez un nœud, puis reliez des connecteurs compatibles pour construire le graphe.",
+      "hint": "Faites un clic droit sur le canevas ou déposez des fichiers pour commencer."
+    },
+    "dropAssets": {
+      "title": "Déposez des fichiers pour les ajouter à votre Flow"
     },
     "a11y": {
       "canvas": "Éditeur de graphe du Flux",

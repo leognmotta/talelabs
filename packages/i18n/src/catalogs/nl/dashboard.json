@@ -69,6 +69,7 @@
     "addFirstNode": "Eerste knoop toevoegen",
     "nodeTypes": "Knooptypen",
     "nodeActions": "Knoopacties",
+    "nodeLocked": "Vergrendeld",
     "duplicateNode": "Knoop dupliceren",
     "deleteNode": "Knoop verwijderen",
     "duplicateSelection": "Selectie dupliceren",
@@ -84,6 +85,11 @@
     "undo": "Ongedaan maken",
     "redo": "Opnieuw",
     "fitView": "Weergave passend maken",
+    "zoomIn": "Inzoomen",
+    "zoomOut": "Uitzoomen",
+    "zoomReset": "Zoom herstellen",
+    "minimapShow": "Minimap tonen",
+    "minimapHide": "Minimap verbergen",
     "focusSelection": "Selectie centreren",
     "autoFormat": "Automatisch rangschikken",
     "selectAll": "Alles selecteren",
@@ -581,7 +587,11 @@
     },
     "emptyCanvas": {
       "title": "Geef je workflow vorm",
-      "description": "Voeg een knoop toe en verbind compatibele aansluitingen om de graaf te bouwen."
+      "description": "Voeg een knoop toe en verbind compatibele aansluitingen om de graaf te bouwen.",
+      "hint": "Klik met de rechtermuisknop op het canvas of sleep bestanden om te beginnen."
+    },
+    "dropAssets": {
+      "title": "Sleep bestanden om ze aan je Flow toe te voegen"
     },
     "a11y": {
       "canvas": "Workflowgraaf-editor",

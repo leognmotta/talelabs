@@ -69,6 +69,7 @@
     "addFirstNode": "Add first node",
     "nodeTypes": "Node types",
     "nodeActions": "Node actions",
+    "nodeLocked": "Locked",
     "duplicateNode": "Duplicate node",
     "deleteNode": "Delete node",
     "duplicateSelection": "Duplicate selection",
@@ -84,6 +85,11 @@
     "undo": "Undo",
     "redo": "Redo",
     "fitView": "Fit view",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "zoomReset": "Reset zoom",
+    "minimapShow": "Show minimap",
+    "minimapHide": "Hide minimap",
     "focusSelection": "Focus selection",
     "autoFormat": "Auto arrange",
     "selectAll": "Select all",
@@ -581,7 +587,11 @@
     },
     "emptyCanvas": {
       "title": "Start shaping your Flow",
-      "description": "Add a node, then connect compatible handles to build the graph."
+      "description": "Add a node, then connect compatible handles to build the graph.",
+      "hint": "Right-click the canvas or drop files to get started."
+    },
+    "dropAssets": {
+      "title": "Drop files to add them to your Flow"
     },
     "a11y": {
       "canvas": "Flow graph editor",

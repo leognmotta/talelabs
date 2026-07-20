@@ -69,6 +69,7 @@
     "addFirstNode": "Adaugă primul nod",
     "nodeTypes": "Tipuri de nod",
     "nodeActions": "Acțiuni pentru nod",
+    "nodeLocked": "Blocat",
     "duplicateNode": "Duplică nodul",
     "deleteNode": "Șterge nodul",
     "duplicateSelection": "Duplică selecția",
@@ -84,6 +85,11 @@
     "undo": "Anulează",
     "redo": "Refă",
     "fitView": "Încadrează vizualizarea",
+    "zoomIn": "Mărește",
+    "zoomOut": "Micșorează",
+    "zoomReset": "Resetează zoom",
+    "minimapShow": "Afișează miniharta",
+    "minimapHide": "Ascunde miniharta",
     "focusSelection": "Focalizează selecția",
     "autoFormat": "Aranjează automat",
     "selectAll": "Selectează tot",
@@ -581,7 +587,11 @@
     },
     "emptyCanvas": {
       "title": "Începe să construiești fluxul",
-      "description": "Adaugă un nod și conectează porturi compatibile pentru a crea graful."
+      "description": "Adaugă un nod și conectează porturi compatibile pentru a crea graful.",
+      "hint": "Fă clic dreapta pe pânză sau plasează fișiere pentru a începe."
+    },
+    "dropAssets": {
+      "title": "Plasează fișiere pentru a le adăuga în Flow"
     },
     "a11y": {
       "canvas": "Editor de graf pentru flux",

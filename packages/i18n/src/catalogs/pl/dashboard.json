@@ -69,6 +69,7 @@
     "addFirstNode": "Dodaj pierwszy węzeł",
     "nodeTypes": "Typy węzłów",
     "nodeActions": "Działania węzła",
+    "nodeLocked": "Zablokowany",
     "duplicateNode": "Duplikuj węzeł",
     "deleteNode": "Usuń węzeł",
     "duplicateSelection": "Duplikuj zaznaczenie",
@@ -84,6 +85,11 @@
     "undo": "Cofnij",
     "redo": "Ponów",
     "fitView": "Dopasuj widok",
+    "zoomIn": "Powiększ",
+    "zoomOut": "Pomniejsz",
+    "zoomReset": "Resetuj powiększenie",
+    "minimapShow": "Pokaż minimapę",
+    "minimapHide": "Ukryj minimapę",
     "focusSelection": "Wyśrodkuj zaznaczenie",
     "autoFormat": "Rozmieść automatycznie",
     "selectAll": "Zaznacz wszystko",
@@ -581,7 +587,11 @@
     },
     "emptyCanvas": {
       "title": "Zacznij tworzyć przepływ",
-      "description": "Dodaj węzeł i połącz zgodne złącza, aby zbudować graf."
+      "description": "Dodaj węzeł i połącz zgodne złącza, aby zbudować graf.",
+      "hint": "Kliknij prawym przyciskiem myszy na kanwie lub upuść pliki, aby rozpocząć."
+    },
+    "dropAssets": {
+      "title": "Upuść pliki, aby dodać je do swojego Flow"
     },
     "a11y": {
       "canvas": "Edytor grafu przepływu",

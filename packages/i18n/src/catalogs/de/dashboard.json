@@ -69,6 +69,7 @@
     "addFirstNode": "Ersten Knoten hinzufügen",
     "nodeTypes": "Knotentypen",
     "nodeActions": "Knotenaktionen",
+    "nodeLocked": "Gesperrt",
     "duplicateNode": "Knoten duplizieren",
     "deleteNode": "Knoten löschen",
     "duplicateSelection": "Auswahl duplizieren",
@@ -84,6 +85,11 @@
     "undo": "Rückgängig",
     "redo": "Wiederholen",
     "fitView": "Ansicht anpassen",
+    "zoomIn": "Vergrößern",
+    "zoomOut": "Verkleinern",
+    "zoomReset": "Zoom zurücksetzen",
+    "minimapShow": "Minikarte anzeigen",
+    "minimapHide": "Minikarte ausblenden",
     "focusSelection": "Auswahl fokussieren",
     "autoFormat": "Automatisch anordnen",
     "selectAll": "Alles auswählen",
@@ -581,7 +587,11 @@
     },
     "emptyCanvas": {
       "title": "Gestalte deinen Workflow",
-      "description": "Füge einen Knoten hinzu und verbinde kompatible Anschlüsse, um den Graphen zu erstellen."
+      "description": "Füge einen Knoten hinzu und verbinde kompatible Anschlüsse, um den Graphen zu erstellen.",
+      "hint": "Klicke mit der rechten Maustaste auf die Arbeitsfläche oder ziehe Dateien hierher, um zu beginnen."
+    },
+    "dropAssets": {
+      "title": "Dateien ablegen, um sie zu deinem Flow hinzuzufügen"
     },
     "a11y": {
       "canvas": "Workflow-Graph-Editor",
