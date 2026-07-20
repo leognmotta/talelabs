@@ -58,228 +58,352 @@ export const postRunsIdBrowserJobsClaim200Schema = z.object({
         nodeId: z.string(),
         operationId: z.string(),
         providerBinding: z.union([
-          z.object({
-            lifecycle: z.union([
-              z.object({
-                cancellation: z.enum(["supported", "unsupported"]),
-                completions: z
-                  .array(z.enum(["response"]))
-                  .min(1)
-                  .max(1),
-                deliveries: z
-                  .array(z.enum(["bytes", "stream", "text", "url"]))
-                  .min(1),
-                submission: z.enum(["immediate"]),
-              }),
-              z.object({
-                cancellation: z.enum(["supported", "unsupported"]),
-                completions: z.union([
-                  z
-                    .array(z.enum(["poll"]))
+          z.union([
+            z.object({
+              lifecycle: z.union([
+                z.object({
+                  cancellation: z.enum(["supported", "unsupported"]),
+                  completions: z
+                    .array(z.enum(["response"]))
                     .min(1)
                     .max(1),
-                  z
-                    .array(z.enum(["webhook"]))
-                    .min(1)
-                    .max(1),
-                  z
-                    .array(z.union([z.enum(["poll"]), z.enum(["webhook"])]))
-                    .min(2)
-                    .max(2),
-                  z
-                    .array(z.union([z.enum(["webhook"]), z.enum(["poll"])]))
-                    .min(2)
-                    .max(2),
-                ]),
-                deliveries: z
-                  .array(z.enum(["bytes", "stream", "text", "url"]))
-                  .min(1),
-                submission: z.enum(["asynchronous"]),
-              }),
-            ]),
-            nativeModelId: z.string().regex(/^[^/]+\/.+$/),
-            operationId: z.string().min(1),
-            provider: z.enum(["openrouter"]),
-            providerTag: z.string().min(1),
-            endpoint: z.enum(["/api/v1/chat/completions"]),
-            protocol: z.enum(["chat"]),
-            requestProfile: z.object({
-              kind: z.enum(["chat"]),
-              maxImageReferences: z.int().min(0),
-              maxTokensParameter: z.enum([
-                "max_completion_tokens",
-                "max_tokens",
+                  deliveries: z
+                    .array(z.enum(["bytes", "stream", "text", "url"]))
+                    .min(1),
+                  submission: z.enum(["immediate"]),
+                }),
+                z.object({
+                  cancellation: z.enum(["supported", "unsupported"]),
+                  completions: z.union([
+                    z
+                      .array(z.enum(["poll"]))
+                      .min(1)
+                      .max(1),
+                    z
+                      .array(z.enum(["webhook"]))
+                      .min(1)
+                      .max(1),
+                    z
+                      .array(z.union([z.enum(["poll"]), z.enum(["webhook"])]))
+                      .min(2)
+                      .max(2),
+                    z
+                      .array(z.union([z.enum(["webhook"]), z.enum(["poll"])]))
+                      .min(2)
+                      .max(2),
+                  ]),
+                  deliveries: z
+                    .array(z.enum(["bytes", "stream", "text", "url"]))
+                    .min(1),
+                  submission: z.enum(["asynchronous"]),
+                }),
               ]),
-              reasoning: z.boolean(),
-              settingIds: z.array(z.string().min(1)),
-            }),
-          }),
-          z.object({
-            lifecycle: z.union([
-              z.object({
-                cancellation: z.enum(["supported", "unsupported"]),
-                completions: z
-                  .array(z.enum(["response"]))
-                  .min(1)
-                  .max(1),
-                deliveries: z
-                  .array(z.enum(["bytes", "stream", "text", "url"]))
-                  .min(1),
-                submission: z.enum(["immediate"]),
-              }),
-              z.object({
-                cancellation: z.enum(["supported", "unsupported"]),
-                completions: z.union([
-                  z
-                    .array(z.enum(["poll"]))
-                    .min(1)
-                    .max(1),
-                  z
-                    .array(z.enum(["webhook"]))
-                    .min(1)
-                    .max(1),
-                  z
-                    .array(z.union([z.enum(["poll"]), z.enum(["webhook"])]))
-                    .min(2)
-                    .max(2),
-                  z
-                    .array(z.union([z.enum(["webhook"]), z.enum(["poll"])]))
-                    .min(2)
-                    .max(2),
+              nativeModelId: z.string().regex(/^[^/]+\/.+$/),
+              operationId: z.string().min(1),
+              provider: z.enum(["openrouter"]),
+              providerTag: z.string().min(1),
+              endpoint: z.enum(["/api/v1/chat/completions"]),
+              protocol: z.enum(["chat"]),
+              requestProfile: z.object({
+                kind: z.enum(["chat"]),
+                maxImageReferences: z.int().min(0),
+                maxTokensParameter: z.enum([
+                  "max_completion_tokens",
+                  "max_tokens",
                 ]),
-                deliveries: z
-                  .array(z.enum(["bytes", "stream", "text", "url"]))
-                  .min(1),
-                submission: z.enum(["asynchronous"]),
+                reasoning: z.boolean(),
+                settingIds: z.array(z.string().min(1)),
               }),
-            ]),
-            nativeModelId: z.string().regex(/^[^/]+\/.+$/),
-            operationId: z.string().min(1),
-            provider: z.enum(["openrouter"]),
-            providerTag: z.string().min(1),
-            endpoint: z.enum(["/api/v1/images"]),
-            protocol: z.enum(["image"]),
-            requestProfile: z.object({
-              kind: z.enum(["image"]),
-              maxReferences: z.int().min(0),
-              settingIds: z.array(z.string().min(1)),
             }),
-          }),
-          z.object({
-            lifecycle: z.union([
-              z.object({
-                cancellation: z.enum(["supported", "unsupported"]),
-                completions: z
-                  .array(z.enum(["response"]))
-                  .min(1)
-                  .max(1),
-                deliveries: z
-                  .array(z.enum(["bytes", "stream", "text", "url"]))
-                  .min(1),
-                submission: z.enum(["immediate"]),
-              }),
-              z.object({
-                cancellation: z.enum(["supported", "unsupported"]),
-                completions: z.union([
-                  z
-                    .array(z.enum(["poll"]))
+            z.object({
+              lifecycle: z.union([
+                z.object({
+                  cancellation: z.enum(["supported", "unsupported"]),
+                  completions: z
+                    .array(z.enum(["response"]))
                     .min(1)
                     .max(1),
-                  z
-                    .array(z.enum(["webhook"]))
-                    .min(1)
-                    .max(1),
-                  z
-                    .array(z.union([z.enum(["poll"]), z.enum(["webhook"])]))
-                    .min(2)
-                    .max(2),
-                  z
-                    .array(z.union([z.enum(["webhook"]), z.enum(["poll"])]))
-                    .min(2)
-                    .max(2),
-                ]),
-                deliveries: z
-                  .array(z.enum(["bytes", "stream", "text", "url"]))
-                  .min(1),
-                submission: z.enum(["asynchronous"]),
-              }),
-            ]),
-            nativeModelId: z.string().regex(/^[^/]+\/.+$/),
-            operationId: z.string().min(1),
-            provider: z.enum(["openrouter"]),
-            providerTag: z.string().min(1),
-            endpoint: z.enum(["/api/v1/audio/speech"]),
-            protocol: z.enum(["speech"]),
-            requestProfile: z.object({
-              kind: z.enum(["speech"]),
-              outputFormats: z
-                .array(z.enum(["mp3"]))
-                .min(1)
-                .max(1),
-              settingIds: z.array(z.string().min(1)),
-              voiceValues: z.object({}).catchall(z.string().min(1)),
-            }),
-          }),
-          z.object({
-            lifecycle: z.union([
-              z.object({
-                cancellation: z.enum(["supported", "unsupported"]),
-                completions: z
-                  .array(z.enum(["response"]))
-                  .min(1)
-                  .max(1),
-                deliveries: z
-                  .array(z.enum(["bytes", "stream", "text", "url"]))
-                  .min(1),
-                submission: z.enum(["immediate"]),
-              }),
-              z.object({
-                cancellation: z.enum(["supported", "unsupported"]),
-                completions: z.union([
-                  z
-                    .array(z.enum(["poll"]))
-                    .min(1)
-                    .max(1),
-                  z
-                    .array(z.enum(["webhook"]))
-                    .min(1)
-                    .max(1),
-                  z
-                    .array(z.union([z.enum(["poll"]), z.enum(["webhook"])]))
-                    .min(2)
-                    .max(2),
-                  z
-                    .array(z.union([z.enum(["webhook"]), z.enum(["poll"])]))
-                    .min(2)
-                    .max(2),
-                ]),
-                deliveries: z
-                  .array(z.enum(["bytes", "stream", "text", "url"]))
-                  .min(1),
-                submission: z.enum(["asynchronous"]),
-              }),
-            ]),
-            nativeModelId: z.string().regex(/^[^/]+\/.+$/),
-            operationId: z.string().min(1),
-            provider: z.enum(["openrouter"]),
-            providerTag: z.string().min(1),
-            endpoint: z.enum(["/api/v1/videos"]),
-            protocol: z.enum(["video"]),
-            requestProfile: z.object({
-              frameMode: z.enum(["first", "first-last", "none"]),
-              generateAudio: z.boolean(),
-              kind: z.enum(["video"]),
-              referenceLimits: z.object({
-                audio: z.int().min(0),
-                image: z.int().min(0),
-                video: z.int().min(0),
-              }),
-              referenceValidationPolicy: z.enum([
-                "none",
-                "seedance-2-reference-v1",
+                  deliveries: z
+                    .array(z.enum(["bytes", "stream", "text", "url"]))
+                    .min(1),
+                  submission: z.enum(["immediate"]),
+                }),
+                z.object({
+                  cancellation: z.enum(["supported", "unsupported"]),
+                  completions: z.union([
+                    z
+                      .array(z.enum(["poll"]))
+                      .min(1)
+                      .max(1),
+                    z
+                      .array(z.enum(["webhook"]))
+                      .min(1)
+                      .max(1),
+                    z
+                      .array(z.union([z.enum(["poll"]), z.enum(["webhook"])]))
+                      .min(2)
+                      .max(2),
+                    z
+                      .array(z.union([z.enum(["webhook"]), z.enum(["poll"])]))
+                      .min(2)
+                      .max(2),
+                  ]),
+                  deliveries: z
+                    .array(z.enum(["bytes", "stream", "text", "url"]))
+                    .min(1),
+                  submission: z.enum(["asynchronous"]),
+                }),
               ]),
-              settingIds: z.array(z.string().min(1)),
+              nativeModelId: z.string().regex(/^[^/]+\/.+$/),
+              operationId: z.string().min(1),
+              provider: z.enum(["openrouter"]),
+              providerTag: z.string().min(1),
+              endpoint: z.enum(["/api/v1/images"]),
+              protocol: z.enum(["image"]),
+              requestProfile: z.object({
+                kind: z.enum(["image"]),
+                maxReferences: z.int().min(0),
+                settingIds: z.array(z.string().min(1)),
+              }),
             }),
+            z.object({
+              lifecycle: z.union([
+                z.object({
+                  cancellation: z.enum(["supported", "unsupported"]),
+                  completions: z
+                    .array(z.enum(["response"]))
+                    .min(1)
+                    .max(1),
+                  deliveries: z
+                    .array(z.enum(["bytes", "stream", "text", "url"]))
+                    .min(1),
+                  submission: z.enum(["immediate"]),
+                }),
+                z.object({
+                  cancellation: z.enum(["supported", "unsupported"]),
+                  completions: z.union([
+                    z
+                      .array(z.enum(["poll"]))
+                      .min(1)
+                      .max(1),
+                    z
+                      .array(z.enum(["webhook"]))
+                      .min(1)
+                      .max(1),
+                    z
+                      .array(z.union([z.enum(["poll"]), z.enum(["webhook"])]))
+                      .min(2)
+                      .max(2),
+                    z
+                      .array(z.union([z.enum(["webhook"]), z.enum(["poll"])]))
+                      .min(2)
+                      .max(2),
+                  ]),
+                  deliveries: z
+                    .array(z.enum(["bytes", "stream", "text", "url"]))
+                    .min(1),
+                  submission: z.enum(["asynchronous"]),
+                }),
+              ]),
+              nativeModelId: z.string().regex(/^[^/]+\/.+$/),
+              operationId: z.string().min(1),
+              provider: z.enum(["openrouter"]),
+              providerTag: z.string().min(1),
+              endpoint: z.enum(["/api/v1/audio/speech"]),
+              protocol: z.enum(["speech"]),
+              requestProfile: z.object({
+                kind: z.enum(["speech"]),
+                outputFormats: z
+                  .array(z.enum(["mp3"]))
+                  .min(1)
+                  .max(1),
+                settingIds: z.array(z.string().min(1)),
+                voiceValues: z.object({}).catchall(z.string().min(1)),
+              }),
+            }),
+            z.object({
+              lifecycle: z.union([
+                z.object({
+                  cancellation: z.enum(["supported", "unsupported"]),
+                  completions: z
+                    .array(z.enum(["response"]))
+                    .min(1)
+                    .max(1),
+                  deliveries: z
+                    .array(z.enum(["bytes", "stream", "text", "url"]))
+                    .min(1),
+                  submission: z.enum(["immediate"]),
+                }),
+                z.object({
+                  cancellation: z.enum(["supported", "unsupported"]),
+                  completions: z.union([
+                    z
+                      .array(z.enum(["poll"]))
+                      .min(1)
+                      .max(1),
+                    z
+                      .array(z.enum(["webhook"]))
+                      .min(1)
+                      .max(1),
+                    z
+                      .array(z.union([z.enum(["poll"]), z.enum(["webhook"])]))
+                      .min(2)
+                      .max(2),
+                    z
+                      .array(z.union([z.enum(["webhook"]), z.enum(["poll"])]))
+                      .min(2)
+                      .max(2),
+                  ]),
+                  deliveries: z
+                    .array(z.enum(["bytes", "stream", "text", "url"]))
+                    .min(1),
+                  submission: z.enum(["asynchronous"]),
+                }),
+              ]),
+              nativeModelId: z.string().regex(/^[^/]+\/.+$/),
+              operationId: z.string().min(1),
+              provider: z.enum(["openrouter"]),
+              providerTag: z.string().min(1),
+              endpoint: z.enum(["/api/v1/videos"]),
+              protocol: z.enum(["video"]),
+              requestProfile: z.object({
+                frameMode: z.enum(["first", "first-last", "none"]),
+                generateAudio: z.boolean(),
+                kind: z.enum(["video"]),
+                referenceLimits: z.object({
+                  audio: z.int().min(0),
+                  image: z.int().min(0),
+                  video: z.int().min(0),
+                }),
+                referenceValidationPolicy: z.enum([
+                  "none",
+                  "seedance-2-reference-v1",
+                ]),
+                settingIds: z.array(z.string().min(1)),
+              }),
+            }),
+          ]),
+          z.object({
+            endpoint: z.enum(["https://queue.fal.run"]),
+            lifecycle: z.union([
+              z.object({
+                cancellation: z.enum(["supported", "unsupported"]),
+                completions: z
+                  .array(z.enum(["response"]))
+                  .min(1)
+                  .max(1),
+                deliveries: z
+                  .array(z.enum(["bytes", "stream", "text", "url"]))
+                  .min(1),
+                submission: z.enum(["immediate"]),
+              }),
+              z.object({
+                cancellation: z.enum(["supported", "unsupported"]),
+                completions: z.union([
+                  z
+                    .array(z.enum(["poll"]))
+                    .min(1)
+                    .max(1),
+                  z
+                    .array(z.enum(["webhook"]))
+                    .min(1)
+                    .max(1),
+                  z
+                    .array(z.union([z.enum(["poll"]), z.enum(["webhook"])]))
+                    .min(2)
+                    .max(2),
+                  z
+                    .array(z.union([z.enum(["webhook"]), z.enum(["poll"])]))
+                    .min(2)
+                    .max(2),
+                ]),
+                deliveries: z
+                  .array(z.enum(["bytes", "stream", "text", "url"]))
+                  .min(1),
+                submission: z.enum(["asynchronous"]),
+              }),
+            ]),
+            nativeModelId: z.string().regex(/^[^/]+\/.+$/),
+            operationId: z.string().min(1),
+            protocol: z.enum(["queue"]),
+            provider: z.enum(["fal"]),
+            providerTag: z.enum(["fal-queue"]),
+            requestProfile: z.union([
+              z.object({
+                kind: z.enum(["image"]),
+                maxReferences: z.int().min(0),
+                params: z.array(
+                  z.object({
+                    field: z.string().min(1),
+                    settingId: z.string().min(1),
+                    valueMap: z.optional(
+                      z
+                        .object({})
+                        .catchall(
+                          z.union([z.boolean(), z.string(), z.number()]),
+                        ),
+                    ),
+                  }),
+                ),
+                promptField: z.string().min(1),
+                referenceField: z.nullable(z.string().min(1)),
+                requestedCountField: z.nullable(z.string().min(1)),
+                settingIds: z.array(z.string().min(1)),
+                staticParams: z
+                  .object({})
+                  .catchall(z.union([z.boolean(), z.string(), z.number()])),
+              }),
+              z.object({
+                kind: z.enum(["speech"]),
+                params: z.array(
+                  z.object({
+                    field: z.string().min(1),
+                    settingId: z.string().min(1),
+                    valueMap: z.optional(
+                      z
+                        .object({})
+                        .catchall(
+                          z.union([z.boolean(), z.string(), z.number()]),
+                        ),
+                    ),
+                  }),
+                ),
+                promptField: z.string().min(1),
+                settingIds: z.array(z.string().min(1)),
+                staticParams: z
+                  .object({})
+                  .catchall(z.union([z.boolean(), z.string(), z.number()])),
+              }),
+              z.object({
+                firstFrameField: z.nullable(z.string().min(1)),
+                frameMode: z.enum(["first", "first-last", "none"]),
+                kind: z.enum(["video"]),
+                lastFrameField: z.nullable(z.string().min(1)),
+                params: z.array(
+                  z.object({
+                    field: z.string().min(1),
+                    settingId: z.string().min(1),
+                    valueMap: z.optional(
+                      z
+                        .object({})
+                        .catchall(
+                          z.union([z.boolean(), z.string(), z.number()]),
+                        ),
+                    ),
+                  }),
+                ),
+                promptField: z.string().min(1),
+                referenceLimits: z.object({
+                  audio: z.int().min(0),
+                  image: z.int().min(0),
+                  video: z.int().min(0),
+                }),
+                settingIds: z.array(z.string().min(1)),
+                staticParams: z
+                  .object({})
+                  .catchall(z.union([z.boolean(), z.string(), z.number()])),
+              }),
+            ]),
           }),
         ]),
       }),

@@ -21,4 +21,5 @@ export const createFlowRunRequestSchema = z.object({
   get selectedNodeIds() {
     return z.array(cuid2Schema).min(1).max(100).optional();
   },
+  byokProviders: z.optional(z.array(z.enum(["fal", "openrouter"])).max(8)),
 }) as unknown as z.ZodType<CreateFlowRunRequest>;

@@ -32,6 +32,14 @@ export const createFlowRunRequestModeEnum = {
 export type CreateFlowRunRequestModeEnumKey =
   (typeof createFlowRunRequestModeEnum)[keyof typeof createFlowRunRequestModeEnum];
 
+export const createFlowRunRequestByokProvidersEnum = {
+  fal: "fal",
+  openrouter: "openrouter",
+} as const;
+
+export type CreateFlowRunRequestByokProvidersEnumKey =
+  (typeof createFlowRunRequestByokProvidersEnum)[keyof typeof createFlowRunRequestByokProvidersEnum];
+
 export type CreateFlowRunRequest = {
   /**
    * @default "live"
@@ -66,4 +74,8 @@ export type CreateFlowRunRequest = {
    * @type array | undefined
    */
   selectedNodeIds?: (Cuid2 | string)[];
+  /**
+   * @type array | undefined
+   */
+  byokProviders?: CreateFlowRunRequestByokProvidersEnumKey[];
 };

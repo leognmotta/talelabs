@@ -32,6 +32,14 @@ export const createRunRequestModeEnum = {
 export type CreateRunRequestModeEnumKey =
   (typeof createRunRequestModeEnum)[keyof typeof createRunRequestModeEnum];
 
+export const createRunRequestByokProvidersEnum = {
+  fal: "fal",
+  openrouter: "openrouter",
+} as const;
+
+export type CreateRunRequestByokProvidersEnumKey =
+  (typeof createRunRequestByokProvidersEnum)[keyof typeof createRunRequestByokProvidersEnum];
+
 export type CreateRunRequest = {
   /**
    * @default "live"
@@ -71,4 +79,8 @@ export type CreateRunRequest = {
    * @type array | undefined
    */
   selectedNodeIds?: (Cuid2 | string)[];
+  /**
+   * @type array | undefined
+   */
+  byokProviders?: CreateRunRequestByokProvidersEnumKey[];
 };

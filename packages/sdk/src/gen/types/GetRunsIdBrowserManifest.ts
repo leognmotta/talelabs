@@ -212,6 +212,34 @@ export const requestProfileReferenceValidationPolicyEnum = {
 export type RequestProfileReferenceValidationPolicyEnumKey =
   (typeof requestProfileReferenceValidationPolicyEnum)[keyof typeof requestProfileReferenceValidationPolicyEnum];
 
+export const providerBindingEndpointEnum5 = {
+  "https://queue.fal.run": "https://queue.fal.run",
+} as const;
+
+export type ProviderBindingEndpointEnum5Key =
+  (typeof providerBindingEndpointEnum5)[keyof typeof providerBindingEndpointEnum5];
+
+export const providerBindingProtocolEnum5 = {
+  queue: "queue",
+} as const;
+
+export type ProviderBindingProtocolEnum5Key =
+  (typeof providerBindingProtocolEnum5)[keyof typeof providerBindingProtocolEnum5];
+
+export const providerBindingProviderEnum2 = {
+  fal: "fal",
+} as const;
+
+export type ProviderBindingProviderEnum2Key =
+  (typeof providerBindingProviderEnum2)[keyof typeof providerBindingProviderEnum2];
+
+export const providerBindingProviderTagEnum = {
+  "fal-queue": "fal-queue",
+} as const;
+
+export type ProviderBindingProviderTagEnumKey =
+  (typeof providerBindingProviderTagEnum)[keyof typeof providerBindingProviderTagEnum];
+
 export const jobsMediaTypeEnum = {
   image: "image",
   video: "video",
@@ -305,409 +333,659 @@ export type GetRunsIdBrowserManifest200 = {
        */
       operationId: string;
       providerBinding:
-        | {
-            lifecycle:
-              | {
-                  /**
-                   * @type string
-                   */
-                  cancellation: LifecycleCancellationEnumKey;
-                  /**
-                   * @type array
-                   */
-                  completions: LifecycleCompletionsEnumKey[];
-                  /**
-                   * @type array
-                   */
-                  deliveries: LifecycleDeliveriesEnumKey[];
-                  /**
-                   * @type string
-                   */
-                  submission: LifecycleSubmissionEnumKey;
-                }
-              | {
-                  /**
-                   * @type string
-                   */
-                  cancellation: LifecycleCancellationEnumKey;
-                  completions:
-                    | LifecycleCompletionsEnum2Key[]
-                    | LifecycleCompletionsEnum3Key[]
-                    | (
-                        | LifecycleCompletionsEnum2Key
-                        | LifecycleCompletionsEnum3Key
-                      )[]
-                    | (
-                        | LifecycleCompletionsEnum3Key
-                        | LifecycleCompletionsEnum2Key
-                      )[];
-                  /**
-                   * @type array
-                   */
-                  deliveries: LifecycleDeliveriesEnumKey[];
-                  /**
-                   * @type string
-                   */
-                  submission: LifecycleSubmissionEnum2Key;
-                };
-            /**
-             * @pattern ^[^/]+\/.+$
-             * @type string
-             */
-            nativeModelId: string;
-            /**
-             * @minLength 1
-             * @type string
-             */
-            operationId: string;
-            /**
-             * @type string
-             */
-            provider: ProviderBindingProviderEnumKey;
-            /**
-             * @minLength 1
-             * @type string
-             */
-            providerTag: string;
-            /**
-             * @type string
-             */
-            endpoint: ProviderBindingEndpointEnumKey;
-            /**
-             * @type string
-             */
-            protocol: ProviderBindingProtocolEnumKey;
-            /**
-             * @type object
-             */
-            requestProfile: {
-              /**
-               * @type string
-               */
-              kind: RequestProfileKindEnumKey;
-              /**
-               * @minLength 0
-               * @type integer
-               */
-              maxImageReferences: number;
-              /**
-               * @type string
-               */
-              maxTokensParameter: RequestProfileMaxTokensParameterEnumKey;
-              /**
-               * @type boolean
-               */
-              reasoning: boolean;
-              /**
-               * @type array
-               */
-              settingIds: string[];
-            };
-          }
-        | {
-            lifecycle:
-              | {
-                  /**
-                   * @type string
-                   */
-                  cancellation: LifecycleCancellationEnumKey;
-                  /**
-                   * @type array
-                   */
-                  completions: LifecycleCompletionsEnumKey[];
-                  /**
-                   * @type array
-                   */
-                  deliveries: LifecycleDeliveriesEnumKey[];
-                  /**
-                   * @type string
-                   */
-                  submission: LifecycleSubmissionEnumKey;
-                }
-              | {
-                  /**
-                   * @type string
-                   */
-                  cancellation: LifecycleCancellationEnumKey;
-                  completions:
-                    | LifecycleCompletionsEnum2Key[]
-                    | LifecycleCompletionsEnum3Key[]
-                    | (
-                        | LifecycleCompletionsEnum2Key
-                        | LifecycleCompletionsEnum3Key
-                      )[]
-                    | (
-                        | LifecycleCompletionsEnum3Key
-                        | LifecycleCompletionsEnum2Key
-                      )[];
-                  /**
-                   * @type array
-                   */
-                  deliveries: LifecycleDeliveriesEnumKey[];
-                  /**
-                   * @type string
-                   */
-                  submission: LifecycleSubmissionEnum2Key;
-                };
-            /**
-             * @pattern ^[^/]+\/.+$
-             * @type string
-             */
-            nativeModelId: string;
-            /**
-             * @minLength 1
-             * @type string
-             */
-            operationId: string;
-            /**
-             * @type string
-             */
-            provider: ProviderBindingProviderEnumKey;
-            /**
-             * @minLength 1
-             * @type string
-             */
-            providerTag: string;
-            /**
-             * @type string
-             */
-            endpoint: ProviderBindingEndpointEnum2Key;
-            /**
-             * @type string
-             */
-            protocol: ProviderBindingProtocolEnum2Key;
-            /**
-             * @type object
-             */
-            requestProfile: {
-              /**
-               * @type string
-               */
-              kind: RequestProfileKindEnum2Key;
-              /**
-               * @minLength 0
-               * @type integer
-               */
-              maxReferences: number;
-              /**
-               * @type array
-               */
-              settingIds: string[];
-            };
-          }
-        | {
-            lifecycle:
-              | {
-                  /**
-                   * @type string
-                   */
-                  cancellation: LifecycleCancellationEnumKey;
-                  /**
-                   * @type array
-                   */
-                  completions: LifecycleCompletionsEnumKey[];
-                  /**
-                   * @type array
-                   */
-                  deliveries: LifecycleDeliveriesEnumKey[];
-                  /**
-                   * @type string
-                   */
-                  submission: LifecycleSubmissionEnumKey;
-                }
-              | {
-                  /**
-                   * @type string
-                   */
-                  cancellation: LifecycleCancellationEnumKey;
-                  completions:
-                    | LifecycleCompletionsEnum2Key[]
-                    | LifecycleCompletionsEnum3Key[]
-                    | (
-                        | LifecycleCompletionsEnum2Key
-                        | LifecycleCompletionsEnum3Key
-                      )[]
-                    | (
-                        | LifecycleCompletionsEnum3Key
-                        | LifecycleCompletionsEnum2Key
-                      )[];
-                  /**
-                   * @type array
-                   */
-                  deliveries: LifecycleDeliveriesEnumKey[];
-                  /**
-                   * @type string
-                   */
-                  submission: LifecycleSubmissionEnum2Key;
-                };
-            /**
-             * @pattern ^[^/]+\/.+$
-             * @type string
-             */
-            nativeModelId: string;
-            /**
-             * @minLength 1
-             * @type string
-             */
-            operationId: string;
-            /**
-             * @type string
-             */
-            provider: ProviderBindingProviderEnumKey;
-            /**
-             * @minLength 1
-             * @type string
-             */
-            providerTag: string;
-            /**
-             * @type string
-             */
-            endpoint: ProviderBindingEndpointEnum3Key;
-            /**
-             * @type string
-             */
-            protocol: ProviderBindingProtocolEnum3Key;
-            /**
-             * @type object
-             */
-            requestProfile: {
-              /**
-               * @type string
-               */
-              kind: RequestProfileKindEnum3Key;
-              /**
-               * @type array
-               */
-              outputFormats: RequestProfileOutputFormatsEnumKey[];
-              /**
-               * @type array
-               */
-              settingIds: string[];
-              /**
-               * @type object
-               */
-              voiceValues: {
-                [key: string]: string;
-              };
-            };
-          }
-        | {
-            lifecycle:
-              | {
-                  /**
-                   * @type string
-                   */
-                  cancellation: LifecycleCancellationEnumKey;
-                  /**
-                   * @type array
-                   */
-                  completions: LifecycleCompletionsEnumKey[];
-                  /**
-                   * @type array
-                   */
-                  deliveries: LifecycleDeliveriesEnumKey[];
-                  /**
-                   * @type string
-                   */
-                  submission: LifecycleSubmissionEnumKey;
-                }
-              | {
-                  /**
-                   * @type string
-                   */
-                  cancellation: LifecycleCancellationEnumKey;
-                  completions:
-                    | LifecycleCompletionsEnum2Key[]
-                    | LifecycleCompletionsEnum3Key[]
-                    | (
-                        | LifecycleCompletionsEnum2Key
-                        | LifecycleCompletionsEnum3Key
-                      )[]
-                    | (
-                        | LifecycleCompletionsEnum3Key
-                        | LifecycleCompletionsEnum2Key
-                      )[];
-                  /**
-                   * @type array
-                   */
-                  deliveries: LifecycleDeliveriesEnumKey[];
-                  /**
-                   * @type string
-                   */
-                  submission: LifecycleSubmissionEnum2Key;
-                };
-            /**
-             * @pattern ^[^/]+\/.+$
-             * @type string
-             */
-            nativeModelId: string;
-            /**
-             * @minLength 1
-             * @type string
-             */
-            operationId: string;
-            /**
-             * @type string
-             */
-            provider: ProviderBindingProviderEnumKey;
-            /**
-             * @minLength 1
-             * @type string
-             */
-            providerTag: string;
-            /**
-             * @type string
-             */
-            endpoint: ProviderBindingEndpointEnum4Key;
-            /**
-             * @type string
-             */
-            protocol: ProviderBindingProtocolEnum4Key;
-            /**
-             * @type object
-             */
-            requestProfile: {
-              /**
-               * @type string
-               */
-              frameMode: RequestProfileFrameModeEnumKey;
-              /**
-               * @type boolean
-               */
-              generateAudio: boolean;
-              /**
-               * @type string
-               */
-              kind: RequestProfileKindEnum4Key;
-              /**
-               * @type object
-               */
-              referenceLimits: {
+        | (
+            | {
+                lifecycle:
+                  | {
+                      /**
+                       * @type string
+                       */
+                      cancellation: LifecycleCancellationEnumKey;
+                      /**
+                       * @type array
+                       */
+                      completions: LifecycleCompletionsEnumKey[];
+                      /**
+                       * @type array
+                       */
+                      deliveries: LifecycleDeliveriesEnumKey[];
+                      /**
+                       * @type string
+                       */
+                      submission: LifecycleSubmissionEnumKey;
+                    }
+                  | {
+                      /**
+                       * @type string
+                       */
+                      cancellation: LifecycleCancellationEnumKey;
+                      completions:
+                        | LifecycleCompletionsEnum2Key[]
+                        | LifecycleCompletionsEnum3Key[]
+                        | (
+                            | LifecycleCompletionsEnum2Key
+                            | LifecycleCompletionsEnum3Key
+                          )[]
+                        | (
+                            | LifecycleCompletionsEnum3Key
+                            | LifecycleCompletionsEnum2Key
+                          )[];
+                      /**
+                       * @type array
+                       */
+                      deliveries: LifecycleDeliveriesEnumKey[];
+                      /**
+                       * @type string
+                       */
+                      submission: LifecycleSubmissionEnum2Key;
+                    };
                 /**
-                 * @minLength 0
-                 * @type integer
+                 * @pattern ^[^/]+\/.+$
+                 * @type string
                  */
-                audio: number;
+                nativeModelId: string;
                 /**
-                 * @minLength 0
-                 * @type integer
+                 * @minLength 1
+                 * @type string
                  */
-                image: number;
+                operationId: string;
                 /**
-                 * @minLength 0
-                 * @type integer
+                 * @type string
                  */
-                video: number;
-              };
-              /**
-               * @type string
-               */
-              referenceValidationPolicy: RequestProfileReferenceValidationPolicyEnumKey;
-              /**
-               * @type array
-               */
-              settingIds: string[];
-            };
+                provider: ProviderBindingProviderEnumKey;
+                /**
+                 * @minLength 1
+                 * @type string
+                 */
+                providerTag: string;
+                /**
+                 * @type string
+                 */
+                endpoint: ProviderBindingEndpointEnumKey;
+                /**
+                 * @type string
+                 */
+                protocol: ProviderBindingProtocolEnumKey;
+                /**
+                 * @type object
+                 */
+                requestProfile: {
+                  /**
+                   * @type string
+                   */
+                  kind: RequestProfileKindEnumKey;
+                  /**
+                   * @minLength 0
+                   * @type integer
+                   */
+                  maxImageReferences: number;
+                  /**
+                   * @type string
+                   */
+                  maxTokensParameter: RequestProfileMaxTokensParameterEnumKey;
+                  /**
+                   * @type boolean
+                   */
+                  reasoning: boolean;
+                  /**
+                   * @type array
+                   */
+                  settingIds: string[];
+                };
+              }
+            | {
+                lifecycle:
+                  | {
+                      /**
+                       * @type string
+                       */
+                      cancellation: LifecycleCancellationEnumKey;
+                      /**
+                       * @type array
+                       */
+                      completions: LifecycleCompletionsEnumKey[];
+                      /**
+                       * @type array
+                       */
+                      deliveries: LifecycleDeliveriesEnumKey[];
+                      /**
+                       * @type string
+                       */
+                      submission: LifecycleSubmissionEnumKey;
+                    }
+                  | {
+                      /**
+                       * @type string
+                       */
+                      cancellation: LifecycleCancellationEnumKey;
+                      completions:
+                        | LifecycleCompletionsEnum2Key[]
+                        | LifecycleCompletionsEnum3Key[]
+                        | (
+                            | LifecycleCompletionsEnum2Key
+                            | LifecycleCompletionsEnum3Key
+                          )[]
+                        | (
+                            | LifecycleCompletionsEnum3Key
+                            | LifecycleCompletionsEnum2Key
+                          )[];
+                      /**
+                       * @type array
+                       */
+                      deliveries: LifecycleDeliveriesEnumKey[];
+                      /**
+                       * @type string
+                       */
+                      submission: LifecycleSubmissionEnum2Key;
+                    };
+                /**
+                 * @pattern ^[^/]+\/.+$
+                 * @type string
+                 */
+                nativeModelId: string;
+                /**
+                 * @minLength 1
+                 * @type string
+                 */
+                operationId: string;
+                /**
+                 * @type string
+                 */
+                provider: ProviderBindingProviderEnumKey;
+                /**
+                 * @minLength 1
+                 * @type string
+                 */
+                providerTag: string;
+                /**
+                 * @type string
+                 */
+                endpoint: ProviderBindingEndpointEnum2Key;
+                /**
+                 * @type string
+                 */
+                protocol: ProviderBindingProtocolEnum2Key;
+                /**
+                 * @type object
+                 */
+                requestProfile: {
+                  /**
+                   * @type string
+                   */
+                  kind: RequestProfileKindEnum2Key;
+                  /**
+                   * @minLength 0
+                   * @type integer
+                   */
+                  maxReferences: number;
+                  /**
+                   * @type array
+                   */
+                  settingIds: string[];
+                };
+              }
+            | {
+                lifecycle:
+                  | {
+                      /**
+                       * @type string
+                       */
+                      cancellation: LifecycleCancellationEnumKey;
+                      /**
+                       * @type array
+                       */
+                      completions: LifecycleCompletionsEnumKey[];
+                      /**
+                       * @type array
+                       */
+                      deliveries: LifecycleDeliveriesEnumKey[];
+                      /**
+                       * @type string
+                       */
+                      submission: LifecycleSubmissionEnumKey;
+                    }
+                  | {
+                      /**
+                       * @type string
+                       */
+                      cancellation: LifecycleCancellationEnumKey;
+                      completions:
+                        | LifecycleCompletionsEnum2Key[]
+                        | LifecycleCompletionsEnum3Key[]
+                        | (
+                            | LifecycleCompletionsEnum2Key
+                            | LifecycleCompletionsEnum3Key
+                          )[]
+                        | (
+                            | LifecycleCompletionsEnum3Key
+                            | LifecycleCompletionsEnum2Key
+                          )[];
+                      /**
+                       * @type array
+                       */
+                      deliveries: LifecycleDeliveriesEnumKey[];
+                      /**
+                       * @type string
+                       */
+                      submission: LifecycleSubmissionEnum2Key;
+                    };
+                /**
+                 * @pattern ^[^/]+\/.+$
+                 * @type string
+                 */
+                nativeModelId: string;
+                /**
+                 * @minLength 1
+                 * @type string
+                 */
+                operationId: string;
+                /**
+                 * @type string
+                 */
+                provider: ProviderBindingProviderEnumKey;
+                /**
+                 * @minLength 1
+                 * @type string
+                 */
+                providerTag: string;
+                /**
+                 * @type string
+                 */
+                endpoint: ProviderBindingEndpointEnum3Key;
+                /**
+                 * @type string
+                 */
+                protocol: ProviderBindingProtocolEnum3Key;
+                /**
+                 * @type object
+                 */
+                requestProfile: {
+                  /**
+                   * @type string
+                   */
+                  kind: RequestProfileKindEnum3Key;
+                  /**
+                   * @type array
+                   */
+                  outputFormats: RequestProfileOutputFormatsEnumKey[];
+                  /**
+                   * @type array
+                   */
+                  settingIds: string[];
+                  /**
+                   * @type object
+                   */
+                  voiceValues: {
+                    [key: string]: string;
+                  };
+                };
+              }
+            | {
+                lifecycle:
+                  | {
+                      /**
+                       * @type string
+                       */
+                      cancellation: LifecycleCancellationEnumKey;
+                      /**
+                       * @type array
+                       */
+                      completions: LifecycleCompletionsEnumKey[];
+                      /**
+                       * @type array
+                       */
+                      deliveries: LifecycleDeliveriesEnumKey[];
+                      /**
+                       * @type string
+                       */
+                      submission: LifecycleSubmissionEnumKey;
+                    }
+                  | {
+                      /**
+                       * @type string
+                       */
+                      cancellation: LifecycleCancellationEnumKey;
+                      completions:
+                        | LifecycleCompletionsEnum2Key[]
+                        | LifecycleCompletionsEnum3Key[]
+                        | (
+                            | LifecycleCompletionsEnum2Key
+                            | LifecycleCompletionsEnum3Key
+                          )[]
+                        | (
+                            | LifecycleCompletionsEnum3Key
+                            | LifecycleCompletionsEnum2Key
+                          )[];
+                      /**
+                       * @type array
+                       */
+                      deliveries: LifecycleDeliveriesEnumKey[];
+                      /**
+                       * @type string
+                       */
+                      submission: LifecycleSubmissionEnum2Key;
+                    };
+                /**
+                 * @pattern ^[^/]+\/.+$
+                 * @type string
+                 */
+                nativeModelId: string;
+                /**
+                 * @minLength 1
+                 * @type string
+                 */
+                operationId: string;
+                /**
+                 * @type string
+                 */
+                provider: ProviderBindingProviderEnumKey;
+                /**
+                 * @minLength 1
+                 * @type string
+                 */
+                providerTag: string;
+                /**
+                 * @type string
+                 */
+                endpoint: ProviderBindingEndpointEnum4Key;
+                /**
+                 * @type string
+                 */
+                protocol: ProviderBindingProtocolEnum4Key;
+                /**
+                 * @type object
+                 */
+                requestProfile: {
+                  /**
+                   * @type string
+                   */
+                  frameMode: RequestProfileFrameModeEnumKey;
+                  /**
+                   * @type boolean
+                   */
+                  generateAudio: boolean;
+                  /**
+                   * @type string
+                   */
+                  kind: RequestProfileKindEnum4Key;
+                  /**
+                   * @type object
+                   */
+                  referenceLimits: {
+                    /**
+                     * @minLength 0
+                     * @type integer
+                     */
+                    audio: number;
+                    /**
+                     * @minLength 0
+                     * @type integer
+                     */
+                    image: number;
+                    /**
+                     * @minLength 0
+                     * @type integer
+                     */
+                    video: number;
+                  };
+                  /**
+                   * @type string
+                   */
+                  referenceValidationPolicy: RequestProfileReferenceValidationPolicyEnumKey;
+                  /**
+                   * @type array
+                   */
+                  settingIds: string[];
+                };
+              }
+          )
+        | {
+            /**
+             * @type string
+             */
+            endpoint: ProviderBindingEndpointEnum5Key;
+            lifecycle:
+              | {
+                  /**
+                   * @type string
+                   */
+                  cancellation: LifecycleCancellationEnumKey;
+                  /**
+                   * @type array
+                   */
+                  completions: LifecycleCompletionsEnumKey[];
+                  /**
+                   * @type array
+                   */
+                  deliveries: LifecycleDeliveriesEnumKey[];
+                  /**
+                   * @type string
+                   */
+                  submission: LifecycleSubmissionEnumKey;
+                }
+              | {
+                  /**
+                   * @type string
+                   */
+                  cancellation: LifecycleCancellationEnumKey;
+                  completions:
+                    | LifecycleCompletionsEnum2Key[]
+                    | LifecycleCompletionsEnum3Key[]
+                    | (
+                        | LifecycleCompletionsEnum2Key
+                        | LifecycleCompletionsEnum3Key
+                      )[]
+                    | (
+                        | LifecycleCompletionsEnum3Key
+                        | LifecycleCompletionsEnum2Key
+                      )[];
+                  /**
+                   * @type array
+                   */
+                  deliveries: LifecycleDeliveriesEnumKey[];
+                  /**
+                   * @type string
+                   */
+                  submission: LifecycleSubmissionEnum2Key;
+                };
+            /**
+             * @pattern ^[^/]+\/.+$
+             * @type string
+             */
+            nativeModelId: string;
+            /**
+             * @minLength 1
+             * @type string
+             */
+            operationId: string;
+            /**
+             * @type string
+             */
+            protocol: ProviderBindingProtocolEnum5Key;
+            /**
+             * @type string
+             */
+            provider: ProviderBindingProviderEnum2Key;
+            /**
+             * @type string
+             */
+            providerTag: ProviderBindingProviderTagEnumKey;
+            requestProfile:
+              | {
+                  /**
+                   * @type string
+                   */
+                  kind: RequestProfileKindEnum2Key;
+                  /**
+                   * @minLength 0
+                   * @type integer
+                   */
+                  maxReferences: number;
+                  /**
+                   * @type array
+                   */
+                  params: {
+                    /**
+                     * @minLength 1
+                     * @type string
+                     */
+                    field: string;
+                    /**
+                     * @minLength 1
+                     * @type string
+                     */
+                    settingId: string;
+                    /**
+                     * @type object | undefined
+                     */
+                    valueMap?: {
+                      [key: string]: string | number | boolean;
+                    };
+                  }[];
+                  /**
+                   * @minLength 1
+                   * @type string
+                   */
+                  promptField: string;
+                  /**
+                   * @minLength 1
+                   * @type string
+                   */
+                  referenceField: string | null;
+                  /**
+                   * @minLength 1
+                   * @type string
+                   */
+                  requestedCountField: string | null;
+                  /**
+                   * @type array
+                   */
+                  settingIds: string[];
+                  /**
+                   * @type object
+                   */
+                  staticParams: {
+                    [key: string]: string | number | boolean;
+                  };
+                }
+              | {
+                  /**
+                   * @type string
+                   */
+                  kind: RequestProfileKindEnum3Key;
+                  /**
+                   * @type array
+                   */
+                  params: {
+                    /**
+                     * @minLength 1
+                     * @type string
+                     */
+                    field: string;
+                    /**
+                     * @minLength 1
+                     * @type string
+                     */
+                    settingId: string;
+                    /**
+                     * @type object | undefined
+                     */
+                    valueMap?: {
+                      [key: string]: string | number | boolean;
+                    };
+                  }[];
+                  /**
+                   * @minLength 1
+                   * @type string
+                   */
+                  promptField: string;
+                  /**
+                   * @type array
+                   */
+                  settingIds: string[];
+                  /**
+                   * @type object
+                   */
+                  staticParams: {
+                    [key: string]: string | number | boolean;
+                  };
+                }
+              | {
+                  /**
+                   * @minLength 1
+                   * @type string
+                   */
+                  firstFrameField: string | null;
+                  /**
+                   * @type string
+                   */
+                  frameMode: RequestProfileFrameModeEnumKey;
+                  /**
+                   * @type string
+                   */
+                  kind: RequestProfileKindEnum4Key;
+                  /**
+                   * @minLength 1
+                   * @type string
+                   */
+                  lastFrameField: string | null;
+                  /**
+                   * @type array
+                   */
+                  params: {
+                    /**
+                     * @minLength 1
+                     * @type string
+                     */
+                    field: string;
+                    /**
+                     * @minLength 1
+                     * @type string
+                     */
+                    settingId: string;
+                    /**
+                     * @type object | undefined
+                     */
+                    valueMap?: {
+                      [key: string]: string | number | boolean;
+                    };
+                  }[];
+                  /**
+                   * @minLength 1
+                   * @type string
+                   */
+                  promptField: string;
+                  /**
+                   * @type object
+                   */
+                  referenceLimits: {
+                    /**
+                     * @minLength 0
+                     * @type integer
+                     */
+                    audio: number;
+                    /**
+                     * @minLength 0
+                     * @type integer
+                     */
+                    image: number;
+                    /**
+                     * @minLength 0
+                     * @type integer
+                     */
+                    video: number;
+                  };
+                  /**
+                   * @type array
+                   */
+                  settingIds: string[];
+                  /**
+                   * @type object
+                   */
+                  staticParams: {
+                    [key: string]: string | number | boolean;
+                  };
+                };
           };
     };
     /**
