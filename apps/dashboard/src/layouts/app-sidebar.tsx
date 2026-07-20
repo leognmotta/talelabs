@@ -7,7 +7,6 @@ import {
   IconFolderOpen,
   IconGitBranch,
   IconLogout,
-  IconPuzzle,
 } from '@tabler/icons-react'
 import {
   Sidebar,
@@ -19,6 +18,7 @@ import {
 import { useTranslation } from 'react-i18next'
 import { OrganizationSwitcher } from '../features/organizations/organization-switcher'
 import { TaleLabsLogo } from '../shared/components/talelabs-logo'
+import { ElementIcon } from '../shared/domain-icons'
 import { NavMain } from './nav-main'
 import { NavUser } from './nav-user'
 
@@ -93,7 +93,7 @@ export function AppSidebar({
             {
               title: t('navigation.elements'),
               url: '/elements',
-              icon: <IconPuzzle />,
+              icon: <ElementIcon />,
             },
           ]}
         />

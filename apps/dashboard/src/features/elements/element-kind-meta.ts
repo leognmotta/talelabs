@@ -6,16 +6,16 @@ import {
   IconCube,
   IconMapPin,
   IconPalette,
-  IconPuzzle,
   IconUser,
 } from '@tabler/icons-react'
 import { ELEMENT_KINDS } from '@talelabs/assets'
+import { ElementIcon } from '../../shared/domain-icons'
 
 /** Icon shown for one Element kind in cards, pickers, and canvas nodes. */
 export const ELEMENT_KIND_ICONS: Record<ElementKind, typeof IconUser> = {
   character: IconUser,
   location: IconMapPin,
-  other: IconPuzzle,
+  other: ElementIcon,
   prop: IconCube,
   style: IconPalette,
 }

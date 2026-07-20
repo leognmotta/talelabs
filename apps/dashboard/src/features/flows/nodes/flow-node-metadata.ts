@@ -12,12 +12,11 @@ import {
   IconMusic,
   IconPhoto,
   IconPhotoSpark,
-  IconPuzzle,
   IconSparkles,
   IconTextCaption,
   IconVideo,
 } from '@tabler/icons-react'
-import { AssetIcon } from '../../../shared/domain-icons'
+import { AssetIcon, ElementIcon } from '../../../shared/domain-icons'
 
 /** Output actions supported by a generation node's selected-state toolbar. */
 export type FlowGenerationToolbarAction
@@ -167,7 +166,7 @@ export const FLOW_NODE_METADATA: Record<FlowNodeType, FlowNodeMetadata> = {
   },
   element: {
     descriptionKey: 'flows.nodePicker.descriptions.element',
-    icon: IconPuzzle,
+    icon: ElementIcon,
     labelKey: 'flows.nodes.element',
     pickerCategory: 'inputs',
     pickerGroup: 'inputs',

@@ -3,10 +3,11 @@
 import type { NodeProps } from '@xyflow/react'
 import type { CanvasNode } from '../../editor/flow-canvas-types'
 
-import { IconAlertTriangle, IconPuzzle } from '@tabler/icons-react'
+import { IconAlertTriangle } from '@tabler/icons-react'
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { ElementIcon } from '../../../../shared/domain-icons'
 import { AssetMediaPreview } from '../../../assets/media/asset-media-preview'
 import { ELEMENT_KIND_ICONS, elementKindLabelKey } from '../../../elements/element-kind-meta'
 import { useCanvasStore, useCanvasStoreApi } from '../../editor/canvas-state/canvas-store-context'
@@ -60,8 +61,8 @@ export const ElementFlowNode = memo(({
   const stackAssets = emittedAssets.slice(1, 1 + PREVIEW_STACK_COUNT)
   const KindIcon = element
     ? ELEMENT_KIND_ICONS[element.kind as keyof typeof ELEMENT_KIND_ICONS]
-    ?? IconPuzzle
-    : IconPuzzle
+    ?? ElementIcon
+    : ElementIcon
 
   function openPicker() {
     store.setState({ elementPickerNodeId: id })
@@ -182,7 +183,7 @@ export const ElementFlowNode = memo(({
         : (
             <FlowNodeSelectionStage
               description={t('flows.chooseElementDescription')}
-              icon={IconPuzzle}
+              icon={ElementIcon}
               label={t('flows.chooseElement')}
               valueType="ImageSet"
               onSelect={openPicker}

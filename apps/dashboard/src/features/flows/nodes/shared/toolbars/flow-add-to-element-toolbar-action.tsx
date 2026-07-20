@@ -1,9 +1,9 @@
 /** Toolbar command that banks one canvas image Asset into an Element. */
 
-import { IconPuzzle } from '@tabler/icons-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { ElementIcon } from '../../../../../shared/domain-icons'
 import { AddToElementDialog } from '../../../../elements/add-to-element-dialog'
 import { FlowToolbarButton } from './flow-toolbar-button'
 
@@ -19,7 +19,7 @@ export function FlowAddToElementToolbarAction({
   return (
     <>
       <FlowToolbarButton
-        icon={IconPuzzle}
+        icon={ElementIcon}
         label={t('elements.addToElementAction')}
         onClick={() => setOpen(true)}
       />

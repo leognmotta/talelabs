@@ -2,7 +2,7 @@
 
 import type { Element, ElementKind } from '@talelabs/sdk'
 
-import { IconPlus, IconPuzzle, IconSearch } from '@tabler/icons-react'
+import { IconPlus, IconSearch } from '@tabler/icons-react'
 import { Button } from '@talelabs/ui/components/button'
 import {
   Empty,
@@ -29,6 +29,7 @@ import {
   MediaLibraryGrid,
   MediaLibrarySkeleton,
 } from '../../shared/components/media-library-card'
+import { ElementIcon } from '../../shared/domain-icons'
 import { DeleteElementDialog } from './delete-element-dialog'
 import { ElementCard } from './element-card'
 import { ElementEditorDialog } from './element-editor-dialog'
@@ -122,7 +123,7 @@ export function ElementsScreen() {
             ? (
                 <Empty>
                   <EmptyHeader>
-                    <EmptyMedia variant="icon"><IconPuzzle /></EmptyMedia>
+                    <EmptyMedia variant="icon"><ElementIcon /></EmptyMedia>
                     <EmptyTitle>
                       {deferredSearch || kind !== 'all'
                         ? t('elements.noResults')

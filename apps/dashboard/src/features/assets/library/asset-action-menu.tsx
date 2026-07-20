@@ -10,7 +10,6 @@ import {
   IconEye,
   IconFolderSymlink,
   IconPencil,
-  IconPuzzle,
   IconRestore,
   IconTrash,
 } from '@tabler/icons-react'
@@ -24,6 +23,7 @@ import {
   DropdownMenuTrigger,
 } from '@talelabs/ui/components/dropdown-menu'
 import { useTranslation } from 'react-i18next'
+import { ElementIcon } from '../../../shared/domain-icons'
 import { LibraryItemAction } from './library-item-action'
 
 /** Exposes only commands supplied by the owning library or viewer controller. */
@@ -77,7 +77,7 @@ export function AssetActionMenu({ asset, actions, triggerClassName, viewDetails 
                   <DropdownMenuItem
                     onClick={() => actions.onAddToElement(asset)}
                   >
-                    <IconPuzzle />
+                    <ElementIcon />
                     {t('elements.addToElementAction')}
                   </DropdownMenuItem>
                 )}
