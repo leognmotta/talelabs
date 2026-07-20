@@ -11,11 +11,10 @@ import { cn } from '@talelabs/ui/lib/utils'
 import {
   Background,
   BackgroundVariant,
-  Controls,
-  MiniMap,
   Panel,
   ReactFlow,
   ReactFlowProvider,
+  SelectionMode,
   useReactFlow,
 } from '@xyflow/react'
 import { useQueryState } from 'nuqs'
@@ -34,6 +33,9 @@ import {
 } from './canvas-state/canvas-store-context'
 import { FlowCanvasConnectionLine } from './flow-canvas-connection-line'
 import { FlowCanvasDebugIndicator } from './flow-canvas-debug-indicator'
+import { FlowCanvasDropOverlay } from './flow-canvas-drop-overlay'
+import { FlowCanvasEmptyState } from './flow-canvas-empty-state'
+import { FlowCanvasMinimap } from './flow-canvas-minimap'
 import { FlowCanvasOverlays } from './flow-canvas-overlays'
 import {
   FlowCanvasHeaderPanel,
@@ -53,6 +55,7 @@ import { FlowMediaPreviewProvider } from './flow-media-preview-provider'
 import { getFlowCanvasShortcutLabels } from './interactions/flow-canvas-shortcuts'
 import { useFlowCanvasAssetUpload } from './interactions/use-flow-canvas-asset-upload'
 import { useFlowCanvasCommands } from './interactions/use-flow-canvas-commands'
+import { useFlowCanvasFileDrop } from './interactions/use-flow-canvas-file-drop'
 import { useFlowCanvasLifecycle } from './interactions/use-flow-canvas-lifecycle'
 import { useFlowCanvasReactFlowHandlers } from './interactions/use-flow-canvas-react-flow-handlers'
 import { useFlowVisibleEdges } from './interactions/use-flow-visible-edges'
@@ -206,6 +209,9 @@ function FlowCanvasInner({
     getGenerationPreviewFingerprint,
     store,
   })
+  const fileDrop = useFlowCanvasFileDrop({
+    uploadFilesAt: assetUploads.uploadFilesAt,
+  })
   const visibleEdges = useFlowVisibleEdges({ edges, referenceData, store })
 
   return (
@@ -231,6 +237,10 @@ function FlowCanvasInner({
               <div
                 ref={wrapperRef}
                 tabIndex={-1}
+                onDragEnter={fileDrop.onDragEnter}
+                onDragLeave={fileDrop.onDragLeave}
+                onDragOver={fileDrop.onDragOver}
+                onDrop={fileDrop.onDrop}
                 onKeyDown={lifecycle.handleCanvasKeyDown}
                 onPointerDownCapture={lifecycle.handleCanvasPointerDown}
               />
@@ -254,6 +264,7 @@ function FlowCanvasInner({
               nodeTypes={FLOW_REACT_NODE_TYPES}
               proOptions={FLOW_CANVAS_PRO_OPTIONS}
               reconnectRadius={14}
+              selectionMode={SelectionMode.Partial}
               snapGrid={FLOW_CANVAS_SNAP_GRID}
               snapToGrid
               onConnect={reactFlowHandlers.onConnect}
@@ -274,23 +285,16 @@ function FlowCanvasInner({
                 size={1.4}
                 variant={BackgroundVariant.Dots}
               />
-              <Controls
-                position="bottom-left"
-                showInteractive={false}
-                aria-label={t('flows.a11y.controls')}
-              />
-              <MiniMap
-                ariaLabel={t('flows.a11y.minimap')}
-                className="rounded-xl! border! bg-card/92! shadow-lg!"
-                maskColor="color-mix(in oklab, var(--background) 75%, transparent)"
-                nodeColor="var(--muted-foreground)"
-                pannable
-                position="bottom-right"
-                zoomable
-              />
+              <FlowCanvasMinimap />
               <FlowCanvasHeaderPanel
                 flow={flow}
+                status={autosave.status}
                 onFlowDeleted={lifecycle.onFlowDeleted}
+                onRetrySave={commands.retrySave}
+              />
+              <FlowCanvasEmptyState
+                canAddNodeType={runAvailability.canAddNodeType}
+                onAddNode={commands.addNode}
               />
               {debugMode && (
                 <Panel className="m-4!" position="top-center">
@@ -308,16 +312,13 @@ function FlowCanvasInner({
                   || runAvailability.hasUnavailableGenerationNode
                 }
                 shortcutLabels={shortcutLabels}
-                status={autosave.status}
                 onAddNode={commands.addNode}
                 onDebugModeChange={setDebugMode}
-                onDelete={commands.deleteSelection}
-                onDuplicate={commands.duplicateNodes}
                 onFitView={commands.fitView}
-                onRetrySave={commands.retrySave}
                 onRunAll={commands.runAll}
               />
             </ReactFlow>
+            {fileDrop.dropActive && <FlowCanvasDropOverlay />}
           </ContextMenuTrigger>
           <FlowCanvasOverlays
             canAddNodeType={runAvailability.canAddNodeType}
