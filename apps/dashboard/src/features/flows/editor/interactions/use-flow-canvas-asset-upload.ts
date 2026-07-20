@@ -285,6 +285,14 @@ export function useFlowCanvasAssetUpload(input: {
     }
   }, [policyDescription, reactFlow, t, upload, wrapperRef])
 
+  const uploadFilesAt = useCallback((
+    files: File[] | FileList,
+    screenPosition: XYPosition,
+  ) => {
+    uploadScreenPositionRef.current = screenPosition
+    uploadFiles(files)
+  }, [uploadFiles])
+
   useEffect(() => store.subscribe((state, previous) => {
     if (state.nodes === previous.nodes)
       return
@@ -338,5 +346,6 @@ export function useFlowCanvasAssetUpload(input: {
     subscribeUploads,
     transientAssets,
     uploadFiles,
+    uploadFilesAt,
   }
 }
