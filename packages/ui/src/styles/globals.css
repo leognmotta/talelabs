@@ -126,16 +126,28 @@
   --flow-preview-text: var(--brand-glacier-light);
   --flow-preview-video: var(--brand-twilight-light);
   --flow-preview-surface: color-mix(in oklab, var(--card) 88%, var(--surface));
-  --flow-preview-glow-mix: 54%;
+  --flow-preview-glow-mix: 46%;
   --flow-preview-glow-fade: 62%;
   --flow-preview-border-mix: 22%;
   --flow-handle-background-mix: 44%;
   --flow-handle-foreground-mix: 45%;
-  --flow-handle-ring-mix: 58%;
+  --flow-handle-ring-mix: 48%;
   --flow-handle-connected-background-mix: 62%;
   --flow-handle-connected-ring-mix: 72%;
   --flow-handle-shadow: rgb(23 23 19 / 14%);
   --flow-handle-connected-shadow: rgb(23 23 19 / 18%);
+  --flow-motion-fast: 150ms;
+  --flow-motion-base: 200ms;
+  --flow-motion-ease: cubic-bezier(0.32, 0.72, 0, 1);
+  --flow-shadow-node:
+    0 1px 2px rgb(23 23 19 / 6%),
+    0 12px 32px rgb(23 23 19 / 10%);
+  --flow-shadow-node-selected:
+    0 1px 2px rgb(23 23 19 / 6%),
+    0 16px 40px rgb(23 23 19 / 14%);
+  --flow-shadow-floating:
+    0 1px 2px rgb(23 23 19 / 8%),
+    0 8px 24px rgb(23 23 19 / 12%);
   --background: #fafafa;
   --foreground: #171713;
   --card: #fdfdfc;
@@ -213,6 +225,15 @@
   --flow-handle-connected-ring-mix: 45%;
   --flow-handle-shadow: rgb(0 0 0 / 22%);
   --flow-handle-connected-shadow: rgb(0 0 0 / 25%);
+  --flow-shadow-node:
+    0 1px 2px rgb(0 0 0 / 20%),
+    0 12px 32px rgb(0 0 0 / 30%);
+  --flow-shadow-node-selected:
+    0 1px 2px rgb(0 0 0 / 22%),
+    0 16px 40px rgb(0 0 0 / 38%);
+  --flow-shadow-floating:
+    0 1px 2px rgb(0 0 0 / 24%),
+    0 8px 24px rgb(0 0 0 / 28%);
   --background: #080806;
   --foreground: #f8f8f5;
   --card: #11110f;
@@ -340,6 +361,32 @@
     }
   }
 
+  @keyframes talelabs-flow-chrome-in {
+    from {
+      opacity: 0;
+      scale: 0.98;
+      translate: 0 4px;
+    }
+  }
+
+  [data-flow-chrome] {
+    border: 1px solid color-mix(in oklab, var(--border) 60%, transparent);
+    background: color-mix(in oklab, var(--card) 85%, transparent);
+    box-shadow: var(--flow-shadow-floating);
+    backdrop-filter: blur(12px);
+  }
+
+  [data-flow-chrome-enter] {
+    animation: talelabs-flow-chrome-in var(--flow-motion-base)
+      var(--flow-motion-ease) both;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-flow-chrome-enter] {
+      animation: none;
+    }
+  }
+
   [data-auth-screen] {
     background:
       radial-gradient(
@@ -437,6 +484,32 @@
     visibility: visible;
     opacity: 1;
     pointer-events: auto;
+  }
+
+  [data-flow-node-shell] [data-flow-node-icon] {
+    color: var(--muted-foreground);
+  }
+
+  [data-flow-node-shell][data-accent] [data-flow-node-icon] {
+    color: color-mix(in oklab, var(--flow-node-accent) 70%, var(--foreground));
+  }
+
+  [data-flow-preview-actions] {
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transition:
+      opacity var(--flow-motion-fast) var(--flow-motion-ease),
+      visibility 0s linear var(--flow-motion-fast);
+  }
+
+  [data-flow-node-shell]:hover [data-flow-preview-actions],
+  [data-flow-node-shell][data-selected="true"] [data-flow-preview-actions],
+  [data-flow-node-shell]:focus-within [data-flow-preview-actions] {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+    transition: opacity var(--flow-motion-fast) var(--flow-motion-ease);
   }
 
   .react-flow__controls {
@@ -576,14 +649,6 @@
     --flow-value-color: var(--flow-preview-text);
   }
 
-  [data-flow-handle][data-value-type="ElementContext"] {
-    --flow-value-color: var(--brand-dawn);
-  }
-
-  [data-flow-node-preview-stage][data-value-type="ElementContext"] {
-    --flow-value-color: var(--flow-preview-element);
-  }
-
   [data-flow-handle][data-value-type="ImageSet"] {
     --flow-value-color: var(--brand-terra);
   }
@@ -660,12 +725,12 @@
         transparent var(--flow-preview-glow-fade)
       ),
       linear-gradient(
-        color-mix(in oklab, var(--foreground) 4%, transparent) 1px,
+        color-mix(in oklab, var(--foreground) 3%, transparent) 1px,
         transparent 1px
       ),
       linear-gradient(
         90deg,
-        color-mix(in oklab, var(--foreground) 4%, transparent) 1px,
+        color-mix(in oklab, var(--foreground) 3%, transparent) 1px,
         transparent 1px
       );
     background-size:
