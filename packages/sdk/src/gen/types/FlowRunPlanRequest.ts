@@ -40,6 +40,29 @@ export const commandModeEnum5 = {
 export type CommandModeEnum5Key =
   (typeof commandModeEnum5)[keyof typeof commandModeEnum5];
 
+export const flowRunPlanRequestExecutionModeEnum = {
+  live: "live",
+  debug: "debug",
+} as const;
+
+export type FlowRunPlanRequestExecutionModeEnumKey =
+  (typeof flowRunPlanRequestExecutionModeEnum)[keyof typeof flowRunPlanRequestExecutionModeEnum];
+
+export const flowRunPlanRequestExecutionRuntimeEnum = {
+  managed: "managed",
+  browser: "browser",
+} as const;
+
+export type FlowRunPlanRequestExecutionRuntimeEnumKey =
+  (typeof flowRunPlanRequestExecutionRuntimeEnum)[keyof typeof flowRunPlanRequestExecutionRuntimeEnum];
+
+export const flowRunPlanRequestFundingSourceEnum = {
+  credits: "credits",
+} as const;
+
+export type FlowRunPlanRequestFundingSourceEnumKey =
+  (typeof flowRunPlanRequestFundingSourceEnum)[keyof typeof flowRunPlanRequestFundingSourceEnum];
+
 export type FlowRunPlanRequest = {
   command:
     | {
@@ -116,4 +139,18 @@ export type FlowRunPlanRequest = {
          */
         mode: CommandModeEnum5Key;
       };
+  /**
+   * @default "live"
+   * @type string | undefined
+   */
+  executionMode?: FlowRunPlanRequestExecutionModeEnumKey;
+  /**
+   * @default "managed"
+   * @type string | undefined
+   */
+  executionRuntime?: FlowRunPlanRequestExecutionRuntimeEnumKey;
+  /**
+   * @type string
+   */
+  fundingSource: FlowRunPlanRequestFundingSourceEnumKey;
 };

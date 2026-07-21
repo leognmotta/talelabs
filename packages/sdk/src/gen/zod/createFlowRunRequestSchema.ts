@@ -13,6 +13,7 @@ export const createFlowRunRequestSchema = z.object({
     z.enum(["managed", "browser"]).default("managed"),
   ),
   expectedPlanHash: z.optional(z.string().regex(/^[0-9a-f]{64}$/)),
+  fundingSource: z.enum(["credits", "byok"]),
   mode: z.enum(["node", "downstream", "upstream", "selection", "all"]),
   expectedFlowRevision: z.int().min(0),
   get targetNodeId() {

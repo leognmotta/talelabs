@@ -42,4 +42,9 @@ export const flowRunPlanRequestSchema = z.object({
       mode: z.enum(["all"]),
     }),
   ]),
+  executionMode: z.optional(z.enum(["live", "debug"]).default("live")),
+  executionRuntime: z.optional(
+    z.enum(["managed", "browser"]).default("managed"),
+  ),
+  fundingSource: z.enum(["credits"]),
 }) as unknown as z.ZodType<FlowRunPlanRequest>;

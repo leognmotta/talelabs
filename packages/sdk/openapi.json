@@ -2068,6 +2068,9 @@
       "FlowRunPlanResponse": {
         "type": "object",
         "properties": {
+          "costEstimate": {
+            "$ref": "#/components/schemas/RunCostEstimate"
+          },
           "flowId": {
             "$ref": "#/components/schemas/Cuid2"
           },
@@ -2114,6 +2117,7 @@
           }
         },
         "required": [
+          "costEstimate",
           "flowId",
           "flowRevision",
           "planHash",
@@ -2123,6 +2127,121 @@
           "plannedJobCount",
           "requestedExecutableCount",
           "topologicalDepth"
+        ]
+      },
+      "RunCostEstimate": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "amountUsd": {
+                "type": "string",
+                "pattern": "^\\d+(?:\\.\\d+)?$"
+              },
+              "currency": {
+                "type": "string",
+                "enum": [
+                  "USD"
+                ]
+              },
+              "estimatedJobCount": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "estimated"
+                ]
+              },
+              "unavailableJobCount": {
+                "type": "number",
+                "enum": [
+                  0
+                ]
+              }
+            },
+            "required": [
+              "amountUsd",
+              "currency",
+              "estimatedJobCount",
+              "status",
+              "unavailableJobCount"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "amountUsd": {
+                "nullable": true
+              },
+              "currency": {
+                "type": "string",
+                "enum": [
+                  "USD"
+                ]
+              },
+              "estimatedJobCount": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "partial"
+                ]
+              },
+              "unavailableJobCount": {
+                "type": "integer",
+                "minimum": 0,
+                "exclusiveMinimum": true
+              }
+            },
+            "required": [
+              "amountUsd",
+              "currency",
+              "estimatedJobCount",
+              "status",
+              "unavailableJobCount"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "amountUsd": {
+                "nullable": true
+              },
+              "currency": {
+                "type": "string",
+                "enum": [
+                  "USD"
+                ]
+              },
+              "estimatedJobCount": {
+                "type": "number",
+                "enum": [
+                  0
+                ]
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "unavailable"
+                ]
+              },
+              "unavailableJobCount": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "amountUsd",
+              "currency",
+              "estimatedJobCount",
+              "status",
+              "unavailableJobCount"
+            ]
+          }
         ]
       },
       "FlowRunPlanRequest": {
@@ -2247,10 +2366,121 @@
                 ]
               }
             ]
+          },
+          "executionMode": {
+            "type": "string",
+            "enum": [
+              "live",
+              "debug"
+            ],
+            "default": "live"
+          },
+          "executionRuntime": {
+            "type": "string",
+            "enum": [
+              "managed",
+              "browser"
+            ],
+            "default": "managed"
+          },
+          "fundingSource": {
+            "type": "string",
+            "enum": [
+              "credits"
+            ]
           }
         },
         "required": [
-          "command"
+          "command",
+          "fundingSource"
+        ]
+      },
+      "FlowRunCostManifestResponse": {
+        "type": "object",
+        "properties": {
+          "allCostEstimate": {
+            "$ref": "#/components/schemas/RunCostEstimate"
+          },
+          "flowId": {
+            "$ref": "#/components/schemas/Cuid2"
+          },
+          "flowRevision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "nodes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FlowRunCostManifestNode"
+            }
+          }
+        },
+        "required": [
+          "flowId",
+          "flowRevision",
+          "nodes"
+        ]
+      },
+      "FlowRunCostManifestNode": {
+        "type": "object",
+        "properties": {
+          "costEstimate": {
+            "$ref": "#/components/schemas/RunCostEstimate"
+          },
+          "nodeId": {
+            "$ref": "#/components/schemas/Cuid2"
+          }
+        },
+        "required": [
+          "costEstimate",
+          "nodeId"
+        ]
+      },
+      "FlowRunCostManifestRequest": {
+        "type": "object",
+        "properties": {
+          "executionMode": {
+            "type": "string",
+            "enum": [
+              "live",
+              "debug"
+            ],
+            "default": "live"
+          },
+          "executionRuntime": {
+            "type": "string",
+            "enum": [
+              "managed",
+              "browser"
+            ],
+            "default": "managed"
+          },
+          "expectedFlowRevision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "fundingSource": {
+            "type": "string",
+            "enum": [
+              "credits"
+            ]
+          },
+          "includeAll": {
+            "type": "boolean",
+            "default": true
+          },
+          "nodeIds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Cuid2"
+            },
+            "maxItems": 32,
+            "default": []
+          }
+        },
+        "required": [
+          "expectedFlowRevision",
+          "fundingSource"
         ]
       },
       "RunListResponse": {
@@ -2863,6 +3093,13 @@
           "flowId": {
             "$ref": "#/components/schemas/Cuid2"
           },
+          "fundingSource": {
+            "type": "string",
+            "enum": [
+              "credits",
+              "byok"
+            ]
+          },
           "mode": {
             "type": "string",
             "enum": [
@@ -2902,6 +3139,7 @@
         },
         "required": [
           "flowId",
+          "fundingSource",
           "mode",
           "expectedFlowRevision"
         ]
@@ -2928,6 +3166,13 @@
           "expectedPlanHash": {
             "type": "string",
             "pattern": "^[0-9a-f]{64}$"
+          },
+          "fundingSource": {
+            "type": "string",
+            "enum": [
+              "credits",
+              "byok"
+            ]
           },
           "mode": {
             "type": "string",
@@ -2967,6 +3212,7 @@
           }
         },
         "required": [
+          "fundingSource",
           "mode",
           "expectedFlowRevision"
         ]
@@ -8592,6 +8838,115 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/FlowRunPlanResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Active organization required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Resource state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Organization request rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/flows/{id}/run-cost-estimates": {
+      "post": {
+        "tags": [
+          "Runs"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "$ref": "#/components/schemas/Cuid2"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FlowRunCostManifestRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Graph-level run cost estimates",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FlowRunCostManifestResponse"
                 }
               }
             }

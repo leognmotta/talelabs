@@ -6,8 +6,12 @@
 import * as z from "zod";
 import type { FlowRunPlanResponse } from "../types/FlowRunPlanResponse.ts";
 import { cuid2Schema } from "./cuid2Schema.ts";
+import { runCostEstimateSchema } from "./runCostEstimateSchema.ts";
 
 export const flowRunPlanResponseSchema = z.object({
+  get costEstimate() {
+    return runCostEstimateSchema;
+  },
   get flowId() {
     return cuid2Schema;
   },

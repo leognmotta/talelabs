@@ -4,6 +4,7 @@
  */
 
 import type { Cuid2 } from "./Cuid2.ts";
+import type { RunCostEstimate } from "./RunCostEstimate.ts";
 
 export const flowRunPlanResponseModeEnum = {
   node: "node",
@@ -17,6 +18,7 @@ export type FlowRunPlanResponseModeEnumKey =
   (typeof flowRunPlanResponseModeEnum)[keyof typeof flowRunPlanResponseModeEnum];
 
 export type FlowRunPlanResponse = {
+  costEstimate: RunCostEstimate;
   /**
    * @pattern ^[a-z][0-9a-z]+$
    * @type string

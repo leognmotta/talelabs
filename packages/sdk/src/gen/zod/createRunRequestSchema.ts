@@ -16,6 +16,7 @@ export const createRunRequestSchema = z.object({
   get flowId() {
     return cuid2Schema;
   },
+  fundingSource: z.enum(["credits", "byok"]),
   mode: z.enum(["node", "downstream", "upstream", "selection", "all"]),
   expectedFlowRevision: z.int().min(0),
   get targetNodeId() {

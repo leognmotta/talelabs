@@ -21,6 +21,14 @@ export const createFlowRunRequestExecutionRuntimeEnum = {
 export type CreateFlowRunRequestExecutionRuntimeEnumKey =
   (typeof createFlowRunRequestExecutionRuntimeEnum)[keyof typeof createFlowRunRequestExecutionRuntimeEnum];
 
+export const createFlowRunRequestFundingSourceEnum = {
+  credits: "credits",
+  byok: "byok",
+} as const;
+
+export type CreateFlowRunRequestFundingSourceEnumKey =
+  (typeof createFlowRunRequestFundingSourceEnum)[keyof typeof createFlowRunRequestFundingSourceEnum];
+
 export const createFlowRunRequestModeEnum = {
   node: "node",
   downstream: "downstream",
@@ -56,6 +64,10 @@ export type CreateFlowRunRequest = {
    * @type string | undefined
    */
   expectedPlanHash?: string;
+  /**
+   * @type string
+   */
+  fundingSource: CreateFlowRunRequestFundingSourceEnumKey;
   /**
    * @type string
    */
