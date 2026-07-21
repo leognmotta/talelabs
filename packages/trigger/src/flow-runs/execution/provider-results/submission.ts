@@ -1,5 +1,8 @@
-import { db } from '@talelabs/db'
+/** Write-ahead provider submission and normalized fact persistence. */
 
+import { db, sql } from '@talelabs/db'
+
+/** Claims the irreversible provider spend boundary before network submission. */
 export async function markProviderSubmissionStarted(input: {
   jobId: string
   organizationId: string
@@ -21,6 +24,7 @@ export async function markProviderSubmissionStarted(input: {
     throw new Error('provider_submission_marker_conflict')
 }
 
+/** Merges post-submission provider facts into the job and result checkpoint. */
 export async function persistProviderFacts(input: {
   facts: {
     providerCostUsd?: number
@@ -41,7 +45,23 @@ export async function persistProviderFacts(input: {
     return
   await db.transaction().execute(async (trx) => {
     const job = await trx.updateTable('generationJobs')
-      .set(values)
+      .set({
+        ...values,
+        ...(input.facts.providerCostUsd === undefined
+          ? {}
+          : {
+              providerSettlementResolvedAt: sql`case
+                when "providerCompletionStatus" is null
+                  then "providerSettlementResolvedAt"
+                else now()
+              end`,
+              providerSettlementStatus: sql`case
+                when "providerCompletionStatus" is null
+                  then "providerSettlementStatus"
+                else 'settled'
+              end`,
+            }),
+      })
       .where('organizationId', '=', input.organizationId)
       .where('id', '=', input.jobId)
       .where('status', '=', 'running')
@@ -57,6 +77,7 @@ export async function persistProviderFacts(input: {
   })
 }
 
+/** Stores the external queue identity required to resume without resubmission. */
 export async function persistProviderSubmission(input: {
   externalJobId: string
   facts: {

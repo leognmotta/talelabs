@@ -1,3 +1,5 @@
+/** Durable provider-result checkpointing before canonical output finalization. */
+
 import type {
   NormalizedGenerationOutput,
   NormalizedGenerationProviderFacts,
@@ -7,6 +9,7 @@ import { db, sql } from '@talelabs/db'
 import { copyObject, putObject, putObjectStream } from '@talelabs/storage'
 
 import { getGeneratedOutputStorageLocation } from '../../../assets/outputs/generated-storage.js'
+import { completedProviderSettlement } from './settlement.js'
 
 /** Stages a complete provider result before any Asset finalization can fail. */
 export async function stageGenerationProviderResult(input: {
@@ -16,6 +19,7 @@ export async function stageGenerationProviderResult(input: {
   outputs: readonly NormalizedGenerationOutput[]
 }) {
   const settledAt = new Date()
+  const settlement = completedProviderSettlement(input.facts, settledAt)
   const outputs = [...input.outputs].toSorted(
     (left, right) => left.outputIndex - right.outputIndex,
   )
@@ -63,14 +67,17 @@ export async function stageGenerationProviderResult(input: {
         ...(input.facts.providerGenerationId === undefined
           ? {}
           : { providerGenerationId: input.facts.providerGenerationId }),
-        providerSettlementResolvedAt: settledAt,
-        providerSettlementStatus: 'settled',
+        ...settlement,
         status: 'running',
       })
       .where('organizationId', '=', input.organizationId)
       .where('id', '=', input.jobId)
       .where('status', '=', 'running')
-      .where('providerSettlementStatus', 'in', ['pending', 'settled'])
+      .where('providerSettlementStatus', 'in', [
+        'pending',
+        'settled',
+        'unknown',
+      ])
       .returning('id')
       .executeTakeFirst()
     if (!runningJob)

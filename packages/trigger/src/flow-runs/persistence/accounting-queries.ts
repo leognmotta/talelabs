@@ -1,17 +1,28 @@
 /** Fair bounded claims for generation jobs missing eventual provider costs. */
 
+import type {
+  FAL_PROVIDER,
+  OPENROUTER_PROVIDER,
+} from '@talelabs/providers/server'
+
 import { db, sql } from '@talelabs/db'
-import { OPENROUTER_PROVIDER } from '@talelabs/providers/server'
 
 const PROVIDER_ACCOUNTING_FAST_RETRY_MS = 5 * 60 * 1_000
 const PROVIDER_ACCOUNTING_MEDIUM_RETRY_MS = 30 * 60 * 1_000
 const PROVIDER_ACCOUNTING_SLOW_RETRY_MS = 4 * 60 * 60 * 1_000
-const PROVIDER_ACCOUNTING_MAX_ATTEMPTS = 12
+/** Maximum provider metadata lookups before cost becomes explicitly unknown. */
+export const PROVIDER_ACCOUNTING_MAX_ATTEMPTS = 12
 
-/** Fairly claims successful jobs whose eventual OpenRouter cost is still absent. */
-export async function claimMissingOpenRouterProviderCosts(input: {
+/** Managed providers with request-level accounting reconciliation. */
+export type ReconciledAccountingProvider
+  = | typeof FAL_PROVIDER
+    | typeof OPENROUTER_PROVIDER
+
+/** Fairly claims terminal managed jobs whose eventual provider cost is absent. */
+export async function claimMissingProviderCosts(input: {
   limit: number
   organizationId?: string
+  provider: ReconciledAccountingProvider
 }) {
   const limit = Math.max(1, Math.min(input.limit, 100))
   const now = Date.now()
@@ -25,24 +36,38 @@ export async function claimMissingOpenRouterProviderCosts(input: {
     flowRunId: string
     generationJobId: string
     organizationId: string
+    provider: ReconciledAccountingProvider
+    providerCostReconciliationAttempts: number
     providerGenerationId: string
+    providerModel: string
     providerResultCostUsd: null | string
+    providerSubmittedAt: Date
   }>`
     with candidates as (
       select
         job."organizationId",
         job."id",
         job."flowRunId",
+        job."provider",
         job."providerGenerationId",
+        job."providerModel",
+        job."providerSubmittedAt",
         result."providerCostUsd" as "providerResultCostUsd"
       from "generationJobs" as job
       inner join "generationProviderResults" as result
         on result."organizationId" = job."organizationId"
         and result."jobId" = job."id"
-      where job."status" = 'succeeded'
-        and job."provider" = ${OPENROUTER_PROVIDER}
+      inner join "flowRuns" as run
+        on run."organizationId" = job."organizationId"
+        and run."id" = job."flowRunId"
+      where job."status" in ('canceled', 'failed', 'succeeded')
+        and job."providerCompletionStatus" = 'completed'
+        and run."executionRuntime" = 'managed'
+        and job."provider" = ${input.provider}
         and job."providerGenerationId" is not null
+        and job."providerSubmittedAt" is not null
         and job."providerCostUsd" is null
+        and job."providerSettlementStatus" = 'pending'
         and job."providerCostReconciliationAttempts"
           < ${PROVIDER_ACCOUNTING_MAX_ATTEMPTS}
         and (
@@ -87,8 +112,12 @@ export async function claimMissingOpenRouterProviderCosts(input: {
       candidates."flowRunId",
       candidates."id" as "generationJobId",
       candidates."organizationId",
+      candidates."provider",
+      job."providerCostReconciliationAttempts",
       candidates."providerGenerationId",
-      candidates."providerResultCostUsd"
+      candidates."providerModel",
+      candidates."providerResultCostUsd",
+      candidates."providerSubmittedAt"
   `.execute(db)
   return result.rows
 }

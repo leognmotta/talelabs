@@ -1,9 +1,33 @@
 /** Durable provider-settlement transitions independent of output retention. */
 
 import type { DatabaseExecutor } from '@talelabs/db'
+import type { NormalizedGenerationProviderFacts } from '@talelabs/flows'
 import type { SafeRunFailure } from '../../../shared/failures/run-failure.js'
 
 import { db, sql } from '@talelabs/db'
+
+/** Resolves financial settlement only when completion includes trusted cost. */
+export function completedProviderSettlement(
+  facts: NormalizedGenerationProviderFacts,
+  completedAt: Date,
+) {
+  if (facts.providerCostUsd !== undefined) {
+    return {
+      providerSettlementResolvedAt: completedAt,
+      providerSettlementStatus: 'settled' as const,
+    }
+  }
+  if (facts.providerGenerationId !== undefined) {
+    return {
+      providerSettlementResolvedAt: null,
+      providerSettlementStatus: 'pending' as const,
+    }
+  }
+  return {
+    providerSettlementResolvedAt: completedAt,
+    providerSettlementStatus: 'unknown' as const,
+  }
+}
 
 /** Settles a provider-reported failure without creating canonical output. */
 export async function markProviderSettlementFailed(input: {
@@ -20,7 +44,10 @@ export async function markProviderSettlementFailed(input: {
         "providerCompletionStatus", 'failed'
       )`,
       providerSettlementResolvedAt: resolvedAt,
-      providerSettlementStatus: 'settled',
+      providerSettlementStatus: sql`case
+        when "providerCostUsd" is null then 'unknown'
+        else 'settled'
+      end`,
     })
     .where('organizationId', '=', input.organizationId)
     .where('id', '=', input.jobId)

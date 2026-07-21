@@ -266,13 +266,26 @@ export async function failBrowserJob(input: {
         // must not overwrite settlement or skip descendants of a valid branch.
         return { state: 'superseded' as const }
       }
+      const submissionWasDefinitivelyRejected
+        = input.safeToResubmit === true && job.providerJobId === null
       await trx
         .updateTable('generationJobs')
         .set({
-          providerSettlementResolvedAt:
-            job.providerSubmittedAt === null ? null : new Date(),
-          providerSettlementStatus:
-            job.providerSubmittedAt === null ? 'not_required' : 'unknown',
+          ...(submissionWasDefinitivelyRejected
+            ? {
+                browserSubmissionState: 'not_started' as const,
+                providerSettlementResolvedAt: null,
+                providerSettlementStatus: 'not_required' as const,
+                providerSubmittedAt: null,
+              }
+            : {
+                providerSettlementResolvedAt:
+                  job.providerSubmittedAt === null ? null : new Date(),
+                providerSettlementStatus:
+                  job.providerSubmittedAt === null
+                    ? 'not_required' as const
+                    : 'unknown' as const,
+              }),
         })
         .where('organizationId', '=', input.organizationId)
         .where('id', '=', job.id)
