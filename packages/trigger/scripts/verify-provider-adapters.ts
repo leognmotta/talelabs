@@ -1,7 +1,7 @@
 /** Provider-neutral offline acceptance gate for every current real adapter. */
 
-import { verifyElevenLabsRequestProfiles } from './fal-provider-verifier/elevenlabs-scenarios.js'
 import { verifyFalAccountingLookup } from './fal-provider-verifier/accounting-scenario.js'
+import { verifyElevenLabsRequestProfiles } from './fal-provider-verifier/elevenlabs-scenarios.js'
 import {
   verifyFalCancellationSemantics,
   verifyFalErrorNormalization,
