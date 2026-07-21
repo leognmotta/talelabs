@@ -8,6 +8,11 @@ import type {
   GenerationJobTable,
   JsonValue,
 } from '@talelabs/db'
+import type {
+  FlowRunSnapshotProviderCostEstimate,
+  FlowRunSnapshotProviderSelection,
+} from '@talelabs/flows'
+import type { ProviderCostInputAsset } from '@talelabs/providers/server'
 import type { Insertable } from 'kysely'
 
 import type { RunMode } from './contracts.js'
@@ -40,6 +45,13 @@ import { jsonb } from './jsonb.js'
 import { logRunEngine } from './logging.js'
 import { loadFlowRunPlan } from './planning.service.js'
 import { availableProvidersForRun } from './provider-availability.js'
+import { requireCompleteProviderCostEstimate } from './provider-cost-admission.js'
+import {
+  prepareProviderCostPricing,
+  providerCostCandidateBindingsForMode,
+  publicRunCostEstimate,
+  resolvePlanProviderCosts,
+} from './provider-cost.service.js'
 import { getRunDetail } from './read.service.js'
 
 /** Admits and persists one tenant-scoped immutable Flow run transactionally. */
@@ -51,6 +63,7 @@ export async function admitFlowRun(input: {
     expectedFlowRevision: number
     expectedPlanHash?: string
     flowId: string
+    fundingSource: 'byok' | 'credits'
     mode: RunMode
     selectedNodeIds?: string[]
     targetNodeId?: string
@@ -61,8 +74,19 @@ export async function admitFlowRun(input: {
 }) {
   const executionMode = input.body.executionMode ?? 'live'
   const executionRuntime = input.body.executionRuntime ?? 'managed'
+  const fundingSource = input.body.fundingSource
   if (executionRuntime === 'browser' && !BROWSER_EXECUTION_ENABLED)
     throw new HttpError(409, 'invalid_execution_runtime', 'Browser execution is unavailable.')
+  if (
+    (fundingSource === 'credits' && executionRuntime !== 'managed')
+    || (fundingSource === 'byok' && executionRuntime !== 'browser')
+  ) {
+    throw new HttpError(
+      409,
+      'invalid_execution_runtime',
+      'The selected funding source is unavailable for this execution runtime.',
+    )
+  }
   if (!input.idempotencyKey)
     throw new HttpError(400, 'idempotency_key_required', 'Idempotency-Key is required.')
 
@@ -101,41 +125,20 @@ export async function admitFlowRun(input: {
     )
   }
 
-  const contracts = generationExecutionContracts(
-    plan,
+  const availableProviders = availableProvidersForRun(
     executionRuntime,
-    executionMode,
-    availableProvidersForRun(
-      executionRuntime,
-      executionRuntime === 'browser' ? input.body.byokProviders : undefined,
-    ),
+    executionRuntime === 'browser' ? input.body.byokProviders : undefined,
   )
-  const contractsByNode = new Map(contracts.map(contract => [contract.nodeId, contract]))
-  const artifact = createFlowRunSnapshotArtifact({
-    adapterContractVersion: 'normalized-generation-v3',
-    canonicalSerializerVersion: CANONICAL_SERIALIZER_VERSION,
-    catalogRevision: GENERATION_CATALOG_REVISION,
-    executionContracts: contracts,
+  const candidatesByNode = providerCostCandidateBindingsForMode({
+    availableProviders,
     executionMode,
     executionRuntime,
-    executorVersion: FLOW_RUN_EXECUTOR_CONTRACT_VERSION,
     plan,
-    plannerVersion: plan.plannerVersion,
-    snapshotVersion: FLOW_RUN_SNAPSHOT_VERSION,
   })
-  if (artifact.bytes > FLOW_RUN_LIMITS.snapshotBytes) {
-    throw new HttpError(
-      422,
-      'run_snapshot_bytes_limit',
-      'The Flow run snapshot is too large.',
-      [{
-        code: 'run_snapshot_bytes_limit',
-        field: 'snapshot',
-        message: 'run_snapshot_bytes_limit',
-        params: { maximum: FLOW_RUN_LIMITS.snapshotBytes },
-      }],
-    )
-  }
+  const costEstimationEnabled = fundingSource === 'credits'
+  const pricing = costEstimationEnabled
+    ? await prepareProviderCostPricing({ candidatesByNode })
+    : { rates: [], version: 1 as const }
 
   const runId = createId()
   const createdBy = await localUserIdOrNull(input.userId)
@@ -199,9 +202,20 @@ export async function admitFlowRun(input: {
     }
 
     const plannedAssetIds = collectPlanPreExistingAssetIds(plan)
+    const assetsById = new Map<string, ProviderCostInputAsset>()
     if (plannedAssetIds.length) {
       const lockedAssets = await trx.selectFrom('assets')
-        .select(['deletedAt', 'id', 'processingState', 'purgeRequestedAt', 'purgedAt'])
+        .select([
+          'deletedAt',
+          'durationSeconds',
+          'height',
+          'id',
+          'processingState',
+          'purgeRequestedAt',
+          'purgedAt',
+          'type',
+          'width',
+        ])
         .where('organizationId', '=', input.organizationId)
         .where('id', 'in', plannedAssetIds)
         .forUpdate()
@@ -225,6 +239,17 @@ export async function admitFlowRun(input: {
           }],
         )
       }
+      for (const asset of lockedAssets) {
+        if (asset.type === 'document')
+          continue
+        assetsById.set(asset.id, {
+          assetId: asset.id,
+          durationSeconds: asset.durationSeconds,
+          height: asset.height,
+          mediaType: asset.type,
+          width: asset.width,
+        })
+      }
     }
 
     const finalFlow = await trx.selectFrom('flows')
@@ -237,6 +262,70 @@ export async function admitFlowRun(input: {
         409,
         'flow_revision_changed',
         'The Flow changed before this run could be admitted.',
+      )
+    }
+
+    const costRoutes = resolvePlanProviderCosts({
+      assetsById,
+      candidatesByNode,
+      costEstimationEnabled,
+      costRoutingEnabled: costEstimationEnabled && executionMode === 'live',
+      plan,
+      pricing,
+    })
+    if (costEstimationEnabled) {
+      requireCompleteProviderCostEstimate(publicRunCostEstimate({
+        plannedJobCount: plan.summary.plannedJobCount,
+        routes: costRoutes,
+      }))
+    }
+    const resolvedBindings = new Map([...costRoutes].map(([nodeId, route]) => {
+      const providerCostEstimate: FlowRunSnapshotProviderCostEstimate | undefined
+        = route.estimate.status === 'estimated'
+          ? {
+              ...route.estimate,
+              jobCount: route.jobEstimates.size,
+              quoteVersion: 1,
+            }
+          : undefined
+      const providerSelection: FlowRunSnapshotProviderSelection = route.selection
+      return [nodeId, {
+        binding: route.binding,
+        ...(providerCostEstimate ? { providerCostEstimate } : {}),
+        providerSelection,
+      }] as const
+    }))
+    const contracts = generationExecutionContracts(
+      plan,
+      executionRuntime,
+      executionMode,
+      availableProviders,
+      resolvedBindings,
+    )
+    const contractsByNode = new Map(contracts.map(contract => [contract.nodeId, contract]))
+    const artifact = createFlowRunSnapshotArtifact({
+      adapterContractVersion: 'normalized-generation-v3',
+      canonicalSerializerVersion: CANONICAL_SERIALIZER_VERSION,
+      catalogRevision: GENERATION_CATALOG_REVISION,
+      executionContracts: contracts,
+      executionMode,
+      executionRuntime,
+      executorVersion: FLOW_RUN_EXECUTOR_CONTRACT_VERSION,
+      plan,
+      plannerVersion: plan.plannerVersion,
+      snapshotVersion: FLOW_RUN_SNAPSHOT_VERSION,
+    })
+    if (artifact.bytes > FLOW_RUN_LIMITS.snapshotBytes) {
+      throw new HttpError(
+        422,
+        'run_snapshot_bytes_limit',
+        'The Flow run snapshot is too large.',
+        [{
+          code: 'run_snapshot_bytes_limit',
+          field: 'snapshot',
+          message: 'run_snapshot_bytes_limit',
+          params: { maximum: FLOW_RUN_LIMITS.snapshotBytes },
+        }],
       )
     }
 
@@ -302,6 +391,12 @@ export async function admitFlowRun(input: {
             operation: node.operationId,
             organizationId: input.organizationId,
             provider: executionContract.provider,
+            providerCostEstimate: (() => {
+              const estimate = costRoutes.get(node.nodeId)?.jobEstimates.get(shard.jobHash)
+              return estimate?.status === 'estimated'
+                ? jsonb({ ...estimate, quoteVersion: 1 } as unknown as JsonValue)
+                : null
+            })(),
             providerEndpoint: executionContract.providerEndpoint,
             providerEndpointTag: executionContract.providerEndpointTag,
             providerLifecycle: executionContract.providerLifecycle as unknown as JsonValue,

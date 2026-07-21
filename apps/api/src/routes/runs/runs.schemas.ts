@@ -31,6 +31,9 @@ export const FlowRunExecutionModeSchema = z.enum(['live', 'debug'])
 /** Environment responsible for provider lifecycle execution. */
 export const FlowRunExecutionRuntimeSchema = z.enum(['managed', 'browser'])
 
+/** Account source responsible for provider spend on an admitted run. */
+export const FlowRunFundingSourceSchema = z.enum(['credits', 'byok'])
+
 /** Durable Flow run lifecycle statuses. */
 export const FlowRunStatusSchema = z.enum([
   'pending',
@@ -109,8 +112,35 @@ export const FlowRunCommandRequestSchema = z
 export const FlowRunPlanRequestSchema = z
   .object({
     command: FlowRunCommandRequestSchema,
+    executionMode: FlowRunExecutionModeSchema.default('live'),
+    executionRuntime: FlowRunExecutionRuntimeSchema.default('managed'),
+    fundingSource: z.literal('credits'),
   })
   .openapi('FlowRunPlanRequest')
+
+const RunCostEstimateSchema = z.discriminatedUnion('status', [
+  z.object({
+    amountUsd: z.string().regex(/^\d+(?:\.\d+)?$/),
+    currency: z.literal('USD'),
+    estimatedJobCount: z.number().int().nonnegative(),
+    status: z.literal('estimated'),
+    unavailableJobCount: z.literal(0),
+  }),
+  z.object({
+    amountUsd: z.null(),
+    currency: z.literal('USD'),
+    estimatedJobCount: z.number().int().nonnegative(),
+    status: z.literal('partial'),
+    unavailableJobCount: z.number().int().positive(),
+  }),
+  z.object({
+    amountUsd: z.null(),
+    currency: z.literal('USD'),
+    estimatedJobCount: z.literal(0),
+    status: z.literal('unavailable'),
+    unavailableJobCount: z.number().int().nonnegative(),
+  }),
+]).openapi('RunCostEstimate')
 
 /** Request body for admitting a tenant-scoped Flow run. */
 export const CreateRunRequestSchema = z
@@ -122,6 +152,7 @@ export const CreateRunRequestSchema = z
       .regex(/^[0-9a-f]{64}$/)
       .optional(),
     flowId: Cuid2Schema,
+    fundingSource: FlowRunFundingSourceSchema,
     mode: FlowRunModeSchema,
     expectedFlowRevision: z.number().int().nonnegative(),
     targetNodeId: Cuid2Schema.optional(),
@@ -138,6 +169,7 @@ export const CreateFlowRunRequestSchema = CreateRunRequestSchema.omit({
 /** Bounded planning summary returned before run admission. */
 export const FlowRunPlanResponseSchema = z
   .object({
+    costEstimate: RunCostEstimateSchema,
     flowId: Cuid2Schema,
     flowRevision: z.number().int().nonnegative(),
     planHash: z.string(),
