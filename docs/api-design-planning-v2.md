@@ -969,7 +969,7 @@ policy. Provider research is encoded in that reviewed catalog; TaleLabs does
 not maintain discovery snapshots or parallel route registries. The endpoint is
 `ETag`-cacheable and changes only on deployment.
 
-The current catalog is a deliberately curated 43-model selection spanning
+The current catalog is a deliberately curated 45-model selection spanning
 image, video, audio, and text generation. Public config exposes canonical
 `vendor/model` IDs, translation keys, semantic slots, safe setting intersections,
 and output profiles only. Native model IDs, provider tags, endpoint choice,

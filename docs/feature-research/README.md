@@ -56,6 +56,7 @@ provider snapshot, inventory JSON, or live provider response.
 
 ## Current Research
 
+- [Provider cost estimation and cost-aware routing](./provider-cost-estimation-and-routing.md)
 - [Lip sync](./lip-sync.md)
 - [AI-assisted VFX and generative video editing](./ai-assisted-vfx-video-editing.md)
 - [Video upscaling and restoration](./video-upscaling-restoration.md)

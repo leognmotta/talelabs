@@ -328,10 +328,12 @@ create index "generationJobsProviderCostReconciliationIdx"
   on "generationJobs"
     ("providerCostReconciliationAttemptedAt", "createdAt", "id")
   include ("organizationId")
-  where "status" = 'succeeded'
-    and "provider" = 'openrouter'
+  where "status" in ('canceled', 'failed', 'succeeded')
+    and "providerCompletionStatus" = 'completed'
+    and "provider" in ('fal', 'openrouter')
     and "providerGenerationId" is not null
     and "providerCostUsd" is null
+    and "providerSettlementStatus" = 'pending'
     and "providerCostReconciliationAttempts" < 12;
 ```
 
@@ -347,8 +349,8 @@ Notes:
 - **No execution retry/attempt/queue columns.** Trigger.dev owns execution
   retries, concurrency, and queueing; duplicating its state machine in Postgres
   would drift. The provider-cost reconciliation counter is different: it is a
-  bounded accounting/audit fact for already-successful jobs and never changes
-  their output status or reopens provider execution. `"status"` is the _domain_
+  bounded accounting/audit fact for provider-completed managed jobs and never
+  changes their output status or reopens provider execution. `"status"` is the _domain_
   outcome, written under the guarded-update rule (see the integration contract,
   including the atomic completion-vs-cancel transaction).
 - **No `cancelRequestedAt`.** User cancellation is represented by the terminal
@@ -361,10 +363,13 @@ Notes:
 - **Costs are recorded before billing exists.** `"creditCost"` and
   `"providerCostUsd"` are execution-time facts that cannot be faithfully
   reconstructed later (provider pricing changes, settings-dependent pricing).
-  A successful OpenRouter job with a generation ID and null cost is claimed by
-  the small partial index above. Bounded metadata reconciliation atomically
-  fills both the provider-result checkpoint and job, then recomputes the
-  terminal run aggregate without coupling output success to accounting.
+  A provider-completed managed OpenRouter or fal job with a generation ID and
+  null cost remains pending and is claimed by the small partial index above,
+  including canceled or failed product jobs whose paid provider output had
+  already completed. Bounded request-level reconciliation atomically fills both
+  the provider-result checkpoint and job, then recomputes the terminal run
+  aggregate without coupling output success to accounting. Exhausted lookup is
+  recorded explicitly as `unknown`, never as `settled` without a cost.
   Recording these facts from the first shipped generation produces the real
   usage dataset the credit system will be calibrated against — the ledger and
   enforcement attach later (see `credits-planning.md`), the measurements start
@@ -372,7 +377,7 @@ Notes:
 - **`"flowRunId"` is `not null`.** Even a node command creates a run and may
   expand to multiple items or shards. There are no standalone jobs to reconcile
   with the workflow path later.
-- **Provider exactly-once is honest, not assumed.** `"providerSubmittedAt"` (write-ahead) + `"providerJobId"` (write-behind) bracket the provider call; the gap between them is the uncertainty window a retry must respect (contract step 4). `providerSettlementStatus` moves from `not_required` to `pending` in the same write-ahead update and ends as `settled` or explicitly `unknown`. Once a provider returns a complete result, `generationProviderResults` and `generationProviderOutputs` checkpoint its safe facts and staged outputs before Asset finalization. A retry resumes from ready output, inspects and promotes an atomically stored `staging` object, or reuses canonical outputs; it never calls the paid provider again. Product retry is rejected while settlement is pending/unknown or a checkpoint remains staging. A check constraint prevents an external job ID without the write-ahead marker, the unique `(provider, "providerJobId")` index guarantees two job rows can never claim the same provider execution, and real OpenRouter jobs require their pinned endpoint and lifecycle contract.
+- **Provider exactly-once is honest, not assumed.** `"providerSubmittedAt"` (write-ahead) + `"providerJobId"` (write-behind) bracket the provider call; the gap between them is the uncertainty window a retry must respect (contract step 4). `providerSettlementStatus` moves from `not_required` to `pending` in the same write-ahead update and ends as `settled` or explicitly `unknown`. Once a provider returns a complete result, `generationProviderResults` and `generationProviderOutputs` checkpoint its safe facts and staged outputs before Asset finalization. A retry resumes from ready output, inspects and promotes an atomically stored `staging` object, or reuses canonical outputs; it never calls the paid provider again. Product retry is rejected while settlement is pending/unknown or a checkpoint remains staging. A check constraint prevents an external job ID without the write-ahead marker, the unique `(provider, "providerJobId")` index guarantees two job rows can never claim the same provider execution, and real provider jobs persist their pinned endpoint and lifecycle contract.
 - The composite FK on `("flowId", "organizationId")` makes a cross-org flow reference structurally impossible — see [Tenant isolation](#tenant-isolation).
 
 `generationProviderResults` is the tenant-scoped checkpoint header keyed by

@@ -1,31 +1,34 @@
 # Audio Provider Strategy: OpenRouter and ElevenLabs
 
-**Status:** exploratory provider research, not approved implementation scope  
-**Last researched:** 2026-07-15
+**Status:** fal execution implemented; direct ElevenLabs remains exploratory
+**Last researched:** 2026-07-20
 
 ## Product Conclusion
 
-OpenRouter currently covers two important TaleLabs audio intents well:
+OpenRouter does not currently expose ElevenLabs models. On 2026-07-20, fal's
+official model API returned eleven active ElevenLabs endpoints. Seven fit the
+approved TaleLabs audio intents and are now exact checked-in fal bindings:
 
-1. speech generation through its dedicated text-to-speech endpoint; and
-2. music generation through Google's Lyria 3 models.
+| TaleLabs node | Canonical model | fal endpoint | Exposed safe controls |
+| --- | --- | --- | --- |
+| Speech | `elevenlabs/eleven-v3` | `fal-ai/elevenlabs/tts/eleven-v3` | voice, stability |
+| Speech | `elevenlabs/multilingual-v2` | `fal-ai/elevenlabs/tts/multilingual-v2` | voice, stability, speed 0.7–1.2 |
+| Speech | `elevenlabs/turbo-v2.5` | `fal-ai/elevenlabs/tts/turbo-v2.5` | voice, stability, speed 0.7–1.2 |
+| Music | `elevenlabs/music` | `fal-ai/elevenlabs/music` | auto or 3–600 second duration, instrumental |
+| Sound Effect | `elevenlabs/sound-effects-v2` | `fal-ai/elevenlabs/sound-effects/v2` | auto or 0.5–22 second duration, loop, prompt influence |
+| Voice Changer | `elevenlabs/voice-changer` | `fal-ai/elevenlabs/voice-changer` | target voice, background-noise removal |
+| Voice Isolation | `elevenlabs/audio-isolation` | `fal-ai/elevenlabs/audio-isolation` | no creative settings |
 
-OpenRouter does not currently expose a reviewed, dedicated route for TaleLabs'
-sound-effect generation, voice-changing, or voice-isolation intents. Those
-features should not be forced through a generic audio-capable chat model. A
-future direct ElevenLabs integration is the clearest managed-provider option
-for those three nodes.
+The four other active fal endpoints remain excluded: both speech-to-text routes
+emit transcription rather than an Asset, text-to-dialogue requires a structured
+dialogue array and speaker contract, and dubbing is a separate translation and
+video-output product intent. fal now provides the managed and local-BYOK path
+for the seven implemented models, so they require no direct ElevenLabs key.
 
-OpenRouter's speech API reference currently contains an example using
-`elevenlabs/eleven-turbo-v2`. However, OpenRouter's live Models API returned no
-ElevenLabs models when reviewed on 2026-07-15. The same live API returned nine
-other speech-output models. TaleLabs must therefore treat ElevenLabs as
-unavailable through OpenRouter until the model is again discoverable in the live
-catalog and its endpoint contract is reviewed.
-
-Documentation examples are not sufficient evidence that a model remains
-available. TaleLabs' active TypeScript registry must use a currently listed
-model and a verified endpoint.
+The 2026-07-15 OpenRouter review remains relevant for non-ElevenLabs speech and
+music routes. Documentation examples are not sufficient evidence that a model
+remains available. Live discovery is research evidence only; TaleLabs' reviewed
+JSON catalog remains the runtime source of truth.
 
 ## Direct Answer: Is an ElevenLabs Subscription Required?
 
@@ -65,7 +68,9 @@ secret and belongs only in server/worker configuration. It must never be sent to
 the dashboard, embedded in a Flow snapshot, written to logs, or exposed through
 the public generation registry.
 
-When a direct integration is approved, the appropriate secret is:
+The implemented fal routes use the existing `FAL_API_KEY` for managed execution
+or the browser-stored fal key for local BYOK. They do not add an ElevenLabs
+secret. If a future direct integration is approved, the appropriate secret is:
 
 ```txt
 ELEVENLABS_API_KEY
@@ -373,12 +378,15 @@ For each model/operation, verify:
 
 ### Approved Direction
 
-- Use OpenRouter for the first Speech and Music loops.
 - Do not assume OpenRouter currently routes ElevenLabs.
 - Keep Sound Effect, Voice Changer, and Voice Isolation as separate nodes.
-- Add a direct ElevenLabs provider only when one of those nodes is approved for
-  implementation.
-- Keep model and provider routes code-owned and reviewed in TypeScript.
+- Execute the seven compatible ElevenLabs audio models through exact fal queue
+  bindings for both managed and browser BYOK runtimes.
+- Keep the four structurally incompatible fal endpoints out of the catalog.
+- Do not add a direct ElevenLabs credential while fal covers the approved
+  surface.
+- Keep creative models and private provider bindings code-owned in the reviewed
+  JSON catalog.
 
 ### Explicit Non-Goals of This Research
 
@@ -391,17 +399,27 @@ For each model/operation, verify:
 
 ## Open Questions
 
-1. Is Lyria's current OpenRouter response sufficiently stable for canonical
-   Asset ingestion, or should Music start with ElevenLabs direct?
-2. Does the first TaleLabs audience value sound effects more than long-form
+1. Does the first TaleLabs audience value sound effects more than long-form
    music?
-3. Should TaleLabs own the ElevenLabs provider account, or eventually support
-   enterprise BYOK?
-4. Which curated voices can TaleLabs legally expose without implementing a full
+2. Which curated voices can TaleLabs legally expose without implementing a full
    voice-resource system?
-5. Which commercial rights and attribution must be surfaced during export?
+3. Which commercial rights and attribution must be surfaced during export?
+4. After paid QA, which additional fal-supported audio formats and MIME types
+   should become product capabilities?
 
 ## Sources
+
+### fal
+
+- [fal ElevenLabs model collection](https://fal.ai/elevenlabs)
+- [fal model-search API](https://fal.ai/docs/platform-apis/v1/models)
+- [fal Eleven v3 API](https://fal.ai/models/fal-ai/elevenlabs/tts/eleven-v3/api)
+- [fal Multilingual v2 API](https://fal.ai/models/fal-ai/elevenlabs/tts/multilingual-v2/api)
+- [fal Turbo v2.5 API](https://fal.ai/models/fal-ai/elevenlabs/tts/turbo-v2.5/api)
+- [fal ElevenLabs Music API](https://fal.ai/models/fal-ai/elevenlabs/music/api)
+- [fal Sound Effects v2 API](https://fal.ai/models/fal-ai/elevenlabs/sound-effects/v2/api)
+- [fal Voice Changer API](https://fal.ai/models/fal-ai/elevenlabs/voice-changer/api)
+- [fal Audio Isolation API](https://fal.ai/models/fal-ai/elevenlabs/audio-isolation/api)
 
 ### OpenRouter
 

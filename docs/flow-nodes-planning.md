@@ -459,9 +459,11 @@ setting normalization, draft validation, and later server admission; the server
 rederives and verifies the stored compatibility `operationId`.
 
 The selected product model decides whether references are supported, their hard
-limit, and the settings visible in the inspector. The current Image catalog
-fixes output count to one, so the node exposes no output amount control. Fixed
-facts are not disabled controls. Model changes immediately
+limit, output multiplicity, and the settings visible in the inspector. Most
+current Image models fix output count to one. Seedream 5.0 Lite and Pro expose
+one through six outputs, so the same catalog-driven inspector renders an output
+amount control only for those operations. Fixed facts are not disabled
+controls. Model changes immediately
 preserve compatible state and atomically remove or reset incompatible edges,
 selections, and settings. The historical `references` handle is rewritten once
 to `imageReferences` only during an explicit contract upgrade; immutable old
@@ -476,6 +478,13 @@ The reviewed Image setting surface is route-specific:
 - GPT Image 2 exposes quality, plus background as an advanced setting.
 - Seedream 4.5 exposes aspect ratio (including provider `auto`) and
   1K/2K/4K resolution.
+- Seedream 5.0 Lite exposes seven reviewed aspect ratios, 2K/3K resolution,
+  output count, and safety checking. Its PNG output is a fixed route fact.
+- Seedream 5.0 Pro exposes the same seven aspect ratios, 1K/2K resolution,
+  output count, JPEG/PNG format, and safety checking.
+- Both Seedream 5.0 models accept up to ten ordered image references in edit
+  mode. Their custom image dimensions are derived from the selected aspect and
+  resolution through one declarative provider profile rather than UI branches.
 - FLUX.2 Pro exposes output format as an advanced setting.
 - Recraft 4.1 has no editable scalar setting on the reviewed OpenRouter route.
 
@@ -483,9 +492,9 @@ There is no generic `creativity` setting. Seed, guidance, steps, Recraft
 controls, and other provider passthrough values remain evidence-only until
 TaleLabs defines an honest provider-independent control and its validation.
 
-One request emits one `PortValue` item whose `ImageSet` contains one Asset. The
-typed collection remains stable for downstream compatibility and does not create
-an outer runtime item. The current catalog is a deliberately curated 43-model
+One request emits one `PortValue` item whose `ImageSet` contains its ordered
+canonical output Assets. Output count changes the inner collection, not the
+number of outer runtime items. The current catalog is a deliberately curated 45-model
 selection spanning image, video, audio, and text generation. It has no Element
 input or live provider dependency on the canvas; private bindings are resolved
 only during run admission.
@@ -511,13 +520,17 @@ type ProductModelDefinition = {
 };
 ```
 
-Each operation's provider binding is server-only and independently replaceable:
+Each operation's ordered provider bindings are private and independently
+replaceable. Priority selects among exact bindings that support the requested
+runtime and have a currently usable credential:
 
 ```ts
 type ProviderBinding = {
   operationId: "textToVideo";
-  provider: "openrouter";
-  protocol: "video";
+  provider: "fal" | "openrouter";
+  priority: number;
+  executionRuntimes: ["browser", "managed"];
+  protocol: "queue" | "video";
   routingPolicy: "pinned";
   endpoint: "/api/v1/videos";
   nativeModelId: "google/veo-3.1";
@@ -538,18 +551,20 @@ type ProviderBinding = {
 };
 ```
 
-Changing OpenRouter to a direct API for the same underlying model may update the
-binding without changing the canonical model ID or Flow schema. Replacing the
+Changing or adding an exact execution provider for the same underlying creative
+model may update the private bindings without changing the canonical model ID or
+Flow schema. Replacing the
 underlying creative model with materially different behavior requires a new
 canonical identity; it must not silently change historical semantics.
 
-Active catalog membership plus a compatible binding defines admission. The
+Active catalog membership plus an exact compatible binding defines admission. The
 dashboard receives only a sanitized projection and has no second allowlist.
 Admission captures canonical model ID, model revision, catalog version, and the
 complete provider binding. A worker validates and executes those immutable
 facts directly, so later catalog retirement or provider changes cannot alter a
-retry. There is no runtime fallback to a mock, alternate model, provider, or
-endpoint. The user's model or contract
+retry. Admission may choose a lower-priority exact binding when a preferred
+provider is unavailable, but there is no post-admission fallback to a mock,
+alternate model, provider, or endpoint. The user's model or contract
 selection is the confirmation: do not interrupt it with a confirmation dialog,
 notification modal, or required follow-up action. This explicit transition is
 separate from passive hydration; loading an old node must never silently

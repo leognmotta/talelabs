@@ -92,8 +92,8 @@ extensions, compromised devices, and accidental telemetry capture.
 
 ### Browser credential storage
 
-TaleLabs implements the credential-persistence boundary for OpenRouter and uses
-it only from the local execution driver. The browser package uses
+TaleLabs implements the credential-persistence boundary for OpenRouter and fal
+and uses it only from the local execution driver. The browser package uses
 one versioned IndexedDB database with separate stores for encrypted credentials
 and a single non-extractable 256-bit AES-GCM `CryptoKey` persisted by structured
 clone. Each credential write uses a unique 96-bit initialization vector and
@@ -106,11 +106,21 @@ storage failures produce a fixed non-secret error and fail closed. Explicit
 sign-out deletes all credential records for the current user before the Better
 Auth session is ended.
 
-The Settings UI can show non-secret status and can store, replace, or remove the
-OpenRouter key. It never resolves the plaintext key. Plaintext resolution occurs
-only inside the browser job runner immediately before its direct provider call.
+The Settings UI can show non-secret status and can store, replace, or remove a
+supported provider key. It never resolves the plaintext key. Plaintext
+resolution occurs only inside the browser job runner immediately before its
+direct provider call.
 Run admission, manifests, checkpoints, recovery records, and output finalization
 contain no credential material.
+
+For a live local run, the browser sends only the provider IDs whose keys are
+currently connected. Admission selects exact compatible bindings from that set
+and freezes each selected provider in the immutable snapshot. The manifest
+projects only the provider ID required by each job. Before claiming work, the
+coordinator re-reads browser credential status and requires every provider in
+the manifest: a fal-only run needs only fal, while a mixed run needs both fal
+and OpenRouter. Removing a required key blocks the run with
+`credential_required`; storing it again restarts local recovery.
 
 ### Local run behavior
 
@@ -187,6 +197,10 @@ sequenceDiagram
 This is the current durable managed path. Trigger.dev owns orchestration and the
 worker making the provider request receives the TaleLabs platform credential in
 memory. Trigger.dev is therefore a trusted subprocesser for managed execution.
+Managed admission considers only policy-approved providers whose existing
+server/worker credentials are currently configured and fails closed when none
+can execute an operation. Provider priority is resolved once before the
+immutable snapshot is written.
 
 Managed execution retains:
 
@@ -360,9 +374,9 @@ necessary.
 1. Preserve and verify the browser-safe provider package boundaries.
 2. Define browser eligibility separately from model availability.
 3. Implement local credential entry and browser-only storage without sending the
-   value to TaleLabs. **Implemented for OpenRouter.**
+   value to TaleLabs. **Implemented for OpenRouter and fal.**
 4. Add local run admission, browser execution, progress, interruption states,
-   and canonical output upload.
+   and canonical output upload. **Implemented for reviewed bindings.**
 5. Validate every supported provider protocol for CORS and browser lifecycle.
 6. Keep current managed platform execution unchanged.
 7. Add managed BYOK and the Provider Gateway only after product demand justifies
