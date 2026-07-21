@@ -221,13 +221,17 @@ billing-event lookup against the immutable native endpoint. Output success never
 waits for accounting. Managed OpenRouter and fal jobs whose provider completed
 but whose cost is absent remain `pending` and enter a separate durable
 reconciliation queue, including outputs later discarded by cancellation or a
-downstream finalization failure. The scheduled sweep fairly claims a small
-batch, retries at 5-minute, 30-minute, and 4-hour intervals, and stops after 12
-metadata requests over approximately one day. A recovered cost updates the
-provider-result checkpoint and job in one transaction, then recomputes the
-Flow-run aggregate even when the run is already terminal. Retries never
-resubmit paid generation work; unresolved cost becomes explicitly `unknown`,
-never falsely `settled`.
+downstream finalization failure. Fal recovery claims ordered pages of 50 jobs
+and resolves each page with at most one billing-events request containing up to
+50 exact request IDs. A sweep stops after 1,000 checked jobs or 90 seconds, and
+the Trigger.dev task permits only one concurrent sweep; stale scheduled runs
+expire rather than forming another backlog. OpenRouter retains its smaller
+bounded pass. Both providers prioritize never-attempted jobs, retry at 5-minute,
+30-minute, and 4-hour intervals, and stop after 12 reconciliation attempts per
+job over approximately one day. A recovered cost updates the provider-result
+checkpoint and job in one transaction, then recomputes the Flow-run aggregate
+even when the run is already terminal. Retries never resubmit paid generation
+work; unresolved cost becomes explicitly `unknown`, never falsely `settled`.
 
 ## Verification and paid acceptance
 

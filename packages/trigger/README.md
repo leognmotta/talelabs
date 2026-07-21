@@ -41,7 +41,8 @@ Read these files in order for the shortest path through the runtime:
 8. [`src/flow-runs/execution/outputs/finalizer.ts`](src/flow-runs/execution/outputs/finalizer.ts)
    — converts normalized results into canonical text outputs or Assets.
 9. [`src/flow-runs/reconciliation/provider-accounting.ts`](src/flow-runs/reconciliation/provider-accounting.ts)
-   — recovers eventual OpenRouter cost without reopening successful output work.
+   — recovers eventual OpenRouter and Fal costs through bounded provider-specific
+   sweeps without reopening provider work.
 
 ## Package map
 
@@ -83,7 +84,7 @@ contracts used by persisted runs and Trigger.dev.
 | `flow-run-orchestrator` | `tasks/flow-runs/orchestrator.task.ts` | Traverse an immutable Flow plan and wait for child jobs |
 | `generation-job` | `tasks/flow-runs/generation-job.task.ts` | Execute one tenant-scoped generation job durably |
 | `flow-run-reconcile` | `tasks/flow-runs/reconcile.task.ts` | Repair run state and dispatch admitted runs missing a parent task |
-| `provider-cost-reconcile` | `tasks/flow-runs/provider-accounting.task.ts` | Recover eventual OpenRouter cost independently of output and dispatch state |
+| `provider-cost-reconcile` | `tasks/flow-runs/provider-accounting.task.ts` | Recover eventual OpenRouter and Fal costs with bounded, non-overlapping sweeps |
 
 Task files contain the Trigger.dev-facing task ID, payload schema, queue, retry
 policy, schedule, and lifecycle-handler wiring. The owning feature folder
