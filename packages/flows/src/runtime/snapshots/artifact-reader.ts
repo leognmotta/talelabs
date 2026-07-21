@@ -12,6 +12,7 @@ import { z } from 'zod'
 import {
   CANONICAL_SERIALIZER_VERSION,
 } from '../serialization/canonical-json.js'
+import { hashFlowRunSnapshot } from '../serialization/plan-hashes.js'
 import {
   createFlowRunSnapshotArtifact,
   executionContractSchema,
@@ -20,6 +21,8 @@ import {
   FlowRunSnapshotReadError,
   readablePlanSchema,
 } from './contracts.js'
+
+const HISTORICAL_FLOW_RUN_SNAPSHOT_VERSION = 3
 
 function isPlainRecord(value: unknown): value is Record<string, unknown> {
   if (!value || typeof value !== 'object' || Array.isArray(value))
@@ -57,11 +60,11 @@ export function readFlowRunSnapshotArtifact(input: {
   snapshotHash: string
   snapshotVersion: number
 }): FlowRunSnapshotArtifact<ReadableFlowRunPlanSnapshot> {
-  if (
-    input.snapshotVersion !== FLOW_RUN_SNAPSHOT_VERSION
+  const supportedVersion = input.snapshotVersion === FLOW_RUN_SNAPSHOT_VERSION
+    || input.snapshotVersion === HISTORICAL_FLOW_RUN_SNAPSHOT_VERSION
+  if (!supportedVersion
     || !isPlainRecord(input.graphSnapshot)
-    || input.graphSnapshot.snapshotVersion !== FLOW_RUN_SNAPSHOT_VERSION
-  ) {
+    || input.graphSnapshot.snapshotVersion !== input.snapshotVersion) {
     throw new FlowRunSnapshotReadError('snapshot_version_unsupported')
   }
   if (
@@ -101,17 +104,20 @@ export function readFlowRunSnapshotArtifact(input: {
     throw new FlowRunSnapshotReadError('snapshot_invalid')
   }
 
+  if (hashFlowRunSnapshot(input.graphSnapshot) !== input.snapshotHash)
+    throw new FlowRunSnapshotReadError('snapshot_hash_mismatch')
+
   let artifact: FlowRunSnapshotArtifact<object>
   try {
     artifact = createFlowRunSnapshotArtifact(
-      input.graphSnapshot as unknown as FlowRunSnapshot<object>,
+      {
+        ...input.graphSnapshot,
+        snapshotVersion: FLOW_RUN_SNAPSHOT_VERSION,
+      } as unknown as FlowRunSnapshot<object>,
     )
   }
   catch {
     throw new FlowRunSnapshotReadError('snapshot_invalid')
   }
-  if (artifact.hash !== input.snapshotHash)
-    throw new FlowRunSnapshotReadError('snapshot_hash_mismatch')
-
   return artifact as FlowRunSnapshotArtifact<ReadableFlowRunPlanSnapshot>
 }

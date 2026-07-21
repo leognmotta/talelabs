@@ -105,6 +105,21 @@ export function verifyRunPlannerSnapshotScenarios(
     === 'debug',
     'the shared snapshot reader must preserve the admitted debug execution mode',
   )
+  const historicalSnapshot = {
+    ...firstArtifact.snapshot,
+    snapshotVersion: 3,
+  }
+  const historicalArtifact = readFlowRunSnapshotArtifact({
+    executorVersion: snapshot.executorVersion,
+    expectedExecutorVersion: snapshot.executorVersion,
+    graphSnapshot: historicalSnapshot,
+    snapshotHash: hashFlowRunSnapshot(historicalSnapshot),
+    snapshotVersion: 3,
+  })
+  expect(
+    historicalArtifact.snapshot.snapshotVersion === FLOW_RUN_SNAPSHOT_VERSION,
+    'snapshot v3 must remain readable through an integrity-checked v4 upcast',
+  )
   const structurallyInvalidArtifact = createFlowRunSnapshotArtifact({
     ...snapshot,
     plan: {

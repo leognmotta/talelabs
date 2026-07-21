@@ -26,13 +26,57 @@ export const FLOW_RUN_PLAN_VERSION = 3 as const
 /** Deterministic planner implementation version captured in every snapshot. */
 export const FLOW_RUN_PLANNER_VERSION = 'catalog-runtime.2' as const
 /** Current immutable snapshot envelope version. */
-export const FLOW_RUN_SNAPSHOT_VERSION = 3 as const
+export const FLOW_RUN_SNAPSHOT_VERSION = 4 as const
 
 /** Selects whether an admitted run may cross a paid provider boundary. */
 export type FlowRunExecutionMode = 'debug' | 'live'
 
 /** Selects the environment that performs admitted provider lifecycle work. */
 export type FlowRunExecutionRuntime = 'browser' | 'managed'
+
+/** Immutable provider pricing evidence captured at admission. */
+export interface FlowRunSnapshotProviderCostBasis {
+  /** Versioned formula policy used for the estimate. */
+  formulaVersion: string
+  /** Provider-native pricing identity associated with the rate. */
+  pricingModelId: string
+  /** Instant at which mutable pricing metadata was retrieved. */
+  pricingRetrievedAt: string
+  /** Authoritative metadata URL used to resolve the rate. */
+  pricingSource: string
+  /** Provider-authored billing unit interpreted by the formula. */
+  unit: string
+  /** Exact decimal USD rate per billing unit. */
+  unitPriceUsd: string
+}
+
+/** Deterministic aggregate provider-cost quote captured for one planned node. */
+export interface FlowRunSnapshotProviderCostEstimate {
+  /** Exact decimal estimated provider spend for all node jobs. */
+  amountUsd: string
+  /** Immutable formula and rate evidence for the aggregate. */
+  basis: FlowRunSnapshotProviderCostBasis
+  /** Current cost-routing currency discriminator. */
+  currency: 'USD'
+  /** Number of planned provider jobs represented by this aggregate. */
+  jobCount: number
+  /** Exact aggregate provider billing-unit quantity. */
+  quantity: string
+  /** Version of the persisted quote envelope. */
+  quoteVersion: 1
+  /** Discriminator preventing unavailable pricing from appearing as zero. */
+  status: 'estimated'
+}
+
+/** Admission routing explanation captured without exposing it publicly. */
+export interface FlowRunSnapshotProviderSelection {
+  /** Runtime-eligible candidate bindings considered for this node. */
+  eligibleCandidateCount: number
+  /** Candidates whose complete node request set was deterministically priced. */
+  estimatedCandidateCount: number
+  /** Policy that selected the immutable binding. */
+  strategy: 'estimated_cost' | 'priority' | 'priority_fallback'
+}
 
 /** Private provider execution facts frozen for one planned node. */
 export interface FlowRunSnapshotExecutionContract {
@@ -46,6 +90,8 @@ export interface FlowRunSnapshotExecutionContract {
   operationId: string
   /** Provider implementation selected during admission. */
   provider: string
+  /** Deterministic aggregate quote when every planned node job was estimable. */
+  providerCostEstimate?: FlowRunSnapshotProviderCostEstimate
   /** Server-only endpoint identity captured during admission. */
   providerEndpoint: string
   /** Exact reviewed provider endpoint slug captured during admission. */
@@ -55,6 +101,8 @@ export interface FlowRunSnapshotExecutionContract {
   providerModel: string
   providerBinding: CatalogProviderBinding
   providerRouteVersion: string
+  /** Private explanation of whether cost or catalog priority selected the route. */
+  providerSelection?: FlowRunSnapshotProviderSelection
 }
 
 /** Versioned immutable snapshot envelope consumed by durable workers. */
@@ -328,6 +376,22 @@ export const executionContractSchema = z.object({
   nodeId: z.string(),
   operationId: z.string(),
   provider: z.string(),
+  providerCostEstimate: z.object({
+    amountUsd: z.string().regex(/^\d+(?:\.\d+)?$/),
+    basis: z.object({
+      formulaVersion: z.string().min(1),
+      pricingModelId: z.string().min(1),
+      pricingRetrievedAt: z.iso.datetime(),
+      pricingSource: z.url(),
+      unit: z.string().min(1),
+      unitPriceUsd: z.string().regex(/^\d+(?:\.\d+)?$/),
+    }).strict(),
+    currency: z.literal('USD'),
+    jobCount: positiveInteger,
+    quantity: z.string().regex(/^\d+(?:\.\d+)?$/),
+    quoteVersion: z.literal(1),
+    status: z.literal('estimated'),
+  }).strict().optional(),
   providerEndpoint: z.string(),
   providerEndpointTag: z.string().min(1),
   providerLifecycle: z.discriminatedUnion('submission', [
@@ -358,4 +422,9 @@ export const executionContractSchema = z.object({
   providerModel: z.string(),
   providerBinding: CatalogProviderBindingSchema,
   providerRouteVersion: z.string(),
+  providerSelection: z.object({
+    eligibleCandidateCount: positiveInteger,
+    estimatedCandidateCount: nonnegativeInteger,
+    strategy: z.enum(['estimated_cost', 'priority', 'priority_fallback']),
+  }).strict().optional(),
 }).strict()
