@@ -1,3 +1,5 @@
+/** Tenant-scoped Flow persistence, graph loading, and reference queries. */
+
 import type {
   AssetTable,
   Database,
@@ -12,31 +14,52 @@ import type { PageCursor } from '../pagination/cursor.js'
 import { availableFolderName, db, sql } from '@talelabs/db'
 import { lockFolderStructure } from './folders.data.js'
 
+/** Persisted Flow row returned by tenant-scoped data queries. */
 export type FlowRecord = Selectable<FlowTable>
+/** Persisted Flow node row used while validating and synchronizing a graph. */
 export type FlowNodeRecord = Selectable<FlowNodeTable>
+/** Persisted Flow edge row used while validating and synchronizing a graph. */
 export type FlowEdgeRecord = Selectable<FlowEdgeTable>
+/** Referenced Asset row enriched with the model that generated it, when known. */
 export type FlowReferenceAssetRecord = Selectable<AssetTable> & {
+  /** Canonical creative model recorded by the Asset's generation job. */
   generationModel: null | string
 }
+/** Canonical node fields accepted by the graph synchronization transaction. */
 export interface FlowNodeWrite {
+  /** Direct Asset reference selected by the node, or null when absent. */
   assetId: null | string
+  /** Validated node payload stored as JSON. */
   data: JsonValue
+  /** Stable node identifier within the Flow. */
   id: string
+  /** Horizontal canvas position in Flow coordinate space. */
   positionX: number
+  /** Vertical canvas position in Flow coordinate space. */
   positionY: number
+  /** Version of the node payload contract. */
   schemaVersion: number
+  /** Registered Flow node type. */
   type: string
 }
 
+/** Canonical edge fields accepted by the graph synchronization transaction. */
 export interface FlowEdgeWrite {
+  /** Creation timestamp preserved when inserting the edge. */
   createdAt: Date | string
+  /** Stable edge identifier within the Flow. */
   id: string
+  /** Optional typed handle on the source node. */
   sourceHandle: null | string
+  /** Identifier of the edge's source node. */
   sourceNodeId: string
+  /** Optional typed handle on the target node. */
   targetHandle: null | string
+  /** Identifier of the edge's target node. */
   targetNodeId: string
 }
 
+/** Database transaction capable of reading and writing a complete Flow graph. */
 export type FlowGraphTransaction = Transaction<Database>
 
 class FlowGraphOwnershipConflictError extends Error {}
@@ -45,6 +68,7 @@ function escapeLike(value: string) {
   return value.replace(/[\\%_]/g, match => `\\${match}`)
 }
 
+/** Lists one cursor-paginated page of Flows owned by an organization. */
 export function listFlowRows(input: {
   cursor: PageCursor<'updatedAt'> | null
   limit: number
@@ -79,6 +103,7 @@ export function listFlowRows(input: {
     .execute()
 }
 
+/** Finds one Flow by tenant and identifier without loading its graph. */
 export function findFlowById(organizationId: string, id: string) {
   return db.selectFrom('flows')
     .selectAll()
@@ -87,6 +112,7 @@ export function findFlowById(organizationId: string, id: string) {
     .executeTakeFirst()
 }
 
+/** Creates a Flow with the default canvas viewport. */
 export function insertFlowRow(input: {
   createdBy: string
   id: string
@@ -102,6 +128,7 @@ export function insertFlowRow(input: {
     .executeTakeFirstOrThrow()
 }
 
+/** Updates Flow metadata and keeps its generated-Asset folder name aligned. */
 export function updateFlowRow(input: {
   id: string
   name?: string
@@ -164,6 +191,7 @@ export function updateFlowRow(input: {
   })
 }
 
+/** Deletes one tenant-owned Flow and returns its identifier when it existed. */
 export function deleteFlowRow(organizationId: string, id: string) {
   return db.deleteFrom('flows')
     .where('organizationId', '=', organizationId)
@@ -172,7 +200,7 @@ export function deleteFlowRow(organizationId: string, id: string) {
     .executeTakeFirst()
 }
 
-export async function getFlowGraphRows(
+async function getFlowDraftGraphRows(
   executor: typeof db | FlowGraphTransaction,
   organizationId: string,
   flowId: string,
@@ -185,7 +213,7 @@ export async function getFlowGraphRows(
   if (!flow)
     return undefined
 
-  const [nodes, edges, activeRuns] = await Promise.all([
+  const [nodes, edges] = await Promise.all([
     executor.selectFrom('flowNodes')
       .selectAll()
       .where('organizationId', '=', organizationId)
@@ -199,33 +227,57 @@ export async function getFlowGraphRows(
       .orderBy('createdAt')
       .orderBy('id')
       .execute(),
-    executor.selectFrom('flowRunNodes as node')
-      .innerJoin('flowRuns as run', join => join
-        .onRef('run.id', '=', 'node.flowRunId')
-        .onRef('run.organizationId', '=', 'node.organizationId'))
-      .select(eb => [
-        'run.id as runId',
-        'node.nodeId',
-        'node.status as nodeStatus',
-        eb.selectFrom('generationJobs as job')
-          .select('job.status')
-          .whereRef('job.flowRunId', '=', 'node.flowRunId')
-          .whereRef('job.nodeId', '=', 'node.nodeId')
-          .whereRef('job.organizationId', '=', 'node.organizationId')
-          .orderBy('job.createdAt', 'desc')
-          .orderBy('job.id', 'desc')
-          .limit(1)
-          .as('jobStatus'),
-      ])
-      .where('run.organizationId', '=', organizationId)
-      .where('run.flowId', '=', flowId)
-      .where('run.status', 'in', ['pending', 'running'])
-      .execute(),
   ])
 
-  return { activeRuns, edges, flow, nodes }
+  return { edges, flow, nodes }
 }
 
+/** Loads only the saved graph facts required by deterministic run planning. */
+export function getFlowRunPlanningRows(
+  executor: typeof db | FlowGraphTransaction,
+  organizationId: string,
+  flowId: string,
+) {
+  return getFlowDraftGraphRows(executor, organizationId, flowId)
+}
+
+/** Loads the saved graph plus active-run presentation required by the canvas. */
+export async function getFlowGraphRows(
+  executor: typeof db | FlowGraphTransaction,
+  organizationId: string,
+  flowId: string,
+) {
+  const graph = await getFlowDraftGraphRows(executor, organizationId, flowId)
+  if (!graph)
+    return undefined
+
+  const activeRuns = await executor.selectFrom('flowRunNodes as node')
+    .innerJoin('flowRuns as run', join => join
+      .onRef('run.id', '=', 'node.flowRunId')
+      .onRef('run.organizationId', '=', 'node.organizationId'))
+    .select(eb => [
+      'run.id as runId',
+      'node.nodeId',
+      'node.status as nodeStatus',
+      eb.selectFrom('generationJobs as job')
+        .select('job.status')
+        .whereRef('job.flowRunId', '=', 'node.flowRunId')
+        .whereRef('job.nodeId', '=', 'node.nodeId')
+        .whereRef('job.organizationId', '=', 'node.organizationId')
+        .orderBy('job.createdAt', 'desc')
+        .orderBy('job.id', 'desc')
+        .limit(1)
+        .as('jobStatus'),
+    ])
+    .where('run.organizationId', '=', organizationId)
+    .where('run.flowId', '=', flowId)
+    .where('run.status', 'in', ['pending', 'running'])
+    .execute()
+
+  return { ...graph, activeRuns }
+}
+
+/** Loads the referenced Asset identities needed inside a graph transaction. */
 export async function listFlowGraphReferenceRows(
   executor: FlowGraphTransaction,
   input: {
@@ -243,6 +295,7 @@ export async function listFlowGraphReferenceRows(
   return { assets }
 }
 
+/** Hydrates bounded reference Assets and their immutable generation models. */
 export async function listFlowGraphHydrationRows(input: {
   assetLimit: number
   assetIds: string[]
@@ -271,6 +324,12 @@ export async function listFlowGraphHydrationRows(input: {
   return { assets, limitExceeded: null }
 }
 
+/**
+ * Atomically validates and synchronizes a Flow graph at an expected revision.
+ *
+ * The callback receives the locked persisted graph and must return canonical
+ * node and edge writes before the revision is advanced.
+ */
 export async function syncFlowGraphRows(input: {
   baseRevision: number
   deleteEdgeIds: string[]

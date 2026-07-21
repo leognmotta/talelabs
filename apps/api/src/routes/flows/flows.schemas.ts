@@ -18,6 +18,8 @@ import {
   UserIdSchema,
 } from '../../schemas/common.js'
 
+const FLOW_RUN_COST_MANIFEST_NODE_SCOPE_LIMIT = 32
+
 /** Canvas viewport position and zoom. */
 export const FlowViewportSchema = z.object({
   x: z.number().finite(),
@@ -274,10 +276,65 @@ export const FlowRunPlanRequestSchema = z.object({
       mode: z.literal('all'),
     }),
   ]),
+  executionMode: z.enum(['live', 'debug']).default('live'),
+  executionRuntime: z.enum(['managed', 'browser']).default('managed'),
+  fundingSource: z.literal('credits'),
 }).openapi('FlowRunPlanRequest')
+
+/** Public complete, partial, or unavailable provider-cost estimate. */
+export const RunCostEstimateSchema = z.discriminatedUnion('status', [
+  z.object({
+    amountUsd: z.string().regex(/^\d+(?:\.\d+)?$/),
+    currency: z.literal('USD'),
+    estimatedJobCount: z.number().int().nonnegative(),
+    status: z.literal('estimated'),
+    unavailableJobCount: z.literal(0),
+  }),
+  z.object({
+    amountUsd: z.null(),
+    currency: z.literal('USD'),
+    estimatedJobCount: z.number().int().nonnegative(),
+    status: z.literal('partial'),
+    unavailableJobCount: z.number().int().positive(),
+  }),
+  z.object({
+    amountUsd: z.null(),
+    currency: z.literal('USD'),
+    estimatedJobCount: z.literal(0),
+    status: z.literal('unavailable'),
+    unavailableJobCount: z.number().int().nonnegative(),
+  }),
+]).openapi('RunCostEstimate')
+
+/** One graph-load request for all visible Credits cost estimates. */
+export const FlowRunCostManifestRequestSchema = z.object({
+  executionMode: z.enum(['live', 'debug']).default('live'),
+  executionRuntime: z.enum(['managed', 'browser']).default('managed'),
+  expectedFlowRevision: z.number().int().nonnegative(),
+  fundingSource: z.literal('credits'),
+  includeAll: z.boolean().default(true),
+  nodeIds: z.array(Cuid2Schema)
+    .max(FLOW_RUN_COST_MANIFEST_NODE_SCOPE_LIMIT)
+    .default([]),
+}).openapi('FlowRunCostManifestRequest')
+
+/** Isolated provider-cost estimate for one runnable generation node. */
+const FlowRunCostManifestNodeSchema = z.object({
+  costEstimate: RunCostEstimateSchema,
+  nodeId: Cuid2Schema,
+}).openapi('FlowRunCostManifestNode')
+
+/** Graph-level estimate manifest consumed by every canvas run control. */
+export const FlowRunCostManifestResponseSchema = z.object({
+  allCostEstimate: RunCostEstimateSchema.optional(),
+  flowId: Cuid2Schema,
+  flowRevision: z.number().int().nonnegative(),
+  nodes: z.array(FlowRunCostManifestNodeSchema),
+}).openapi('FlowRunCostManifestResponse')
 
 /** Run-plan preview: hashes and planned counts. */
 export const FlowRunPlanResponseSchema = z.object({
+  costEstimate: RunCostEstimateSchema,
   flowId: Cuid2Schema,
   flowRevision: z.number().int().nonnegative(),
   planHash: z.string(),

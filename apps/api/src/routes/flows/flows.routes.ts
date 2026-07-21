@@ -7,6 +7,7 @@ import { createRoute } from '@hono/zod-openapi'
 import { FLOW_GRAPH_LIMITS } from '@talelabs/flows'
 import { bodyLimit } from 'hono/body-limit'
 
+import { assertFlowRunExecutionModeAuthorized } from '../../domain/runs/execution-mode.js'
 import { apiError } from '../../middleware/error.js'
 import { getFlowReferences } from '../../services/flow-graph-reference.service.js'
 import {
@@ -18,7 +19,10 @@ import {
   syncFlowGraph,
   updateFlow,
 } from '../../services/flows.service.js'
-import { preflightFlowRun } from '../../services/runs.service.js'
+import {
+  getFlowRunCostManifest,
+  preflightFlowRun,
+} from '../../services/runs.service.js'
 import { commonErrorResponses } from '../product.responses.js'
 import {
   CreateFlowRequestSchema,
@@ -29,6 +33,8 @@ import {
   FlowListQuerySchema,
   FlowListResponseSchema,
   FlowParamsSchema,
+  FlowRunCostManifestRequestSchema,
+  FlowRunCostManifestResponseSchema,
   FlowRunPlanRequestSchema,
   FlowRunPlanResponseSchema,
   FlowSchema,
@@ -143,6 +149,20 @@ const preflightRunRoute = createRoute({
   },
 })
 
+const runCostManifestRoute = createRoute({
+  method: 'post',
+  path: '/flows/{id}/run-cost-estimates',
+  tags: ['Runs'],
+  request: {
+    params: FlowParamsSchema,
+    body: { required: true, content: { 'application/json': { schema: FlowRunCostManifestRequestSchema } } },
+  },
+  responses: {
+    200: { description: 'Graph-level run cost estimates', content: { 'application/json': { schema: FlowRunCostManifestResponseSchema } } },
+    ...commonErrorResponses,
+  },
+})
+
 /** Mounts every Flow route on the product API. */
 export function registerFlowRoutes(app: OpenAPIHono<ApiEnv>) {
   app.use('/flows/:id/graph', bodyLimit({
@@ -217,8 +237,24 @@ export function registerFlowRoutes(app: OpenAPIHono<ApiEnv>) {
   })
 
   app.openapi(preflightRunRoute, async (c) => {
+    const body = c.req.valid('json')
+    assertFlowRunExecutionModeAuthorized(body.executionMode, c.var.isSystemAdmin)
     return c.json(await preflightFlowRun({
-      command: c.req.valid('json').command,
+      command: body.command,
+      executionMode: body.executionMode,
+      executionRuntime: body.executionRuntime,
+      flowId: c.req.valid('param').id,
+      fundingSource: body.fundingSource,
+      organizationId: c.var.organizationId,
+      signal: c.req.raw.signal,
+    }), 200)
+  })
+
+  app.openapi(runCostManifestRoute, async (c) => {
+    const body = c.req.valid('json')
+    assertFlowRunExecutionModeAuthorized(body.executionMode, c.var.isSystemAdmin)
+    return c.json(await getFlowRunCostManifest({
+      ...body,
       flowId: c.req.valid('param').id,
       organizationId: c.var.organizationId,
     }), 200)
