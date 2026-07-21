@@ -4541,7 +4541,7 @@
         },
         "endpoint": "/api/v1/images",
         "evidence": {
-          "reviewedAt": "2026-07-15",
+          "reviewedAt": "2026-07-21",
           "sources": [
             "https://openrouter.ai/docs/guides/overview/multimodal/image-generation",
             "https://openrouter.ai/black-forest-labs/flux.2-max",
@@ -4562,7 +4562,7 @@
         "operationId": "textToImage",
         "priority": 100,
         "provider": "openrouter",
-        "providerTag": "black-forest-labs",
+        "providerTag": "black-forest-labs/us-3",
         "protocol": "image",
         "requestProfile": {
           "kind": "image",
@@ -4572,7 +4572,7 @@
           ]
         },
         "requiresDurableSubmissionBoundary": true,
-        "routeVersion": "2026-07-15.19",
+        "routeVersion": "2026-07-21.20",
         "routingPolicy": "pinned",
         "supportedParameters": [
           "model",
@@ -4586,9 +4586,9 @@
           "browser"
         ],
         "browserVerification": {
-          "bindingHash": "sha256:352620c7330b28a446c9cc7b2a00d5d8a58957c725f5e5d2165f8fe7db9a6fb2",
+          "bindingHash": "sha256:b36197dba40962e6fc80991322e0f632d849fd21182864038b79c7d3ad958fb9",
           "profile": "openrouter-browser-v1",
-          "reviewedAt": "2026-07-17"
+          "reviewedAt": "2026-07-21"
         }
       },
       {
@@ -4600,7 +4600,7 @@
         },
         "endpoint": "/api/v1/images",
         "evidence": {
-          "reviewedAt": "2026-07-15",
+          "reviewedAt": "2026-07-21",
           "sources": [
             "https://openrouter.ai/docs/guides/overview/multimodal/image-generation",
             "https://openrouter.ai/black-forest-labs/flux.2-max",
@@ -4621,7 +4621,7 @@
         "operationId": "imageToImage",
         "priority": 100,
         "provider": "openrouter",
-        "providerTag": "black-forest-labs",
+        "providerTag": "black-forest-labs/us-3",
         "protocol": "image",
         "requestProfile": {
           "kind": "image",
@@ -4631,7 +4631,7 @@
           ]
         },
         "requiresDurableSubmissionBoundary": true,
-        "routeVersion": "2026-07-15.19",
+        "routeVersion": "2026-07-21.20",
         "routingPolicy": "pinned",
         "supportedParameters": [
           "model",
@@ -4646,9 +4646,9 @@
           "browser"
         ],
         "browserVerification": {
-          "bindingHash": "sha256:9c99b79e53fa4a521144628543dd9260e4b2f5f46353dce2300679e685b986fd",
+          "bindingHash": "sha256:e2becd47174b740ea37aa0c995a6a90caf9c4c97675a3dd3f36f62747ba403d4",
           "profile": "openrouter-browser-v1",
-          "reviewedAt": "2026-07-17"
+          "reviewedAt": "2026-07-21"
         }
       },
       {
