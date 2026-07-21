@@ -9,6 +9,7 @@ import type {
   FlowRunPlannerInput,
   FlowRunPlanningResult,
 } from './planner-contracts.js'
+import type { FlowRunGraphSelectionIndex } from './selection.js'
 
 import { materializeFlowRunExecution } from './execution-materialization.js'
 import { expandFlowRunJobs } from './job-expansion.js'
@@ -17,8 +18,17 @@ import { flowRunPlanningFailure } from './planner-result.js'
 import { prepareSelectedFlowRunGraph } from './selected-graph-preparation.js'
 
 /** Plans one immutable, bounded Flow execution snapshot. */
-export function planFlowRun(input: FlowRunPlannerInput): FlowRunPlanningResult {
-  const selectedGraph = prepareSelectedFlowRunGraph(input)
+export function planFlowRun(
+  input: FlowRunPlannerInput,
+  options?: {
+    /** Reusable selection index created from this exact graph revision. */
+    selectionIndex?: FlowRunGraphSelectionIndex
+  },
+): FlowRunPlanningResult {
+  const selectedGraph = prepareSelectedFlowRunGraph(
+    input,
+    options?.selectionIndex,
+  )
   if (!selectedGraph.ok)
     return flowRunPlanningFailure(selectedGraph.issues)
 

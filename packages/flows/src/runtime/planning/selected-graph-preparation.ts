@@ -15,7 +15,10 @@ import type {
   FlowRunPlanningIssue,
   NormalizedFlowRunCommand,
 } from './run-command.js'
-import type { FlowRunGraphSelection } from './selection.js'
+import type {
+  FlowRunGraphSelection,
+  FlowRunGraphSelectionIndex,
+} from './selection.js'
 
 import { isGenerationNodeType } from '../../generation/registry/index.js'
 import { compareFlowEdgesByPriority } from '../../graph/ordering/edges.js'
@@ -51,6 +54,7 @@ export interface PreparedSelectedGraph {
  */
 export function prepareSelectedFlowRunGraph(
   input: FlowRunPlannerInput,
+  selectionIndex?: FlowRunGraphSelectionIndex,
 ): FlowRunPlanningStageResult<PreparedSelectedGraph> {
   const limits = resolveFlowRunLimits(input.limits)
   const draftValidation = validateFlowGraphDraft({
@@ -78,6 +82,7 @@ export function prepareSelectedFlowRunGraph(
   const selection = selectFlowRunGraph({
     command: normalizedCommand.command,
     edges: input.flow.edges,
+    index: selectionIndex,
     nodes: normalizedNodes,
   })
   const capturedNodeIds = new Set(selection.capturedNodeIds)
