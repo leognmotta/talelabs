@@ -108,6 +108,7 @@ export async function cloneRunExecutionRowsForRetry(input: {
       operation: job.operation,
       organizationId: input.organizationId,
       provider: job.provider,
+      providerCostEstimate: job.providerCostEstimate,
       providerEndpoint: job.providerEndpoint,
       providerEndpointTag: job.providerEndpointTag,
       providerLifecycle: job.providerLifecycle,

@@ -343,6 +343,8 @@ export interface GenerationJobTable {
   /** Database-authored instant after which browser claiming may retry. */
   browserNextEligibleAt: NullableTimestamp
   creditCost: number | null
+  /** Immutable admission-time quote; null when deterministic pricing was unavailable. */
+  providerCostEstimate: JsonValue | null
   providerCostUsd: NullableNumericColumn
   /** Informational browser-reported cost that is never trusted for billing. */
   browserReportedProviderCostUsd: NullableNumericColumn
