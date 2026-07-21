@@ -1,5 +1,7 @@
+/** Organization-scoped request limiting and standard rate-limit headers. */
+
+import type { RateLimitDecision, RateLimitStore } from '@talelabs/cache'
 import type { Context } from 'hono'
-import type { RateLimitDecision, RateLimitStore } from '../rate-limit/rate-limit-store.js'
 import type { ApiEnv } from '../types.js'
 
 import { createMiddleware } from 'hono/factory'
@@ -18,6 +20,7 @@ function setRateLimitHeaders(
   c.header('RateLimit-Reset', String(getSecondsUntil(decision.resetAt)))
 }
 
+/** Creates authenticated organization admission middleware for one limiter. */
 export function createOrganizationRateLimitMiddleware(store: RateLimitStore) {
   return createMiddleware<ApiEnv>(async (c, next) => {
     const decision = await store.consume(c.var.organizationId)

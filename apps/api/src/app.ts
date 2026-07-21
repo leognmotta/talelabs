@@ -1,7 +1,7 @@
 /** Composes the API Hono app: middleware, auth, and product route mounts. */
 
+import type { RateLimitStore } from '@talelabs/cache'
 import type { OrganizationSessionResolver } from './middleware/organization.js'
-import type { RateLimitStore } from './rate-limit/rate-limit-store.js'
 import type { ProductRouteRegistrar } from './routes/product.routes.js'
 import type { ApiEnv } from './types.js'
 import { OpenAPIHono } from '@hono/zod-openapi'

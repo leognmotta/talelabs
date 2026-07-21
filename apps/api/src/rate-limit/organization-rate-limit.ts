@@ -1,14 +1,14 @@
-import type { RateLimitStore } from './rate-limit-store.js'
+/** Composes organization request admission with the shared cache backend. */
 
-import { InMemoryRateLimitStore } from './in-memory-rate-limit-store.js'
-import {
-  IN_MEMORY_RATE_LIMIT_STORE_MAX_ENTRIES,
-  ORGANIZATION_API_RATE_LIMIT_POLICY,
-} from './rate-limit-policy.js'
+import type { RateLimitStore } from '@talelabs/cache'
 
-// TODO: Replace InMemoryRateLimitStore with shared Redis storage before running multiple API instances. Process-local limits are not globally enforced and reset during deployments.
+import { FixedWindowRateLimitStore, rateLimitCache } from '@talelabs/cache'
+import { ORGANIZATION_API_RATE_LIMIT_POLICY } from './rate-limit-policy.js'
+
+/** Organization-scoped API rate limiter sharing the application cache. */
 export const organizationApiRateLimitStore: RateLimitStore
-  = new InMemoryRateLimitStore(
-    ORGANIZATION_API_RATE_LIMIT_POLICY,
-    IN_MEMORY_RATE_LIMIT_STORE_MAX_ENTRIES,
-  )
+  = new FixedWindowRateLimitStore({
+    cache: rateLimitCache,
+    keyNamespace: 'rate-limit:organization-api:v1',
+    policy: ORGANIZATION_API_RATE_LIMIT_POLICY,
+  })
