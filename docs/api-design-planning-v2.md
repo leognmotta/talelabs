@@ -746,11 +746,21 @@ Request:
 
 ```ts
 {
-  expectedFlowRevision: number;
   command:
-    | { mode: "node" | "downstream" | "upstream"; targetNodeId: string }
-    | { mode: "selection"; selectedNodeIds: string[] }
-    | { mode: "all" };
+    | {
+        expectedFlowRevision: number;
+        mode: "node" | "downstream" | "upstream";
+        targetNodeId: string;
+      }
+    | {
+        expectedFlowRevision: number;
+        mode: "selection";
+        selectedNodeIds: string[];
+      }
+    | { expectedFlowRevision: number; mode: "all" };
+  executionMode?: "live" | "debug"; // default live
+  executionRuntime?: "managed" | "browser"; // default managed
+  fundingSource: "credits";
 }
 ```
 
@@ -762,8 +772,45 @@ The client may immediately admit an obvious one-node plan; it discloses scope
 before admission when dependency expansion or multiplicity is larger than the
 visible command.
 
+The response also contains a sanitized advisory `costEstimate`:
+
+```ts
+type RunCostEstimate =
+  | {
+      status: "estimated";
+      amountUsd: string;
+      currency: "USD";
+      estimatedJobCount: number;
+      unavailableJobCount: 0;
+    }
+  | {
+      status: "partial" | "unavailable";
+      amountUsd: null;
+      currency: "USD";
+      estimatedJobCount: number;
+      unavailableJobCount: number;
+    };
+```
+
+No subtotal is returned for partial plans. Provider identity, mutable rates,
+formula evidence, credentials, and routing policy stay private. This cost
+preflight endpoint is called only for Credits funding. Credits-funded managed
+live preflight uses complete cost comparison; Credits debug preflight keeps
+priority selection while showing its equivalent live estimate. BYOK does not
+call cost preflight or receive a reference estimate.
+
+This advisory endpoint prices the runnable portion of a requested graph scope.
+If one selected generation node is missing required configuration, preflight
+omits that node and continues with the remaining runnable nodes; an entirely
+unrunnable scope has zero planned jobs. The canvas does not call node preflight
+or render a cost state for an unrunnable node. This tolerance is presentation-
+only: admission never drops invalid nodes from the requested command.
+
 Preflight is advisory, never trusted input. `POST /runs` repeats planning and
 requires the same revision and, when supplied, the same plan hash.
+Credits-funded admission reloads current prices and recalculates its binding
+choice and quote; the preflight amount is never accepted as admission input.
+BYOK admission selects by priority without loading pricing metadata.
 
 ### `POST /runs` — execute a node, branch, selection, or Flow
 

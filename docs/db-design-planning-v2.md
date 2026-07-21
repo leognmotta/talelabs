@@ -285,6 +285,8 @@ create table "generationJobs" (
 
   "creditCost" integer,             -- credits this execution cost, recorded from day one (no balance
                                     -- enforcement yet); pricing rules in credits-planning.md
+  "providerCostEstimate" jsonb,     -- immutable admission-time advertised-provider quote and
+                                    -- formula/rate evidence; null when deterministic pricing is unavailable
   "providerCostUsd" numeric(20, 10),-- actual provider spend when returned; null means unknown
   "providerCostReconciliationAttempts" smallint not null default 0
     check ("providerCostReconciliationAttempts" between 0 and 12),
@@ -1003,7 +1005,14 @@ Execution semantics:
 - **Product retry creates a new run:** it derives a new immutable snapshot from
   the terminal source run, records `retryOfRunId`, freezes any reused successful
   outputs, and never reopens or mutates the source run.
-- **Costs:** each child records its own `"creditCost"`; the run's aggregate is the sum, denormalized onto the run row at completion. Credit reservation strategy for whole runs (aggregate up front vs. per node) is analyzed in `credits-planning.md`, not constrained by this schema.
+- **Costs:** each child records its immutable `"providerCostEstimate"` when
+  admission can price it deterministically, its settled `"providerCostUsd"`
+  independently, and its own `"creditCost"` once the credit product exists.
+  Estimate evidence is never overwritten by settlement. The run's future
+  credit aggregate is the sum of child captures, denormalized onto the run row
+  at completion. Credit reservation strategy for whole runs (aggregate up front
+  vs. per node) is analyzed in `credits-planning.md`, not constrained by this
+  schema.
 
 **Tools reuse this exact model — no separate `toolRuns` table, ever.** A Tool is mutable identity/metadata backed by an ordinary editable draft Flow. A ToolVersion is the immutable packaged Flow with declared, typed inputs and outputs. A Tool run is a `flowRuns` row whose graph comes from one resolved published version instead of the live draft. The complete seam, so nobody re-derives it later:
 

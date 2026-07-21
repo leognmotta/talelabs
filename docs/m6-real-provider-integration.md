@@ -34,14 +34,23 @@ an active operation has a missing or incompatible binding. Admitted retries use
 their self-contained snapshot rather than current catalog state.
 There is no public `executionAvailable` flag or secondary model registry.
 Admission walks reviewed bindings by priority and may choose a lower-priority
-provider only when the preferred provider lacks a credential for that runtime.
-Once captured, execution never reroutes, re-discovers, or falls back.
+provider when the preferred provider lacks a credential for that runtime.
+Managed live admission may also choose a lower-cost binding when every eligible
+candidate has a comparable deterministic provider-cost estimate. Equal costs
+and any incomplete comparison retain catalog priority and checked-in order.
+Browser BYOK and debug execution remain priority-based. Once captured,
+execution never reroutes, re-discovers, or falls back.
 
 Managed availability is derived from whether the existing platform credential
 for each policy-approved provider is actually configured in API/worker
 composition. It is not inferred from catalog membership or an availability
-flag. Seedance 2.0 prioritizes OpenRouter and uses its exact fal binding only
-when OpenRouter is unavailable before admission.
+flag. Seedance 2.0's catalog fallback order still prioritizes OpenRouter; a
+managed live run may select its exact fal binding when a complete current cost
+comparison shows fal is cheaper. Browser BYOK, debug execution, pricing outages,
+and unestimable configurations preserve the OpenRouter-first fallback order.
+For Credits-funded managed execution, that fallback is only a deterministic
+selection: admission still fails closed until the selected binding has a
+complete quote.
 
 All active OpenRouter models reuse one of four protocol adapters:
 

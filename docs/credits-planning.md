@@ -10,17 +10,32 @@ Companion to `db-design-planning-v2.md`.
 
 ```txt
 Phase 1 (now):    every generation job records creditCost + providerCostUsd.
-                  No balances, no reservations, no enforcement, nothing blocked.
+                  Deterministic jobs also capture providerCostEstimate, and the
+                  canvas may show temporary advisory USD. No balances, no
+                  reservations, no enforcement, nothing blocked.
 Phase 2 (later):  ledger, balances, reservation lifecycle, packs/subscriptions,
-                  estimation UI, insufficient-credit enforcement.
+                  credit-facing estimation UI, insufficient-credit enforcement.
 ```
 
 Phase 1 is not "billing turned off" — it is **data collection**. Provider pricing changes over time and depends on settings (resolution, duration, steps), so per-execution cost facts cannot be reconstructed retroactively. By the time Phase 2 ships, the jobs table contains the real distribution of models, settings, provider costs, and failure rates — the credit pricing below gets calibrated against measurements, not guesses.
 
+Phase 1 may expose a browser-local `Credits | BYOK` generation preference. This
+is a funding-route choice, not a balance or billing implementation: Credits uses
+the existing managed platform-provider path, while BYOK uses the user's own
+browser key. There is still no ledger, reservation, balance enforcement, or
+credit-denominated quote. The preference must not be confused with the separate,
+currently hidden managed-BYOK execution-location control.
+
 ## The credit model
 
 - **Credits are integers** — one atomic indivisible unit, no fractional credits. Fractional pricing granularity is achieved by scaling the unit (1 credit = small value), never by decimals.
-- **Credits are the only user-facing cost language.** Users never see provider prices; margins live in the pricing function, not the UI.
+- **Credits are the final product cost language.** Before the credit product
+  exists, the canvas shows an explicitly advisory provider-cost estimate in USD
+  only when the generation funding preference is Credits. BYOK does not request,
+  display, persist, or require that estimate. The interim USD value is not a
+  charge or a margin promise and must be replaced by the credit-facing quote
+  when Phase 2 ships. Private provider identity, rates, and formula evidence
+  remain server-only.
 - **Pricing is a pure server-side function** of `(model, settings)` → credits, defined in versioned static config (same philosophy as the model/element registries — code-owned, not DB-owned). Every charge records the `pricingVersion` that computed it, so historical jobs remain explainable after price changes.
 - **Non-expiring credits initially.** Expiring promotional buckets force FIFO consumption accounting (per-bucket balances, expiry sweeps, consumption ordering rules) — heavy machinery to carry before there's revenue. If expiry becomes a business need, it arrives as a new ledger entry type plus a sweep, not a redesign.
 

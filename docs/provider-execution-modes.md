@@ -50,6 +50,27 @@ The selected mode is part of execution provenance. A run must never silently
 move between local and managed execution because the trust model, durability,
 credential source, and cost ownership differ.
 
+### Funding preference versus execution runtime
+
+The visible Generation Mode preference is a funding-source choice, not the
+managed-runtime selector:
+
+```txt
+Credits -> managed platform execution with TaleLabs provider credentials
+BYOK    -> the user's BYOK runtime preference; browser-local today
+```
+
+The Credits/BYOK preference is browser-local, scoped to the authenticated user,
+and defaults to BYOK so existing users never silently move onto platform-funded
+execution. Choosing Credits does not upload or use browser-stored keys. Choosing
+BYOK currently resolves to local browser execution because managed BYOK and its
+server-side key synchronization remain unavailable.
+
+These must remain separate product concepts. The managed BYOK runtime selector
+stays hidden until the Provider Gateway and credential vault exist. Enabling it
+later may change where a BYOK request executes without changing whether the user
+selected Credits or BYOK as the funding source.
+
 ## Mode 1: Local BYOK
 
 ```mermaid
@@ -121,6 +142,11 @@ coordinator re-reads browser credential status and requires every provider in
 the manifest: a fal-only run needs only fal, while a mixed run needs both fal
 and OpenRouter. Removing a required key blocks the run with
 `credential_required`; storing it again restarts local recovery.
+
+BYOK does not request or display TaleLabs provider-cost estimates. Admission
+selects the first eligible binding in catalog-priority order without loading
+pricing metadata, requiring a quote, or persisting estimate evidence. Cost
+preflight belongs exclusively to the separate Credits funding mode.
 
 ### Local run behavior
 
@@ -199,8 +225,17 @@ worker making the provider request receives the TaleLabs platform credential in
 memory. Trigger.dev is therefore a trusted subprocesser for managed execution.
 Managed admission considers only policy-approved providers whose existing
 server/worker credentials are currently configured and fails closed when none
-can execute an operation. Provider priority is resolved once before the
-immutable snapshot is written.
+can execute an operation. When the explicit funding source is Credits, managed
+live admission estimates every eligible binding from the same locked request
+facts. When all candidates have
+comparable deterministic USD estimates, the lowest estimated provider cost is
+the primary selector. Equal costs retain catalog priority and checked-in order;
+any missing or incomparable estimate restores catalog priority for the whole
+candidate set. This selection fallback does not authorize unquoted spend:
+Credits-funded managed admission fails closed unless the selected binding has a
+complete quote. The exact binding, selection policy, and quote are resolved
+once before the immutable snapshot is written. Debug execution remains
+priority-based.
 
 Managed execution retains:
 
