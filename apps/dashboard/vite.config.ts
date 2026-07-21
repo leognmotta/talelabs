@@ -7,6 +7,14 @@ import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
 const DASHBOARD_STORAGE_SOURCES = ['https://*.r2.cloudflarestorage.com']
+const DASHBOARD_FAL_QUEUE_SOURCES = [
+  'https://queue.fal.run',
+]
+const DASHBOARD_FAL_MEDIA_SOURCES = [
+  'https://*.fal.media',
+  'https://*.fal.run',
+  'https://storage.googleapis.com/download/storage/v1/b/falserverless/o/',
+]
 const DASHBOARD_PRODUCTION_API_SOURCES = [
   'https://talelabs.ai',
   'https://*.talelabs.ai',
@@ -36,6 +44,8 @@ function contentSecurityPolicy(mode: string) {
     'wss://api.trigger.dev',
     'https://openrouter.ai',
     'https://*.openrouter.ai',
+    ...DASHBOARD_FAL_QUEUE_SOURCES,
+    ...DASHBOARD_FAL_MEDIA_SOURCES,
     ...DASHBOARD_STORAGE_SOURCES,
   ]
   return [
@@ -53,6 +63,25 @@ function contentSecurityPolicy(mode: string) {
   ].join('; ')
 }
 
+/** Fails production builds when browser-provider origins drift out of the CSP. */
+function assertProductionContentSecurityPolicy(policy: string) {
+  const directives = new Map(policy.split('; ').map((directive) => {
+    const [name, ...sources] = directive.split(' ')
+    return [name, new Set(sources)]
+  }))
+  const connectSources = directives.get('connect-src') ?? new Set()
+  if (
+    DASHBOARD_FAL_QUEUE_SOURCES.some(source => !connectSources.has(source))
+    || DASHBOARD_FAL_MEDIA_SOURCES.some(source =>
+      !connectSources.has(source),
+    )
+    || policy.includes('localhost')
+    || policy.includes('127.0.0.1')
+  ) {
+    throw new Error('dashboard_production_csp_invalid')
+  }
+}
+
 /** Injects the document CSP while keeping the response-only policy at the edge. */
 function contentSecurityPolicyPlugin(policy: string): Plugin {
   return {
@@ -67,10 +96,20 @@ function contentSecurityPolicyPlugin(policy: string): Plugin {
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const policy = contentSecurityPolicy(mode)
+  if (mode === 'production')
+    assertProductionContentSecurityPolicy(policy)
   return {
     plugins: [contentSecurityPolicyPlugin(policy), react(), tailwindcss()],
     resolve: {
       alias: [
+        {
+          find: '@talelabs/providers/browser',
+          replacement: fileURLToPath(new URL('../../packages/providers/src/browser.ts', import.meta.url)),
+        },
+        {
+          find: '@talelabs/providers/core',
+          replacement: fileURLToPath(new URL('../../packages/providers/src/core.ts', import.meta.url)),
+        },
         {
           find: '@talelabs/i18n/catalogs',
           replacement: fileURLToPath(new URL('../../packages/i18n/src/catalogs.ts', import.meta.url)),

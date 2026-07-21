@@ -1,19 +1,21 @@
-/** OpenRouter credential status and browser-local management actions. */
+/** One provider's browser-local credential status and management actions. */
 
+import type { SecureStoreProvider } from './secure-store-providers'
+
+import { IconKey } from '@tabler/icons-react'
 import { Badge } from '@talelabs/ui/components/badge'
 import { Button } from '@talelabs/ui/components/button'
 import { useTranslation } from 'react-i18next'
-import openRouterDarkLogo from './openrouter-glyph-dark.svg'
-import openRouterLightLogo from './openrouter-glyph-light.svg'
 import { SettingsRow } from './settings-row'
 
-/** Renders the only provider currently supported by Secure Store. */
+/** Renders one Secure Store provider row with connect, replace, and remove. */
 export function SecureStoreProviderRow({
   disabled,
   isRemoving,
   onRemove,
   onReplace,
   onStore,
+  provider,
   stored,
 }: {
   disabled: boolean
@@ -21,6 +23,7 @@ export function SecureStoreProviderRow({
   onRemove: () => void
   onReplace: () => void
   onStore: () => void
+  provider: SecureStoreProvider
   stored: boolean
 }) {
   const { t } = useTranslation()
@@ -34,24 +37,30 @@ export function SecureStoreProviderRow({
             border-border/70 bg-background/75 shadow-xs
           "
           >
-            <img
-              alt=""
-              className="
-                size-5 object-contain
-                dark:hidden
-              "
-              src={openRouterLightLogo}
-            />
-            <img
-              alt=""
-              className="
-                hidden size-5 object-contain
-                dark:block
-              "
-              src={openRouterDarkLogo}
-            />
+            {provider.logoLight && provider.logoDark
+              ? (
+                  <>
+                    <img
+                      alt=""
+                      className="
+                        size-5 object-contain
+                        dark:hidden
+                      "
+                      src={provider.logoLight}
+                    />
+                    <img
+                      alt=""
+                      className="
+                        hidden size-5 object-contain
+                        dark:block
+                      "
+                      src={provider.logoDark}
+                    />
+                  </>
+                )
+              : <IconKey className="size-5 text-muted-foreground" />}
           </span>
-          <span>{t('secureStore.openRouter')}</span>
+          <span>{t(provider.nameKey)}</span>
         </span>
       )}
     >

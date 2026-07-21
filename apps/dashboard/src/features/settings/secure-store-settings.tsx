@@ -1,5 +1,6 @@
 /** Settings surface for encrypted browser-only provider credential storage. */
 
+import type { BrowserCredentialProviderId } from '@talelabs/providers/browser'
 import type { SecureStoreDialogMode } from './secure-store-credential-dialog'
 
 import { IconShieldLock } from '@tabler/icons-react'
@@ -16,27 +17,37 @@ import { useSession } from '../auth/auth-client'
 import { notifyBrowserCredentialsChanged } from './execution-runtime-preference'
 import { SecureStoreCredentialDialog } from './secure-store-credential-dialog'
 import { SecureStoreProviderRow } from './secure-store-provider-row'
+import { SECURE_STORE_PROVIDERS } from './secure-store-providers'
 
-/** Manages OpenRouter credential status without resolving its plaintext value. */
+interface SecureStoreDialogTarget {
+  mode: SecureStoreDialogMode
+  providerId: BrowserCredentialProviderId
+}
+
+/** Manages each provider's credential status without resolving plaintext keys. */
 export function SecureStoreSettings() {
   const { t } = useTranslation()
   const session = useSession()
   const userId = session.data?.user.id
-  const [dialogMode, setDialogMode] = useState<SecureStoreDialogMode | null>(
+  const [dialogTarget, setDialogTarget] = useState<SecureStoreDialogTarget | null>(
     null,
   )
-  const [isRemoving, setIsRemoving] = useState(false)
+  const [removingProviderId, setRemovingProviderId]
+    = useState<BrowserCredentialProviderId | null>(null)
   const [credentialState, setCredentialState] = useState<{
     status: 'loading' | 'ready' | 'unavailable'
-    stored: boolean
+    stored: ReadonlySet<BrowserCredentialProviderId>
     userId: string | undefined
-  }>({ status: 'loading', stored: false, userId })
+  }>(() => ({ status: 'loading', stored: new Set(), userId }))
   const currentCredentialState
     = credentialState.userId === userId
       ? credentialState
-      : { status: 'loading' as const, stored: false, userId }
+      : {
+          status: 'loading' as const,
+          stored: new Set<BrowserCredentialProviderId>(),
+          userId,
+        }
   const isLoading = currentCredentialState.status === 'loading'
-  const stored = currentCredentialState.stored
   const unavailable
     = currentCredentialState.status === 'unavailable' || !userId
 
@@ -50,9 +61,7 @@ export function SecureStoreSettings() {
         if (active) {
           setCredentialState({
             status: 'ready',
-            stored: statuses.some(
-              status => status.providerId === 'openrouter',
-            ),
+            stored: new Set(statuses.map(status => status.providerId)),
             userId,
           })
         }
@@ -61,7 +70,7 @@ export function SecureStoreSettings() {
         if (active) {
           setCredentialState({
             status: 'unavailable',
-            stored: false,
+            stored: new Set(),
             userId,
           })
         }
@@ -72,23 +81,30 @@ export function SecureStoreSettings() {
     }
   }, [userId])
 
-  async function handleRemove() {
+  async function handleRemove(providerId: BrowserCredentialProviderId) {
     if (!userId)
       return
 
-    setIsRemoving(true)
+    setRemovingProviderId(providerId)
     try {
-      await removeCredential({ providerId: 'openrouter', userId })
-      setCredentialState({ status: 'ready', stored: false, userId })
+      await removeCredential({ providerId, userId })
+      setCredentialState((previous) => {
+        const stored = new Set(previous.stored)
+        stored.delete(providerId)
+        return { status: 'ready', stored, userId }
+      })
       notifyBrowserCredentialsChanged()
     }
     catch {
       toast.error(t('secureStore.couldNotRemove'))
     }
     finally {
-      setIsRemoving(false)
+      setRemovingProviderId(null)
     }
   }
+
+  const dialogProvider = dialogTarget
+    && SECURE_STORE_PROVIDERS.find(provider => provider.id === dialogTarget.providerId)
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col">
@@ -108,26 +124,37 @@ export function SecureStoreSettings() {
           <AlertDescription>{t('secureStore.unavailable')}</AlertDescription>
         </Alert>
       )}
-      <SecureStoreProviderRow
-        disabled={isLoading || unavailable || !userId}
-        isRemoving={isRemoving}
-        onRemove={() => void handleRemove()}
-        onReplace={() => setDialogMode('replace')}
-        onStore={() => setDialogMode('store')}
-        stored={stored}
-      />
-      {userId && dialogMode && (
+      {SECURE_STORE_PROVIDERS.map(provider => (
+        <SecureStoreProviderRow
+          disabled={isLoading || unavailable || !userId}
+          isRemoving={removingProviderId === provider.id}
+          key={provider.id}
+          onRemove={() => void handleRemove(provider.id)}
+          onReplace={() => setDialogTarget({ mode: 'replace', providerId: provider.id })}
+          onStore={() => setDialogTarget({ mode: 'store', providerId: provider.id })}
+          provider={provider}
+          stored={currentCredentialState.stored.has(provider.id)}
+        />
+      ))}
+      {userId && dialogTarget && dialogProvider && (
         <SecureStoreCredentialDialog
-          mode={dialogMode}
+          mode={dialogTarget.mode}
           onOpenChange={(nextOpen) => {
             if (!nextOpen)
-              setDialogMode(null)
+              setDialogTarget(null)
           }}
           onStored={() => {
-            setCredentialState({ status: 'ready', stored: true, userId })
+            const providerId = dialogTarget.providerId
+            setCredentialState((previous) => {
+              const stored = new Set(previous.stored)
+              stored.add(providerId)
+              return { status: 'ready', stored, userId }
+            })
             notifyBrowserCredentialsChanged()
           }}
           open
+          providerId={dialogProvider.id}
+          providerName={t(dialogProvider.nameKey)}
           userId={userId}
         />
       )}

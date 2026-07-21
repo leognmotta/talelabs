@@ -8,12 +8,13 @@ import type {
 import type { PostRunsIdBrowserJobsJobidFailMutationRequest } from '@talelabs/sdk'
 
 import {
-  createOpenRouterBrowserProviderAdapter,
   GenerationProviderError,
   resolveCredential,
 } from '@talelabs/providers/browser'
 
 import { transferBrowserOutputs } from './browser-output-transfer'
+import { createBrowserProviderAdapter } from './browser-provider-adapter'
+import { waitForBrowserProviderPoll } from './browser-provider-polling'
 import {
   clearBrowserJobJournal,
   writeBrowserRunJournal,
@@ -27,7 +28,6 @@ import {
 } from './browser-runtime-api'
 
 const PROVIDER_POLL_LIMIT_MS = 30 * 60 * 1_000
-const PROVIDER_POLL_DEFAULT_MS = 5_000
 type BrowserJobFailureCode
   = PostRunsIdBrowserJobsJobidFailMutationRequest['code']
 
@@ -91,8 +91,9 @@ async function liveProviderResult(
   claim: BrowserRunClaimedJob,
   scope: BrowserJobExecutionScope,
 ) {
+  const binding = claim.executionContract.providerBinding
   const credential = await resolveCredential({
-    providerId: 'openrouter',
+    providerId: binding.provider,
     userId: scope.userId,
   })
   if (!credential) {
@@ -103,9 +104,9 @@ async function liveProviderResult(
   const assets = new Map(
     claim.inputAssets.map(asset => [asset.assetId, asset]),
   )
-  const adapter = createOpenRouterBrowserProviderAdapter({
-    binding: claim.executionContract.providerBinding,
-    credential: { provider: 'openrouter', resolveApiKey: () => credential },
+  const adapter = createBrowserProviderAdapter({
+    apiKey: credential,
+    binding,
     resolveAsset: async (asset) => {
       const resolved = assets.get(asset.assetId)
       if (!resolved)
@@ -116,6 +117,7 @@ async function liveProviderResult(
   })
   let facts: NormalizedGenerationProviderFacts = {}
   let externalJobId = claim.job.providerJobId
+  let pollAfterMs: number | undefined
   if (!externalJobId) {
     if (
       claim.job.submissionState !== 'not_started'
@@ -153,6 +155,7 @@ async function liveProviderResult(
       return { facts, outputs: submission.outputs, providerJobId: null }
     }
     externalJobId = submission.externalJobId
+    pollAfterMs = submission.pollAfterMs
     await checkpointBrowserJob(scope, claim.job.id, {
       facts,
       providerJobId: externalJobId,
@@ -174,24 +177,19 @@ async function liveProviderResult(
     throw new Error('browser_provider_poll_unavailable')
   const startedAt = Date.now()
   while (Date.now() - startedAt < PROVIDER_POLL_LIMIT_MS) {
-    await new Promise<void>((resolve, reject) => {
-      const timeout = window.setTimeout(resolve, PROVIDER_POLL_DEFAULT_MS)
-      scope.signal.addEventListener(
-        'abort',
-        () => {
-          window.clearTimeout(timeout)
-          reject(scope.signal.reason)
-        },
-        { once: true },
-      )
+    await waitForBrowserProviderPoll({
+      delayMs: pollAfterMs,
+      signal: scope.signal,
     })
     const manifest = await getBrowserManifest(scope)
     if (manifest.run.status === 'canceled')
       throw new DOMException('Run canceled', 'AbortError')
     const completion = await adapter.poll(externalJobId)
     facts = { ...facts, ...completion.facts }
-    if (completion.status === 'pending')
+    if (completion.status === 'pending') {
+      pollAfterMs = completion.pollAfterMs
       continue
+    }
     if (completion.status === 'failed') {
       throw Object.assign(new Error(completion.code), {
         code: completion.code,

@@ -45,6 +45,7 @@ export function useFlowRunAdmission(input: {
   } = input
   return useCallback(
     async (command: FlowRunCommandRequest) => {
+      let byokProviders: ('fal' | 'openrouter')[] | undefined
       if (executionMode === 'live' && executionRuntime === 'browser') {
         if (!userId)
           return { reason: 'credential_store_unavailable' as const }
@@ -55,8 +56,9 @@ export function useFlowRunAdmission(input: {
         catch {
           return { reason: 'credential_store_unavailable' as const }
         }
-        if (!credentials.some(status => status.providerId === 'openrouter'))
+        if (credentials.length === 0)
           return { reason: 'credential_required' as const }
+        byokProviders = credentials.map(status => status.providerId)
       }
       const revision = await saveNow()
       if (revision === null)
@@ -67,6 +69,7 @@ export function useFlowRunAdmission(input: {
           executionRuntime,
           expectedFlowRevision: revision,
           mode: command.mode,
+          ...(byokProviders ? { byokProviders } : {}),
           ...(command.mode === 'selection'
             ? { selectedNodeIds: command.selectedNodeIds }
             : command.mode === 'all'

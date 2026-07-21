@@ -1,5 +1,6 @@
 /** Password-only credential entry dialog for browser-local provider storage. */
 
+import type { BrowserCredentialProviderId } from '@talelabs/providers/browser'
 import type { FormEvent } from 'react'
 
 import { storeCredential } from '@talelabs/providers/browser'
@@ -25,18 +26,22 @@ import { useTranslation } from 'react-i18next'
 /** Credential action represented by the secure entry dialog. */
 export type SecureStoreDialogMode = 'store' | 'replace'
 
-/** Captures and immediately clears one OpenRouter credential before storage. */
+/** Captures and immediately clears one provider credential before storage. */
 export function SecureStoreCredentialDialog({
   mode,
   onOpenChange,
   onStored,
   open,
+  providerId,
+  providerName,
   userId,
 }: {
   mode: SecureStoreDialogMode
   onOpenChange: (open: boolean) => void
   onStored: () => void
   open: boolean
+  providerId: BrowserCredentialProviderId
+  providerName: string
   userId: string
 }) {
   const { t } = useTranslation()
@@ -75,7 +80,7 @@ export function SecureStoreCredentialDialog({
     try {
       await storeCredential({
         credential,
-        providerId: 'openrouter',
+        providerId,
         userId,
       })
       setIsSaving(false)
@@ -98,8 +103,8 @@ export function SecureStoreCredentialDialog({
           <DialogHeader>
             <DialogTitle>
               {mode === 'store'
-                ? t('secureStore.storeTitle')
-                : t('secureStore.replaceTitle')}
+                ? t('secureStore.storeTitle', { provider: providerName })
+                : t('secureStore.replaceTitle', { provider: providerName })}
             </DialogTitle>
             <DialogDescription>
               {t('secureStore.dialogDescription')}
@@ -107,12 +112,12 @@ export function SecureStoreCredentialDialog({
           </DialogHeader>
           <FieldGroup>
             <Field data-invalid={error}>
-              <FieldLabel htmlFor="secure-store-openrouter-key">
-                {t('secureStore.apiKeyLabel')}
+              <FieldLabel htmlFor={`secure-store-${providerId}-key`}>
+                {t('secureStore.apiKeyLabel', { provider: providerName })}
               </FieldLabel>
               <Input
                 autoComplete="off"
-                id="secure-store-openrouter-key"
+                id={`secure-store-${providerId}-key`}
                 ref={credentialInputRef}
                 required
                 spellCheck={false}

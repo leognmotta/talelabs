@@ -90,11 +90,7 @@ export function useImageGenerationNode(input: {
       ? getActiveGenerationSettings(
           model,
           resolution.resolvedOperationId,
-        ).filter(
-          setting =>
-            setting.id !== 'outputCount'
-            && visibleSettingIds.has(setting.id),
-        )
+        ).filter(setting => visibleSettingIds.has(setting.id))
       : []
   const { requestModelChange, upgradeModelContract }
     = useGenerationModelTransition({

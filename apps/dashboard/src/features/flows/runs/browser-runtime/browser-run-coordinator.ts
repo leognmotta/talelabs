@@ -5,7 +5,10 @@ import type { QueryClient } from '@tanstack/react-query'
 import type { BrowserLeasedRunScope } from './browser-runtime-api'
 
 import type { BrowserExecutorFailure } from './browser-runtime-errors'
-import { listCredentialStatuses } from '@talelabs/providers/browser'
+import {
+  listCredentialStatuses,
+  missingBrowserCredentialProviders,
+} from '@talelabs/providers/browser'
 
 import PQueue from 'p-queue'
 import { flowQueryKeys } from '../../data/query-keys/flow-query-keys'
@@ -38,6 +41,7 @@ import {
 
 const BROWSER_JOB_CONCURRENCY = 2
 const BROWSER_QUEUE_FILL_LIMIT = BROWSER_JOB_CONCURRENCY * 2
+const BROWSER_CANCELLATION_RECONCILE_MS = 5_000
 const BROWSER_DISCOVERY_REFRESH_MS = 60_000
 const BROWSER_ERROR_RETRY_MS = 15_000
 const BROWSER_LEASE_RENEWAL_SAFETY_MS = 15_000
@@ -51,6 +55,7 @@ interface BrowserCoordinatorLease extends BrowserLeasedRunScope {
 /** Coordinates browser work while PostgreSQL owns lifecycle and lease facts. */
 export class BrowserRunCoordinator {
   readonly #queue = new PQueue({ concurrency: BROWSER_JOB_CONCURRENCY })
+  readonly #cancellationPendingRunIds = new Set<string>()
   readonly #inFlightJobs = new Set<string>()
   readonly #leases = new Map<string, BrowserCoordinatorLease>()
   readonly #credentialBlockedRunIds = new Set<string>()
@@ -184,6 +189,7 @@ export class BrowserRunCoordinator {
   async #forgetRun(runId: string) {
     await clearBrowserRunJournal(runId).catch(() => undefined)
     this.#leases.delete(runId)
+    this.#cancellationPendingRunIds.delete(runId)
     this.#readyRunIds.delete(runId)
     this.#credentialBlockedRunIds.delete(runId)
     forgetActiveBrowserRun(
@@ -201,6 +207,7 @@ export class BrowserRunCoordinator {
     scope: BrowserLeasedRunScope,
     manifest: Awaited<ReturnType<typeof getBrowserManifest>>,
   ) {
+    let reconciliationComplete = manifest.cancellations.length === 0
     for (const cancellation of manifest.cancellations) {
       await writeBrowserRunJournal({
         executorId: scope.executorId,
@@ -214,19 +221,31 @@ export class BrowserRunCoordinator {
         updatedAt: new Date().toISOString(),
         userId: this.#input.userId,
       })
-      await executeBrowserCancellation({
+      const result = await executeBrowserCancellation({
         cancellation,
         scope,
         signal: this.#input.signal,
         userId: this.#input.userId,
       })
+      reconciliationComplete = result.cancellationReconciled
     }
+    if (!reconciliationComplete) {
+      this.#cancellationPendingRunIds.add(scope.runId)
+      await this.#input.queryClient.invalidateQueries({
+        queryKey: flowQueryKeys.run(scope.organizationId, scope.runId),
+      })
+      return
+    }
+    this.#cancellationPendingRunIds.delete(scope.runId)
     await clearBrowserRunJournal(scope.runId)
     await this.#release(scope)
     await this.#forgetRun(scope.runId)
   }
 
-  async #requireLiveCredential(scope: BrowserLeasedRunScope) {
+  async #requireLiveCredentials(
+    scope: BrowserLeasedRunScope,
+    manifest: Awaited<ReturnType<typeof getBrowserManifest>>,
+  ) {
     let statuses
     try {
       statuses = await listCredentialStatuses({ userId: this.#input.userId })
@@ -236,7 +255,11 @@ export class BrowserRunCoordinator {
         browserExecutorCode: 'credential_store_unavailable',
       })
     }
-    if (statuses.some(status => status.providerId === 'openrouter'))
+    const missingProviders = missingBrowserCredentialProviders(
+      manifest.jobs.map(job => job.provider),
+      statuses.map(status => status.providerId),
+    )
+    if (missingProviders.length === 0)
       return
     await writeBrowserRunJournal({
       executorId: scope.executorId,
@@ -301,7 +324,7 @@ export class BrowserRunCoordinator {
       })
     }
     if (manifest.run.executionMode === 'live')
-      await this.#requireLiveCredential(scope)
+      await this.#requireLiveCredentials(scope, manifest)
     if (!this.#readyRunIds.has(runId)) {
       await this.#persistStatus(runId, { code: null, status: 'ready' })
       this.#readyRunIds.add(runId)
@@ -364,6 +387,12 @@ export class BrowserRunCoordinator {
       : this.#nextDiscoveryRefreshMs()
     if (!hasActiveRuns)
       return discoveryRefreshMs
+    if (this.#cancellationPendingRunIds.size > 0) {
+      return Math.min(
+        discoveryRefreshMs,
+        BROWSER_CANCELLATION_RECONCILE_MS,
+      )
+    }
     const renewalTimes = [...this.#leases.values()].map(
       scope =>
         new Date(scope.leaseExpiresAt).getTime()
@@ -485,6 +514,7 @@ export class BrowserRunCoordinator {
         [...this.#leases.values()].map(releaseBrowserLease),
       )
       this.#leases.clear()
+      this.#cancellationPendingRunIds.clear()
     }
   }
 }

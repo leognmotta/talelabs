@@ -180,7 +180,7 @@ export function useFlowRunObservation(input: {
         const message
           = errorCode === 'provider_insufficient_balance'
             ? run.executionRuntime === 'browser'
-              ? t('errors.browser_openrouter_insufficient_balance')
+              ? t('errors.browser_provider_insufficient_balance')
               : t('errors.provider_insufficient_balance')
             : errorCode?.startsWith('provider_')
               ? fallbackMessage

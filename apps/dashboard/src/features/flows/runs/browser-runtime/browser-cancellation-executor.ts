@@ -5,9 +5,9 @@ import type { BrowserRunManifest } from '@talelabs/flows'
 import type { BrowserLeasedRunScope } from './browser-runtime-api'
 
 import {
-  createOpenRouterBrowserProviderAdapter,
   resolveCredential,
 } from '@talelabs/providers/browser'
+import { createBrowserProviderAdapter } from './browser-provider-adapter'
 import {
   acknowledgeBrowserCancellation,
 } from './browser-runtime-api'
@@ -40,10 +40,11 @@ export async function executeBrowserCancellation(input: {
       result: 'unavailable',
     })
   }
+  const binding = cancellation.executionContract.providerBinding
   let credential: string | null
   try {
     credential = await resolveCredential({
-      providerId: 'openrouter',
+      providerId: binding.provider,
       userId: input.userId,
     })
   }
@@ -53,9 +54,9 @@ export async function executeBrowserCancellation(input: {
   if (!credential)
     throw credentialError('credential_required')
   const apiKey = credential
-  const adapter = createOpenRouterBrowserProviderAdapter({
-    binding: cancellation.executionContract.providerBinding,
-    credential: { provider: 'openrouter', resolveApiKey: () => apiKey },
+  const adapter = createBrowserProviderAdapter({
+    apiKey,
+    binding,
     resolveAsset: async () => {
       throw new Error('browser_cancellation_does_not_resolve_assets')
     },
