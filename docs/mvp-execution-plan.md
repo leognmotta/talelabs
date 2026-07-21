@@ -331,7 +331,7 @@ M5.1  forward-only run schema migration + pure server planner
 M5.2  server preflight + immutable admission, snapshots, idempotency, and run API
 M5.3  Trigger.dev parent orchestration + deterministic mock adapters
 M5.4  canonical mock outputs, text outputs, provenance, cancel/reconcile APIs
-M5.5  dashboard binding, durable statuses/history, Run all, Run selection
+M5.5  dashboard binding, durable statuses/history, Run selection; retain engine all
 M5.6  engineering verification + user-owned run UX/E2E QA
 ```
 
@@ -355,14 +355,15 @@ edge-case semantics.
 
 ### E-050 - Run Modes And Planner Contract
 
-Add one server-owned planner for five user-visible modes:
+Add one server-owned planner for five modes. The normal canvas exposes the
+first four; `all` remains an engine capability:
 
 ```txt
 node        Run node
 downstream  Run from here
 upstream    Run till here
 selection   Run selection
-all         Run all
+all         Run all (engine support; hidden on normal canvas)
 ```
 
 `node`, `downstream`, and `upstream` require `targetNodeId`. `selection`
@@ -513,7 +514,6 @@ node context menu       = switch element / duplicate / lock / delete
 
 Add:
 
-- `Run all` to the main canvas action bar.
 - `Run selection` to the context menu shown when one or more nodes are selected
   and the selection contains at least one executable node.
 - A plan summary when an action includes more executable nodes than the visible
@@ -524,6 +524,10 @@ Add:
 - A root-level active-run observer so navigation away from the Flow never stops
   progress updates. Trigger.dev Realtime is a wake-up signal; the run API remains
   the rendered source of truth.
+
+Retain `all` across planner, API, snapshots, Trigger.dev, and persistence for
+future Tools or another approved workflow. Do not expose a Run All control or
+register its whole-Flow cost estimate on the normal canvas.
 
 In React Flow terminology, this command operates on selected nodes. Do not
 reintroduce the retired multi-role Element product or call run-selected nodes
@@ -590,6 +594,14 @@ the managed registry from `@talelabs/providers/server` with the immutable
 captured binding and an optional non-serializable runtime credential. The
 server entry point resolves the current platform OpenRouter key as fallback and
 never copies it into durable state.
+Credits-funded managed live admission loads mutable pricing metadata before its
+transaction and uses exact-decimal, provider-owned formulas after locking
+request facts. It selects the lowest estimated binding only when every eligible
+candidate is deterministically comparable; ties and incomplete comparisons
+preserve catalog priority. Browser BYOK routing remains priority-based and does
+not estimate cost. Credits-only run-plan preflight reuses the same calculator
+to show an advisory localized USD amount beside every canvas Run action until
+the deferred credit product supplies the final user-facing cost language.
 `docs/m6-real-provider-integration.md` is the binding provider-boundary and
 paid-smoke checklist; it intentionally does not duplicate the model inventory.
 

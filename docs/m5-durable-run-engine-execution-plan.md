@@ -651,9 +651,11 @@ Preserve every user-approved canvas control and visual primitive.
 
 - node primary Run -> `node`;
 - node dropdown -> `downstream` and `upstream`;
-- main canvas action bar -> `all`;
 - selected-node context menu -> `selection` when at least one selected node is
   executable.
+
+Retain `all` across planner, API, snapshots, and execution for future Tools or
+another approved workflow. The normal canvas exposes no Run All action.
 
 Command capture:
 
@@ -891,7 +893,8 @@ Gate:
 Deliver:
 
 - replace browser-only Run actions with durable commands;
-- Run all and Run selection bindings;
+- Run selection binding and engine-level Run all support without a normal canvas
+  action;
 - plan disclosure when scope expands;
 - durable overlays, progress, outputs, history, cancel, and rerun;
 - root active-run observer, Realtime invalidation, and polling fallback;

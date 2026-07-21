@@ -167,11 +167,12 @@ User clicks Run node
 -> the Flow node receives the resulting Asset reference
 ```
 
-Trigger.dev durably executes the five explicit user-owned commands: Run node,
-Run from here, Run till here, Run selection, and Run all. Connecting nodes never
-starts execution. Run selection executes only the chosen executable nodes and
-reuses compatible prior upstream results, avoiding unexpected regeneration and
-spend.
+Trigger.dev durably supports five explicit engine commands: Run node, Run from
+here, Run till here, Run selection, and Run all. The normal canvas exposes the
+first four; Run all remains reserved for future Tools or another explicitly
+approved workflow. Connecting nodes never starts execution. Run selection
+executes only the chosen executable nodes and reuses compatible prior upstream
+results, avoiding unexpected regeneration and spend.
 
 Short deterministic operations remain in the TaleLabs API, including graph persistence, connection validation, input previews, cost estimates, signed-upload creation, and ordinary Asset updates.
 
@@ -358,12 +359,14 @@ Run node       = only the target node
 Run from here  = target plus descendants
 Run till here  = target plus ancestors
 Run selection  = selected executable nodes only, reusing prior upstream outputs
-Run all        = every executable node
+Run all        = every executable node (engine support; hidden on normal canvas)
 ```
 
-The node toolbar owns the first three commands. `Run all` belongs on the main
-canvas action bar. `Run selection` belongs in the selected-node context menu.
-Connecting nodes never starts execution by itself.
+The node footer owns the first three commands. `Run selection` belongs in the
+selected-node context menu. `Run all` remains supported by the planner,
+snapshots, and executor for future Tools, but the normal canvas displays no
+Run All action and does not request a whole-Flow estimate. Connecting nodes
+never starts execution by itself.
 
 Do not build the following into the first Flow engine:
 

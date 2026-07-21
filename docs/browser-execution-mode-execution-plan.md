@@ -838,13 +838,17 @@ validation. Billing/entitlement data may own this choice later.
 
 ### Canvas commands
 
-Do not hide commands merely because Browser mode is selected. Preserve:
+Do not hide normal canvas commands merely because Browser mode is selected.
+Preserve:
 
 ```txt
 node toolbar menu       -> Run node, Run from here, Run till here
 selection context menu  -> Run selection
-main canvas action bar  -> Run all
 ```
+
+The `all` command remains supported by both execution runtimes for future Tools
+or another approved workflow, but the normal canvas exposes no Run All action
+in either runtime.
 
 Availability depends on the admitted command, debug/live mode, and binding
 eligibility, not a browser-wide node-only rule. An unsupported live binding

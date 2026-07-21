@@ -129,7 +129,7 @@ deterministic ordering
 mock output states for product QA
 ```
 
-The approved execution commands are:
+The engine-approved execution commands are:
 
 ```txt
 Run node       = execute only one target executable node
@@ -145,11 +145,14 @@ node toolbar): there is no per-node floating toolbar. `Run node` and the
 a compact run control. Output commands (download, crop, copy, add to Element,
 fullscreen) are hover actions on the node's media preview, also revealed by
 selection and keyboard focus. Delete, lock, and Element switching live in the
-node context menu. `Run all` belongs on the main canvas action bar.
-`Run selection` belongs in the selection context menu and is available only
-when the selection contains at least one executable node. Text and Asset nodes
+node context menu. `Run selection` belongs in the selection context menu and is
+available only when the selection contains at least one executable node. Text
+and Asset nodes
 contribute immutable inputs but do not create jobs. Connecting nodes never
-starts execution automatically.
+starts execution automatically. `Run all` remains supported by planning,
+admission, snapshots, and execution for future Tools or another explicitly
+approved workflow, but the normal canvas exposes no Run All action and requests
+no whole-Flow cost estimate.
 
 ## Build Sequence
 

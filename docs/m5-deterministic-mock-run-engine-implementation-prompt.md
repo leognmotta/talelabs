@@ -168,8 +168,8 @@ Approved UI placement:
 
 - Node toolbar primary Run executes `node`.
 - Existing node Run dropdown keeps Run from here and Run till here.
-- Add Run all to the main canvas action bar/header using existing toolbar
-  primitives and visual conventions.
+- Retain Run all in the planner, API, snapshots, and executor for future Tools,
+  but do not expose it on the normal canvas.
 - Add Run selection to the right-click context menu only when the selection
   contains at least one executable node.
 - Do not call React Flow nodes "elements" in product copy.
@@ -434,7 +434,7 @@ Bind existing approved canvas controls to the real run API while preserving the
 current visual design:
 
 - Node Run / Run from here / Run till here.
-- Main canvas Run all action.
+- Engine-level Run all support without a normal canvas action.
 - Right-click Run selection for selected executable nodes.
 - Every action flushes Flow autosave and runs the saved revision; commands never
   submit unsaved browser graph JSON.

@@ -1133,7 +1133,7 @@ downstream  Run from here  target plus executable descendants
 upstream    Run till here  target plus executable ancestors needed to reach it
 selection   Run selection  selected executable nodes only; resolve unselected
                            executable ancestors from prior outputs
-all         Run all        every executable node in the saved Flow
+all         Run all        every executable node in the saved Flow; engine-only
 ```
 
 `Run selection` must not regenerate unselected ancestors. Missing required prior
@@ -1141,8 +1141,10 @@ outputs reject preflight/admission instead of silently adding dependency jobs.
 Selected edges and non-executable nodes alone do not make the command available.
 The node's footer run control owns `node`, `downstream`, and `upstream`
 (placement revised by user decision 2026-07-19 — the floating node toolbar is
-retired); the main canvas action bar owns `all`; the selection context menu
-owns `selection`.
+retired); the selection context menu owns `selection`. The planner, immutable
+snapshot, and executor retain `all` for future Tools or another approved
+workflow, but the normal canvas owns no `all` action and requests no `all` cost
+estimate.
 
 Planning stages:
 
