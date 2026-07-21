@@ -16,23 +16,35 @@ function enumSetting(request: NormalizedGenerationRequest, settingId: string) {
   return value
 }
 
+function optionalEnumSetting(
+  request: NormalizedGenerationRequest,
+  binding: OpenRouterVideoBinding,
+  settingId: string,
+) {
+  return binding.requestProfile.settingIds.includes(settingId)
+    ? enumSetting(request, settingId)
+    : undefined
+}
+
 /** Maps provider-neutral video settings into OpenRouter request values. */
 export function openRouterVideoSettings(
   request: NormalizedGenerationRequest,
   binding: OpenRouterVideoBinding,
 ) {
   assertOnlySettings(request, binding.requestProfile.settingIds)
-  const duration = Number(enumSetting(request, 'durationSeconds'))
-  if (!Number.isInteger(duration) || duration <= 0)
+  const durationValue = optionalEnumSetting(request, binding, 'durationSeconds')
+  const duration = durationValue === undefined ? undefined : Number(durationValue)
+  if (duration !== undefined && (!Number.isInteger(duration) || duration <= 0))
     throwProviderResponseInvalid()
-  const resolution = enumSetting(request, 'resolution')
+  const resolution = optionalEnumSetting(request, binding, 'resolution')
   const generateAudio = binding.requestProfile.generateAudio
+    && binding.requestProfile.settingIds.includes('generateAudio')
     ? request.settings.generateAudio
     : undefined
   if (generateAudio !== undefined && typeof generateAudio !== 'boolean')
     throwProviderResponseInvalid()
   return {
-    aspectRatio: enumSetting(request, 'aspectRatio'),
+    aspectRatio: optionalEnumSetting(request, binding, 'aspectRatio'),
     duration,
     generateAudio,
     resolution: resolution === '4k' ? '4K' : resolution,

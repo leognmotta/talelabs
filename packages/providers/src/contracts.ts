@@ -12,8 +12,18 @@ export interface OpenRouterRuntimeCredential {
   resolveApiKey: () => string | undefined
 }
 
+/** Runtime-only fal API-key resolver selected by active composition. */
+export interface FalRuntimeCredential {
+  /** Provider discriminator used to reject credential/binding mismatches. */
+  provider: 'fal'
+  /** Resolves the secret immediately before authenticated client creation. */
+  resolveApiKey: () => string | undefined
+}
+
 /** Runtime credentials accepted by provider protocol construction. */
-export type ProviderRuntimeCredential = OpenRouterRuntimeCredential
+export type ProviderRuntimeCredential
+  = | FalRuntimeCredential
+    | OpenRouterRuntimeCredential
 
 /** Runtime-resolved Asset metadata consumed by provider protocol translation. */
 export interface ResolvedProviderAsset {

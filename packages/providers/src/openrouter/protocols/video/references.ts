@@ -14,13 +14,8 @@ import { throwProviderResponseInvalid } from '../../errors.js'
 
 const MEBIBYTE = 1024 * 1024
 const IMAGE_MIME_TYPES = new Set([
-  'image/bmp',
-  'image/gif',
-  'image/heic',
-  'image/heif',
   'image/jpeg',
   'image/png',
-  'image/tiff',
   'image/webp',
 ])
 const VIDEO_MIME_TYPES = new Set(['video/mp4', 'video/quicktime'])
@@ -49,7 +44,7 @@ function validateSeedanceReferenceAsset(
     const aspectRatio = width / height
     if (
       !IMAGE_MIME_TYPES.has(mimeType)
-      || sizeBytes >= 30 * MEBIBYTE
+      || sizeBytes > 30 * MEBIBYTE
       || width <= 300
       || height <= 300
       || width >= 6_000
@@ -79,7 +74,7 @@ function validateSeedanceReferenceAsset(
   const pixels = width * height
   if (
     !VIDEO_MIME_TYPES.has(mimeType)
-    || sizeBytes > 200 * MEBIBYTE
+    || sizeBytes > 50 * MEBIBYTE
     || durationSeconds < 2
     || durationSeconds > 15
     || width < 300
@@ -102,9 +97,10 @@ export async function resolveOpenRouterReferenceInputs(input: {
   referenceInputs: OrderedVideoMediaInput[]
   resolveAsset: OpenRouterAssetResolver
 }) {
-  const totalLimit = input.profile.referenceLimits.audio
+  const perSlotLimit = input.profile.referenceLimits.audio
     + input.profile.referenceLimits.image
     + input.profile.referenceLimits.video
+  const totalLimit = input.profile.totalReferenceLimit ?? perSlotLimit
   if (input.referenceInputs.length < 1 || input.referenceInputs.length > totalLimit)
     throwProviderResponseInvalid()
   const profileLimit = {

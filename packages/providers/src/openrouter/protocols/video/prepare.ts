@@ -37,9 +37,13 @@ export function createOpenRouterVideoPreparation(input: {
       })
       return createOpenRouterVideoSubmission({
         body: {
-          aspect_ratio: settings.aspectRatio,
+          ...(settings.aspectRatio === undefined
+            ? {}
+            : { aspect_ratio: settings.aspectRatio }),
           ...(context?.callbackUrl ? { callback_url: context.callbackUrl } : {}),
-          duration: settings.duration,
+          ...(settings.duration === undefined
+            ? {}
+            : { duration: settings.duration }),
           ...(videoInputs.frameImages.length
             ? { frame_images: videoInputs.frameImages }
             : {}),
@@ -52,7 +56,9 @@ export function createOpenRouterVideoPreparation(input: {
           model: input.binding.nativeModelId,
           prompt: requestText(request),
           provider: pinnedOpenRouterProvider(input.binding),
-          resolution: settings.resolution,
+          ...(settings.resolution === undefined
+            ? {}
+            : { resolution: settings.resolution }),
         },
         callbackExpected: Boolean(context?.callbackUrl),
         client: input.client,
