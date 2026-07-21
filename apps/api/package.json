@@ -2,7 +2,7 @@
   "name": "api",
   "type": "module",
   "scripts": {
-    "dev": "NODE_ENV=development tsx watch --include '../../packages/{assets,auth,db,email,flows,i18n,models-catalog,providers,storage,trigger}/dist/**/*.js' src/index.ts",
+    "dev": "NODE_ENV=development tsx watch --include '../../packages/{assets,auth,cache,db,email,flows,i18n,models-catalog,providers,storage,trigger}/dist/**/*.js' src/index.ts",
     "dev:e2e": "NODE_ENV=development tsx watch src/index.ts",
     "verify:m5-runs": "npm run run:check -w @talelabs/flows",
     "verify:browser-planner-snapshot": "tsx scripts/verify-browser-planner-snapshot-matrix.ts",
@@ -20,6 +20,7 @@
     "@paralleldrive/cuid2": "^3.3.0",
     "@talelabs/assets": "*",
     "@talelabs/auth": "*",
+    "@talelabs/cache": "*",
     "@talelabs/db": "*",
     "@talelabs/flows": "*",
     "@talelabs/i18n": "^0.0.0",
