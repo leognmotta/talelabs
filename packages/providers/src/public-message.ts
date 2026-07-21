@@ -1,6 +1,9 @@
 /**
  * Sanitization for provider-owned rejection messages.
  *
+ * Provider-neutral and browser-safe: shared by every provider's error mapping so
+ * untrusted upstream text is bounded and stripped of URLs and secrets before it
+ * can reach a persisted failure or the browser.
  */
 
 const MAX_PROVIDER_PUBLIC_MESSAGE_LENGTH = 500
