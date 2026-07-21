@@ -7,6 +7,7 @@
     "verify:m5-runs": "npm run run:check -w @talelabs/flows",
     "verify:browser-planner-snapshot": "tsx scripts/verify-browser-planner-snapshot-matrix.ts",
     "verify:provider-availability": "tsx scripts/verify-provider-availability.ts",
+    "verify:provider-costs": "tsx scripts/verify-provider-costs.ts",
     "build": "tsc -p tsconfig.build.json",
     "check-types": "tsc --noEmit",
     "start": "node dist/index.js",
