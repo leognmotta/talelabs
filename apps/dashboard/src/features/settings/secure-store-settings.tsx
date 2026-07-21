@@ -10,14 +10,20 @@ import {
 } from '@talelabs/providers/browser'
 import { Alert, AlertDescription } from '@talelabs/ui/components/alert'
 import { Separator } from '@talelabs/ui/components/separator'
+import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from '@talelabs/ui/components/toggle-group'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { useSession } from '../auth/auth-client'
 import { notifyBrowserCredentialsChanged } from './execution-runtime-preference'
+import { useGenerationFundingPreference } from './generation-funding-preference'
 import { SecureStoreCredentialDialog } from './secure-store-credential-dialog'
 import { SecureStoreProviderRow } from './secure-store-provider-row'
 import { SECURE_STORE_PROVIDERS } from './secure-store-providers'
+import { SettingsRow } from './settings-row'
 
 interface SecureStoreDialogTarget {
   mode: SecureStoreDialogMode
@@ -29,6 +35,8 @@ export function SecureStoreSettings() {
   const { t } = useTranslation()
   const session = useSession()
   const userId = session.data?.user.id
+  const [fundingPreference, setFundingPreference]
+    = useGenerationFundingPreference(userId)
   const [dialogTarget, setDialogTarget] = useState<SecureStoreDialogTarget | null>(
     null,
   )
@@ -114,6 +122,39 @@ export function SecureStoreSettings() {
           {t('secureStore.description')}
         </p>
       </header>
+      <Separator />
+      <section className="pt-5">
+        <h3 className="text-sm font-semibold">
+          {t('secureStore.generationMode')}
+        </h3>
+        <Separator className="mt-3" />
+        <SettingsRow
+          description={fundingPreference === 'credits'
+            ? t('secureStore.creditsDescription')
+            : t('secureStore.byokDescription')}
+          label={t('secureStore.preferredMode')}
+        >
+          <ToggleGroup
+            aria-label={t('secureStore.preferredMode')}
+            disabled={!userId}
+            size="sm"
+            value={[fundingPreference]}
+            variant="filled"
+            onValueChange={(values) => {
+              const next = values.at(-1)
+              if (next === 'credits' || next === 'byok')
+                setFundingPreference(next)
+            }}
+          >
+            <ToggleGroupItem value="credits">
+              {t('secureStore.credits')}
+            </ToggleGroupItem>
+            <ToggleGroupItem value="byok">
+              {t('secureStore.byok')}
+            </ToggleGroupItem>
+          </ToggleGroup>
+        </SettingsRow>
+      </section>
       <Separator />
       <Alert className="my-5">
         <IconShieldLock />

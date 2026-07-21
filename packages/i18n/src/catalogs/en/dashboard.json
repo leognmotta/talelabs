@@ -76,6 +76,12 @@
     "deleteSelection": "Delete selection",
     "runSelection": "Run selection",
     "runAll": "Run all",
+    "runCost": {
+      "amount": "Estimated {{amount}}",
+      "estimating": "Estimating…",
+      "updating": "Updating…",
+      "explanation": "Estimated cost."
+    },
     "debugMode": {
       "active": "Debug mode",
       "disable": "Disable debug mode",
@@ -1010,6 +1016,12 @@
     "couldNotRemove": "Could not remove the API key from this browser.",
     "couldNotStore": "Could not store the API key in this browser.",
     "description": "Manage provider API keys encrypted in this browser.",
+    "generationMode": "Generation mode",
+    "preferredMode": "Preferred mode",
+    "credits": "Credits",
+    "byok": "BYOK",
+    "creditsDescription": "Uses TaleLabs credits — browser-stored API keys are not used.",
+    "byokDescription": "Uses your own API keys — no platform credits spent. Keys stay in this browser.",
     "dialogDescription": "Enter the API key to encrypt and store in this browser.",
     "openRouter": "OpenRouter",
     "fal": "fal.ai",
@@ -1049,7 +1061,7 @@
     "profile": "Profile",
     "providers": "Providers",
     "security": "Security",
-    "secureStore": "Secure Store",
+    "secureStore": "API Keys",
     "system": "System",
     "team": "Team",
     "theme": "Theme"
@@ -1168,6 +1180,7 @@
     "provider_authentication": "The generation provider could not be authenticated.",
     "browser_provider_insufficient_balance": "Your provider account does not have enough credits. Add funds with the provider and try again.",
     "provider_insufficient_balance": "Something went wrong. Contact support.",
+    "run_cost_estimate_unavailable": "Wait for a complete cost estimate before running.",
     "provider_rate_limited": "The generation provider is busy. Try again shortly.",
     "provider_timeout": "The generation provider took too long to respond.",
     "provider_response_invalid": "The generation provider returned an invalid response.",

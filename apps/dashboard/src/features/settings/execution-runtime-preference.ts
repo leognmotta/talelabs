@@ -1,4 +1,4 @@
-/** Code-owned runtime preference seam while managed selection remains hidden. */
+/** Code-owned BYOK runtime seam while managed BYOK remains unavailable. */
 
 import type { FlowRunExecutionRuntime } from '@talelabs/flows'
 
@@ -7,7 +7,7 @@ import { BROWSER_EXECUTION_ENABLED } from '@talelabs/flows'
 import { useCallback, useSyncExternalStore } from 'react'
 
 const PREFERENCE_EVENT = 'talelabs-execution-runtime-changed'
-const MANAGED_EXECUTION_PREFERENCE_ENABLED = false
+const MANAGED_BYOK_PREFERENCE_ENABLED = false
 /** Browser event that restarts executors after local key storage changes. */
 export const BROWSER_CREDENTIALS_CHANGED_EVENT = 'talelabs-browser-credentials-changed'
 
@@ -20,11 +20,11 @@ function preferenceKey(userId: string) {
   return `talelabs.executionRuntime.v1.${userId}`
 }
 
-/** Returns browser execution while the managed runtime selector is unavailable. */
+/** Returns browser execution while the managed BYOK selector is unavailable. */
 export function readExecutionRuntimePreference(userId: string | undefined): FlowRunExecutionRuntime {
   if (!BROWSER_EXECUTION_ENABLED)
     return 'managed'
-  if (!MANAGED_EXECUTION_PREFERENCE_ENABLED)
+  if (!MANAGED_BYOK_PREFERENCE_ENABLED)
     return 'browser'
   if (!userId)
     return 'browser'
@@ -33,7 +33,7 @@ export function readExecutionRuntimePreference(userId: string | undefined): Flow
     : 'browser'
 }
 
-/** Keeps the effective runtime synchronized without adding run state to Zustand. */
+/** Keeps the hidden BYOK runtime synchronized without adding run state to Zustand. */
 export function useExecutionRuntimePreference(userId: string | undefined) {
   const subscribe = useCallback((listener: () => void) => {
     const sync = () => listener()
@@ -54,7 +54,7 @@ export function useExecutionRuntimePreference(userId: string | undefined) {
     (): FlowRunExecutionRuntime => BROWSER_EXECUTION_ENABLED ? 'browser' : 'managed',
   )
   const setRuntime = useCallback((next: FlowRunExecutionRuntime) => {
-    if (!userId || !MANAGED_EXECUTION_PREFERENCE_ENABLED)
+    if (!userId || !MANAGED_BYOK_PREFERENCE_ENABLED)
       return
     localStorage.setItem(preferenceKey(userId), next)
     window.dispatchEvent(new Event(PREFERENCE_EVENT))
