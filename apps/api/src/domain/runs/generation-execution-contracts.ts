@@ -9,8 +9,13 @@
 import type {
   FlowRunPlan,
   FlowRunSnapshotExecutionContract,
+  FlowRunSnapshotProviderCostEstimate,
+  FlowRunSnapshotProviderSelection,
 } from '@talelabs/flows'
-import type { CatalogProviderId } from '@talelabs/models-catalog'
+import type {
+  CatalogProviderBinding,
+  CatalogProviderId,
+} from '@talelabs/models-catalog'
 
 import {
   getCatalogModel,
@@ -33,6 +38,16 @@ interface GenerationExecutionContractPlan {
   >[]
 }
 
+/** Admission-resolved binding and optional immutable cost-routing evidence. */
+export interface ResolvedGenerationExecutionBinding {
+  /** Exact eligible binding selected for this node. */
+  binding: CatalogProviderBinding
+  /** Complete deterministic aggregate quote, when available. */
+  providerCostEstimate?: FlowRunSnapshotProviderCostEstimate
+  /** Private policy explanation for the selected binding. */
+  providerSelection?: FlowRunSnapshotProviderSelection
+}
+
 /**
  * Resolves one exact private binding for every planned executable node.
  *
@@ -46,6 +61,7 @@ interface GenerationExecutionContractPlan {
  * @param executionMode - Whether this admits a live or deterministic debug run.
  * @param availableProviders - Providers usable for this run mode; required for
  *   live admission and ignored for debug.
+ * @param resolvedBindings - Optional admission-resolved routes keyed by node ID.
  * @returns Self-contained execution contracts ready for snapshot persistence.
  * @throws When a model revision or provider route cannot resolve exactly.
  */
@@ -54,20 +70,25 @@ export function generationExecutionContracts(
   executionRuntime: 'browser' | 'managed' = 'managed',
   executionMode: 'debug' | 'live' = 'live',
   availableProviders: ReadonlySet<CatalogProviderId> = new Set(),
+  resolvedBindings: ReadonlyMap<string, ResolvedGenerationExecutionBinding> = new Map(),
 ): FlowRunSnapshotExecutionContract[] {
   return plan.executionNodes.map((node) => {
     const model = getCatalogModel(node.modelId)
-    const binding = executionMode === 'live'
-      ? selectProviderBinding({
-          availableProviders,
-          executionRuntime,
-          modelId: node.modelId,
-          operationId: node.operationId,
-        })
-      : getCatalogProviderBinding(node.modelId, node.operationId)
+    const resolved = resolvedBindings.get(node.nodeId)
+    const binding = resolved?.binding ?? (
+      executionMode === 'live'
+        ? selectProviderBinding({
+            availableProviders,
+            executionRuntime,
+            modelId: node.modelId,
+            operationId: node.operationId,
+          })
+        : getCatalogProviderBinding(node.modelId, node.operationId)
+    )
     if (
       !model
       || !binding
+      || binding.operationId !== node.operationId
       || node.catalogRevision !== MODEL_CATALOG.catalogRevision
       || node.catalogVersion !== MODEL_CATALOG.catalogVersion
       || node.modelRevision !== model.revision
@@ -87,12 +108,18 @@ export function generationExecutionContracts(
       nodeId: node.nodeId,
       operationId: node.operationId,
       provider: binding.provider,
+      ...(resolved?.providerCostEstimate
+        ? { providerCostEstimate: resolved.providerCostEstimate }
+        : {}),
       providerBinding: binding,
       providerEndpoint: binding.endpoint,
       providerEndpointTag: binding.providerTag,
       providerLifecycle: binding.lifecycle,
       providerModel: binding.nativeModelId,
       providerRouteVersion: binding.routeVersion,
+      ...(resolved?.providerSelection
+        ? { providerSelection: resolved.providerSelection }
+        : {}),
     }
   })
 }
