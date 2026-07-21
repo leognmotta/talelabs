@@ -246,6 +246,8 @@
       "deepseekV32": "DeepSeek V3.2",
       "mistralLarge3": "Mistral Large 3",
       "seedream45": "Seedream 4.5",
+      "seedream50Lite": "Seedream 5.0 Lite",
+      "seedream50Pro": "Seedream 5.0 Pro",
       "flux2Pro": "FLUX.2 Pro",
       "recraft41": "Recraft 4.1",
       "veo31": "Veo 3.1",
@@ -253,11 +255,13 @@
       "grokImagineVideo": "Grok Imagine Video",
       "seedance20": "Seedance 2.0",
       "ltx23Pro": "LTX 2.3 Pro",
-      "elevenMultilingualV2": "Eleven Multilingual v2",
-      "elevenSoundEffectsV2": "Eleven Sound Effects v2",
-      "elevenMusicV2": "Eleven Music v2",
-      "elevenVoiceChanger": "Eleven Voice Changer",
-      "elevenVoiceIsolator": "Eleven Voice Isolator",
+      "elevenV3": "ElevenLabs Eleven v3",
+      "elevenMultilingualV2": "ElevenLabs TTS Multilingual v2",
+      "elevenTurboV25": "ElevenLabs TTS Turbo v2.5",
+      "elevenSoundEffectsV2": "ElevenLabs Sound Effects v2",
+      "elevenMusic": "ElevenLabs Music",
+      "elevenVoiceChanger": "ElevenLabs Voice Changer",
+      "elevenAudioIsolation": "ElevenLabs Audio Isolation",
       "gpt4oMiniTts": "GPT-4o mini TTS",
       "gemini31FlashTtsPreview": "Gemini 3.1 Flash TTS Preview",
       "stableAudio25": "Stable Audio 2.5"
@@ -280,6 +284,8 @@
       "deepseekV32": "Transformation efficace de texte et rédaction créative structurée.",
       "mistralLarge3": "Rédaction multilingue polyvalente et compréhension d’images sans réglage du raisonnement.",
       "seedream45": "Retouche multi-image haute fidélité avec excellent contrôle de la typographie et de la mise en page.",
+      "seedream50Lite": "Génération et retouche rapides avec plusieurs références et jusqu’à six sorties.",
+      "seedream50Pro": "Génération et retouche avancées avec contrôle précis de la mise en page et plusieurs références.",
       "flux2Pro": "Retouche photoréaliste à grande échelle avec contrôle précis de plusieurs références.",
       "recraft41": "Design, photoréalisme et illustration soignés à partir de prompts concis.",
       "veo31": "Vidéo cinématographique haute fidélité avec audio natif et contrôle avancé par références.",
@@ -287,11 +293,13 @@
       "grokImagineVideo": "Création vidéo rapide à partir de prompts, d’images initiales et de références visuelles.",
       "seedance20": "Contrôle digne d’un réalisateur avec des références image, vidéo et audio.",
       "ltx23Pro": "Vidéo 1080p nette dont le mouvement suit précisément l’audio de référence.",
+      "elevenV3": "Synthèse vocale expressive avec une interprétation émotionnelle naturelle.",
       "elevenMultilingualV2": "Voix naturelle et stable pour les contenus longs dans 29 langues.",
+      "elevenTurboV25": "Génération vocale multilingue rapide, optimisée pour une faible latence.",
       "elevenSoundEffectsV2": "Effets cinématographiques, bruitages, ambiances et boucles audio fluides.",
-      "elevenMusicV2": "Musique naturelle à partir d’instructions, avec durée flexible et contrôle instrumental.",
+      "elevenMusic": "Musique naturelle à partir d’instructions, avec durée flexible et contrôle instrumental.",
       "elevenVoiceChanger": "Transformation vocale qui préserve l’interprétation originale.",
-      "elevenVoiceIsolator": "Nettoyage ciblé de la voix parlée dans les enregistrements bruités.",
+      "elevenAudioIsolation": "Nettoyage ciblé de la voix parlée dans les enregistrements bruités.",
       "gpt4oMiniTts": "Parole expressive avec contrôle de la voix, du rythme et de l’interprétation.",
       "gemini31FlashTtsPreview": "Génération de parole naturelle avec Gemini et une voix au choix.",
       "stableAudio25": "Musique longue et design sonore avec contrôle de la durée, de la graine et du respect des instructions."
@@ -325,7 +333,8 @@
       "lyrics": "Paroles",
       "lyricsDescription": "Paroles facultatives, réservées aux modèles musicaux compatibles.",
       "sourceMedia": "Média source",
-      "sourceMediaDescription": "Un élément audio ou vidéo contenant l’interprétation source."
+      "sourceMediaDescription": "Un élément audio ou vidéo contenant l’interprétation source.",
+      "sourceAudioDescription": "Un élément audio contenant l’interprétation source."
     },
     "settings": {
       "label": "Paramètres",
@@ -340,6 +349,7 @@
         "ultrawide": "Ultra-large"
       },
       "outputCount": "Sorties",
+      "safetyChecker": "Contrôle de sécurité",
       "quality": "Qualité",
       "background": "Arrière-plan",
       "backgrounds": {
@@ -410,6 +420,7 @@
         "512": "512 px",
         "1k": "1K",
         "2k": "2K",
+        "3k": "3K",
         "480p": "480p",
         "720p": "720p",
         "1080p": "1080p",
@@ -427,10 +438,13 @@
       "instrumental": "Instrumental",
       "removeBackgroundNoise": "Supprimer le bruit de fond",
       "voices": {
+        "elevenAria": "Aria",
         "elevenAntoni": "Antoni",
         "elevenDomi": "Domi",
         "elevenJosh": "Josh",
         "elevenRachel": "Rachel",
+        "elevenRoger": "Roger",
+        "elevenSarah": "Sarah",
         "openaiCedar": "Cedar",
         "openaiCoral": "Coral",
         "openaiMarin": "Marin",
@@ -566,7 +580,7 @@
       "failed": "La génération a échoué"
     },
     "browserExecution": {
-      "credential_required": "Ajoutez une clé API OpenRouter dans le Stockage sécurisé pour exécuter dans ce navigateur.",
+      "credential_required": "Ajoutez la clé API requise dans le Stockage sécurisé pour exécuter dans ce navigateur.",
       "credential_store_unavailable": "Le stockage sécurisé des clés du navigateur est indisponible. Ouvrez le Stockage sécurisé et réessayez.",
       "failed": "L’exécution dans le navigateur s’est arrêtée. Gardez cet onglet ouvert et réessayez.",
       "openSecureStore": "Ouvrir le Stockage sécurisé",
@@ -642,7 +656,8 @@
       "lastFrameRequiresFirstFrame": "Connectez une première image avant d’utiliser la dernière.",
       "referencesRequireEightSeconds": "Les vidéos avec références nécessitent 8 secondes.",
       "referencesRequireLandscape": "Les vidéos avec images de référence prennent uniquement en charge le format 16:9.",
-      "highResolutionRequiresEightSeconds": "Les vidéos 1080p et 4K nécessitent 8 secondes."
+      "highResolutionRequiresEightSeconds": "Les vidéos 1080p et 4K nécessitent 8 secondes.",
+      "referencesAtMostTenSeconds": "Les vidéos guidées par des références sont limitées à 10 secondes."
     },
     "nodeMedia": {
       "play": "Lire {{name}}"
@@ -1151,7 +1166,7 @@
     "internal_error": "Une erreur est survenue. Réessayez.",
     "generation_provider_route_unavailable": "Ce modèle ou mode de génération n’est pas encore disponible à l’exécution.",
     "provider_authentication": "Le fournisseur de génération n’a pas pu être authentifié.",
-    "browser_openrouter_insufficient_balance": "Votre compte OpenRouter n’a pas assez de crédits. Ajoutez des crédits dans OpenRouter, puis réessayez.",
+    "browser_provider_insufficient_balance": "Votre compte fournisseur n’a pas assez de crédits. Ajoutez des crédits auprès du fournisseur, puis réessayez.",
     "provider_insufficient_balance": "Un problème est survenu. Contactez l’assistance.",
     "provider_rate_limited": "Le fournisseur de génération est occupé. Réessayez dans quelques instants.",
     "provider_timeout": "Le fournisseur de génération a mis trop de temps à répondre.",
