@@ -1,19 +1,22 @@
 # Provider Cost Estimation And Cost-Aware Routing
 
-**Status:** research and implementation plan only; not approved implementation
-scope.
+**Status:** approved and implemented for Credits-funded cost-aware routing plus
+a Credits-only advisory preflight USD estimate. Credit accounting remains
+deferred.
 
-**Last researched:** 2026-07-20.
+**Last researched:** 2026-07-21.
 
-This document plans a runtime function that estimates the provider-side cost of
-one reviewed generation request and can later use comparable estimates to choose
-between exact provider bindings. It covers OpenRouter and fal, with Seedance 2.0
-as the detailed configuration-sensitive example.
+This document records the design and implementation of the runtime function that
+estimates the provider-side cost of one reviewed generation request and uses
+comparable estimates to choose between exact provider bindings. It covers
+OpenRouter and fal, with Seedance 2.0 as the detailed
+configuration-sensitive example.
 
-Research in this file does not enable credit enforcement, change provider
-selection, expose provider prices in the UI, or add a feature to the active MVP.
-Those changes require their own approval and must update the binding product and
-API/database documents before implementation.
+The implemented slice changes Credits-funded managed-live provider selection
+and temporarily exposes an advisory provider-cost estimate in USD beside every
+canvas Run action only while Credits is selected. It does not add credit
+balances, reservations, enforcement, or billing. Browser BYOK neither estimates
+nor displays cost and remains priority-based.
 
 ## Decision Summary
 
@@ -35,15 +38,51 @@ The recommended design is:
    request facts, or provider rounding rule is incomplete.
 6. Capture any quote that affects routing in the immutable run snapshot and on
    its generated job. Keep actual `providerCostUsd` settlement independent.
-7. Initially use cost-aware routing only for managed live execution and only
-   when every eligible candidate has a comparable deterministic estimate.
-8. Preserve current catalog priority for ties, missing estimates, pricing API
-   failures, browser BYOK, and deterministic debug execution.
+7. Initially use cost-aware routing only for Credits-funded managed live
+   execution and only when every eligible candidate has a comparable
+   deterministic estimate.
+8. Preserve current catalog priority as the deterministic selection fallback
+   for ties and incomplete comparisons. Credits-funded managed admission still
+   fails closed until the selected binding has a complete quote. Browser BYOK
+   and deterministic debug execution remain priority-routed.
 
 This removes broad manual rate duplication. A small amount of reviewed provider
 logic remains irreducible when a provider's machine-readable pricing response
 does not describe how request configuration becomes billable units. Seedance
 2.0 on fal is one such exception.
+
+## Implemented Slice (2026-07-21)
+
+- `@talelabs/providers/server` owns bounded authenticated pricing clients,
+  exact-decimal arithmetic, provider-dispatched estimators, and explicit
+  unavailable results. Adding a provider extends that server-only dispatcher;
+  it does not add rates to every catalog binding.
+- Credits-funded managed live admission compares all runtime- and
+  credential-eligible
+  candidates only when every candidate has a deterministic USD estimate. The
+  lowest amount wins. A tie preserves catalog priority and order. Any missing
+  estimate restores priority for the whole candidate set, but a Credits run is
+  not admitted unless the selected binding's quote is complete.
+- Admission loads mutable rates before opening its transaction, derives
+  billable facts from locked Assets inside the transaction, and captures the
+  selected binding, policy result, and immutable quote in snapshot version 4
+  and `generationJobs.providerCostEstimate`.
+- Credits-only `POST /flows/:id/run-plans` returns a sanitized complete,
+  partial, or unavailable aggregate without exposing providers, rates,
+  formulas, or credentials. Admission always recalculates independently.
+- While Credits is selected, the dashboard shows the advisory result next to
+  runnable node and graph-scope actions. Nodes without enough configuration to
+  run do not request or render an estimate. Graph-scope preflight omits those
+  nodes and still prices every runnable planned job. Each action remains
+  disabled until its complete estimate is known. Copy and currency formatting
+  are localized across every supported locale.
+- Browser BYOK does not call pricing preflight, show a quote, load server
+  pricing during admission, or persist estimate evidence. It selects bindings
+  in catalog-priority order. Debug shows the equivalent live provider estimate
+  only when Credits is selected while continuing to execute the free mock.
+- Migration `029_provider_cost_estimates` adds the nullable job quote. It must
+  be verified on disposable PostgreSQL or staging before deployment; it was not
+  run against the configured remote database during implementation.
 
 ## Goals
 
@@ -61,8 +100,10 @@ does not describe how request configuration becomes billable units. Seedance
 ## Non-Goals
 
 - No credit ledger, balance, reservation, capture, refund, or `402` behavior.
-- No provider-cost or USD UI in this phase. TaleLabs credits remain the future
-  user-facing cost language defined by `docs/credits-planning.md`.
+- The current provider-USD display is an interim advisory aid only. TaleLabs
+  credits remain the future product cost language defined by
+  `docs/credits-planning.md`; the USD estimate is not a charge, reservation, or
+  settlement.
 - No browser BYOK cost routing. The TaleLabs server does not receive browser
   credentials, and fal may return account-specific prices for a BYOK key.
 - No post-admission provider fallback or retry-time rerouting.
@@ -547,37 +588,43 @@ route-selection edge case.
 A small façade may combine rate loading and pure calculation for API callers,
 but tests and admission must retain this separation.
 
-## Rate Cache And Failure Policy
+## Rate Loading And Failure Policy
 
-Pricing metadata changes more often than catalog routes, but fetching it for
-every candidate on every click is unnecessary and would make admission depend
-on provider latency.
-
-Recommended initial policy, owned as typed code constants rather than new
-environment variables:
-
-```txt
-successful cache TTL       5 minutes
-maximum routing age       15 minutes
-negative/error cache TTL  15 seconds
-pricing request timeout    2 seconds
-```
+The implementation uses a one-minute process-local cache keyed by the exact
+provider/model/protocol/tag binding set, with in-flight request coalescing.
+This keeps the automatically rendered node estimates from issuing duplicate
+provider metadata requests while preserving the provider-authored retrieval
+time in every quote. Incomplete snapshots use a 15-second negative lifetime to
+bound outage traffic without making them durable pricing facts. Managed
+dashboard queries separately retain a complete
+scope fingerprint for five minutes. The fingerprint contains only the graph
+slice and Asset metadata captured by that command, so an unrelated node edit
+does not invalidate every node estimate; the edited scope, flow total, and
+dependent scopes still refresh after autosave. Browser BYOK does not request
+managed pricing. Each provider metadata load gets two attempts with a
+five-second per-request timeout, and responses are streamed through a
+two-megabyte byte limit.
 
 Implementation rules:
 
-- Coalesce concurrent reads for the same provider/rate scope with one in-flight
-  promise.
-- Key fal cache entries by managed provider/account scope in memory without
-  persisting or logging a key fingerprint.
-- Cache OpenRouter video metadata as one list and image endpoint metadata by
-  exact model ID.
-- Do not persist a general rate table in PostgreSQL initially.
-- Do not use a response older than the maximum routing age to change providers.
+- Batch fal endpoint IDs in groups of at most 50 and fetch the OpenRouter video
+  model list once per request.
+- Deduplicate exact provider/model/protocol/tag scopes inside each request and
+  coalesce identical in-flight snapshots across requests.
+- Do not persist a general rate table in PostgreSQL.
+- Keep the cache account-local and short-lived, with incomplete results expiring
+  before complete quotes. A future shared cache must define distributed
+  consistency and account scope before replacing this process-local optimization.
 - A timeout, `401`, `429`, schema drift, missing endpoint, or stale rate makes
-  that estimate unavailable. It does not make the generation binding itself
-  unavailable.
-- When estimation cannot compare every eligible route, fall back to catalog
-  priority and continue normal admission.
+  that internal estimate unavailable. The canvas keeps the related Run action
+  disabled, performs only bounded request retries, and stores a short negative
+  result. After ordinary query retries, incomplete scopes get at most three
+  delayed recovery attempts at 30, 60, and 120 seconds. Focus or a later manual
+  interaction may recover after that budget; the UI never presents
+  `unavailable` as a user-facing cost or spins indefinitely.
+- When estimation cannot compare every eligible route, use catalog priority for
+  provisional selection. Credits-funded managed admission still rejects the
+  run until the selected route has a complete quote.
 
 Provider pricing network calls must never occur while holding the organization
 admission lock or Asset row locks.
@@ -591,7 +638,8 @@ an unavailable credential or unsupported runtime eligible.
 1. Load exact bindings for the canonical model operation.
 2. Filter by execution runtime and currently configured credential.
 3. If zero bindings remain, preserve the existing route-unavailable error.
-4. If one binding remains, select it without requiring a price lookup.
+4. If one binding remains, retain it as the selected candidate but still quote
+   it for the Credits admission gate.
 5. Estimate every remaining binding from the same normalized request facts.
 6. If every candidate has a deterministic comparable USD estimate, select the
    lowest amount.
@@ -599,6 +647,9 @@ an unavailable credential or unsupported runtime eligible.
 8. If amount and priority tie, preserve original catalog binding order.
 9. If any candidate is unavailable or only an upper bound, use the existing
    priority ordering for the whole candidate set.
+10. Require a complete quote for the selected binding before admitting a
+    Credits-funded managed run; priority fallback is not permission to spend
+    without a quote.
 ```
 
 The first version deliberately avoids clever partial comparisons. Selecting a
@@ -628,24 +679,26 @@ Managed platform execution is the initial eligible mode because:
 
 ### Browser BYOK
 
-Browser execution keeps current catalog-priority behavior in V1.
+Browser execution keeps current catalog-priority behavior in V1 and does not
+participate in provider-cost estimation.
 
 - The API sees only non-secret `byokProviders`, not the user's credentials.
-- fal custom pricing may differ per user account.
-- Asking the server to quote with TaleLabs' key would compare the wrong rates.
-- Accepting a client-supplied quote as server-authoritative would add a new
-  admission and provenance contract.
+- The canvas does not request or show a server reference quote in BYOK mode.
+- Admission does not load pricing metadata, require a complete estimate, or
+  persist estimate evidence for BYOK.
 - Browser-side provider preference was explicitly deferred.
 
-A future browser estimator could query providers directly with the local key
-and send a selected reviewed binding identifier to admission, but that needs a
-separate security and product decision. It must not be smuggled into the managed
-implementation.
+A future authoritative browser estimator could query providers directly with
+the local key and send a selected reviewed binding identifier to admission, but
+that needs a separate security and product decision. It must not be smuggled
+into the managed implementation.
 
 ### Deterministic debug execution
 
-Debug runs preserve existing highest-priority binding selection and mock cost
-facts. They do not call pricing APIs and must remain usable offline.
+Debug runs preserve existing highest-priority binding selection and mock
+execution. With Credits selected, run-plan preflight may show the equivalent
+live provider estimate. With BYOK selected, no estimate is requested or shown.
+Debug execution never contacts or charges a generation provider.
 
 ## Admission And Snapshot Integration
 
@@ -668,6 +721,7 @@ lock-free idempotency replay check
 -> derive normalized estimate facts using locked Asset metadata
 -> calculate candidate quotes with no network I/O
 -> select exact bindings by managed cost policy or priority fallback
+-> require a complete quote for every selected Credits binding
 -> build/hash immutable snapshot using selected bindings and quotes
 -> insert run, nodes, items, sources, inputs, and initial jobs
 -> commit and dispatch IDs only
@@ -687,8 +741,9 @@ would weaken immutable provenance.
 Therefore:
 
 - cost-route only when every required billable fact is known at admission;
-- use catalog priority for a node whose estimate depends on an unknown same-run
-  output;
+- use catalog priority to select a node whose estimate depends on an unknown
+  same-run output, then fail Credits admission closed because its quote remains
+  incomplete;
 - do not infer output metadata from an upstream setting unless the model
   contract guarantees that exact fact;
 - do not capture several providers and choose later;
@@ -815,14 +870,22 @@ provider request facts
 -> integer credit quote shown to the user
 ```
 
-A future estimate endpoint can reuse the same planner and estimator, but it must:
+The implemented run-plan preflight reuses the same planner and estimator. It:
 
-- recompute server-side at admission;
-- return the captured Flow revision and plan hash;
-- distinguish complete, partial, upper-bound, and unavailable results;
-- return localized credit-facing data to ordinary users;
-- keep provider USD, account discounts, binding priority, and margins private;
-- avoid promising that an advisory preflight is a final reservation.
+- is recomputed server-side at admission;
+- returns the captured Flow revision and plan hash;
+- distinguishes complete, partial, and unavailable results;
+- loads one graph-level manifest for missing direct-node estimates while Credits
+  is selected; the hidden engine-level `all` command creates no normal-canvas
+  estimate scope;
+- returns a temporary advisory USD amount formatted and explained by the
+  localized dashboard only after every planned job is estimated;
+- bounds transient request retries, negatively caches incomplete pricing for a
+  short interval, and prevents that scope from running until a complete amount
+  is known;
+- keeps provider identity, account discounts, binding priority, formula
+  evidence, and margins private;
+- avoids promising that an advisory preflight is a final reservation.
 
 Adopting live provider cost as an input to credit pricing would change the
 current static `(model, settings) -> credits` statement in
@@ -830,12 +893,102 @@ current static `(model, settings) -> credits` statement in
 deferred credit phase and must update the binding credit contract before code is
 implemented.
 
-## Observability And Shadow Rollout
+## Estimate Fetching, Caching, And Large Graphs
 
-Do not switch routing immediately after adding the calculator.
+The first dashboard implementation mounted one `POST /run-plans` query per
+generation-node control. TanStack Query deduplicated identical keys and the
+provider layer cached mutable rates and exact job formulas, but every distinct
+node command still repeated tenant graph, validation-context, prior-output, and
+Asset loading. A warm process therefore still issued `generation nodes + 1`
+HTTP requests and repeated the expensive planning boundary. The cache was
+hitting, but below the dominant work.
 
-First run it in managed shadow mode while existing priority continues to select
-the provider. Record only bounded structural facts:
+The reviewed competitor pattern is selective reuse rather than whole-canvas
+recalculation:
+
+- ComfyUI caches node outputs and walks backward from requested outputs so it
+  executes only nodes whose inputs or widgets changed. Its server also reports
+  cached execution separately.
+- n8n data pinning reuses saved node output while editing a workflow, avoiding
+  repeated external calls and setup work.
+- Runway Workflows lets creators lock a node output so later workflow runs do
+  not regenerate it. Runway Agent can show a generation plan and estimated
+  credit cost before asking for approval.
+- React Flow recommends memoized node surfaces, narrow state subscriptions, and
+  optional visible-element-only rendering for large diagrams. TanStack Query
+  provides deterministic query keys, structural sharing, and selected
+  subscriptions for the server-state half of the same problem.
+
+TaleLabs now applies those ideas without treating an estimate as generated
+output truth:
+
+```txt
+one canvas fingerprint coordinator
+-> bounded requests for only missing estimate scopes
+-> one server graph/context/prior-output load
+-> batched deterministic plans
+-> shared per-job provider-cost cache
+-> narrow TanStack Query entries per requested node scope
+```
+
+The graph-level request is `POST /flows/:id/run-cost-estimates`. On first load it
+requests only mounted, runnable direct-node controls after one short coalescing
+window. The browser sends at most 24 direct scopes per sequential batch, while
+the API rejects more than 32 scopes in one request. The endpoint retains an
+optional `all` scope for future non-canvas workflows, but the normal canvas does
+not register or price it.
+With React Flow's visible-element rendering, offscreen and incomplete generation
+nodes do not create estimate work. Panning queues newly visible missing scopes.
+The server derives cache identities from its loaded graph, validation context,
+and prior outputs, then caches each requested scope independently.
+Complete scopes live for five minutes and incomplete pricing for 15 seconds.
+Provider-cost entries and organization rate-limit counters use separate bounded
+stores within `@talelabs/cache`, so estimate cardinality cannot evict admission
+counters. The current backing stores are process memory by explicit temporary
+product decision; their package boundary and TODO preserve the Redis replacement.
+Identical cold manifest requests share one process-local calculation before
+loading the graph, Assets, or pricing. Distributed miss coalescing will require
+a bounded Redis lease (`SET key token NX PX ttl`) whose release atomically
+compares and deletes the owner's token, because the current in-flight map is
+intentionally process-local.
+
+The browser retains each complete estimate under a cost-relevant scope hash.
+Node position, selection, lock presentation, and unrelated graph branches do
+not change that key. When one node changes, unchanged node keys keep their
+estimates; the next request contains only changed or affected node scopes.
+Incomplete nodes receive a non-runnable zero-job result that
+is cached but never rendered as `$0`, `unavailable`, or an endless estimating
+state. Lazy `from here`, `till here`, and selection scopes remain exact
+on-demand preflights because their same-run and prior-output semantics cannot be
+reconstructed by summing direct-node prices.
+
+For a 300-node canvas, HTTP and tenant-data loading are bounded by sequential
+24-scope batches rather than 301 concurrent requests. Normally only visible
+controls participate, so typical canvases still need one batch. Each request
+loads its planning source once and builds one reusable graph-selection index;
+the browser likewise computes dependency closures only for its current batch.
+Server planning is proportional to the runnable generation controls currently
+mounted in the viewport; it is not proportional to every offscreen node. The
+current run contract still limits one command to 256 executable nodes, while a
+saved graph may contain 2,000 total nodes. Visible direct-node estimates remain
+available independently of the hidden engine-level `all` command.
+
+The initial cold calculation remains bounded by the number and topology of
+requested generation scopes; batching removes network and database
+multiplication, not all CPU work. The reusable selection indexes remove repeated
+adjacency construction and ancestor-closure setup. The hard batch limits remain
+the authoritative work budget and are not a reason to reintroduce per-node
+requests or duplicate pricing policy in the browser.
+
+## Observability And Calibration
+
+The approved initial implementation enabled managed cost routing directly after
+deterministic fake-HTTP verification instead of requiring a shadow-only release.
+Settled-cost calibration remains required before broad production traffic and
+before additional formula families become estimable.
+
+When funded-QA calibration instrumentation is added, record only bounded
+structural facts:
 
 ```txt
 provider
@@ -846,32 +999,34 @@ estimate amount
 rate age
 actual settled amount when available
 absolute and relative variance
-whether cost routing would have changed the provider
+whether cost routing changed the provider
 ```
 
 Do not record prompts, credentials, signed URLs, media, provider response
 bodies, or user-supplied text used to derive a character count.
 
-Review shadow results by provider, operation, resolution, and formula version.
-Enable cost routing only for formula families whose actual settlement confirms
-the documented calculation and whose missing-estimate rate is understood.
+Review results by provider, operation, resolution, and formula version. Expand
+the set of estimable formula families only when actual settlement confirms the
+documented calculation and the missing-estimate rate is understood.
 
 If a provider changes metadata shape or actual costs drift materially, disable
-that formula family for routing in code and fall back to priority. Do not disable
-the generation binding itself unless execution is also unsafe.
+that formula family for routing in code and fall back to priority selection.
+Credits execution remains blocked until the selected route is quotable; BYOK
+keeps the generation binding unless execution itself is unsafe.
 
 ## Implementation Phases
 
-### Phase 0 — approve the contract
+### Phase 0 — approve the contract (complete)
 
 - Confirm provider API usage cost, rather than adjusted COGS, is the comparison
   metric.
-- Confirm managed-only routing and priority fallback.
+- Confirm managed-only cost routing, deterministic priority fallback, and the
+  fail-closed Credits quote gate.
 - Confirm the minimal Seedance exception is acceptable; otherwise mark fal
   Seedance unavailable.
 - Update binding product/API/database documents only after approval.
 
-### Phase 1 — estimator foundation, no behavior change
+### Phase 1 — estimator foundation (complete)
 
 - Add normalized pricing metadata schemas and bounded clients.
 - Add decimal arithmetic and the estimate result union.
@@ -881,29 +1036,31 @@ the generation binding itself unless execution is also unsafe.
 - Add deterministic fixtures and coverage reports.
 - Keep provider selection entirely priority-based.
 
-### Phase 2 — managed shadow evaluation
+### Phase 2 — managed calibration follow-up (pending funded QA)
 
-- Derive estimate facts for admitted managed jobs.
-- Compute and record shadow estimates without changing routing.
-- Compare estimates with existing actual-cost settlement.
+- Compare immutable admitted estimates with existing actual-cost settlement.
+- Add bounded structural drift reporting without prompts or provider payloads.
 - Resolve provider rounding, multi-reference duration, and metadata-drift gaps.
 
-### Phase 3 — managed cost-aware routing
+### Phase 3 — managed cost-aware routing (complete)
 
 - Move binding selection and snapshot construction to the locked-fact portion
   of admission while keeping rate I/O outside the transaction.
 - Apply cost selection only when all eligible quotes are deterministic.
 - Persist the selected quote in snapshot and job projection.
 - Verify retries and reconciliation never reroute.
-- Keep a code-owned kill switch that restores priority selection; do not add an
-  environment variable for it.
+- Keep deterministic priority selection fallback for incomplete comparisons,
+  while failing Credits admission closed until the selected quote is complete;
+  do not add an environment-variable policy switch.
 
-### Phase 4 — advisory estimate API and UI
+### Phase 4 — advisory estimate API and interim USD UI (complete)
 
 - Design a server estimate/preflight response.
 - Aggregate multi-job plans without hiding unknown jobs.
-- Convert private provider estimates through the future credit policy.
-- Add localized UI only when credits are approved.
+- Keep the public aggregate free of private provider identity and pricing basis.
+- Show localized advisory USD only for Credits mode until the separately
+  approved credit policy replaces it with the product cost language.
+- Keep BYOK estimation-free and preserve catalog-priority routing.
 
 ### Phase 5 — credit reservation
 
@@ -948,7 +1105,8 @@ injected fake HTTP. No generation request is required.
 - cheaper fal and cheaper OpenRouter fixtures;
 - equal amount selects higher priority;
 - equal amount and priority preserves catalog order;
-- missing/stale/ambiguous quote falls back to priority for all candidates;
+- missing/stale/ambiguous quote selects by priority for all candidates and then
+  fails the Credits admission gate when the selected quote is incomplete;
 - absent credential is filtered before comparison;
 - browser BYOK remains priority-based;
 - debug remains offline and priority-based;
@@ -960,7 +1118,8 @@ injected fake HTTP. No generation request is required.
 - provider rate I/O finishes before any transaction lock;
 - locked Asset dimensions/durations feed the pure estimator;
 - Flow revision or Asset-state drift rolls admission back;
-- unknown same-run output facts use priority fallback;
+- unknown same-run output facts use priority selection and fail the Credits
+  admission gate until they can be quoted;
 - snapshot hash includes the selected quote;
 - old snapshot readers accept an absent quote;
 - job quote equals the snapshot projection;
@@ -997,12 +1156,14 @@ The estimator foundation is complete when:
 
 Managed cost-aware routing is complete only when:
 
-- shadow evidence supports every enabled formula family;
+- reviewed official pricing rules and deterministic fake-HTTP fixtures support
+  every enabled formula family;
 - every eligible candidate is compared from the same immutable request facts;
 - ties and missing estimates behave deterministically;
 - the exact selected binding and quote are captured before dispatch;
 - retries, cancellation, and reconciliation never route again;
-- a pricing metadata outage safely restores existing priority behavior.
+- a pricing metadata outage preserves deterministic priority selection but
+  blocks Credits-funded managed admission until quoting recovers.
 
 ## Open Questions Requiring Provider Or Product Confirmation
 
@@ -1017,8 +1178,8 @@ Managed cost-aware routing is complete only when:
 5. Should later provider routing compare advertised API usage only, or adjusted
    COGS including provider-credit purchase fees and infrastructure? This plan
    recommends advertised usage only for the first implementation.
-6. What shadow variance threshold is acceptable before a formula family can
-   influence managed routing?
+6. What funded-QA variance threshold should disable a formula family and return
+   it to explicit unavailable pricing?
 
 ## TaleLabs Sources Consulted
 
@@ -1032,6 +1193,24 @@ Managed cost-aware routing is complete only when:
 - [`packages/models-catalog/src/providers/contracts.ts`](../../packages/models-catalog/src/providers/contracts.ts)
 - [`apps/api/src/domain/runs/generation-execution-contracts.ts`](../../apps/api/src/domain/runs/generation-execution-contracts.ts)
 - [`apps/api/src/domain/runs/admission.service.ts`](../../apps/api/src/domain/runs/admission.service.ts)
+
+## Official Performance And Product References
+
+- [ComfyUI server execution and node output caching](https://docs.comfy.org/custom-nodes/backend/server_overview)
+- [ComfyUI partial execution](https://docs.comfy.org/interface/features/partial-execution)
+- [ComfyUI `execution_cached` server message](https://docs.comfy.org/development/comfyui-server/comms_messages)
+- [n8n data pinning and external-call reuse](https://blog.n8n.io/easier-workflow-setup-with-data-pinning-mapping/)
+- [Runway Workflows and locked node outputs](https://help.runwayml.com/hc/en-us/articles/45763528999699-Introduction-to-Workflows)
+- [Runway Agent estimated credit approval](https://help.runwayml.com/hc/en-us/articles/51601639579667-Creating-with-Runway-Agent)
+- [React Flow performance guidance](https://reactflow.dev/learn/advanced-use/performance)
+- [React Flow `onlyRenderVisibleElements`](https://reactflow.dev/api-reference/react-flow)
+- [TanStack Query render optimizations](https://tanstack.com/query/latest/docs/framework/react/guides/render-optimizations)
+- [TanStack Query deterministic query keys](https://tanstack.com/query/latest/docs/framework/react/guides/query-keys)
+- [TanStack Query important defaults](https://tanstack.com/query/latest/docs/framework/react/guides/important-defaults)
+- [TanStack Query bounded retries](https://tanstack.com/query/latest/docs/framework/react/guides/query-retries)
+- [TanStack Query focus-triggered refetching](https://tanstack.com/query/latest/docs/framework/react/guides/window-focus-refetching)
+- [Redis `SET` conditions and expirations](https://redis.io/docs/latest/commands/set/)
+- [Redis bounded `SET NX PX` leases](https://redis.io/docs/latest/develop/clients/patterns/distributed-locks/)
 
 ## Official Provider References
 
