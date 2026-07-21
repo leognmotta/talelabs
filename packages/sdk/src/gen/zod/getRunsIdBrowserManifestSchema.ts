@@ -47,7 +47,11 @@ export const getRunsIdBrowserManifest200Schema = z.object({
             z.object({
               lifecycle: z.union([
                 z.object({
-                  cancellation: z.enum(["supported", "unsupported"]),
+                  cancellation: z.enum([
+                    "best-effort",
+                    "supported",
+                    "unsupported",
+                  ]),
                   completions: z
                     .array(z.enum(["response"]))
                     .min(1)
@@ -58,7 +62,11 @@ export const getRunsIdBrowserManifest200Schema = z.object({
                   submission: z.enum(["immediate"]),
                 }),
                 z.object({
-                  cancellation: z.enum(["supported", "unsupported"]),
+                  cancellation: z.enum([
+                    "best-effort",
+                    "supported",
+                    "unsupported",
+                  ]),
                   completions: z.union([
                     z
                       .array(z.enum(["poll"]))
@@ -103,7 +111,11 @@ export const getRunsIdBrowserManifest200Schema = z.object({
             z.object({
               lifecycle: z.union([
                 z.object({
-                  cancellation: z.enum(["supported", "unsupported"]),
+                  cancellation: z.enum([
+                    "best-effort",
+                    "supported",
+                    "unsupported",
+                  ]),
                   completions: z
                     .array(z.enum(["response"]))
                     .min(1)
@@ -114,7 +126,11 @@ export const getRunsIdBrowserManifest200Schema = z.object({
                   submission: z.enum(["immediate"]),
                 }),
                 z.object({
-                  cancellation: z.enum(["supported", "unsupported"]),
+                  cancellation: z.enum([
+                    "best-effort",
+                    "supported",
+                    "unsupported",
+                  ]),
                   completions: z.union([
                     z
                       .array(z.enum(["poll"]))
@@ -154,7 +170,11 @@ export const getRunsIdBrowserManifest200Schema = z.object({
             z.object({
               lifecycle: z.union([
                 z.object({
-                  cancellation: z.enum(["supported", "unsupported"]),
+                  cancellation: z.enum([
+                    "best-effort",
+                    "supported",
+                    "unsupported",
+                  ]),
                   completions: z
                     .array(z.enum(["response"]))
                     .min(1)
@@ -165,7 +185,11 @@ export const getRunsIdBrowserManifest200Schema = z.object({
                   submission: z.enum(["immediate"]),
                 }),
                 z.object({
-                  cancellation: z.enum(["supported", "unsupported"]),
+                  cancellation: z.enum([
+                    "best-effort",
+                    "supported",
+                    "unsupported",
+                  ]),
                   completions: z.union([
                     z
                       .array(z.enum(["poll"]))
@@ -209,7 +233,11 @@ export const getRunsIdBrowserManifest200Schema = z.object({
             z.object({
               lifecycle: z.union([
                 z.object({
-                  cancellation: z.enum(["supported", "unsupported"]),
+                  cancellation: z.enum([
+                    "best-effort",
+                    "supported",
+                    "unsupported",
+                  ]),
                   completions: z
                     .array(z.enum(["response"]))
                     .min(1)
@@ -220,7 +248,11 @@ export const getRunsIdBrowserManifest200Schema = z.object({
                   submission: z.enum(["immediate"]),
                 }),
                 z.object({
-                  cancellation: z.enum(["supported", "unsupported"]),
+                  cancellation: z.enum([
+                    "best-effort",
+                    "supported",
+                    "unsupported",
+                  ]),
                   completions: z.union([
                     z
                       .array(z.enum(["poll"]))
@@ -265,6 +297,7 @@ export const getRunsIdBrowserManifest200Schema = z.object({
                   "seedance-2-reference-v1",
                 ]),
                 settingIds: z.array(z.string().min(1)),
+                totalReferenceLimit: z.optional(z.int().gt(0)),
               }),
             }),
           ]),
@@ -272,7 +305,11 @@ export const getRunsIdBrowserManifest200Schema = z.object({
             endpoint: z.enum(["https://queue.fal.run"]),
             lifecycle: z.union([
               z.object({
-                cancellation: z.enum(["supported", "unsupported"]),
+                cancellation: z.enum([
+                  "best-effort",
+                  "supported",
+                  "unsupported",
+                ]),
                 completions: z
                   .array(z.enum(["response"]))
                   .min(1)
@@ -283,7 +320,11 @@ export const getRunsIdBrowserManifest200Schema = z.object({
                 submission: z.enum(["immediate"]),
               }),
               z.object({
-                cancellation: z.enum(["supported", "unsupported"]),
+                cancellation: z.enum([
+                  "best-effort",
+                  "supported",
+                  "unsupported",
+                ]),
                 completions: z.union([
                   z
                     .array(z.enum(["poll"]))
@@ -315,11 +356,55 @@ export const getRunsIdBrowserManifest200Schema = z.object({
             providerTag: z.enum(["fal-queue"]),
             requestProfile: z.union([
               z.object({
+                combinedParams: z.array(
+                  z.object({
+                    field: z.string().min(1),
+                    settingIds: z.array(z.string().min(1)).min(2).max(2),
+                    valueMap: z.object({}).catchall(
+                      z.object({}).catchall(
+                        z.union([
+                          z.boolean(),
+                          z.string(),
+                          z.number(),
+                          z.object({
+                            height: z.int().gt(0),
+                            width: z.int().gt(0),
+                          }),
+                        ]),
+                      ),
+                    ),
+                  }),
+                ),
+                inputMappings: z.array(
+                  z.object({
+                    alternativeFields: z.optional(
+                      z.array(
+                        z.object({
+                          field: z.string().min(1),
+                          mediaType: z.enum(["audio", "image", "video"]),
+                        }),
+                      ),
+                    ),
+                    cardinality: z.enum(["many", "single"]),
+                    field: z.string().min(1),
+                    maxItems: z.int().gt(0),
+                    mediaType: z.enum(["audio", "image", "video"]),
+                    minItems: z.int().min(0),
+                    targetSlotId: z.string().min(1),
+                  }),
+                ),
                 kind: z.enum(["image"]),
-                maxReferences: z.int().min(0),
+                maxInputItems: z.int().min(0),
                 params: z.array(
                   z.object({
                     field: z.string().min(1),
+                    numberMultiplier: z.optional(z.number().gt(0)),
+                    sendWhen: z.optional(
+                      z.object({
+                        equals: z.union([z.boolean(), z.string(), z.number()]),
+                        settingId: z.string().min(1),
+                      }),
+                    ),
                     settingId: z.string().min(1),
                     valueMap: z.optional(
                       z
@@ -330,8 +415,7 @@ export const getRunsIdBrowserManifest200Schema = z.object({
                     ),
                   }),
                 ),
-                promptField: z.string().min(1),
-                referenceField: z.nullable(z.string().min(1)),
+                promptField: z.nullable(z.string().min(1)),
                 requestedCountField: z.nullable(z.string().min(1)),
                 settingIds: z.array(z.string().min(1)),
                 staticParams: z
@@ -339,10 +423,55 @@ export const getRunsIdBrowserManifest200Schema = z.object({
                   .catchall(z.union([z.boolean(), z.string(), z.number()])),
               }),
               z.object({
+                combinedParams: z.array(
+                  z.object({
+                    field: z.string().min(1),
+                    settingIds: z.array(z.string().min(1)).min(2).max(2),
+                    valueMap: z.object({}).catchall(
+                      z.object({}).catchall(
+                        z.union([
+                          z.boolean(),
+                          z.string(),
+                          z.number(),
+                          z.object({
+                            height: z.int().gt(0),
+                            width: z.int().gt(0),
+                          }),
+                        ]),
+                      ),
+                    ),
+                  }),
+                ),
+                inputMappings: z.array(
+                  z.object({
+                    alternativeFields: z.optional(
+                      z.array(
+                        z.object({
+                          field: z.string().min(1),
+                          mediaType: z.enum(["audio", "image", "video"]),
+                        }),
+                      ),
+                    ),
+                    cardinality: z.enum(["many", "single"]),
+                    field: z.string().min(1),
+                    maxItems: z.int().gt(0),
+                    mediaType: z.enum(["audio", "image", "video"]),
+                    minItems: z.int().min(0),
+                    targetSlotId: z.string().min(1),
+                  }),
+                ),
                 kind: z.enum(["speech"]),
+                maxInputItems: z.int().min(0),
                 params: z.array(
                   z.object({
                     field: z.string().min(1),
+                    numberMultiplier: z.optional(z.number().gt(0)),
+                    sendWhen: z.optional(
+                      z.object({
+                        equals: z.union([z.boolean(), z.string(), z.number()]),
+                        settingId: z.string().min(1),
+                      }),
+                    ),
                     settingId: z.string().min(1),
                     valueMap: z.optional(
                       z
@@ -353,20 +482,62 @@ export const getRunsIdBrowserManifest200Schema = z.object({
                     ),
                   }),
                 ),
-                promptField: z.string().min(1),
+                promptField: z.nullable(z.string().min(1)),
                 settingIds: z.array(z.string().min(1)),
                 staticParams: z
                   .object({})
                   .catchall(z.union([z.boolean(), z.string(), z.number()])),
               }),
               z.object({
-                firstFrameField: z.nullable(z.string().min(1)),
-                frameMode: z.enum(["first", "first-last", "none"]),
+                combinedParams: z.array(
+                  z.object({
+                    field: z.string().min(1),
+                    settingIds: z.array(z.string().min(1)).min(2).max(2),
+                    valueMap: z.object({}).catchall(
+                      z.object({}).catchall(
+                        z.union([
+                          z.boolean(),
+                          z.string(),
+                          z.number(),
+                          z.object({
+                            height: z.int().gt(0),
+                            width: z.int().gt(0),
+                          }),
+                        ]),
+                      ),
+                    ),
+                  }),
+                ),
+                inputMappings: z.array(
+                  z.object({
+                    alternativeFields: z.optional(
+                      z.array(
+                        z.object({
+                          field: z.string().min(1),
+                          mediaType: z.enum(["audio", "image", "video"]),
+                        }),
+                      ),
+                    ),
+                    cardinality: z.enum(["many", "single"]),
+                    field: z.string().min(1),
+                    maxItems: z.int().gt(0),
+                    mediaType: z.enum(["audio", "image", "video"]),
+                    minItems: z.int().min(0),
+                    targetSlotId: z.string().min(1),
+                  }),
+                ),
                 kind: z.enum(["video"]),
-                lastFrameField: z.nullable(z.string().min(1)),
+                maxInputItems: z.int().min(0),
                 params: z.array(
                   z.object({
                     field: z.string().min(1),
+                    numberMultiplier: z.optional(z.number().gt(0)),
+                    sendWhen: z.optional(
+                      z.object({
+                        equals: z.union([z.boolean(), z.string(), z.number()]),
+                        settingId: z.string().min(1),
+                      }),
+                    ),
                     settingId: z.string().min(1),
                     valueMap: z.optional(
                       z
@@ -377,12 +548,7 @@ export const getRunsIdBrowserManifest200Schema = z.object({
                     ),
                   }),
                 ),
-                promptField: z.string().min(1),
-                referenceLimits: z.object({
-                  audio: z.int().min(0),
-                  image: z.int().min(0),
-                  video: z.int().min(0),
-                }),
+                promptField: z.nullable(z.string().min(1)),
                 settingIds: z.array(z.string().min(1)),
                 staticParams: z
                   .object({})
@@ -405,6 +571,7 @@ export const getRunsIdBrowserManifest200Schema = z.object({
       mediaType: z.enum(["image", "video", "audio", "text"]),
       nodeId: z.string(),
       outputCount: z.int().gt(0),
+      provider: z.enum(["fal", "openrouter"]),
       providerJobId: z.nullable(z.string()),
       providerSubmittedAt: z.nullable(z.iso.datetime()),
       requestHash: z.string(),

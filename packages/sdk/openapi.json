@@ -4668,9 +4668,13 @@
                 "element",
                 "imageGeneration",
                 "llm",
+                "musicGeneration",
+                "soundEffectGeneration",
                 "speechGeneration",
                 "text",
-                "videoGeneration"
+                "videoGeneration",
+                "voiceChanger",
+                "voiceIsolation"
               ]
             }
           },
@@ -9894,6 +9898,7 @@
                                                   "cancellation": {
                                                     "type": "string",
                                                     "enum": [
+                                                      "best-effort",
                                                       "supported",
                                                       "unsupported"
                                                     ]
@@ -9943,6 +9948,7 @@
                                                   "cancellation": {
                                                     "type": "string",
                                                     "enum": [
+                                                      "best-effort",
                                                       "supported",
                                                       "unsupported"
                                                     ]
@@ -10139,6 +10145,7 @@
                                                   "cancellation": {
                                                     "type": "string",
                                                     "enum": [
+                                                      "best-effort",
                                                       "supported",
                                                       "unsupported"
                                                     ]
@@ -10188,6 +10195,7 @@
                                                   "cancellation": {
                                                     "type": "string",
                                                     "enum": [
+                                                      "best-effort",
                                                       "supported",
                                                       "unsupported"
                                                     ]
@@ -10372,6 +10380,7 @@
                                                   "cancellation": {
                                                     "type": "string",
                                                     "enum": [
+                                                      "best-effort",
                                                       "supported",
                                                       "unsupported"
                                                     ]
@@ -10421,6 +10430,7 @@
                                                   "cancellation": {
                                                     "type": "string",
                                                     "enum": [
+                                                      "best-effort",
                                                       "supported",
                                                       "unsupported"
                                                     ]
@@ -10620,6 +10630,7 @@
                                                   "cancellation": {
                                                     "type": "string",
                                                     "enum": [
+                                                      "best-effort",
                                                       "supported",
                                                       "unsupported"
                                                     ]
@@ -10669,6 +10680,7 @@
                                                   "cancellation": {
                                                     "type": "string",
                                                     "enum": [
+                                                      "best-effort",
                                                       "supported",
                                                       "unsupported"
                                                     ]
@@ -10857,6 +10869,11 @@
                                                   "type": "string",
                                                   "minLength": 1
                                                 }
+                                              },
+                                              "totalReferenceLimit": {
+                                                "type": "integer",
+                                                "minimum": 0,
+                                                "exclusiveMinimum": true
                                               }
                                             },
                                             "required": [
@@ -10901,6 +10918,7 @@
                                               "cancellation": {
                                                 "type": "string",
                                                 "enum": [
+                                                  "best-effort",
                                                   "supported",
                                                   "unsupported"
                                                 ]
@@ -10950,6 +10968,7 @@
                                               "cancellation": {
                                                 "type": "string",
                                                 "enum": [
+                                                  "best-effort",
                                                   "supported",
                                                   "unsupported"
                                                 ]
@@ -11083,13 +11102,153 @@
                                           {
                                             "type": "object",
                                             "properties": {
+                                              "combinedParams": {
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "object",
+                                                  "properties": {
+                                                    "field": {
+                                                      "type": "string",
+                                                      "minLength": 1
+                                                    },
+                                                    "settingIds": {
+                                                      "type": "array",
+                                                      "items": {
+                                                        "type": "string",
+                                                        "minLength": 1
+                                                      },
+                                                      "minItems": 2,
+                                                      "maxItems": 2
+                                                    },
+                                                    "valueMap": {
+                                                      "type": "object",
+                                                      "additionalProperties": {
+                                                        "type": "object",
+                                                        "additionalProperties": {
+                                                          "anyOf": [
+                                                            {
+                                                              "type": "string"
+                                                            },
+                                                            {
+                                                              "type": "number"
+                                                            },
+                                                            {
+                                                              "type": "boolean"
+                                                            },
+                                                            {
+                                                              "type": "object",
+                                                              "properties": {
+                                                                "height": {
+                                                                  "type": "integer",
+                                                                  "minimum": 0,
+                                                                  "exclusiveMinimum": true
+                                                                },
+                                                                "width": {
+                                                                  "type": "integer",
+                                                                  "minimum": 0,
+                                                                  "exclusiveMinimum": true
+                                                                }
+                                                              },
+                                                              "required": [
+                                                                "height",
+                                                                "width"
+                                                              ],
+                                                              "additionalProperties": false
+                                                            }
+                                                          ]
+                                                        }
+                                                      }
+                                                    }
+                                                  },
+                                                  "required": [
+                                                    "field",
+                                                    "settingIds",
+                                                    "valueMap"
+                                                  ],
+                                                  "additionalProperties": false
+                                                }
+                                              },
+                                              "inputMappings": {
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "object",
+                                                  "properties": {
+                                                    "alternativeFields": {
+                                                      "type": "array",
+                                                      "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                          "field": {
+                                                            "type": "string",
+                                                            "minLength": 1
+                                                          },
+                                                          "mediaType": {
+                                                            "type": "string",
+                                                            "enum": [
+                                                              "audio",
+                                                              "image",
+                                                              "video"
+                                                            ]
+                                                          }
+                                                        },
+                                                        "required": [
+                                                          "field",
+                                                          "mediaType"
+                                                        ],
+                                                        "additionalProperties": false
+                                                      }
+                                                    },
+                                                    "cardinality": {
+                                                      "type": "string",
+                                                      "enum": [
+                                                        "many",
+                                                        "single"
+                                                      ]
+                                                    },
+                                                    "field": {
+                                                      "type": "string",
+                                                      "minLength": 1
+                                                    },
+                                                    "maxItems": {
+                                                      "type": "integer",
+                                                      "minimum": 0,
+                                                      "exclusiveMinimum": true
+                                                    },
+                                                    "mediaType": {
+                                                      "type": "string",
+                                                      "enum": [
+                                                        "audio",
+                                                        "image",
+                                                        "video"
+                                                      ]
+                                                    },
+                                                    "minItems": {
+                                                      "type": "integer",
+                                                      "minimum": 0
+                                                    },
+                                                    "targetSlotId": {
+                                                      "type": "string",
+                                                      "minLength": 1
+                                                    }
+                                                  },
+                                                  "required": [
+                                                    "cardinality",
+                                                    "field",
+                                                    "maxItems",
+                                                    "mediaType",
+                                                    "minItems",
+                                                    "targetSlotId"
+                                                  ],
+                                                  "additionalProperties": false
+                                                }
+                                              },
                                               "kind": {
                                                 "type": "string",
                                                 "enum": [
                                                   "image"
                                                 ]
                                               },
-                                              "maxReferences": {
+                                              "maxInputItems": {
                                                 "type": "integer",
                                                 "minimum": 0
                                               },
@@ -11101,6 +11260,38 @@
                                                     "field": {
                                                       "type": "string",
                                                       "minLength": 1
+                                                    },
+                                                    "numberMultiplier": {
+                                                      "type": "number",
+                                                      "minimum": 0,
+                                                      "exclusiveMinimum": true
+                                                    },
+                                                    "sendWhen": {
+                                                      "type": "object",
+                                                      "properties": {
+                                                        "equals": {
+                                                          "anyOf": [
+                                                            {
+                                                              "type": "string"
+                                                            },
+                                                            {
+                                                              "type": "number"
+                                                            },
+                                                            {
+                                                              "type": "boolean"
+                                                            }
+                                                          ]
+                                                        },
+                                                        "settingId": {
+                                                          "type": "string",
+                                                          "minLength": 1
+                                                        }
+                                                      },
+                                                      "required": [
+                                                        "equals",
+                                                        "settingId"
+                                                      ],
+                                                      "additionalProperties": false
                                                     },
                                                     "settingId": {
                                                       "type": "string",
@@ -11131,10 +11322,6 @@
                                                 }
                                               },
                                               "promptField": {
-                                                "type": "string",
-                                                "minLength": 1
-                                              },
-                                              "referenceField": {
                                                 "type": "string",
                                                 "nullable": true,
                                                 "minLength": 1
@@ -11169,11 +11356,12 @@
                                               }
                                             },
                                             "required": [
+                                              "combinedParams",
+                                              "inputMappings",
                                               "kind",
-                                              "maxReferences",
+                                              "maxInputItems",
                                               "params",
                                               "promptField",
-                                              "referenceField",
                                               "requestedCountField",
                                               "settingIds",
                                               "staticParams"
@@ -11183,11 +11371,155 @@
                                           {
                                             "type": "object",
                                             "properties": {
+                                              "combinedParams": {
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "object",
+                                                  "properties": {
+                                                    "field": {
+                                                      "type": "string",
+                                                      "minLength": 1
+                                                    },
+                                                    "settingIds": {
+                                                      "type": "array",
+                                                      "items": {
+                                                        "type": "string",
+                                                        "minLength": 1
+                                                      },
+                                                      "minItems": 2,
+                                                      "maxItems": 2
+                                                    },
+                                                    "valueMap": {
+                                                      "type": "object",
+                                                      "additionalProperties": {
+                                                        "type": "object",
+                                                        "additionalProperties": {
+                                                          "anyOf": [
+                                                            {
+                                                              "type": "string"
+                                                            },
+                                                            {
+                                                              "type": "number"
+                                                            },
+                                                            {
+                                                              "type": "boolean"
+                                                            },
+                                                            {
+                                                              "type": "object",
+                                                              "properties": {
+                                                                "height": {
+                                                                  "type": "integer",
+                                                                  "minimum": 0,
+                                                                  "exclusiveMinimum": true
+                                                                },
+                                                                "width": {
+                                                                  "type": "integer",
+                                                                  "minimum": 0,
+                                                                  "exclusiveMinimum": true
+                                                                }
+                                                              },
+                                                              "required": [
+                                                                "height",
+                                                                "width"
+                                                              ],
+                                                              "additionalProperties": false
+                                                            }
+                                                          ]
+                                                        }
+                                                      }
+                                                    }
+                                                  },
+                                                  "required": [
+                                                    "field",
+                                                    "settingIds",
+                                                    "valueMap"
+                                                  ],
+                                                  "additionalProperties": false
+                                                }
+                                              },
+                                              "inputMappings": {
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "object",
+                                                  "properties": {
+                                                    "alternativeFields": {
+                                                      "type": "array",
+                                                      "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                          "field": {
+                                                            "type": "string",
+                                                            "minLength": 1
+                                                          },
+                                                          "mediaType": {
+                                                            "type": "string",
+                                                            "enum": [
+                                                              "audio",
+                                                              "image",
+                                                              "video"
+                                                            ]
+                                                          }
+                                                        },
+                                                        "required": [
+                                                          "field",
+                                                          "mediaType"
+                                                        ],
+                                                        "additionalProperties": false
+                                                      }
+                                                    },
+                                                    "cardinality": {
+                                                      "type": "string",
+                                                      "enum": [
+                                                        "many",
+                                                        "single"
+                                                      ]
+                                                    },
+                                                    "field": {
+                                                      "type": "string",
+                                                      "minLength": 1
+                                                    },
+                                                    "maxItems": {
+                                                      "type": "integer",
+                                                      "minimum": 0,
+                                                      "exclusiveMinimum": true
+                                                    },
+                                                    "mediaType": {
+                                                      "type": "string",
+                                                      "enum": [
+                                                        "audio",
+                                                        "image",
+                                                        "video"
+                                                      ]
+                                                    },
+                                                    "minItems": {
+                                                      "type": "integer",
+                                                      "minimum": 0
+                                                    },
+                                                    "targetSlotId": {
+                                                      "type": "string",
+                                                      "minLength": 1
+                                                    }
+                                                  },
+                                                  "required": [
+                                                    "cardinality",
+                                                    "field",
+                                                    "maxItems",
+                                                    "mediaType",
+                                                    "minItems",
+                                                    "targetSlotId"
+                                                  ],
+                                                  "additionalProperties": false
+                                                }
+                                              },
                                               "kind": {
                                                 "type": "string",
                                                 "enum": [
                                                   "speech"
                                                 ]
+                                              },
+                                              "maxInputItems": {
+                                                "type": "integer",
+                                                "minimum": 0
                                               },
                                               "params": {
                                                 "type": "array",
@@ -11197,6 +11529,38 @@
                                                     "field": {
                                                       "type": "string",
                                                       "minLength": 1
+                                                    },
+                                                    "numberMultiplier": {
+                                                      "type": "number",
+                                                      "minimum": 0,
+                                                      "exclusiveMinimum": true
+                                                    },
+                                                    "sendWhen": {
+                                                      "type": "object",
+                                                      "properties": {
+                                                        "equals": {
+                                                          "anyOf": [
+                                                            {
+                                                              "type": "string"
+                                                            },
+                                                            {
+                                                              "type": "number"
+                                                            },
+                                                            {
+                                                              "type": "boolean"
+                                                            }
+                                                          ]
+                                                        },
+                                                        "settingId": {
+                                                          "type": "string",
+                                                          "minLength": 1
+                                                        }
+                                                      },
+                                                      "required": [
+                                                        "equals",
+                                                        "settingId"
+                                                      ],
+                                                      "additionalProperties": false
                                                     },
                                                     "settingId": {
                                                       "type": "string",
@@ -11228,6 +11592,7 @@
                                               },
                                               "promptField": {
                                                 "type": "string",
+                                                "nullable": true,
                                                 "minLength": 1
                                               },
                                               "settingIds": {
@@ -11255,7 +11620,10 @@
                                               }
                                             },
                                             "required": [
+                                              "combinedParams",
+                                              "inputMappings",
                                               "kind",
+                                              "maxInputItems",
                                               "params",
                                               "promptField",
                                               "settingIds",
@@ -11266,18 +11634,145 @@
                                           {
                                             "type": "object",
                                             "properties": {
-                                              "firstFrameField": {
-                                                "type": "string",
-                                                "nullable": true,
-                                                "minLength": 1
+                                              "combinedParams": {
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "object",
+                                                  "properties": {
+                                                    "field": {
+                                                      "type": "string",
+                                                      "minLength": 1
+                                                    },
+                                                    "settingIds": {
+                                                      "type": "array",
+                                                      "items": {
+                                                        "type": "string",
+                                                        "minLength": 1
+                                                      },
+                                                      "minItems": 2,
+                                                      "maxItems": 2
+                                                    },
+                                                    "valueMap": {
+                                                      "type": "object",
+                                                      "additionalProperties": {
+                                                        "type": "object",
+                                                        "additionalProperties": {
+                                                          "anyOf": [
+                                                            {
+                                                              "type": "string"
+                                                            },
+                                                            {
+                                                              "type": "number"
+                                                            },
+                                                            {
+                                                              "type": "boolean"
+                                                            },
+                                                            {
+                                                              "type": "object",
+                                                              "properties": {
+                                                                "height": {
+                                                                  "type": "integer",
+                                                                  "minimum": 0,
+                                                                  "exclusiveMinimum": true
+                                                                },
+                                                                "width": {
+                                                                  "type": "integer",
+                                                                  "minimum": 0,
+                                                                  "exclusiveMinimum": true
+                                                                }
+                                                              },
+                                                              "required": [
+                                                                "height",
+                                                                "width"
+                                                              ],
+                                                              "additionalProperties": false
+                                                            }
+                                                          ]
+                                                        }
+                                                      }
+                                                    }
+                                                  },
+                                                  "required": [
+                                                    "field",
+                                                    "settingIds",
+                                                    "valueMap"
+                                                  ],
+                                                  "additionalProperties": false
+                                                }
                                               },
-                                              "frameMode": {
-                                                "type": "string",
-                                                "enum": [
-                                                  "first",
-                                                  "first-last",
-                                                  "none"
-                                                ]
+                                              "inputMappings": {
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "object",
+                                                  "properties": {
+                                                    "alternativeFields": {
+                                                      "type": "array",
+                                                      "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                          "field": {
+                                                            "type": "string",
+                                                            "minLength": 1
+                                                          },
+                                                          "mediaType": {
+                                                            "type": "string",
+                                                            "enum": [
+                                                              "audio",
+                                                              "image",
+                                                              "video"
+                                                            ]
+                                                          }
+                                                        },
+                                                        "required": [
+                                                          "field",
+                                                          "mediaType"
+                                                        ],
+                                                        "additionalProperties": false
+                                                      }
+                                                    },
+                                                    "cardinality": {
+                                                      "type": "string",
+                                                      "enum": [
+                                                        "many",
+                                                        "single"
+                                                      ]
+                                                    },
+                                                    "field": {
+                                                      "type": "string",
+                                                      "minLength": 1
+                                                    },
+                                                    "maxItems": {
+                                                      "type": "integer",
+                                                      "minimum": 0,
+                                                      "exclusiveMinimum": true
+                                                    },
+                                                    "mediaType": {
+                                                      "type": "string",
+                                                      "enum": [
+                                                        "audio",
+                                                        "image",
+                                                        "video"
+                                                      ]
+                                                    },
+                                                    "minItems": {
+                                                      "type": "integer",
+                                                      "minimum": 0
+                                                    },
+                                                    "targetSlotId": {
+                                                      "type": "string",
+                                                      "minLength": 1
+                                                    }
+                                                  },
+                                                  "required": [
+                                                    "cardinality",
+                                                    "field",
+                                                    "maxItems",
+                                                    "mediaType",
+                                                    "minItems",
+                                                    "targetSlotId"
+                                                  ],
+                                                  "additionalProperties": false
+                                                }
                                               },
                                               "kind": {
                                                 "type": "string",
@@ -11285,10 +11780,9 @@
                                                   "video"
                                                 ]
                                               },
-                                              "lastFrameField": {
-                                                "type": "string",
-                                                "nullable": true,
-                                                "minLength": 1
+                                              "maxInputItems": {
+                                                "type": "integer",
+                                                "minimum": 0
                                               },
                                               "params": {
                                                 "type": "array",
@@ -11298,6 +11792,38 @@
                                                     "field": {
                                                       "type": "string",
                                                       "minLength": 1
+                                                    },
+                                                    "numberMultiplier": {
+                                                      "type": "number",
+                                                      "minimum": 0,
+                                                      "exclusiveMinimum": true
+                                                    },
+                                                    "sendWhen": {
+                                                      "type": "object",
+                                                      "properties": {
+                                                        "equals": {
+                                                          "anyOf": [
+                                                            {
+                                                              "type": "string"
+                                                            },
+                                                            {
+                                                              "type": "number"
+                                                            },
+                                                            {
+                                                              "type": "boolean"
+                                                            }
+                                                          ]
+                                                        },
+                                                        "settingId": {
+                                                          "type": "string",
+                                                          "minLength": 1
+                                                        }
+                                                      },
+                                                      "required": [
+                                                        "equals",
+                                                        "settingId"
+                                                      ],
+                                                      "additionalProperties": false
                                                     },
                                                     "settingId": {
                                                       "type": "string",
@@ -11329,30 +11855,8 @@
                                               },
                                               "promptField": {
                                                 "type": "string",
+                                                "nullable": true,
                                                 "minLength": 1
-                                              },
-                                              "referenceLimits": {
-                                                "type": "object",
-                                                "properties": {
-                                                  "audio": {
-                                                    "type": "integer",
-                                                    "minimum": 0
-                                                  },
-                                                  "image": {
-                                                    "type": "integer",
-                                                    "minimum": 0
-                                                  },
-                                                  "video": {
-                                                    "type": "integer",
-                                                    "minimum": 0
-                                                  }
-                                                },
-                                                "required": [
-                                                  "audio",
-                                                  "image",
-                                                  "video"
-                                                ],
-                                                "additionalProperties": false
                                               },
                                               "settingIds": {
                                                 "type": "array",
@@ -11379,13 +11883,12 @@
                                               }
                                             },
                                             "required": [
-                                              "firstFrameField",
-                                              "frameMode",
+                                              "combinedParams",
+                                              "inputMappings",
                                               "kind",
-                                              "lastFrameField",
+                                              "maxInputItems",
                                               "params",
                                               "promptField",
-                                              "referenceLimits",
                                               "settingIds",
                                               "staticParams"
                                             ],
@@ -11471,6 +11974,13 @@
                             "minimum": 0,
                             "exclusiveMinimum": true
                           },
+                          "provider": {
+                            "type": "string",
+                            "enum": [
+                              "fal",
+                              "openrouter"
+                            ]
+                          },
                           "providerJobId": {
                             "type": "string",
                             "nullable": true
@@ -11514,6 +12024,7 @@
                           "mediaType",
                           "nodeId",
                           "outputCount",
+                          "provider",
                           "providerJobId",
                           "providerSubmittedAt",
                           "requestHash",
@@ -11847,6 +12358,7 @@
                                                   "cancellation": {
                                                     "type": "string",
                                                     "enum": [
+                                                      "best-effort",
                                                       "supported",
                                                       "unsupported"
                                                     ]
@@ -11896,6 +12408,7 @@
                                                   "cancellation": {
                                                     "type": "string",
                                                     "enum": [
+                                                      "best-effort",
                                                       "supported",
                                                       "unsupported"
                                                     ]
@@ -12092,6 +12605,7 @@
                                                   "cancellation": {
                                                     "type": "string",
                                                     "enum": [
+                                                      "best-effort",
                                                       "supported",
                                                       "unsupported"
                                                     ]
@@ -12141,6 +12655,7 @@
                                                   "cancellation": {
                                                     "type": "string",
                                                     "enum": [
+                                                      "best-effort",
                                                       "supported",
                                                       "unsupported"
                                                     ]
@@ -12325,6 +12840,7 @@
                                                   "cancellation": {
                                                     "type": "string",
                                                     "enum": [
+                                                      "best-effort",
                                                       "supported",
                                                       "unsupported"
                                                     ]
@@ -12374,6 +12890,7 @@
                                                   "cancellation": {
                                                     "type": "string",
                                                     "enum": [
+                                                      "best-effort",
                                                       "supported",
                                                       "unsupported"
                                                     ]
@@ -12573,6 +13090,7 @@
                                                   "cancellation": {
                                                     "type": "string",
                                                     "enum": [
+                                                      "best-effort",
                                                       "supported",
                                                       "unsupported"
                                                     ]
@@ -12622,6 +13140,7 @@
                                                   "cancellation": {
                                                     "type": "string",
                                                     "enum": [
+                                                      "best-effort",
                                                       "supported",
                                                       "unsupported"
                                                     ]
@@ -12810,6 +13329,11 @@
                                                   "type": "string",
                                                   "minLength": 1
                                                 }
+                                              },
+                                              "totalReferenceLimit": {
+                                                "type": "integer",
+                                                "minimum": 0,
+                                                "exclusiveMinimum": true
                                               }
                                             },
                                             "required": [
@@ -12854,6 +13378,7 @@
                                               "cancellation": {
                                                 "type": "string",
                                                 "enum": [
+                                                  "best-effort",
                                                   "supported",
                                                   "unsupported"
                                                 ]
@@ -12903,6 +13428,7 @@
                                               "cancellation": {
                                                 "type": "string",
                                                 "enum": [
+                                                  "best-effort",
                                                   "supported",
                                                   "unsupported"
                                                 ]
@@ -13036,13 +13562,153 @@
                                           {
                                             "type": "object",
                                             "properties": {
+                                              "combinedParams": {
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "object",
+                                                  "properties": {
+                                                    "field": {
+                                                      "type": "string",
+                                                      "minLength": 1
+                                                    },
+                                                    "settingIds": {
+                                                      "type": "array",
+                                                      "items": {
+                                                        "type": "string",
+                                                        "minLength": 1
+                                                      },
+                                                      "minItems": 2,
+                                                      "maxItems": 2
+                                                    },
+                                                    "valueMap": {
+                                                      "type": "object",
+                                                      "additionalProperties": {
+                                                        "type": "object",
+                                                        "additionalProperties": {
+                                                          "anyOf": [
+                                                            {
+                                                              "type": "string"
+                                                            },
+                                                            {
+                                                              "type": "number"
+                                                            },
+                                                            {
+                                                              "type": "boolean"
+                                                            },
+                                                            {
+                                                              "type": "object",
+                                                              "properties": {
+                                                                "height": {
+                                                                  "type": "integer",
+                                                                  "minimum": 0,
+                                                                  "exclusiveMinimum": true
+                                                                },
+                                                                "width": {
+                                                                  "type": "integer",
+                                                                  "minimum": 0,
+                                                                  "exclusiveMinimum": true
+                                                                }
+                                                              },
+                                                              "required": [
+                                                                "height",
+                                                                "width"
+                                                              ],
+                                                              "additionalProperties": false
+                                                            }
+                                                          ]
+                                                        }
+                                                      }
+                                                    }
+                                                  },
+                                                  "required": [
+                                                    "field",
+                                                    "settingIds",
+                                                    "valueMap"
+                                                  ],
+                                                  "additionalProperties": false
+                                                }
+                                              },
+                                              "inputMappings": {
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "object",
+                                                  "properties": {
+                                                    "alternativeFields": {
+                                                      "type": "array",
+                                                      "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                          "field": {
+                                                            "type": "string",
+                                                            "minLength": 1
+                                                          },
+                                                          "mediaType": {
+                                                            "type": "string",
+                                                            "enum": [
+                                                              "audio",
+                                                              "image",
+                                                              "video"
+                                                            ]
+                                                          }
+                                                        },
+                                                        "required": [
+                                                          "field",
+                                                          "mediaType"
+                                                        ],
+                                                        "additionalProperties": false
+                                                      }
+                                                    },
+                                                    "cardinality": {
+                                                      "type": "string",
+                                                      "enum": [
+                                                        "many",
+                                                        "single"
+                                                      ]
+                                                    },
+                                                    "field": {
+                                                      "type": "string",
+                                                      "minLength": 1
+                                                    },
+                                                    "maxItems": {
+                                                      "type": "integer",
+                                                      "minimum": 0,
+                                                      "exclusiveMinimum": true
+                                                    },
+                                                    "mediaType": {
+                                                      "type": "string",
+                                                      "enum": [
+                                                        "audio",
+                                                        "image",
+                                                        "video"
+                                                      ]
+                                                    },
+                                                    "minItems": {
+                                                      "type": "integer",
+                                                      "minimum": 0
+                                                    },
+                                                    "targetSlotId": {
+                                                      "type": "string",
+                                                      "minLength": 1
+                                                    }
+                                                  },
+                                                  "required": [
+                                                    "cardinality",
+                                                    "field",
+                                                    "maxItems",
+                                                    "mediaType",
+                                                    "minItems",
+                                                    "targetSlotId"
+                                                  ],
+                                                  "additionalProperties": false
+                                                }
+                                              },
                                               "kind": {
                                                 "type": "string",
                                                 "enum": [
                                                   "image"
                                                 ]
                                               },
-                                              "maxReferences": {
+                                              "maxInputItems": {
                                                 "type": "integer",
                                                 "minimum": 0
                                               },
@@ -13054,6 +13720,38 @@
                                                     "field": {
                                                       "type": "string",
                                                       "minLength": 1
+                                                    },
+                                                    "numberMultiplier": {
+                                                      "type": "number",
+                                                      "minimum": 0,
+                                                      "exclusiveMinimum": true
+                                                    },
+                                                    "sendWhen": {
+                                                      "type": "object",
+                                                      "properties": {
+                                                        "equals": {
+                                                          "anyOf": [
+                                                            {
+                                                              "type": "string"
+                                                            },
+                                                            {
+                                                              "type": "number"
+                                                            },
+                                                            {
+                                                              "type": "boolean"
+                                                            }
+                                                          ]
+                                                        },
+                                                        "settingId": {
+                                                          "type": "string",
+                                                          "minLength": 1
+                                                        }
+                                                      },
+                                                      "required": [
+                                                        "equals",
+                                                        "settingId"
+                                                      ],
+                                                      "additionalProperties": false
                                                     },
                                                     "settingId": {
                                                       "type": "string",
@@ -13084,10 +13782,6 @@
                                                 }
                                               },
                                               "promptField": {
-                                                "type": "string",
-                                                "minLength": 1
-                                              },
-                                              "referenceField": {
                                                 "type": "string",
                                                 "nullable": true,
                                                 "minLength": 1
@@ -13122,11 +13816,12 @@
                                               }
                                             },
                                             "required": [
+                                              "combinedParams",
+                                              "inputMappings",
                                               "kind",
-                                              "maxReferences",
+                                              "maxInputItems",
                                               "params",
                                               "promptField",
-                                              "referenceField",
                                               "requestedCountField",
                                               "settingIds",
                                               "staticParams"
@@ -13136,11 +13831,155 @@
                                           {
                                             "type": "object",
                                             "properties": {
+                                              "combinedParams": {
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "object",
+                                                  "properties": {
+                                                    "field": {
+                                                      "type": "string",
+                                                      "minLength": 1
+                                                    },
+                                                    "settingIds": {
+                                                      "type": "array",
+                                                      "items": {
+                                                        "type": "string",
+                                                        "minLength": 1
+                                                      },
+                                                      "minItems": 2,
+                                                      "maxItems": 2
+                                                    },
+                                                    "valueMap": {
+                                                      "type": "object",
+                                                      "additionalProperties": {
+                                                        "type": "object",
+                                                        "additionalProperties": {
+                                                          "anyOf": [
+                                                            {
+                                                              "type": "string"
+                                                            },
+                                                            {
+                                                              "type": "number"
+                                                            },
+                                                            {
+                                                              "type": "boolean"
+                                                            },
+                                                            {
+                                                              "type": "object",
+                                                              "properties": {
+                                                                "height": {
+                                                                  "type": "integer",
+                                                                  "minimum": 0,
+                                                                  "exclusiveMinimum": true
+                                                                },
+                                                                "width": {
+                                                                  "type": "integer",
+                                                                  "minimum": 0,
+                                                                  "exclusiveMinimum": true
+                                                                }
+                                                              },
+                                                              "required": [
+                                                                "height",
+                                                                "width"
+                                                              ],
+                                                              "additionalProperties": false
+                                                            }
+                                                          ]
+                                                        }
+                                                      }
+                                                    }
+                                                  },
+                                                  "required": [
+                                                    "field",
+                                                    "settingIds",
+                                                    "valueMap"
+                                                  ],
+                                                  "additionalProperties": false
+                                                }
+                                              },
+                                              "inputMappings": {
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "object",
+                                                  "properties": {
+                                                    "alternativeFields": {
+                                                      "type": "array",
+                                                      "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                          "field": {
+                                                            "type": "string",
+                                                            "minLength": 1
+                                                          },
+                                                          "mediaType": {
+                                                            "type": "string",
+                                                            "enum": [
+                                                              "audio",
+                                                              "image",
+                                                              "video"
+                                                            ]
+                                                          }
+                                                        },
+                                                        "required": [
+                                                          "field",
+                                                          "mediaType"
+                                                        ],
+                                                        "additionalProperties": false
+                                                      }
+                                                    },
+                                                    "cardinality": {
+                                                      "type": "string",
+                                                      "enum": [
+                                                        "many",
+                                                        "single"
+                                                      ]
+                                                    },
+                                                    "field": {
+                                                      "type": "string",
+                                                      "minLength": 1
+                                                    },
+                                                    "maxItems": {
+                                                      "type": "integer",
+                                                      "minimum": 0,
+                                                      "exclusiveMinimum": true
+                                                    },
+                                                    "mediaType": {
+                                                      "type": "string",
+                                                      "enum": [
+                                                        "audio",
+                                                        "image",
+                                                        "video"
+                                                      ]
+                                                    },
+                                                    "minItems": {
+                                                      "type": "integer",
+                                                      "minimum": 0
+                                                    },
+                                                    "targetSlotId": {
+                                                      "type": "string",
+                                                      "minLength": 1
+                                                    }
+                                                  },
+                                                  "required": [
+                                                    "cardinality",
+                                                    "field",
+                                                    "maxItems",
+                                                    "mediaType",
+                                                    "minItems",
+                                                    "targetSlotId"
+                                                  ],
+                                                  "additionalProperties": false
+                                                }
+                                              },
                                               "kind": {
                                                 "type": "string",
                                                 "enum": [
                                                   "speech"
                                                 ]
+                                              },
+                                              "maxInputItems": {
+                                                "type": "integer",
+                                                "minimum": 0
                                               },
                                               "params": {
                                                 "type": "array",
@@ -13150,6 +13989,38 @@
                                                     "field": {
                                                       "type": "string",
                                                       "minLength": 1
+                                                    },
+                                                    "numberMultiplier": {
+                                                      "type": "number",
+                                                      "minimum": 0,
+                                                      "exclusiveMinimum": true
+                                                    },
+                                                    "sendWhen": {
+                                                      "type": "object",
+                                                      "properties": {
+                                                        "equals": {
+                                                          "anyOf": [
+                                                            {
+                                                              "type": "string"
+                                                            },
+                                                            {
+                                                              "type": "number"
+                                                            },
+                                                            {
+                                                              "type": "boolean"
+                                                            }
+                                                          ]
+                                                        },
+                                                        "settingId": {
+                                                          "type": "string",
+                                                          "minLength": 1
+                                                        }
+                                                      },
+                                                      "required": [
+                                                        "equals",
+                                                        "settingId"
+                                                      ],
+                                                      "additionalProperties": false
                                                     },
                                                     "settingId": {
                                                       "type": "string",
@@ -13181,6 +14052,7 @@
                                               },
                                               "promptField": {
                                                 "type": "string",
+                                                "nullable": true,
                                                 "minLength": 1
                                               },
                                               "settingIds": {
@@ -13208,7 +14080,10 @@
                                               }
                                             },
                                             "required": [
+                                              "combinedParams",
+                                              "inputMappings",
                                               "kind",
+                                              "maxInputItems",
                                               "params",
                                               "promptField",
                                               "settingIds",
@@ -13219,18 +14094,145 @@
                                           {
                                             "type": "object",
                                             "properties": {
-                                              "firstFrameField": {
-                                                "type": "string",
-                                                "nullable": true,
-                                                "minLength": 1
+                                              "combinedParams": {
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "object",
+                                                  "properties": {
+                                                    "field": {
+                                                      "type": "string",
+                                                      "minLength": 1
+                                                    },
+                                                    "settingIds": {
+                                                      "type": "array",
+                                                      "items": {
+                                                        "type": "string",
+                                                        "minLength": 1
+                                                      },
+                                                      "minItems": 2,
+                                                      "maxItems": 2
+                                                    },
+                                                    "valueMap": {
+                                                      "type": "object",
+                                                      "additionalProperties": {
+                                                        "type": "object",
+                                                        "additionalProperties": {
+                                                          "anyOf": [
+                                                            {
+                                                              "type": "string"
+                                                            },
+                                                            {
+                                                              "type": "number"
+                                                            },
+                                                            {
+                                                              "type": "boolean"
+                                                            },
+                                                            {
+                                                              "type": "object",
+                                                              "properties": {
+                                                                "height": {
+                                                                  "type": "integer",
+                                                                  "minimum": 0,
+                                                                  "exclusiveMinimum": true
+                                                                },
+                                                                "width": {
+                                                                  "type": "integer",
+                                                                  "minimum": 0,
+                                                                  "exclusiveMinimum": true
+                                                                }
+                                                              },
+                                                              "required": [
+                                                                "height",
+                                                                "width"
+                                                              ],
+                                                              "additionalProperties": false
+                                                            }
+                                                          ]
+                                                        }
+                                                      }
+                                                    }
+                                                  },
+                                                  "required": [
+                                                    "field",
+                                                    "settingIds",
+                                                    "valueMap"
+                                                  ],
+                                                  "additionalProperties": false
+                                                }
                                               },
-                                              "frameMode": {
-                                                "type": "string",
-                                                "enum": [
-                                                  "first",
-                                                  "first-last",
-                                                  "none"
-                                                ]
+                                              "inputMappings": {
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "object",
+                                                  "properties": {
+                                                    "alternativeFields": {
+                                                      "type": "array",
+                                                      "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                          "field": {
+                                                            "type": "string",
+                                                            "minLength": 1
+                                                          },
+                                                          "mediaType": {
+                                                            "type": "string",
+                                                            "enum": [
+                                                              "audio",
+                                                              "image",
+                                                              "video"
+                                                            ]
+                                                          }
+                                                        },
+                                                        "required": [
+                                                          "field",
+                                                          "mediaType"
+                                                        ],
+                                                        "additionalProperties": false
+                                                      }
+                                                    },
+                                                    "cardinality": {
+                                                      "type": "string",
+                                                      "enum": [
+                                                        "many",
+                                                        "single"
+                                                      ]
+                                                    },
+                                                    "field": {
+                                                      "type": "string",
+                                                      "minLength": 1
+                                                    },
+                                                    "maxItems": {
+                                                      "type": "integer",
+                                                      "minimum": 0,
+                                                      "exclusiveMinimum": true
+                                                    },
+                                                    "mediaType": {
+                                                      "type": "string",
+                                                      "enum": [
+                                                        "audio",
+                                                        "image",
+                                                        "video"
+                                                      ]
+                                                    },
+                                                    "minItems": {
+                                                      "type": "integer",
+                                                      "minimum": 0
+                                                    },
+                                                    "targetSlotId": {
+                                                      "type": "string",
+                                                      "minLength": 1
+                                                    }
+                                                  },
+                                                  "required": [
+                                                    "cardinality",
+                                                    "field",
+                                                    "maxItems",
+                                                    "mediaType",
+                                                    "minItems",
+                                                    "targetSlotId"
+                                                  ],
+                                                  "additionalProperties": false
+                                                }
                                               },
                                               "kind": {
                                                 "type": "string",
@@ -13238,10 +14240,9 @@
                                                   "video"
                                                 ]
                                               },
-                                              "lastFrameField": {
-                                                "type": "string",
-                                                "nullable": true,
-                                                "minLength": 1
+                                              "maxInputItems": {
+                                                "type": "integer",
+                                                "minimum": 0
                                               },
                                               "params": {
                                                 "type": "array",
@@ -13251,6 +14252,38 @@
                                                     "field": {
                                                       "type": "string",
                                                       "minLength": 1
+                                                    },
+                                                    "numberMultiplier": {
+                                                      "type": "number",
+                                                      "minimum": 0,
+                                                      "exclusiveMinimum": true
+                                                    },
+                                                    "sendWhen": {
+                                                      "type": "object",
+                                                      "properties": {
+                                                        "equals": {
+                                                          "anyOf": [
+                                                            {
+                                                              "type": "string"
+                                                            },
+                                                            {
+                                                              "type": "number"
+                                                            },
+                                                            {
+                                                              "type": "boolean"
+                                                            }
+                                                          ]
+                                                        },
+                                                        "settingId": {
+                                                          "type": "string",
+                                                          "minLength": 1
+                                                        }
+                                                      },
+                                                      "required": [
+                                                        "equals",
+                                                        "settingId"
+                                                      ],
+                                                      "additionalProperties": false
                                                     },
                                                     "settingId": {
                                                       "type": "string",
@@ -13282,30 +14315,8 @@
                                               },
                                               "promptField": {
                                                 "type": "string",
+                                                "nullable": true,
                                                 "minLength": 1
-                                              },
-                                              "referenceLimits": {
-                                                "type": "object",
-                                                "properties": {
-                                                  "audio": {
-                                                    "type": "integer",
-                                                    "minimum": 0
-                                                  },
-                                                  "image": {
-                                                    "type": "integer",
-                                                    "minimum": 0
-                                                  },
-                                                  "video": {
-                                                    "type": "integer",
-                                                    "minimum": 0
-                                                  }
-                                                },
-                                                "required": [
-                                                  "audio",
-                                                  "image",
-                                                  "video"
-                                                ],
-                                                "additionalProperties": false
                                               },
                                               "settingIds": {
                                                 "type": "array",
@@ -13332,13 +14343,12 @@
                                               }
                                             },
                                             "required": [
-                                              "firstFrameField",
-                                              "frameMode",
+                                              "combinedParams",
+                                              "inputMappings",
                                               "kind",
-                                              "lastFrameField",
+                                              "maxInputItems",
                                               "params",
                                               "promptField",
-                                              "referenceLimits",
                                               "settingIds",
                                               "staticParams"
                                             ],

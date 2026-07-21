@@ -343,9 +343,13 @@ export const generationConfigResponseNodeTypesEnum = {
   element: "element",
   imageGeneration: "imageGeneration",
   llm: "llm",
+  musicGeneration: "musicGeneration",
+  soundEffectGeneration: "soundEffectGeneration",
   speechGeneration: "speechGeneration",
   text: "text",
   videoGeneration: "videoGeneration",
+  voiceChanger: "voiceChanger",
+  voiceIsolation: "voiceIsolation",
 } as const;
 
 export type GenerationConfigResponseNodeTypesEnumKey =

@@ -36,6 +36,7 @@ export type DebugOutputsDeliveryEnum2Key =
   (typeof debugOutputsDeliveryEnum2)[keyof typeof debugOutputsDeliveryEnum2];
 
 export const lifecycleCancellationEnum2 = {
+  "best-effort": "best-effort",
   supported: "supported",
   unsupported: "unsupported",
 } as const;
@@ -238,6 +239,32 @@ export const providerBindingProviderTagEnum2 = {
 
 export type ProviderBindingProviderTagEnum2Key =
   (typeof providerBindingProviderTagEnum2)[keyof typeof providerBindingProviderTagEnum2];
+
+export const alternativeFieldsMediaTypeEnum2 = {
+  audio: "audio",
+  image: "image",
+  video: "video",
+} as const;
+
+export type AlternativeFieldsMediaTypeEnum2Key =
+  (typeof alternativeFieldsMediaTypeEnum2)[keyof typeof alternativeFieldsMediaTypeEnum2];
+
+export const inputMappingsCardinalityEnum2 = {
+  many: "many",
+  single: "single",
+} as const;
+
+export type InputMappingsCardinalityEnum2Key =
+  (typeof inputMappingsCardinalityEnum2)[keyof typeof inputMappingsCardinalityEnum2];
+
+export const inputMappingsMediaTypeEnum2 = {
+  audio: "audio",
+  image: "image",
+  video: "video",
+} as const;
+
+export type InputMappingsMediaTypeEnum2Key =
+  (typeof inputMappingsMediaTypeEnum2)[keyof typeof inputMappingsMediaTypeEnum2];
 
 export const jobsExecutionModeEnum = {
   debug: "debug",
@@ -785,6 +812,10 @@ export type PostRunsIdBrowserJobsClaim200 = {
                    * @type array
                    */
                   settingIds: string[];
+                  /**
+                   * @type integer | undefined
+                   */
+                  totalReferenceLimit?: number;
                 };
               }
           )
@@ -862,6 +893,87 @@ export type PostRunsIdBrowserJobsClaim200 = {
             requestProfile:
               | {
                   /**
+                   * @type array
+                   */
+                  combinedParams: {
+                    /**
+                     * @minLength 1
+                     * @type string
+                     */
+                    field: string;
+                    /**
+                     * @type array
+                     */
+                    settingIds: string[];
+                    /**
+                     * @type object
+                     */
+                    valueMap: {
+                      [key: string]: {
+                        [key: string]:
+                          | string
+                          | number
+                          | boolean
+                          | {
+                              /**
+                               * @type integer
+                               */
+                              height: number;
+                              /**
+                               * @type integer
+                               */
+                              width: number;
+                            };
+                      };
+                    };
+                  }[];
+                  /**
+                   * @type array
+                   */
+                  inputMappings: {
+                    /**
+                     * @type array | undefined
+                     */
+                    alternativeFields?: {
+                      /**
+                       * @minLength 1
+                       * @type string
+                       */
+                      field: string;
+                      /**
+                       * @type string
+                       */
+                      mediaType: AlternativeFieldsMediaTypeEnum2Key;
+                    }[];
+                    /**
+                     * @type string
+                     */
+                    cardinality: InputMappingsCardinalityEnum2Key;
+                    /**
+                     * @minLength 1
+                     * @type string
+                     */
+                    field: string;
+                    /**
+                     * @type integer
+                     */
+                    maxItems: number;
+                    /**
+                     * @type string
+                     */
+                    mediaType: InputMappingsMediaTypeEnum2Key;
+                    /**
+                     * @minLength 0
+                     * @type integer
+                     */
+                    minItems: number;
+                    /**
+                     * @minLength 1
+                     * @type string
+                     */
+                    targetSlotId: string;
+                  }[];
+                  /**
                    * @type string
                    */
                   kind: RequestProfileKindEnum6Key;
@@ -869,7 +981,7 @@ export type PostRunsIdBrowserJobsClaim200 = {
                    * @minLength 0
                    * @type integer
                    */
-                  maxReferences: number;
+                  maxInputItems: number;
                   /**
                    * @type array
                    */
@@ -879,6 +991,21 @@ export type PostRunsIdBrowserJobsClaim200 = {
                      * @type string
                      */
                     field: string;
+                    /**
+                     * @type number | undefined
+                     */
+                    numberMultiplier?: number;
+                    /**
+                     * @type object | undefined
+                     */
+                    sendWhen?: {
+                      equals: string | number | boolean;
+                      /**
+                       * @minLength 1
+                       * @type string
+                       */
+                      settingId: string;
+                    };
                     /**
                      * @minLength 1
                      * @type string
@@ -895,12 +1022,7 @@ export type PostRunsIdBrowserJobsClaim200 = {
                    * @minLength 1
                    * @type string
                    */
-                  promptField: string;
-                  /**
-                   * @minLength 1
-                   * @type string
-                   */
-                  referenceField: string | null;
+                  promptField: string | null;
                   /**
                    * @minLength 1
                    * @type string
@@ -919,9 +1041,95 @@ export type PostRunsIdBrowserJobsClaim200 = {
                 }
               | {
                   /**
+                   * @type array
+                   */
+                  combinedParams: {
+                    /**
+                     * @minLength 1
+                     * @type string
+                     */
+                    field: string;
+                    /**
+                     * @type array
+                     */
+                    settingIds: string[];
+                    /**
+                     * @type object
+                     */
+                    valueMap: {
+                      [key: string]: {
+                        [key: string]:
+                          | string
+                          | number
+                          | boolean
+                          | {
+                              /**
+                               * @type integer
+                               */
+                              height: number;
+                              /**
+                               * @type integer
+                               */
+                              width: number;
+                            };
+                      };
+                    };
+                  }[];
+                  /**
+                   * @type array
+                   */
+                  inputMappings: {
+                    /**
+                     * @type array | undefined
+                     */
+                    alternativeFields?: {
+                      /**
+                       * @minLength 1
+                       * @type string
+                       */
+                      field: string;
+                      /**
+                       * @type string
+                       */
+                      mediaType: AlternativeFieldsMediaTypeEnum2Key;
+                    }[];
+                    /**
+                     * @type string
+                     */
+                    cardinality: InputMappingsCardinalityEnum2Key;
+                    /**
+                     * @minLength 1
+                     * @type string
+                     */
+                    field: string;
+                    /**
+                     * @type integer
+                     */
+                    maxItems: number;
+                    /**
+                     * @type string
+                     */
+                    mediaType: InputMappingsMediaTypeEnum2Key;
+                    /**
+                     * @minLength 0
+                     * @type integer
+                     */
+                    minItems: number;
+                    /**
+                     * @minLength 1
+                     * @type string
+                     */
+                    targetSlotId: string;
+                  }[];
+                  /**
                    * @type string
                    */
                   kind: RequestProfileKindEnum7Key;
+                  /**
+                   * @minLength 0
+                   * @type integer
+                   */
+                  maxInputItems: number;
                   /**
                    * @type array
                    */
@@ -931,6 +1139,21 @@ export type PostRunsIdBrowserJobsClaim200 = {
                      * @type string
                      */
                     field: string;
+                    /**
+                     * @type number | undefined
+                     */
+                    numberMultiplier?: number;
+                    /**
+                     * @type object | undefined
+                     */
+                    sendWhen?: {
+                      equals: string | number | boolean;
+                      /**
+                       * @minLength 1
+                       * @type string
+                       */
+                      settingId: string;
+                    };
                     /**
                      * @minLength 1
                      * @type string
@@ -947,7 +1170,7 @@ export type PostRunsIdBrowserJobsClaim200 = {
                    * @minLength 1
                    * @type string
                    */
-                  promptField: string;
+                  promptField: string | null;
                   /**
                    * @type array
                    */
@@ -961,23 +1184,95 @@ export type PostRunsIdBrowserJobsClaim200 = {
                 }
               | {
                   /**
-                   * @minLength 1
-                   * @type string
+                   * @type array
                    */
-                  firstFrameField: string | null;
+                  combinedParams: {
+                    /**
+                     * @minLength 1
+                     * @type string
+                     */
+                    field: string;
+                    /**
+                     * @type array
+                     */
+                    settingIds: string[];
+                    /**
+                     * @type object
+                     */
+                    valueMap: {
+                      [key: string]: {
+                        [key: string]:
+                          | string
+                          | number
+                          | boolean
+                          | {
+                              /**
+                               * @type integer
+                               */
+                              height: number;
+                              /**
+                               * @type integer
+                               */
+                              width: number;
+                            };
+                      };
+                    };
+                  }[];
                   /**
-                   * @type string
+                   * @type array
                    */
-                  frameMode: RequestProfileFrameModeEnum2Key;
+                  inputMappings: {
+                    /**
+                     * @type array | undefined
+                     */
+                    alternativeFields?: {
+                      /**
+                       * @minLength 1
+                       * @type string
+                       */
+                      field: string;
+                      /**
+                       * @type string
+                       */
+                      mediaType: AlternativeFieldsMediaTypeEnum2Key;
+                    }[];
+                    /**
+                     * @type string
+                     */
+                    cardinality: InputMappingsCardinalityEnum2Key;
+                    /**
+                     * @minLength 1
+                     * @type string
+                     */
+                    field: string;
+                    /**
+                     * @type integer
+                     */
+                    maxItems: number;
+                    /**
+                     * @type string
+                     */
+                    mediaType: InputMappingsMediaTypeEnum2Key;
+                    /**
+                     * @minLength 0
+                     * @type integer
+                     */
+                    minItems: number;
+                    /**
+                     * @minLength 1
+                     * @type string
+                     */
+                    targetSlotId: string;
+                  }[];
                   /**
                    * @type string
                    */
                   kind: RequestProfileKindEnum8Key;
                   /**
-                   * @minLength 1
-                   * @type string
+                   * @minLength 0
+                   * @type integer
                    */
-                  lastFrameField: string | null;
+                  maxInputItems: number;
                   /**
                    * @type array
                    */
@@ -987,6 +1282,21 @@ export type PostRunsIdBrowserJobsClaim200 = {
                      * @type string
                      */
                     field: string;
+                    /**
+                     * @type number | undefined
+                     */
+                    numberMultiplier?: number;
+                    /**
+                     * @type object | undefined
+                     */
+                    sendWhen?: {
+                      equals: string | number | boolean;
+                      /**
+                       * @minLength 1
+                       * @type string
+                       */
+                      settingId: string;
+                    };
                     /**
                      * @minLength 1
                      * @type string
@@ -1003,27 +1313,7 @@ export type PostRunsIdBrowserJobsClaim200 = {
                    * @minLength 1
                    * @type string
                    */
-                  promptField: string;
-                  /**
-                   * @type object
-                   */
-                  referenceLimits: {
-                    /**
-                     * @minLength 0
-                     * @type integer
-                     */
-                    audio: number;
-                    /**
-                     * @minLength 0
-                     * @type integer
-                     */
-                    image: number;
-                    /**
-                     * @minLength 0
-                     * @type integer
-                     */
-                    video: number;
-                  };
+                  promptField: string | null;
                   /**
                    * @type array
                    */

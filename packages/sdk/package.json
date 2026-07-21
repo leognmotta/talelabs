@@ -11,7 +11,7 @@
   },
   "scripts": {
     "build": "npm run generate && tsc --noEmit",
-    "check-types": "npm run generate && tsc --noEmit",
+    "check-types": "npm run generate && tsc --noEmit && tsc --project tsconfig.scripts.json",
     "dev:sdk": "tsx scripts/watch.ts",
     "generate": "tsx scripts/generate.ts",
     "generate:openapi": "tsx scripts/write-openapi.ts"

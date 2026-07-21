@@ -37,6 +37,7 @@ export type CancellationsCancellationEnumKey =
   (typeof cancellationsCancellationEnum)[keyof typeof cancellationsCancellationEnum];
 
 export const lifecycleCancellationEnum = {
+  "best-effort": "best-effort",
   supported: "supported",
   unsupported: "unsupported",
 } as const;
@@ -240,6 +241,32 @@ export const providerBindingProviderTagEnum = {
 export type ProviderBindingProviderTagEnumKey =
   (typeof providerBindingProviderTagEnum)[keyof typeof providerBindingProviderTagEnum];
 
+export const alternativeFieldsMediaTypeEnum = {
+  audio: "audio",
+  image: "image",
+  video: "video",
+} as const;
+
+export type AlternativeFieldsMediaTypeEnumKey =
+  (typeof alternativeFieldsMediaTypeEnum)[keyof typeof alternativeFieldsMediaTypeEnum];
+
+export const inputMappingsCardinalityEnum = {
+  many: "many",
+  single: "single",
+} as const;
+
+export type InputMappingsCardinalityEnumKey =
+  (typeof inputMappingsCardinalityEnum)[keyof typeof inputMappingsCardinalityEnum];
+
+export const inputMappingsMediaTypeEnum = {
+  audio: "audio",
+  image: "image",
+  video: "video",
+} as const;
+
+export type InputMappingsMediaTypeEnumKey =
+  (typeof inputMappingsMediaTypeEnum)[keyof typeof inputMappingsMediaTypeEnum];
+
 export const jobsMediaTypeEnum = {
   image: "image",
   video: "video",
@@ -249,6 +276,14 @@ export const jobsMediaTypeEnum = {
 
 export type JobsMediaTypeEnumKey =
   (typeof jobsMediaTypeEnum)[keyof typeof jobsMediaTypeEnum];
+
+export const jobsProviderEnum = {
+  fal: "fal",
+  openrouter: "openrouter",
+} as const;
+
+export type JobsProviderEnumKey =
+  (typeof jobsProviderEnum)[keyof typeof jobsProviderEnum];
 
 export const jobsSubmissionStateEnum = {
   not_started: "not_started",
@@ -736,6 +771,10 @@ export type GetRunsIdBrowserManifest200 = {
                    * @type array
                    */
                   settingIds: string[];
+                  /**
+                   * @type integer | undefined
+                   */
+                  totalReferenceLimit?: number;
                 };
               }
           )
@@ -813,6 +852,87 @@ export type GetRunsIdBrowserManifest200 = {
             requestProfile:
               | {
                   /**
+                   * @type array
+                   */
+                  combinedParams: {
+                    /**
+                     * @minLength 1
+                     * @type string
+                     */
+                    field: string;
+                    /**
+                     * @type array
+                     */
+                    settingIds: string[];
+                    /**
+                     * @type object
+                     */
+                    valueMap: {
+                      [key: string]: {
+                        [key: string]:
+                          | string
+                          | number
+                          | boolean
+                          | {
+                              /**
+                               * @type integer
+                               */
+                              height: number;
+                              /**
+                               * @type integer
+                               */
+                              width: number;
+                            };
+                      };
+                    };
+                  }[];
+                  /**
+                   * @type array
+                   */
+                  inputMappings: {
+                    /**
+                     * @type array | undefined
+                     */
+                    alternativeFields?: {
+                      /**
+                       * @minLength 1
+                       * @type string
+                       */
+                      field: string;
+                      /**
+                       * @type string
+                       */
+                      mediaType: AlternativeFieldsMediaTypeEnumKey;
+                    }[];
+                    /**
+                     * @type string
+                     */
+                    cardinality: InputMappingsCardinalityEnumKey;
+                    /**
+                     * @minLength 1
+                     * @type string
+                     */
+                    field: string;
+                    /**
+                     * @type integer
+                     */
+                    maxItems: number;
+                    /**
+                     * @type string
+                     */
+                    mediaType: InputMappingsMediaTypeEnumKey;
+                    /**
+                     * @minLength 0
+                     * @type integer
+                     */
+                    minItems: number;
+                    /**
+                     * @minLength 1
+                     * @type string
+                     */
+                    targetSlotId: string;
+                  }[];
+                  /**
                    * @type string
                    */
                   kind: RequestProfileKindEnum2Key;
@@ -820,7 +940,7 @@ export type GetRunsIdBrowserManifest200 = {
                    * @minLength 0
                    * @type integer
                    */
-                  maxReferences: number;
+                  maxInputItems: number;
                   /**
                    * @type array
                    */
@@ -830,6 +950,21 @@ export type GetRunsIdBrowserManifest200 = {
                      * @type string
                      */
                     field: string;
+                    /**
+                     * @type number | undefined
+                     */
+                    numberMultiplier?: number;
+                    /**
+                     * @type object | undefined
+                     */
+                    sendWhen?: {
+                      equals: string | number | boolean;
+                      /**
+                       * @minLength 1
+                       * @type string
+                       */
+                      settingId: string;
+                    };
                     /**
                      * @minLength 1
                      * @type string
@@ -846,12 +981,7 @@ export type GetRunsIdBrowserManifest200 = {
                    * @minLength 1
                    * @type string
                    */
-                  promptField: string;
-                  /**
-                   * @minLength 1
-                   * @type string
-                   */
-                  referenceField: string | null;
+                  promptField: string | null;
                   /**
                    * @minLength 1
                    * @type string
@@ -870,9 +1000,95 @@ export type GetRunsIdBrowserManifest200 = {
                 }
               | {
                   /**
+                   * @type array
+                   */
+                  combinedParams: {
+                    /**
+                     * @minLength 1
+                     * @type string
+                     */
+                    field: string;
+                    /**
+                     * @type array
+                     */
+                    settingIds: string[];
+                    /**
+                     * @type object
+                     */
+                    valueMap: {
+                      [key: string]: {
+                        [key: string]:
+                          | string
+                          | number
+                          | boolean
+                          | {
+                              /**
+                               * @type integer
+                               */
+                              height: number;
+                              /**
+                               * @type integer
+                               */
+                              width: number;
+                            };
+                      };
+                    };
+                  }[];
+                  /**
+                   * @type array
+                   */
+                  inputMappings: {
+                    /**
+                     * @type array | undefined
+                     */
+                    alternativeFields?: {
+                      /**
+                       * @minLength 1
+                       * @type string
+                       */
+                      field: string;
+                      /**
+                       * @type string
+                       */
+                      mediaType: AlternativeFieldsMediaTypeEnumKey;
+                    }[];
+                    /**
+                     * @type string
+                     */
+                    cardinality: InputMappingsCardinalityEnumKey;
+                    /**
+                     * @minLength 1
+                     * @type string
+                     */
+                    field: string;
+                    /**
+                     * @type integer
+                     */
+                    maxItems: number;
+                    /**
+                     * @type string
+                     */
+                    mediaType: InputMappingsMediaTypeEnumKey;
+                    /**
+                     * @minLength 0
+                     * @type integer
+                     */
+                    minItems: number;
+                    /**
+                     * @minLength 1
+                     * @type string
+                     */
+                    targetSlotId: string;
+                  }[];
+                  /**
                    * @type string
                    */
                   kind: RequestProfileKindEnum3Key;
+                  /**
+                   * @minLength 0
+                   * @type integer
+                   */
+                  maxInputItems: number;
                   /**
                    * @type array
                    */
@@ -882,6 +1098,21 @@ export type GetRunsIdBrowserManifest200 = {
                      * @type string
                      */
                     field: string;
+                    /**
+                     * @type number | undefined
+                     */
+                    numberMultiplier?: number;
+                    /**
+                     * @type object | undefined
+                     */
+                    sendWhen?: {
+                      equals: string | number | boolean;
+                      /**
+                       * @minLength 1
+                       * @type string
+                       */
+                      settingId: string;
+                    };
                     /**
                      * @minLength 1
                      * @type string
@@ -898,7 +1129,7 @@ export type GetRunsIdBrowserManifest200 = {
                    * @minLength 1
                    * @type string
                    */
-                  promptField: string;
+                  promptField: string | null;
                   /**
                    * @type array
                    */
@@ -912,23 +1143,95 @@ export type GetRunsIdBrowserManifest200 = {
                 }
               | {
                   /**
-                   * @minLength 1
-                   * @type string
+                   * @type array
                    */
-                  firstFrameField: string | null;
+                  combinedParams: {
+                    /**
+                     * @minLength 1
+                     * @type string
+                     */
+                    field: string;
+                    /**
+                     * @type array
+                     */
+                    settingIds: string[];
+                    /**
+                     * @type object
+                     */
+                    valueMap: {
+                      [key: string]: {
+                        [key: string]:
+                          | string
+                          | number
+                          | boolean
+                          | {
+                              /**
+                               * @type integer
+                               */
+                              height: number;
+                              /**
+                               * @type integer
+                               */
+                              width: number;
+                            };
+                      };
+                    };
+                  }[];
                   /**
-                   * @type string
+                   * @type array
                    */
-                  frameMode: RequestProfileFrameModeEnumKey;
+                  inputMappings: {
+                    /**
+                     * @type array | undefined
+                     */
+                    alternativeFields?: {
+                      /**
+                       * @minLength 1
+                       * @type string
+                       */
+                      field: string;
+                      /**
+                       * @type string
+                       */
+                      mediaType: AlternativeFieldsMediaTypeEnumKey;
+                    }[];
+                    /**
+                     * @type string
+                     */
+                    cardinality: InputMappingsCardinalityEnumKey;
+                    /**
+                     * @minLength 1
+                     * @type string
+                     */
+                    field: string;
+                    /**
+                     * @type integer
+                     */
+                    maxItems: number;
+                    /**
+                     * @type string
+                     */
+                    mediaType: InputMappingsMediaTypeEnumKey;
+                    /**
+                     * @minLength 0
+                     * @type integer
+                     */
+                    minItems: number;
+                    /**
+                     * @minLength 1
+                     * @type string
+                     */
+                    targetSlotId: string;
+                  }[];
                   /**
                    * @type string
                    */
                   kind: RequestProfileKindEnum4Key;
                   /**
-                   * @minLength 1
-                   * @type string
+                   * @minLength 0
+                   * @type integer
                    */
-                  lastFrameField: string | null;
+                  maxInputItems: number;
                   /**
                    * @type array
                    */
@@ -938,6 +1241,21 @@ export type GetRunsIdBrowserManifest200 = {
                      * @type string
                      */
                     field: string;
+                    /**
+                     * @type number | undefined
+                     */
+                    numberMultiplier?: number;
+                    /**
+                     * @type object | undefined
+                     */
+                    sendWhen?: {
+                      equals: string | number | boolean;
+                      /**
+                       * @minLength 1
+                       * @type string
+                       */
+                      settingId: string;
+                    };
                     /**
                      * @minLength 1
                      * @type string
@@ -954,27 +1272,7 @@ export type GetRunsIdBrowserManifest200 = {
                    * @minLength 1
                    * @type string
                    */
-                  promptField: string;
-                  /**
-                   * @type object
-                   */
-                  referenceLimits: {
-                    /**
-                     * @minLength 0
-                     * @type integer
-                     */
-                    audio: number;
-                    /**
-                     * @minLength 0
-                     * @type integer
-                     */
-                    image: number;
-                    /**
-                     * @minLength 0
-                     * @type integer
-                     */
-                    video: number;
-                  };
+                  promptField: string | null;
                   /**
                    * @type array
                    */
@@ -1030,6 +1328,10 @@ export type GetRunsIdBrowserManifest200 = {
      * @type integer
      */
     outputCount: number;
+    /**
+     * @type string
+     */
+    provider: JobsProviderEnumKey;
     /**
      * @type string
      */
