@@ -1,8 +1,14 @@
 /** Validation for authenticated browser credential ownership scopes. */
 
-import type { BrowserCredentialScope } from './credential-contracts.js'
+import type {
+  BrowserCredentialProviderId,
+  BrowserCredentialScope,
+} from './credential-contracts.js'
 
-import { BROWSER_CREDENTIAL_STORE_ERROR } from './credential-contracts.js'
+import {
+  BROWSER_CREDENTIAL_STORE_ERROR,
+  isBrowserCredentialProviderId,
+} from './credential-contracts.js'
 
 /** Rejects empty or malformed immutable Better Auth user identifiers. */
 export function assertBrowserCredentialUserId(userId: string): void {
@@ -16,6 +22,20 @@ export function assertBrowserCredentialScope(
 ): void {
   assertBrowserCredentialUserId(scope.userId)
 
-  if (scope.providerId !== 'openrouter')
+  if (!isBrowserCredentialProviderId(scope.providerId))
     throw new Error(BROWSER_CREDENTIAL_STORE_ERROR)
+}
+
+/**
+ * Lists captured run providers whose browser credential is not currently
+ * available. Inputs contain provider identifiers only and never key material.
+ */
+export function missingBrowserCredentialProviders(
+  requiredProviders: readonly BrowserCredentialProviderId[],
+  connectedProviders: readonly BrowserCredentialProviderId[],
+): BrowserCredentialProviderId[] {
+  const connected = new Set(connectedProviders)
+  return [...new Set(requiredProviders)]
+    .filter(provider => !connected.has(provider))
+    .toSorted()
 }

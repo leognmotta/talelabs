@@ -25,7 +25,19 @@ export const BROWSER_ENCRYPTION_KEY_ID = 'browser-master-key'
 export const BROWSER_CREDENTIAL_STORE_ERROR = 'browser_credential_store_unavailable'
 
 /** Providers currently eligible for browser-only credential persistence. */
-export type BrowserCredentialProviderId = 'openrouter'
+export const BROWSER_CREDENTIAL_PROVIDER_IDS = ['fal', 'openrouter'] as const
+
+/** Provider identifier accepted by the browser credential store. */
+export type BrowserCredentialProviderId
+  = typeof BROWSER_CREDENTIAL_PROVIDER_IDS[number]
+
+/** Checks an untrusted value against the browser credential provider set. */
+export function isBrowserCredentialProviderId(
+  value: unknown,
+): value is BrowserCredentialProviderId {
+  return typeof value === 'string'
+    && (BROWSER_CREDENTIAL_PROVIDER_IDS as readonly string[]).includes(value)
+}
 
 /** Immutable owner and provider scope bound into AES-GCM authenticated data. */
 export interface BrowserCredentialScope {

@@ -23,6 +23,7 @@
   },
   "scripts": {
     "browser:check": "npm run build && tsc -p tsconfig.browser.json",
+    "browser-credentials:verify": "tsx scripts/verify-browser-credential-requirements.ts",
     "build": "tsc && node scripts/check-browser-bundle.mjs",
     "check-types": "tsc --noEmit && tsc -p tsconfig.browser.json",
     "dev:build": "tsc --watch --preserveWatchOutput"

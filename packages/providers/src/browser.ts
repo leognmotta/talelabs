@@ -10,10 +10,12 @@ export {
   listCredentialStatuses,
   resolveCredential,
 } from './browser/credential-read.js'
+export { missingBrowserCredentialProviders } from './browser/credential-scope.js'
 export {
   clearUserCredentials,
   removeCredential,
   storeCredential,
 } from './browser/credential-write.js'
 export * from './core.js'
+export { createFalBrowserProviderAdapter } from './fal/browser-adapter.js'
 export { createOpenRouterBrowserProviderAdapter } from './openrouter/browser-adapter.js'

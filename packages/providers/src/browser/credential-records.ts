@@ -10,6 +10,7 @@ import {
   BROWSER_CREDENTIAL_SCHEMA_VERSION,
   BROWSER_CREDENTIAL_STORE_ERROR,
   BROWSER_ENCRYPTION_KEY_ID,
+  isBrowserCredentialProviderId,
 } from './credential-contracts.js'
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -26,7 +27,7 @@ export function parseStoredBrowserCredentialRecord(
     || value.schemaVersion !== BROWSER_CREDENTIAL_SCHEMA_VERSION
     || typeof value.userId !== 'string'
     || value.userId.trim().length === 0
-    || value.providerId !== 'openrouter'
+    || !isBrowserCredentialProviderId(value.providerId)
     || !(value.iv instanceof Uint8Array)
     || value.iv.byteLength !== 12
     || !(value.ciphertext instanceof ArrayBuffer)
