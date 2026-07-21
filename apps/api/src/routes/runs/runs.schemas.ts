@@ -126,6 +126,7 @@ export const CreateRunRequestSchema = z
     expectedFlowRevision: z.number().int().nonnegative(),
     targetNodeId: Cuid2Schema.optional(),
     selectedNodeIds: z.array(Cuid2Schema).min(1).max(100).optional(),
+    byokProviders: z.array(z.enum(['fal', 'openrouter'])).max(8).optional(),
   })
   .openapi('CreateRunRequest')
 

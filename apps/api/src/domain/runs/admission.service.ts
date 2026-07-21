@@ -39,11 +39,13 @@ import { generationExecutionContracts } from './generation-execution-contracts.j
 import { jsonb } from './jsonb.js'
 import { logRunEngine } from './logging.js'
 import { loadFlowRunPlan } from './planning.service.js'
+import { availableProvidersForRun } from './provider-availability.js'
 import { getRunDetail } from './read.service.js'
 
 /** Admits and persists one tenant-scoped immutable Flow run transactionally. */
 export async function admitFlowRun(input: {
   body: {
+    byokProviders?: ('fal' | 'openrouter')[]
     executionMode?: 'debug' | 'live'
     executionRuntime?: 'browser' | 'managed'
     expectedFlowRevision: number
@@ -99,7 +101,15 @@ export async function admitFlowRun(input: {
     )
   }
 
-  const contracts = generationExecutionContracts(plan, executionRuntime, executionMode)
+  const contracts = generationExecutionContracts(
+    plan,
+    executionRuntime,
+    executionMode,
+    availableProvidersForRun(
+      executionRuntime,
+      executionRuntime === 'browser' ? input.body.byokProviders : undefined,
+    ),
+  )
   const contractsByNode = new Map(contracts.map(contract => [contract.nodeId, contract]))
   const artifact = createFlowRunSnapshotArtifact({
     adapterContractVersion: 'normalized-generation-v3',

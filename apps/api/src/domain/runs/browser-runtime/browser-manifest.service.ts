@@ -72,6 +72,11 @@ export async function getBrowserRunManifest(input: {
         requestHash: job.requestHash,
         requestPayload: job.requestPayload,
       })
+      const executionContract = artifact.snapshot.executionContracts.find(
+        contract => contract.nodeId === job.nodeId,
+      )
+      if (!executionContract)
+        throw new Error('browser_job_contract_missing')
       return {
         browserAttemptCount: job.browserAttemptCount,
         browserNextEligibleAt: job.browserNextEligibleAt?.toISOString() ?? null,
@@ -80,6 +85,7 @@ export async function getBrowserRunManifest(input: {
         mediaType: job.mediaType,
         nodeId: job.nodeId,
         outputCount: request.outputCount,
+        provider: executionContract.providerBinding.provider,
         providerJobId: job.providerJobId,
         providerSubmittedAt: job.providerSubmittedAt?.toISOString() ?? null,
         requestHash: job.requestHash,

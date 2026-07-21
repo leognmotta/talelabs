@@ -237,6 +237,7 @@ export const BrowserRunManifestSchema = z
           mediaType: mediaTypeSchema,
           nodeId: z.string(),
           outputCount: z.number().int().positive(),
+          provider: z.enum(['fal', 'openrouter']),
           providerJobId: z.string().nullable(),
           providerSubmittedAt: nullableTimestamp,
           requestHash: z.string(),

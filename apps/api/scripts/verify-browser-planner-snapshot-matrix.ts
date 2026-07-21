@@ -250,6 +250,8 @@ function verifyBrowserRecoveryContracts(
         mediaType: 'text',
         nodeId: node.nodeId,
         outputCount: request.requestPayload.outputCount,
+        provider: getCatalogProviderBinding(node.modelId, node.operationId)?.provider
+          ?? 'openrouter',
         providerJobId: null,
         providerSubmittedAt: null,
         requestHash: request.jobHash,
