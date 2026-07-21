@@ -1,8 +1,8 @@
-/** Production catalog binding fixtures and immutable route projections. */
+/** Current fal catalog binding fixtures and immutable route projections. */
 
 import type {
+  CatalogFalProviderBinding,
   CatalogModelRecord,
-  CatalogOpenRouterProviderBinding,
   CatalogOperation,
 } from '@talelabs/models-catalog'
 import type { PinnedGenerationProviderRoute } from '../../src/generation/adapters/contracts.js'
@@ -12,22 +12,26 @@ import {
   GENERATION_MODEL_CONTRACT_VERSION,
 } from '@talelabs/flows'
 import {
-  getCatalogModel,
   MODEL_CATALOG,
   MODEL_CATALOG_MODELS,
 } from '@talelabs/models-catalog'
 
-/** One current model operation paired with its immutable provider binding. */
-export interface CatalogRouteFixture {
-  binding: CatalogOpenRouterProviderBinding
+/** One current model operation paired with its immutable fal binding. */
+export interface FalCatalogRouteFixture {
+  /** Reviewed private fal execution binding. */
+  binding: CatalogFalProviderBinding
+  /** Current owning creative model. */
   model: CatalogModelRecord
+  /** Provider-neutral operation served by the binding. */
   operation: CatalogOperation
 }
 
-/** Enumerates every OpenRouter catalog binding with its owning operation. */
-export function currentRoutes(): CatalogRouteFixture[] {
+/** Enumerates every fal catalog binding with its owning operation. */
+export function currentFalRoutes(): FalCatalogRouteFixture[] {
   return MODEL_CATALOG_MODELS.flatMap(model => model.bindings
-    .filter(binding => binding.provider === 'openrouter')
+    .filter((binding): binding is CatalogFalProviderBinding =>
+      binding.provider === 'fal',
+    )
     .map((binding) => {
       const operation = model.operations.find(candidate =>
         candidate.id === binding.operationId,
@@ -41,9 +45,9 @@ export function currentRoutes(): CatalogRouteFixture[] {
     }))
 }
 
-/** Projects one catalog fixture into the exact route captured by admission. */
-export function pinnedRoute(
-  route: CatalogRouteFixture,
+/** Projects one fal fixture into the exact route captured by admission. */
+export function pinnedFalRoute(
+  route: FalCatalogRouteFixture,
 ): Readonly<PinnedGenerationProviderRoute> {
   return Object.freeze({
     adapterVersion: route.binding.adapterVersion,
@@ -62,28 +66,4 @@ export function pinnedRoute(
     providerModel: route.binding.nativeModelId,
     providerRouteVersion: route.binding.routeVersion,
   })
-}
-
-/** Resolves one required current fixture by canonical model and operation. */
-export function currentRoute(productModelId: string, operationId: string) {
-  const model = getCatalogModel(productModelId)
-  if (!model)
-    throw new Error(`Catalog model ${productModelId} does not exist`)
-
-  const operation = model.operations.find(candidate => candidate.id === operationId)
-  const binding = model.bindings.find(
-    (candidate): candidate is CatalogOpenRouterProviderBinding =>
-      candidate.operationId === operationId && candidate.provider === 'openrouter',
-  )
-  if (!operation) {
-    throw new Error(
-      `Catalog operation ${productModelId}/${operationId} does not exist`,
-    )
-  }
-  if (!binding) {
-    throw new Error(
-      `Catalog operation ${productModelId}/${operationId} does not have a provider binding`,
-    )
-  }
-  return { binding, model, operation }
 }

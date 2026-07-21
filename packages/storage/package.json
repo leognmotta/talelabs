@@ -11,7 +11,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "check-types": "tsc --noEmit",
+    "check-types": "tsc --noEmit && tsc --project tsconfig.scripts.json",
     "policy:check": "tsx scripts/check-asset-storage-policy.ts",
     "dev:build": "tsc --watch --preserveWatchOutput"
   },

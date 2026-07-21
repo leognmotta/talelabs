@@ -4,7 +4,10 @@ import type {
   NormalizedGenerationMediaAsset,
   NormalizedGenerationRequest,
 } from '@talelabs/flows'
-import type { CatalogRouteFixture } from './routes.js'
+import type {
+  CatalogModelRecord,
+  CatalogOperation,
+} from '@talelabs/models-catalog'
 
 import {
   GENERATION_MODEL_CONTRACT_VERSION,
@@ -12,10 +15,19 @@ import {
 import { MODEL_CATALOG } from '@talelabs/models-catalog'
 import { defaultSettings } from './settings.js'
 
+/** Minimum catalog route facts needed to build a normalized request fixture. */
+export interface ProviderRequestRoute {
+  /** Current owning model record. */
+  model: CatalogModelRecord
+  /** Current operation served by the captured binding. */
+  operation: CatalogOperation
+}
+
 /** Builds one immutable normalized request matching a catalog route fixture. */
 export function providerRequest(input: {
   orderedInputs?: NormalizedGenerationRequest['orderedInputs']
-  route: CatalogRouteFixture
+  outputCount?: number
+  route: ProviderRequestRoute
   settings?: NormalizedGenerationRequest['settings']
 }): NormalizedGenerationRequest {
   return {
@@ -28,7 +40,7 @@ export function providerRequest(input: {
     nodeId: 'node-0',
     operationId: input.route.operation.id,
     orderedInputs: input.orderedInputs ?? [],
-    outputCount: 1,
+    outputCount: input.outputCount ?? 1,
     productModelId: input.route.model.id,
     requestId: 'job-0',
     requestIndex: 0,
@@ -54,17 +66,25 @@ export function providerRequest(input: {
 /** Builds one ordered image Asset input for a target slot. */
 export function imageInput(targetSlotId = 'imageReferences'):
 NormalizedGenerationRequest['orderedInputs'][number] {
+  return mediaInput(targetSlotId, 'image')
+}
+
+/** Builds one ordered media Asset input for an exact semantic target slot. */
+export function mediaInput(
+  targetSlotId: string,
+  mediaType: 'audio' | 'image' | 'video',
+): NormalizedGenerationRequest['orderedInputs'][number] {
   return {
     edgeId: `edge-${targetSlotId}`,
     items: [{
-      assets: [{ assetId: 'asset-image', mediaType: 'image', order: 0 }],
+      assets: [{ assetId: `asset-${mediaType}-${targetSlotId}`, mediaType, order: 0 }],
       dimensions: {},
-      itemKey: 'item-image',
+      itemKey: `item-${mediaType}`,
       text: null,
     }],
     order: 0,
-    sourceHandleId: 'image',
-    sourceNodeId: 'image-node',
+    sourceHandleId: mediaType,
+    sourceNodeId: `${mediaType}-node`,
     targetSlotId,
   }
 }

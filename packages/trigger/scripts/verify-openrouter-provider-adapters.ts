@@ -13,16 +13,16 @@ import {
 import { verifyVideoStreamBoundary } from './openrouter-provider-verifier/video-stream-boundary.js'
 import { verifyWebhookSignatureBoundary } from './openrouter-provider-verifier/webhook-signature-boundary.js'
 
-verifyProductionResolver()
-await verifyDebugModeResolver()
-await verifyCurrentRouteScenarios()
-await verifyNanoBanana2CanvasRequest()
-await verifyHttpBoundary()
-verifyWebhookSignatureBoundary()
-await verifyLifecycleRecovery()
-await verifyWebhookWakeBackoff()
-await verifyVideoStreamBoundary()
-
-console.log(
-  `Verified ${currentRoutes().length} catalog bindings and every current OpenRouter protocol with fake HTTP.`,
-)
+/** Runs every deterministic OpenRouter adapter and lifecycle scenario. */
+export async function verifyOpenRouterProviderAdapters() {
+  verifyProductionResolver()
+  await verifyDebugModeResolver()
+  await verifyCurrentRouteScenarios()
+  await verifyNanoBanana2CanvasRequest()
+  await verifyHttpBoundary()
+  verifyWebhookSignatureBoundary()
+  await verifyLifecycleRecovery()
+  await verifyWebhookWakeBackoff()
+  await verifyVideoStreamBoundary()
+  return currentRoutes().length
+}

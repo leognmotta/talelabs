@@ -1,4 +1,9 @@
-import type { RuntimeAssetCollectionValue } from '../src/index.js'
+/** Executable acceptance scenarios for Flow planning and request materialization. */
+
+import type {
+  PriorNodeOutputDescriptor,
+  RuntimeAssetCollectionValue,
+} from '../src/index.js'
 
 import {
   collectRuntimeAssetItems,
@@ -157,6 +162,7 @@ const firstFrameSlotPlan = expectSuccess(planFlowRun({
       'asset-first': 'image',
       'asset-last': 'image',
     },
+    elementReferencesById: {},
   },
   flow: {
     edges: [
@@ -182,6 +188,7 @@ const swappedFrameSlotPlan = expectSuccess(planFlowRun({
       'asset-first': 'image',
       'asset-last': 'image',
     },
+    elementReferencesById: {},
   },
   flow: {
     edges: [
@@ -302,7 +309,10 @@ expectFailure(planFlowRun(plannerInput({
 })), 'selection_duplicate_node', 'duplicate selection rejection')
 expectFailure(planFlowRun({
   command: { mode: 'selection', selectedNodeIds: ['asset-node'] },
-  context: { assetTypesById: { 'asset-1': 'image' } },
+  context: {
+    assetTypesById: { 'asset-1': 'image' },
+    elementReferencesById: {},
+  },
   flow: {
     edges: [],
     id: 'flow-source-only',

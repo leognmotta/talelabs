@@ -1,3 +1,5 @@
+/** Repository-owned deterministic media bytes used by mock fixture tooling. */
+
 import { Buffer } from 'node:buffer'
 
 const IMAGE_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="320" height="180" viewBox="0 0 320 180"><rect width="320" height="180" fill="#2f6fed"/><circle cx="230" cy="52" r="32" fill="#8b5cf6"/><path d="M24 142L94 72l48 48 38-38 116 60z" fill="#22d3ee"/></svg>\n'
@@ -29,7 +31,8 @@ function audioWav() {
   return buffer
 }
 
-export const MOCK_FIXTURE_SOURCE_BYTES = Object.freeze({
+/** Repository-owned source bytes keyed by stable mock fixture identifier. */
+export const MOCK_FIXTURE_SOURCE_BYTES: Readonly<Record<string, Buffer>> = Object.freeze({
   'talelabs-audio-v1': audioWav(),
   'talelabs-image-v1': Buffer.from(IMAGE_SVG),
   'talelabs-video-v1': Buffer.from(VIDEO_MP4_BASE64, 'base64'),
