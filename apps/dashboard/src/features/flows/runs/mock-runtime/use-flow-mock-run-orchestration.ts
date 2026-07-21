@@ -14,7 +14,7 @@ import type { FlowGenerationPreviewScope } from './flow-mock-runtime-node-scope'
 import { isGenerationNodeType } from '@talelabs/flows'
 import { postRunsIdRetry } from '@talelabs/sdk'
 import { useQueryClient } from '@tanstack/react-query'
-import { useCallback } from 'react'
+import { useCallback, useRef } from 'react'
 import { toast } from 'sonner'
 
 import { getApiErrorMessage } from '../../../../shared/lib/api-error'
@@ -33,6 +33,7 @@ export function useFlowMockRunOrchestration(input: {
   executionMode: FlowRunExecutionMode
   executionRuntime: FlowRunExecutionRuntime
   flowId: string
+  fundingSource: 'byok' | 'credits'
   initialActiveRunIds: readonly string[]
   initialLatestResults: readonly FlowLatestResult[]
   locale: string
@@ -49,6 +50,7 @@ export function useFlowMockRunOrchestration(input: {
     executionMode,
     executionRuntime,
     flowId,
+    fundingSource,
     initialActiveRunIds,
     initialLatestResults,
     locale,
@@ -84,21 +86,53 @@ export function useFlowMockRunOrchestration(input: {
     updatePreview,
     updateRunStatePreview,
   } = observation
+  const plannerCacheRef = useRef<null | {
+    edges: object
+    locale: string
+    nodes: object
+    planner: ReturnType<typeof createFlowMockRuntimePlanner>
+    previews: object
+    referenceData: FlowReferenceData
+  }>(null)
   const createCurrentPlanner = useCallback(
-    () =>
-      createFlowMockRuntimePlanner({
-        edges: store.getState().edges,
+    () => {
+      const state = store.getState()
+      const previews = previewsRef.current
+      const referenceData = referenceDataRef.current
+      const cached = plannerCacheRef.current
+      if (
+        cached?.edges === state.edges
+        && cached.locale === locale
+        && cached.nodes === state.nodes
+        && cached.previews === previews
+        && cached.referenceData === referenceData
+      ) {
+        return cached.planner
+      }
+      const planner = createFlowMockRuntimePlanner({
+        edges: state.edges,
         locale,
-        nodes: store.getState().nodes,
-        previews: previewsRef.current,
-        referenceData: referenceDataRef.current,
-      }),
+        nodes: state.nodes,
+        previews,
+        referenceData,
+      })
+      plannerCacheRef.current = {
+        edges: state.edges,
+        locale,
+        nodes: state.nodes,
+        planner,
+        previews,
+        referenceData,
+      }
+      return planner
+    },
     [locale, previewsRef, referenceDataRef, store],
   )
   const admitRun = useFlowRunAdmission({
     executionMode,
     executionRuntime,
     flowId,
+    fundingSource,
     observeRun,
     organizationId,
     saveNow,

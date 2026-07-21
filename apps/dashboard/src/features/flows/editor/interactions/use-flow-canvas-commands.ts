@@ -33,8 +33,6 @@ export function useFlowCanvasCommands(input: {
   reactFlow: ReactFlowInstance<CanvasNode, CanvasEdge>
   /** Retries a failed graph save. */
   retrySave: () => Promise<null | number>
-  /** Executes every admissible generation node. */
-  runAll: () => Promise<void>
   /** Executes one node with an optional graph scope. */
   runGeneration: (
     nodeId: string,
@@ -74,7 +72,6 @@ export function useFlowCanvasCommands(input: {
       ),
       focusSelection: focusFlowCanvas.bind(null, viewportContext),
       retrySave: input.retrySave,
-      runAll: input.runAll,
       runFromHere: runFlowCanvasGeneration.bind(
         null,
         input.runGeneration,
@@ -93,7 +90,6 @@ export function useFlowCanvasCommands(input: {
     input.reactFlow,
     input.referenceData,
     input.retrySave,
-    input.runAll,
     input.runGeneration,
     input.runSelection,
     input.store,

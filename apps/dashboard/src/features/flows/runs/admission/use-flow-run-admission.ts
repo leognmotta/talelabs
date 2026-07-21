@@ -26,6 +26,7 @@ export function useFlowRunAdmission(input: {
   executionMode: FlowRunExecutionMode
   executionRuntime: FlowRunExecutionRuntime
   flowId: string
+  fundingSource: 'byok' | 'credits'
   observeRun: (run: FlowRun) => void
   organizationId: string
   saveNow: (options?: {
@@ -38,6 +39,7 @@ export function useFlowRunAdmission(input: {
     executionMode,
     executionRuntime,
     flowId,
+    fundingSource,
     observeRun,
     organizationId,
     saveNow,
@@ -68,6 +70,7 @@ export function useFlowRunAdmission(input: {
           executionMode,
           executionRuntime,
           expectedFlowRevision: revision,
+          fundingSource,
           mode: command.mode,
           ...(byokProviders ? { byokProviders } : {}),
           ...(command.mode === 'selection'
@@ -99,6 +102,7 @@ export function useFlowRunAdmission(input: {
       executionMode,
       executionRuntime,
       flowId,
+      fundingSource,
       observeRun,
       organizationId,
       queryClient,

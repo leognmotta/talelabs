@@ -14,6 +14,11 @@ import {
   ContextMenuShortcut,
 } from '@talelabs/ui/components/context-menu'
 import { useTranslation } from 'react-i18next'
+import { RunCostEstimate } from '../../runs/cost-estimation/run-cost-estimate'
+import {
+  isRunCostEstimateReady,
+  useFlowRunCostEstimate,
+} from '../../runs/cost-estimation/use-flow-run-cost-estimate'
 
 /** Offers duplicate, lock, and delete commands for the current graph selection. */
 export function FlowCanvasSelectionContextMenu({
@@ -24,6 +29,7 @@ export function FlowCanvasSelectionContextMenu({
   canRunNode,
   deleteShortcut,
   duplicateShortcut,
+  nodeIds,
   onArrange,
   onDelete,
   onDuplicate,
@@ -40,6 +46,7 @@ export function FlowCanvasSelectionContextMenu({
   canRunNode?: boolean
   deleteShortcut: string
   duplicateShortcut: string
+  nodeIds: string[]
   onArrange: () => void
   onDelete: () => void
   onDuplicate: () => void
@@ -51,6 +58,23 @@ export function FlowCanvasSelectionContextMenu({
 }) {
   const { t } = useTranslation()
   const hasNodeRunActions = Boolean(onRunNode && onRunFromHere && onRunTillHere)
+  const nodeId = nodeIds.length === 1 ? nodeIds[0] : undefined
+  const nodeCost = useFlowRunCostEstimate({
+    command: { mode: 'node', targetNodeId: nodeId ?? '' },
+    enabled: Boolean(nodeId && canRunNode),
+  })
+  const fromHereCost = useFlowRunCostEstimate({
+    command: { mode: 'downstream', targetNodeId: nodeId ?? '' },
+    enabled: Boolean(nodeId && canRunNode),
+  })
+  const tillHereCost = useFlowRunCostEstimate({
+    command: { mode: 'upstream', targetNodeId: nodeId ?? '' },
+    enabled: Boolean(nodeId && canRunNode),
+  })
+  const selectionCost = useFlowRunCostEstimate({
+    command: { mode: 'selection', selectedNodeIds: nodeIds },
+    enabled: canRun && nodeIds.length > 0,
+  })
 
   return (
     <>
@@ -58,24 +82,48 @@ export function FlowCanvasSelectionContextMenu({
         {hasNodeRunActions
           ? (
               <>
-                <ContextMenuItem disabled={!canRunNode} onClick={onRunNode}>
+                <ContextMenuItem
+                  disabled={!canRunNode || !isRunCostEstimateReady(nodeCost)}
+                  onClick={onRunNode}
+                >
                   <IconPlayerPlay />
                   {t('flows.nodeToolbar.run')}
+                  <ContextMenuShortcut>
+                    <RunCostEstimate showTooltip={false} state={nodeCost} />
+                  </ContextMenuShortcut>
                 </ContextMenuItem>
-                <ContextMenuItem disabled={!canRunNode} onClick={onRunFromHere}>
+                <ContextMenuItem
+                  disabled={!canRunNode || !isRunCostEstimateReady(fromHereCost)}
+                  onClick={onRunFromHere}
+                >
                   <IconPlayerPlay />
                   {t('flows.nodeToolbar.runFromHere')}
+                  <ContextMenuShortcut>
+                    <RunCostEstimate showTooltip={false} state={fromHereCost} />
+                  </ContextMenuShortcut>
                 </ContextMenuItem>
-                <ContextMenuItem disabled={!canRunNode} onClick={onRunTillHere}>
+                <ContextMenuItem
+                  disabled={!canRunNode || !isRunCostEstimateReady(tillHereCost)}
+                  onClick={onRunTillHere}
+                >
                   <IconPlayerPlay />
                   {t('flows.nodeToolbar.runTillHere')}
+                  <ContextMenuShortcut>
+                    <RunCostEstimate showTooltip={false} state={tillHereCost} />
+                  </ContextMenuShortcut>
                 </ContextMenuItem>
               </>
             )
           : null}
-        <ContextMenuItem disabled={!canRun} onClick={onRun}>
+        <ContextMenuItem
+          disabled={!canRun || !isRunCostEstimateReady(selectionCost)}
+          onClick={onRun}
+        >
           <IconPlayerPlay />
           {t('flows.runSelection')}
+          <ContextMenuShortcut>
+            <RunCostEstimate showTooltip={false} state={selectionCost} />
+          </ContextMenuShortcut>
         </ContextMenuItem>
       </ContextMenuGroup>
       <ContextMenuSeparator />

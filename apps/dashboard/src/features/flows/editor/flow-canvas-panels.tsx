@@ -94,12 +94,9 @@ export const FlowCanvasToolbarPanel = memo((input: {
   canAddNodeType: (nodeType: FlowNodeType) => boolean
   canUseDebugMode: boolean
   debugMode: boolean
-  isRunAllRunning: boolean
   onAddNode: (nodeType: FlowNodeType) => void
   onDebugModeChange: (enabled: boolean) => void
   onFitView: () => void
-  onRunAll: () => void
-  runAllDisabled: boolean
   shortcutLabels: Readonly<{
     redo: string
     undo: string
@@ -116,14 +113,11 @@ export const FlowCanvasToolbarPanel = memo((input: {
         canUndo={canUndo}
         canUseDebugMode={input.canUseDebugMode}
         debugMode={input.debugMode}
-        isRunAllRunning={input.isRunAllRunning}
-        runAllDisabled={input.runAllDisabled}
         shortcutLabels={input.shortcutLabels}
         onAddNode={input.onAddNode}
         onDebugModeChange={input.onDebugModeChange}
         onFitView={input.onFitView}
         onRedo={() => restoreCanvasHistory(store, 'redo')}
-        onRunAll={input.onRunAll}
         onUndo={() => restoreCanvasHistory(store, 'undo')}
       />
     </Panel>

@@ -142,8 +142,14 @@ export function useFlowAutosave(input: {
           createFlowGraphDiff(committedGraph, latestGraph),
         )
         if (!stillDirty) {
-          store.setState({ savedRevision: latestState.graphRevision })
+          store.setState({
+            savedRevision: latestState.graphRevision,
+            serverRevision: result.revision,
+          })
           commitDirty(false)
+        }
+        else {
+          store.setState({ serverRevision: result.revision })
         }
         queryClient.setQueryData<FlowGraphResponse>(
           flowQueryKeys.graph(organizationId, flowId),
@@ -221,6 +227,7 @@ export function useFlowAutosave(input: {
           past: [],
           positionHistoryActive: false,
           savedRevision: server.revision,
+          serverRevision: server.revision,
           selectedEdgeIds: [],
           selectedNodeIds: [],
         })
@@ -261,6 +268,7 @@ export function useFlowAutosave(input: {
       past: [],
       positionHistoryActive: false,
       savedRevision: server.revision,
+      serverRevision: server.revision,
       selectedEdgeIds: [],
       selectedNodeIds: [],
     })

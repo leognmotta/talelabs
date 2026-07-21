@@ -59,6 +59,7 @@ export const FlowCanvasContextMenuContent = memo((input: {
                   : false}
                 deleteShortcut={input.shortcutLabels.delete}
                 duplicateShortcut={input.shortcutLabels.duplicate}
+                nodeIds={target.nodeIds}
                 onArrange={() => input.onArrange(target.nodeIds)}
                 onDelete={input.onDeleteSelection}
                 onDuplicate={() => input.onDuplicate(target.nodeIds)}

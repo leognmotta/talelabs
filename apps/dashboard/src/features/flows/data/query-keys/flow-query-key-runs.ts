@@ -36,3 +36,59 @@ export function flowRun(
 ) {
   return [...flowScope(organizationId), 'run', runId, 'detail'] as const
 }
+
+/** Key for one cost-relevant Flow scope and mode-aware preflight command. */
+export function flowRunCostEstimate(input: {
+  /** Provider-neutral run command included in the preflight request. */
+  command: object
+  /** Run mode controlling debug-versus-live cost explanation. */
+  executionMode: 'debug' | 'live'
+  /** Driver used by the current Credits execution path. */
+  executionRuntime: 'browser' | 'managed'
+  /** Flow whose saved graph is being estimated. */
+  flowId: null | string
+  /** Tenant owning the Flow. */
+  organizationId: null | string
+  /** Hash of only the graph and reference facts captured by this command. */
+  scopeFingerprint: string
+}) {
+  return [
+    ...flowRuns(input.organizationId, input.flowId),
+    'cost-estimate',
+    input.scopeFingerprint,
+    input.executionMode,
+    input.executionRuntime,
+    input.command,
+  ] as const
+}
+
+/** Key for one batched request containing only currently missing cost scopes. */
+export function flowRunCostManifest(input: {
+  /** Browser cost-context partition for graph references and prior results. */
+  estimateContextHash: string
+  /** Run mode controlling debug-versus-live cost explanation. */
+  executionMode: 'debug' | 'live'
+  /** Driver used by the current Credits execution path. */
+  executionRuntime: 'browser' | 'managed'
+  /** Saved Flow revision planned by the server. */
+  flowRevision: number
+  /** Flow whose missing scopes are requested. */
+  flowId: null | string
+  /** Whether this batch includes the whole-Flow estimate. */
+  includeAll: boolean
+  /** Direct-node estimates absent from the browser cache. */
+  nodeIds: readonly string[]
+  /** Tenant owning the Flow. */
+  organizationId: null | string
+}) {
+  return [
+    ...flowRuns(input.organizationId, input.flowId),
+    'cost-manifest',
+    input.flowRevision,
+    input.executionMode,
+    input.executionRuntime,
+    input.estimateContextHash,
+    input.includeAll,
+    input.nodeIds,
+  ] as const
+}

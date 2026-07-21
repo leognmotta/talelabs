@@ -76,6 +76,8 @@ export interface CanvasState {
   positionHistoryActive: boolean
   /** Last local graph revision fully acknowledged by autosave. */
   savedRevision: number
+  /** Latest compare-and-swap revision acknowledged by the API. */
+  serverRevision: number
   /** Selected edge IDs stored separately from the frequently changing edge array. */
   selectedEdgeIds: string[]
   /** Selected node IDs stored separately from the frequently changing node array. */
@@ -115,6 +117,7 @@ export function createCanvasStore(input: {
     past: [],
     positionHistoryActive: false,
     savedRevision: initialRevision,
+    serverRevision: initialRevision,
     selectedEdgeIds: [],
     selectedNodeIds: [],
   }))

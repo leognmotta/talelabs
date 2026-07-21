@@ -8,6 +8,14 @@ import { createContext, use, useSyncExternalStore } from 'react'
 
 /** Stable external services available to nodes inside one Flow canvas. */
 export interface FlowCanvasRuntimeContextValue {
+  /** Run mode whose provider-cost semantics the canvas presents. */
+  executionMode: 'debug' | 'live'
+  /** Driver responsible for the admitted provider lifecycle. */
+  executionRuntime: 'browser' | 'managed'
+  /** Explicit account source that decides whether provider cost is estimated. */
+  fundingSource: 'byok' | 'credits'
+  /** Flow identity used by run-plan cost queries. */
+  flowId: string
   /** Server-owned generation catalog projection used to configure nodes. */
   generationConfig: GenerationConfigResponse
   /** Reads the current upload presentation for one transient Asset node. */
@@ -20,6 +28,8 @@ export interface FlowCanvasRuntimeContextValue {
   getGenerationPreviewFingerprint: (nodeId: string) => null | string
   /** Server-owned Asset and graph reference data used by node presentation. */
   referenceData: FlowReferenceData
+  /** Tenant identity attached to run-plan cost requests. */
+  organizationId: string
   /** Retries the durable run that produced a retryable node preview. */
   retryGenerationRun: (nodeId: string) => Promise<void>
   /** Admits a durable run for one node and optional graph scope. */
@@ -31,6 +41,8 @@ export interface FlowCanvasRuntimeContextValue {
   subscribeAssetUploads: (listener: () => void) => () => void
   /** Subscribes to preview changes without changing context identity. */
   subscribeGenerationPreviews: (listener: () => void) => () => void
+  /** Authenticated browser user used only to enumerate non-secret BYOK status. */
+  userId: string | undefined
 }
 
 /** Runtime-only context; client-owned graph state remains in the scoped store. */

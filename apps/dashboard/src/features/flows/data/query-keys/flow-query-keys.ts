@@ -11,7 +11,14 @@ import {
   flowGenerationConfig,
   flowReferences,
 } from './flow-query-key-references'
-import { flowActiveBrowserRuns, flowActiveRuns, flowRun, flowRuns } from './flow-query-key-runs'
+import {
+  flowActiveBrowserRuns,
+  flowActiveRuns,
+  flowRun,
+  flowRunCostEstimate,
+  flowRunCostManifest,
+  flowRuns,
+} from './flow-query-key-runs'
 import { flowList, flowLists, flowScope } from './flow-query-key-scope'
 
 /** Composed hierarchical query-key factory for Flow data and run observation. */
@@ -27,6 +34,8 @@ export const flowQueryKeys = {
   lists: flowLists,
   references: flowReferences,
   run: flowRun,
+  runCostEstimate: flowRunCostEstimate,
+  runCostManifest: flowRunCostManifest,
   runRealtimeToken: flowRunRealtimeToken,
   runs: flowRuns,
   scope: flowScope,
