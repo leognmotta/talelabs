@@ -307,6 +307,147 @@
           "profile": "openrouter-browser-v1",
           "reviewedAt": "2026-07-17"
         }
+      },
+      {
+        "adapterVersion": "fal-queue-v1",
+        "browserVerification": {
+          "bindingHash": "sha256:340c39e9e5d35235e2c13a5f432cf27f8ba96fa975498c950d49756d0fc63c74",
+          "profile": "fal-browser-v1",
+          "reviewedAt": "2026-07-20"
+        },
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "https://queue.fal.run",
+        "evidence": {
+          "reviewedAt": "2026-07-20",
+          "sources": [
+            "https://fal.ai/models/google/nano-banana-lite/api",
+            "https://fal.ai/docs/documentation/model-apis/inference/queue"
+          ]
+        },
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "lifecycle": {
+          "cancellation": "best-effort",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "google/nano-banana-lite",
+        "operationId": "textToImage",
+        "priority": 200,
+        "provider": "fal",
+        "providerTag": "fal-queue",
+        "protocol": "queue",
+        "requestProfile": {
+          "combinedParams": [],
+          "inputMappings": [],
+          "kind": "image",
+          "maxInputItems": 0,
+          "params": [
+            {
+              "field": "aspect_ratio",
+              "settingId": "aspectRatio"
+            }
+          ],
+          "promptField": "prompt",
+          "requestedCountField": null,
+          "settingIds": [
+            "aspectRatio"
+          ],
+          "staticParams": {
+            "limit_generations": true,
+            "num_images": 1,
+            "output_format": "png",
+            "sync_mode": false
+          }
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-20.2"
+      },
+      {
+        "adapterVersion": "fal-queue-v1",
+        "browserVerification": {
+          "bindingHash": "sha256:d3a25f740817cd61e4399efd350b29db8a93426984769e14e87a13e426eb816d",
+          "profile": "fal-browser-v1",
+          "reviewedAt": "2026-07-20"
+        },
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "https://queue.fal.run",
+        "evidence": {
+          "reviewedAt": "2026-07-20",
+          "sources": [
+            "https://fal.ai/models/google/nano-banana-lite/edit/api",
+            "https://fal.ai/docs/documentation/model-apis/inference/queue"
+          ]
+        },
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "lifecycle": {
+          "cancellation": "best-effort",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "google/nano-banana-lite/edit",
+        "operationId": "imageToImage",
+        "priority": 200,
+        "provider": "fal",
+        "providerTag": "fal-queue",
+        "protocol": "queue",
+        "requestProfile": {
+          "combinedParams": [],
+          "inputMappings": [
+            {
+              "cardinality": "many",
+              "field": "image_urls",
+              "maxItems": 14,
+              "mediaType": "image",
+              "minItems": 1,
+              "targetSlotId": "imageReferences"
+            }
+          ],
+          "kind": "image",
+          "maxInputItems": 14,
+          "params": [
+            {
+              "field": "aspect_ratio",
+              "settingId": "aspectRatio"
+            }
+          ],
+          "promptField": "prompt",
+          "requestedCountField": null,
+          "settingIds": [
+            "aspectRatio"
+          ],
+          "staticParams": {
+            "limit_generations": true,
+            "num_images": 1,
+            "output_format": "png",
+            "sync_mode": false
+          }
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-20.2"
       }
     ]
   },
@@ -648,6 +789,169 @@
           "profile": "openrouter-browser-v1",
           "reviewedAt": "2026-07-17"
         }
+      },
+      {
+        "adapterVersion": "fal-queue-v1",
+        "browserVerification": {
+          "bindingHash": "sha256:a5112cba2804ae6d7aa3233808a3ad64d2456291458a3728684bd796b6a4ea6e",
+          "profile": "fal-browser-v1",
+          "reviewedAt": "2026-07-20"
+        },
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "https://queue.fal.run",
+        "evidence": {
+          "reviewedAt": "2026-07-20",
+          "sources": [
+            "https://fal.ai/models/fal-ai/nano-banana-2/api",
+            "https://fal.ai/docs/documentation/model-apis/inference/queue"
+          ]
+        },
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "lifecycle": {
+          "cancellation": "best-effort",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "fal-ai/nano-banana-2",
+        "operationId": "textToImage",
+        "priority": 200,
+        "provider": "fal",
+        "providerTag": "fal-queue",
+        "protocol": "queue",
+        "requestProfile": {
+          "combinedParams": [],
+          "inputMappings": [],
+          "kind": "image",
+          "maxInputItems": 0,
+          "params": [
+            {
+              "field": "aspect_ratio",
+              "settingId": "aspectRatio"
+            },
+            {
+              "field": "resolution",
+              "settingId": "resolution",
+              "valueMap": {
+                "512": "0.5K",
+                "1K": "1K",
+                "2K": "2K",
+                "4K": "4K"
+              }
+            }
+          ],
+          "promptField": "prompt",
+          "requestedCountField": null,
+          "settingIds": [
+            "aspectRatio",
+            "resolution"
+          ],
+          "staticParams": {
+            "limit_generations": true,
+            "num_images": 1,
+            "output_format": "png",
+            "sync_mode": false
+          }
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-20.2"
+      },
+      {
+        "adapterVersion": "fal-queue-v1",
+        "browserVerification": {
+          "bindingHash": "sha256:52ec2da43ffbb59ef0e78cc240a3b42d3862f65af604d5d139550e2135db4308",
+          "profile": "fal-browser-v1",
+          "reviewedAt": "2026-07-20"
+        },
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "https://queue.fal.run",
+        "evidence": {
+          "reviewedAt": "2026-07-20",
+          "sources": [
+            "https://fal.ai/models/fal-ai/nano-banana-2/edit/api",
+            "https://fal.ai/docs/documentation/model-apis/inference/queue"
+          ]
+        },
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "lifecycle": {
+          "cancellation": "best-effort",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "fal-ai/nano-banana-2/edit",
+        "operationId": "imageToImage",
+        "priority": 200,
+        "provider": "fal",
+        "providerTag": "fal-queue",
+        "protocol": "queue",
+        "requestProfile": {
+          "combinedParams": [],
+          "inputMappings": [
+            {
+              "cardinality": "many",
+              "field": "image_urls",
+              "maxItems": 14,
+              "mediaType": "image",
+              "minItems": 1,
+              "targetSlotId": "imageReferences"
+            }
+          ],
+          "kind": "image",
+          "maxInputItems": 14,
+          "params": [
+            {
+              "field": "aspect_ratio",
+              "settingId": "aspectRatio"
+            },
+            {
+              "field": "resolution",
+              "settingId": "resolution",
+              "valueMap": {
+                "512": "0.5K",
+                "1K": "1K",
+                "2K": "2K",
+                "4K": "4K"
+              }
+            }
+          ],
+          "promptField": "prompt",
+          "requestedCountField": null,
+          "settingIds": [
+            "aspectRatio",
+            "resolution"
+          ],
+          "staticParams": {
+            "limit_generations": true,
+            "num_images": 1,
+            "output_format": "png",
+            "sync_mode": false
+          }
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-20.2"
       }
     ]
   },
@@ -969,6 +1273,157 @@
           "profile": "openrouter-browser-v1",
           "reviewedAt": "2026-07-17"
         }
+      },
+      {
+        "adapterVersion": "fal-queue-v1",
+        "browserVerification": {
+          "bindingHash": "sha256:b25266b0251a1e2cffd890d9fc5c4b9f1deac4ab3c4935b847ecef7b6628f349",
+          "profile": "fal-browser-v1",
+          "reviewedAt": "2026-07-20"
+        },
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "https://queue.fal.run",
+        "evidence": {
+          "reviewedAt": "2026-07-20",
+          "sources": [
+            "https://fal.ai/models/fal-ai/nano-banana-pro/api",
+            "https://fal.ai/docs/documentation/model-apis/inference/queue"
+          ]
+        },
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "lifecycle": {
+          "cancellation": "best-effort",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "fal-ai/nano-banana-pro",
+        "operationId": "textToImage",
+        "priority": 200,
+        "provider": "fal",
+        "providerTag": "fal-queue",
+        "protocol": "queue",
+        "requestProfile": {
+          "combinedParams": [],
+          "inputMappings": [],
+          "kind": "image",
+          "maxInputItems": 0,
+          "params": [
+            {
+              "field": "aspect_ratio",
+              "settingId": "aspectRatio"
+            },
+            {
+              "field": "resolution",
+              "settingId": "resolution"
+            }
+          ],
+          "promptField": "prompt",
+          "requestedCountField": null,
+          "settingIds": [
+            "aspectRatio",
+            "resolution"
+          ],
+          "staticParams": {
+            "limit_generations": true,
+            "num_images": 1,
+            "output_format": "png",
+            "sync_mode": false
+          }
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-20.2"
+      },
+      {
+        "adapterVersion": "fal-queue-v1",
+        "browserVerification": {
+          "bindingHash": "sha256:6da0e79998b282b0b65795106bbd4f59b0ecb4cf653687a614d29e88d701c28a",
+          "profile": "fal-browser-v1",
+          "reviewedAt": "2026-07-20"
+        },
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "https://queue.fal.run",
+        "evidence": {
+          "reviewedAt": "2026-07-20",
+          "sources": [
+            "https://fal.ai/models/fal-ai/nano-banana-pro/edit/api",
+            "https://fal.ai/docs/documentation/model-apis/inference/queue"
+          ]
+        },
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "lifecycle": {
+          "cancellation": "best-effort",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "fal-ai/nano-banana-pro/edit",
+        "operationId": "imageToImage",
+        "priority": 200,
+        "provider": "fal",
+        "providerTag": "fal-queue",
+        "protocol": "queue",
+        "requestProfile": {
+          "combinedParams": [],
+          "inputMappings": [
+            {
+              "cardinality": "many",
+              "field": "image_urls",
+              "maxItems": 14,
+              "mediaType": "image",
+              "minItems": 1,
+              "targetSlotId": "imageReferences"
+            }
+          ],
+          "kind": "image",
+          "maxInputItems": 14,
+          "params": [
+            {
+              "field": "aspect_ratio",
+              "settingId": "aspectRatio"
+            },
+            {
+              "field": "resolution",
+              "settingId": "resolution"
+            }
+          ],
+          "promptField": "prompt",
+          "requestedCountField": null,
+          "settingIds": [
+            "aspectRatio",
+            "resolution"
+          ],
+          "staticParams": {
+            "limit_generations": true,
+            "num_images": 1,
+            "output_format": "png",
+            "sync_mode": false
+          }
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-20.2"
       }
     ]
   },
@@ -1268,7 +1723,7 @@
   },
   {
     "id": "bytedance-seed/seedream-4.5",
-    "revision": 1,
+    "revision": 2,
     "status": "active",
     "displayName": "Seedream 4.5",
     "labelKey": "flows.models.seedream45",
@@ -1308,7 +1763,7 @@
         "id": "imageReferences",
         "labelKey": "flows.inputs.imageReferences",
         "maxConnections": 32,
-        "maxItems": 14,
+        "maxItems": 10,
         "minConnections": 0,
         "referenceProfile": {
           "contactSheetPolicy": "never",
@@ -1473,7 +1928,7 @@
           "mediaType": "image"
         },
         "referenceLimit": {
-          "maxItems": 14,
+          "maxItems": 10,
           "slotIds": [
             "imageReferences"
           ]
@@ -1581,7 +2036,7 @@
         "protocol": "image",
         "requestProfile": {
           "kind": "image",
-          "maxReferences": 14,
+          "maxReferences": 10,
           "settingIds": [
             "aspectRatio",
             "resolution"
@@ -1604,10 +2059,503 @@
           "browser"
         ],
         "browserVerification": {
-          "bindingHash": "sha256:13c8fb674c3174d3a713e3e0f67279662331fd3a5530e137827efa5f464a7d7a",
+          "bindingHash": "sha256:571116aa172792c2b009f1f8423e72939403d06aba392d60c5740a7b9ebe2a0f",
           "profile": "openrouter-browser-v1",
-          "reviewedAt": "2026-07-17"
+          "reviewedAt": "2026-07-20"
         }
+      },
+      {
+        "adapterVersion": "fal-queue-v1",
+        "browserVerification": {
+          "bindingHash": "sha256:04e7a631b7c92fae56fadce6ca9d1e732dd37bee0385028a0e8fff2fb6efd259",
+          "profile": "fal-browser-v1",
+          "reviewedAt": "2026-07-20"
+        },
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "https://queue.fal.run",
+        "evidence": {
+          "reviewedAt": "2026-07-20",
+          "sources": [
+            "https://fal.ai/models/fal-ai/bytedance/seedream/v4.5/text-to-image/api",
+            "https://fal.ai/docs/documentation/model-apis/inference/queue"
+          ]
+        },
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "lifecycle": {
+          "cancellation": "best-effort",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "fal-ai/bytedance/seedream/v4.5/text-to-image",
+        "operationId": "textToImage",
+        "priority": 200,
+        "provider": "fal",
+        "providerTag": "fal-queue",
+        "protocol": "queue",
+        "requestProfile": {
+          "combinedParams": [
+            {
+              "field": "image_size",
+              "settingIds": [
+                "aspectRatio",
+                "resolution"
+              ],
+              "valueMap": {
+                "1:1": {
+                  "2K": {
+                    "height": 2048,
+                    "width": 2048
+                  },
+                  "4K": {
+                    "height": 4096,
+                    "width": 4096
+                  }
+                },
+                "1:2": {
+                  "2K": {
+                    "height": 2896,
+                    "width": 1456
+                  },
+                  "4K": {
+                    "height": 4096,
+                    "width": 2048
+                  }
+                },
+                "2:1": {
+                  "2K": {
+                    "height": 1456,
+                    "width": 2896
+                  },
+                  "4K": {
+                    "height": 2048,
+                    "width": 4096
+                  }
+                },
+                "2:3": {
+                  "2K": {
+                    "height": 2512,
+                    "width": 1680
+                  },
+                  "4K": {
+                    "height": 4096,
+                    "width": 2736
+                  }
+                },
+                "3:2": {
+                  "2K": {
+                    "height": 1680,
+                    "width": 2512
+                  },
+                  "4K": {
+                    "height": 2736,
+                    "width": 4096
+                  }
+                },
+                "3:4": {
+                  "2K": {
+                    "height": 2368,
+                    "width": 1776
+                  },
+                  "4K": {
+                    "height": 4096,
+                    "width": 3072
+                  }
+                },
+                "4:3": {
+                  "2K": {
+                    "height": 1776,
+                    "width": 2368
+                  },
+                  "4K": {
+                    "height": 3072,
+                    "width": 4096
+                  }
+                },
+                "4:5": {
+                  "2K": {
+                    "height": 2288,
+                    "width": 1824
+                  },
+                  "4K": {
+                    "height": 4096,
+                    "width": 3280
+                  }
+                },
+                "5:4": {
+                  "2K": {
+                    "height": 1824,
+                    "width": 2288
+                  },
+                  "4K": {
+                    "height": 3280,
+                    "width": 4096
+                  }
+                },
+                "9:16": {
+                  "2K": {
+                    "height": 2736,
+                    "width": 1536
+                  },
+                  "4K": {
+                    "height": 4096,
+                    "width": 2304
+                  }
+                },
+                "16:9": {
+                  "2K": {
+                    "height": 1536,
+                    "width": 2736
+                  },
+                  "4K": {
+                    "height": 2304,
+                    "width": 4096
+                  }
+                },
+                "9:19.5": {
+                  "2K": {
+                    "height": 3008,
+                    "width": 1392
+                  },
+                  "4K": {
+                    "height": 4096,
+                    "width": 1888
+                  }
+                },
+                "19.5:9": {
+                  "2K": {
+                    "height": 1392,
+                    "width": 3008
+                  },
+                  "4K": {
+                    "height": 1888,
+                    "width": 4096
+                  }
+                },
+                "9:20": {
+                  "2K": {
+                    "height": 3056,
+                    "width": 1376
+                  },
+                  "4K": {
+                    "height": 4096,
+                    "width": 1840
+                  }
+                },
+                "20:9": {
+                  "2K": {
+                    "height": 1376,
+                    "width": 3056
+                  },
+                  "4K": {
+                    "height": 1840,
+                    "width": 4096
+                  }
+                },
+                "9:21": {
+                  "2K": {
+                    "height": 3136,
+                    "width": 1344
+                  },
+                  "4K": {
+                    "height": 4096,
+                    "width": 1760
+                  }
+                },
+                "21:9": {
+                  "2K": {
+                    "height": 1344,
+                    "width": 3136
+                  },
+                  "4K": {
+                    "height": 1760,
+                    "width": 4096
+                  }
+                }
+              }
+            }
+          ],
+          "inputMappings": [],
+          "kind": "image",
+          "maxInputItems": 0,
+          "params": [],
+          "promptField": "prompt",
+          "requestedCountField": null,
+          "settingIds": [
+            "aspectRatio",
+            "resolution"
+          ],
+          "staticParams": {
+            "enable_safety_checker": true,
+            "max_images": 1,
+            "num_images": 1,
+            "sync_mode": false
+          }
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-20.2"
+      },
+      {
+        "adapterVersion": "fal-queue-v1",
+        "browserVerification": {
+          "bindingHash": "sha256:59298a5d16c4efcce33d785d185def7b87d2769b9c5676fe482fa12f5ab2742b",
+          "profile": "fal-browser-v1",
+          "reviewedAt": "2026-07-20"
+        },
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "https://queue.fal.run",
+        "evidence": {
+          "reviewedAt": "2026-07-20",
+          "sources": [
+            "https://fal.ai/models/fal-ai/bytedance/seedream/v4.5/edit/api",
+            "https://fal.ai/docs/documentation/model-apis/inference/queue"
+          ]
+        },
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "lifecycle": {
+          "cancellation": "best-effort",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "fal-ai/bytedance/seedream/v4.5/edit",
+        "operationId": "imageToImage",
+        "priority": 200,
+        "provider": "fal",
+        "providerTag": "fal-queue",
+        "protocol": "queue",
+        "requestProfile": {
+          "combinedParams": [
+            {
+              "field": "image_size",
+              "settingIds": [
+                "aspectRatio",
+                "resolution"
+              ],
+              "valueMap": {
+                "1:1": {
+                  "2K": {
+                    "height": 2048,
+                    "width": 2048
+                  },
+                  "4K": {
+                    "height": 4096,
+                    "width": 4096
+                  }
+                },
+                "1:2": {
+                  "2K": {
+                    "height": 2896,
+                    "width": 1456
+                  },
+                  "4K": {
+                    "height": 4096,
+                    "width": 2048
+                  }
+                },
+                "2:1": {
+                  "2K": {
+                    "height": 1456,
+                    "width": 2896
+                  },
+                  "4K": {
+                    "height": 2048,
+                    "width": 4096
+                  }
+                },
+                "2:3": {
+                  "2K": {
+                    "height": 2512,
+                    "width": 1680
+                  },
+                  "4K": {
+                    "height": 4096,
+                    "width": 2736
+                  }
+                },
+                "3:2": {
+                  "2K": {
+                    "height": 1680,
+                    "width": 2512
+                  },
+                  "4K": {
+                    "height": 2736,
+                    "width": 4096
+                  }
+                },
+                "3:4": {
+                  "2K": {
+                    "height": 2368,
+                    "width": 1776
+                  },
+                  "4K": {
+                    "height": 4096,
+                    "width": 3072
+                  }
+                },
+                "4:3": {
+                  "2K": {
+                    "height": 1776,
+                    "width": 2368
+                  },
+                  "4K": {
+                    "height": 3072,
+                    "width": 4096
+                  }
+                },
+                "4:5": {
+                  "2K": {
+                    "height": 2288,
+                    "width": 1824
+                  },
+                  "4K": {
+                    "height": 4096,
+                    "width": 3280
+                  }
+                },
+                "5:4": {
+                  "2K": {
+                    "height": 1824,
+                    "width": 2288
+                  },
+                  "4K": {
+                    "height": 3280,
+                    "width": 4096
+                  }
+                },
+                "9:16": {
+                  "2K": {
+                    "height": 2736,
+                    "width": 1536
+                  },
+                  "4K": {
+                    "height": 4096,
+                    "width": 2304
+                  }
+                },
+                "16:9": {
+                  "2K": {
+                    "height": 1536,
+                    "width": 2736
+                  },
+                  "4K": {
+                    "height": 2304,
+                    "width": 4096
+                  }
+                },
+                "9:19.5": {
+                  "2K": {
+                    "height": 3008,
+                    "width": 1392
+                  },
+                  "4K": {
+                    "height": 4096,
+                    "width": 1888
+                  }
+                },
+                "19.5:9": {
+                  "2K": {
+                    "height": 1392,
+                    "width": 3008
+                  },
+                  "4K": {
+                    "height": 1888,
+                    "width": 4096
+                  }
+                },
+                "9:20": {
+                  "2K": {
+                    "height": 3056,
+                    "width": 1376
+                  },
+                  "4K": {
+                    "height": 4096,
+                    "width": 1840
+                  }
+                },
+                "20:9": {
+                  "2K": {
+                    "height": 1376,
+                    "width": 3056
+                  },
+                  "4K": {
+                    "height": 1840,
+                    "width": 4096
+                  }
+                },
+                "9:21": {
+                  "2K": {
+                    "height": 3136,
+                    "width": 1344
+                  },
+                  "4K": {
+                    "height": 4096,
+                    "width": 1760
+                  }
+                },
+                "21:9": {
+                  "2K": {
+                    "height": 1344,
+                    "width": 3136
+                  },
+                  "4K": {
+                    "height": 1760,
+                    "width": 4096
+                  }
+                }
+              }
+            }
+          ],
+          "inputMappings": [
+            {
+              "cardinality": "many",
+              "field": "image_urls",
+              "maxItems": 10,
+              "mediaType": "image",
+              "minItems": 1,
+              "targetSlotId": "imageReferences"
+            }
+          ],
+          "kind": "image",
+          "maxInputItems": 10,
+          "params": [],
+          "promptField": "prompt",
+          "requestedCountField": null,
+          "settingIds": [
+            "aspectRatio",
+            "resolution"
+          ],
+          "staticParams": {
+            "enable_safety_checker": true,
+            "max_images": 1,
+            "num_images": 1,
+            "sync_mode": false
+          }
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-20.2"
       }
     ]
   },
@@ -1872,6 +2820,143 @@
           "profile": "openrouter-browser-v1",
           "reviewedAt": "2026-07-17"
         }
+      },
+      {
+        "adapterVersion": "fal-queue-v1",
+        "browserVerification": {
+          "bindingHash": "sha256:fb9123d7ae0af6ba1025f1e29bb1c04cea3a709ab3e0e27e5eacf408af3a4f6d",
+          "profile": "fal-browser-v1",
+          "reviewedAt": "2026-07-20"
+        },
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "https://queue.fal.run",
+        "evidence": {
+          "reviewedAt": "2026-07-20",
+          "sources": [
+            "https://fal.ai/models/fal-ai/flux-2-pro/api",
+            "https://fal.ai/docs/documentation/model-apis/inference/queue"
+          ]
+        },
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "lifecycle": {
+          "cancellation": "best-effort",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "fal-ai/flux-2-pro",
+        "operationId": "textToImage",
+        "priority": 200,
+        "provider": "fal",
+        "providerTag": "fal-queue",
+        "protocol": "queue",
+        "requestProfile": {
+          "combinedParams": [],
+          "inputMappings": [],
+          "kind": "image",
+          "maxInputItems": 0,
+          "params": [
+            {
+              "field": "output_format",
+              "settingId": "outputFormat"
+            }
+          ],
+          "promptField": "prompt",
+          "requestedCountField": null,
+          "settingIds": [
+            "outputFormat"
+          ],
+          "staticParams": {
+            "enable_safety_checker": true,
+            "sync_mode": false
+          }
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-20.1"
+      },
+      {
+        "adapterVersion": "fal-queue-v1",
+        "browserVerification": {
+          "bindingHash": "sha256:0985eb1bdebde2404c0b1996c354700b62c1e972cb2ca9d7a42624f40d877b9d",
+          "profile": "fal-browser-v1",
+          "reviewedAt": "2026-07-20"
+        },
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "https://queue.fal.run",
+        "evidence": {
+          "reviewedAt": "2026-07-20",
+          "sources": [
+            "https://fal.ai/models/fal-ai/flux-2-pro/edit/api",
+            "https://fal.ai/docs/documentation/model-apis/inference/queue"
+          ]
+        },
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "lifecycle": {
+          "cancellation": "best-effort",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "fal-ai/flux-2-pro/edit",
+        "operationId": "imageToImage",
+        "priority": 200,
+        "provider": "fal",
+        "providerTag": "fal-queue",
+        "protocol": "queue",
+        "requestProfile": {
+          "combinedParams": [],
+          "inputMappings": [
+            {
+              "cardinality": "many",
+              "field": "image_urls",
+              "maxItems": 8,
+              "mediaType": "image",
+              "minItems": 1,
+              "targetSlotId": "imageReferences"
+            }
+          ],
+          "kind": "image",
+          "maxInputItems": 8,
+          "params": [
+            {
+              "field": "output_format",
+              "settingId": "outputFormat"
+            }
+          ],
+          "promptField": "prompt",
+          "requestedCountField": null,
+          "settingIds": [
+            "outputFormat"
+          ],
+          "staticParams": {
+            "enable_safety_checker": true,
+            "sync_mode": false
+          }
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-20.1"
       }
     ]
   },
@@ -2108,6 +3193,63 @@
           "profile": "openrouter-browser-v1",
           "reviewedAt": "2026-07-17"
         }
+      },
+      {
+        "adapterVersion": "fal-queue-v1",
+        "browserVerification": {
+          "bindingHash": "sha256:f386994cb1b3435ea7b8b695b6a2ab35ed2e418dad17f208539a3726b733e730",
+          "profile": "fal-browser-v1",
+          "reviewedAt": "2026-07-20"
+        },
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "https://queue.fal.run",
+        "evidence": {
+          "reviewedAt": "2026-07-20",
+          "sources": [
+            "https://fal.ai/models/fal-ai/recraft/v4.1/text-to-image/api",
+            "https://fal.ai/docs/documentation/model-apis/inference/queue"
+          ]
+        },
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "lifecycle": {
+          "cancellation": "best-effort",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "fal-ai/recraft/v4.1/text-to-image",
+        "operationId": "textToImage",
+        "priority": 200,
+        "provider": "fal",
+        "providerTag": "fal-queue",
+        "protocol": "queue",
+        "requestProfile": {
+          "combinedParams": [],
+          "inputMappings": [],
+          "kind": "image",
+          "maxInputItems": 0,
+          "params": [],
+          "promptField": "prompt",
+          "requestedCountField": null,
+          "settingIds": [],
+          "staticParams": {
+            "enable_safety_checker": true,
+            "image_size": "square_hd"
+          }
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-20.2"
       }
     ]
   },
@@ -2689,6 +3831,145 @@
           "profile": "openrouter-browser-v1",
           "reviewedAt": "2026-07-17"
         }
+      },
+      {
+        "adapterVersion": "fal-queue-v1",
+        "browserVerification": {
+          "bindingHash": "sha256:4f5b6ccda8e1964c0b351e0e7f488465cdb4802138be1ff922915fed68cbc827",
+          "profile": "fal-browser-v1",
+          "reviewedAt": "2026-07-20"
+        },
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "https://queue.fal.run",
+        "evidence": {
+          "reviewedAt": "2026-07-20",
+          "sources": [
+            "https://fal.ai/models/microsoft/mai-image-2.5/api",
+            "https://fal.ai/docs/documentation/model-apis/inference/queue"
+          ]
+        },
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "lifecycle": {
+          "cancellation": "best-effort",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "microsoft/mai-image-2.5",
+        "operationId": "textToImage",
+        "priority": 200,
+        "provider": "fal",
+        "providerTag": "fal-queue",
+        "protocol": "queue",
+        "requestProfile": {
+          "combinedParams": [],
+          "inputMappings": [],
+          "kind": "image",
+          "maxInputItems": 0,
+          "params": [
+            {
+              "field": "aspect_ratio",
+              "settingId": "aspectRatio"
+            }
+          ],
+          "promptField": "prompt",
+          "requestedCountField": null,
+          "settingIds": [
+            "aspectRatio"
+          ],
+          "staticParams": {
+            "num_images": 1,
+            "output_format": "png",
+            "sync_mode": false
+          }
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-20.2"
+      },
+      {
+        "adapterVersion": "fal-queue-v1",
+        "browserVerification": {
+          "bindingHash": "sha256:c5d5f39f770a0af8880fdf1531bd6dbaeb17080c1924886c94d65476b5699635",
+          "profile": "fal-browser-v1",
+          "reviewedAt": "2026-07-20"
+        },
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "https://queue.fal.run",
+        "evidence": {
+          "reviewedAt": "2026-07-20",
+          "sources": [
+            "https://fal.ai/models/microsoft/mai-image-2.5/edit/api",
+            "https://fal.ai/docs/documentation/model-apis/inference/queue"
+          ]
+        },
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "lifecycle": {
+          "cancellation": "best-effort",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "microsoft/mai-image-2.5/edit",
+        "operationId": "imageToImage",
+        "priority": 200,
+        "provider": "fal",
+        "providerTag": "fal-queue",
+        "protocol": "queue",
+        "requestProfile": {
+          "combinedParams": [],
+          "inputMappings": [
+            {
+              "cardinality": "many",
+              "field": "image_urls",
+              "maxItems": 1,
+              "mediaType": "image",
+              "minItems": 1,
+              "targetSlotId": "imageReferences"
+            }
+          ],
+          "kind": "image",
+          "maxInputItems": 1,
+          "params": [
+            {
+              "field": "aspect_ratio",
+              "settingId": "aspectRatio"
+            }
+          ],
+          "promptField": "prompt",
+          "requestedCountField": null,
+          "settingIds": [
+            "aspectRatio"
+          ],
+          "staticParams": {
+            "num_images": 1,
+            "output_format": "png",
+            "sync_mode": false
+          }
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-20.2"
       }
     ]
   },
@@ -3022,6 +4303,89 @@
           "profile": "openrouter-browser-v1",
           "reviewedAt": "2026-07-17"
         }
+      },
+      {
+        "adapterVersion": "fal-queue-v1",
+        "browserVerification": {
+          "bindingHash": "sha256:a1d56412f4144630b0540eb7b3bcbd04353cfbce93bc168bc1ef831dac39eb40",
+          "profile": "fal-browser-v1",
+          "reviewedAt": "2026-07-20"
+        },
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "https://queue.fal.run",
+        "evidence": {
+          "reviewedAt": "2026-07-20",
+          "sources": [
+            "https://fal.ai/models/xai/grok-imagine-image/edit/api",
+            "https://fal.ai/docs/documentation/model-apis/inference/queue"
+          ]
+        },
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "lifecycle": {
+          "cancellation": "best-effort",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "xai/grok-imagine-image/edit",
+        "operationId": "imageToImage",
+        "priority": 200,
+        "provider": "fal",
+        "providerTag": "fal-queue",
+        "protocol": "queue",
+        "requestProfile": {
+          "combinedParams": [],
+          "inputMappings": [
+            {
+              "cardinality": "many",
+              "field": "image_urls",
+              "maxItems": 3,
+              "mediaType": "image",
+              "minItems": 1,
+              "targetSlotId": "imageReferences"
+            }
+          ],
+          "kind": "image",
+          "maxInputItems": 3,
+          "params": [
+            {
+              "field": "aspect_ratio",
+              "settingId": "aspectRatio"
+            },
+            {
+              "field": "resolution",
+              "settingId": "resolution",
+              "valueMap": {
+                "1K": "1k",
+                "2K": "2k"
+              }
+            }
+          ],
+          "promptField": "prompt",
+          "requestedCountField": null,
+          "settingIds": [
+            "aspectRatio",
+            "resolution"
+          ],
+          "staticParams": {
+            "num_images": 1,
+            "output_format": "jpeg",
+            "sync_mode": false
+          }
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-20.2"
       }
     ]
   },
@@ -3286,6 +4650,143 @@
           "profile": "openrouter-browser-v1",
           "reviewedAt": "2026-07-17"
         }
+      },
+      {
+        "adapterVersion": "fal-queue-v1",
+        "browserVerification": {
+          "bindingHash": "sha256:230fedcd997dc863c5d12f05d3f6fe3705d317eb45dc4533f4156576d8b3c12a",
+          "profile": "fal-browser-v1",
+          "reviewedAt": "2026-07-20"
+        },
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "https://queue.fal.run",
+        "evidence": {
+          "reviewedAt": "2026-07-20",
+          "sources": [
+            "https://fal.ai/models/fal-ai/flux-2-max/api",
+            "https://fal.ai/docs/documentation/model-apis/inference/queue"
+          ]
+        },
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "lifecycle": {
+          "cancellation": "best-effort",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "fal-ai/flux-2-max",
+        "operationId": "textToImage",
+        "priority": 200,
+        "provider": "fal",
+        "providerTag": "fal-queue",
+        "protocol": "queue",
+        "requestProfile": {
+          "combinedParams": [],
+          "inputMappings": [],
+          "kind": "image",
+          "maxInputItems": 0,
+          "params": [
+            {
+              "field": "output_format",
+              "settingId": "outputFormat"
+            }
+          ],
+          "promptField": "prompt",
+          "requestedCountField": null,
+          "settingIds": [
+            "outputFormat"
+          ],
+          "staticParams": {
+            "enable_safety_checker": true,
+            "sync_mode": false
+          }
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-20.1"
+      },
+      {
+        "adapterVersion": "fal-queue-v1",
+        "browserVerification": {
+          "bindingHash": "sha256:91d8443a182825113e52550fdedafe3e2218d7b0d999ae534a60ada8a66eb799",
+          "profile": "fal-browser-v1",
+          "reviewedAt": "2026-07-20"
+        },
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "https://queue.fal.run",
+        "evidence": {
+          "reviewedAt": "2026-07-20",
+          "sources": [
+            "https://fal.ai/models/fal-ai/flux-2-max/edit/api",
+            "https://fal.ai/docs/documentation/model-apis/inference/queue"
+          ]
+        },
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "lifecycle": {
+          "cancellation": "best-effort",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "fal-ai/flux-2-max/edit",
+        "operationId": "imageToImage",
+        "priority": 200,
+        "provider": "fal",
+        "providerTag": "fal-queue",
+        "protocol": "queue",
+        "requestProfile": {
+          "combinedParams": [],
+          "inputMappings": [
+            {
+              "cardinality": "many",
+              "field": "image_urls",
+              "maxItems": 8,
+              "mediaType": "image",
+              "minItems": 1,
+              "targetSlotId": "imageReferences"
+            }
+          ],
+          "kind": "image",
+          "maxInputItems": 8,
+          "params": [
+            {
+              "field": "output_format",
+              "settingId": "outputFormat"
+            }
+          ],
+          "promptField": "prompt",
+          "requestedCountField": null,
+          "settingIds": [
+            "outputFormat"
+          ],
+          "staticParams": {
+            "enable_safety_checker": true,
+            "sync_mode": false
+          }
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-20.1"
       }
     ]
   },
@@ -3522,6 +5023,1104 @@
           "profile": "openrouter-browser-v1",
           "reviewedAt": "2026-07-17"
         }
+      },
+      {
+        "adapterVersion": "fal-queue-v1",
+        "browserVerification": {
+          "bindingHash": "sha256:afa7ed38eb1969b66762fae8a3e407f7690aed6336471282bc1c9143f928a1a0",
+          "profile": "fal-browser-v1",
+          "reviewedAt": "2026-07-20"
+        },
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "https://queue.fal.run",
+        "evidence": {
+          "reviewedAt": "2026-07-20",
+          "sources": [
+            "https://fal.ai/models/fal-ai/recraft/v4.1/pro/text-to-image/api",
+            "https://fal.ai/docs/documentation/model-apis/inference/queue"
+          ]
+        },
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "lifecycle": {
+          "cancellation": "best-effort",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "fal-ai/recraft/v4.1/pro/text-to-image",
+        "operationId": "textToImage",
+        "priority": 200,
+        "provider": "fal",
+        "providerTag": "fal-queue",
+        "protocol": "queue",
+        "requestProfile": {
+          "combinedParams": [],
+          "inputMappings": [],
+          "kind": "image",
+          "maxInputItems": 0,
+          "params": [],
+          "promptField": "prompt",
+          "requestedCountField": null,
+          "settingIds": [],
+          "staticParams": {
+            "enable_safety_checker": true,
+            "image_size": "square_hd"
+          }
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-20.2"
+      }
+    ]
+  },
+  {
+    "id": "bytedance/seedream-5.0-lite",
+    "revision": 1,
+    "status": "active",
+    "displayName": "Seedream 5.0 Lite",
+    "labelKey": "flows.models.seedream50Lite",
+    "presentation": {
+      "descriptionKey": "flows.modelDescriptions.seedream50Lite",
+      "logoId": "bytedance"
+    },
+    "mediaType": "image",
+    "recommended": false,
+    "capabilitySchemaVersion": 3,
+    "defaultOperationId": "textToImage",
+    "inputSlots": [
+      {
+        "accepts": [
+          "Text"
+        ],
+        "descriptionKey": "flows.inputs.promptDescription",
+        "id": "prompt",
+        "labelKey": "flows.inputs.prompt",
+        "maxConnections": 32,
+        "maxItems": 32,
+        "minConnections": 0
+      },
+      {
+        "accepts": [
+          "ImageSet"
+        ],
+        "acceptedMedia": {
+          "maxBytes": 52428800,
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ]
+        },
+        "descriptionKey": "flows.inputs.imageReferencesDescription",
+        "id": "imageReferences",
+        "labelKey": "flows.inputs.imageReferences",
+        "maxConnections": 32,
+        "maxItems": 10,
+        "minConnections": 0,
+        "referenceProfile": {
+          "contactSheetPolicy": "never",
+          "multipleSubjectSupport": "supported",
+          "purposes": [
+            "composition",
+            "identity",
+            "style",
+            "subject"
+          ]
+        }
+      }
+    ],
+    "settings": [
+      {
+        "default": "1:1",
+        "id": "aspectRatio",
+        "kind": "enum",
+        "labelKey": "flows.settings.aspectRatio",
+        "options": [
+          {
+            "labelKey": "flows.settings.aspectRatios.square",
+            "value": "1:1"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "2:3"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "3:2"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "3:4"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "4:3"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "9:16"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "16:9"
+          }
+        ]
+      },
+      {
+        "default": "2K",
+        "id": "resolution",
+        "kind": "enum",
+        "labelKey": "flows.settings.resolution",
+        "options": [
+          {
+            "labelKey": "flows.settings.resolutions.2k",
+            "value": "2K"
+          },
+          {
+            "labelKey": "flows.settings.resolutions.3k",
+            "value": "3K"
+          }
+        ]
+      },
+      {
+        "default": 1,
+        "id": "outputCount",
+        "kind": "number",
+        "labelKey": "flows.settings.outputCount",
+        "max": 6,
+        "min": 1,
+        "step": 1
+      },
+      {
+        "advanced": true,
+        "default": true,
+        "id": "safetyChecker",
+        "kind": "boolean",
+        "labelKey": "flows.settings.safetyChecker"
+      }
+    ],
+    "constraints": [],
+    "operations": [
+      {
+        "descriptionKey": "flows.operations.textToImageDescription",
+        "id": "textToImage",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt"
+        ],
+        "labelKey": "flows.operations.textToImage",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 6,
+            "min": 1,
+            "settingId": "outputCount"
+          },
+          "mediaType": "image"
+        },
+        "referenceLimit": {
+          "maxItems": 0,
+          "slotIds": []
+        },
+        "settingIds": [
+          "aspectRatio",
+          "resolution",
+          "outputCount",
+          "safetyChecker"
+        ],
+        "nodeType": "imageGeneration"
+      },
+      {
+        "descriptionKey": "flows.operations.imageToImageDescription",
+        "id": "imageToImage",
+        "inputs": {
+          "imageReferences": {
+            "required": true
+          },
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt",
+          "imageReferences"
+        ],
+        "labelKey": "flows.operations.imageToImage",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 6,
+            "min": 1,
+            "settingId": "outputCount"
+          },
+          "mediaType": "image"
+        },
+        "referenceLimit": {
+          "maxItems": 10,
+          "slotIds": [
+            "imageReferences"
+          ]
+        },
+        "settingIds": [
+          "aspectRatio",
+          "resolution",
+          "outputCount",
+          "safetyChecker"
+        ],
+        "nodeType": "imageGeneration"
+      }
+    ],
+    "bindings": [
+      {
+        "adapterVersion": "fal-queue-v1",
+        "browserVerification": {
+          "bindingHash": "sha256:fa5f331fd8831106401eea57d7771434bd1c924c0cf41fbba8ef5298c15726be",
+          "profile": "fal-browser-v1",
+          "reviewedAt": "2026-07-20"
+        },
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "https://queue.fal.run",
+        "evidence": {
+          "reviewedAt": "2026-07-20",
+          "sources": [
+            "https://fal.ai/models/fal-ai/bytedance/seedream/v5/lite/text-to-image/api",
+            "https://fal.ai/docs/documentation/model-apis/inference/queue"
+          ]
+        },
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "lifecycle": {
+          "cancellation": "best-effort",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "fal-ai/bytedance/seedream/v5/lite/text-to-image",
+        "operationId": "textToImage",
+        "priority": 200,
+        "provider": "fal",
+        "providerTag": "fal-queue",
+        "protocol": "queue",
+        "requestProfile": {
+          "combinedParams": [
+            {
+              "field": "image_size",
+              "settingIds": [
+                "aspectRatio",
+                "resolution"
+              ],
+              "valueMap": {
+                "1:1": {
+                  "2K": {
+                    "height": 2048,
+                    "width": 2048
+                  },
+                  "3K": {
+                    "height": 3072,
+                    "width": 3072
+                  }
+                },
+                "2:3": {
+                  "2K": {
+                    "height": 2496,
+                    "width": 1664
+                  },
+                  "3K": {
+                    "height": 3744,
+                    "width": 2496
+                  }
+                },
+                "3:2": {
+                  "2K": {
+                    "height": 1664,
+                    "width": 2496
+                  },
+                  "3K": {
+                    "height": 2496,
+                    "width": 3744
+                  }
+                },
+                "3:4": {
+                  "2K": {
+                    "height": 2368,
+                    "width": 1776
+                  },
+                  "3K": {
+                    "height": 3520,
+                    "width": 2640
+                  }
+                },
+                "4:3": {
+                  "2K": {
+                    "height": 1776,
+                    "width": 2368
+                  },
+                  "3K": {
+                    "height": 2640,
+                    "width": 3520
+                  }
+                },
+                "9:16": {
+                  "2K": {
+                    "height": 2560,
+                    "width": 1440
+                  },
+                  "3K": {
+                    "height": 3072,
+                    "width": 1728
+                  }
+                },
+                "16:9": {
+                  "2K": {
+                    "height": 1440,
+                    "width": 2560
+                  },
+                  "3K": {
+                    "height": 1728,
+                    "width": 3072
+                  }
+                }
+              }
+            }
+          ],
+          "inputMappings": [],
+          "kind": "image",
+          "maxInputItems": 0,
+          "params": [
+            {
+              "field": "enable_safety_checker",
+              "settingId": "safetyChecker"
+            }
+          ],
+          "promptField": "prompt",
+          "requestedCountField": "num_images",
+          "settingIds": [
+            "aspectRatio",
+            "resolution",
+            "outputCount",
+            "safetyChecker"
+          ],
+          "staticParams": {
+            "max_images": 1,
+            "sync_mode": false
+          }
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-20.2"
+      },
+      {
+        "adapterVersion": "fal-queue-v1",
+        "browserVerification": {
+          "bindingHash": "sha256:7e48a880f9b5ad40e546aa58ab20a45614663e4860ab6dbfc98c4f2190099590",
+          "profile": "fal-browser-v1",
+          "reviewedAt": "2026-07-20"
+        },
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "https://queue.fal.run",
+        "evidence": {
+          "reviewedAt": "2026-07-20",
+          "sources": [
+            "https://fal.ai/models/fal-ai/bytedance/seedream/v5/lite/edit/api",
+            "https://fal.ai/docs/documentation/model-apis/inference/queue"
+          ]
+        },
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "lifecycle": {
+          "cancellation": "best-effort",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "fal-ai/bytedance/seedream/v5/lite/edit",
+        "operationId": "imageToImage",
+        "priority": 200,
+        "provider": "fal",
+        "providerTag": "fal-queue",
+        "protocol": "queue",
+        "requestProfile": {
+          "combinedParams": [
+            {
+              "field": "image_size",
+              "settingIds": [
+                "aspectRatio",
+                "resolution"
+              ],
+              "valueMap": {
+                "1:1": {
+                  "2K": {
+                    "height": 2048,
+                    "width": 2048
+                  },
+                  "3K": {
+                    "height": 3072,
+                    "width": 3072
+                  }
+                },
+                "2:3": {
+                  "2K": {
+                    "height": 2496,
+                    "width": 1664
+                  },
+                  "3K": {
+                    "height": 3744,
+                    "width": 2496
+                  }
+                },
+                "3:2": {
+                  "2K": {
+                    "height": 1664,
+                    "width": 2496
+                  },
+                  "3K": {
+                    "height": 2496,
+                    "width": 3744
+                  }
+                },
+                "3:4": {
+                  "2K": {
+                    "height": 2368,
+                    "width": 1776
+                  },
+                  "3K": {
+                    "height": 3520,
+                    "width": 2640
+                  }
+                },
+                "4:3": {
+                  "2K": {
+                    "height": 1776,
+                    "width": 2368
+                  },
+                  "3K": {
+                    "height": 2640,
+                    "width": 3520
+                  }
+                },
+                "9:16": {
+                  "2K": {
+                    "height": 2560,
+                    "width": 1440
+                  },
+                  "3K": {
+                    "height": 3072,
+                    "width": 1728
+                  }
+                },
+                "16:9": {
+                  "2K": {
+                    "height": 1440,
+                    "width": 2560
+                  },
+                  "3K": {
+                    "height": 1728,
+                    "width": 3072
+                  }
+                }
+              }
+            }
+          ],
+          "inputMappings": [
+            {
+              "cardinality": "many",
+              "field": "image_urls",
+              "maxItems": 10,
+              "mediaType": "image",
+              "minItems": 1,
+              "targetSlotId": "imageReferences"
+            }
+          ],
+          "kind": "image",
+          "maxInputItems": 10,
+          "params": [
+            {
+              "field": "enable_safety_checker",
+              "settingId": "safetyChecker"
+            }
+          ],
+          "promptField": "prompt",
+          "requestedCountField": "num_images",
+          "settingIds": [
+            "aspectRatio",
+            "resolution",
+            "outputCount",
+            "safetyChecker"
+          ],
+          "staticParams": {
+            "max_images": 1,
+            "sync_mode": false
+          }
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-20.2"
+      }
+    ]
+  },
+  {
+    "id": "bytedance/seedream-5.0-pro",
+    "revision": 1,
+    "status": "active",
+    "displayName": "Seedream 5.0 Pro",
+    "labelKey": "flows.models.seedream50Pro",
+    "presentation": {
+      "descriptionKey": "flows.modelDescriptions.seedream50Pro",
+      "logoId": "bytedance"
+    },
+    "mediaType": "image",
+    "recommended": false,
+    "capabilitySchemaVersion": 3,
+    "defaultOperationId": "textToImage",
+    "inputSlots": [
+      {
+        "accepts": [
+          "Text"
+        ],
+        "descriptionKey": "flows.inputs.promptDescription",
+        "id": "prompt",
+        "labelKey": "flows.inputs.prompt",
+        "maxConnections": 32,
+        "maxItems": 32,
+        "minConnections": 0
+      },
+      {
+        "accepts": [
+          "ImageSet"
+        ],
+        "acceptedMedia": {
+          "maxBytes": 52428800,
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ]
+        },
+        "descriptionKey": "flows.inputs.imageReferencesDescription",
+        "id": "imageReferences",
+        "labelKey": "flows.inputs.imageReferences",
+        "maxConnections": 32,
+        "maxItems": 10,
+        "minConnections": 0,
+        "referenceProfile": {
+          "contactSheetPolicy": "never",
+          "multipleSubjectSupport": "supported",
+          "purposes": [
+            "composition",
+            "identity",
+            "style",
+            "subject"
+          ]
+        }
+      }
+    ],
+    "settings": [
+      {
+        "default": "1:1",
+        "id": "aspectRatio",
+        "kind": "enum",
+        "labelKey": "flows.settings.aspectRatio",
+        "options": [
+          {
+            "labelKey": "flows.settings.aspectRatios.square",
+            "value": "1:1"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "2:3"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "3:2"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "3:4"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "4:3"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "9:16"
+          },
+          {
+            "labelKey": "flows.settings.aspectRatio",
+            "value": "16:9"
+          }
+        ]
+      },
+      {
+        "default": "2K",
+        "id": "resolution",
+        "kind": "enum",
+        "labelKey": "flows.settings.resolution",
+        "options": [
+          {
+            "labelKey": "flows.settings.resolutions.1k",
+            "value": "1K"
+          },
+          {
+            "labelKey": "flows.settings.resolutions.2k",
+            "value": "2K"
+          }
+        ]
+      },
+      {
+        "default": 1,
+        "id": "outputCount",
+        "kind": "number",
+        "labelKey": "flows.settings.outputCount",
+        "max": 6,
+        "min": 1,
+        "step": 1
+      },
+      {
+        "advanced": true,
+        "default": "jpeg",
+        "id": "outputFormat",
+        "kind": "enum",
+        "labelKey": "flows.settings.outputFormat",
+        "options": [
+          {
+            "labelKey": "flows.settings.outputFormats.jpeg",
+            "value": "jpeg"
+          },
+          {
+            "labelKey": "flows.settings.outputFormats.png",
+            "value": "png"
+          }
+        ]
+      },
+      {
+        "advanced": true,
+        "default": true,
+        "id": "safetyChecker",
+        "kind": "boolean",
+        "labelKey": "flows.settings.safetyChecker"
+      }
+    ],
+    "constraints": [],
+    "operations": [
+      {
+        "descriptionKey": "flows.operations.textToImageDescription",
+        "id": "textToImage",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt"
+        ],
+        "labelKey": "flows.operations.textToImage",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 6,
+            "min": 1,
+            "settingId": "outputCount"
+          },
+          "mediaType": "image"
+        },
+        "referenceLimit": {
+          "maxItems": 0,
+          "slotIds": []
+        },
+        "settingIds": [
+          "aspectRatio",
+          "resolution",
+          "outputCount",
+          "outputFormat",
+          "safetyChecker"
+        ],
+        "nodeType": "imageGeneration"
+      },
+      {
+        "descriptionKey": "flows.operations.imageToImageDescription",
+        "id": "imageToImage",
+        "inputs": {
+          "imageReferences": {
+            "required": true
+          },
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt",
+          "imageReferences"
+        ],
+        "labelKey": "flows.operations.imageToImage",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 6,
+            "min": 1,
+            "settingId": "outputCount"
+          },
+          "mediaType": "image"
+        },
+        "referenceLimit": {
+          "maxItems": 10,
+          "slotIds": [
+            "imageReferences"
+          ]
+        },
+        "settingIds": [
+          "aspectRatio",
+          "resolution",
+          "outputCount",
+          "outputFormat",
+          "safetyChecker"
+        ],
+        "nodeType": "imageGeneration"
+      }
+    ],
+    "bindings": [
+      {
+        "adapterVersion": "fal-queue-v1",
+        "browserVerification": {
+          "bindingHash": "sha256:9729cd462393a505bb9d2da5499fc7812c39722b455c8269cfa2c70eb58428c9",
+          "profile": "fal-browser-v1",
+          "reviewedAt": "2026-07-20"
+        },
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "https://queue.fal.run",
+        "evidence": {
+          "reviewedAt": "2026-07-20",
+          "sources": [
+            "https://fal.ai/models/bytedance/seedream/v5/pro/text-to-image/api",
+            "https://fal.ai/docs/documentation/model-apis/inference/queue"
+          ]
+        },
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "lifecycle": {
+          "cancellation": "best-effort",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "bytedance/seedream/v5/pro/text-to-image",
+        "operationId": "textToImage",
+        "priority": 200,
+        "provider": "fal",
+        "providerTag": "fal-queue",
+        "protocol": "queue",
+        "requestProfile": {
+          "combinedParams": [
+            {
+              "field": "image_size",
+              "settingIds": [
+                "aspectRatio",
+                "resolution"
+              ],
+              "valueMap": {
+                "1:1": {
+                  "1K": {
+                    "height": 1024,
+                    "width": 1024
+                  },
+                  "2K": {
+                    "height": 2048,
+                    "width": 2048
+                  }
+                },
+                "2:3": {
+                  "1K": {
+                    "height": 1272,
+                    "width": 848
+                  },
+                  "2K": {
+                    "height": 2496,
+                    "width": 1664
+                  }
+                },
+                "3:2": {
+                  "1K": {
+                    "height": 848,
+                    "width": 1272
+                  },
+                  "2K": {
+                    "height": 1664,
+                    "width": 2496
+                  }
+                },
+                "3:4": {
+                  "1K": {
+                    "height": 1184,
+                    "width": 888
+                  },
+                  "2K": {
+                    "height": 2304,
+                    "width": 1728
+                  }
+                },
+                "4:3": {
+                  "1K": {
+                    "height": 888,
+                    "width": 1184
+                  },
+                  "2K": {
+                    "height": 1728,
+                    "width": 2304
+                  }
+                },
+                "9:16": {
+                  "1K": {
+                    "height": 1408,
+                    "width": 792
+                  },
+                  "2K": {
+                    "height": 2560,
+                    "width": 1440
+                  }
+                },
+                "16:9": {
+                  "1K": {
+                    "height": 792,
+                    "width": 1408
+                  },
+                  "2K": {
+                    "height": 1440,
+                    "width": 2560
+                  }
+                }
+              }
+            }
+          ],
+          "inputMappings": [],
+          "kind": "image",
+          "maxInputItems": 0,
+          "params": [
+            {
+              "field": "output_format",
+              "settingId": "outputFormat"
+            },
+            {
+              "field": "enable_safety_checker",
+              "settingId": "safetyChecker"
+            }
+          ],
+          "promptField": "prompt",
+          "requestedCountField": "num_images",
+          "settingIds": [
+            "aspectRatio",
+            "resolution",
+            "outputCount",
+            "outputFormat",
+            "safetyChecker"
+          ],
+          "staticParams": {
+            "sync_mode": false
+          }
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-20.2"
+      },
+      {
+        "adapterVersion": "fal-queue-v1",
+        "browserVerification": {
+          "bindingHash": "sha256:d4ef272b49b1e37af6c00617d7625a2c8a275f15d845a11d16c90aada9bfdc33",
+          "profile": "fal-browser-v1",
+          "reviewedAt": "2026-07-20"
+        },
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "https://queue.fal.run",
+        "evidence": {
+          "reviewedAt": "2026-07-20",
+          "sources": [
+            "https://fal.ai/models/bytedance/seedream/v5/pro/edit/api",
+            "https://fal.ai/docs/documentation/model-apis/inference/queue"
+          ]
+        },
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "lifecycle": {
+          "cancellation": "best-effort",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "bytedance/seedream/v5/pro/edit",
+        "operationId": "imageToImage",
+        "priority": 200,
+        "provider": "fal",
+        "providerTag": "fal-queue",
+        "protocol": "queue",
+        "requestProfile": {
+          "combinedParams": [
+            {
+              "field": "image_size",
+              "settingIds": [
+                "aspectRatio",
+                "resolution"
+              ],
+              "valueMap": {
+                "1:1": {
+                  "1K": {
+                    "height": 1024,
+                    "width": 1024
+                  },
+                  "2K": {
+                    "height": 2048,
+                    "width": 2048
+                  }
+                },
+                "2:3": {
+                  "1K": {
+                    "height": 1272,
+                    "width": 848
+                  },
+                  "2K": {
+                    "height": 2496,
+                    "width": 1664
+                  }
+                },
+                "3:2": {
+                  "1K": {
+                    "height": 848,
+                    "width": 1272
+                  },
+                  "2K": {
+                    "height": 1664,
+                    "width": 2496
+                  }
+                },
+                "3:4": {
+                  "1K": {
+                    "height": 1184,
+                    "width": 888
+                  },
+                  "2K": {
+                    "height": 2304,
+                    "width": 1728
+                  }
+                },
+                "4:3": {
+                  "1K": {
+                    "height": 888,
+                    "width": 1184
+                  },
+                  "2K": {
+                    "height": 1728,
+                    "width": 2304
+                  }
+                },
+                "9:16": {
+                  "1K": {
+                    "height": 1408,
+                    "width": 792
+                  },
+                  "2K": {
+                    "height": 2560,
+                    "width": 1440
+                  }
+                },
+                "16:9": {
+                  "1K": {
+                    "height": 792,
+                    "width": 1408
+                  },
+                  "2K": {
+                    "height": 1440,
+                    "width": 2560
+                  }
+                }
+              }
+            }
+          ],
+          "inputMappings": [
+            {
+              "cardinality": "many",
+              "field": "image_urls",
+              "maxItems": 10,
+              "mediaType": "image",
+              "minItems": 1,
+              "targetSlotId": "imageReferences"
+            }
+          ],
+          "kind": "image",
+          "maxInputItems": 10,
+          "params": [
+            {
+              "field": "output_format",
+              "settingId": "outputFormat"
+            },
+            {
+              "field": "enable_safety_checker",
+              "settingId": "safetyChecker"
+            }
+          ],
+          "promptField": "prompt",
+          "requestedCountField": "num_images",
+          "settingIds": [
+            "aspectRatio",
+            "resolution",
+            "outputCount",
+            "outputFormat",
+            "safetyChecker"
+          ],
+          "staticParams": {
+            "sync_mode": false
+          }
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-20.2"
       }
     ]
   }

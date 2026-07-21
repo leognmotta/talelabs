@@ -154,5 +154,1280 @@
         }
       }
     ]
+  },
+  {
+    "id": "elevenlabs/eleven-v3",
+    "revision": 1,
+    "status": "active",
+    "displayName": "ElevenLabs Eleven v3",
+    "labelKey": "flows.models.elevenV3",
+    "presentation": {
+      "descriptionKey": "flows.modelDescriptions.elevenV3",
+      "logoId": "elevenlabs"
+    },
+    "mediaType": "audio",
+    "recommended": false,
+    "capabilitySchemaVersion": 3,
+    "defaultOperationId": "textToSpeech",
+    "inputSlots": [
+      {
+        "accepts": [
+          "Text"
+        ],
+        "descriptionKey": "flows.inputs.scriptDescription",
+        "id": "prompt",
+        "labelKey": "flows.inputs.script",
+        "maxConnections": 1,
+        "maxItems": 1,
+        "minConnections": 0
+      }
+    ],
+    "settings": [
+      {
+        "default": "eleven-rachel",
+        "id": "voice",
+        "kind": "enum",
+        "labelKey": "flows.settings.voice",
+        "options": [
+          {
+            "labelKey": "flows.settings.voices.elevenRachel",
+            "value": "eleven-rachel"
+          },
+          {
+            "labelKey": "flows.settings.voices.elevenAria",
+            "value": "eleven-aria"
+          },
+          {
+            "labelKey": "flows.settings.voices.elevenRoger",
+            "value": "eleven-roger"
+          },
+          {
+            "labelKey": "flows.settings.voices.elevenSarah",
+            "value": "eleven-sarah"
+          }
+        ]
+      },
+      {
+        "default": 0.5,
+        "id": "stability",
+        "kind": "number",
+        "labelKey": "flows.settings.stability",
+        "max": 1,
+        "min": 0,
+        "step": 0.05
+      }
+    ],
+    "constraints": [],
+    "operations": [
+      {
+        "descriptionKey": "flows.operations.textToSpeechDescription",
+        "id": "textToSpeech",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt"
+        ],
+        "labelKey": "flows.operations.textToSpeech",
+        "nodeType": "speechGeneration",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "audio"
+        },
+        "referenceLimit": {
+          "maxItems": 0,
+          "slotIds": []
+        },
+        "requiredSettingIds": [
+          "voice"
+        ],
+        "settingIds": [
+          "voice",
+          "stability"
+        ]
+      }
+    ],
+    "bindings": [
+      {
+        "adapterVersion": "fal-queue-v1",
+        "browserVerification": {
+          "bindingHash": "sha256:5e525f4bc540dbed7a07e8ecebcd7a2a38c04488cb0379618add7ca54f57a02f",
+          "profile": "fal-browser-v1",
+          "reviewedAt": "2026-07-20"
+        },
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "https://queue.fal.run",
+        "evidence": {
+          "reviewedAt": "2026-07-20",
+          "sources": [
+            "https://fal.ai/models/fal-ai/elevenlabs/tts/eleven-v3/api",
+            "https://fal.ai/docs/platform-apis/v1/models",
+            "https://fal.ai/docs/documentation/model-apis/inference/queue"
+          ]
+        },
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "lifecycle": {
+          "cancellation": "best-effort",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "fal-ai/elevenlabs/tts/eleven-v3",
+        "operationId": "textToSpeech",
+        "priority": 100,
+        "provider": "fal",
+        "providerTag": "fal-queue",
+        "protocol": "queue",
+        "requestProfile": {
+          "combinedParams": [],
+          "inputMappings": [],
+          "kind": "speech",
+          "maxInputItems": 0,
+          "params": [
+            {
+              "field": "voice",
+              "settingId": "voice",
+              "valueMap": {
+                "eleven-aria": "Aria",
+                "eleven-rachel": "Rachel",
+                "eleven-roger": "Roger",
+                "eleven-sarah": "Sarah"
+              }
+            },
+            {
+              "field": "stability",
+              "settingId": "stability"
+            }
+          ],
+          "promptField": "text",
+          "settingIds": [
+            "voice",
+            "stability"
+          ],
+          "staticParams": {
+            "apply_text_normalization": "auto",
+            "timestamps": false
+          }
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-20.1"
+      }
+    ]
+  },
+  {
+    "id": "elevenlabs/multilingual-v2",
+    "revision": 1,
+    "status": "active",
+    "displayName": "ElevenLabs TTS Multilingual v2",
+    "labelKey": "flows.models.elevenMultilingualV2",
+    "presentation": {
+      "descriptionKey": "flows.modelDescriptions.elevenMultilingualV2",
+      "logoId": "elevenlabs"
+    },
+    "mediaType": "audio",
+    "recommended": false,
+    "capabilitySchemaVersion": 3,
+    "defaultOperationId": "textToSpeech",
+    "inputSlots": [
+      {
+        "accepts": [
+          "Text"
+        ],
+        "descriptionKey": "flows.inputs.scriptDescription",
+        "id": "prompt",
+        "labelKey": "flows.inputs.script",
+        "maxConnections": 1,
+        "maxItems": 1,
+        "minConnections": 0
+      }
+    ],
+    "settings": [
+      {
+        "default": "eleven-rachel",
+        "id": "voice",
+        "kind": "enum",
+        "labelKey": "flows.settings.voice",
+        "options": [
+          {
+            "labelKey": "flows.settings.voices.elevenRachel",
+            "value": "eleven-rachel"
+          },
+          {
+            "labelKey": "flows.settings.voices.elevenAria",
+            "value": "eleven-aria"
+          },
+          {
+            "labelKey": "flows.settings.voices.elevenRoger",
+            "value": "eleven-roger"
+          },
+          {
+            "labelKey": "flows.settings.voices.elevenSarah",
+            "value": "eleven-sarah"
+          }
+        ]
+      },
+      {
+        "default": 0.5,
+        "id": "stability",
+        "kind": "number",
+        "labelKey": "flows.settings.stability",
+        "max": 1,
+        "min": 0,
+        "step": 0.05
+      },
+      {
+        "default": 1,
+        "id": "speed",
+        "kind": "number",
+        "labelKey": "flows.settings.speed",
+        "max": 1.2,
+        "min": 0.7,
+        "step": 0.05
+      }
+    ],
+    "constraints": [],
+    "operations": [
+      {
+        "descriptionKey": "flows.operations.textToSpeechDescription",
+        "id": "textToSpeech",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt"
+        ],
+        "labelKey": "flows.operations.textToSpeech",
+        "nodeType": "speechGeneration",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "audio"
+        },
+        "referenceLimit": {
+          "maxItems": 0,
+          "slotIds": []
+        },
+        "requiredSettingIds": [
+          "voice"
+        ],
+        "settingIds": [
+          "voice",
+          "stability",
+          "speed"
+        ]
+      }
+    ],
+    "bindings": [
+      {
+        "adapterVersion": "fal-queue-v1",
+        "browserVerification": {
+          "bindingHash": "sha256:26abc861e9f4ade97e1c0ab4a66d32a10fe9c97cc12c38b8692de0ef00099b0c",
+          "profile": "fal-browser-v1",
+          "reviewedAt": "2026-07-20"
+        },
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "https://queue.fal.run",
+        "evidence": {
+          "reviewedAt": "2026-07-20",
+          "sources": [
+            "https://fal.ai/models/fal-ai/elevenlabs/tts/multilingual-v2/api",
+            "https://fal.ai/docs/platform-apis/v1/models",
+            "https://fal.ai/docs/documentation/model-apis/inference/queue"
+          ]
+        },
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "lifecycle": {
+          "cancellation": "best-effort",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "fal-ai/elevenlabs/tts/multilingual-v2",
+        "operationId": "textToSpeech",
+        "priority": 100,
+        "provider": "fal",
+        "providerTag": "fal-queue",
+        "protocol": "queue",
+        "requestProfile": {
+          "combinedParams": [],
+          "inputMappings": [],
+          "kind": "speech",
+          "maxInputItems": 0,
+          "params": [
+            {
+              "field": "voice",
+              "settingId": "voice",
+              "valueMap": {
+                "eleven-aria": "Aria",
+                "eleven-rachel": "Rachel",
+                "eleven-roger": "Roger",
+                "eleven-sarah": "Sarah"
+              }
+            },
+            {
+              "field": "stability",
+              "settingId": "stability"
+            },
+            {
+              "field": "speed",
+              "settingId": "speed"
+            }
+          ],
+          "promptField": "text",
+          "settingIds": [
+            "voice",
+            "stability",
+            "speed"
+          ],
+          "staticParams": {
+            "apply_text_normalization": "auto",
+            "similarity_boost": 0.75,
+            "style": 0,
+            "timestamps": false
+          }
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-20.1"
+      }
+    ]
+  },
+  {
+    "id": "elevenlabs/turbo-v2.5",
+    "revision": 1,
+    "status": "active",
+    "displayName": "ElevenLabs TTS Turbo v2.5",
+    "labelKey": "flows.models.elevenTurboV25",
+    "presentation": {
+      "descriptionKey": "flows.modelDescriptions.elevenTurboV25",
+      "logoId": "elevenlabs"
+    },
+    "mediaType": "audio",
+    "recommended": false,
+    "capabilitySchemaVersion": 3,
+    "defaultOperationId": "textToSpeech",
+    "inputSlots": [
+      {
+        "accepts": [
+          "Text"
+        ],
+        "descriptionKey": "flows.inputs.scriptDescription",
+        "id": "prompt",
+        "labelKey": "flows.inputs.script",
+        "maxConnections": 1,
+        "maxItems": 1,
+        "minConnections": 0
+      }
+    ],
+    "settings": [
+      {
+        "default": "eleven-rachel",
+        "id": "voice",
+        "kind": "enum",
+        "labelKey": "flows.settings.voice",
+        "options": [
+          {
+            "labelKey": "flows.settings.voices.elevenRachel",
+            "value": "eleven-rachel"
+          },
+          {
+            "labelKey": "flows.settings.voices.elevenAria",
+            "value": "eleven-aria"
+          },
+          {
+            "labelKey": "flows.settings.voices.elevenRoger",
+            "value": "eleven-roger"
+          },
+          {
+            "labelKey": "flows.settings.voices.elevenSarah",
+            "value": "eleven-sarah"
+          }
+        ]
+      },
+      {
+        "default": 0.5,
+        "id": "stability",
+        "kind": "number",
+        "labelKey": "flows.settings.stability",
+        "max": 1,
+        "min": 0,
+        "step": 0.05
+      },
+      {
+        "default": 1,
+        "id": "speed",
+        "kind": "number",
+        "labelKey": "flows.settings.speed",
+        "max": 1.2,
+        "min": 0.7,
+        "step": 0.05
+      }
+    ],
+    "constraints": [],
+    "operations": [
+      {
+        "descriptionKey": "flows.operations.textToSpeechDescription",
+        "id": "textToSpeech",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt"
+        ],
+        "labelKey": "flows.operations.textToSpeech",
+        "nodeType": "speechGeneration",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "audio"
+        },
+        "referenceLimit": {
+          "maxItems": 0,
+          "slotIds": []
+        },
+        "requiredSettingIds": [
+          "voice"
+        ],
+        "settingIds": [
+          "voice",
+          "stability",
+          "speed"
+        ]
+      }
+    ],
+    "bindings": [
+      {
+        "adapterVersion": "fal-queue-v1",
+        "browserVerification": {
+          "bindingHash": "sha256:a4e8b2f0ebd16edd85163cde368448c34eba2e111a806dfe165deda42ad769f9",
+          "profile": "fal-browser-v1",
+          "reviewedAt": "2026-07-20"
+        },
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "https://queue.fal.run",
+        "evidence": {
+          "reviewedAt": "2026-07-20",
+          "sources": [
+            "https://fal.ai/models/fal-ai/elevenlabs/tts/turbo-v2.5/api",
+            "https://fal.ai/docs/platform-apis/v1/models",
+            "https://fal.ai/docs/documentation/model-apis/inference/queue"
+          ]
+        },
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "lifecycle": {
+          "cancellation": "best-effort",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "fal-ai/elevenlabs/tts/turbo-v2.5",
+        "operationId": "textToSpeech",
+        "priority": 100,
+        "provider": "fal",
+        "providerTag": "fal-queue",
+        "protocol": "queue",
+        "requestProfile": {
+          "combinedParams": [],
+          "inputMappings": [],
+          "kind": "speech",
+          "maxInputItems": 0,
+          "params": [
+            {
+              "field": "voice",
+              "settingId": "voice",
+              "valueMap": {
+                "eleven-aria": "Aria",
+                "eleven-rachel": "Rachel",
+                "eleven-roger": "Roger",
+                "eleven-sarah": "Sarah"
+              }
+            },
+            {
+              "field": "stability",
+              "settingId": "stability"
+            },
+            {
+              "field": "speed",
+              "settingId": "speed"
+            }
+          ],
+          "promptField": "text",
+          "settingIds": [
+            "voice",
+            "stability",
+            "speed"
+          ],
+          "staticParams": {
+            "apply_text_normalization": "auto",
+            "similarity_boost": 0.75,
+            "style": 0,
+            "timestamps": false
+          }
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-20.1"
+      }
+    ]
+  },
+  {
+    "id": "elevenlabs/music",
+    "revision": 1,
+    "status": "active",
+    "displayName": "ElevenLabs Music",
+    "labelKey": "flows.models.elevenMusic",
+    "presentation": {
+      "descriptionKey": "flows.modelDescriptions.elevenMusic",
+      "logoId": "elevenlabs"
+    },
+    "mediaType": "audio",
+    "recommended": false,
+    "capabilitySchemaVersion": 3,
+    "defaultOperationId": "textToMusic",
+    "inputSlots": [
+      {
+        "accepts": [
+          "Text"
+        ],
+        "descriptionKey": "flows.inputs.promptDescription",
+        "id": "prompt",
+        "labelKey": "flows.inputs.prompt",
+        "maxConnections": 1,
+        "maxItems": 1,
+        "minConnections": 0
+      }
+    ],
+    "settings": [
+      {
+        "default": "auto",
+        "id": "durationMode",
+        "kind": "enum",
+        "labelKey": "flows.settings.durationMode",
+        "options": [
+          {
+            "labelKey": "flows.settings.durationModes.auto",
+            "value": "auto"
+          },
+          {
+            "labelKey": "flows.settings.durationModes.custom",
+            "value": "custom"
+          }
+        ]
+      },
+      {
+        "default": 30,
+        "id": "duration",
+        "kind": "number",
+        "labelKey": "flows.settings.duration",
+        "max": 600,
+        "min": 3,
+        "step": 1,
+        "visibleWhen": [
+          {
+            "field": "setting",
+            "id": "durationMode",
+            "operator": "equals",
+            "value": "custom"
+          }
+        ]
+      },
+      {
+        "default": false,
+        "id": "instrumental",
+        "kind": "boolean",
+        "labelKey": "flows.settings.instrumental"
+      }
+    ],
+    "constraints": [],
+    "operations": [
+      {
+        "descriptionKey": "flows.operations.textToMusicDescription",
+        "id": "textToMusic",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt"
+        ],
+        "labelKey": "flows.operations.textToMusic",
+        "nodeType": "musicGeneration",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "audio"
+        },
+        "referenceLimit": {
+          "maxItems": 0,
+          "slotIds": []
+        },
+        "settingIds": [
+          "durationMode",
+          "duration",
+          "instrumental"
+        ]
+      }
+    ],
+    "bindings": [
+      {
+        "adapterVersion": "fal-queue-v1",
+        "browserVerification": {
+          "bindingHash": "sha256:f88d51d72124cac164f2f2164ea8460b5985546d38b029699bf6016b2dd05794",
+          "profile": "fal-browser-v1",
+          "reviewedAt": "2026-07-20"
+        },
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "https://queue.fal.run",
+        "evidence": {
+          "reviewedAt": "2026-07-20",
+          "sources": [
+            "https://fal.ai/models/fal-ai/elevenlabs/music/api",
+            "https://fal.ai/docs/platform-apis/v1/models",
+            "https://fal.ai/docs/documentation/model-apis/inference/queue"
+          ]
+        },
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "lifecycle": {
+          "cancellation": "best-effort",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "fal-ai/elevenlabs/music",
+        "operationId": "textToMusic",
+        "priority": 100,
+        "provider": "fal",
+        "providerTag": "fal-queue",
+        "protocol": "queue",
+        "requestProfile": {
+          "combinedParams": [],
+          "inputMappings": [],
+          "kind": "speech",
+          "maxInputItems": 0,
+          "params": [
+            {
+              "field": "music_length_ms",
+              "numberMultiplier": 1000,
+              "sendWhen": {
+                "equals": "custom",
+                "settingId": "durationMode"
+              },
+              "settingId": "duration"
+            },
+            {
+              "field": "force_instrumental",
+              "settingId": "instrumental"
+            }
+          ],
+          "promptField": "prompt",
+          "settingIds": [
+            "durationMode",
+            "duration",
+            "instrumental"
+          ],
+          "staticParams": {
+            "output_format": "mp3_44100_128"
+          }
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-20.1"
+      }
+    ]
+  },
+  {
+    "id": "elevenlabs/sound-effects-v2",
+    "revision": 1,
+    "status": "active",
+    "displayName": "ElevenLabs Sound Effects v2",
+    "labelKey": "flows.models.elevenSoundEffectsV2",
+    "presentation": {
+      "descriptionKey": "flows.modelDescriptions.elevenSoundEffectsV2",
+      "logoId": "elevenlabs"
+    },
+    "mediaType": "audio",
+    "recommended": false,
+    "capabilitySchemaVersion": 3,
+    "defaultOperationId": "textToSoundEffect",
+    "inputSlots": [
+      {
+        "accepts": [
+          "Text"
+        ],
+        "descriptionKey": "flows.inputs.promptDescription",
+        "id": "prompt",
+        "labelKey": "flows.inputs.prompt",
+        "maxConnections": 1,
+        "maxItems": 1,
+        "minConnections": 0
+      }
+    ],
+    "settings": [
+      {
+        "default": "auto",
+        "id": "durationMode",
+        "kind": "enum",
+        "labelKey": "flows.settings.durationMode",
+        "options": [
+          {
+            "labelKey": "flows.settings.durationModes.auto",
+            "value": "auto"
+          },
+          {
+            "labelKey": "flows.settings.durationModes.custom",
+            "value": "custom"
+          }
+        ]
+      },
+      {
+        "default": 5,
+        "id": "duration",
+        "kind": "number",
+        "labelKey": "flows.settings.duration",
+        "max": 22,
+        "min": 0.5,
+        "step": 0.5,
+        "visibleWhen": [
+          {
+            "field": "setting",
+            "id": "durationMode",
+            "operator": "equals",
+            "value": "custom"
+          }
+        ]
+      },
+      {
+        "default": false,
+        "id": "loop",
+        "kind": "boolean",
+        "labelKey": "flows.settings.loop"
+      },
+      {
+        "default": 0.3,
+        "id": "promptInfluence",
+        "kind": "number",
+        "labelKey": "flows.settings.promptInfluence",
+        "max": 1,
+        "min": 0,
+        "step": 0.05
+      }
+    ],
+    "constraints": [],
+    "operations": [
+      {
+        "descriptionKey": "flows.operations.textToSoundEffectDescription",
+        "id": "textToSoundEffect",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt"
+        ],
+        "labelKey": "flows.operations.textToSoundEffect",
+        "nodeType": "soundEffectGeneration",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "audio"
+        },
+        "referenceLimit": {
+          "maxItems": 0,
+          "slotIds": []
+        },
+        "settingIds": [
+          "durationMode",
+          "duration",
+          "loop",
+          "promptInfluence"
+        ]
+      }
+    ],
+    "bindings": [
+      {
+        "adapterVersion": "fal-queue-v1",
+        "browserVerification": {
+          "bindingHash": "sha256:010913686bb2813f30575d22b1b2f064bc94169b443b5e4bdbddec70ceda5d39",
+          "profile": "fal-browser-v1",
+          "reviewedAt": "2026-07-20"
+        },
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "https://queue.fal.run",
+        "evidence": {
+          "reviewedAt": "2026-07-20",
+          "sources": [
+            "https://fal.ai/models/fal-ai/elevenlabs/sound-effects/v2/api",
+            "https://fal.ai/docs/platform-apis/v1/models",
+            "https://fal.ai/docs/documentation/model-apis/inference/queue"
+          ]
+        },
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "lifecycle": {
+          "cancellation": "best-effort",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "fal-ai/elevenlabs/sound-effects/v2",
+        "operationId": "textToSoundEffect",
+        "priority": 100,
+        "provider": "fal",
+        "providerTag": "fal-queue",
+        "protocol": "queue",
+        "requestProfile": {
+          "combinedParams": [],
+          "inputMappings": [],
+          "kind": "speech",
+          "maxInputItems": 0,
+          "params": [
+            {
+              "field": "duration_seconds",
+              "sendWhen": {
+                "equals": "custom",
+                "settingId": "durationMode"
+              },
+              "settingId": "duration"
+            },
+            {
+              "field": "loop",
+              "settingId": "loop"
+            },
+            {
+              "field": "prompt_influence",
+              "settingId": "promptInfluence"
+            }
+          ],
+          "promptField": "text",
+          "settingIds": [
+            "durationMode",
+            "duration",
+            "loop",
+            "promptInfluence"
+          ],
+          "staticParams": {
+            "output_format": "mp3_44100_128"
+          }
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-20.1"
+      }
+    ]
+  },
+  {
+    "id": "elevenlabs/voice-changer",
+    "revision": 1,
+    "status": "active",
+    "displayName": "ElevenLabs Voice Changer",
+    "labelKey": "flows.models.elevenVoiceChanger",
+    "presentation": {
+      "descriptionKey": "flows.modelDescriptions.elevenVoiceChanger",
+      "logoId": "elevenlabs"
+    },
+    "mediaType": "audio",
+    "recommended": false,
+    "capabilitySchemaVersion": 3,
+    "defaultOperationId": "changeVoice",
+    "inputSlots": [
+      {
+        "accepts": [
+          "AudioSet"
+        ],
+        "acceptedMedia": {
+          "mimeTypes": [
+            "audio/mpeg"
+          ]
+        },
+        "descriptionKey": "flows.inputs.sourceAudioDescription",
+        "id": "sourceMedia",
+        "labelKey": "flows.inputs.sourceMedia",
+        "maxConnections": 1,
+        "maxItems": 1,
+        "minConnections": 1,
+        "referenceProfile": {
+          "contactSheetPolicy": "not-applicable",
+          "multipleSubjectSupport": "not-applicable",
+          "purposes": [
+            "audioGuidance"
+          ]
+        }
+      }
+    ],
+    "settings": [
+      {
+        "default": "eleven-rachel",
+        "id": "voice",
+        "kind": "enum",
+        "labelKey": "flows.settings.voice",
+        "options": [
+          {
+            "labelKey": "flows.settings.voices.elevenRachel",
+            "value": "eleven-rachel"
+          },
+          {
+            "labelKey": "flows.settings.voices.elevenAria",
+            "value": "eleven-aria"
+          },
+          {
+            "labelKey": "flows.settings.voices.elevenRoger",
+            "value": "eleven-roger"
+          },
+          {
+            "labelKey": "flows.settings.voices.elevenSarah",
+            "value": "eleven-sarah"
+          }
+        ]
+      },
+      {
+        "default": false,
+        "id": "removeBackgroundNoise",
+        "kind": "boolean",
+        "labelKey": "flows.settings.removeBackgroundNoise"
+      }
+    ],
+    "constraints": [],
+    "operations": [
+      {
+        "descriptionKey": "flows.operations.changeVoiceDescription",
+        "id": "changeVoice",
+        "inputs": {
+          "sourceMedia": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "sourceMedia"
+        ],
+        "labelKey": "flows.operations.changeVoice",
+        "nodeType": "voiceChanger",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "audio"
+        },
+        "referenceLimit": {
+          "maxItems": 1,
+          "slotIds": [
+            "sourceMedia"
+          ]
+        },
+        "requiredSettingIds": [
+          "voice"
+        ],
+        "settingIds": [
+          "voice",
+          "removeBackgroundNoise"
+        ]
+      }
+    ],
+    "bindings": [
+      {
+        "adapterVersion": "fal-queue-v1",
+        "browserVerification": {
+          "bindingHash": "sha256:b954eae13d5106398b3264d931cb0612aacd7c149ff9ffddc893dd935716db3b",
+          "profile": "fal-browser-v1",
+          "reviewedAt": "2026-07-20"
+        },
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "https://queue.fal.run",
+        "evidence": {
+          "reviewedAt": "2026-07-20",
+          "sources": [
+            "https://fal.ai/models/fal-ai/elevenlabs/voice-changer/api",
+            "https://fal.ai/docs/platform-apis/v1/models",
+            "https://fal.ai/docs/documentation/model-apis/inference/queue"
+          ]
+        },
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "lifecycle": {
+          "cancellation": "best-effort",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "fal-ai/elevenlabs/voice-changer",
+        "operationId": "changeVoice",
+        "priority": 100,
+        "provider": "fal",
+        "providerTag": "fal-queue",
+        "protocol": "queue",
+        "requestProfile": {
+          "combinedParams": [],
+          "inputMappings": [
+            {
+              "cardinality": "single",
+              "field": "audio_url",
+              "maxItems": 1,
+              "mediaType": "audio",
+              "minItems": 1,
+              "targetSlotId": "sourceMedia"
+            }
+          ],
+          "kind": "speech",
+          "maxInputItems": 1,
+          "params": [
+            {
+              "field": "voice",
+              "settingId": "voice",
+              "valueMap": {
+                "eleven-aria": "Aria",
+                "eleven-rachel": "Rachel",
+                "eleven-roger": "Roger",
+                "eleven-sarah": "Sarah"
+              }
+            },
+            {
+              "field": "remove_background_noise",
+              "settingId": "removeBackgroundNoise"
+            }
+          ],
+          "promptField": null,
+          "settingIds": [
+            "voice",
+            "removeBackgroundNoise"
+          ],
+          "staticParams": {
+            "output_format": "mp3_44100_128"
+          }
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-20.1"
+      }
+    ]
+  },
+  {
+    "id": "elevenlabs/audio-isolation",
+    "revision": 1,
+    "status": "active",
+    "displayName": "ElevenLabs Audio Isolation",
+    "labelKey": "flows.models.elevenAudioIsolation",
+    "presentation": {
+      "descriptionKey": "flows.modelDescriptions.elevenAudioIsolation",
+      "logoId": "elevenlabs"
+    },
+    "mediaType": "audio",
+    "recommended": false,
+    "capabilitySchemaVersion": 3,
+    "defaultOperationId": "isolateVoice",
+    "inputSlots": [
+      {
+        "accepts": [
+          "AudioSet",
+          "VideoSet"
+        ],
+        "acceptedMedia": {
+          "mimeTypes": [
+            "audio/mpeg",
+            "video/mp4"
+          ]
+        },
+        "descriptionKey": "flows.inputs.sourceMediaDescription",
+        "id": "sourceMedia",
+        "labelKey": "flows.inputs.sourceMedia",
+        "maxConnections": 1,
+        "maxItems": 1,
+        "minConnections": 1,
+        "referenceProfile": {
+          "contactSheetPolicy": "not-applicable",
+          "multipleSubjectSupport": "not-applicable",
+          "purposes": [
+            "audioGuidance"
+          ]
+        }
+      }
+    ],
+    "settings": [],
+    "constraints": [],
+    "operations": [
+      {
+        "descriptionKey": "flows.operations.isolateVoiceDescription",
+        "id": "isolateVoice",
+        "inputs": {
+          "sourceMedia": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "sourceMedia"
+        ],
+        "labelKey": "flows.operations.isolateVoice",
+        "nodeType": "voiceIsolation",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "audio"
+        },
+        "referenceLimit": {
+          "maxItems": 1,
+          "slotIds": [
+            "sourceMedia"
+          ]
+        },
+        "settingIds": []
+      }
+    ],
+    "bindings": [
+      {
+        "adapterVersion": "fal-queue-v1",
+        "browserVerification": {
+          "bindingHash": "sha256:7d9d085526edc360d2a1b50be71c393d02d0d2e538024cb7e21fbbe60de141f4",
+          "profile": "fal-browser-v1",
+          "reviewedAt": "2026-07-20"
+        },
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "https://queue.fal.run",
+        "evidence": {
+          "reviewedAt": "2026-07-20",
+          "sources": [
+            "https://fal.ai/models/fal-ai/elevenlabs/audio-isolation/api",
+            "https://fal.ai/docs/platform-apis/v1/models",
+            "https://fal.ai/docs/documentation/model-apis/inference/queue"
+          ]
+        },
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "lifecycle": {
+          "cancellation": "best-effort",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "fal-ai/elevenlabs/audio-isolation",
+        "operationId": "isolateVoice",
+        "priority": 100,
+        "provider": "fal",
+        "providerTag": "fal-queue",
+        "protocol": "queue",
+        "requestProfile": {
+          "combinedParams": [],
+          "inputMappings": [
+            {
+              "alternativeFields": [
+                {
+                  "field": "video_url",
+                  "mediaType": "video"
+                }
+              ],
+              "cardinality": "single",
+              "field": "audio_url",
+              "maxItems": 1,
+              "mediaType": "audio",
+              "minItems": 1,
+              "targetSlotId": "sourceMedia"
+            }
+          ],
+          "kind": "speech",
+          "maxInputItems": 1,
+          "params": [],
+          "promptField": null,
+          "settingIds": [],
+          "staticParams": {}
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-20.1"
+      }
+    ]
   }
 ]

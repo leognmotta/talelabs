@@ -74,6 +74,8 @@ export interface CatalogVideoRequestProfile {
   referenceValidationPolicy: 'none' | 'seedance-2-reference-v1'
   /** Ordered TaleLabs setting IDs mapped into the request. */
   settingIds: readonly string[]
+  /** Combined non-frame reference cap when lower than per-slot maxima. */
+  totalReferenceLimit?: number
 }
 
 interface CatalogOpenRouterBindingCommon extends CatalogProviderBindingCommon {
@@ -168,6 +170,7 @@ const requestProfileSchemas = {
     }).strict(),
     referenceValidationPolicy: z.enum(['none', 'seedance-2-reference-v1']),
     settingIds: z.array(z.string().min(1)),
+    totalReferenceLimit: z.number().int().positive().optional(),
   }).strict(),
 } as const
 
@@ -369,16 +372,37 @@ export function validateOpenRouterBindingCompatibility(
   if (JSON.stringify(profileSettingIds) !== JSON.stringify(operationSettingIds))
     errors.push(`${prefix}: request profile settings do not match the operation`)
 
+  const perSlotVideoReferences = profile.kind === 'video'
+    ? Object.values(profile.referenceLimits).reduce(
+        (sum, value) => sum + value,
+        0,
+      )
+    : 0
+  const totalVideoReferences = profile.kind === 'video'
+    ? (profile.totalReferenceLimit ?? perSlotVideoReferences)
+    : 0
+  const frameReferences = profile.kind === 'video'
+    ? profile.frameMode === 'first'
+      ? 1
+      : profile.frameMode === 'first-last' ? 2 : 0
+    : 0
   const profileReferences = profile.kind === 'image'
     ? profile.maxReferences
     : profile.kind === 'chat'
       ? profile.maxImageReferences
       : profile.kind === 'video'
-        ? Object.values(profile.referenceLimits).reduce((sum, value) => sum + value, 0)
-        + (profile.frameMode === 'first' ? 1 : profile.frameMode === 'first-last' ? 2 : 0)
+        ? totalVideoReferences + frameReferences
         : 0
   if (profileReferences !== operation.referenceLimit.maxItems)
     errors.push(`${prefix}: request profile reference limit does not match the operation`)
+  if (
+    profile.kind === 'video'
+    && profile.totalReferenceLimit !== undefined
+    && profile.totalReferenceLimit > Object.values(profile.referenceLimits)
+      .reduce((sum, value) => sum + value, 0)
+  ) {
+    errors.push(`${prefix}: total reference limit exceeds per-slot capacity`)
+  }
 
   const lifecycle = binding.lifecycle
   const lifecycleCompatible = binding.protocol === 'video'

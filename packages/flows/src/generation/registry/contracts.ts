@@ -71,14 +71,27 @@ export type ImageGenerationModelId = string
 /** Canonical default model IDs owned by the catalog. */
 export const DEFAULT_GENERATION_MODEL_IDS = MODEL_CATALOG.defaults
 
+function firstCatalogModelIdForNode(nodeType: GenerationNodeType) {
+  const model = SELECTABLE_CATALOG_MODELS.find(candidate =>
+    candidate.operations.some(operation => operation.nodeType === nodeType),
+  )
+  if (!model)
+    throw new Error(`No active catalog model supports ${nodeType}`)
+  return model.id
+}
+
 const defaultGenerationModelIdsByNode: Partial<Record<
   Exclude<GenerationNodeType, 'audioGeneration'>,
   GenerationModelId
 >> = {
   imageGeneration: DEFAULT_GENERATION_MODEL_IDS.image,
   llm: DEFAULT_GENERATION_MODEL_IDS.text,
+  musicGeneration: firstCatalogModelIdForNode('musicGeneration'),
+  soundEffectGeneration: firstCatalogModelIdForNode('soundEffectGeneration'),
   speechGeneration: DEFAULT_GENERATION_MODEL_IDS.audio,
   videoGeneration: DEFAULT_GENERATION_MODEL_IDS.video,
+  voiceChanger: firstCatalogModelIdForNode('voiceChanger'),
+  voiceIsolation: firstCatalogModelIdForNode('voiceIsolation'),
 }
 
 /** Default model IDs for node intents with a single product default. */

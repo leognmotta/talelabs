@@ -5,6 +5,7 @@
 import type { CatalogModelRecord } from '../schema.js'
 import type { CatalogProviderBinding } from './schema.js'
 
+import { validateFalBindingCompatibility } from './fal/index.js'
 import { validateOpenRouterBindingCompatibility } from './openrouter.js'
 
 /** Dispatches one binding to the validator owned by its provider. */
@@ -13,6 +14,8 @@ export function validateProviderBinding(
   binding: CatalogProviderBinding,
 ): string[] {
   switch (binding.provider) {
+    case 'fal':
+      return validateFalBindingCompatibility(model, binding)
     case 'openrouter':
       return validateOpenRouterBindingCompatibility(model, binding)
   }

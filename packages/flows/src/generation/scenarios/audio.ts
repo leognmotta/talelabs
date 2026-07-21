@@ -34,7 +34,12 @@ export function validateGenerationAudioCapabilityScenarios() {
     .map(model => model.id)
   if (
     JSON.stringify(speechModelIds)
-    !== JSON.stringify(['google/gemini-3.1-flash-tts-preview'])
+    !== JSON.stringify([
+      'google/gemini-3.1-flash-tts-preview',
+      'elevenlabs/eleven-v3',
+      'elevenlabs/multilingual-v2',
+      'elevenlabs/turbo-v2.5',
+    ])
   ) {
     errors.push('current speech picker must be driven by the catalog')
   }

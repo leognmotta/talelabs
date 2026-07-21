@@ -6,7 +6,7 @@ import { z } from 'zod'
 
 interface CatalogProviderLifecycleBase {
   /** Whether the provider supports remote cancellation. */
-  cancellation: 'supported' | 'unsupported'
+  cancellation: 'best-effort' | 'supported' | 'unsupported'
   /** Output delivery forms returned by the adapter. */
   deliveries: readonly [
     'bytes' | 'stream' | 'text' | 'url',
@@ -54,7 +54,7 @@ export interface CatalogBrowserBindingVerification {
   /** SHA-256 of the browser-relevant binding fields checked by catalog CI. */
   bindingHash: string
   /** Versioned provider policy whose transport checks were reviewed. */
-  profile: 'openrouter-browser-v1'
+  profile: 'fal-browser-v1' | 'openrouter-browser-v1'
   /** ISO date on which this exact binding was reviewed for browser execution. */
   reviewedAt: string
 }
@@ -122,13 +122,13 @@ const nonEmptyEvidenceSourcesSchema = z
 /** Strict schema for the provider lifecycle captured in reviewed bindings. */
 export const CatalogProviderLifecycleSchema = z.discriminatedUnion('submission', [
   z.object({
-    cancellation: z.enum(['supported', 'unsupported']),
+    cancellation: z.enum(['best-effort', 'supported', 'unsupported']),
     completions: z.tuple([z.literal('response')]),
     deliveries: nonEmptyDeliveriesSchema,
     submission: z.literal('immediate'),
   }).strict(),
   z.object({
-    cancellation: z.enum(['supported', 'unsupported']),
+    cancellation: z.enum(['best-effort', 'supported', 'unsupported']),
     completions: z.union([
       z.tuple([z.literal('poll')]),
       z.tuple([z.literal('webhook')]),
@@ -145,7 +145,7 @@ export const CatalogProviderBindingCommonSchema = z.object({
   adapterVersion: z.string().min(1),
   browserVerification: z.object({
     bindingHash: z.string().regex(/^sha256:[0-9a-f]{64}$/),
-    profile: z.literal('openrouter-browser-v1'),
+    profile: z.enum(['fal-browser-v1', 'openrouter-browser-v1']),
     reviewedAt: z.iso.date(),
   }).strict().optional(),
   costCapture: z.object({

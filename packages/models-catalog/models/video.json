@@ -381,6 +381,94 @@
           "profile": "openrouter-browser-v1",
           "reviewedAt": "2026-07-17"
         }
+      },
+      {
+        "adapterVersion": "fal-queue-v1",
+        "browserVerification": {
+          "bindingHash": "sha256:8f9011f871ca4656e78e1ff2fb7ed78ed2b5a575f12c2c54032075665c1f89b9",
+          "profile": "fal-browser-v1",
+          "reviewedAt": "2026-07-20"
+        },
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "https://queue.fal.run",
+        "evidence": {
+          "reviewedAt": "2026-07-20",
+          "sources": [
+            "https://fal.ai/models/fal-ai/veo3.1/api",
+            "https://fal.ai/docs/documentation/model-apis/inference/queue"
+          ]
+        },
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "lifecycle": {
+          "cancellation": "best-effort",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "fal-ai/veo3.1",
+        "operationId": "textToVideo",
+        "priority": 200,
+        "provider": "fal",
+        "providerTag": "fal-queue",
+        "protocol": "queue",
+        "requestProfile": {
+          "combinedParams": [],
+          "inputMappings": [],
+          "kind": "video",
+          "maxInputItems": 0,
+          "params": [
+            {
+              "field": "aspect_ratio",
+              "settingId": "aspectRatio"
+            },
+            {
+              "field": "duration",
+              "settingId": "durationSeconds",
+              "valueMap": {
+                "4": "4s",
+                "6": "6s",
+                "8": "8s"
+              }
+            },
+            {
+              "field": "resolution",
+              "settingId": "resolution",
+              "valueMap": {
+                "720p": "720p",
+                "1080p": "1080p",
+                "4K": "4k"
+              }
+            },
+            {
+              "field": "generate_audio",
+              "settingId": "generateAudio"
+            }
+          ],
+          "promptField": "prompt",
+          "settingIds": [
+            "aspectRatio",
+            "durationSeconds",
+            "resolution",
+            "generateAudio"
+          ],
+          "staticParams": {
+            "auto_fix": true,
+            "safety_tolerance": "4"
+          }
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-20.2"
       }
     ]
   },
@@ -762,12 +850,99 @@
           "profile": "openrouter-browser-v1",
           "reviewedAt": "2026-07-17"
         }
+      },
+      {
+        "adapterVersion": "fal-queue-v1",
+        "browserVerification": {
+          "bindingHash": "sha256:abc3f454a2e48c5a05d3e92546b2918af4cdd36fe516fe0a5cf7c975e3a561c8",
+          "profile": "fal-browser-v1",
+          "reviewedAt": "2026-07-20"
+        },
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "https://queue.fal.run",
+        "evidence": {
+          "reviewedAt": "2026-07-20",
+          "sources": [
+            "https://fal.ai/models/fal-ai/veo3.1/lite/api",
+            "https://fal.ai/docs/documentation/model-apis/inference/queue"
+          ]
+        },
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "lifecycle": {
+          "cancellation": "best-effort",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "fal-ai/veo3.1/lite",
+        "operationId": "textToVideo",
+        "priority": 200,
+        "provider": "fal",
+        "providerTag": "fal-queue",
+        "protocol": "queue",
+        "requestProfile": {
+          "combinedParams": [],
+          "inputMappings": [],
+          "kind": "video",
+          "maxInputItems": 0,
+          "params": [
+            {
+              "field": "aspect_ratio",
+              "settingId": "aspectRatio"
+            },
+            {
+              "field": "duration",
+              "settingId": "durationSeconds",
+              "valueMap": {
+                "4": "4s",
+                "6": "6s",
+                "8": "8s"
+              }
+            },
+            {
+              "field": "resolution",
+              "settingId": "resolution",
+              "valueMap": {
+                "720p": "720p",
+                "1080p": "1080p"
+              }
+            },
+            {
+              "field": "generate_audio",
+              "settingId": "generateAudio"
+            }
+          ],
+          "promptField": "prompt",
+          "settingIds": [
+            "aspectRatio",
+            "durationSeconds",
+            "resolution",
+            "generateAudio"
+          ],
+          "staticParams": {
+            "auto_fix": true,
+            "safety_tolerance": "4"
+          }
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-20.2"
       }
     ]
   },
   {
     "id": "x-ai/grok-imagine-video",
-    "revision": 1,
+    "revision": 2,
     "status": "active",
     "displayName": "Grok Imagine Video",
     "labelKey": "flows.models.grokImagineVideo",
@@ -969,7 +1144,33 @@
         ]
       }
     ],
-    "constraints": [],
+    "constraints": [
+      {
+        "forbid": [
+          {
+            "field": "setting",
+            "id": "durationSeconds",
+            "operator": "in",
+            "values": [
+              "11",
+              "12",
+              "13",
+              "14",
+              "15"
+            ]
+          }
+        ],
+        "id": "reference-video-duration-at-most-ten-seconds",
+        "messageKey": "flows.constraints.referencesAtMostTenSeconds",
+        "when": [
+          {
+            "field": "operation",
+            "operator": "equals",
+            "value": "referencesToVideo"
+          }
+        ]
+      }
+    ],
     "operations": [
       {
         "descriptionKey": "flows.operations.textToVideoDescription",
@@ -1289,12 +1490,291 @@
           "profile": "openrouter-browser-v1",
           "reviewedAt": "2026-07-17"
         }
+      },
+      {
+        "adapterVersion": "fal-queue-v1",
+        "browserVerification": {
+          "bindingHash": "sha256:dd734e466af7b27921645a8a1d0206f0240c68a0f5230f1f291ae7fc8ae00d63",
+          "profile": "fal-browser-v1",
+          "reviewedAt": "2026-07-20"
+        },
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "https://queue.fal.run",
+        "evidence": {
+          "reviewedAt": "2026-07-20",
+          "sources": [
+            "https://fal.ai/models/xai/grok-imagine-video/text-to-video/api",
+            "https://fal.ai/docs/documentation/model-apis/inference/queue"
+          ]
+        },
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "lifecycle": {
+          "cancellation": "best-effort",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "xai/grok-imagine-video/text-to-video",
+        "operationId": "textToVideo",
+        "priority": 200,
+        "provider": "fal",
+        "providerTag": "fal-queue",
+        "protocol": "queue",
+        "requestProfile": {
+          "combinedParams": [],
+          "inputMappings": [],
+          "kind": "video",
+          "maxInputItems": 0,
+          "params": [
+            {
+              "field": "aspect_ratio",
+              "settingId": "aspectRatio"
+            },
+            {
+              "field": "duration",
+              "settingId": "durationSeconds",
+              "valueMap": {
+                "1": 1,
+                "2": 2,
+                "3": 3,
+                "4": 4,
+                "5": 5,
+                "6": 6,
+                "7": 7,
+                "8": 8,
+                "9": 9,
+                "10": 10,
+                "11": 11,
+                "12": 12,
+                "13": 13,
+                "14": 14,
+                "15": 15
+              }
+            },
+            {
+              "field": "resolution",
+              "settingId": "resolution"
+            }
+          ],
+          "promptField": "prompt",
+          "settingIds": [
+            "aspectRatio",
+            "durationSeconds",
+            "resolution"
+          ],
+          "staticParams": {}
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-20.2"
+      },
+      {
+        "adapterVersion": "fal-queue-v1",
+        "browserVerification": {
+          "bindingHash": "sha256:ed11a63fee831e44b51f6ae81d3be9daa64da56fccd7499a8c2527b2f8b2e528",
+          "profile": "fal-browser-v1",
+          "reviewedAt": "2026-07-20"
+        },
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "https://queue.fal.run",
+        "evidence": {
+          "reviewedAt": "2026-07-20",
+          "sources": [
+            "https://fal.ai/models/xai/grok-imagine-video/image-to-video/api",
+            "https://fal.ai/docs/documentation/model-apis/inference/queue"
+          ]
+        },
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "lifecycle": {
+          "cancellation": "best-effort",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "xai/grok-imagine-video/image-to-video",
+        "operationId": "imageToVideo",
+        "priority": 200,
+        "provider": "fal",
+        "providerTag": "fal-queue",
+        "protocol": "queue",
+        "requestProfile": {
+          "combinedParams": [],
+          "inputMappings": [
+            {
+              "cardinality": "single",
+              "field": "image_url",
+              "maxItems": 1,
+              "mediaType": "image",
+              "minItems": 1,
+              "targetSlotId": "firstFrame"
+            }
+          ],
+          "kind": "video",
+          "maxInputItems": 1,
+          "params": [
+            {
+              "field": "aspect_ratio",
+              "settingId": "aspectRatio"
+            },
+            {
+              "field": "duration",
+              "settingId": "durationSeconds",
+              "valueMap": {
+                "1": 1,
+                "2": 2,
+                "3": 3,
+                "4": 4,
+                "5": 5,
+                "6": 6,
+                "7": 7,
+                "8": 8,
+                "9": 9,
+                "10": 10,
+                "11": 11,
+                "12": 12,
+                "13": 13,
+                "14": 14,
+                "15": 15
+              }
+            },
+            {
+              "field": "resolution",
+              "settingId": "resolution"
+            }
+          ],
+          "promptField": "prompt",
+          "settingIds": [
+            "aspectRatio",
+            "durationSeconds",
+            "resolution"
+          ],
+          "staticParams": {}
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-20.2"
+      },
+      {
+        "adapterVersion": "fal-queue-v1",
+        "browserVerification": {
+          "bindingHash": "sha256:cf425c93165286d5028624392d6e12739517f64a7734886e193691a65852fc12",
+          "profile": "fal-browser-v1",
+          "reviewedAt": "2026-07-20"
+        },
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "https://queue.fal.run",
+        "evidence": {
+          "reviewedAt": "2026-07-20",
+          "sources": [
+            "https://fal.ai/models/xai/grok-imagine-video/reference-to-video/api",
+            "https://fal.ai/docs/documentation/model-apis/inference/queue"
+          ]
+        },
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "lifecycle": {
+          "cancellation": "best-effort",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "xai/grok-imagine-video/reference-to-video",
+        "operationId": "referencesToVideo",
+        "priority": 200,
+        "provider": "fal",
+        "providerTag": "fal-queue",
+        "protocol": "queue",
+        "requestProfile": {
+          "combinedParams": [],
+          "inputMappings": [
+            {
+              "cardinality": "many",
+              "field": "reference_image_urls",
+              "maxItems": 7,
+              "mediaType": "image",
+              "minItems": 1,
+              "targetSlotId": "imageReferences"
+            }
+          ],
+          "kind": "video",
+          "maxInputItems": 7,
+          "params": [
+            {
+              "field": "aspect_ratio",
+              "settingId": "aspectRatio"
+            },
+            {
+              "field": "duration",
+              "settingId": "durationSeconds",
+              "valueMap": {
+                "1": 1,
+                "2": 2,
+                "3": 3,
+                "4": 4,
+                "5": 5,
+                "6": 6,
+                "7": 7,
+                "8": 8,
+                "9": 9,
+                "10": 10,
+                "11": 11,
+                "12": 12,
+                "13": 13,
+                "14": 14,
+                "15": 15
+              }
+            },
+            {
+              "field": "resolution",
+              "settingId": "resolution"
+            }
+          ],
+          "promptField": "prompt",
+          "settingIds": [
+            "aspectRatio",
+            "durationSeconds",
+            "resolution"
+          ],
+          "staticParams": {}
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-20.2"
       }
     ]
   },
   {
     "id": "bytedance/seedance-2.0",
-    "revision": 1,
+    "revision": 2,
     "status": "active",
     "displayName": "Seedance 2.0",
     "labelKey": "flows.models.seedance20",
@@ -1325,13 +1805,8 @@
         "acceptedMedia": {
           "maxBytes": 31457280,
           "mimeTypes": [
-            "image/bmp",
-            "image/gif",
-            "image/heic",
-            "image/heif",
             "image/jpeg",
             "image/png",
-            "image/tiff",
             "image/webp"
           ]
         },
@@ -1356,13 +1831,8 @@
         "acceptedMedia": {
           "maxBytes": 31457280,
           "mimeTypes": [
-            "image/bmp",
-            "image/gif",
-            "image/heic",
-            "image/heif",
             "image/jpeg",
             "image/png",
-            "image/tiff",
             "image/webp"
           ]
         },
@@ -1387,13 +1857,8 @@
         "acceptedMedia": {
           "maxBytes": 31457280,
           "mimeTypes": [
-            "image/bmp",
-            "image/gif",
-            "image/heic",
-            "image/heif",
             "image/jpeg",
             "image/png",
-            "image/tiff",
             "image/webp"
           ]
         },
@@ -1423,7 +1888,7 @@
             "max": 15,
             "min": 2
           },
-          "maxBytes": 209715200,
+          "maxBytes": 52428800,
           "mimeTypes": [
             "video/mp4",
             "video/quicktime"
@@ -1505,10 +1970,6 @@
           {
             "labelKey": "flows.settings.aspectRatios.ultrawide",
             "value": "21:9"
-          },
-          {
-            "labelKey": "flows.settings.aspectRatios.portrait",
-            "value": "9:21"
           }
         ]
       },
@@ -1722,7 +2183,7 @@
           "mediaType": "video"
         },
         "referenceLimit": {
-          "maxItems": 15,
+          "maxItems": 12,
           "slotIds": [
             "imageReferences",
             "videoReferences",
@@ -1767,7 +2228,7 @@
         },
         "nativeModelId": "bytedance/seedance-2.0",
         "operationId": "textToVideo",
-        "priority": 100,
+        "priority": 200,
         "provider": "openrouter",
         "providerTag": "seed",
         "protocol": "video",
@@ -1839,7 +2300,7 @@
         },
         "nativeModelId": "bytedance/seedance-2.0",
         "operationId": "firstLastFrameToVideo",
-        "priority": 100,
+        "priority": 200,
         "provider": "openrouter",
         "providerTag": "seed",
         "protocol": "video",
@@ -1912,7 +2373,7 @@
         },
         "nativeModelId": "bytedance/seedance-2.0",
         "operationId": "referencesToVideo",
-        "priority": 100,
+        "priority": 200,
         "provider": "openrouter",
         "providerTag": "seed",
         "protocol": "video",
@@ -1931,7 +2392,8 @@
             "durationSeconds",
             "resolution",
             "generateAudio"
-          ]
+          ],
+          "totalReferenceLimit": 12
         },
         "requiresDurableSubmissionBoundary": true,
         "routeVersion": "2026-07-16.1",
@@ -1952,16 +2414,301 @@
           "browser"
         ],
         "browserVerification": {
-          "bindingHash": "sha256:50e65999adacda146b74047abb03e16b2d558483f6de67084bbf231db33ee522",
+          "bindingHash": "sha256:20ac7306fe1ca1d1882290e6001ca420d7cd764f63a657e0365120f404696a55",
           "profile": "openrouter-browser-v1",
-          "reviewedAt": "2026-07-17"
+          "reviewedAt": "2026-07-20"
         }
+      },
+      {
+        "adapterVersion": "fal-queue-v1",
+        "browserVerification": {
+          "bindingHash": "sha256:c7154fc3c6251eeeddb519bc00d40cdff6cfd0d2b20d70a415c816f0a9b70c49",
+          "profile": "fal-browser-v1",
+          "reviewedAt": "2026-07-20"
+        },
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "https://queue.fal.run",
+        "evidence": {
+          "reviewedAt": "2026-07-20",
+          "sources": [
+            "https://fal.ai/models/bytedance/seedance-2.0/text-to-video/api",
+            "https://fal.ai/docs/documentation/model-apis/inference/queue"
+          ]
+        },
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "lifecycle": {
+          "cancellation": "best-effort",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "bytedance/seedance-2.0/text-to-video",
+        "operationId": "textToVideo",
+        "priority": 100,
+        "provider": "fal",
+        "providerTag": "fal-queue",
+        "protocol": "queue",
+        "requestProfile": {
+          "combinedParams": [],
+          "inputMappings": [],
+          "kind": "video",
+          "maxInputItems": 0,
+          "params": [
+            {
+              "field": "aspect_ratio",
+              "settingId": "aspectRatio"
+            },
+            {
+              "field": "duration",
+              "settingId": "durationSeconds"
+            },
+            {
+              "field": "resolution",
+              "settingId": "resolution",
+              "valueMap": {
+                "480p": "480p",
+                "720p": "720p",
+                "1080p": "1080p",
+                "4K": "4k"
+              }
+            },
+            {
+              "field": "generate_audio",
+              "settingId": "generateAudio"
+            }
+          ],
+          "promptField": "prompt",
+          "settingIds": [
+            "aspectRatio",
+            "durationSeconds",
+            "resolution",
+            "generateAudio"
+          ],
+          "staticParams": {}
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-20.2"
+      },
+      {
+        "adapterVersion": "fal-queue-v1",
+        "browserVerification": {
+          "bindingHash": "sha256:d61ca6123508dbe533edc90b080e35f2712f34eaec338fb3abcec4d68f598084",
+          "profile": "fal-browser-v1",
+          "reviewedAt": "2026-07-20"
+        },
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "https://queue.fal.run",
+        "evidence": {
+          "reviewedAt": "2026-07-20",
+          "sources": [
+            "https://fal.ai/models/bytedance/seedance-2.0/image-to-video/api",
+            "https://fal.ai/docs/documentation/model-apis/inference/queue"
+          ]
+        },
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "lifecycle": {
+          "cancellation": "best-effort",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "bytedance/seedance-2.0/image-to-video",
+        "operationId": "firstLastFrameToVideo",
+        "priority": 100,
+        "provider": "fal",
+        "providerTag": "fal-queue",
+        "protocol": "queue",
+        "requestProfile": {
+          "combinedParams": [],
+          "inputMappings": [
+            {
+              "cardinality": "single",
+              "field": "image_url",
+              "maxItems": 1,
+              "mediaType": "image",
+              "minItems": 1,
+              "targetSlotId": "firstFrame"
+            },
+            {
+              "cardinality": "single",
+              "field": "end_image_url",
+              "maxItems": 1,
+              "mediaType": "image",
+              "minItems": 0,
+              "targetSlotId": "lastFrame"
+            }
+          ],
+          "kind": "video",
+          "maxInputItems": 2,
+          "params": [
+            {
+              "field": "aspect_ratio",
+              "settingId": "aspectRatio"
+            },
+            {
+              "field": "duration",
+              "settingId": "durationSeconds"
+            },
+            {
+              "field": "resolution",
+              "settingId": "resolution",
+              "valueMap": {
+                "480p": "480p",
+                "720p": "720p",
+                "1080p": "1080p",
+                "4K": "4k"
+              }
+            },
+            {
+              "field": "generate_audio",
+              "settingId": "generateAudio"
+            }
+          ],
+          "promptField": "prompt",
+          "settingIds": [
+            "aspectRatio",
+            "durationSeconds",
+            "resolution",
+            "generateAudio"
+          ],
+          "staticParams": {}
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-20.2"
+      },
+      {
+        "adapterVersion": "fal-queue-v1",
+        "browserVerification": {
+          "bindingHash": "sha256:38212992d534e3de0f6e1f9626ccd4066d39a2d40668cb730b5dc1330944c113",
+          "profile": "fal-browser-v1",
+          "reviewedAt": "2026-07-20"
+        },
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "https://queue.fal.run",
+        "evidence": {
+          "reviewedAt": "2026-07-20",
+          "sources": [
+            "https://fal.ai/models/bytedance/seedance-2.0/reference-to-video/api",
+            "https://fal.ai/docs/documentation/model-apis/inference/queue"
+          ]
+        },
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "lifecycle": {
+          "cancellation": "best-effort",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "bytedance/seedance-2.0/reference-to-video",
+        "operationId": "referencesToVideo",
+        "priority": 100,
+        "provider": "fal",
+        "providerTag": "fal-queue",
+        "protocol": "queue",
+        "requestProfile": {
+          "combinedParams": [],
+          "inputMappings": [
+            {
+              "cardinality": "many",
+              "field": "image_urls",
+              "maxItems": 9,
+              "mediaType": "image",
+              "minItems": 0,
+              "targetSlotId": "imageReferences"
+            },
+            {
+              "cardinality": "many",
+              "field": "video_urls",
+              "maxItems": 3,
+              "mediaType": "video",
+              "minItems": 0,
+              "targetSlotId": "videoReferences"
+            },
+            {
+              "cardinality": "many",
+              "field": "audio_urls",
+              "maxItems": 3,
+              "mediaType": "audio",
+              "minItems": 0,
+              "targetSlotId": "audioReferences"
+            }
+          ],
+          "kind": "video",
+          "maxInputItems": 12,
+          "params": [
+            {
+              "field": "aspect_ratio",
+              "settingId": "aspectRatio"
+            },
+            {
+              "field": "duration",
+              "settingId": "durationSeconds"
+            },
+            {
+              "field": "resolution",
+              "settingId": "resolution",
+              "valueMap": {
+                "480p": "480p",
+                "720p": "720p",
+                "1080p": "1080p",
+                "4K": "4k"
+              }
+            },
+            {
+              "field": "generate_audio",
+              "settingId": "generateAudio"
+            }
+          ],
+          "promptField": "prompt",
+          "settingIds": [
+            "aspectRatio",
+            "durationSeconds",
+            "resolution",
+            "generateAudio"
+          ],
+          "staticParams": {}
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-20.2"
       }
     ]
   },
   {
     "id": "kwaivgi/kling-v3.0-pro",
-    "revision": 1,
+    "revision": 2,
     "status": "active",
     "displayName": "Kling 3.0 Pro",
     "labelKey": "flows.models.kling30Pro",
@@ -2120,18 +2867,6 @@
         ]
       },
       {
-        "default": "720p",
-        "id": "resolution",
-        "kind": "enum",
-        "labelKey": "flows.settings.resolution",
-        "options": [
-          {
-            "labelKey": "flows.settings.resolutions.720p",
-            "value": "720p"
-          }
-        ]
-      },
-      {
         "default": true,
         "id": "generateAudio",
         "kind": "boolean",
@@ -2186,7 +2921,6 @@
         "settingIds": [
           "aspectRatio",
           "durationSeconds",
-          "resolution",
           "generateAudio"
         ],
         "nodeType": "videoGeneration"
@@ -2224,9 +2958,7 @@
           ]
         },
         "settingIds": [
-          "aspectRatio",
           "durationSeconds",
-          "resolution",
           "generateAudio"
         ],
         "nodeType": "videoGeneration"
@@ -2278,7 +3010,6 @@
           "settingIds": [
             "aspectRatio",
             "durationSeconds",
-            "resolution",
             "generateAudio"
           ]
         },
@@ -2300,9 +3031,9 @@
           "browser"
         ],
         "browserVerification": {
-          "bindingHash": "sha256:62670f2f1b241158253db24e74c0e1586ebc30f00015554ac637200ed1930720",
+          "bindingHash": "sha256:8eda8a1617c207b13a46eeb69cb74c36aa893e351fb0893486e1b4c5b9dbd5a0",
           "profile": "openrouter-browser-v1",
-          "reviewedAt": "2026-07-17"
+          "reviewedAt": "2026-07-20"
         }
       },
       {
@@ -2348,9 +3079,7 @@
           },
           "referenceValidationPolicy": "none",
           "settingIds": [
-            "aspectRatio",
             "durationSeconds",
-            "resolution",
             "generateAudio"
           ]
         },
@@ -2373,16 +3102,172 @@
           "browser"
         ],
         "browserVerification": {
-          "bindingHash": "sha256:bf8cb0657858fc0caf092b3d2f90990439173b5d9e3c8abc51b4ca129728fcf9",
+          "bindingHash": "sha256:61069f46a21a8225bb2010b93a02bf9f5d9e6f05aeff7d77065dd3d4c9ab96f4",
           "profile": "openrouter-browser-v1",
-          "reviewedAt": "2026-07-17"
+          "reviewedAt": "2026-07-20"
         }
+      },
+      {
+        "adapterVersion": "fal-queue-v1",
+        "browserVerification": {
+          "bindingHash": "sha256:547a7dd7e3cdd93b06c3d7758f93b8e575f848215a315142a45b702a8f780a9a",
+          "profile": "fal-browser-v1",
+          "reviewedAt": "2026-07-20"
+        },
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "https://queue.fal.run",
+        "evidence": {
+          "reviewedAt": "2026-07-20",
+          "sources": [
+            "https://fal.ai/models/fal-ai/kling-video/v3/pro/text-to-video/api",
+            "https://fal.ai/docs/documentation/model-apis/inference/queue"
+          ]
+        },
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "lifecycle": {
+          "cancellation": "best-effort",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "fal-ai/kling-video/v3/pro/text-to-video",
+        "operationId": "textToVideo",
+        "priority": 200,
+        "provider": "fal",
+        "providerTag": "fal-queue",
+        "protocol": "queue",
+        "requestProfile": {
+          "combinedParams": [],
+          "inputMappings": [],
+          "kind": "video",
+          "maxInputItems": 0,
+          "params": [
+            {
+              "field": "aspect_ratio",
+              "settingId": "aspectRatio"
+            },
+            {
+              "field": "duration",
+              "settingId": "durationSeconds"
+            },
+            {
+              "field": "generate_audio",
+              "settingId": "generateAudio"
+            }
+          ],
+          "promptField": "prompt",
+          "settingIds": [
+            "aspectRatio",
+            "durationSeconds",
+            "generateAudio"
+          ],
+          "staticParams": {
+            "shot_type": "customize"
+          }
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-20.2"
+      },
+      {
+        "adapterVersion": "fal-queue-v1",
+        "browserVerification": {
+          "bindingHash": "sha256:c087171c82cb8e3922748abf6dbead3450be4115575c578f1220b8ce5a4131c4",
+          "profile": "fal-browser-v1",
+          "reviewedAt": "2026-07-20"
+        },
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "https://queue.fal.run",
+        "evidence": {
+          "reviewedAt": "2026-07-20",
+          "sources": [
+            "https://fal.ai/models/fal-ai/kling-video/v3/pro/image-to-video/api",
+            "https://fal.ai/docs/documentation/model-apis/inference/queue"
+          ]
+        },
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "lifecycle": {
+          "cancellation": "best-effort",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "fal-ai/kling-video/v3/pro/image-to-video",
+        "operationId": "firstLastFrameToVideo",
+        "priority": 200,
+        "provider": "fal",
+        "providerTag": "fal-queue",
+        "protocol": "queue",
+        "requestProfile": {
+          "combinedParams": [],
+          "inputMappings": [
+            {
+              "cardinality": "single",
+              "field": "start_image_url",
+              "maxItems": 1,
+              "mediaType": "image",
+              "minItems": 1,
+              "targetSlotId": "firstFrame"
+            },
+            {
+              "cardinality": "single",
+              "field": "end_image_url",
+              "maxItems": 1,
+              "mediaType": "image",
+              "minItems": 0,
+              "targetSlotId": "lastFrame"
+            }
+          ],
+          "kind": "video",
+          "maxInputItems": 2,
+          "params": [
+            {
+              "field": "duration",
+              "settingId": "durationSeconds"
+            },
+            {
+              "field": "generate_audio",
+              "settingId": "generateAudio"
+            }
+          ],
+          "promptField": "prompt",
+          "settingIds": [
+            "durationSeconds",
+            "generateAudio"
+          ],
+          "staticParams": {
+            "shot_type": "customize"
+          }
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-20.2"
       }
     ]
   },
   {
     "id": "kwaivgi/kling-v3.0-std",
-    "revision": 1,
+    "revision": 2,
     "status": "active",
     "displayName": "Kling 3.0 Standard",
     "labelKey": "flows.models.kling30Standard",
@@ -2541,18 +3426,6 @@
         ]
       },
       {
-        "default": "720p",
-        "id": "resolution",
-        "kind": "enum",
-        "labelKey": "flows.settings.resolution",
-        "options": [
-          {
-            "labelKey": "flows.settings.resolutions.720p",
-            "value": "720p"
-          }
-        ]
-      },
-      {
         "default": true,
         "id": "generateAudio",
         "kind": "boolean",
@@ -2607,7 +3480,6 @@
         "settingIds": [
           "aspectRatio",
           "durationSeconds",
-          "resolution",
           "generateAudio"
         ],
         "nodeType": "videoGeneration"
@@ -2645,9 +3517,7 @@
           ]
         },
         "settingIds": [
-          "aspectRatio",
           "durationSeconds",
-          "resolution",
           "generateAudio"
         ],
         "nodeType": "videoGeneration"
@@ -2699,7 +3569,6 @@
           "settingIds": [
             "aspectRatio",
             "durationSeconds",
-            "resolution",
             "generateAudio"
           ]
         },
@@ -2721,9 +3590,9 @@
           "browser"
         ],
         "browserVerification": {
-          "bindingHash": "sha256:660b30002b659d7d513dd438f308395425a3349a71091d18c4afbf7def2d6e38",
+          "bindingHash": "sha256:ba7f6cf20d28df5004a9a665445db1b123e4911ce61d72b4592a782c47a8dbb0",
           "profile": "openrouter-browser-v1",
-          "reviewedAt": "2026-07-17"
+          "reviewedAt": "2026-07-20"
         }
       },
       {
@@ -2769,9 +3638,7 @@
           },
           "referenceValidationPolicy": "none",
           "settingIds": [
-            "aspectRatio",
             "durationSeconds",
-            "resolution",
             "generateAudio"
           ]
         },
@@ -2794,16 +3661,172 @@
           "browser"
         ],
         "browserVerification": {
-          "bindingHash": "sha256:255b22d8abc2f1c10aa104c9f3e9e6fd1754cac1d94c848d64c5229f1fe68a49",
+          "bindingHash": "sha256:76b1453c62eb3aea72aabc82eb148182885ecec998f0a7592dbadf9c1ec4d4cd",
           "profile": "openrouter-browser-v1",
-          "reviewedAt": "2026-07-17"
+          "reviewedAt": "2026-07-20"
         }
+      },
+      {
+        "adapterVersion": "fal-queue-v1",
+        "browserVerification": {
+          "bindingHash": "sha256:e54673ac301fa2b142a942be446dd3d142021852adeb7b07738fc82e53562004",
+          "profile": "fal-browser-v1",
+          "reviewedAt": "2026-07-20"
+        },
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "https://queue.fal.run",
+        "evidence": {
+          "reviewedAt": "2026-07-20",
+          "sources": [
+            "https://fal.ai/models/fal-ai/kling-video/v3/standard/text-to-video/api",
+            "https://fal.ai/docs/documentation/model-apis/inference/queue"
+          ]
+        },
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "lifecycle": {
+          "cancellation": "best-effort",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "fal-ai/kling-video/v3/standard/text-to-video",
+        "operationId": "textToVideo",
+        "priority": 200,
+        "provider": "fal",
+        "providerTag": "fal-queue",
+        "protocol": "queue",
+        "requestProfile": {
+          "combinedParams": [],
+          "inputMappings": [],
+          "kind": "video",
+          "maxInputItems": 0,
+          "params": [
+            {
+              "field": "aspect_ratio",
+              "settingId": "aspectRatio"
+            },
+            {
+              "field": "duration",
+              "settingId": "durationSeconds"
+            },
+            {
+              "field": "generate_audio",
+              "settingId": "generateAudio"
+            }
+          ],
+          "promptField": "prompt",
+          "settingIds": [
+            "aspectRatio",
+            "durationSeconds",
+            "generateAudio"
+          ],
+          "staticParams": {
+            "shot_type": "customize"
+          }
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-20.2"
+      },
+      {
+        "adapterVersion": "fal-queue-v1",
+        "browserVerification": {
+          "bindingHash": "sha256:67363d1c09fa96486892020244b61e20dea8babeb99e3e3fac57e5ad6e6a17a5",
+          "profile": "fal-browser-v1",
+          "reviewedAt": "2026-07-20"
+        },
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "https://queue.fal.run",
+        "evidence": {
+          "reviewedAt": "2026-07-20",
+          "sources": [
+            "https://fal.ai/models/fal-ai/kling-video/v3/standard/image-to-video/api",
+            "https://fal.ai/docs/documentation/model-apis/inference/queue"
+          ]
+        },
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "lifecycle": {
+          "cancellation": "best-effort",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "fal-ai/kling-video/v3/standard/image-to-video",
+        "operationId": "firstLastFrameToVideo",
+        "priority": 200,
+        "provider": "fal",
+        "providerTag": "fal-queue",
+        "protocol": "queue",
+        "requestProfile": {
+          "combinedParams": [],
+          "inputMappings": [
+            {
+              "cardinality": "single",
+              "field": "start_image_url",
+              "maxItems": 1,
+              "mediaType": "image",
+              "minItems": 1,
+              "targetSlotId": "firstFrame"
+            },
+            {
+              "cardinality": "single",
+              "field": "end_image_url",
+              "maxItems": 1,
+              "mediaType": "image",
+              "minItems": 0,
+              "targetSlotId": "lastFrame"
+            }
+          ],
+          "kind": "video",
+          "maxInputItems": 2,
+          "params": [
+            {
+              "field": "duration",
+              "settingId": "durationSeconds"
+            },
+            {
+              "field": "generate_audio",
+              "settingId": "generateAudio"
+            }
+          ],
+          "promptField": "prompt",
+          "settingIds": [
+            "durationSeconds",
+            "generateAudio"
+          ],
+          "staticParams": {
+            "shot_type": "customize"
+          }
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-20.2"
       }
     ]
   },
   {
     "id": "kwaivgi/kling-video-o1",
-    "revision": 1,
+    "revision": 2,
     "status": "active",
     "displayName": "Kling Video O1",
     "labelKey": "flows.models.klingVideoO1",
@@ -3022,10 +4045,7 @@
           ]
         },
         "settingIds": [
-          "aspectRatio",
-          "durationSeconds",
-          "resolution",
-          "generateAudio"
+          "durationSeconds"
         ],
         "nodeType": "videoGeneration"
       }
@@ -3146,10 +4166,7 @@
           },
           "referenceValidationPolicy": "none",
           "settingIds": [
-            "aspectRatio",
-            "durationSeconds",
-            "resolution",
-            "generateAudio"
+            "durationSeconds"
           ]
         },
         "requiresDurableSubmissionBoundary": true,
@@ -3171,16 +4188,93 @@
           "browser"
         ],
         "browserVerification": {
-          "bindingHash": "sha256:c2b38ff6f5b69d017ee7256fbcff09776377e7bcf64db17c96bcd99af3aa2fb0",
+          "bindingHash": "sha256:3f3e944af37993ebcc5c98568aecf90547be70ae33d83986e9616f9939b98c1b",
           "profile": "openrouter-browser-v1",
-          "reviewedAt": "2026-07-17"
+          "reviewedAt": "2026-07-20"
         }
+      },
+      {
+        "adapterVersion": "fal-queue-v1",
+        "browserVerification": {
+          "bindingHash": "sha256:df5865c70e80ba89b5967e585f19c44fef2e48c64c4296b7f28d051be1efe71a",
+          "profile": "fal-browser-v1",
+          "reviewedAt": "2026-07-20"
+        },
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "https://queue.fal.run",
+        "evidence": {
+          "reviewedAt": "2026-07-20",
+          "sources": [
+            "https://fal.ai/models/fal-ai/kling-video/o1/image-to-video/api",
+            "https://fal.ai/docs/documentation/model-apis/inference/queue"
+          ]
+        },
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "lifecycle": {
+          "cancellation": "best-effort",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "fal-ai/kling-video/o1/image-to-video",
+        "operationId": "firstLastFrameToVideo",
+        "priority": 200,
+        "provider": "fal",
+        "providerTag": "fal-queue",
+        "protocol": "queue",
+        "requestProfile": {
+          "combinedParams": [],
+          "inputMappings": [
+            {
+              "cardinality": "single",
+              "field": "start_image_url",
+              "maxItems": 1,
+              "mediaType": "image",
+              "minItems": 1,
+              "targetSlotId": "firstFrame"
+            },
+            {
+              "cardinality": "single",
+              "field": "end_image_url",
+              "maxItems": 1,
+              "mediaType": "image",
+              "minItems": 0,
+              "targetSlotId": "lastFrame"
+            }
+          ],
+          "kind": "video",
+          "maxInputItems": 2,
+          "params": [
+            {
+              "field": "duration",
+              "settingId": "durationSeconds"
+            }
+          ],
+          "promptField": "prompt",
+          "settingIds": [
+            "durationSeconds"
+          ],
+          "staticParams": {}
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-20.2"
       }
     ]
   },
   {
     "id": "alibaba/wan-2.7",
-    "revision": 1,
+    "revision": 2,
     "status": "active",
     "displayName": "Wan 2.7",
     "labelKey": "flows.models.wan27",
@@ -3345,12 +4439,6 @@
             "value": "1080p"
           }
         ]
-      },
-      {
-        "default": true,
-        "id": "generateAudio",
-        "kind": "boolean",
-        "labelKey": "flows.settings.generateAudio"
       }
     ],
     "constraints": [
@@ -3401,8 +4489,7 @@
         "settingIds": [
           "aspectRatio",
           "durationSeconds",
-          "resolution",
-          "generateAudio"
+          "resolution"
         ],
         "nodeType": "videoGeneration"
       },
@@ -3439,10 +4526,8 @@
           ]
         },
         "settingIds": [
-          "aspectRatio",
           "durationSeconds",
-          "resolution",
-          "generateAudio"
+          "resolution"
         ],
         "nodeType": "videoGeneration"
       }
@@ -3493,8 +4578,7 @@
           "settingIds": [
             "aspectRatio",
             "durationSeconds",
-            "resolution",
-            "generateAudio"
+            "resolution"
           ]
         },
         "requiresDurableSubmissionBoundary": true,
@@ -3515,9 +4599,9 @@
           "browser"
         ],
         "browserVerification": {
-          "bindingHash": "sha256:bacdf174033b56b401239af6d376cb4f12eadd60ffaae290d9db15484380c777",
+          "bindingHash": "sha256:a6b552dacdd269e70b973121d9d7c64a382c03f02180c98bfe2d4b22ef53bfc9",
           "profile": "openrouter-browser-v1",
-          "reviewedAt": "2026-07-17"
+          "reviewedAt": "2026-07-20"
         }
       },
       {
@@ -3563,10 +4647,8 @@
           },
           "referenceValidationPolicy": "none",
           "settingIds": [
-            "aspectRatio",
             "durationSeconds",
-            "resolution",
-            "generateAudio"
+            "resolution"
           ]
         },
         "requiresDurableSubmissionBoundary": true,
@@ -3588,16 +4670,194 @@
           "browser"
         ],
         "browserVerification": {
-          "bindingHash": "sha256:0f2b7b8efef62492c34822543dba13a065e83e396a72381007fa1c8dfd78d237",
+          "bindingHash": "sha256:e6c81290f5dd5287218608e60784a6644f53b61d86a1097409f6db91d5963881",
           "profile": "openrouter-browser-v1",
-          "reviewedAt": "2026-07-17"
+          "reviewedAt": "2026-07-20"
         }
+      },
+      {
+        "adapterVersion": "fal-queue-v1",
+        "browserVerification": {
+          "bindingHash": "sha256:7c2a710d2d2a005f15d96784fab9c302325f388883906bbb518616a9b9f3b7ef",
+          "profile": "fal-browser-v1",
+          "reviewedAt": "2026-07-20"
+        },
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "https://queue.fal.run",
+        "evidence": {
+          "reviewedAt": "2026-07-20",
+          "sources": [
+            "https://fal.ai/models/fal-ai/wan/v2.7/text-to-video/api",
+            "https://fal.ai/docs/documentation/model-apis/inference/queue"
+          ]
+        },
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "lifecycle": {
+          "cancellation": "best-effort",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "fal-ai/wan/v2.7/text-to-video",
+        "operationId": "textToVideo",
+        "priority": 200,
+        "provider": "fal",
+        "providerTag": "fal-queue",
+        "protocol": "queue",
+        "requestProfile": {
+          "combinedParams": [],
+          "inputMappings": [],
+          "kind": "video",
+          "maxInputItems": 0,
+          "params": [
+            {
+              "field": "aspect_ratio",
+              "settingId": "aspectRatio"
+            },
+            {
+              "field": "duration",
+              "settingId": "durationSeconds",
+              "valueMap": {
+                "2": 2,
+                "3": 3,
+                "4": 4,
+                "5": 5,
+                "6": 6,
+                "7": 7,
+                "8": 8,
+                "9": 9,
+                "10": 10
+              }
+            },
+            {
+              "field": "resolution",
+              "settingId": "resolution"
+            }
+          ],
+          "promptField": "prompt",
+          "settingIds": [
+            "aspectRatio",
+            "durationSeconds",
+            "resolution"
+          ],
+          "staticParams": {
+            "enable_safety_checker": true
+          }
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-20.2"
+      },
+      {
+        "adapterVersion": "fal-queue-v1",
+        "browserVerification": {
+          "bindingHash": "sha256:d8274e8907eba80879e3c4571203b6033ffdeafdd8a7a07e491a720bc0c8261a",
+          "profile": "fal-browser-v1",
+          "reviewedAt": "2026-07-20"
+        },
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "https://queue.fal.run",
+        "evidence": {
+          "reviewedAt": "2026-07-20",
+          "sources": [
+            "https://fal.ai/models/fal-ai/wan/v2.7/image-to-video/api",
+            "https://fal.ai/docs/documentation/model-apis/inference/queue"
+          ]
+        },
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "lifecycle": {
+          "cancellation": "best-effort",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "fal-ai/wan/v2.7/image-to-video",
+        "operationId": "firstLastFrameToVideo",
+        "priority": 200,
+        "provider": "fal",
+        "providerTag": "fal-queue",
+        "protocol": "queue",
+        "requestProfile": {
+          "combinedParams": [],
+          "inputMappings": [
+            {
+              "cardinality": "single",
+              "field": "image_url",
+              "maxItems": 1,
+              "mediaType": "image",
+              "minItems": 1,
+              "targetSlotId": "firstFrame"
+            },
+            {
+              "cardinality": "single",
+              "field": "end_image_url",
+              "maxItems": 1,
+              "mediaType": "image",
+              "minItems": 0,
+              "targetSlotId": "lastFrame"
+            }
+          ],
+          "kind": "video",
+          "maxInputItems": 2,
+          "params": [
+            {
+              "field": "duration",
+              "settingId": "durationSeconds",
+              "valueMap": {
+                "2": 2,
+                "3": 3,
+                "4": 4,
+                "5": 5,
+                "6": 6,
+                "7": 7,
+                "8": 8,
+                "9": 9,
+                "10": 10
+              }
+            },
+            {
+              "field": "resolution",
+              "settingId": "resolution"
+            }
+          ],
+          "promptField": "prompt",
+          "settingIds": [
+            "durationSeconds",
+            "resolution"
+          ],
+          "staticParams": {
+            "enable_safety_checker": true
+          }
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-20.2"
       }
     ]
   },
   {
     "id": "alibaba/wan-2.6",
-    "revision": 1,
+    "revision": 2,
     "status": "active",
     "displayName": "Wan 2.6",
     "labelKey": "flows.models.wan26",
@@ -3696,12 +4956,6 @@
             "value": "1080p"
           }
         ]
-      },
-      {
-        "default": true,
-        "id": "generateAudio",
-        "kind": "boolean",
-        "labelKey": "flows.settings.generateAudio"
       }
     ],
     "constraints": [],
@@ -3733,8 +4987,7 @@
         "settingIds": [
           "aspectRatio",
           "durationSeconds",
-          "resolution",
-          "generateAudio"
+          "resolution"
         ],
         "nodeType": "videoGeneration"
       },
@@ -3769,10 +5022,8 @@
           ]
         },
         "settingIds": [
-          "aspectRatio",
           "durationSeconds",
-          "resolution",
-          "generateAudio"
+          "resolution"
         ],
         "nodeType": "videoGeneration"
       }
@@ -3823,8 +5074,7 @@
           "settingIds": [
             "aspectRatio",
             "durationSeconds",
-            "resolution",
-            "generateAudio"
+            "resolution"
           ]
         },
         "requiresDurableSubmissionBoundary": true,
@@ -3845,9 +5095,9 @@
           "browser"
         ],
         "browserVerification": {
-          "bindingHash": "sha256:4e0f98cc80dff3a6ee07d9dbb65406b6c8b6c8900dd518d9dba946976c57f131",
+          "bindingHash": "sha256:f7561be1974c5a81bcb546529be812c1ba7ddef0c5a3faf2c22726f59709f911",
           "profile": "openrouter-browser-v1",
-          "reviewedAt": "2026-07-17"
+          "reviewedAt": "2026-07-20"
         }
       },
       {
@@ -3893,10 +5143,8 @@
           },
           "referenceValidationPolicy": "none",
           "settingIds": [
-            "aspectRatio",
             "durationSeconds",
-            "resolution",
-            "generateAudio"
+            "resolution"
           ]
         },
         "requiresDurableSubmissionBoundary": true,
@@ -3918,16 +5166,164 @@
           "browser"
         ],
         "browserVerification": {
-          "bindingHash": "sha256:720dfb17cb558446a8a9b7f34d720bfbf635d9424f08c3f79886406df72cb983",
+          "bindingHash": "sha256:efc410c0037af1a8a35460e42224c5a7838abdf357e8a0fc43628fcf418c805f",
           "profile": "openrouter-browser-v1",
-          "reviewedAt": "2026-07-17"
+          "reviewedAt": "2026-07-20"
         }
+      },
+      {
+        "adapterVersion": "fal-queue-v1",
+        "browserVerification": {
+          "bindingHash": "sha256:47e9b09c9e1149d1709a2d12a0f9abc82bde4f21a499928901944146f58f4ba7",
+          "profile": "fal-browser-v1",
+          "reviewedAt": "2026-07-20"
+        },
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "https://queue.fal.run",
+        "evidence": {
+          "reviewedAt": "2026-07-20",
+          "sources": [
+            "https://fal.ai/models/wan/v2.6/text-to-video/api",
+            "https://fal.ai/docs/documentation/model-apis/inference/queue"
+          ]
+        },
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "lifecycle": {
+          "cancellation": "best-effort",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "wan/v2.6/text-to-video",
+        "operationId": "textToVideo",
+        "priority": 200,
+        "provider": "fal",
+        "providerTag": "fal-queue",
+        "protocol": "queue",
+        "requestProfile": {
+          "combinedParams": [],
+          "inputMappings": [],
+          "kind": "video",
+          "maxInputItems": 0,
+          "params": [
+            {
+              "field": "aspect_ratio",
+              "settingId": "aspectRatio"
+            },
+            {
+              "field": "duration",
+              "settingId": "durationSeconds"
+            },
+            {
+              "field": "resolution",
+              "settingId": "resolution"
+            }
+          ],
+          "promptField": "prompt",
+          "settingIds": [
+            "aspectRatio",
+            "durationSeconds",
+            "resolution"
+          ],
+          "staticParams": {
+            "enable_safety_checker": true
+          }
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-20.2"
+      },
+      {
+        "adapterVersion": "fal-queue-v1",
+        "browserVerification": {
+          "bindingHash": "sha256:0f568a4ef64bdf42fd4d2dad37e72822f490c6da7f7e60575c13c5ab97901bd8",
+          "profile": "fal-browser-v1",
+          "reviewedAt": "2026-07-20"
+        },
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "https://queue.fal.run",
+        "evidence": {
+          "reviewedAt": "2026-07-20",
+          "sources": [
+            "https://fal.ai/models/wan/v2.6/image-to-video/api",
+            "https://fal.ai/docs/documentation/model-apis/inference/queue"
+          ]
+        },
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "lifecycle": {
+          "cancellation": "best-effort",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "wan/v2.6/image-to-video",
+        "operationId": "imageToVideo",
+        "priority": 200,
+        "provider": "fal",
+        "providerTag": "fal-queue",
+        "protocol": "queue",
+        "requestProfile": {
+          "combinedParams": [],
+          "inputMappings": [
+            {
+              "cardinality": "single",
+              "field": "image_url",
+              "maxItems": 1,
+              "mediaType": "image",
+              "minItems": 1,
+              "targetSlotId": "firstFrame"
+            }
+          ],
+          "kind": "video",
+          "maxInputItems": 1,
+          "params": [
+            {
+              "field": "duration",
+              "settingId": "durationSeconds"
+            },
+            {
+              "field": "resolution",
+              "settingId": "resolution"
+            }
+          ],
+          "promptField": "prompt",
+          "settingIds": [
+            "durationSeconds",
+            "resolution"
+          ],
+          "staticParams": {
+            "enable_safety_checker": true
+          }
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-20.2"
       }
     ]
   },
   {
     "id": "minimax/hailuo-2.3",
-    "revision": 1,
+    "revision": 2,
     "status": "active",
     "displayName": "Hailuo 2.3",
     "labelKey": "flows.models.hailuo23",
@@ -3978,48 +5374,7 @@
         }
       }
     ],
-    "settings": [
-      {
-        "default": "16:9",
-        "id": "aspectRatio",
-        "kind": "enum",
-        "labelKey": "flows.settings.aspectRatio",
-        "options": [
-          {
-            "labelKey": "flows.settings.aspectRatios.landscape",
-            "value": "16:9"
-          }
-        ]
-      },
-      {
-        "default": "6",
-        "id": "durationSeconds",
-        "kind": "enum",
-        "labelKey": "flows.settings.duration",
-        "options": [
-          {
-            "labelKey": "flows.settings.durations.seconds6",
-            "value": "6"
-          },
-          {
-            "labelKey": "flows.settings.durations.seconds10",
-            "value": "10"
-          }
-        ]
-      },
-      {
-        "default": "1080p",
-        "id": "resolution",
-        "kind": "enum",
-        "labelKey": "flows.settings.resolution",
-        "options": [
-          {
-            "labelKey": "flows.settings.resolutions.1080p",
-            "value": "1080p"
-          }
-        ]
-      }
-    ],
+    "settings": [],
     "constraints": [],
     "operations": [
       {
@@ -4046,11 +5401,7 @@
           "maxItems": 0,
           "slotIds": []
         },
-        "settingIds": [
-          "aspectRatio",
-          "durationSeconds",
-          "resolution"
-        ],
+        "settingIds": [],
         "nodeType": "videoGeneration"
       },
       {
@@ -4083,11 +5434,7 @@
             "firstFrame"
           ]
         },
-        "settingIds": [
-          "aspectRatio",
-          "durationSeconds",
-          "resolution"
-        ],
+        "settingIds": [],
         "nodeType": "videoGeneration"
       }
     ],
@@ -4134,11 +5481,7 @@
             "video": 0
           },
           "referenceValidationPolicy": "none",
-          "settingIds": [
-            "aspectRatio",
-            "durationSeconds",
-            "resolution"
-          ]
+          "settingIds": []
         },
         "requiresDurableSubmissionBoundary": true,
         "routeVersion": "2026-07-16.1",
@@ -4157,9 +5500,9 @@
           "browser"
         ],
         "browserVerification": {
-          "bindingHash": "sha256:84b2febe1c890fa9c5bc96fed69d78c2ccc0f32d154dc49ba25eddbb4f4c7c17",
+          "bindingHash": "sha256:43725be5b59d706b54fbe740ca778dab847c33e5d06bd551e14b785bdf8525ed",
           "profile": "openrouter-browser-v1",
-          "reviewedAt": "2026-07-17"
+          "reviewedAt": "2026-07-20"
         }
       },
       {
@@ -4204,11 +5547,7 @@
             "video": 0
           },
           "referenceValidationPolicy": "none",
-          "settingIds": [
-            "aspectRatio",
-            "durationSeconds",
-            "resolution"
-          ]
+          "settingIds": []
         },
         "requiresDurableSubmissionBoundary": true,
         "routeVersion": "2026-07-16.1",
@@ -4228,10 +5567,129 @@
           "browser"
         ],
         "browserVerification": {
-          "bindingHash": "sha256:3f8558aeca42073a67a4a38c862bab238e3260102882afbb36b6c9e8d37e0377",
+          "bindingHash": "sha256:277a4ecbe91199b78dd68687b4ee86757b96545babc8dd1425f8365ee13bfc2e",
           "profile": "openrouter-browser-v1",
-          "reviewedAt": "2026-07-17"
+          "reviewedAt": "2026-07-20"
         }
+      },
+      {
+        "adapterVersion": "fal-queue-v1",
+        "browserVerification": {
+          "bindingHash": "sha256:5fd339b069f5b5c575a003c16af548bddd1a6603173715f92017d8e458bd98a0",
+          "profile": "fal-browser-v1",
+          "reviewedAt": "2026-07-20"
+        },
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "https://queue.fal.run",
+        "evidence": {
+          "reviewedAt": "2026-07-20",
+          "sources": [
+            "https://fal.ai/models/fal-ai/minimax/hailuo-2.3/pro/text-to-video/api",
+            "https://fal.ai/docs/documentation/model-apis/inference/queue"
+          ]
+        },
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "lifecycle": {
+          "cancellation": "best-effort",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "fal-ai/minimax/hailuo-2.3/pro/text-to-video",
+        "operationId": "textToVideo",
+        "priority": 200,
+        "provider": "fal",
+        "providerTag": "fal-queue",
+        "protocol": "queue",
+        "requestProfile": {
+          "combinedParams": [],
+          "inputMappings": [],
+          "kind": "video",
+          "maxInputItems": 0,
+          "params": [],
+          "promptField": "prompt",
+          "settingIds": [],
+          "staticParams": {
+            "prompt_optimizer": true
+          }
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-20.2"
+      },
+      {
+        "adapterVersion": "fal-queue-v1",
+        "browserVerification": {
+          "bindingHash": "sha256:31df89db489b2fac761339bc54732f04595f2156952d4c7526599e0860c214b6",
+          "profile": "fal-browser-v1",
+          "reviewedAt": "2026-07-20"
+        },
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "https://queue.fal.run",
+        "evidence": {
+          "reviewedAt": "2026-07-20",
+          "sources": [
+            "https://fal.ai/models/fal-ai/minimax/hailuo-2.3/pro/image-to-video/api",
+            "https://fal.ai/docs/documentation/model-apis/inference/queue"
+          ]
+        },
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "lifecycle": {
+          "cancellation": "best-effort",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "fal-ai/minimax/hailuo-2.3/pro/image-to-video",
+        "operationId": "imageToVideo",
+        "priority": 200,
+        "provider": "fal",
+        "providerTag": "fal-queue",
+        "protocol": "queue",
+        "requestProfile": {
+          "combinedParams": [],
+          "inputMappings": [
+            {
+              "cardinality": "single",
+              "field": "image_url",
+              "maxItems": 1,
+              "mediaType": "image",
+              "minItems": 1,
+              "targetSlotId": "firstFrame"
+            }
+          ],
+          "kind": "video",
+          "maxInputItems": 1,
+          "params": [],
+          "promptField": "prompt",
+          "settingIds": [],
+          "staticParams": {
+            "prompt_optimizer": true
+          }
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-20.2"
       }
     ]
   },
@@ -4822,12 +6280,100 @@
           "profile": "openrouter-browser-v1",
           "reviewedAt": "2026-07-17"
         }
+      },
+      {
+        "adapterVersion": "fal-queue-v1",
+        "browserVerification": {
+          "bindingHash": "sha256:8543cbaf5ee6fbefba4859746838025ab355d651b5f5e547d9ff1ecd0eafbefb",
+          "profile": "fal-browser-v1",
+          "reviewedAt": "2026-07-20"
+        },
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "https://queue.fal.run",
+        "evidence": {
+          "reviewedAt": "2026-07-20",
+          "sources": [
+            "https://fal.ai/models/fal-ai/veo3.1/fast/api",
+            "https://fal.ai/docs/documentation/model-apis/inference/queue"
+          ]
+        },
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "lifecycle": {
+          "cancellation": "best-effort",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "fal-ai/veo3.1/fast",
+        "operationId": "textToVideo",
+        "priority": 200,
+        "provider": "fal",
+        "providerTag": "fal-queue",
+        "protocol": "queue",
+        "requestProfile": {
+          "combinedParams": [],
+          "inputMappings": [],
+          "kind": "video",
+          "maxInputItems": 0,
+          "params": [
+            {
+              "field": "aspect_ratio",
+              "settingId": "aspectRatio"
+            },
+            {
+              "field": "duration",
+              "settingId": "durationSeconds",
+              "valueMap": {
+                "4": "4s",
+                "6": "6s",
+                "8": "8s"
+              }
+            },
+            {
+              "field": "resolution",
+              "settingId": "resolution",
+              "valueMap": {
+                "720p": "720p",
+                "1080p": "1080p",
+                "4K": "4k"
+              }
+            },
+            {
+              "field": "generate_audio",
+              "settingId": "generateAudio"
+            }
+          ],
+          "promptField": "prompt",
+          "settingIds": [
+            "aspectRatio",
+            "durationSeconds",
+            "resolution",
+            "generateAudio"
+          ],
+          "staticParams": {
+            "auto_fix": true,
+            "safety_tolerance": "4"
+          }
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-20.2"
       }
     ]
   },
   {
     "id": "bytedance/seedance-2.0-fast",
-    "revision": 1,
+    "revision": 2,
     "status": "active",
     "displayName": "Seedance 2.0 Fast",
     "labelKey": "flows.models.seedance20Fast",
@@ -4934,10 +6480,6 @@
           {
             "labelKey": "flows.settings.aspectRatios.ultrawide",
             "value": "21:9"
-          },
-          {
-            "labelKey": "flows.settings.aspectRatio",
-            "value": "9:21"
           }
         ]
       },
@@ -5259,12 +6801,187 @@
           "profile": "openrouter-browser-v1",
           "reviewedAt": "2026-07-17"
         }
+      },
+      {
+        "adapterVersion": "fal-queue-v1",
+        "browserVerification": {
+          "bindingHash": "sha256:dee96663ed6c7f58061a1736cd0bfaed90cdfd0ac0ecf082e2dac2fb37ad64ec",
+          "profile": "fal-browser-v1",
+          "reviewedAt": "2026-07-20"
+        },
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "https://queue.fal.run",
+        "evidence": {
+          "reviewedAt": "2026-07-20",
+          "sources": [
+            "https://fal.ai/models/bytedance/seedance-2.0/fast/text-to-video/api",
+            "https://fal.ai/docs/documentation/model-apis/inference/queue"
+          ]
+        },
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "lifecycle": {
+          "cancellation": "best-effort",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "bytedance/seedance-2.0/fast/text-to-video",
+        "operationId": "textToVideo",
+        "priority": 200,
+        "provider": "fal",
+        "providerTag": "fal-queue",
+        "protocol": "queue",
+        "requestProfile": {
+          "combinedParams": [],
+          "inputMappings": [],
+          "kind": "video",
+          "maxInputItems": 0,
+          "params": [
+            {
+              "field": "aspect_ratio",
+              "settingId": "aspectRatio"
+            },
+            {
+              "field": "duration",
+              "settingId": "durationSeconds"
+            },
+            {
+              "field": "resolution",
+              "settingId": "resolution",
+              "valueMap": {
+                "480p": "480p",
+                "720p": "720p"
+              }
+            },
+            {
+              "field": "generate_audio",
+              "settingId": "generateAudio"
+            }
+          ],
+          "promptField": "prompt",
+          "settingIds": [
+            "aspectRatio",
+            "durationSeconds",
+            "resolution",
+            "generateAudio"
+          ],
+          "staticParams": {}
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-20.2"
+      },
+      {
+        "adapterVersion": "fal-queue-v1",
+        "browserVerification": {
+          "bindingHash": "sha256:ccbcf4f102faedfadd5e70f231e94d02784865719905d42bebcd402d2cfb034a",
+          "profile": "fal-browser-v1",
+          "reviewedAt": "2026-07-20"
+        },
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "https://queue.fal.run",
+        "evidence": {
+          "reviewedAt": "2026-07-20",
+          "sources": [
+            "https://fal.ai/models/bytedance/seedance-2.0/fast/image-to-video/api",
+            "https://fal.ai/docs/documentation/model-apis/inference/queue"
+          ]
+        },
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "lifecycle": {
+          "cancellation": "best-effort",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "bytedance/seedance-2.0/fast/image-to-video",
+        "operationId": "firstLastFrameToVideo",
+        "priority": 200,
+        "provider": "fal",
+        "providerTag": "fal-queue",
+        "protocol": "queue",
+        "requestProfile": {
+          "combinedParams": [],
+          "inputMappings": [
+            {
+              "cardinality": "single",
+              "field": "image_url",
+              "maxItems": 1,
+              "mediaType": "image",
+              "minItems": 1,
+              "targetSlotId": "firstFrame"
+            },
+            {
+              "cardinality": "single",
+              "field": "end_image_url",
+              "maxItems": 1,
+              "mediaType": "image",
+              "minItems": 0,
+              "targetSlotId": "lastFrame"
+            }
+          ],
+          "kind": "video",
+          "maxInputItems": 2,
+          "params": [
+            {
+              "field": "aspect_ratio",
+              "settingId": "aspectRatio"
+            },
+            {
+              "field": "duration",
+              "settingId": "durationSeconds"
+            },
+            {
+              "field": "resolution",
+              "settingId": "resolution",
+              "valueMap": {
+                "480p": "480p",
+                "720p": "720p"
+              }
+            },
+            {
+              "field": "generate_audio",
+              "settingId": "generateAudio"
+            }
+          ],
+          "promptField": "prompt",
+          "settingIds": [
+            "aspectRatio",
+            "durationSeconds",
+            "resolution",
+            "generateAudio"
+          ],
+          "staticParams": {}
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-20.2"
       }
     ]
   },
   {
     "id": "alibaba/happyhorse-1.1",
-    "revision": 1,
+    "revision": 2,
     "status": "active",
     "displayName": "HappyHorse 1.1",
     "labelKey": "flows.models.happyhorse11",
@@ -5493,7 +7210,6 @@
           ]
         },
         "settingIds": [
-          "aspectRatio",
           "durationSeconds",
           "resolution"
         ],
@@ -5614,7 +7330,6 @@
           },
           "referenceValidationPolicy": "none",
           "settingIds": [
-            "aspectRatio",
             "durationSeconds",
             "resolution"
           ]
@@ -5637,10 +7352,188 @@
           "browser"
         ],
         "browserVerification": {
-          "bindingHash": "sha256:b9901faab74614170346eac5d753cbfe8ad1f0b7de059f833a7193697b441824",
+          "bindingHash": "sha256:b4aafc3e0b004dacc1a1b0ca02a6446d4d55056c8283e27be93c0184ff44db75",
           "profile": "openrouter-browser-v1",
-          "reviewedAt": "2026-07-17"
+          "reviewedAt": "2026-07-20"
         }
+      },
+      {
+        "adapterVersion": "fal-queue-v1",
+        "browserVerification": {
+          "bindingHash": "sha256:798e01af711cf305532de4e02dfc637a53c8be866ad3a8ab599b62f5d61beeab",
+          "profile": "fal-browser-v1",
+          "reviewedAt": "2026-07-20"
+        },
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "https://queue.fal.run",
+        "evidence": {
+          "reviewedAt": "2026-07-20",
+          "sources": [
+            "https://fal.ai/models/alibaba/happy-horse/v1.1/text-to-video/api",
+            "https://fal.ai/docs/documentation/model-apis/inference/queue"
+          ]
+        },
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "lifecycle": {
+          "cancellation": "best-effort",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "alibaba/happy-horse/v1.1/text-to-video",
+        "operationId": "textToVideo",
+        "priority": 200,
+        "provider": "fal",
+        "providerTag": "fal-queue",
+        "protocol": "queue",
+        "requestProfile": {
+          "combinedParams": [],
+          "inputMappings": [],
+          "kind": "video",
+          "maxInputItems": 0,
+          "params": [
+            {
+              "field": "aspect_ratio",
+              "settingId": "aspectRatio"
+            },
+            {
+              "field": "duration",
+              "settingId": "durationSeconds",
+              "valueMap": {
+                "3": 3,
+                "4": 4,
+                "5": 5,
+                "6": 6,
+                "7": 7,
+                "8": 8,
+                "9": 9,
+                "10": 10,
+                "11": 11,
+                "12": 12,
+                "13": 13,
+                "14": 14,
+                "15": 15
+              }
+            },
+            {
+              "field": "resolution",
+              "settingId": "resolution"
+            }
+          ],
+          "promptField": "prompt",
+          "settingIds": [
+            "aspectRatio",
+            "durationSeconds",
+            "resolution"
+          ],
+          "staticParams": {
+            "enable_safety_checker": true
+          }
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-20.2"
+      },
+      {
+        "adapterVersion": "fal-queue-v1",
+        "browserVerification": {
+          "bindingHash": "sha256:834753e7f3e910bf9f0386e196e86c73acddec5927ef7f76b424df593a16257a",
+          "profile": "fal-browser-v1",
+          "reviewedAt": "2026-07-20"
+        },
+        "costCapture": {
+          "creditCost": "unknown",
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "https://queue.fal.run",
+        "evidence": {
+          "reviewedAt": "2026-07-20",
+          "sources": [
+            "https://fal.ai/models/alibaba/happy-horse/v1.1/image-to-video/api",
+            "https://fal.ai/docs/documentation/model-apis/inference/queue"
+          ]
+        },
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "lifecycle": {
+          "cancellation": "best-effort",
+          "completions": [
+            "poll"
+          ],
+          "deliveries": [
+            "stream"
+          ],
+          "submission": "asynchronous"
+        },
+        "nativeModelId": "alibaba/happy-horse/v1.1/image-to-video",
+        "operationId": "imageToVideo",
+        "priority": 200,
+        "provider": "fal",
+        "providerTag": "fal-queue",
+        "protocol": "queue",
+        "requestProfile": {
+          "combinedParams": [],
+          "inputMappings": [
+            {
+              "cardinality": "single",
+              "field": "image_url",
+              "maxItems": 1,
+              "mediaType": "image",
+              "minItems": 1,
+              "targetSlotId": "firstFrame"
+            }
+          ],
+          "kind": "video",
+          "maxInputItems": 1,
+          "params": [
+            {
+              "field": "duration",
+              "settingId": "durationSeconds",
+              "valueMap": {
+                "3": 3,
+                "4": 4,
+                "5": 5,
+                "6": 6,
+                "7": 7,
+                "8": 8,
+                "9": 9,
+                "10": 10,
+                "11": 11,
+                "12": 12,
+                "13": 13,
+                "14": 14,
+                "15": 15
+              }
+            },
+            {
+              "field": "resolution",
+              "settingId": "resolution"
+            }
+          ],
+          "promptField": "prompt",
+          "settingIds": [
+            "durationSeconds",
+            "resolution"
+          ],
+          "staticParams": {
+            "enable_safety_checker": true
+          }
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-20.2"
       }
     ]
   }

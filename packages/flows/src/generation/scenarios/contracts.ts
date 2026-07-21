@@ -34,6 +34,8 @@ function defaultSettings(model: GenerationModelDefinition) {
 }
 
 const gptImage2 = GENERATION_MODEL_REGISTRY['openai/gpt-image-2']
+const seedream50Lite
+  = GENERATION_MODEL_REGISTRY['bytedance/seedream-5.0-lite']
 const veo31 = GENERATION_MODEL_REGISTRY['google/veo-3.1']
 const seedance20 = GENERATION_MODEL_REGISTRY['bytedance/seedance-2.0']
 
@@ -60,6 +62,30 @@ const CAPABILITY_SCENARIOS: readonly CapabilityScenario[] = [
       settings: defaultSettings(gptImage2),
     },
     name: 'structural prompt connection does not satisfy runtime input',
+  },
+  {
+    input: {
+      connectionCounts: { prompt: 1 },
+      model: seedream50Lite,
+      operationId: 'textToImage',
+      requireComplete: true,
+      settings: { ...defaultSettings(seedream50Lite), outputCount: 6 },
+    },
+    name: 'Seedream 5 exposes its reviewed six-output maximum',
+  },
+  {
+    expectedIssueCodes: [
+      'generation_output_count',
+      'generation_setting_invalid',
+    ],
+    input: {
+      connectionCounts: { prompt: 1 },
+      model: seedream50Lite,
+      operationId: 'textToImage',
+      requireComplete: true,
+      settings: { ...defaultSettings(seedream50Lite), outputCount: 7 },
+    },
+    name: 'Seedream 5 rejects output counts above six',
   },
   {
     input: {
@@ -90,13 +116,13 @@ const CAPABILITY_SCENARIOS: readonly CapabilityScenario[] = [
     input: {
       connectionCounts: {
         audioReferences: 3,
-        imageReferences: 9,
+        imageReferences: 6,
         prompt: 1,
         videoReferences: 3,
       },
       itemCounts: {
         audioReferences: 3,
-        imageReferences: 9,
+        imageReferences: 6,
         prompt: 1,
         videoReferences: 3,
       },
@@ -105,7 +131,29 @@ const CAPABILITY_SCENARIOS: readonly CapabilityScenario[] = [
       requireComplete: true,
       settings: defaultSettings(seedance20),
     },
-    name: 'Seedance accepts its reviewed per-family reference maxima',
+    name: 'Seedance accepts its reviewed combined reference maximum',
+  },
+  {
+    expectedIssueCodes: ['generation_reference_limit'],
+    input: {
+      connectionCounts: {
+        audioReferences: 3,
+        imageReferences: 7,
+        prompt: 1,
+        videoReferences: 3,
+      },
+      itemCounts: {
+        audioReferences: 3,
+        imageReferences: 7,
+        prompt: 1,
+        videoReferences: 3,
+      },
+      model: seedance20,
+      operationId: 'referencesToVideo',
+      requireComplete: true,
+      settings: defaultSettings(seedance20),
+    },
+    name: 'Seedance rejects references above its combined maximum',
   },
   {
     expectedIssueCodes: ['generation_input_at_least_one'],
@@ -145,6 +193,19 @@ export function validateGenerationContractCapabilityScenarios() {
         `${scenario.name}: expected [${expectedCodes.join(', ')}], received [${actualCodes.join(', ')}]`,
       )
     }
+  }
+
+  const seedreamVisibility = evaluateGenerationContract({
+    connectionCounts: { prompt: 1 },
+    model: seedream50Lite,
+    operationId: 'textToImage',
+    requireComplete: true,
+    settings: defaultSettings(seedream50Lite),
+  }).visibleSettingIds
+  if (!seedreamVisibility.includes('outputCount')) {
+    errors.push(
+      'Seedream 5 output count must remain visible through the generic catalog contract',
+    )
   }
 
   const emptyConnectedTextResult = validateExecutableFlowGraph({
