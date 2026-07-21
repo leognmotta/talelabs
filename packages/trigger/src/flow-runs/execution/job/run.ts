@@ -216,6 +216,8 @@ export async function runGenerationJob(
         mediaType: job.mediaType as 'audio' | 'image' | 'text' | 'video',
         organizationId: payload.organizationId,
       },
+      providerCostUsd: job.providerCostUsd,
+      providerGenerationId: job.providerGenerationId,
       providerJobId: job.providerJobId,
       providerSubmittedAt: job.providerSubmittedAt,
       requiresDurableSubmissionBoundary:

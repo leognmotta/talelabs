@@ -57,8 +57,8 @@ export async function acknowledgeBrowserJobCancellation(input: {
         browserCancelAcknowledgedAt: now,
         browserCancelFinal: input.final,
         browserCancelStatus: input.result,
-        providerSettlementResolvedAt: now,
-        providerSettlementStatus: 'unknown',
+        providerSettlementResolvedAt: input.final ? now : null,
+        providerSettlementStatus: input.final ? 'unknown' : 'pending',
       })
       .where('organizationId', '=', input.organizationId)
       .where('flowRunId', '=', input.runId)

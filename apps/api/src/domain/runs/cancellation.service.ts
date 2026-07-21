@@ -63,8 +63,8 @@ export async function cancelRun(input: {
         .set({
           browserCancelRequestedAt: now,
           completedAt: now,
-          providerSettlementResolvedAt: now,
-          providerSettlementStatus: 'unknown',
+          providerSettlementResolvedAt: null,
+          providerSettlementStatus: 'pending',
           status: 'canceled',
         })
         .where('organizationId', '=', input.organizationId)

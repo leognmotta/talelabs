@@ -1,3 +1,5 @@
+/** Durable generation-job failure classification, retry, and settlement transitions. */
+
 import type { TaskRunContext } from '@trigger.dev/sdk'
 import type { GenerationJobTaskPayload } from '../../../tasks/flow-runs/contracts.js'
 
@@ -15,6 +17,7 @@ import {
 } from '../provider-results/settlement.js'
 import { markJobFailed } from './state/index.js'
 
+/** Applies retry, settlement, cancellation, and terminal failure policy to one job error. */
 export async function handleGenerationJobError(input: {
   ctx: TaskRunContext
   error: unknown
@@ -32,6 +35,7 @@ export async function handleGenerationJobError(input: {
       .onRef('run.organizationId', '=', 'job.organizationId'))
     .select([
       'job.flowRunId',
+      'job.providerJobId',
       'job.providerSettlementStatus',
       'job.providerSubmittedAt',
       'run.status as runStatus',
@@ -42,6 +46,7 @@ export async function handleGenerationJobError(input: {
   const runCanceled = state?.runStatus === 'canceled'
   const safeToResubmit = error instanceof GenerationProviderError
     && error.safeToResubmit
+    && state?.providerJobId === null
   if (safeToResubmit) {
     await db.updateTable('generationJobs')
       .set({
