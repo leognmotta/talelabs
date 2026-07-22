@@ -41,6 +41,15 @@ and any incomplete comparison retain catalog priority and checked-in order.
 Browser BYOK and debug execution remain priority-based. Once captured,
 execution never reroutes, re-discovers, or falls back.
 
+Credits preflight and admission use one estimator path: canonical Flow planning
+and Asset facts feed one provider pricing snapshot, `estimateProviderCost`,
+`resolvePlanProviderCosts`, and the sanitized `publicRunCostEstimate` projection.
+The browser alone retains final public estimates under exact scope-aware
+TanStack Query keys for five minutes. The server retains only short-lived
+provider pricing rates and negative rate misses; it does not cache Flow scopes,
+manifest responses, route decisions, final estimates, or per-job estimates.
+Admission always recalculates from locked facts and never trusts browser data.
+
 Managed availability is derived from whether the existing platform credential
 for each policy-approved provider is actually configured in API/worker
 composition. It is not inferred from catalog membership or an availability

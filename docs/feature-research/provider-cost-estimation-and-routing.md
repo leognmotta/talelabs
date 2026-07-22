@@ -70,6 +70,11 @@ does not describe how request configuration becomes billable units. Seedance
 - Credits-only `POST /flows/:id/run-plans` returns a sanitized complete,
   partial, or unavailable aggregate without exposing providers, rates,
   formulas, or credentials. Admission always recalculates independently.
+- Batched canvas preflight uses one canonical pipeline: one saved graph and
+  context load, one shared selection index, one Asset load, one pricing
+  snapshot for every distinct candidate binding, and pure route resolution for
+  every requested scope. Admission calls the same estimator and route resolver
+  again from its locked request facts.
 - While Credits is selected, the dashboard shows the advisory result next to
   runnable node and graph-scope actions. Nodes without enough configuration to
   run do not request or render an estimate. Graph-scope preflight omits those
@@ -80,6 +85,9 @@ does not describe how request configuration becomes billable units. Seedance
   pricing during admission, or persist estimate evidence. It selects bindings
   in catalog-priority order. Debug shows the equivalent live provider estimate
   only when Credits is selected while continuing to execute the free mock.
+- Estimate results have one retained owner: the browser's scope-keyed TanStack
+  Query entries. The server retains only provider pricing rates; it never caches
+  Flow scopes, manifests, final estimates, or per-job estimate results.
 - Migration `029_provider_cost_estimates` adds the nullable job quote. It must
   be verified on disposable PostgreSQL or staging before deployment; it was not
   run against the configured remote database during implementation.
@@ -540,12 +548,42 @@ packages/providers/src/openrouter/server/pricing-client.ts
 packages/providers/src/openrouter/server/image-pricing-estimator.ts
 packages/providers/src/openrouter/server/video-pricing-estimator.ts
 
-apps/api/src/domain/runs/provider-cost-estimation.service.ts
+apps/api/src/domain/runs/provider-cost.service.ts
 apps/api/src/domain/runs/provider-cost-routing.ts
 ```
 
 Do not create a package per pricing unit, one class per model, a database-backed
 pricing registry, or a generic rule engine.
+
+## Canonical Estimator Pipeline
+
+There is one supported path and four narrow operations:
+
+```txt
+loadProviderPricingSnapshot -> estimateProviderCost
+-> resolvePlanProviderCosts -> publicRunCostEstimate
+```
+
+There are no cached and uncached estimator variants. Preflight and admission
+both call `resolvePlanProviderCosts`; their only difference is where the same
+provider-neutral request facts come from. Preflight uses one tenant-scoped saved
+planning source, while admission recalculates from locked Assets and the
+revalidated Flow revision. The server pricing loader may reuse rates, but every
+route decision and estimate is newly calculated.
+
+### Retained cache boundaries
+
+Only two retained estimation caches exist:
+
+1. The browser's per-scope TanStack Query entry stores the sanitized
+   `PublicRunCostEstimate` under organization, Flow, execution mode/runtime,
+   command, and cost-relevant scope fingerprint.
+2. The server's `providerPricingCache` stores only short-lived provider rate
+   metadata or a negative rate miss under provider pricing identity.
+
+The manifest mutation is transport state, not a result cache. Server Flow
+scopes, route decisions, final estimates, and per-job estimates are never cache
+values.
 
 ## Split I/O From Calculation
 
@@ -554,11 +592,9 @@ The implementation should expose two narrow layers.
 ### Impure rate loading
 
 ```ts
-interface ProviderPricingSource {
-  loadRates(
-    bindings: readonly CatalogProviderBinding[],
-  ): Promise<ReadonlyMap<string, ProviderRateMetadata>>;
-}
+function loadProviderPricingSnapshot(input: {
+  bindings: readonly CatalogProviderBinding[];
+}): Promise<ProviderPricingSnapshot>;
 ```
 
 Responsibilities:
@@ -590,14 +626,16 @@ but tests and admission must retain this separation.
 
 ## Rate Loading And Failure Policy
 
-The implementation uses a one-minute process-local cache keyed by the exact
-provider/model/protocol/tag binding set, with in-flight request coalescing.
-This keeps the automatically rendered node estimates from issuing duplicate
-provider metadata requests while preserving the provider-authored retrieval
-time in every quote. Incomplete snapshots use a 15-second negative lifetime to
-bound outage traffic without making them durable pricing facts. Managed
-dashboard queries separately retain a complete
-scope fingerprint for five minutes. The fingerprint contains only the graph
+The implementation uses one-minute process-local rate entries keyed by exact
+provider, protocol, native model, and provider tag pricing identity. Missing
+rates use a 15-second negative lifetime, and identical cold miss sets coalesce
+inside the provider pricing loader. No cached value contains a Flow,
+organization, node, Asset, prompt, credential, request facts, route decision,
+or final estimate. Injected fake pricing loaders bypass retention unless a
+verification supplies its own isolated `CacheStore`.
+
+The dashboard separately retains a complete public estimate under its scope
+fingerprint for five minutes. The fingerprint contains only the graph
 slice and Asset metadata captured by that command, so an unrelated node edit
 does not invalidate every node estimate; the edited scope, flow total, and
 dependent scopes still refresh after autosave. Browser BYOK does not request
@@ -609,16 +647,18 @@ Implementation rules:
 
 - Batch fal endpoint IDs in groups of at most 50 and fetch the OpenRouter video
   model list once per request.
-- Deduplicate exact provider/model/protocol/tag scopes inside each request and
-  coalesce identical in-flight snapshots across requests.
+- Deduplicate pricing identities inside each snapshot and coalesce identical
+  in-flight rate miss sets across requests.
 - Do not persist a general rate table in PostgreSQL.
 - Keep the cache account-local and short-lived, with incomplete results expiring
   before complete quotes. A future shared cache must define distributed
   consistency and account scope before replacing this process-local optimization.
 - A timeout, `401`, `429`, schema drift, missing endpoint, or stale rate makes
   that internal estimate unavailable. The canvas keeps the related Run action
-  disabled, performs only bounded request retries, and stores a short negative
-  result. After ordinary query retries, incomplete scopes get at most three
+  disabled, performs only bounded request retries, and retains the incomplete
+  public scope in the browser for 30 seconds. Provider-rate misses keep their
+  separate short server negative entry. After ordinary query retries,
+  incomplete scopes get at most three
   delayed recovery attempts at 30, 60, and 120 seconds. Focus or a later manual
   interaction may recover after that budget; the UI never presents
   `unavailable` as a user-facing cost or spins indefinitely.
@@ -880,9 +920,9 @@ The implemented run-plan preflight reuses the same planner and estimator. It:
   estimate scope;
 - returns a temporary advisory USD amount formatted and explained by the
   localized dashboard only after every planned job is estimated;
-- bounds transient request retries, negatively caches incomplete pricing for a
-  short interval, and prevents that scope from running until a complete amount
-  is known;
+- bounds transient request retries, keeps incomplete public scopes briefly in
+  the browser, and prevents that scope from running until a complete amount is
+  known;
 - keeps provider identity, account discounts, binding priority, formula
   evidence, and margins private;
 - avoids promising that an advisory preflight is a final reservation.
@@ -926,8 +966,10 @@ output truth:
 one canvas fingerprint coordinator
 -> bounded requests for only missing estimate scopes
 -> one server graph/context/prior-output load
--> batched deterministic plans
--> shared per-job provider-cost cache
+-> one shared graph-selection index and batched deterministic plans
+-> one unioned Asset load
+-> one pricing snapshot for every distinct candidate binding
+-> the canonical pure estimator and route resolver for every scope
 -> narrow TanStack Query entries per requested node scope
 ```
 
@@ -939,23 +981,29 @@ optional `all` scope for future non-canvas workflows, but the normal canvas does
 not register or price it.
 With React Flow's visible-element rendering, offscreen and incomplete generation
 nodes do not create estimate work. Panning queues newly visible missing scopes.
-The server derives cache identities from its loaded graph, validation context,
-and prior outputs, then caches each requested scope independently.
-Complete scopes live for five minutes and incomplete pricing for 15 seconds.
-Provider-cost entries and organization rate-limit counters use separate bounded
-stores within `@talelabs/cache`, so estimate cardinality cannot evict admission
-counters. The current backing stores are process memory by explicit temporary
-product decision; their package boundary and TODO preserve the Redis replacement.
-Identical cold manifest requests share one process-local calculation before
-loading the graph, Assets, or pricing. Distributed miss coalescing will require
-a bounded Redis lease (`SET key token NX PX ttl`) whose release atomically
-compares and deletes the owner's token, because the current in-flight map is
-intentionally process-local.
+Every manifest request recomputes its selected Flow scopes. The server does not
+retain a manifest response, Flow-scope result, final estimate, or per-job
+estimate. Its only estimation cache is the bounded `providerPricingCache` in
+`@talelabs/cache`; rate-limit counters remain in their separate workload store.
+Obsolete browser requests propagate cancellation through manifest planning into
+provider pricing I/O. A canceled waiter exits without writing a negative rate;
+coalesced pricing work continues for active waiters and is aborted only when no
+caller still needs it.
+Both current stores use process memory by explicit temporary product decision.
+Redis initially replaces only the provider pricing-rate store. Cross-instance
+rate-miss coalescing will then need a token-owned bounded lease with atomic
+owner-verified release. A distributed manifest cache is deliberately deferred
+until production measurements show that authoritative planning itself is the
+remaining bottleneck.
 
 The browser retains each complete estimate under a cost-relevant scope hash.
 Node position, selection, lock presentation, and unrelated graph branches do
 not change that key. When one node changes, unchanged node keys keep their
 estimates; the next request contains only changed or affected node scopes.
+Complete public estimates remain fresh for five minutes; incomplete results
+remain for 30 seconds only to bound outage retries. The manifest transport is a
+zero-retention mutation: it writes returned estimates directly into those
+per-scope entries and retains no duplicate response data.
 Incomplete nodes receive a non-runnable zero-job result that
 is cached but never rendered as `$0`, `unavailable`, or an endless estimating
 state. Lazy `from here`, `till here`, and selection scopes remain exact
@@ -978,7 +1026,10 @@ requested generation scopes; batching removes network and database
 multiplication, not all CPU work. The reusable selection indexes remove repeated
 adjacency construction and ancestor-closure setup. The hard batch limits remain
 the authoritative work budget and are not a reason to reintroduce per-node
-requests or duplicate pricing policy in the browser.
+requests or duplicate pricing policy in the browser. Concurrent cold manifests
+may still repeat authoritative graph planning; only provider-rate misses
+coalesce. That explicit tradeoff keeps the pipeline simple until measurements
+justify a separate distributed planning cache.
 
 ## Observability And Calibration
 

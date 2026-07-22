@@ -500,7 +500,12 @@ first/last-frame requirements, reference-image limits, resolutions that force a
 specific duration, mutually exclusive inputs, and operation-specific audio
 contracts such as TTS versus sound effects.
 
-Generation must remain server-authoritative. The server resolves connected context, validates compatibility, records immutable job inputs, estimates cost later when credits exist, calls the provider, and ingests successful outputs into Assets.
+Generation must remain server-authoritative. The server resolves connected
+context, validates compatibility, calculates the current advisory provider-cost
+estimate for Credits-funded managed runs, records immutable job inputs and quote
+evidence, calls the provider, and ingests successful outputs into Assets. This
+pre-billing estimate is not a credit balance, reservation, charge, or enforcement
+system.
 
 The provider adapter boundary supports both immediate results and asynchronous
 jobs. Images may complete immediately or stream, videos commonly submit and
@@ -896,10 +901,15 @@ None are required to validate the first sellable loop.
 
 Credits and billing are necessary for a commercial generation product, but they should follow the proven single-user creation loop rather than lead implementation.
 
+TaleLabs already calculates and displays an advisory provider-cost estimate for
+Credits-funded managed runs and recalculates it authoritatively at admission.
+Credit balances, reservations, capture, release, pricing margins, and enforcement
+remain future billing work.
+
 When introduced, billing must support:
 
 ```txt
-generation cost estimation
+credit-denominated run quotes derived from provider-cost estimates
 credit reservation before execution
 capture after billable success
 release after non-billable failure
