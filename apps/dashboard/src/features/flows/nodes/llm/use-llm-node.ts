@@ -47,41 +47,28 @@ export function useLlmNode(input: {
     () => (model?.inputSlots ?? []).filter(slot => slot.id !== 'instructions'),
     [model],
   )
-  const itemCounts = useMemo(
-    () => Object.fromEntries(inputSlots.map((slot) => {
-      return [
-        slot.id,
-        canvas.getExecutableInputCount(input.node.id, slot.id),
-      ]
-    })),
-    [canvas, input.node.id, inputSlots],
-  )
+  const itemCounts = Object.fromEntries(inputSlots.map((slot) => {
+    return [
+      slot.id,
+      canvas.getExecutableInputCount(input.node.id, slot.id),
+    ]
+  }))
   const inlineInstructions = String(input.node.data.instructions ?? '')
   const inlinePrompt = generationInlineValue({
     connectionCounts,
     data: input.node.data,
     slotId: 'prompt',
   })
-  const resolution = useMemo(
-    () => model
-      ? resolveLlmState({
-          connectionCounts,
-          inlineInstructions,
-          inlinePrompt,
-          itemCounts,
-          model,
-          settings: input.node.data.settings ?? {},
-        })
-      : null,
-    [
-      connectionCounts,
-      input.node.data.settings,
-      inlineInstructions,
-      inlinePrompt,
-      itemCounts,
-      model,
-    ],
-  )
+  const resolution = model
+    ? resolveLlmState({
+        connectionCounts,
+        inlineInstructions,
+        inlinePrompt,
+        itemCounts,
+        model,
+        settings: input.node.data.settings ?? {},
+      })
+    : null
   const visibleSettingIds = new Set(resolution?.visibleSettingIds ?? [])
   const activeSettings = model && resolution?.resolvedOperationId
     ? getActiveGenerationSettings(model, resolution.resolvedOperationId)

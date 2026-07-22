@@ -31,9 +31,12 @@ export function generationInlineValue(input: {
 }) {
   if ((input.connectionCounts[input.slotId] ?? 0) > 0)
     return ''
+  const value = input.data[input.slotId]
+  if (value === undefined)
+    return ''
   return input.slotId === 'prompt'
-    ? promptTemplateResolvedText(coercePromptTemplate(input.data.prompt))
-    : String(input.data[input.slotId] ?? '')
+    ? promptTemplateResolvedText(coercePromptTemplate(value))
+    : String(value ?? '')
 }
 
 /** Projects model slots into canvas compatibility contracts. */

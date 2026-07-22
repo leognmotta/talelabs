@@ -14,7 +14,7 @@ export type FlowMockRequestResolver = (
   visiting: ReadonlySet<string>,
 ) => GenerationMockRequest | null
 
-/** Returns a mounted output only when it still matches the resolved request fingerprint. */
+/** Returns the latest durable output or a transient output matching the current request. */
 export function currentMockRuntimeOutput(
   state: FlowMockRuntimeState,
   nodeId: string,
@@ -29,7 +29,7 @@ export function currentMockRuntimeOutput(
   )[0] ?? null
 }
 
-/** Returns every current output in provider order for prompt-input selection. */
+/** Returns every executable output in provider order for downstream consumption. */
 export function currentMockRuntimeOutputs(
   state: FlowMockRuntimeState,
   nodeId: string,
@@ -38,9 +38,6 @@ export function currentMockRuntimeOutputs(
 ): readonly FlowGenerationPreviewOutput[] {
   const preview = state.input.previews[nodeId]
   if (preview?.status !== 'succeeded')
-    return []
-  const request = resolveRequest(nodeId, visiting)
-  if (!request || preview.fingerprint !== fingerprintGenerationMockRequest(request))
     return []
   if (preview.resultSets?.length) {
     const collections = preview.resultSets.map(resultSet => (
@@ -60,6 +57,9 @@ export function currentMockRuntimeOutputs(
     )).every(Boolean)
     return compatible ? collections[0]!.slice(0, commonLength) : []
   }
+  const request = resolveRequest(nodeId, visiting)
+  if (!request || preview.fingerprint !== fingerprintGenerationMockRequest(request))
+    return []
   return preview.output ? [preview.output] : []
 }
 

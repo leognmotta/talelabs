@@ -13,7 +13,6 @@ import {
   getActiveGenerationSettings,
   resolveVideoGenerationState,
 } from '@talelabs/flows'
-import { useMemo } from 'react'
 import { useGenerationModelTransition } from '../shared/generation-node/use-generation-model-transition'
 import {
   generationInlineValue,
@@ -44,42 +43,28 @@ export function useVideoGenerationNode(input: {
       mediaType: 'video',
     },
   })
-  const itemCounts = useMemo(
-    () =>
-      Object.fromEntries(
-        (model?.inputSlots ?? []).map((slot) => {
-          return [
-            slot.id,
-            canvas.getExecutableInputCount(input.node.id, slot.id),
-          ]
-        }),
-      ),
-    [canvas, input.node.id, model?.inputSlots],
+  const itemCounts = Object.fromEntries(
+    (model?.inputSlots ?? []).map((slot) => {
+      return [
+        slot.id,
+        canvas.getExecutableInputCount(input.node.id, slot.id),
+      ]
+    }),
   )
   const inlinePrompt = generationInlineValue({
     connectionCounts,
     data: input.node.data,
     slotId: 'prompt',
   })
-  const resolution = useMemo(
-    () =>
-      model
-        ? resolveVideoGenerationState({
-            connectionCounts,
-            inlinePrompt,
-            itemCounts,
-            model,
-            settings: input.node.data.settings ?? {},
-          })
-        : null,
-    [
-      connectionCounts,
-      input.node.data.settings,
-      inlinePrompt,
-      itemCounts,
-      model,
-    ],
-  )
+  const resolution = model
+    ? resolveVideoGenerationState({
+        connectionCounts,
+        inlinePrompt,
+        itemCounts,
+        model,
+        settings: input.node.data.settings ?? {},
+      })
+    : null
   const visibleSettingIds = new Set(resolution?.visibleSettingIds ?? [])
   const activeSettings
     = model && resolution?.resolvedOperationId

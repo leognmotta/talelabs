@@ -14,7 +14,6 @@ import {
   getGenerationOperationsForNodeType,
   resolveAudioNodeState,
 } from '@talelabs/flows'
-import { useMemo } from 'react'
 import { useGenerationModelTransition } from '../shared/generation-node/use-generation-model-transition'
 import {
   generationInlineValue,
@@ -48,15 +47,12 @@ export function useAudioIntentNode(input: {
       nodeType: input.nodeType,
     },
   })
-  const itemCounts = useMemo(
-    () => Object.fromEntries(slots.map((slot) => {
-      return [
-        slot.id,
-        canvas.getExecutableInputCount(input.node.id, slot.id),
-      ]
-    })),
-    [canvas, input.node.id, slots],
-  )
+  const itemCounts = Object.fromEntries(slots.map((slot) => {
+    return [
+      slot.id,
+      canvas.getExecutableInputCount(input.node.id, slot.id),
+    ]
+  }))
   const inlineLyrics = generationInlineValue({
     connectionCounts,
     data: input.node.data,
@@ -67,27 +63,16 @@ export function useAudioIntentNode(input: {
     data: input.node.data,
     slotId: 'prompt',
   })
-  const resolution = useMemo(
-    () => model
-      ? resolveAudioNodeState(input.nodeType, {
-          connectionCounts,
-          inlineLyrics,
-          inlinePrompt,
-          itemCounts,
-          model,
-          settings: input.node.data.settings ?? {},
-        })
-      : null,
-    [
-      connectionCounts,
-      input.node.data.settings,
-      input.nodeType,
-      inlineLyrics,
-      inlinePrompt,
-      itemCounts,
-      model,
-    ],
-  )
+  const resolution = model
+    ? resolveAudioNodeState(input.nodeType, {
+        connectionCounts,
+        inlineLyrics,
+        inlinePrompt,
+        itemCounts,
+        model,
+        settings: input.node.data.settings ?? {},
+      })
+    : null
   const visibleSettingIds = new Set(resolution?.visibleSettingIds ?? [])
   const operation = model
     ? getGenerationOperationsForNodeType(model, input.nodeType).find(

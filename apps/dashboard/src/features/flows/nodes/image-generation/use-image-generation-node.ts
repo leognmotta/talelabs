@@ -51,42 +51,28 @@ export function useImageGenerationNode(input: {
     () => slots.filter(slot => IMAGE_GENERATION_SEMANTIC_SLOT_IDS.has(slot.id)),
     [slots],
   )
-  const itemCounts = useMemo(
-    () =>
-      Object.fromEntries(
-        semanticSlots.map((slot) => {
-          return [
-            slot.id,
-            canvas.getExecutableInputCount(input.node.id, slot.id),
-          ]
-        }),
-      ),
-    [canvas, input.node.id, semanticSlots],
+  const itemCounts = Object.fromEntries(
+    semanticSlots.map((slot) => {
+      return [
+        slot.id,
+        canvas.getExecutableInputCount(input.node.id, slot.id),
+      ]
+    }),
   )
   const inlinePrompt = generationInlineValue({
     connectionCounts,
     data: input.node.data,
     slotId: 'prompt',
   })
-  const resolution = useMemo(
-    () =>
-      model
-        ? resolveImageGenerationState({
-            connectionCounts,
-            inlinePrompt,
-            itemCounts,
-            model,
-            settings: input.node.data.settings ?? {},
-          })
-        : null,
-    [
-      connectionCounts,
-      input.node.data.settings,
-      inlinePrompt,
-      itemCounts,
-      model,
-    ],
-  )
+  const resolution = model
+    ? resolveImageGenerationState({
+        connectionCounts,
+        inlinePrompt,
+        itemCounts,
+        model,
+        settings: input.node.data.settings ?? {},
+      })
+    : null
   const visibleSettingIds = new Set(resolution?.visibleSettingIds ?? [])
   const activeSettings
     = model && resolution?.resolvedOperationId

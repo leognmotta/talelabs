@@ -64,7 +64,8 @@ export function createMockRuntimeRequest(
       ),
     ]),
   )
-  const promptResolution = connectedText.prompt === null
+  const promptResolution = slots.some(slot => slot.id === 'prompt')
+    && connectedText.prompt === null
     ? resolvePromptTemplate({
         inputs: promptMockRuntimeInputs(
           state,
