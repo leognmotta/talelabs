@@ -1989,6 +1989,54 @@ Runtime preference is one product setting shared with the canvas, not a
 per-session execution implementation. Switching it changes how the next request
 is admitted; it does not rewrite historical runs or outputs.
 
+### System-administrator debug mode
+
+Create must reuse the canvas debug-mode contract. It is available only to users
+whose system role is `system_admin` or `system_super_admin`; organization admins
+do not receive access merely because they administer one workspace. The
+dashboard may use the existing account `isSystemAdmin` capability to reveal the
+control, but the run and estimate APIs remain the authorization boundary and
+must reject unauthorized `executionMode=debug` requests.
+
+The control should live with the Create execution controls and use the existing
+localized debug-mode vocabulary. While enabled, Create must show a persistent,
+unmistakable warning that outputs are deterministic mocks. Hiding the warning
+after submission or presenting mock outputs as provider results is not allowed.
+
+Debug remains an immutable per-run execution choice and supports both browser
+and managed execution drivers. It must exercise the production-shaped path:
+
+```txt
+saved Create Flow
+-> canonical planning and validation
+-> immutable snapshot with executionMode=debug
+-> durable run, items and jobs
+-> deterministic fixture adapter
+-> canonical Asset ingestion
+-> realtime/recovery and persisted result history
+```
+
+No paid provider request or callback is created. Debug runs require no browser
+provider credential, have zero provider and credit cost, and preserve the same
+input materialization, lifecycle, output ordering, provenance, cancellation,
+retry, and reload behavior as live runs. Create must not implement a separate
+mock executor or fixture catalog.
+
+### Pre-run cost contract
+
+Cost presentation must match canvas execution:
+
+| Funding and mode | Before Generate | Admission behavior |
+| --- | --- | --- |
+| Managed credits, live | Show the complete advisory estimate for the saved request revision. Disable Generate while the estimate is updating or unavailable. | Recalculate through canonical admission and fail closed when a complete required estimate is unavailable. |
+| Browser BYOK, live | Show the selected provider/key state; do not request or display a TaleLabs platform-cost estimate. | Use the ordinary BYOK admission contract. |
+| Browser or managed, debug | Show a localized mock-output, zero-cost state instead of a provider estimate. | Admit with `executionMode=debug`; persist zero provider and credit cost. |
+
+Create must use the existing estimate query, scope fingerprint, saved-revision
+ordering, retry policy, and server estimator. It must not cache or calculate a
+second estimate, infer credits from model metadata, or enable a live managed run
+from a stale estimate.
+
 ### Canvas runtime parity acceptance
 
 For the same saved one-step graph, model, operation, prompt, attachments, and
@@ -2011,6 +2059,44 @@ different facts. Debug verification should admit equivalent requests from both
 surfaces and compare their persisted binding, request payload, selected inputs,
 and outputs. Any difference needs an explicit product reason rather than a
 Create-specific fallback.
+
+### Debug QA contract
+
+Debug mode is the engineering acceptance path for the Create feature before
+funded provider QA. It does not replace final user-owned visual QA or a small
+funded live-provider pass.
+
+The implementation session must provide a repeatable debug matrix covering:
+
+1. authorization: ordinary users and organization admins cannot see or submit
+   debug mode; system administrators and system super administrators can;
+2. runtime parity: the same representative request succeeds through browser and
+   managed debug execution without a provider credential or paid request;
+3. surface parity: equivalent Create and canvas requests persist compatible
+   plans, snapshots, selected inputs, request payloads, output order and
+   provenance;
+4. Image: prompt-only, image-guided and multiple-output requests supported by
+   the selected catalog model;
+5. Video: representative prompt-only and media-guided modes, including one
+   long-running lifecycle simulation;
+6. Audio: every shipped Create Audio intent with an executable catalog
+   operation, including source-media tasks where applicable;
+7. lifecycle: admission, queued/running alive state, cancellation, retry,
+   terminal success, deterministic failure or partial-result fixture, navigation
+   away and return, and reload restoration;
+8. persistence: every mock media output becomes one canonical Asset with durable
+   lineage and remains visible in Create history after reload;
+9. cost states: debug displays zero/mock cost, live managed displays and enforces
+   its estimate before Generate, and BYOK makes no estimation request; and
+10. safety: network and persisted-data inspection confirms no provider key,
+    signed URL, prompt content or media bytes enter forbidden logs, analytics,
+    snapshots or server payloads.
+
+The matrix should record run IDs, execution runtime/mode, model and operation,
+terminal state, output Asset IDs and relevant persisted contract hashes. It must
+use existing debug fixtures and runtime verification helpers rather than a
+Create-only test harness. Final responsive behavior, visual hierarchy and copy
+approval remain user-owned.
 
 ## Failure and Recovery
 
@@ -2165,7 +2251,10 @@ planning, provider, upload, or result ownership.
 - extract controlled generation setting primitives only where Create becomes a
   second consumer;
 - add a small shared run-admission command while retaining Flow autosave and
-  canvas projection in Flow-specific hooks.
+  canvas projection in Flow-specific hooks;
+- compose the existing system-admin capability, debug execution mode and cost
+  estimate state through those shared seams; do not fork their authorization or
+  business rules into Create.
 
 Acceptance:
 
@@ -2187,6 +2276,9 @@ Deliver one complete vertical slice:
 - Tiptap prompt composer with `@Image` references;
 - model-adaptive Image settings;
 - managed and browser execution;
+- system-admin and system-super-admin debug execution with persistent mock
+  labeling;
+- managed live cost estimation before Generate;
 - realtime status;
 - canonical Asset results;
 - result reuse as an Image reference.
@@ -2199,6 +2291,8 @@ Acceptance:
 - removing or reordering attachments updates tokens atomically and never causes
   a token to reference a different Asset silently;
 - no second model, planner, provider, or output architecture exists.
+- the Image vertical slice passes the managed/browser debug parity checks and
+  the three cost-state checks before funded provider QA.
 
 ### R3: Video modes
 
@@ -2208,6 +2302,8 @@ Acceptance:
 - preserve model-switch constraints;
 - add image-to-video continuation;
 - validate long-running progress, navigation, cancellation, and reload.
+- extend the repeatable debug matrix to every shipped Video input mode before
+  making funded provider calls.
 
 ### R4: Audio intents
 
@@ -2218,6 +2314,8 @@ Acceptance:
 - Voice Isolation;
 - task-specific settings and source-media behavior;
 - audio playback and continuation UX.
+- extend the repeatable debug matrix to every shipped Audio intent before
+  funded provider QA.
 
 Do not block Audio delivery on unsupported providers or models. Show only
 catalog operations with an executable binding for the selected runtime.
@@ -2233,6 +2331,8 @@ catalog operations with an executable binding for the selected runtime.
 - responsive layout;
 - long-history performance;
 - focused error recovery;
+- complete the admin/super-admin debug QA matrix and record its run/Asset
+  evidence;
 - final user-owned browser QA.
 
 Acceptance:
@@ -2272,6 +2372,8 @@ media. A review must confirm the following architecture properties.
 - prompt content exists as `PromptTemplate`, never as duplicate plain text plus
   Tiptap JSON representations;
 - server data is not copied into Zustand or a second client cache.
+- debug authorization, deterministic fixtures and cost treatment retain their
+  existing canvas/runtime owners rather than Create-specific equivalents.
 
 ### Readability checks
 
@@ -2299,6 +2401,8 @@ media. A review must confirm the following architecture properties.
 - first-submission partial failures leave an understandable recoverable state;
 - a generated output is visible in the stream only through its canonical Asset
   and remains available after reload.
+- live managed Generate cannot bypass a required complete saved-revision
+  estimate, while BYOK and debug avoid unnecessary estimate requests.
 
 ### Extension-cost probes
 
@@ -2420,6 +2524,12 @@ elapsed-time updates or decorative loading motion.
 
 Before the user-owned final QA, the implementation session must provide:
 
+- the completed debug QA matrix with representative managed/browser run IDs,
+  output Asset IDs and persisted snapshot/provenance evidence;
+- authorization evidence that the API rejects debug admission for an ordinary
+  user and an organization-only admin while accepting both system-admin roles;
+- the three pre-run cost states: estimated live managed, estimation-free live
+  BYOK, and zero-cost deterministic debug;
 - screenshots for the required states at the evidence viewports;
 - one short recording of keyboard-only `@` mention selection;
 - one long-running generation state that remains visibly alive without fake
