@@ -7,6 +7,7 @@ import type { NodeConnection } from '@xyflow/react'
 import type { CanvasEdge, CanvasNode, FlowInputState } from '../../../editor/flow-canvas-types'
 import type { GenerationConfigurationUpdate, GenerationInputContract } from '../../../generation/flow-generation-configuration'
 import {
+  coercePromptTemplate,
   getGenerationInputSlotsForNodeType,
   isCurrentGenerationModelContract,
 } from '@talelabs/flows'
@@ -18,7 +19,9 @@ import { setCanvasSelection } from '../../../editor/canvas-state/canvas-ui-actio
 import { useFlowCanvasRuntime, useFlowGenerationPreview } from '../../../editor/flow-canvas-runtime-context'
 import { createFlowGenerationCanvasBridge } from '../../../generation/flow-generation-canvas-bridge'
 import { getCanvasGenerationModel } from '../../../generation/flow-generation-contract'
+import { promptTemplateIsValid } from '../prompt-composer/prompt-template-adapter'
 import { generationConnectionCounts } from './generation-node-controller-values'
+import { useGenerationPromptInputs } from './generation-prompt-input-context'
 
 export * from './generation-node-controller-values'
 
@@ -80,6 +83,7 @@ export function useGenerationNodeController(input: {
   const store = useCanvasStoreApi()
   const runtime = useFlowCanvasRuntime()
   const preview = useFlowGenerationPreview(input.node.id)
+  const promptInputs = useGenerationPromptInputs(input.node.id)
   const updateNodeInternals = useUpdateNodeInternals()
   const model = getCanvasGenerationModel(input.node)
   const scopedNodeType = input.scope.kind === 'nodeType'
@@ -161,6 +165,12 @@ export function useGenerationNodeController(input: {
     referenceData: runtime.referenceData,
     store,
   }), [runtime.referenceData, store])
+  const promptReferencesValid = input.node.data.prompt === undefined
+    || (connectionCounts.prompt ?? 0) > 0
+    || promptTemplateIsValid(
+      coercePromptTemplate(input.node.data.prompt),
+      promptInputs,
+    )
   const canvas = useMemo<GenerationNodeCanvas>(() => ({
     generationConfig: runtime.generationConfig,
     getExecutableInputCount: runtime.getExecutableInputCount,
@@ -189,6 +199,8 @@ export function useGenerationNodeController(input: {
     connectionCounts,
     model,
     modelOptions,
+    promptInputs,
+    promptReferencesValid,
     slots,
   }
 }

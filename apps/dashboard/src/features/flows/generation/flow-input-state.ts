@@ -32,15 +32,27 @@ function isUsableReferenceAsset(asset: FlowReferenceAsset) {
   )
 }
 
-/** Projects connection, inline, and executable-item counts into one input state. */
-export function getFlowInputState(input: {
-  edges: CanvasEdge[]
-  nodeId: string
-  nodes: CanvasNode[]
+type FlowInputStateSource
+  = | {
+    edges: readonly CanvasEdge[]
+    nodeId: string
+    nodes: readonly CanvasNode[]
+  }
+  | {
+    incomingEdges: readonly CanvasEdge[]
+    nodesById: ReadonlyMap<string, CanvasNode>
+    targetNode: CanvasNode
+  }
+
+/** Projects one slot from either raw graph arrays or a shared indexed graph. */
+export function getFlowInputState(input: FlowInputStateSource & {
   referenceData: FlowReferenceData
   slotId: string
 }): FlowInputState | null {
-  const targetNode = input.nodes.find(node => node.id === input.nodeId)
+  const indexed = 'targetNode' in input
+  const targetNode = indexed
+    ? input.targetNode
+    : input.nodes.find(node => node.id === input.nodeId)
   if (!targetNode || !isGenerationNodeType(targetNode.type))
     return null
   const model = getGenerationModel(
@@ -56,18 +68,19 @@ export function getFlowInputState(input: {
   if (!slot)
     return null
 
-  const incomingEdges = input.edges
+  const incomingEdges = (indexed ? input.incomingEdges : input.edges)
     .filter(
       edge => edge.target === targetNode.id && edge.targetHandle === slot.id,
     )
     .toSorted(compareFlowEdgesByPriority)
   const acceptedTypes = acceptedAssetTypes(slot.accepts)
   const candidates: FlowCandidate[] = []
-  const seenAssetIds = new Set<string>()
   let invalidDirectAssetConnection = false
 
   for (const edge of incomingEdges) {
-    const sourceNode = input.nodes.find(node => node.id === edge.source)
+    const sourceNode = indexed
+      ? input.nodesById.get(edge.source)
+      : input.nodes.find(node => node.id === edge.source)
     if (!sourceNode)
       continue
 
@@ -85,9 +98,6 @@ export function getFlowInputState(input: {
         invalidDirectAssetConnection = true
         continue
       }
-      if (seenAssetIds.has(asset.id))
-        continue
-      seenAssetIds.add(asset.id)
       candidates.push({
         assetId: asset.id,
         isPrimary: true,
@@ -132,11 +142,9 @@ export function getFlowInputState(input: {
           !asset
           || !acceptedTypes.has(asset.type)
           || !isUsableReferenceAsset(asset)
-          || seenAssetIds.has(asset.id)
         ) {
           continue
         }
-        seenAssetIds.add(asset.id)
         candidates.push({
           assetId: asset.id,
           isPrimary: index === 0,
@@ -177,9 +185,11 @@ export function getFlowInputState(input: {
   const unavailableAssetIds = manual
     ? selectedAssetIds.filter(assetId => !candidateIds.has(assetId))
     : []
-  const selectedAvailableCount = selectedAssetIds.filter(assetId =>
-    candidateIds.has(assetId),
-  ).length
+  const selectedAssetIdSet = new Set(selectedAssetIds)
+  const selectedAvailableCount = manual
+    ? candidates.filter(candidate => selectedAssetIdSet.has(candidate.assetId))
+      .length
+    : selectedAssetIds.length
   const invalid
     = invalidDirectAssetConnection
       || Boolean(

@@ -23,30 +23,35 @@ export function inputPortPreviewItems(
 
   const inputState = canvas.getInputState(node.id, handle.id)
   const selectedAssetIds = new Set(inputState?.selectedAssetIds ?? [])
-  const representedDirectAssetSourceIds = new Set<string>()
+  const selectedDirectLimit = inputState?.selectedAvailableCount ?? 0
+  let selectedDirectCount = 0
   const items: PortPreviewItem[] = []
-
-  for (const candidate of inputState?.candidates ?? []) {
-    if (!selectedAssetIds.has(candidate.assetId))
-      continue
-    const asset = canvas.referenceData.assetsById.get(candidate.assetId)
-    if (!asset)
-      continue
-    representedDirectAssetSourceIds.add(candidate.sourceId)
-    items.push({
-      asset,
-      id: `${handle.id}:asset:${asset.id}`,
-      name: asset.name,
-      valueType,
-    })
-  }
 
   const incomingEdges = edges
     .filter(edge => edge.target === node.id && edge.targetHandle === handle.id)
     .toSorted(compareFlowEdgesByPriority)
   for (const edge of incomingEdges) {
-    if (representedDirectAssetSourceIds.has(edge.source))
+    const directCandidates = (inputState?.candidates ?? []).filter(candidate => (
+      candidate.sourceId === edge.source
+      && selectedAssetIds.has(candidate.assetId)
+    ))
+    if (directCandidates.length > 0) {
+      for (const candidate of directCandidates) {
+        if (selectedDirectCount >= selectedDirectLimit)
+          break
+        const asset = canvas.referenceData.assetsById.get(candidate.assetId)
+        if (!asset)
+          continue
+        items.push({
+          asset,
+          id: `${handle.id}:connection:${edge.id}:asset:${asset.id}`,
+          name: asset.name,
+          valueType,
+        })
+        selectedDirectCount += 1
+      }
       continue
+    }
     const sourceNode = canvas.getNode(edge.source)
     if (!sourceNode || !edge.sourceHandle)
       continue

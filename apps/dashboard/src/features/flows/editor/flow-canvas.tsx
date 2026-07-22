@@ -24,6 +24,7 @@ import { ACCEPTED_ASSET_MEDIA } from '../../assets/upload/asset-upload-files'
 import { useSession } from '../../auth/auth-client'
 import { useGenerationExecutionSettings } from '../../settings/generation-funding-preference'
 import { FLOW_REACT_NODE_TYPES } from '../nodes/flow-dashboard-node-registry'
+import { GenerationPromptInputIndexProvider } from '../nodes/shared/generation-node/generation-prompt-input-provider'
 import { useFlowRunAvailability } from '../runs/admission/use-flow-run-availability'
 import { FlowRunCostEstimateProvider } from '../runs/cost-estimation/flow-run-cost-estimate-provider'
 import { useFlowMockRunOrchestration } from '../runs/mock-runtime/use-flow-mock-run-orchestration'
@@ -228,127 +229,132 @@ function FlowCanvasInner({
 
   return (
     <FlowCanvasRuntimeContext value={runtime}>
-      <FlowRunCostEstimateProvider>
-        <FlowMediaPreviewProvider>
-          <input
-            ref={assetUploads.fileInputRef}
-            accept={ACCEPTED_ASSET_MEDIA}
-            aria-label={t('assets.uploadFiles')}
-            className="sr-only"
-            multiple
-            tabIndex={-1}
-            type="file"
-            onChange={lifecycle.handleFileChange}
-          />
-          <ContextMenu>
-            <ContextMenuTrigger
-              className={cn(
-                'relative size-full overflow-hidden bg-background outline-none',
-                debugMode && 'ring-2 ring-warning/70 ring-inset',
-              )}
-              render={(
-                <div
-                  ref={wrapperRef}
-                  tabIndex={-1}
-                  onDragEnter={fileDrop.onDragEnter}
-                  onDragLeave={fileDrop.onDragLeave}
-                  onDragOver={fileDrop.onDragOver}
-                  onDrop={fileDrop.onDrop}
-                  onKeyDown={lifecycle.handleCanvasKeyDown}
-                  onPointerDownCapture={lifecycle.handleCanvasPointerDown}
-                />
-              )}
-            >
-              <ReactFlow
-                aria-label={t('flows.a11y.canvas')}
-                ariaLabelConfig={lifecycle.ariaLabelConfig}
-                connectionLineComponent={FlowCanvasConnectionLine}
-                connectionLineStyle={FLOW_CANVAS_CONNECTION_LINE_STYLE}
-                defaultEdgeOptions={FLOW_CANVAS_DEFAULT_EDGE_OPTIONS}
-                defaultViewport={lifecycle.defaultViewport}
-                deleteKeyCode={FLOW_CANVAS_DELETE_KEY_CODE}
-                edgeTypes={FLOW_CANVAS_EDGE_TYPES}
-                edges={visibleEdges}
-                fitView={graph.nodes.length === 0}
-                isValidConnection={reactFlowHandlers.isValidConnection}
-                maxZoom={2}
-                minZoom={0.15}
-                nodes={nodes}
-                nodeTypes={FLOW_REACT_NODE_TYPES}
-                onlyRenderVisibleElements
-                proOptions={FLOW_CANVAS_PRO_OPTIONS}
-                reconnectRadius={14}
-                selectionMode={SelectionMode.Partial}
-                snapGrid={FLOW_CANVAS_SNAP_GRID}
-                snapToGrid
-                onConnect={reactFlowHandlers.onConnect}
-                onEdgeContextMenu={reactFlowHandlers.onEdgeContextMenu}
-                onEdgesChange={reactFlowHandlers.onEdgesChange}
-                onMoveEnd={reactFlowHandlers.onMoveEnd}
-                onNodeContextMenu={reactFlowHandlers.onNodeContextMenu}
-                onNodeDoubleClick={reactFlowHandlers.onNodeDoubleClick}
-                onNodesChange={reactFlowHandlers.onNodesChange}
-                onPaneContextMenu={reactFlowHandlers.onPaneContextMenu}
-                onReconnect={reactFlowHandlers.onReconnect}
-                onSelectionChange={reactFlowHandlers.onSelectionChange}
-                onSelectionContextMenu={reactFlowHandlers.onSelectionContextMenu}
-              >
-                <Background
-                  color="var(--flow-dot)"
-                  gap={20}
-                  size={1.4}
-                  variant={BackgroundVariant.Dots}
-                />
-                <FlowCanvasMinimap />
-                <FlowCanvasHeaderPanel
-                  flow={flow}
-                  status={autosave.status}
-                  onFlowDeleted={lifecycle.onFlowDeleted}
-                  onRetrySave={commands.retrySave}
-                />
-                <FlowCanvasEmptyState
-                  canAddNodeType={runAvailability.canAddNodeType}
-                  onAddNode={commands.addNode}
-                />
-                {debugMode && (
-                  <Panel className="m-4!" position="top-center">
-                    <FlowCanvasDebugIndicator />
-                  </Panel>
-                )}
-                <FlowCanvasInspectorPanelSlot />
-                <FlowCanvasToolbarPanel
-                  canAddNodeType={runAvailability.canAddNodeType}
-                  canUseDebugMode={canUseDebugMode}
-                  debugMode={debugMode}
-                  shortcutLabels={shortcutLabels}
-                  onAddNode={commands.addNode}
-                  onDebugModeChange={setDebugMode}
-                  onFitView={commands.fitView}
-                />
-              </ReactFlow>
-              {fileDrop.dropActive && <FlowCanvasDropOverlay />}
-            </ContextMenuTrigger>
-            <FlowCanvasOverlays
-              canAddNodeType={runAvailability.canAddNodeType}
-              getCanRunNode={runAvailability.getCanRunNode}
-              shortcutLabels={shortcutLabels}
-              onAddNode={commands.addNode}
-              onArrange={commands.arrangeSelection}
-              onDeleteNodeIds={commands.deleteNodes}
-              onDeleteSelection={commands.deleteSelection}
-              onDuplicate={commands.duplicateNodes}
-              onFitView={commands.fitView}
-              onFocus={commands.focusSelection}
-              onRunFromHere={commands.runFromHere}
-              onRunNode={commands.runNode}
-              onRunSelection={commands.runSelection}
-              onRunTillHere={commands.runTillHere}
-              onSelectAll={commands.selectAll}
-              onUploadAssets={assetUploads.openFilePicker}
+      <GenerationPromptInputIndexProvider>
+        <FlowRunCostEstimateProvider>
+          <FlowMediaPreviewProvider>
+            <input
+              ref={assetUploads.fileInputRef}
+              accept={ACCEPTED_ASSET_MEDIA}
+              aria-label={t('assets.uploadFiles')}
+              className="sr-only"
+              multiple
+              tabIndex={-1}
+              type="file"
+              onChange={lifecycle.handleFileChange}
             />
-          </ContextMenu>
-        </FlowMediaPreviewProvider>
-      </FlowRunCostEstimateProvider>
+            <ContextMenu>
+              <ContextMenuTrigger
+                className={cn(
+                  `
+                    relative size-full overflow-hidden bg-background
+                    outline-none
+                  `,
+                  debugMode && 'ring-2 ring-warning/70 ring-inset',
+                )}
+                render={(
+                  <div
+                    ref={wrapperRef}
+                    tabIndex={-1}
+                    onDragEnter={fileDrop.onDragEnter}
+                    onDragLeave={fileDrop.onDragLeave}
+                    onDragOver={fileDrop.onDragOver}
+                    onDrop={fileDrop.onDrop}
+                    onKeyDown={lifecycle.handleCanvasKeyDown}
+                    onPointerDownCapture={lifecycle.handleCanvasPointerDown}
+                  />
+                )}
+              >
+                <ReactFlow
+                  aria-label={t('flows.a11y.canvas')}
+                  ariaLabelConfig={lifecycle.ariaLabelConfig}
+                  connectionLineComponent={FlowCanvasConnectionLine}
+                  connectionLineStyle={FLOW_CANVAS_CONNECTION_LINE_STYLE}
+                  defaultEdgeOptions={FLOW_CANVAS_DEFAULT_EDGE_OPTIONS}
+                  defaultViewport={lifecycle.defaultViewport}
+                  deleteKeyCode={FLOW_CANVAS_DELETE_KEY_CODE}
+                  edgeTypes={FLOW_CANVAS_EDGE_TYPES}
+                  edges={visibleEdges}
+                  fitView={graph.nodes.length === 0}
+                  isValidConnection={reactFlowHandlers.isValidConnection}
+                  maxZoom={2}
+                  minZoom={0.15}
+                  nodes={nodes}
+                  nodeTypes={FLOW_REACT_NODE_TYPES}
+                  onlyRenderVisibleElements
+                  proOptions={FLOW_CANVAS_PRO_OPTIONS}
+                  reconnectRadius={14}
+                  selectionMode={SelectionMode.Partial}
+                  snapGrid={FLOW_CANVAS_SNAP_GRID}
+                  snapToGrid
+                  onConnect={reactFlowHandlers.onConnect}
+                  onEdgeContextMenu={reactFlowHandlers.onEdgeContextMenu}
+                  onEdgesChange={reactFlowHandlers.onEdgesChange}
+                  onMoveEnd={reactFlowHandlers.onMoveEnd}
+                  onNodeContextMenu={reactFlowHandlers.onNodeContextMenu}
+                  onNodeDoubleClick={reactFlowHandlers.onNodeDoubleClick}
+                  onNodesChange={reactFlowHandlers.onNodesChange}
+                  onPaneContextMenu={reactFlowHandlers.onPaneContextMenu}
+                  onReconnect={reactFlowHandlers.onReconnect}
+                  onSelectionChange={reactFlowHandlers.onSelectionChange}
+                  onSelectionContextMenu={reactFlowHandlers.onSelectionContextMenu}
+                >
+                  <Background
+                    color="var(--flow-dot)"
+                    gap={20}
+                    size={1.4}
+                    variant={BackgroundVariant.Dots}
+                  />
+                  <FlowCanvasMinimap />
+                  <FlowCanvasHeaderPanel
+                    flow={flow}
+                    status={autosave.status}
+                    onFlowDeleted={lifecycle.onFlowDeleted}
+                    onRetrySave={commands.retrySave}
+                  />
+                  <FlowCanvasEmptyState
+                    canAddNodeType={runAvailability.canAddNodeType}
+                    onAddNode={commands.addNode}
+                  />
+                  {debugMode && (
+                    <Panel className="m-4!" position="top-center">
+                      <FlowCanvasDebugIndicator />
+                    </Panel>
+                  )}
+                  <FlowCanvasInspectorPanelSlot />
+                  <FlowCanvasToolbarPanel
+                    canAddNodeType={runAvailability.canAddNodeType}
+                    canUseDebugMode={canUseDebugMode}
+                    debugMode={debugMode}
+                    shortcutLabels={shortcutLabels}
+                    onAddNode={commands.addNode}
+                    onDebugModeChange={setDebugMode}
+                    onFitView={commands.fitView}
+                  />
+                </ReactFlow>
+                {fileDrop.dropActive && <FlowCanvasDropOverlay />}
+              </ContextMenuTrigger>
+              <FlowCanvasOverlays
+                canAddNodeType={runAvailability.canAddNodeType}
+                getCanRunNode={runAvailability.getCanRunNode}
+                shortcutLabels={shortcutLabels}
+                onAddNode={commands.addNode}
+                onArrange={commands.arrangeSelection}
+                onDeleteNodeIds={commands.deleteNodes}
+                onDeleteSelection={commands.deleteSelection}
+                onDuplicate={commands.duplicateNodes}
+                onFitView={commands.fitView}
+                onFocus={commands.focusSelection}
+                onRunFromHere={commands.runFromHere}
+                onRunNode={commands.runNode}
+                onRunSelection={commands.runSelection}
+                onRunTillHere={commands.runTillHere}
+                onSelectAll={commands.selectAll}
+                onUploadAssets={assetUploads.openFilePicker}
+              />
+            </ContextMenu>
+          </FlowMediaPreviewProvider>
+        </FlowRunCostEstimateProvider>
+      </GenerationPromptInputIndexProvider>
     </FlowCanvasRuntimeContext>
   )
 }

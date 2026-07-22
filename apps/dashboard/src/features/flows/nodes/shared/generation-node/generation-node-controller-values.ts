@@ -7,6 +7,8 @@ import type {
 import type { NodeConnection } from '@xyflow/react'
 import type { GenerationInputContract } from '../../../generation/flow-generation-configuration'
 
+import { coercePromptTemplate, promptTemplateResolvedText } from '@talelabs/flows'
+
 /** Counts incoming React Flow connections by target handle. */
 export function generationConnectionCounts(
   connections: readonly NodeConnection[],
@@ -27,8 +29,10 @@ export function generationInlineValue(input: {
   data: Readonly<Record<string, unknown>>
   slotId: string
 }) {
-  return (input.connectionCounts[input.slotId] ?? 0) > 0
-    ? ''
+  if ((input.connectionCounts[input.slotId] ?? 0) > 0)
+    return ''
+  return input.slotId === 'prompt'
+    ? promptTemplateResolvedText(coercePromptTemplate(input.data.prompt))
     : String(input.data[input.slotId] ?? '')
 }
 
