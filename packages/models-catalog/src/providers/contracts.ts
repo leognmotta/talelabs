@@ -63,10 +63,26 @@ export interface CatalogBrowserBindingVerification {
 export interface CatalogCostCapture {
   /** Pre-billing credit estimate behavior while balances remain deferred. */
   creditCost: 'unknown'
+  /** Reviewed fixed-unit preflight price when provider metadata omits the unit. */
+  preflightPricing?: CatalogFixedUnitPreflightPricing
   /** Source and nullability policy for provider cost. */
   providerCostUsd: 'response-or-unknown'
   /** Provider result as the authoritative cost source. */
   source: 'provider-result'
+}
+
+/** Reviewed fixed provider unit used only for deterministic run preflight. */
+export interface CatalogFixedUnitPreflightPricing {
+  /** Versioned formula applied by the provider-cost estimator. */
+  formula: 'fixed-output-unit-v1'
+  /** ISO date on which the provider-authored unit price was reviewed. */
+  reviewedAt: string
+  /** Authoritative HTTPS page displaying the provider-authored price. */
+  source: string
+  /** Provider billing unit represented by one generated output. */
+  unit: string
+  /** Exact decimal USD price for one output unit. */
+  unitPriceUsd: string
 }
 
 /** Fields shared by every provider-specific private binding. */
@@ -150,6 +166,13 @@ export const CatalogProviderBindingCommonSchema = z.object({
   }).strict().optional(),
   costCapture: z.object({
     creditCost: z.literal('unknown'),
+    preflightPricing: z.object({
+      formula: z.literal('fixed-output-unit-v1'),
+      reviewedAt: z.iso.date(),
+      source: z.url({ protocol: /^https$/ }),
+      unit: z.string().min(1),
+      unitPriceUsd: z.string().regex(/^(?:0|[1-9]\d*)(?:\.\d+)?$/),
+    }).strict().optional(),
     providerCostUsd: z.literal('response-or-unknown'),
     source: z.literal('provider-result'),
   }).strict(),

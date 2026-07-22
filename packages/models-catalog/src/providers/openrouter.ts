@@ -12,7 +12,22 @@ import {
 } from './contracts.js'
 
 /** Wire protocols implemented by the OpenRouter provider boundary. */
-export type CatalogOpenRouterProtocol = 'chat' | 'image' | 'speech' | 'video'
+export type CatalogOpenRouterProtocol
+  = | 'audio'
+    | 'chat'
+    | 'image'
+    | 'speech'
+    | 'video'
+
+/** Request shaping policy for chat-completions audio output. */
+export interface CatalogAudioRequestProfile {
+  /** Protocol discriminator. */
+  kind: 'audio'
+  /** Fixed decoded output format requested from the reviewed route. */
+  outputFormat: 'wav'
+  /** Ordered TaleLabs setting IDs mapped into the request. */
+  settingIds: readonly string[]
+}
 
 /** Request shaping policy for the shared image protocol. */
 export interface CatalogImageRequestProfile {
@@ -133,14 +148,31 @@ export interface CatalogOpenRouterChatBinding
   requestProfile: CatalogChatRequestProfile
 }
 
+/** Immutable OpenRouter chat-audio binding captured at run admission. */
+export interface CatalogOpenRouterAudioBinding
+  extends CatalogOpenRouterBindingCommon {
+  /** Pinned OpenRouter chat-completions endpoint. */
+  endpoint: '/api/v1/chat/completions'
+  /** OpenRouter streaming audio protocol discriminator. */
+  protocol: 'audio'
+  /** Audio-output request-shaping policy. */
+  requestProfile: CatalogAudioRequestProfile
+}
+
 /** Every OpenRouter binding variant accepted by the current catalog. */
 export type CatalogOpenRouterProviderBinding
-  = | CatalogOpenRouterChatBinding
+  = | CatalogOpenRouterAudioBinding
+    | CatalogOpenRouterChatBinding
     | CatalogOpenRouterImageBinding
     | CatalogOpenRouterSpeechBinding
     | CatalogOpenRouterVideoBinding
 
 const requestProfileSchemas = {
+  audio: z.object({
+    kind: z.literal('audio'),
+    outputFormat: z.literal('wav'),
+    settingIds: z.array(z.string().min(1)),
+  }).strict(),
   chat: z.object({
     kind: z.literal('chat'),
     maxImageReferences: z.number().int().nonnegative(),
@@ -195,6 +227,11 @@ export const CatalogOpenRouterProviderBindingSchema = z.discriminatedUnion(
   [
     openRouterBindingBaseSchema.extend({
       endpoint: z.literal('/api/v1/chat/completions'),
+      protocol: z.literal('audio'),
+      requestProfile: requestProfileSchemas.audio,
+    }).strict(),
+    openRouterBindingBaseSchema.extend({
+      endpoint: z.literal('/api/v1/chat/completions'),
       protocol: z.literal('chat'),
       requestProfile: requestProfileSchemas.chat,
     }).strict(),
@@ -232,6 +269,11 @@ export type BrowserOpenRouterChatBinding = Pick<
   CatalogOpenRouterChatBinding,
   BrowserOpenRouterBindingKeys
 >
+/** Narrow chat-audio binding disclosed to the browser execution driver. */
+export type BrowserOpenRouterAudioBinding = Pick<
+  CatalogOpenRouterAudioBinding,
+  BrowserOpenRouterBindingKeys
+>
 /** Narrow image binding disclosed to the browser execution driver. */
 export type BrowserOpenRouterImageBinding = Pick<
   CatalogOpenRouterImageBinding,
@@ -250,7 +292,8 @@ export type BrowserOpenRouterVideoBinding = Pick<
 
 /** Every narrow OpenRouter binding variant a browser lease may receive. */
 export type BrowserOpenRouterProviderBinding
-  = | BrowserOpenRouterChatBinding
+  = | BrowserOpenRouterAudioBinding
+    | BrowserOpenRouterChatBinding
     | BrowserOpenRouterImageBinding
     | BrowserOpenRouterSpeechBinding
     | BrowserOpenRouterVideoBinding
@@ -267,6 +310,11 @@ const browserBindingBaseSchema = z.object({
 export const BrowserOpenRouterProviderBindingSchema = z.discriminatedUnion(
   'protocol',
   [
+    browserBindingBaseSchema.extend({
+      endpoint: z.literal('/api/v1/chat/completions'),
+      protocol: z.literal('audio'),
+      requestProfile: requestProfileSchemas.audio,
+    }).strict(),
     browserBindingBaseSchema.extend({
       endpoint: z.literal('/api/v1/chat/completions'),
       protocol: z.literal('chat'),
@@ -302,6 +350,13 @@ export function toBrowserOpenRouterProviderBinding(
     providerTag: binding.providerTag,
   }
   switch (binding.protocol) {
+    case 'audio':
+      return {
+        ...common,
+        endpoint: binding.endpoint,
+        protocol: binding.protocol,
+        requestProfile: binding.requestProfile,
+      }
     case 'chat':
       return {
         ...common,
@@ -348,9 +403,12 @@ export function validateOpenRouterBindingCompatibility(
   const expectedProtocol = model.mediaType === 'text'
     ? 'chat'
     : model.mediaType === 'audio'
-      ? 'speech'
+      ? operation.id === 'textToSpeech'
+        ? 'speech'
+        : operation.id === 'textToMusic' ? 'audio' : undefined
       : model.mediaType
   const expectedEndpoint = {
+    audio: '/api/v1/chat/completions',
     chat: '/api/v1/chat/completions',
     image: '/api/v1/images',
     speech: '/api/v1/audio/speech',

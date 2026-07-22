@@ -77,6 +77,7 @@ for (const privateField of [
   'browserVerification',
   'endpoint',
   'nativeModelId',
+  'preflightPricing',
   'providerTag',
   'requestProfile',
   'supportedParameters',

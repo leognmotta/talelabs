@@ -41,6 +41,14 @@ export const OPENROUTER_BROWSER_VERIFICATION_PROFILE = Object.freeze({
   id: 'openrouter-browser-v1' as const,
   origin: 'https://openrouter.ai',
   protocols: Object.freeze({
+    audio: Object.freeze({
+      adapterVersion: 'openrouter-audio-v1',
+      cancellation: 'unsupported',
+      completions: Object.freeze(['response']),
+      deliveries: Object.freeze(['bytes']),
+      endpoint: '/api/v1/chat/completions',
+      submission: 'immediate',
+    }),
     chat: Object.freeze({
       adapterVersion: 'openrouter-chat-v1',
       cancellation: 'unsupported',
@@ -77,6 +85,7 @@ export const OPENROUTER_BROWSER_VERIFICATION_PROFILE = Object.freeze({
   sources: Object.freeze([
     'https://openrouter.ai/docs/api/reference/authentication',
     'https://openrouter.ai/docs/api/reference/errors-and-debugging',
+    'https://openrouter.ai/docs/guides/overview/multimodal/audio',
     'https://openrouter.ai/docs/guides/overview/multimodal/image-generation',
     'https://openrouter.ai/docs/guides/overview/multimodal/text-to-speech',
     'https://openrouter.ai/docs/guides/overview/multimodal/video-generation',
