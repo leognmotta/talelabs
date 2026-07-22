@@ -20,6 +20,7 @@ import {
   planFlowRun,
   selectFlowRunGraph,
 } from '@talelabs/flows'
+import { loadProviderPricingSnapshot } from '@talelabs/providers/server'
 import { listPriorOutputs } from '../../data/flow-run-planning.data.js'
 import { getFlowRunPlanningRows } from '../../data/flows.data.js'
 import { HttpError, TenantResourceNotFoundError } from '../../middleware/error.js'
@@ -38,7 +39,7 @@ import { loadProviderCostInputAssets } from './provider-cost-assets.js'
 import {
   providerCostCandidateBindingsForMode,
   publicRunCostEstimate,
-  resolveCachedPlanProviderCosts,
+  resolvePlanProviderCosts,
 } from './provider-cost.service.js'
 
 /** Shared saved-graph facts loaded once for one or many run commands. */
@@ -307,7 +308,10 @@ export async function loadFlowRunPlan(input: {
   })
 }
 
-/** Calculates several command summaries from one already-loaded graph source. */
+/**
+ * Calculates several command summaries from one graph index, one Asset load,
+ * and one provider pricing snapshot shared by every requested scope.
+ */
 export async function preflightLoadedFlowRuns(input: {
   /** Optional authoritative Asset facts already loaded for this source batch. */
   assetsById?: ReadonlyMap<string, ProviderCostInputAsset>
@@ -316,6 +320,8 @@ export async function preflightLoadedFlowRuns(input: {
   executionRuntime?: 'browser' | 'managed'
   fundingSource: 'credits'
   organizationId: string
+  /** Optional request cancellation propagated only to provider pricing I/O. */
+  signal?: AbortSignal
   source: FlowRunPlanningSource
 }): Promise<FlowRunCostPreflightResult[]> {
   const executionMode = input.executionMode ?? 'live'
@@ -361,30 +367,46 @@ export async function preflightLoadedFlowRuns(input: {
       }, error)
     }
   })
-  const assetsById = input.assetsById ?? await loadProviderCostInputAssets({
-    assetIds: [...new Set(plans.flatMap(plan =>
-      plan ? collectPlanPreExistingAssetIds(plan) : []))],
-    organizationId: input.organizationId,
-  })
   const availableProviders = availableProvidersForRun(executionRuntime)
-  return Promise.all(plans.map(async (plan, index) => {
+  const candidatesByPlan = plans.map(plan => plan
+    ? providerCostCandidateBindingsForMode({
+        availableProviders,
+        executionMode,
+        executionRuntime,
+        plan,
+      })
+    : null)
+  const assetIds = [...new Set(plans.flatMap(plan =>
+    plan ? collectPlanPreExistingAssetIds(plan) : []))]
+  const [assetsById, pricing] = await Promise.all([
+    input.assetsById
+      ? Promise.resolve(input.assetsById)
+      : assetIds.length > 0
+        ? loadProviderCostInputAssets({
+            assetIds,
+            organizationId: input.organizationId,
+          })
+        : Promise.resolve(new Map<string, ProviderCostInputAsset>()),
+    loadProviderPricingSnapshot({
+      bindings: candidatesByPlan.flatMap(candidates =>
+        candidates ? [...candidates.values()].flat() : []),
+      signal: input.signal,
+    }),
+  ])
+  return plans.map((plan, index) => {
     if (!plan) {
       return emptyRunCostPreflight({
         command: input.commands[index]!,
         flowId: input.source.flow.id,
       })
     }
-    const candidatesByNode = providerCostCandidateBindingsForMode({
-      availableProviders,
-      executionMode,
-      executionRuntime,
-      plan,
-    })
-    const routes = await resolveCachedPlanProviderCosts({
+    const routes = resolvePlanProviderCosts({
       assetsById,
-      candidatesByNode,
+      candidatesByNode: candidatesByPlan[index]!,
+      costEstimationEnabled: true,
       costRoutingEnabled: executionMode === 'live',
       plan,
+      pricing,
     })
     return {
       ...summaryFromPlan(plan),
@@ -393,7 +415,7 @@ export async function preflightLoadedFlowRuns(input: {
         routes,
       }),
     }
-  }))
+  })
 }
 
 /** Returns a bounded planning summary without admitting a durable run. */

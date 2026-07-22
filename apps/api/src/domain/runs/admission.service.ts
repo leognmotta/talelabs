@@ -28,6 +28,7 @@ import {
   GENERATION_MODEL_REGISTRY,
   hashFlowRunRequest,
 } from '@talelabs/flows'
+import { loadProviderPricingSnapshot } from '@talelabs/providers/server'
 
 import { FLOW_RUN_EXECUTOR_CONTRACT_VERSION } from '@talelabs/trigger'
 import { acquireFlowRunAdmissionLocks } from '../../data/flow-run-admission.data.js'
@@ -47,7 +48,6 @@ import { loadFlowRunPlan } from './planning.service.js'
 import { availableProvidersForRun } from './provider-availability.js'
 import { requireCompleteProviderCostEstimate } from './provider-cost-admission.js'
 import {
-  prepareProviderCostPricing,
   providerCostCandidateBindingsForMode,
   publicRunCostEstimate,
   resolvePlanProviderCosts,
@@ -137,7 +137,9 @@ export async function admitFlowRun(input: {
   })
   const costEstimationEnabled = fundingSource === 'credits'
   const pricing = costEstimationEnabled
-    ? await prepareProviderCostPricing({ candidatesByNode })
+    ? await loadProviderPricingSnapshot({
+        bindings: [...candidatesByNode.values()].flat(),
+      })
     : { rates: [], version: 1 as const }
 
   const runId = createId()

@@ -257,6 +257,7 @@ export function registerFlowRoutes(app: OpenAPIHono<ApiEnv>) {
       ...body,
       flowId: c.req.valid('param').id,
       organizationId: c.var.organizationId,
+      signal: c.req.raw.signal,
     }), 200)
   })
 }

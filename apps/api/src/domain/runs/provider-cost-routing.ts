@@ -1,6 +1,5 @@
 /** Pure cost-first selection of one eligible binding per planned node. */
 
-import type { CacheStore } from '@talelabs/cache'
 import type {
   FlowRunSnapshotProviderSelection,
 } from '@talelabs/flows'
@@ -16,7 +15,6 @@ import {
   aggregateProviderCostEstimates,
   compareProviderCostDecimals,
   estimateProviderCost,
-  estimateProviderCostCached,
 } from '@talelabs/providers/server'
 
 /** Selected route, aggregate quote, and per-job quote results for one node. */
@@ -71,26 +69,6 @@ function estimateCandidate(input: {
       request: { ...job.request, binding: input.binding },
     }),
   ]))
-  return {
-    binding: input.binding,
-    estimate: aggregateProviderCostEstimates([...jobEstimates.values()]),
-    jobEstimates,
-  }
-}
-
-async function estimateCandidateCached(input: {
-  binding: CatalogProviderBinding
-  cache?: CacheStore
-  node: PlannedProviderCostNode
-}): Promise<CandidateEstimate> {
-  const estimates = await Promise.all(input.node.jobs.map(async job => [
-    job.jobKey,
-    await estimateProviderCostCached({
-      cache: input.cache,
-      request: { ...job.request, binding: input.binding },
-    }),
-  ] as const))
-  const jobEstimates = new Map(estimates)
   return {
     binding: input.binding,
     estimate: aggregateProviderCostEstimates([...jobEstimates.values()]),
@@ -160,38 +138,6 @@ export function resolveProviderCostNodeRouting(input: {
     node: input.node,
     pricing: input.pricing,
   }))
-  return selectedCandidateRouting({
-    candidates,
-    costRoutingEnabled: input.costRoutingEnabled,
-  })
-}
-
-/**
- * Resolves the same cost-first route while reusing exact per-job estimates.
- * This is limited to advisory preflight; admission recalculates under its locks.
- */
-export async function resolveCachedProviderCostNodeRouting(input: {
-  /** Optional cache override used by focused verification. */
-  cache?: CacheStore
-  /** Whether this funding source permits provider-cost calculation. */
-  costEstimationEnabled: boolean
-  /** Whether complete estimates may override catalog priority. */
-  costRoutingEnabled: boolean
-  /** Runtime- and credential-eligible bindings in catalog priority order. */
-  eligibleBindings: readonly CatalogProviderBinding[]
-  /** Planned node requests evaluated identically for every candidate. */
-  node: PlannedProviderCostNode
-}): Promise<ProviderCostNodeRouting | undefined> {
-  if (input.eligibleBindings.length === 0)
-    return undefined
-  if (!input.costEstimationEnabled)
-    return resolveProviderPriorityRouting(input.eligibleBindings)
-  const candidates = await Promise.all(input.eligibleBindings.map(binding =>
-    estimateCandidateCached({
-      binding,
-      cache: input.cache,
-      node: input.node,
-    })))
   return selectedCandidateRouting({
     candidates,
     costRoutingEnabled: input.costRoutingEnabled,

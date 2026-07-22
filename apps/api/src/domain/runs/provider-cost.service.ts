@@ -15,13 +15,9 @@ import {
   getCatalogProviderBinding,
   getCatalogProviderBindings,
 } from '@talelabs/models-catalog'
-import {
-  addProviderCostDecimals,
-  loadProviderPricingSnapshot,
-} from '@talelabs/providers/server'
+import { addProviderCostDecimals } from '@talelabs/providers/server'
 import { plannedProviderCostNodes } from './provider-cost-plan.js'
 import {
-  resolveCachedProviderCostNodeRouting,
   resolveProviderCostNodeRouting,
   resolveProviderPriorityRouting,
 } from './provider-cost-routing.js'
@@ -102,19 +98,6 @@ export function providerCostCandidateBindingsForMode(input: {
   }))
 }
 
-/** Loads mutable pricing for all distinct eligible candidate bindings. */
-export async function prepareProviderCostPricing(input: {
-  /** Candidate bindings grouped by planned node ID. */
-  candidatesByNode: ReadonlyMap<string, readonly CatalogProviderBinding[]>
-  /** Optional request cancellation signal. */
-  signal?: AbortSignal
-}): Promise<ProviderPricingSnapshot> {
-  return loadProviderPricingSnapshot({
-    bindings: [...input.candidatesByNode.values()].flat(),
-    signal: input.signal,
-  })
-}
-
 /** Resolves binding selection and cost quotes for every planned node. */
 export function resolvePlanProviderCosts(input: {
   /** Locked or tenant-scoped Asset metadata used by formulas. */
@@ -154,37 +137,6 @@ export function resolvePlanProviderCosts(input: {
       routes.set(node.nodeId, route)
   }
   return routes
-}
-
-/**
- * Resolves advisory preflight routes with per-job cache reuse. Equivalent jobs
- * share estimates across commands while unrelated node changes keep their keys.
- */
-export async function resolveCachedPlanProviderCosts(input: {
-  /** Tenant-scoped Asset metadata used by provider formulas. */
-  assetsById: ReadonlyMap<string, ProviderCostInputAsset>
-  /** Candidate bindings grouped by planned node ID. */
-  candidatesByNode: ReadonlyMap<string, readonly CatalogProviderBinding[]>
-  /** Whether complete estimates may override catalog priority. */
-  costRoutingEnabled: boolean
-  /** Provider-neutral immutable Flow plan. */
-  plan: FlowRunPlan
-}): Promise<Map<string, ProviderCostNodeRouting>> {
-  const entries = await Promise.all(plannedProviderCostNodes({
-    assetsById: input.assetsById,
-    plan: input.plan,
-  }).map(async (node) => {
-    const route = await resolveCachedProviderCostNodeRouting({
-      costEstimationEnabled: true,
-      costRoutingEnabled: input.costRoutingEnabled,
-      eligibleBindings: input.candidatesByNode.get(node.nodeId) ?? [],
-      node,
-    })
-    return route ? [node.nodeId, route] as const : undefined
-  }))
-  return new Map(entries.filter(
-    (entry): entry is readonly [string, ProviderCostNodeRouting] => Boolean(entry),
-  ))
 }
 
 /** Projects selected per-job estimates onto one provider-neutral public total. */

@@ -1,5 +1,6 @@
 /** Resilient loading and short-lived coalescing of provider pricing metadata. */
 
+import type { CacheStore } from '@talelabs/cache'
 import type { CatalogProviderBinding } from '@talelabs/models-catalog'
 import type {
   OpenRouterImagePricingRate,
@@ -11,9 +12,8 @@ import type {
 import {
   createCacheKey,
   getOrSetCachedValue,
-  providerCostCache,
+  providerPricingCache,
 } from '@talelabs/cache'
-import { hashCanonicalValue } from '@talelabs/flows'
 import { loadFalPricingRates } from '../../fal/server/pricing-client.js'
 import {
   loadOpenRouterImagePricingRate,
@@ -29,21 +29,26 @@ const PROVIDER_PRICING_REQUEST_TIMEOUT_MS = 5_000
 const PROVIDER_PRICING_SNAPSHOT_TTL_MS = 60_000
 const PROVIDER_PRICING_UNAVAILABLE_TTL_MS = 15_000
 
-async function loadProviderPricingWithRetry<T>(input: {
-  load: () => Promise<T>
+async function loadProviderPricingWithRetry<Value, Recovered = never>(input: {
+  load: () => Promise<Value>
+  recover?: (error: unknown) => Recovered
   signal?: AbortSignal
-}): Promise<T> {
+}): Promise<Recovered | Value> {
   let lastError: unknown
   for (let attempt = 0; attempt < PROVIDER_PRICING_LOAD_ATTEMPTS; attempt += 1) {
+    input.signal?.throwIfAborted()
     try {
-      return await input.load()
+      const value = await input.load()
+      input.signal?.throwIfAborted()
+      return value
     }
     catch (error) {
       lastError = error
-      if (input.signal?.aborted)
-        throw error
+      input.signal?.throwIfAborted()
     }
   }
+  if (input.recover)
+    return input.recover(lastError)
   throw lastError
 }
 
@@ -73,11 +78,17 @@ function providerPricingRateCacheKey(
   binding: CatalogProviderBinding,
 ): string {
   return createCacheKey('provider-pricing-rate:v1', [
-    hashCanonicalValue(
-      'talelabs:provider-pricing-rate-cache:v1',
-      providerPricingBindingKey(binding),
-    ),
+    ...providerPricingBindingKey(binding).split('\u0000'),
   ])
+}
+
+function providerPricingLoadFlightKey(
+  bindings: readonly CatalogProviderBinding[],
+): string {
+  return createCacheKey(
+    'provider-pricing-load-flight:v1',
+    bindings.map(providerPricingBindingKey).toSorted(),
+  )
 }
 
 async function loadOpenRouterImageRates(input: {
@@ -94,6 +105,7 @@ async function loadOpenRouterImageRates(input: {
     length: Math.min(OPENROUTER_IMAGE_PRICING_CONCURRENCY, input.bindings.length),
   }, async () => {
     while (nextIndex < input.bindings.length) {
+      input.signal?.throwIfAborted()
       const index = nextIndex
       nextIndex += 1
       const binding = input.bindings[index]!
@@ -107,11 +119,13 @@ async function loadOpenRouterImageRates(input: {
           signal: input.signal,
           timeoutMs: PROVIDER_PRICING_REQUEST_TIMEOUT_MS,
         }),
+        recover: () => undefined,
         signal: input.signal,
-      }).catch(() => undefined)
+      })
     }
   })
   await Promise.all(workers)
+  input.signal?.throwIfAborted()
   return rates.flatMap(rate => rate ? [rate] : [])
 }
 
@@ -129,6 +143,7 @@ async function loadOpenRouterTokenRates(input: {
     length: Math.min(OPENROUTER_TOKEN_PRICING_CONCURRENCY, input.bindings.length),
   }, async () => {
     while (nextIndex < input.bindings.length) {
+      input.signal?.throwIfAborted()
       const index = nextIndex
       nextIndex += 1
       const binding = input.bindings[index]!
@@ -145,11 +160,13 @@ async function loadOpenRouterTokenRates(input: {
           signal: input.signal,
           timeoutMs: PROVIDER_PRICING_REQUEST_TIMEOUT_MS,
         }),
+        recover: () => undefined,
         signal: input.signal,
-      }).catch(() => undefined)
+      })
     }
   })
   await Promise.all(workers)
+  input.signal?.throwIfAborted()
   return rates.flatMap(rate => rate ? [rate] : [])
 }
 
@@ -187,8 +204,9 @@ async function loadOpenRouterRates(input: {
         signal: input.signal,
         timeoutMs: PROVIDER_PRICING_REQUEST_TIMEOUT_MS,
       }),
+      recover: () => [],
       signal: input.signal,
-    }).catch(() => []),
+    }),
     loadOpenRouterImageRates({
       apiKey: input.apiKey,
       bindings: imageBindings,
@@ -204,6 +222,7 @@ async function loadOpenRouterRates(input: {
       signal: input.signal,
     }),
   ])
+  input.signal?.throwIfAborted()
   return [...videoResult, ...imageRates, ...tokenRates]
 }
 
@@ -220,6 +239,9 @@ async function loadProviderPricingSnapshotUncached(input: {
   /** Optional caller cancellation signal. */
   signal?: AbortSignal
 }): Promise<ProviderPricingSnapshot> {
+  input.signal?.throwIfAborted()
+  if (input.bindings.length === 0)
+    return { rates: [], version: 1 }
   const resolveApiKey = input.resolveApiKey ?? ((provider) => {
     const credential = provider === 'fal'
       ? resolveProviderRuntimeCredential('fal')
@@ -228,17 +250,15 @@ async function loadProviderPricingSnapshotUncached(input: {
   })
   const retrievedAt = (input.now ?? (() => new Date()))().toISOString()
   const uniqueBindings = input.bindings.filter((binding, index, values) =>
-    values.findIndex(candidate =>
-      candidate.provider === binding.provider
-      && candidate.protocol === binding.protocol
-      && candidate.nativeModelId === binding.nativeModelId
-      && candidate.providerTag === binding.providerTag,
-    ) === index)
+    values.findIndex(candidate => providerPricingBindingKey(candidate)
+      === providerPricingBindingKey(binding)) === index)
   const tasks: Promise<ProviderPricingRate[]>[] = []
-  const falKey = resolveApiKey('fal')?.trim()
   const falEndpointIds = uniqueBindings
     .filter(binding => binding.provider === 'fal')
     .map(binding => binding.nativeModelId)
+  const falKey = falEndpointIds.length > 0
+    ? resolveApiKey('fal')?.trim()
+    : undefined
   if (falKey && falEndpointIds.length > 0) {
     tasks.push(loadProviderPricingWithRetry({
       load: () => loadFalPricingRates({
@@ -249,11 +269,17 @@ async function loadProviderPricingSnapshotUncached(input: {
         signal: input.signal,
         timeoutMs: PROVIDER_PRICING_REQUEST_TIMEOUT_MS,
       }),
+      recover: () => [],
       signal: input.signal,
-    }).catch(() => []))
+    }))
   }
-  const openRouterKey = resolveApiKey('openrouter')?.trim()
-  if (openRouterKey && uniqueBindings.some(binding => binding.provider === 'openrouter')) {
+  const hasOpenRouterBindings = uniqueBindings.some(
+    binding => binding.provider === 'openrouter',
+  )
+  const openRouterKey = hasOpenRouterBindings
+    ? resolveApiKey('openrouter')?.trim()
+    : undefined
+  if (openRouterKey) {
     tasks.push(loadOpenRouterRates({
       apiKey: openRouterKey,
       bindings: uniqueBindings,
@@ -262,20 +288,24 @@ async function loadProviderPricingSnapshotUncached(input: {
       signal: input.signal,
     }))
   }
+  const rates = (await Promise.all(tasks)).flat()
+  input.signal?.throwIfAborted()
   return {
-    rates: (await Promise.all(tasks)).flat(),
+    rates,
     version: 1,
   }
 }
 
 /**
- * Loads current platform-account pricing with one-minute exact-binding cache
- * entries and in-flight coalescing. A changed binding loads only its missing
- * rate; incomplete rates and injected verification loaders bypass retention.
+ * Loads current platform-account pricing with one-minute per-rate cache entries,
+ * short negative entries, and exact-miss-set coalescing. Injected loaders remain
+ * uncached unless verification supplies an isolated cache explicitly.
  */
 export async function loadProviderPricingSnapshot(input: {
   /** Exact candidate bindings that may require pricing metadata. */
   bindings: readonly CatalogProviderBinding[]
+  /** Optional isolated rate cache used by deterministic cache verification. */
+  cache?: CacheStore
   /** Injectable HTTP implementation used by focused verification. */
   fetch?: typeof globalThis.fetch
   /** Injectable clock used to make captured quote evidence deterministic. */
@@ -285,7 +315,15 @@ export async function loadProviderPricingSnapshot(input: {
   /** Optional caller cancellation signal. */
   signal?: AbortSignal
 }): Promise<ProviderPricingSnapshot> {
-  if (input.fetch || input.now || input.resolveApiKey || input.bindings.length === 0)
+  input.signal?.throwIfAborted()
+  if (input.bindings.length === 0)
+    return { rates: [], version: 1 }
+  const cache = input.cache ?? (
+    input.fetch || input.now || input.resolveApiKey
+      ? undefined
+      : providerPricingCache
+  )
+  if (!cache)
     return loadProviderPricingSnapshotUncached(input)
 
   const bindings = input.bindings.filter((binding, index, values) =>
@@ -295,45 +333,65 @@ export async function loadProviderPricingSnapshot(input: {
     binding,
     key: providerPricingRateCacheKey(binding),
   }))
-  const ratesByKey = new Map<string, ProviderPricingRate>()
   const misses: typeof keyedBindings = []
   await Promise.all(keyedBindings.map(async (keyedBinding) => {
-    const rate = await providerCostCache.get<ProviderPricingRate | null>(
-      keyedBinding.key,
-    )
-    if (rate)
-      ratesByKey.set(keyedBinding.key, rate)
-    else
+    const rate = await cache.get<ProviderPricingRate | null>(keyedBinding.key)
+    if (rate === undefined)
       misses.push(keyedBinding)
   }))
+  input.signal?.throwIfAborted()
 
-  let missingSnapshot: Promise<ProviderPricingSnapshot> | undefined
-  await Promise.all(misses.map(async (keyedBinding) => {
-    const rate = await getOrSetCachedValue<ProviderPricingRate | null>({
-      cache: providerCostCache,
-      key: keyedBinding.key,
-      load: async () => {
-        missingSnapshot ??= loadProviderPricingSnapshotUncached({
-          bindings: misses.map(miss => miss.binding),
+  if (misses.length > 0) {
+    await getOrSetCachedValue({
+      cache,
+      key: providerPricingLoadFlightKey(misses.map(miss => miss.binding)),
+      load: async (loadSignal) => {
+        const unresolved: typeof misses = []
+        await Promise.all(misses.map(async (miss) => {
+          if (await cache.get<ProviderPricingRate | null>(miss.key) === undefined)
+            unresolved.push(miss)
+        }))
+        loadSignal.throwIfAborted()
+        if (unresolved.length === 0)
+          return
+
+        const snapshot = await loadProviderPricingSnapshotUncached({
+          bindings: unresolved.map(miss => miss.binding),
+          fetch: input.fetch,
+          now: input.now,
+          resolveApiKey: input.resolveApiKey,
+          signal: loadSignal,
         })
-        const snapshot = await missingSnapshot
-        return snapshot.rates.find(candidate =>
-          providerPricingRateKey(candidate)
-          === providerPricingBindingKey(keyedBinding.binding)) ?? null
+        loadSignal.throwIfAborted()
+        const ratesByIdentity = new Map(snapshot.rates.map(rate => [
+          providerPricingRateKey(rate),
+          rate,
+        ]))
+        await Promise.all(unresolved.map((miss) => {
+          loadSignal.throwIfAborted()
+          const rate = ratesByIdentity.get(
+            providerPricingBindingKey(miss.binding),
+          ) ?? null
+          return cache.set(miss.key, rate, {
+            ttlMs: rate === null
+              ? PROVIDER_PRICING_UNAVAILABLE_TTL_MS
+              : PROVIDER_PRICING_SNAPSHOT_TTL_MS,
+          })
+        }))
       },
-      ttlMs: candidate => candidate === null
-        ? PROVIDER_PRICING_UNAVAILABLE_TTL_MS
-        : PROVIDER_PRICING_SNAPSHOT_TTL_MS,
+      shouldCache: () => false,
+      signal: input.signal,
+      ttlMs: PROVIDER_PRICING_UNAVAILABLE_TTL_MS,
     })
-    if (rate)
-      ratesByKey.set(keyedBinding.key, rate)
-  }))
+  }
 
+  input.signal?.throwIfAborted()
+  const rates = await Promise.all(keyedBindings.map(async ({ key }) => (
+    await cache.get<ProviderPricingRate | null>(key) ?? null
+  )))
+  input.signal?.throwIfAborted()
   return {
-    rates: keyedBindings.flatMap(({ key }) => {
-      const rate = ratesByKey.get(key)
-      return rate ? [rate] : []
-    }),
+    rates: rates.flatMap(rate => rate ? [rate] : []),
     version: 1,
   }
 }
