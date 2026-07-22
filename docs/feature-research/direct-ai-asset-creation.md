@@ -1727,6 +1727,46 @@ A maintainer adding a model changes the Models Catalog, not Create. A
 maintainer adding a provider changes provider bindings/adapters, not Create. A
 maintainer changing run durability changes the existing run system, not Create.
 
+### DAG orchestration and generation execution boundary
+
+Create must reuse the same managed generation-job execution path as canvas. The
+Flow graph decides **what should run and in what dependency order**; the
+generation executor decides **how one admitted provider job runs**. These are
+separate responsibilities and must remain separate:
+
+```txt
+@talelabs/flows
+  graph selection, topology, typed values, job expansion and immutable plan
+
+API admission
+  revision validation, exact binding resolution, snapshot and durable rows
+
+Trigger Flow orchestrator
+  dependency readiness, bounded scheduling, cancellation and aggregation
+
+Trigger generation-job executor
+  load one admitted job, materialize inputs, execute captured provider binding,
+  settle accounting, finalize outputs and ingest canonical Assets
+```
+
+The generation-job executor must not know whether its job originated from the
+Create page or canvas. It receives tenant-scoped run/job identity and executes
+the captured snapshot contract; it does not receive `CreateDraft`, React Flow
+nodes, mutable graph rows, or a surface-specific provider payload.
+
+Do not add a Create Trigger task, Create provider adapter, Create output
+finalizer, or a second implementation of input materialization. Managed Create
+runs use the existing Flow orchestrator and generation-job task. A one-node
+Create request is still an ordinary one-node execution plan, while future
+multi-step canvas and Tool runs continue using the same executor for each
+generation job.
+
+The browser runtime follows the same immutable plan and normalized provider
+contract but retains its existing browser-specific coordination and credential
+boundary. Share provider-neutral request/result contracts and browser-safe
+protocol code; do not import server or Trigger persistence code into the
+browser merely to make the implementations look identical.
+
 ### Dashboard organization
 
 Start with the smallest purpose-bearing structure and add a folder only when it
@@ -2233,6 +2273,9 @@ Before implementation:
 - prototype one request projection using registered Asset and generation nodes;
 - prove that the ordinary Flow sync and run APIs can execute it and restore its
   result from run history after reload;
+- prove that a managed Create request reaches the existing Flow orchestrator,
+  generation-job task, provider adapter boundary and output finalizer without a
+  Create-specific Trigger task or executor branch;
 - inventory each planned shared extraction and identify both real consumers.
 
 The architecture proof may use local development data, but it must not add a
@@ -2371,9 +2414,12 @@ media. A review must confirm the following architecture properties.
   request exists once as an immutable run snapshot;
 - prompt content exists as `PromptTemplate`, never as duplicate plain text plus
   Tiptap JSON representations;
-- server data is not copied into Zustand or a second client cache.
+- server data is not copied into Zustand or a second client cache;
 - debug authorization, deterministic fixtures and cost treatment retain their
-  existing canvas/runtime owners rather than Create-specific equivalents.
+  existing canvas/runtime owners rather than Create-specific equivalents;
+- DAG selection and scheduling remain owned by the Flow planner/orchestrator,
+  while one-job provider execution remains owned by the existing generation-job
+  executor; neither layer contains Create-specific execution behavior.
 
 ### Readability checks
 
@@ -2400,7 +2446,7 @@ media. A review must confirm the following architecture properties.
   managed-run realtime observation;
 - first-submission partial failures leave an understandable recoverable state;
 - a generated output is visible in the stream only through its canonical Asset
-  and remains available after reload.
+  and remains available after reload;
 - live managed Generate cannot bypass a required complete saved-revision
   estimate, while BYOK and debug avoid unnecessary estimate requests.
 
@@ -2420,6 +2466,9 @@ Before approval, answer these with concrete file paths:
 5. Which owner changes if `@` token persistence changes? Expected: the shared
    prompt contract and adapter with a versioned migration, not per-surface
    editors.
+6. Which files change to execute an existing catalog operation from Create?
+   Expected: Create composition/projection only. No Trigger task, generation-job
+   executor, provider adapter, finalizer, planner or Asset-ingestion change.
 
 Required engineering verification follows repository policy: generated SDK
 contracts where API schemas change, all workspace type checks, i18n validation,
