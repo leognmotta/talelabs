@@ -1962,12 +1962,55 @@ deterministic default does not require an agent.
   logs, or analytics.
 - Show which connected provider will execute the selected binding.
 - Keep estimation behavior consistent with the existing BYOK product decision.
+- Read credentials only through the existing browser Secure Store. Do not copy
+  provider keys into Create state, TanStack Query, Flow data, session data, or
+  a Create-specific storage layer.
+- Use the same browser-eligible catalog bindings, provider availability,
+  credential resolution, binding priority, request translation, cancellation,
+  recovery, and output-finalization path as canvas execution.
+- Admit the request as an ordinary durable Flow run with browser execution. The
+  provider request occurs in the browser runtime; the server remains the source
+  of truth for admission, snapshots, jobs, lineage, and canonical output
+  registration without receiving the credential.
+- Keep browser execution alive through the dashboard-global `BrowserRunRoot`
+  when the user navigates between Create, Flows, and Assets, subject to the
+  documented browser-lifecycle limitations.
+- When no compatible connected provider can execute the selected model and
+  operation, disable Generate with a localized explanation and a direct command
+  to connect a supported provider in Secure Store.
 
 ### Runtime selection
 
 The settings preference chooses browser or managed execution. Create should not
 invent a third runtime. When the selected model has no compatible binding for
 the active runtime, explain the missing provider/key or offer compatible models.
+
+Runtime preference is one product setting shared with the canvas, not a
+per-session execution implementation. Switching it changes how the next request
+is admitted; it does not rewrite historical runs or outputs.
+
+### Canvas runtime parity acceptance
+
+For the same saved one-step graph, model, operation, prompt, attachments, and
+settings, Create and canvas must resolve the same:
+
+```txt
+effective model capability
+provider binding and priority
+browser eligibility
+readiness and validation errors
+normalized provider request
+immutable snapshot contract
+cancel/retry/recovery behavior
+provider cost facts where applicable
+canonical output Asset and provenance
+```
+
+Create may present those facts differently, but it must not calculate or own
+different facts. Debug verification should admit equivalent requests from both
+surfaces and compare their persisted binding, request payload, selected inputs,
+and outputs. Any difference needs an explicit product reason rather than a
+Create-specific fallback.
 
 ## Failure and Recovery
 
