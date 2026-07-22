@@ -32,6 +32,8 @@ export function useLlmNode(input: {
     connectionCounts,
     model,
     modelOptions,
+    promptInputs,
+    promptReferencesValid,
   } = useGenerationNodeController({
     ...input,
     scope: {
@@ -112,6 +114,8 @@ export function useLlmNode(input: {
     modelOptions,
     preview,
     previewFingerprint,
+    promptInputs,
+    promptReferencesValid,
     requestModelChange,
     resolution,
     openOutputInspector: canvas.openNodeOutputInspector.bind(null, input.node.id),

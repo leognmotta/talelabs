@@ -4,6 +4,7 @@ import type {
   GenerationInputSlotDefinition,
   GenerationModelDefinition,
   GenerationSettingValue,
+  PromptTemplate,
 } from '@talelabs/flows'
 import type { CanvasNode } from '../../editor/flow-canvas-types'
 import type { GenerationNodeCanvas } from '../shared/generation-node/use-generation-node-controller'
@@ -60,7 +61,7 @@ export function getLlmInputState(
 /** Applies the inline prompt for one LLM node. */
 export function updateLlmPrompt(
   context: Pick<LlmActionContext, 'canvas' | 'node'>,
-  prompt: string,
+  prompt: PromptTemplate,
 ) {
   context.canvas.updateNodeData(
     context.node.id,

@@ -4,6 +4,7 @@ import type { NodeProps } from '@xyflow/react'
 import type { CanvasNode } from '../../../editor/flow-canvas-types'
 
 import { IconMicrophone } from '@tabler/icons-react'
+import { coercePromptTemplate } from '@talelabs/flows'
 import { useNodeConnections } from '@xyflow/react'
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -13,7 +14,7 @@ import { GenerationNodeFrame } from '../../shared/generation-node/generation-nod
 import { GenerationNodePreviewArea } from '../../shared/generation-node/generation-node-preview-area'
 import { GenerationNodePromptSection } from '../../shared/generation-node/generation-node-prompt-section'
 import { AudioPreview } from '../shared/audio-preview'
-import { AudioTextField } from '../shared/audio-text-field'
+import { AudioPromptField } from '../shared/audio-text-field'
 import { useSpeechGenerationNode } from './use-speech-generation-node'
 
 /** Memoized speech-generation projection keyed only by this node and its preview. */
@@ -66,9 +67,13 @@ export const SpeechGenerationFlowNode = memo(({
         slot: promptSlot,
       }
     : undefined
-  const readinessMessageKey = speech.resolution.issues.find(
-    issue => issue.messageKey,
-  )?.messageKey ?? `flows.audio.readiness.${speech.resolution.readiness}`
+  const effectiveReadiness = speech.promptReferencesValid
+    ? speech.resolution.readiness
+    : 'invalid'
+  const readinessMessageKey = speech.promptReferencesValid
+    ? speech.resolution.issues.find(issue => issue.messageKey)?.messageKey
+    ?? `flows.audio.readiness.${speech.resolution.readiness}`
+    : 'flows.promptComposer.invalid'
   const outputLabel = t('flows.outputs.audio')
 
   return (
@@ -80,7 +85,7 @@ export const SpeechGenerationFlowNode = memo(({
       outputHandleId="audio"
       outputLabel={outputLabel}
       outputValueType="AudioSet"
-      readiness={speech.resolution.readiness}
+      readiness={effectiveReadiness}
       resolvedOperationId={speech.resolution.resolvedOperationId}
       selected={selected}
       title={t('flows.nodes.speechGeneration')}
@@ -90,18 +95,19 @@ export const SpeechGenerationFlowNode = memo(({
           pending={preview?.status === 'pending'}
           previewUrl={audioPreviewUrl}
           readinessMessageKey={readinessMessageKey}
-          resolution={speech.resolution}
+          resolution={{ ...speech.resolution, readiness: effectiveReadiness }}
         />
       </GenerationNodePreviewArea>
       <GenerationNodePromptSection>
-        <AudioTextField
+        <AudioPromptField
           externalConnected={speech.externalPromptConnected}
           externalHelp={t('flows.audio.prompt.externalAuthoritative')}
           helpId={`speech-script-external-help-${id}`}
           input={promptInput}
+          inputs={speech.promptInputs}
           label={t('flows.audio.speech.scriptLabel')}
           placeholder={t('flows.audio.speech.scriptPlaceholder')}
-          value={String(data.prompt ?? '')}
+          value={coercePromptTemplate(data.prompt)}
           onValueChange={speech.updatePrompt}
         />
       </GenerationNodePromptSection>

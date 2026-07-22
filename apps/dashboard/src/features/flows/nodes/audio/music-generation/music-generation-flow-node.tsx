@@ -4,6 +4,7 @@ import type { NodeProps } from '@xyflow/react'
 import type { CanvasNode } from '../../../editor/flow-canvas-types'
 
 import { IconMusic } from '@tabler/icons-react'
+import { coercePromptTemplate } from '@talelabs/flows'
 import { useNodeConnections } from '@xyflow/react'
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -13,7 +14,7 @@ import { GenerationNodePreviewArea } from '../../shared/generation-node/generati
 import { GenerationNodePromptSection } from '../../shared/generation-node/generation-node-prompt-section'
 import { AudioInputRail } from '../shared/audio-input-rail'
 import { AudioPreview } from '../shared/audio-preview'
-import { AudioTextField } from '../shared/audio-text-field'
+import { AudioPromptField, AudioTextField } from '../shared/audio-text-field'
 import { useMusicGenerationNode } from './use-music-generation-node'
 
 /** Composes lyric/prompt inputs, adaptive settings, output preview, and run controls. */
@@ -59,9 +60,13 @@ export const MusicGenerationFlowNode = memo(({
   }
 
   const lyricsInput = textInput('lyrics')
-  const readinessMessageKey = music.resolution.issues.find(
-    issue => issue.messageKey,
-  )?.messageKey ?? `flows.audio.readiness.${music.resolution.readiness}`
+  const effectiveReadiness = music.promptReferencesValid
+    ? music.resolution.readiness
+    : 'invalid'
+  const readinessMessageKey = music.promptReferencesValid
+    ? music.resolution.issues.find(issue => issue.messageKey)?.messageKey
+    ?? `flows.audio.readiness.${music.resolution.readiness}`
+    : 'flows.promptComposer.invalid'
   const outputLabel = t('flows.outputs.audio')
 
   return (
@@ -73,7 +78,7 @@ export const MusicGenerationFlowNode = memo(({
       outputHandleId="audio"
       outputLabel={outputLabel}
       outputValueType="AudioSet"
-      readiness={music.resolution.readiness}
+      readiness={effectiveReadiness}
       resolvedOperationId={music.resolution.resolvedOperationId}
       selected={selected}
       title={t('flows.nodes.musicGeneration')}
@@ -82,7 +87,7 @@ export const MusicGenerationFlowNode = memo(({
         <AudioInputRail
           ariaLabel={t('flows.audio.inputs.railLabel')}
           inputState={music.inputState}
-          resolution={music.resolution}
+          resolution={{ ...music.resolution, readiness: effectiveReadiness }}
           slots={music.slots}
         />
         <AudioPreview
@@ -92,14 +97,15 @@ export const MusicGenerationFlowNode = memo(({
       </GenerationNodePreviewArea>
       <GenerationNodePromptSection>
         <div className="flex flex-col gap-3">
-          <AudioTextField
+          <AudioPromptField
             externalConnected={music.externalPromptConnected}
             externalHelp={t('flows.audio.prompt.externalAuthoritative')}
             helpId={`music-prompt-external-help-${id}`}
             input={textInput('prompt')}
+            inputs={music.promptInputs}
             label={t('flows.audio.music.promptLabel')}
             placeholder={t('flows.audio.music.promptPlaceholder')}
-            value={String(data.prompt ?? '')}
+            value={coercePromptTemplate(data.prompt)}
             onValueChange={music.updatePrompt}
           />
           {lyricsInput && (

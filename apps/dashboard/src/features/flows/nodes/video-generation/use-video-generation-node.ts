@@ -3,6 +3,7 @@
 import type {
   GenerationInputSlotDefinition,
   GenerationSettingValue,
+  PromptTemplate,
 } from '@talelabs/flows'
 import type { NodeConnection } from '@xyflow/react'
 import type { CanvasNode } from '../../editor/flow-canvas-types'
@@ -32,6 +33,8 @@ export function useVideoGenerationNode(input: {
     connectionCounts,
     model,
     modelOptions,
+    promptInputs,
+    promptReferencesValid,
   } = useGenerationNodeController({
     ...input,
     scope: {
@@ -134,9 +137,11 @@ export function useVideoGenerationNode(input: {
     inputState,
     model,
     modelOptions,
+    promptInputs,
+    promptReferencesValid,
     requestModelChange,
     resolution,
-    updatePrompt: (prompt: string) =>
+    updatePrompt: (prompt: PromptTemplate) =>
       canvas.updateNodeData(input.node.id, current => ({
         ...current,
         prompt,

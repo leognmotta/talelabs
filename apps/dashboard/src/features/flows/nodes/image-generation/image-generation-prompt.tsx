@@ -3,8 +3,10 @@
 import type {
   GenerationInputAvailability,
   GenerationInputSlotDefinition,
+  PromptTemplate,
 } from '@talelabs/flows'
 import type { FlowInputState } from '../../editor/flow-canvas-types'
+import type { PromptComposerInput } from '../shared/prompt-composer/prompt-composer-types'
 
 import { useTranslation } from 'react-i18next'
 import { GenerationPromptField } from '../shared/generation-node/generation-prompt-field'
@@ -15,6 +17,7 @@ export function ImageGenerationPrompt({
   externalPromptConnected,
   helpId,
   input,
+  inputs,
   prompt,
   onPromptChange,
 }: {
@@ -25,8 +28,9 @@ export function ImageGenerationPrompt({
     inputState: FlowInputState | null
     slot: GenerationInputSlotDefinition
   }
-  prompt: string
-  onPromptChange: (prompt: string) => void
+  inputs: readonly PromptComposerInput[]
+  prompt: PromptTemplate
+  onPromptChange: (prompt: PromptTemplate) => void
 }) {
   const { t } = useTranslation()
 
@@ -35,6 +39,7 @@ export function ImageGenerationPrompt({
       externalHelp={t('flows.image.prompt.externalAuthoritative')}
       externalPromptConnected={externalPromptConnected}
       helpId={helpId}
+      inputs={inputs}
       label={t('flows.image.prompt.label')}
       placeholder={t('flows.image.prompt.placeholder')}
       prompt={prompt}

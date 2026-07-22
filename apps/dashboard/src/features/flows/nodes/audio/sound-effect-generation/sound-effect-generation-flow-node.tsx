@@ -4,6 +4,7 @@ import type { NodeProps } from '@xyflow/react'
 import type { CanvasNode } from '../../../editor/flow-canvas-types'
 
 import { IconSparkles } from '@tabler/icons-react'
+import { coercePromptTemplate } from '@talelabs/flows'
 import { useNodeConnections } from '@xyflow/react'
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -12,7 +13,7 @@ import { GenerationNodeFrame } from '../../shared/generation-node/generation-nod
 import { GenerationNodePreviewArea } from '../../shared/generation-node/generation-node-preview-area'
 import { GenerationNodePromptSection } from '../../shared/generation-node/generation-node-prompt-section'
 import { AudioPreview } from '../shared/audio-preview'
-import { AudioTextField } from '../shared/audio-text-field'
+import { AudioPromptField } from '../shared/audio-text-field'
 import { useSoundEffectGenerationNode } from './use-sound-effect-generation-node'
 
 /** Composes prompt input, adaptive settings, output preview, and run controls. */
@@ -58,9 +59,13 @@ export const SoundEffectGenerationFlowNode = memo(({
         slot: promptSlot,
       }
     : undefined
-  const readinessMessageKey = soundEffect.resolution.issues.find(
-    issue => issue.messageKey,
-  )?.messageKey ?? `flows.audio.readiness.${soundEffect.resolution.readiness}`
+  const effectiveReadiness = soundEffect.promptReferencesValid
+    ? soundEffect.resolution.readiness
+    : 'invalid'
+  const readinessMessageKey = soundEffect.promptReferencesValid
+    ? soundEffect.resolution.issues.find(issue => issue.messageKey)?.messageKey
+    ?? `flows.audio.readiness.${soundEffect.resolution.readiness}`
+    : 'flows.promptComposer.invalid'
   const outputLabel = t('flows.outputs.audio')
 
   return (
@@ -72,7 +77,7 @@ export const SoundEffectGenerationFlowNode = memo(({
       outputHandleId="audio"
       outputLabel={outputLabel}
       outputValueType="AudioSet"
-      readiness={soundEffect.resolution.readiness}
+      readiness={effectiveReadiness}
       resolvedOperationId={soundEffect.resolution.resolvedOperationId}
       selected={selected}
       title={t('flows.nodes.soundEffectGeneration')}
@@ -80,18 +85,19 @@ export const SoundEffectGenerationFlowNode = memo(({
       <GenerationNodePreviewArea nodeId={id}>
         <AudioPreview
           readinessMessageKey={readinessMessageKey}
-          resolution={soundEffect.resolution}
+          resolution={{ ...soundEffect.resolution, readiness: effectiveReadiness }}
         />
       </GenerationNodePreviewArea>
       <GenerationNodePromptSection>
-        <AudioTextField
+        <AudioPromptField
           externalConnected={soundEffect.externalPromptConnected}
           externalHelp={t('flows.audio.prompt.externalAuthoritative')}
           helpId={`sound-effect-prompt-external-help-${id}`}
           input={promptInput}
+          inputs={soundEffect.promptInputs}
           label={t('flows.audio.soundEffect.promptLabel')}
           placeholder={t('flows.audio.soundEffect.promptPlaceholder')}
-          value={String(data.prompt ?? '')}
+          value={coercePromptTemplate(data.prompt)}
           onValueChange={soundEffect.updatePrompt}
         />
       </GenerationNodePromptSection>

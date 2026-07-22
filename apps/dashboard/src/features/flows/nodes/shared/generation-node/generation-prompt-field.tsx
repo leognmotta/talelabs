@@ -1,8 +1,10 @@
-/** Inline generation prompt editor that yields authority to a connected Text edge. */
+/** Structured generation prompt editor that yields to a connected Text edge. */
 
+import type { PromptTemplate } from '@talelabs/flows'
 import type { ReactNode } from 'react'
+import type { PromptComposerInput } from '../prompt-composer/prompt-composer-types'
 
-import { FlowNodeTextarea } from '../flow-node-textarea'
+import { PromptComposer } from '../prompt-composer/prompt-composer'
 
 /** Edits an inline prompt and switches to connected-state presentation when wired. */
 export function GenerationPromptField({
@@ -10,6 +12,7 @@ export function GenerationPromptField({
   externalHelp,
   externalPromptConnected,
   helpId,
+  inputs,
   label,
   placeholder,
   prompt,
@@ -19,10 +22,11 @@ export function GenerationPromptField({
   externalHelp: string
   externalPromptConnected: boolean
   helpId: string
+  inputs: readonly PromptComposerInput[]
   label: string
   placeholder: string
-  prompt: string
-  onPromptChange: (prompt: string) => void
+  prompt: PromptTemplate
+  onPromptChange: (prompt: PromptTemplate) => void
 }) {
   const textareaId = `${helpId}-input`
 
@@ -35,24 +39,15 @@ export function GenerationPromptField({
         {label}
       </label>
       <div className="relative">
-        <FlowNodeTextarea
-          aria-describedby={externalPromptConnected ? helpId : undefined}
-          className="
-            rounded-lg border-transparent bg-muted/40 p-2.5 text-xs/relaxed
-            transition-[height,background-color,border-color]
-            duration-(--flow-motion-fast) ease-(--flow-motion-ease)
-            hover:bg-muted/55
-            focus-visible:border-(--flow-node-accent,var(--ring))
-            focus-visible:bg-background/80
-            motion-reduce:transition-none
-          "
-          collapsible
+        <PromptComposer
+          ariaDescribedBy={externalPromptConnected ? helpId : undefined}
           disabled={externalPromptConnected}
           id={textareaId}
-          maxLength={16_000}
+          inputs={inputs}
+          label={label}
           placeholder={placeholder}
-          value={prompt}
-          onChange={event => onPromptChange(event.currentTarget.value)}
+          template={prompt}
+          onChange={onPromptChange}
         />
         {children}
       </div>

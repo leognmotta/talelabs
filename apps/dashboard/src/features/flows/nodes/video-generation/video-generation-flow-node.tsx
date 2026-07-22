@@ -4,6 +4,7 @@ import type { NodeProps } from '@xyflow/react'
 import type { CanvasNode } from '../../editor/flow-canvas-types'
 
 import { IconVideo } from '@tabler/icons-react'
+import { coercePromptTemplate } from '@talelabs/flows'
 import { useNodeConnections } from '@xyflow/react'
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -44,13 +45,17 @@ export const VideoGenerationFlowNode = memo(({
     )
   }
 
-  const effectiveReadiness = video.resolution.readiness === 'ready' || video.hasRunnablePlan
-    ? 'ready'
-    : video.resolution.readiness
-  const readinessMessageKey = effectiveReadiness === 'ready'
-    ? 'flows.video.readiness.ready'
-    : video.resolution.issues.find(issue => issue.messageKey)?.messageKey
-      ?? `flows.video.readiness.${effectiveReadiness}`
+  const effectiveReadiness = !video.promptReferencesValid
+    ? 'invalid'
+    : video.resolution.readiness === 'ready' || video.hasRunnablePlan
+      ? 'ready'
+      : video.resolution.readiness
+  const readinessMessageKey = !video.promptReferencesValid
+    ? 'flows.promptComposer.invalid'
+    : effectiveReadiness === 'ready'
+      ? 'flows.video.readiness.ready'
+      : video.resolution.issues.find(issue => issue.messageKey)?.messageKey
+        ?? `flows.video.readiness.${effectiveReadiness}`
   const promptSlot = video.model.inputSlots.find(slot => slot.id === 'prompt')
   const promptAvailability = promptSlot
     ? video.resolution.inputAvailability[promptSlot.id]
@@ -106,7 +111,8 @@ export const VideoGenerationFlowNode = memo(({
           externalPromptConnected={video.externalPromptConnected}
           helpId={`video-prompt-external-help-${id}`}
           input={promptInput}
-          prompt={String(data.prompt ?? '')}
+          inputs={video.promptInputs}
+          prompt={coercePromptTemplate(data.prompt)}
           onPromptChange={video.updatePrompt}
         />
       </GenerationNodePromptSection>

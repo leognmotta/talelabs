@@ -4,7 +4,7 @@ import type { NodeProps } from '@xyflow/react'
 import type { CanvasNode } from '../../editor/flow-canvas-types'
 
 import { IconPhotoSpark } from '@tabler/icons-react'
-import { normalizeImageGenerationInputSlotId } from '@talelabs/flows'
+import { coercePromptTemplate, normalizeImageGenerationInputSlotId } from '@talelabs/flows'
 import { useNodeConnections } from '@xyflow/react'
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -52,9 +52,13 @@ export const ImageGenerationFlowNode = memo(
       )
     }
 
-    const readinessMessageKey
-      = image.resolution.issues.find(issue => issue.messageKey)?.messageKey
-        ?? `flows.image.readiness.${image.resolution.readiness}`
+    const effectiveReadiness = image.promptReferencesValid
+      ? image.resolution.readiness
+      : 'invalid'
+    const readinessMessageKey = image.promptReferencesValid
+      ? image.resolution.issues.find(issue => issue.messageKey)?.messageKey
+      ?? `flows.image.readiness.${image.resolution.readiness}`
+      : 'flows.promptComposer.invalid'
     const promptSlot = image.semanticSlots.find(slot => slot.id === 'prompt')
     const promptAvailability = promptSlot
       ? image.resolution.inputAvailability[
@@ -89,7 +93,7 @@ export const ImageGenerationFlowNode = memo(
         outputHandleId="images"
         outputLabel={outputLabel}
         outputValueType="ImageSet"
-        readiness={image.resolution.readiness}
+        readiness={effectiveReadiness}
         resolvedOperationId={image.resolution.resolvedOperationId}
         selected={selected}
         title={t('flows.nodes.imageGeneration')}
@@ -115,7 +119,7 @@ export const ImageGenerationFlowNode = memo(
                   pending={preview?.status === 'pending'}
                   previewUrl={previewUrl}
                   readinessMessageKey={readinessMessageKey}
-                  resolution={image.resolution}
+                  resolution={{ ...image.resolution, readiness: effectiveReadiness }}
                   savedCrop={savedCrop}
                 />
               )}
@@ -125,7 +129,8 @@ export const ImageGenerationFlowNode = memo(
             externalPromptConnected={image.externalPromptConnected}
             helpId={`image-prompt-external-help-${id}`}
             input={promptInput}
-            prompt={String(data.prompt ?? '')}
+            inputs={image.promptInputs}
+            prompt={coercePromptTemplate(data.prompt)}
             onPromptChange={image.updatePrompt}
           />
         </GenerationNodePromptSection>

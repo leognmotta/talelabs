@@ -4,6 +4,7 @@ import type {
   AudioIntentNodeType,
   GenerationInputSlotDefinition,
   GenerationSettingValue,
+  PromptTemplate,
 } from '@talelabs/flows'
 import type { NodeConnection } from '@xyflow/react'
 import type { CanvasNode } from '../../editor/flow-canvas-types'
@@ -34,6 +35,8 @@ export function useAudioIntentNode(input: {
     connectionCounts,
     model,
     modelOptions,
+    promptInputs,
+    promptReferencesValid,
     slots,
   } = useGenerationNodeController({
     incomingConnections: input.incomingConnections,
@@ -153,12 +156,14 @@ export function useAudioIntentNode(input: {
     inputState,
     model,
     modelOptions,
+    promptInputs,
+    promptReferencesValid,
     requestModelChange,
     resolution,
     slots,
     updateLyrics: (lyrics: string) =>
       canvas.updateNodeData(input.node.id, current => ({ ...current, lyrics })),
-    updatePrompt: (prompt: string) =>
+    updatePrompt: (prompt: PromptTemplate) =>
       canvas.updateNodeData(input.node.id, current => ({ ...current, prompt })),
     updateSetting,
     upgradeModelContract,

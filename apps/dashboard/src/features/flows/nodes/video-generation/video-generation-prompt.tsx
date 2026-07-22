@@ -2,9 +2,11 @@
 
 import type {
   GenerationInputSlotDefinition,
+  PromptTemplate,
   VideoInputAvailability,
 } from '@talelabs/flows'
 import type { FlowInputState } from '../../editor/flow-canvas-types'
+import type { PromptComposerInput } from '../shared/prompt-composer/prompt-composer-types'
 
 import { useTranslation } from 'react-i18next'
 import { GenerationPromptField } from '../shared/generation-node/generation-prompt-field'
@@ -15,6 +17,7 @@ export function VideoGenerationPrompt({
   externalPromptConnected,
   helpId,
   input,
+  inputs,
   prompt,
   onPromptChange,
 }: {
@@ -25,8 +28,9 @@ export function VideoGenerationPrompt({
     inputState: FlowInputState | null
     slot: GenerationInputSlotDefinition
   }
-  prompt: string
-  onPromptChange: (prompt: string) => void
+  inputs: readonly PromptComposerInput[]
+  prompt: PromptTemplate
+  onPromptChange: (prompt: PromptTemplate) => void
 }) {
   const { t } = useTranslation()
 
@@ -35,6 +39,7 @@ export function VideoGenerationPrompt({
       externalHelp={t('flows.video.prompt.externalAuthoritative')}
       externalPromptConnected={externalPromptConnected}
       helpId={helpId}
+      inputs={inputs}
       label={t('flows.video.prompt.label')}
       placeholder={t('flows.video.prompt.placeholder')}
       prompt={prompt}

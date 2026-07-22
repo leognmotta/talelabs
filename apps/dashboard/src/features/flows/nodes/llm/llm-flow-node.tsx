@@ -4,6 +4,7 @@ import type { NodeProps } from '@xyflow/react'
 import type { CanvasNode } from '../../editor/flow-canvas-types'
 
 import { IconSparkles } from '@tabler/icons-react'
+import { coercePromptTemplate } from '@talelabs/flows'
 import { useNodeConnections } from '@xyflow/react'
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -42,9 +43,13 @@ export const LlmFlowNode = memo(({
     )
   }
 
-  const readinessMessageKey = llm.resolution.issues.find(
-    issue => issue.messageKey,
-  )?.messageKey ?? `flows.llm.readiness.${llm.resolution.readiness}`
+  const effectiveReadiness = llm.promptReferencesValid
+    ? llm.resolution.readiness
+    : 'invalid'
+  const readinessMessageKey = llm.promptReferencesValid
+    ? llm.resolution.issues.find(issue => issue.messageKey)?.messageKey
+    ?? `flows.llm.readiness.${llm.resolution.readiness}`
+    : 'flows.promptComposer.invalid'
   const promptSlot = llm.inputSlots.find(slot => slot.id === 'prompt')
   const promptAvailability = promptSlot
     ? llm.resolution.inputAvailability[promptSlot.id]
@@ -70,7 +75,7 @@ export const LlmFlowNode = memo(({
       outputHandleId="text"
       outputLabel={outputLabel}
       outputValueType="Text"
-      readiness={llm.resolution.readiness}
+      readiness={effectiveReadiness}
       resolvedOperationId={llm.resolution.resolvedOperationId}
       selected={selected}
       title={t('flows.nodes.llm')}
@@ -85,7 +90,7 @@ export const LlmFlowNode = memo(({
         <LlmOutputPreview
           currentFingerprint={llm.previewFingerprint}
           preview={llm.preview}
-          readiness={llm.resolution.readiness}
+          readiness={effectiveReadiness}
           readinessMessageKey={readinessMessageKey}
           onOpen={llm.openOutputInspector}
         />
@@ -95,7 +100,8 @@ export const LlmFlowNode = memo(({
           externalPromptConnected={llm.externalPromptConnected}
           helpId={`llm-prompt-external-help-${id}`}
           input={promptInput}
-          prompt={String(data.prompt ?? '')}
+          inputs={llm.promptInputs}
+          prompt={coercePromptTemplate(data.prompt)}
           onPromptChange={llm.updatePrompt}
         />
       </GenerationNodePromptSection>
