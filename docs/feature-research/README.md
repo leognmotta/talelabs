@@ -56,6 +56,7 @@ provider snapshot, inventory JSON, or live provider response.
 
 ## Current Research
 
+- [Direct AI asset creation](./direct-ai-asset-creation.md)
 - [Provider cost estimation and cost-aware routing](./provider-cost-estimation-and-routing.md)
 - [Lip sync](./lip-sync.md)
 - [AI-assisted VFX and generative video editing](./ai-assisted-vfx-video-editing.md)
