@@ -1,6 +1,7 @@
 /** Browser-safe OpenRouter protocol, transport, and normalization exports. */
 
 export * from './errors.js'
+export * from './protocols/audio.js'
 export * from './protocols/chat.js'
 export * from './protocols/image.js'
 export * from './protocols/speech.js'

@@ -27,5 +27,5 @@ await verifySeedream5RequestProfiles()
 await verifyElevenLabsRequestProfiles()
 
 console.log(
-  `Verified ${openRouterBindings + falBindings} catalog bindings across OpenRouter and fal with fake HTTP.`,
+  `Verified ${openRouterBindings + falBindings} catalog bindings across OpenRouter and fal with managed and browser fake HTTP.`,
 )

@@ -13,6 +13,7 @@ import type {
   OpenRouterRuntimeCredential,
 } from './types.js'
 
+import { createOpenRouterAudioAdapter } from './protocols/audio.js'
 import { createOpenRouterChatAdapter } from './protocols/chat.js'
 import { createOpenRouterImageAdapter } from './protocols/image.js'
 import { createOpenRouterSpeechAdapter } from './protocols/speech.js'
@@ -43,6 +44,8 @@ export function createOpenRouterProviderAdapter(input: {
   })
   const shared = { client, resolveAsset: input.resolveAsset }
   switch (input.binding.protocol) {
+    case 'audio':
+      return createOpenRouterAudioAdapter({ binding: input.binding, client })
     case 'image':
       return createOpenRouterImageAdapter({
         ...shared,

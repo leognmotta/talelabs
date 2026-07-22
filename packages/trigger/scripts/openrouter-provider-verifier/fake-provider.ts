@@ -2,14 +2,48 @@
 
 import { createOpenRouterHttpClient } from '@talelabs/providers/server'
 
+function musicSseResponse() {
+  const encoded = [
+    btoa(String.fromCharCode(0x52, 0x49, 0x46, 0x46, 0, 0, 0, 0)),
+    btoa(String.fromCharCode(0x57, 0x41, 0x56, 0x45)),
+  ]
+  const payload = [
+    ': keepalive\r\n\r\n',
+    `data: ${JSON.stringify({
+      choices: [{ delta: { audio: { data: encoded[0] } } }],
+      id: 'music-generation-0',
+    })}\r\n\r\n`,
+    `data: ${JSON.stringify({
+      choices: [{ delta: { audio: { data: encoded[1] } } }],
+    })}\r\n\r\n`,
+    `data: ${JSON.stringify({ choices: [], usage: { cost: 0.04 } })}\r\n\r\n`,
+    'data: [DONE]\r\n\r\n',
+  ].join('')
+  const bytes = new TextEncoder().encode(payload)
+  const offsets = [0, 13, 41, 97, 151, bytes.byteLength]
+  return new Response(new ReadableStream<Uint8Array>({
+    start(controller) {
+      for (let index = 1; index < offsets.length; index += 1) {
+        controller.enqueue(bytes.subarray(offsets[index - 1], offsets[index]))
+      }
+      controller.close()
+    },
+  }), {
+    headers: { 'content-type': 'text/event-stream; charset=utf-8' },
+  })
+}
+
 /** Creates a deterministic fake HTTP client and captured request-body list. */
 export function fakeProvider() {
   const bodies: Array<Record<string, unknown>> = []
   let submissions = 0
   const fetch: typeof globalThis.fetch = async (url, init) => {
     const parsedUrl = new URL(String(url))
-    if (init?.body)
-      bodies.push(JSON.parse(String(init.body)) as Record<string, unknown>)
+    const body = init?.body
+      ? JSON.parse(String(init.body)) as Record<string, unknown>
+      : undefined
+    if (body)
+      bodies.push(body)
     if (parsedUrl.pathname === '/api/v1/images') {
       return new Response(JSON.stringify({
         data: [{ b64_json: 'iVBORw0KGgo=', media_type: 'image/png' }],
@@ -17,6 +51,8 @@ export function fakeProvider() {
       }), { headers: { 'content-type': 'application/json' } })
     }
     if (parsedUrl.pathname === '/api/v1/chat/completions') {
+      if (Array.isArray(body?.modalities) && body.modalities.includes('audio'))
+        return musicSseResponse()
       return new Response(JSON.stringify({
         choices: [{ message: { content: 'Verified text output.' } }],
         id: 'chat-generation-0',
@@ -83,5 +119,6 @@ export function fakeProvider() {
       },
       fetch,
     }),
+    fetch,
   }
 }

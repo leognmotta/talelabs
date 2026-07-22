@@ -4,6 +4,7 @@
  */
 
 import type {
+  BrowserOpenRouterAudioBinding,
   BrowserOpenRouterChatBinding,
   BrowserOpenRouterImageBinding,
   BrowserOpenRouterSpeechBinding,
@@ -21,6 +22,9 @@ export type ResolvedOpenRouterAsset = ResolvedProviderAsset
 
 /** Tenant-aware resolver injected by Trigger without leaking database access. */
 export type OpenRouterAssetResolver = ProviderAssetResolver
+
+/** Narrow streaming-audio binding facts disclosed to either execution driver. */
+export type OpenRouterAudioBinding = BrowserOpenRouterAudioBinding
 
 /** Narrow image binding facts disclosed to either execution driver. */
 export type OpenRouterImageBinding = BrowserOpenRouterImageBinding

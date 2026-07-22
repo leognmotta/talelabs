@@ -5,6 +5,10 @@ import type { BrowserOpenRouterProviderBinding } from '@talelabs/models-catalog'
 import type { OpenRouterAssetResolver, OpenRouterRuntimeCredential } from './types.js'
 
 import { BROWSER_RUN_MAX_OUTPUT_BYTES } from '@talelabs/flows'
+import {
+  createOpenRouterAudioAdapter,
+  OPENROUTER_MAX_AUDIO_SSE_BYTES,
+} from './protocols/audio.js'
 import { createOpenRouterChatAdapter } from './protocols/chat.js'
 import { createOpenRouterImageAdapter } from './protocols/image.js'
 import { createOpenRouterSpeechAdapter } from './protocols/speech.js'
@@ -15,16 +19,23 @@ import { createOpenRouterHttpClient } from './transport/client.js'
 export function createOpenRouterBrowserProviderAdapter(input: {
   binding: BrowserOpenRouterProviderBinding
   credential: OpenRouterRuntimeCredential
+  /** Optional deterministic transport used by offline browser verification. */
+  fetch?: typeof globalThis.fetch
   resolveAsset: OpenRouterAssetResolver
   signal?: AbortSignal
 }): NormalizedGenerationProviderAdapter {
   const client = createOpenRouterHttpClient({
     credential: input.credential,
-    maxMediaResponseBytes: BROWSER_RUN_MAX_OUTPUT_BYTES,
+    fetch: input.fetch,
+    maxMediaResponseBytes: input.binding.protocol === 'audio'
+      ? OPENROUTER_MAX_AUDIO_SSE_BYTES
+      : BROWSER_RUN_MAX_OUTPUT_BYTES,
     signal: input.signal,
   })
   const shared = { client, resolveAsset: input.resolveAsset }
   switch (input.binding.protocol) {
+    case 'audio':
+      return createOpenRouterAudioAdapter({ binding: input.binding, client })
     case 'image':
       return createOpenRouterImageAdapter({ ...shared, binding: input.binding })
     case 'video':
