@@ -1,6 +1,6 @@
 {
   "catalogVersion": 1,
-  "catalogRevision": "sha256:7a39541a1aa526da844d9736dd68c0fc16caf4f2a64c1f32f63c03c9cfedaa19",
+  "catalogRevision": "sha256:3c7ee3a22cd0475d0eb7e998bd5dfa2cd6bff50b57448e2f1c9e129d0c9ae55e",
   "defaults": {
     "audio": "google/gemini-3.1-flash-tts-preview",
     "image": "openai/gpt-image-2",

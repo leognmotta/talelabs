@@ -156,6 +156,262 @@
     ]
   },
   {
+    "id": "google/lyria-3-clip-preview",
+    "revision": 1,
+    "status": "active",
+    "displayName": "Lyria 3 Clip Preview",
+    "labelKey": "flows.models.lyria3ClipPreview",
+    "presentation": {
+      "descriptionKey": "flows.modelDescriptions.lyria3ClipPreview",
+      "logoId": "gemini"
+    },
+    "mediaType": "audio",
+    "recommended": true,
+    "capabilitySchemaVersion": 3,
+    "defaultOperationId": "textToMusic",
+    "inputSlots": [
+      {
+        "accepts": [
+          "Text"
+        ],
+        "descriptionKey": "flows.inputs.promptDescription",
+        "id": "prompt",
+        "labelKey": "flows.inputs.prompt",
+        "maxConnections": 1,
+        "maxItems": 1,
+        "minConnections": 0
+      }
+    ],
+    "settings": [],
+    "constraints": [],
+    "operations": [
+      {
+        "descriptionKey": "flows.operations.textToMusicDescription",
+        "id": "textToMusic",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt"
+        ],
+        "labelKey": "flows.operations.textToMusic",
+        "nodeType": "musicGeneration",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "audio"
+        },
+        "referenceLimit": {
+          "maxItems": 0,
+          "slotIds": []
+        },
+        "settingIds": []
+      }
+    ],
+    "bindings": [
+      {
+        "adapterVersion": "openrouter-audio-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "preflightPricing": {
+            "formula": "fixed-output-unit-v1",
+            "reviewedAt": "2026-07-22",
+            "source": "https://openrouter.ai/google/lyria-3-clip-preview",
+            "unit": "song",
+            "unitPriceUsd": "0.04"
+          },
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/chat/completions",
+        "evidence": {
+          "reviewedAt": "2026-07-22",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/audio",
+            "https://openrouter.ai/docs/api/api-reference/chat/send-chat-completion-request",
+            "https://openrouter.ai/google/lyria-3-clip-preview",
+            "https://openrouter.ai/api/v1/models/google/lyria-3-clip-preview/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "bytes"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "google/lyria-3-clip-preview",
+        "operationId": "textToMusic",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "google-ai-studio",
+        "protocol": "audio",
+        "requestProfile": {
+          "kind": "audio",
+          "outputFormat": "wav",
+          "settingIds": []
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-22.1",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "audio",
+          "messages",
+          "modalities",
+          "model",
+          "provider",
+          "stream",
+          "stream_options"
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:a3a5e70c30cd0ec37a10e1793449da513029ce7c6438325ee908cb91529da374",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-22"
+        }
+      }
+    ]
+  },
+  {
+    "id": "google/lyria-3-pro-preview",
+    "revision": 1,
+    "status": "active",
+    "displayName": "Lyria 3 Pro Preview",
+    "labelKey": "flows.models.lyria3ProPreview",
+    "presentation": {
+      "descriptionKey": "flows.modelDescriptions.lyria3ProPreview",
+      "logoId": "gemini"
+    },
+    "mediaType": "audio",
+    "recommended": false,
+    "capabilitySchemaVersion": 3,
+    "defaultOperationId": "textToMusic",
+    "inputSlots": [
+      {
+        "accepts": [
+          "Text"
+        ],
+        "descriptionKey": "flows.inputs.promptDescription",
+        "id": "prompt",
+        "labelKey": "flows.inputs.prompt",
+        "maxConnections": 1,
+        "maxItems": 1,
+        "minConnections": 0
+      }
+    ],
+    "settings": [],
+    "constraints": [],
+    "operations": [
+      {
+        "descriptionKey": "flows.operations.textToMusicDescription",
+        "id": "textToMusic",
+        "inputs": {
+          "prompt": {
+            "required": true
+          }
+        },
+        "inputSlotIds": [
+          "prompt"
+        ],
+        "labelKey": "flows.operations.textToMusic",
+        "nodeType": "musicGeneration",
+        "output": {
+          "count": {
+            "default": 1,
+            "max": 1,
+            "min": 1
+          },
+          "mediaType": "audio"
+        },
+        "referenceLimit": {
+          "maxItems": 0,
+          "slotIds": []
+        },
+        "settingIds": []
+      }
+    ],
+    "bindings": [
+      {
+        "adapterVersion": "openrouter-audio-v1",
+        "costCapture": {
+          "creditCost": "unknown",
+          "preflightPricing": {
+            "formula": "fixed-output-unit-v1",
+            "reviewedAt": "2026-07-22",
+            "source": "https://openrouter.ai/google/lyria-3-pro-preview",
+            "unit": "song",
+            "unitPriceUsd": "0.08"
+          },
+          "providerCostUsd": "response-or-unknown",
+          "source": "provider-result"
+        },
+        "endpoint": "/api/v1/chat/completions",
+        "evidence": {
+          "reviewedAt": "2026-07-22",
+          "sources": [
+            "https://openrouter.ai/docs/guides/overview/multimodal/audio",
+            "https://openrouter.ai/docs/api/api-reference/chat/send-chat-completion-request",
+            "https://openrouter.ai/google/lyria-3-pro-preview",
+            "https://openrouter.ai/api/v1/models/google/lyria-3-pro-preview/endpoints"
+          ]
+        },
+        "lifecycle": {
+          "cancellation": "unsupported",
+          "completions": [
+            "response"
+          ],
+          "deliveries": [
+            "bytes"
+          ],
+          "submission": "immediate"
+        },
+        "nativeModelId": "google/lyria-3-pro-preview",
+        "operationId": "textToMusic",
+        "priority": 100,
+        "provider": "openrouter",
+        "providerTag": "google-ai-studio",
+        "protocol": "audio",
+        "requestProfile": {
+          "kind": "audio",
+          "outputFormat": "wav",
+          "settingIds": []
+        },
+        "requiresDurableSubmissionBoundary": true,
+        "routeVersion": "2026-07-22.1",
+        "routingPolicy": "pinned",
+        "supportedParameters": [
+          "audio",
+          "messages",
+          "modalities",
+          "model",
+          "provider",
+          "stream",
+          "stream_options"
+        ],
+        "executionRuntimes": [
+          "managed",
+          "browser"
+        ],
+        "browserVerification": {
+          "bindingHash": "sha256:1049dbed0913f6c07996fcb089d79b2cbd6bfc065f1e5344e7ebef55c802e169",
+          "profile": "openrouter-browser-v1",
+          "reviewedAt": "2026-07-22"
+        }
+      }
+    ]
+  },
+  {
     "id": "elevenlabs/eleven-v3",
     "revision": 1,
     "status": "active",
@@ -1286,7 +1542,7 @@
   },
   {
     "id": "elevenlabs/audio-isolation",
-    "revision": 1,
+    "revision": 2,
     "status": "active",
     "displayName": "ElevenLabs Audio Isolation",
     "labelKey": "flows.models.elevenAudioIsolation",
@@ -1301,21 +1557,42 @@
     "inputSlots": [
       {
         "accepts": [
-          "AudioSet",
+          "AudioSet"
+        ],
+        "acceptedMedia": {
+          "mimeTypes": [
+            "audio/mpeg"
+          ]
+        },
+        "descriptionKey": "flows.inputs.sourceAudioDescription",
+        "id": "sourceAudio",
+        "labelKey": "flows.inputs.sourceAudio",
+        "maxConnections": 1,
+        "maxItems": 1,
+        "minConnections": 0,
+        "referenceProfile": {
+          "contactSheetPolicy": "not-applicable",
+          "multipleSubjectSupport": "not-applicable",
+          "purposes": [
+            "audioGuidance"
+          ]
+        }
+      },
+      {
+        "accepts": [
           "VideoSet"
         ],
         "acceptedMedia": {
           "mimeTypes": [
-            "audio/mpeg",
             "video/mp4"
           ]
         },
-        "descriptionKey": "flows.inputs.sourceMediaDescription",
-        "id": "sourceMedia",
-        "labelKey": "flows.inputs.sourceMedia",
+        "descriptionKey": "flows.inputs.sourceVideoDescription",
+        "id": "sourceVideo",
+        "labelKey": "flows.inputs.sourceVideo",
         "maxConnections": 1,
         "maxItems": 1,
-        "minConnections": 1,
+        "minConnections": 0,
         "referenceProfile": {
           "contactSheetPolicy": "not-applicable",
           "multipleSubjectSupport": "not-applicable",
@@ -1333,11 +1610,15 @@
         "id": "isolateVoice",
         "inputs": {
           "sourceMedia": {
-            "required": true
+            "oneOf": [
+              "sourceAudio",
+              "sourceVideo"
+            ]
           }
         },
         "inputSlotIds": [
-          "sourceMedia"
+          "sourceAudio",
+          "sourceVideo"
         ],
         "labelKey": "flows.operations.isolateVoice",
         "nodeType": "voiceIsolation",
@@ -1352,7 +1633,8 @@
         "referenceLimit": {
           "maxItems": 1,
           "slotIds": [
-            "sourceMedia"
+            "sourceAudio",
+            "sourceVideo"
           ]
         },
         "settingIds": []
@@ -1362,7 +1644,7 @@
       {
         "adapterVersion": "fal-queue-v1",
         "browserVerification": {
-          "bindingHash": "sha256:7d9d085526edc360d2a1b50be71c393d02d0d2e538024cb7e21fbbe60de141f4",
+          "bindingHash": "sha256:8cb85bf90de9c48efd28570d3b1e0d4c1f1076596e9e2ef9acddf67f7d4f5b84",
           "profile": "fal-browser-v1",
           "reviewedAt": "2026-07-20"
         },
@@ -1404,18 +1686,20 @@
           "combinedParams": [],
           "inputMappings": [
             {
-              "alternativeFields": [
-                {
-                  "field": "video_url",
-                  "mediaType": "video"
-                }
-              ],
               "cardinality": "single",
               "field": "audio_url",
               "maxItems": 1,
               "mediaType": "audio",
-              "minItems": 1,
-              "targetSlotId": "sourceMedia"
+              "minItems": 0,
+              "targetSlotId": "sourceAudio"
+            },
+            {
+              "cardinality": "single",
+              "field": "video_url",
+              "maxItems": 1,
+              "mediaType": "video",
+              "minItems": 0,
+              "targetSlotId": "sourceVideo"
             }
           ],
           "kind": "speech",
@@ -1426,7 +1710,7 @@
           "staticParams": {}
         },
         "requiresDurableSubmissionBoundary": true,
-        "routeVersion": "2026-07-20.1"
+        "routeVersion": "2026-07-22.1"
       }
     ]
   }

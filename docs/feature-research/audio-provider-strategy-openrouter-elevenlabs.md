@@ -1,13 +1,27 @@
 # Audio Provider Strategy: OpenRouter and ElevenLabs
 
-**Status:** fal execution implemented; direct ElevenLabs remains exploratory
-**Last researched:** 2026-07-20
+**Status:** OpenRouter and fal execution implemented; paid provider smoke QA remains user-owned
+**Last researched:** 2026-07-22
 
 ## Product Conclusion
 
+Audio remains five intent-specific nodes because each operation has different
+inputs, settings, provider semantics, and safety constraints. Model selection
+adapts each node without turning audio into one generic operation.
+
+The implemented provider surface is:
+
+| TaleLabs node | OpenRouter | fal | Current decision |
+| --- | --- | --- | --- |
+| Speech Generation | `google/gemini-3.1-flash-tts-preview` | Eleven v3, Multilingual v2, Turbo v2.5 | Both providers; model-specific voice and speech controls |
+| Music Generation | Lyria 3 Clip Preview, Lyria 3 Pro Preview | ElevenLabs Music | Both providers; Lyria is prompt-only until its image-input contract receives paid QA |
+| Sound Effect Generation | No dedicated route confirmed | ElevenLabs Sound Effects v2 | fal only |
+| Voice Changer | No dedicated route confirmed | ElevenLabs Voice Changer | fal only |
+| Voice Isolation | No dedicated route confirmed | ElevenLabs Audio Isolation | fal only |
+
 OpenRouter does not currently expose ElevenLabs models. On 2026-07-20, fal's
 official model API returned eleven active ElevenLabs endpoints. Seven fit the
-approved TaleLabs audio intents and are now exact checked-in fal bindings:
+approved TaleLabs audio intents and are exact checked-in fal bindings:
 
 | TaleLabs node | Canonical model | fal endpoint | Exposed safe controls |
 | --- | --- | --- | --- |
@@ -25,10 +39,9 @@ dialogue array and speaker contract, and dubbing is a separate translation and
 video-output product intent. fal now provides the managed and local-BYOK path
 for the seven implemented models, so they require no direct ElevenLabs key.
 
-The 2026-07-15 OpenRouter review remains relevant for non-ElevenLabs speech and
-music routes. Documentation examples are not sufficient evidence that a model
-remains available. Live discovery is research evidence only; TaleLabs' reviewed
-JSON catalog remains the runtime source of truth.
+The 2026-07-22 OpenRouter review confirmed Gemini TTS plus both Lyria routes.
+Live discovery remains research evidence only; TaleLabs' reviewed JSON catalog
+is the runtime source of truth.
 
 ## Direct Answer: Is an ElevenLabs Subscription Required?
 
@@ -103,10 +116,10 @@ documentation on the research date.
 | TaleLabs node | OpenRouter coverage | Recommended first route | Decision |
 | --- | --- | --- | --- |
 | Speech Generation | Strong | `google/gemini-3.1-flash-tts-preview` through `/api/v1/audio/speech` | Keep and test |
-| Music Generation | Strong | `google/lyria-3-clip-preview`; add `google/lyria-3-pro-preview` later | Implement through OpenRouter |
-| Sound Effect Generation | No dedicated model confirmed | None | Defer or integrate ElevenLabs directly |
-| Voice Changer | No dedicated speech-to-speech conversion contract confirmed | None | Direct provider later |
-| Voice Isolation | No dedicated source-separation/isolation contract confirmed | None | Direct provider later |
+| Music Generation | Strong | `google/lyria-3-clip-preview` and `google/lyria-3-pro-preview` | Implemented through OpenRouter |
+| Sound Effect Generation | No dedicated model confirmed | None | Keep fal-only |
+| Voice Changer | No dedicated speech-to-speech conversion contract confirmed | None | Keep fal-only |
+| Voice Isolation | No dedicated source-separation/isolation contract confirmed | None | Keep fal-only |
 
 OpenRouter additionally exposes transcription and conversational audio models.
 Those are separate product intents. Speech-to-text does not satisfy voice
@@ -131,8 +144,8 @@ mistralai/voxtral-mini-tts-2603
 
 The list is research evidence, not runtime configuration. TaleLabs should add a
 model only after reviewing its voices, languages, formats, limits, settings,
-cost semantics, and endpoint behavior, then encode the decision in the
-TypeScript model and provider-route registries.
+cost semantics, and endpoint behavior, then encode the decision in the reviewed
+JSON catalog and its private provider bindings.
 
 ### OpenRouter Speech Contract
 
@@ -171,11 +184,14 @@ OpenRouter currently lists:
 | `google/lyria-3-clip-preview` | text and optional image | 30-second music clip | USD 0.04 per clip |
 | `google/lyria-3-pro-preview` | text and optional image | full structured song | USD 0.08 per song |
 
-Lyria is materially different from TTS. It needs a Music Generation operation
-and adapter profile rather than being added to the speech adapter. The first
-TaleLabs route should use Clip for low-cost product validation. Pro should be
-added only after the output response, duration behavior, lyrics controls,
-licensing, and cost records have been verified with a paid smoke run.
+Lyria is materially different from TTS. Both models therefore use the Music
+Generation operation and a shared streaming chat-audio protocol rather than the
+speech adapter. TaleLabs requests text and audio modalities, incrementally
+decodes bounded SSE audio chunks, validates a WAV signature, and captures usage
+cost when OpenRouter returns it. Clip is the recommended default; Pro remains an
+explicit model choice. Neither route exposes lyrics, duration, instrumental, or
+image-reference controls because those request semantics have not yet been
+verified end to end with paid QA.
 
 ## Direct ElevenLabs Coverage
 
@@ -212,40 +228,23 @@ voice ownership, consent, allowed use, provider voice mappings, output formats,
 commercial rights, and revocation before exposing cloning or user-created
 voices.
 
-## Recommended TaleLabs Delivery Sequence
+## Current Runtime Coverage and Next QA
 
-### Phase A: Complete Audio Through OpenRouter
+All ten catalog models use the same provider-independent run engine, immutable
+snapshot, output ingestion, canonical Asset, and provenance path. Managed
+Credits execution uses platform OpenRouter or fal credentials. Browser BYOK
+uses the user's connected key for the selected model's provider. A user with
+only OpenRouter can run Gemini TTS and either Lyria model; a user with only fal
+can run all five node intents through the seven fal routes.
 
-1. Keep the existing Speech Generation node and Gemini TTS route.
-2. Run one controlled paid speech smoke test.
-3. Add Lyria 3 Clip to Music Generation.
-4. Verify text-to-music first; add image guidance only after its exact payload
-   and output contract are proven.
-5. Add Lyria 3 Pro only after Clip is stable and users need complete songs.
-6. Keep Sound Effect, Voice Changer, and Voice Isolation unavailable rather than
-   attaching semantically incorrect models.
+No paid call was made while implementing these routes. User-owned smoke QA must
+still verify one low-cost request for Gemini TTS, Lyria Clip, Lyria Pro, and each
+of the seven fal model routes with the intended account entitlements. That QA
+should confirm
+MIME and duration metadata, actual cost, cancellation behavior, output recovery,
+and commercial-use terms before production enablement.
 
-This phase uses the existing `OPENROUTER_API_KEY` and does not require an
-ElevenLabs account.
-
-### Phase B: Direct ElevenLabs Adapter
-
-Add direct ElevenLabs only when at least one of these is a validated user need:
-
-- short sound effects and ambience;
-- performance-preserving voice conversion;
-- dialogue isolation and cleanup;
-- ElevenLabs voices unavailable through OpenRouter;
-- composition plans or longer iterative music.
-
-Start with Sound Effect Generation because it has a compact contract and is
-directly useful for generated video. Then evaluate Voice Isolation. Voice
-Changer comes later because it needs target-voice identity, permissions, and
-consent safeguards.
-
-### Phase C: Voice Identity and Advanced Music
-
-Defer these until the first commercial audio loop works:
+Defer these until the first commercial audio loop is proven:
 
 - voice cloning and voice marketplace access;
 - reusable TaleLabs Voice resources;
@@ -263,25 +262,31 @@ nodes as distinct intents while reusing shared transport and output utilities.
 ```txt
 Speech Generation
   -> openrouter-speech-v1
-  -> future elevenlabs-tts-v1
+  -> fal-queue-v1
 
 Music Generation
-  -> openrouter-music-v1
-  -> future elevenlabs-music-v1
+  -> openrouter-audio-v1
+  -> fal-queue-v1
 
 Sound Effect Generation
-  -> future elevenlabs-sound-effect-v1
+  -> fal-queue-v1
 
 Voice Changer
-  -> future elevenlabs-voice-changer-v1
+  -> fal-queue-v1
 
 Voice Isolation
-  -> future elevenlabs-voice-isolation-v1
+  -> fal-queue-v1
 ```
 
-The direct adapters may share:
+Voice Changer accepts one audio source. Voice Isolation exposes separate
+`sourceAudio` and `sourceVideo` inputs under one exact-one contract: both ports
+remain visible, connecting either disables the other, and the selected slot maps
+to fal's `audio_url` or `video_url` field. Both Voice Isolation paths return one
+audio Asset and remain one product operation.
 
-- authenticated ElevenLabs HTTP transport;
+The provider protocols share:
+
+- authenticated provider transport;
 - retry/error normalization;
 - raw and streamed byte handling;
 - cost/request/trace header capture;
@@ -289,8 +294,9 @@ The direct adapters may share:
 - R2 staging and canonical Asset finalization;
 - redacted structured logging.
 
-They must not share one request schema because each operation has different
-inputs, settings, pricing units, safety concerns, and response behavior.
+The five nodes must not share one product request schema because each operation
+has different inputs, settings, pricing units, safety concerns, and response
+behavior. Protocol reuse stays below that product boundary.
 
 ## Execution and Asset Contract
 
