@@ -10433,6 +10433,243 @@
                                           "protocol": {
                                             "type": "string",
                                             "enum": [
+                                              "audio"
+                                            ]
+                                          },
+                                          "requestProfile": {
+                                            "type": "object",
+                                            "properties": {
+                                              "kind": {
+                                                "type": "string",
+                                                "enum": [
+                                                  "audio"
+                                                ]
+                                              },
+                                              "outputFormat": {
+                                                "type": "string",
+                                                "enum": [
+                                                  "wav"
+                                                ]
+                                              },
+                                              "settingIds": {
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "string",
+                                                  "minLength": 1
+                                                }
+                                              }
+                                            },
+                                            "required": [
+                                              "kind",
+                                              "outputFormat",
+                                              "settingIds"
+                                            ],
+                                            "additionalProperties": false
+                                          }
+                                        },
+                                        "required": [
+                                          "lifecycle",
+                                          "nativeModelId",
+                                          "operationId",
+                                          "provider",
+                                          "providerTag",
+                                          "endpoint",
+                                          "protocol",
+                                          "requestProfile"
+                                        ],
+                                        "additionalProperties": false
+                                      },
+                                      {
+                                        "type": "object",
+                                        "properties": {
+                                          "lifecycle": {
+                                            "oneOf": [
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "cancellation": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                      "best-effort",
+                                                      "supported",
+                                                      "unsupported"
+                                                    ]
+                                                  },
+                                                  "completions": {
+                                                    "type": "array",
+                                                    "items": {
+                                                      "type": "string",
+                                                      "enum": [
+                                                        "response"
+                                                      ]
+                                                    },
+                                                    "minItems": 1,
+                                                    "maxItems": 1
+                                                  },
+                                                  "deliveries": {
+                                                    "type": "array",
+                                                    "items": {
+                                                      "type": "string",
+                                                      "enum": [
+                                                        "bytes",
+                                                        "stream",
+                                                        "text",
+                                                        "url"
+                                                      ]
+                                                    },
+                                                    "minItems": 1
+                                                  },
+                                                  "submission": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                      "immediate"
+                                                    ]
+                                                  }
+                                                },
+                                                "required": [
+                                                  "cancellation",
+                                                  "completions",
+                                                  "deliveries",
+                                                  "submission"
+                                                ],
+                                                "additionalProperties": false
+                                              },
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "cancellation": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                      "best-effort",
+                                                      "supported",
+                                                      "unsupported"
+                                                    ]
+                                                  },
+                                                  "completions": {
+                                                    "anyOf": [
+                                                      {
+                                                        "type": "array",
+                                                        "items": {
+                                                          "type": "string",
+                                                          "enum": [
+                                                            "poll"
+                                                          ]
+                                                        },
+                                                        "minItems": 1,
+                                                        "maxItems": 1
+                                                      },
+                                                      {
+                                                        "type": "array",
+                                                        "items": {
+                                                          "type": "string",
+                                                          "enum": [
+                                                            "webhook"
+                                                          ]
+                                                        },
+                                                        "minItems": 1,
+                                                        "maxItems": 1
+                                                      },
+                                                      {
+                                                        "type": "array",
+                                                        "items": {
+                                                          "anyOf": [
+                                                            {
+                                                              "type": "string",
+                                                              "enum": [
+                                                                "poll"
+                                                              ]
+                                                            },
+                                                            {
+                                                              "type": "string",
+                                                              "enum": [
+                                                                "webhook"
+                                                              ]
+                                                            }
+                                                          ]
+                                                        },
+                                                        "minItems": 2,
+                                                        "maxItems": 2
+                                                      },
+                                                      {
+                                                        "type": "array",
+                                                        "items": {
+                                                          "anyOf": [
+                                                            {
+                                                              "type": "string",
+                                                              "enum": [
+                                                                "webhook"
+                                                              ]
+                                                            },
+                                                            {
+                                                              "type": "string",
+                                                              "enum": [
+                                                                "poll"
+                                                              ]
+                                                            }
+                                                          ]
+                                                        },
+                                                        "minItems": 2,
+                                                        "maxItems": 2
+                                                      }
+                                                    ]
+                                                  },
+                                                  "deliveries": {
+                                                    "type": "array",
+                                                    "items": {
+                                                      "type": "string",
+                                                      "enum": [
+                                                        "bytes",
+                                                        "stream",
+                                                        "text",
+                                                        "url"
+                                                      ]
+                                                    },
+                                                    "minItems": 1
+                                                  },
+                                                  "submission": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                      "asynchronous"
+                                                    ]
+                                                  }
+                                                },
+                                                "required": [
+                                                  "cancellation",
+                                                  "completions",
+                                                  "deliveries",
+                                                  "submission"
+                                                ],
+                                                "additionalProperties": false
+                                              }
+                                            ]
+                                          },
+                                          "nativeModelId": {
+                                            "type": "string",
+                                            "pattern": "^[^/]+\\/.+$"
+                                          },
+                                          "operationId": {
+                                            "type": "string",
+                                            "minLength": 1
+                                          },
+                                          "provider": {
+                                            "type": "string",
+                                            "enum": [
+                                              "openrouter"
+                                            ]
+                                          },
+                                          "providerTag": {
+                                            "type": "string",
+                                            "minLength": 1
+                                          },
+                                          "endpoint": {
+                                            "type": "string",
+                                            "enum": [
+                                              "/api/v1/chat/completions"
+                                            ]
+                                          },
+                                          "protocol": {
+                                            "type": "string",
+                                            "enum": [
                                               "chat"
                                             ]
                                           },
@@ -12702,6 +12939,243 @@
                                 "oneOf": [
                                   {
                                     "oneOf": [
+                                      {
+                                        "type": "object",
+                                        "properties": {
+                                          "lifecycle": {
+                                            "oneOf": [
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "cancellation": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                      "best-effort",
+                                                      "supported",
+                                                      "unsupported"
+                                                    ]
+                                                  },
+                                                  "completions": {
+                                                    "type": "array",
+                                                    "items": {
+                                                      "type": "string",
+                                                      "enum": [
+                                                        "response"
+                                                      ]
+                                                    },
+                                                    "minItems": 1,
+                                                    "maxItems": 1
+                                                  },
+                                                  "deliveries": {
+                                                    "type": "array",
+                                                    "items": {
+                                                      "type": "string",
+                                                      "enum": [
+                                                        "bytes",
+                                                        "stream",
+                                                        "text",
+                                                        "url"
+                                                      ]
+                                                    },
+                                                    "minItems": 1
+                                                  },
+                                                  "submission": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                      "immediate"
+                                                    ]
+                                                  }
+                                                },
+                                                "required": [
+                                                  "cancellation",
+                                                  "completions",
+                                                  "deliveries",
+                                                  "submission"
+                                                ],
+                                                "additionalProperties": false
+                                              },
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "cancellation": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                      "best-effort",
+                                                      "supported",
+                                                      "unsupported"
+                                                    ]
+                                                  },
+                                                  "completions": {
+                                                    "anyOf": [
+                                                      {
+                                                        "type": "array",
+                                                        "items": {
+                                                          "type": "string",
+                                                          "enum": [
+                                                            "poll"
+                                                          ]
+                                                        },
+                                                        "minItems": 1,
+                                                        "maxItems": 1
+                                                      },
+                                                      {
+                                                        "type": "array",
+                                                        "items": {
+                                                          "type": "string",
+                                                          "enum": [
+                                                            "webhook"
+                                                          ]
+                                                        },
+                                                        "minItems": 1,
+                                                        "maxItems": 1
+                                                      },
+                                                      {
+                                                        "type": "array",
+                                                        "items": {
+                                                          "anyOf": [
+                                                            {
+                                                              "type": "string",
+                                                              "enum": [
+                                                                "poll"
+                                                              ]
+                                                            },
+                                                            {
+                                                              "type": "string",
+                                                              "enum": [
+                                                                "webhook"
+                                                              ]
+                                                            }
+                                                          ]
+                                                        },
+                                                        "minItems": 2,
+                                                        "maxItems": 2
+                                                      },
+                                                      {
+                                                        "type": "array",
+                                                        "items": {
+                                                          "anyOf": [
+                                                            {
+                                                              "type": "string",
+                                                              "enum": [
+                                                                "webhook"
+                                                              ]
+                                                            },
+                                                            {
+                                                              "type": "string",
+                                                              "enum": [
+                                                                "poll"
+                                                              ]
+                                                            }
+                                                          ]
+                                                        },
+                                                        "minItems": 2,
+                                                        "maxItems": 2
+                                                      }
+                                                    ]
+                                                  },
+                                                  "deliveries": {
+                                                    "type": "array",
+                                                    "items": {
+                                                      "type": "string",
+                                                      "enum": [
+                                                        "bytes",
+                                                        "stream",
+                                                        "text",
+                                                        "url"
+                                                      ]
+                                                    },
+                                                    "minItems": 1
+                                                  },
+                                                  "submission": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                      "asynchronous"
+                                                    ]
+                                                  }
+                                                },
+                                                "required": [
+                                                  "cancellation",
+                                                  "completions",
+                                                  "deliveries",
+                                                  "submission"
+                                                ],
+                                                "additionalProperties": false
+                                              }
+                                            ]
+                                          },
+                                          "nativeModelId": {
+                                            "type": "string",
+                                            "pattern": "^[^/]+\\/.+$"
+                                          },
+                                          "operationId": {
+                                            "type": "string",
+                                            "minLength": 1
+                                          },
+                                          "provider": {
+                                            "type": "string",
+                                            "enum": [
+                                              "openrouter"
+                                            ]
+                                          },
+                                          "providerTag": {
+                                            "type": "string",
+                                            "minLength": 1
+                                          },
+                                          "endpoint": {
+                                            "type": "string",
+                                            "enum": [
+                                              "/api/v1/chat/completions"
+                                            ]
+                                          },
+                                          "protocol": {
+                                            "type": "string",
+                                            "enum": [
+                                              "audio"
+                                            ]
+                                          },
+                                          "requestProfile": {
+                                            "type": "object",
+                                            "properties": {
+                                              "kind": {
+                                                "type": "string",
+                                                "enum": [
+                                                  "audio"
+                                                ]
+                                              },
+                                              "outputFormat": {
+                                                "type": "string",
+                                                "enum": [
+                                                  "wav"
+                                                ]
+                                              },
+                                              "settingIds": {
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "string",
+                                                  "minLength": 1
+                                                }
+                                              }
+                                            },
+                                            "required": [
+                                              "kind",
+                                              "outputFormat",
+                                              "settingIds"
+                                            ],
+                                            "additionalProperties": false
+                                          }
+                                        },
+                                        "required": [
+                                          "lifecycle",
+                                          "nativeModelId",
+                                          "operationId",
+                                          "provider",
+                                          "providerTag",
+                                          "endpoint",
+                                          "protocol",
+                                          "requestProfile"
+                                        ],
+                                        "additionalProperties": false
+                                      },
                                       {
                                         "type": "object",
                                         "properties": {

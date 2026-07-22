@@ -105,18 +105,39 @@ export type ProviderBindingEndpointEnumKey =
   (typeof providerBindingEndpointEnum)[keyof typeof providerBindingEndpointEnum];
 
 export const providerBindingProtocolEnum = {
-  chat: "chat",
+  audio: "audio",
 } as const;
 
 export type ProviderBindingProtocolEnumKey =
   (typeof providerBindingProtocolEnum)[keyof typeof providerBindingProtocolEnum];
 
 export const requestProfileKindEnum = {
-  chat: "chat",
+  audio: "audio",
 } as const;
 
 export type RequestProfileKindEnumKey =
   (typeof requestProfileKindEnum)[keyof typeof requestProfileKindEnum];
+
+export const requestProfileOutputFormatEnum = {
+  wav: "wav",
+} as const;
+
+export type RequestProfileOutputFormatEnumKey =
+  (typeof requestProfileOutputFormatEnum)[keyof typeof requestProfileOutputFormatEnum];
+
+export const providerBindingProtocolEnum2 = {
+  chat: "chat",
+} as const;
+
+export type ProviderBindingProtocolEnum2Key =
+  (typeof providerBindingProtocolEnum2)[keyof typeof providerBindingProtocolEnum2];
+
+export const requestProfileKindEnum2 = {
+  chat: "chat",
+} as const;
+
+export type RequestProfileKindEnum2Key =
+  (typeof requestProfileKindEnum2)[keyof typeof requestProfileKindEnum2];
 
 export const requestProfileMaxTokensParameterEnum = {
   max_completion_tokens: "max_completion_tokens",
@@ -133,19 +154,19 @@ export const providerBindingEndpointEnum2 = {
 export type ProviderBindingEndpointEnum2Key =
   (typeof providerBindingEndpointEnum2)[keyof typeof providerBindingEndpointEnum2];
 
-export const providerBindingProtocolEnum2 = {
+export const providerBindingProtocolEnum3 = {
   image: "image",
 } as const;
 
-export type ProviderBindingProtocolEnum2Key =
-  (typeof providerBindingProtocolEnum2)[keyof typeof providerBindingProtocolEnum2];
+export type ProviderBindingProtocolEnum3Key =
+  (typeof providerBindingProtocolEnum3)[keyof typeof providerBindingProtocolEnum3];
 
-export const requestProfileKindEnum2 = {
+export const requestProfileKindEnum3 = {
   image: "image",
 } as const;
 
-export type RequestProfileKindEnum2Key =
-  (typeof requestProfileKindEnum2)[keyof typeof requestProfileKindEnum2];
+export type RequestProfileKindEnum3Key =
+  (typeof requestProfileKindEnum3)[keyof typeof requestProfileKindEnum3];
 
 export const providerBindingEndpointEnum3 = {
   "/api/v1/audio/speech": "/api/v1/audio/speech",
@@ -154,19 +175,19 @@ export const providerBindingEndpointEnum3 = {
 export type ProviderBindingEndpointEnum3Key =
   (typeof providerBindingEndpointEnum3)[keyof typeof providerBindingEndpointEnum3];
 
-export const providerBindingProtocolEnum3 = {
+export const providerBindingProtocolEnum4 = {
   speech: "speech",
 } as const;
 
-export type ProviderBindingProtocolEnum3Key =
-  (typeof providerBindingProtocolEnum3)[keyof typeof providerBindingProtocolEnum3];
+export type ProviderBindingProtocolEnum4Key =
+  (typeof providerBindingProtocolEnum4)[keyof typeof providerBindingProtocolEnum4];
 
-export const requestProfileKindEnum3 = {
+export const requestProfileKindEnum4 = {
   speech: "speech",
 } as const;
 
-export type RequestProfileKindEnum3Key =
-  (typeof requestProfileKindEnum3)[keyof typeof requestProfileKindEnum3];
+export type RequestProfileKindEnum4Key =
+  (typeof requestProfileKindEnum4)[keyof typeof requestProfileKindEnum4];
 
 export const requestProfileOutputFormatsEnum = {
   mp3: "mp3",
@@ -182,12 +203,12 @@ export const providerBindingEndpointEnum4 = {
 export type ProviderBindingEndpointEnum4Key =
   (typeof providerBindingEndpointEnum4)[keyof typeof providerBindingEndpointEnum4];
 
-export const providerBindingProtocolEnum4 = {
+export const providerBindingProtocolEnum5 = {
   video: "video",
 } as const;
 
-export type ProviderBindingProtocolEnum4Key =
-  (typeof providerBindingProtocolEnum4)[keyof typeof providerBindingProtocolEnum4];
+export type ProviderBindingProtocolEnum5Key =
+  (typeof providerBindingProtocolEnum5)[keyof typeof providerBindingProtocolEnum5];
 
 export const requestProfileFrameModeEnum = {
   first: "first",
@@ -198,12 +219,12 @@ export const requestProfileFrameModeEnum = {
 export type RequestProfileFrameModeEnumKey =
   (typeof requestProfileFrameModeEnum)[keyof typeof requestProfileFrameModeEnum];
 
-export const requestProfileKindEnum4 = {
+export const requestProfileKindEnum5 = {
   video: "video",
 } as const;
 
-export type RequestProfileKindEnum4Key =
-  (typeof requestProfileKindEnum4)[keyof typeof requestProfileKindEnum4];
+export type RequestProfileKindEnum5Key =
+  (typeof requestProfileKindEnum5)[keyof typeof requestProfileKindEnum5];
 
 export const requestProfileReferenceValidationPolicyEnum = {
   none: "none",
@@ -220,12 +241,12 @@ export const providerBindingEndpointEnum5 = {
 export type ProviderBindingEndpointEnum5Key =
   (typeof providerBindingEndpointEnum5)[keyof typeof providerBindingEndpointEnum5];
 
-export const providerBindingProtocolEnum5 = {
+export const providerBindingProtocolEnum6 = {
   queue: "queue",
 } as const;
 
-export type ProviderBindingProtocolEnum5Key =
-  (typeof providerBindingProtocolEnum5)[keyof typeof providerBindingProtocolEnum5];
+export type ProviderBindingProtocolEnum6Key =
+  (typeof providerBindingProtocolEnum6)[keyof typeof providerBindingProtocolEnum6];
 
 export const providerBindingProviderEnum2 = {
   fal: "fal",
@@ -450,6 +471,96 @@ export type GetRunsIdBrowserManifest200 = {
                    */
                   kind: RequestProfileKindEnumKey;
                   /**
+                   * @type string
+                   */
+                  outputFormat: RequestProfileOutputFormatEnumKey;
+                  /**
+                   * @type array
+                   */
+                  settingIds: string[];
+                };
+              }
+            | {
+                lifecycle:
+                  | {
+                      /**
+                       * @type string
+                       */
+                      cancellation: LifecycleCancellationEnumKey;
+                      /**
+                       * @type array
+                       */
+                      completions: LifecycleCompletionsEnumKey[];
+                      /**
+                       * @type array
+                       */
+                      deliveries: LifecycleDeliveriesEnumKey[];
+                      /**
+                       * @type string
+                       */
+                      submission: LifecycleSubmissionEnumKey;
+                    }
+                  | {
+                      /**
+                       * @type string
+                       */
+                      cancellation: LifecycleCancellationEnumKey;
+                      completions:
+                        | LifecycleCompletionsEnum2Key[]
+                        | LifecycleCompletionsEnum3Key[]
+                        | (
+                            | LifecycleCompletionsEnum2Key
+                            | LifecycleCompletionsEnum3Key
+                          )[]
+                        | (
+                            | LifecycleCompletionsEnum3Key
+                            | LifecycleCompletionsEnum2Key
+                          )[];
+                      /**
+                       * @type array
+                       */
+                      deliveries: LifecycleDeliveriesEnumKey[];
+                      /**
+                       * @type string
+                       */
+                      submission: LifecycleSubmissionEnum2Key;
+                    };
+                /**
+                 * @pattern ^[^/]+\/.+$
+                 * @type string
+                 */
+                nativeModelId: string;
+                /**
+                 * @minLength 1
+                 * @type string
+                 */
+                operationId: string;
+                /**
+                 * @type string
+                 */
+                provider: ProviderBindingProviderEnumKey;
+                /**
+                 * @minLength 1
+                 * @type string
+                 */
+                providerTag: string;
+                /**
+                 * @type string
+                 */
+                endpoint: ProviderBindingEndpointEnumKey;
+                /**
+                 * @type string
+                 */
+                protocol: ProviderBindingProtocolEnum2Key;
+                /**
+                 * @type object
+                 */
+                requestProfile: {
+                  /**
+                   * @type string
+                   */
+                  kind: RequestProfileKindEnum2Key;
+                  /**
                    * @minLength 0
                    * @type integer
                    */
@@ -539,7 +650,7 @@ export type GetRunsIdBrowserManifest200 = {
                 /**
                  * @type string
                  */
-                protocol: ProviderBindingProtocolEnum2Key;
+                protocol: ProviderBindingProtocolEnum3Key;
                 /**
                  * @type object
                  */
@@ -547,7 +658,7 @@ export type GetRunsIdBrowserManifest200 = {
                   /**
                    * @type string
                    */
-                  kind: RequestProfileKindEnum2Key;
+                  kind: RequestProfileKindEnum3Key;
                   /**
                    * @minLength 0
                    * @type integer
@@ -630,7 +741,7 @@ export type GetRunsIdBrowserManifest200 = {
                 /**
                  * @type string
                  */
-                protocol: ProviderBindingProtocolEnum3Key;
+                protocol: ProviderBindingProtocolEnum4Key;
                 /**
                  * @type object
                  */
@@ -638,7 +749,7 @@ export type GetRunsIdBrowserManifest200 = {
                   /**
                    * @type string
                    */
-                  kind: RequestProfileKindEnum3Key;
+                  kind: RequestProfileKindEnum4Key;
                   /**
                    * @type array
                    */
@@ -726,7 +837,7 @@ export type GetRunsIdBrowserManifest200 = {
                 /**
                  * @type string
                  */
-                protocol: ProviderBindingProtocolEnum4Key;
+                protocol: ProviderBindingProtocolEnum5Key;
                 /**
                  * @type object
                  */
@@ -742,7 +853,7 @@ export type GetRunsIdBrowserManifest200 = {
                   /**
                    * @type string
                    */
-                  kind: RequestProfileKindEnum4Key;
+                  kind: RequestProfileKindEnum5Key;
                   /**
                    * @type object
                    */
@@ -840,7 +951,7 @@ export type GetRunsIdBrowserManifest200 = {
             /**
              * @type string
              */
-            protocol: ProviderBindingProtocolEnum5Key;
+            protocol: ProviderBindingProtocolEnum6Key;
             /**
              * @type string
              */
@@ -935,7 +1046,7 @@ export type GetRunsIdBrowserManifest200 = {
                   /**
                    * @type string
                    */
-                  kind: RequestProfileKindEnum2Key;
+                  kind: RequestProfileKindEnum3Key;
                   /**
                    * @minLength 0
                    * @type integer
@@ -1083,7 +1194,7 @@ export type GetRunsIdBrowserManifest200 = {
                   /**
                    * @type string
                    */
-                  kind: RequestProfileKindEnum3Key;
+                  kind: RequestProfileKindEnum4Key;
                   /**
                    * @minLength 0
                    * @type integer
@@ -1226,7 +1337,7 @@ export type GetRunsIdBrowserManifest200 = {
                   /**
                    * @type string
                    */
-                  kind: RequestProfileKindEnum4Key;
+                  kind: RequestProfileKindEnum5Key;
                   /**
                    * @minLength 0
                    * @type integer

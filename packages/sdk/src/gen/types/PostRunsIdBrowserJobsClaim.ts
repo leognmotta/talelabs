@@ -103,19 +103,40 @@ export const providerBindingEndpointEnum6 = {
 export type ProviderBindingEndpointEnum6Key =
   (typeof providerBindingEndpointEnum6)[keyof typeof providerBindingEndpointEnum6];
 
-export const providerBindingProtocolEnum6 = {
+export const providerBindingProtocolEnum7 = {
+  audio: "audio",
+} as const;
+
+export type ProviderBindingProtocolEnum7Key =
+  (typeof providerBindingProtocolEnum7)[keyof typeof providerBindingProtocolEnum7];
+
+export const requestProfileKindEnum6 = {
+  audio: "audio",
+} as const;
+
+export type RequestProfileKindEnum6Key =
+  (typeof requestProfileKindEnum6)[keyof typeof requestProfileKindEnum6];
+
+export const requestProfileOutputFormatEnum2 = {
+  wav: "wav",
+} as const;
+
+export type RequestProfileOutputFormatEnum2Key =
+  (typeof requestProfileOutputFormatEnum2)[keyof typeof requestProfileOutputFormatEnum2];
+
+export const providerBindingProtocolEnum8 = {
   chat: "chat",
 } as const;
 
-export type ProviderBindingProtocolEnum6Key =
-  (typeof providerBindingProtocolEnum6)[keyof typeof providerBindingProtocolEnum6];
+export type ProviderBindingProtocolEnum8Key =
+  (typeof providerBindingProtocolEnum8)[keyof typeof providerBindingProtocolEnum8];
 
-export const requestProfileKindEnum5 = {
+export const requestProfileKindEnum7 = {
   chat: "chat",
 } as const;
 
-export type RequestProfileKindEnum5Key =
-  (typeof requestProfileKindEnum5)[keyof typeof requestProfileKindEnum5];
+export type RequestProfileKindEnum7Key =
+  (typeof requestProfileKindEnum7)[keyof typeof requestProfileKindEnum7];
 
 export const requestProfileMaxTokensParameterEnum2 = {
   max_completion_tokens: "max_completion_tokens",
@@ -132,19 +153,19 @@ export const providerBindingEndpointEnum7 = {
 export type ProviderBindingEndpointEnum7Key =
   (typeof providerBindingEndpointEnum7)[keyof typeof providerBindingEndpointEnum7];
 
-export const providerBindingProtocolEnum7 = {
+export const providerBindingProtocolEnum9 = {
   image: "image",
 } as const;
 
-export type ProviderBindingProtocolEnum7Key =
-  (typeof providerBindingProtocolEnum7)[keyof typeof providerBindingProtocolEnum7];
+export type ProviderBindingProtocolEnum9Key =
+  (typeof providerBindingProtocolEnum9)[keyof typeof providerBindingProtocolEnum9];
 
-export const requestProfileKindEnum6 = {
+export const requestProfileKindEnum8 = {
   image: "image",
 } as const;
 
-export type RequestProfileKindEnum6Key =
-  (typeof requestProfileKindEnum6)[keyof typeof requestProfileKindEnum6];
+export type RequestProfileKindEnum8Key =
+  (typeof requestProfileKindEnum8)[keyof typeof requestProfileKindEnum8];
 
 export const providerBindingEndpointEnum8 = {
   "/api/v1/audio/speech": "/api/v1/audio/speech",
@@ -153,19 +174,19 @@ export const providerBindingEndpointEnum8 = {
 export type ProviderBindingEndpointEnum8Key =
   (typeof providerBindingEndpointEnum8)[keyof typeof providerBindingEndpointEnum8];
 
-export const providerBindingProtocolEnum8 = {
+export const providerBindingProtocolEnum10 = {
   speech: "speech",
 } as const;
 
-export type ProviderBindingProtocolEnum8Key =
-  (typeof providerBindingProtocolEnum8)[keyof typeof providerBindingProtocolEnum8];
+export type ProviderBindingProtocolEnum10Key =
+  (typeof providerBindingProtocolEnum10)[keyof typeof providerBindingProtocolEnum10];
 
-export const requestProfileKindEnum7 = {
+export const requestProfileKindEnum9 = {
   speech: "speech",
 } as const;
 
-export type RequestProfileKindEnum7Key =
-  (typeof requestProfileKindEnum7)[keyof typeof requestProfileKindEnum7];
+export type RequestProfileKindEnum9Key =
+  (typeof requestProfileKindEnum9)[keyof typeof requestProfileKindEnum9];
 
 export const requestProfileOutputFormatsEnum2 = {
   mp3: "mp3",
@@ -181,12 +202,12 @@ export const providerBindingEndpointEnum9 = {
 export type ProviderBindingEndpointEnum9Key =
   (typeof providerBindingEndpointEnum9)[keyof typeof providerBindingEndpointEnum9];
 
-export const providerBindingProtocolEnum9 = {
+export const providerBindingProtocolEnum11 = {
   video: "video",
 } as const;
 
-export type ProviderBindingProtocolEnum9Key =
-  (typeof providerBindingProtocolEnum9)[keyof typeof providerBindingProtocolEnum9];
+export type ProviderBindingProtocolEnum11Key =
+  (typeof providerBindingProtocolEnum11)[keyof typeof providerBindingProtocolEnum11];
 
 export const requestProfileFrameModeEnum2 = {
   first: "first",
@@ -197,12 +218,12 @@ export const requestProfileFrameModeEnum2 = {
 export type RequestProfileFrameModeEnum2Key =
   (typeof requestProfileFrameModeEnum2)[keyof typeof requestProfileFrameModeEnum2];
 
-export const requestProfileKindEnum8 = {
+export const requestProfileKindEnum10 = {
   video: "video",
 } as const;
 
-export type RequestProfileKindEnum8Key =
-  (typeof requestProfileKindEnum8)[keyof typeof requestProfileKindEnum8];
+export type RequestProfileKindEnum10Key =
+  (typeof requestProfileKindEnum10)[keyof typeof requestProfileKindEnum10];
 
 export const requestProfileReferenceValidationPolicyEnum2 = {
   none: "none",
@@ -219,12 +240,12 @@ export const providerBindingEndpointEnum10 = {
 export type ProviderBindingEndpointEnum10Key =
   (typeof providerBindingEndpointEnum10)[keyof typeof providerBindingEndpointEnum10];
 
-export const providerBindingProtocolEnum10 = {
+export const providerBindingProtocolEnum12 = {
   queue: "queue",
 } as const;
 
-export type ProviderBindingProtocolEnum10Key =
-  (typeof providerBindingProtocolEnum10)[keyof typeof providerBindingProtocolEnum10];
+export type ProviderBindingProtocolEnum12Key =
+  (typeof providerBindingProtocolEnum12)[keyof typeof providerBindingProtocolEnum12];
 
 export const providerBindingProviderEnum4 = {
   fal: "fal",
@@ -490,7 +511,7 @@ export type PostRunsIdBrowserJobsClaim200 = {
                 /**
                  * @type string
                  */
-                protocol: ProviderBindingProtocolEnum6Key;
+                protocol: ProviderBindingProtocolEnum7Key;
                 /**
                  * @type object
                  */
@@ -498,7 +519,97 @@ export type PostRunsIdBrowserJobsClaim200 = {
                   /**
                    * @type string
                    */
-                  kind: RequestProfileKindEnum5Key;
+                  kind: RequestProfileKindEnum6Key;
+                  /**
+                   * @type string
+                   */
+                  outputFormat: RequestProfileOutputFormatEnum2Key;
+                  /**
+                   * @type array
+                   */
+                  settingIds: string[];
+                };
+              }
+            | {
+                lifecycle:
+                  | {
+                      /**
+                       * @type string
+                       */
+                      cancellation: LifecycleCancellationEnum2Key;
+                      /**
+                       * @type array
+                       */
+                      completions: LifecycleCompletionsEnum4Key[];
+                      /**
+                       * @type array
+                       */
+                      deliveries: LifecycleDeliveriesEnum2Key[];
+                      /**
+                       * @type string
+                       */
+                      submission: LifecycleSubmissionEnum3Key;
+                    }
+                  | {
+                      /**
+                       * @type string
+                       */
+                      cancellation: LifecycleCancellationEnum2Key;
+                      completions:
+                        | LifecycleCompletionsEnum5Key[]
+                        | LifecycleCompletionsEnum6Key[]
+                        | (
+                            | LifecycleCompletionsEnum5Key
+                            | LifecycleCompletionsEnum6Key
+                          )[]
+                        | (
+                            | LifecycleCompletionsEnum6Key
+                            | LifecycleCompletionsEnum5Key
+                          )[];
+                      /**
+                       * @type array
+                       */
+                      deliveries: LifecycleDeliveriesEnum2Key[];
+                      /**
+                       * @type string
+                       */
+                      submission: LifecycleSubmissionEnum4Key;
+                    };
+                /**
+                 * @pattern ^[^/]+\/.+$
+                 * @type string
+                 */
+                nativeModelId: string;
+                /**
+                 * @minLength 1
+                 * @type string
+                 */
+                operationId: string;
+                /**
+                 * @type string
+                 */
+                provider: ProviderBindingProviderEnum3Key;
+                /**
+                 * @minLength 1
+                 * @type string
+                 */
+                providerTag: string;
+                /**
+                 * @type string
+                 */
+                endpoint: ProviderBindingEndpointEnum6Key;
+                /**
+                 * @type string
+                 */
+                protocol: ProviderBindingProtocolEnum8Key;
+                /**
+                 * @type object
+                 */
+                requestProfile: {
+                  /**
+                   * @type string
+                   */
+                  kind: RequestProfileKindEnum7Key;
                   /**
                    * @minLength 0
                    * @type integer
@@ -589,7 +700,7 @@ export type PostRunsIdBrowserJobsClaim200 = {
                 /**
                  * @type string
                  */
-                protocol: ProviderBindingProtocolEnum7Key;
+                protocol: ProviderBindingProtocolEnum9Key;
                 /**
                  * @type object
                  */
@@ -597,7 +708,7 @@ export type PostRunsIdBrowserJobsClaim200 = {
                   /**
                    * @type string
                    */
-                  kind: RequestProfileKindEnum6Key;
+                  kind: RequestProfileKindEnum8Key;
                   /**
                    * @minLength 0
                    * @type integer
@@ -680,7 +791,7 @@ export type PostRunsIdBrowserJobsClaim200 = {
                 /**
                  * @type string
                  */
-                protocol: ProviderBindingProtocolEnum8Key;
+                protocol: ProviderBindingProtocolEnum10Key;
                 /**
                  * @type object
                  */
@@ -688,7 +799,7 @@ export type PostRunsIdBrowserJobsClaim200 = {
                   /**
                    * @type string
                    */
-                  kind: RequestProfileKindEnum7Key;
+                  kind: RequestProfileKindEnum9Key;
                   /**
                    * @type array
                    */
@@ -776,7 +887,7 @@ export type PostRunsIdBrowserJobsClaim200 = {
                 /**
                  * @type string
                  */
-                protocol: ProviderBindingProtocolEnum9Key;
+                protocol: ProviderBindingProtocolEnum11Key;
                 /**
                  * @type object
                  */
@@ -792,7 +903,7 @@ export type PostRunsIdBrowserJobsClaim200 = {
                   /**
                    * @type string
                    */
-                  kind: RequestProfileKindEnum8Key;
+                  kind: RequestProfileKindEnum10Key;
                   /**
                    * @type object
                    */
@@ -890,7 +1001,7 @@ export type PostRunsIdBrowserJobsClaim200 = {
             /**
              * @type string
              */
-            protocol: ProviderBindingProtocolEnum10Key;
+            protocol: ProviderBindingProtocolEnum12Key;
             /**
              * @type string
              */
@@ -985,7 +1096,7 @@ export type PostRunsIdBrowserJobsClaim200 = {
                   /**
                    * @type string
                    */
-                  kind: RequestProfileKindEnum6Key;
+                  kind: RequestProfileKindEnum8Key;
                   /**
                    * @minLength 0
                    * @type integer
@@ -1133,7 +1244,7 @@ export type PostRunsIdBrowserJobsClaim200 = {
                   /**
                    * @type string
                    */
-                  kind: RequestProfileKindEnum7Key;
+                  kind: RequestProfileKindEnum9Key;
                   /**
                    * @minLength 0
                    * @type integer
@@ -1276,7 +1387,7 @@ export type PostRunsIdBrowserJobsClaim200 = {
                   /**
                    * @type string
                    */
-                  kind: RequestProfileKindEnum8Key;
+                  kind: RequestProfileKindEnum10Key;
                   /**
                    * @minLength 0
                    * @type integer

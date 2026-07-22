@@ -96,6 +96,65 @@ export const getRunsIdBrowserManifest200Schema = z.object({
               provider: z.enum(["openrouter"]),
               providerTag: z.string().min(1),
               endpoint: z.enum(["/api/v1/chat/completions"]),
+              protocol: z.enum(["audio"]),
+              requestProfile: z.object({
+                kind: z.enum(["audio"]),
+                outputFormat: z.enum(["wav"]),
+                settingIds: z.array(z.string().min(1)),
+              }),
+            }),
+            z.object({
+              lifecycle: z.union([
+                z.object({
+                  cancellation: z.enum([
+                    "best-effort",
+                    "supported",
+                    "unsupported",
+                  ]),
+                  completions: z
+                    .array(z.enum(["response"]))
+                    .min(1)
+                    .max(1),
+                  deliveries: z
+                    .array(z.enum(["bytes", "stream", "text", "url"]))
+                    .min(1),
+                  submission: z.enum(["immediate"]),
+                }),
+                z.object({
+                  cancellation: z.enum([
+                    "best-effort",
+                    "supported",
+                    "unsupported",
+                  ]),
+                  completions: z.union([
+                    z
+                      .array(z.enum(["poll"]))
+                      .min(1)
+                      .max(1),
+                    z
+                      .array(z.enum(["webhook"]))
+                      .min(1)
+                      .max(1),
+                    z
+                      .array(z.union([z.enum(["poll"]), z.enum(["webhook"])]))
+                      .min(2)
+                      .max(2),
+                    z
+                      .array(z.union([z.enum(["webhook"]), z.enum(["poll"])]))
+                      .min(2)
+                      .max(2),
+                  ]),
+                  deliveries: z
+                    .array(z.enum(["bytes", "stream", "text", "url"]))
+                    .min(1),
+                  submission: z.enum(["asynchronous"]),
+                }),
+              ]),
+              nativeModelId: z.string().regex(/^[^/]+\/.+$/),
+              operationId: z.string().min(1),
+              provider: z.enum(["openrouter"]),
+              providerTag: z.string().min(1),
+              endpoint: z.enum(["/api/v1/chat/completions"]),
               protocol: z.enum(["chat"]),
               requestProfile: z.object({
                 kind: z.enum(["chat"]),
