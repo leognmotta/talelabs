@@ -14,6 +14,11 @@ import type {
   ProviderCostRequest,
 } from '@talelabs/providers/server'
 
+import {
+  promptTemplateResolvedText,
+  selectedProviderRequestInputs,
+} from '@talelabs/flows'
+
 /** Provider-cost request facts before a candidate binding is attached. */
 export interface PlannedProviderCostJob {
   /** Stable planner hash used to associate the selected quote with persistence. */
@@ -86,11 +91,16 @@ function textCharacterCount(input: {
   }
   const slotIds = new Set([
     ...Object.keys(input.payload.inline),
+    ...Object.keys(input.payload.promptTemplates ?? {}),
     ...connectedBySlot.keys(),
   ])
   return {
     count: [...slotIds].reduce((total, slotId) => total + (
-      connectedBySlot.get(slotId) ?? input.payload.inline[slotId]?.length ?? 0
+      connectedBySlot.get(slotId)
+      ?? (input.payload.promptTemplates?.[slotId]
+        ? promptTemplateResolvedText(input.payload.promptTemplates[slotId]).length
+        : input.payload.inline[slotId]?.length)
+      ?? 0
     ), 0),
     unresolved,
   }
@@ -103,7 +113,7 @@ function plannedInputAssets(input: {
 }): { assets: ProviderCostInputAsset[], unresolved: boolean } {
   const assets: ProviderCostInputAsset[] = []
   let unresolved = false
-  for (const plannedInput of input.payload.inputs) {
+  for (const plannedInput of selectedProviderRequestInputs(input.payload)) {
     for (const runtimeItem of plannedInput.items) {
       if (runtimeItem.value.kind === 'text')
         continue

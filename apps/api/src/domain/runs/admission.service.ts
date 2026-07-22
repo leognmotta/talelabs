@@ -11,6 +11,7 @@ import type {
 import type {
   FlowRunSnapshotProviderCostEstimate,
   FlowRunSnapshotProviderSelection,
+  PlannedJobRequestPayload,
 } from '@talelabs/flows'
 import type { ProviderCostInputAsset } from '@talelabs/providers/server'
 import type { Insertable } from 'kysely'
@@ -27,6 +28,8 @@ import {
   GENERATION_CATALOG_REVISION,
   GENERATION_MODEL_REGISTRY,
   hashFlowRunRequest,
+  promptTemplateResolvedText,
+  selectedProviderRequestInputs,
 } from '@talelabs/flows'
 import { loadProviderPricingSnapshot } from '@talelabs/providers/server'
 
@@ -53,6 +56,22 @@ import {
   resolvePlanProviderCosts,
 } from './provider-cost.service.js'
 import { getRunDetail } from './read.service.js'
+
+function initialResolvedPrompt(payload: PlannedJobRequestPayload): null | string {
+  const connected = payload.inputs.flatMap(input => (
+    input.targetHandleId === 'prompt'
+      ? input.items.flatMap(item => item.value.kind === 'text' ? [item.value.text] : [])
+      : []
+  ))
+  if (connected.length > 0) {
+    return connected.includes(null)
+      ? null
+      : connected.join('\n')
+  }
+  return payload.promptTemplates?.prompt
+    ? promptTemplateResolvedText(payload.promptTemplates.prompt)
+    : payload.inline.prompt ?? null
+}
 
 /** Admits and persists one tenant-scoped immutable Flow run transactionally. */
 export async function admitFlowRun(input: {
@@ -407,13 +426,13 @@ export async function admitFlowRun(input: {
             requestHash: shard.jobHash,
             requestIndex: shard.requestIndex,
             requestPayload: shard.requestPayload as unknown as JsonValue,
-            resolvedPrompt: shard.requestPayload.inline.prompt ?? null,
+            resolvedPrompt: initialResolvedPrompt(shard.requestPayload),
             settings: node.settings as JsonValue,
             status: 'pending',
           })
           let sourceOrder = 0
           let inputOrder = 0
-          const insertedInputs = new Set<string>()
+          const sourceIdByAssetLocation = new Map<string, string>()
           for (const plannedInput of shard.requestPayload.inputs) {
             for (const runtimeItem of plannedInput.items) {
               const sourceId = createId()
@@ -437,22 +456,30 @@ export async function admitFlowRun(input: {
                       : 'text',
               })
               for (const assetRef of assetRefs) {
-                const role = plannedInput.targetHandleId || 'reference'
-                const inputKey = `${assetRef.assetId}\u0000${role}`
-                if (insertedInputs.has(inputKey))
-                  continue
-                insertedInputs.add(inputKey)
+                sourceIdByAssetLocation.set(
+                  `${plannedInput.edgeId}\u0000${runtimeItem.key}\u0000${assetRef.assetId}`,
+                  sourceId,
+                )
+              }
+              sourceOrder += 1
+            }
+          }
+          for (const plannedInput of selectedProviderRequestInputs(shard.requestPayload)) {
+            const role = plannedInput.targetHandleId || 'reference'
+            for (const runtimeItem of plannedInput.items) {
+              for (const assetRef of assetReferencesFromValue(runtimeItem.value)) {
                 inputRows.push({
                   assetId: assetRef.assetId,
                   jobId,
                   organizationId: input.organizationId,
                   role,
                   sortOrder: inputOrder,
-                  sourceId,
+                  sourceId: sourceIdByAssetLocation.get(
+                    `${plannedInput.edgeId}\u0000${runtimeItem.key}\u0000${assetRef.assetId}`,
+                  ) ?? null,
                 })
                 inputOrder += 1
               }
-              sourceOrder += 1
             }
           }
         }

@@ -48,12 +48,14 @@ export function providerRequest(input: {
     settings: input.settings ?? defaultSettings(input.route),
     textSlots: [
       {
+        inputReferences: [],
         parts: [],
         resolvedText: 'Follow the creative brief.',
         slotId: 'instructions',
         source: 'inline',
       },
       {
+        inputReferences: [],
         parts: [],
         resolvedText: 'A safe verification prompt.',
         slotId: 'prompt',

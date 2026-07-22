@@ -504,6 +504,7 @@ export async function listAssetUsageRows(input: {
       'input.role',
       'job.createdAt',
     ])
+    .distinct()
     .where('input.organizationId', '=', input.organizationId)
     .where('input.assetId', '=', input.assetId)
 

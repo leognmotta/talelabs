@@ -13,6 +13,10 @@ import type { Insertable } from 'kysely'
 
 import { createId } from '@paralleldrive/cuid2'
 import { db, withDatabaseTransaction } from '@talelabs/db'
+import {
+  materializeGenerationProviderRequest,
+  selectedProviderRequestInputs,
+} from '@talelabs/flows'
 
 import { logRunEngine } from '../../observability/logging.js'
 import {
@@ -32,9 +36,8 @@ export async function materializeJobInputs(
 ): Promise<PlannedJobRequestPayload> {
   let sortOrder = 0
   let inputSortOrder = 0
-  const insertedInputKeys = new Set<string>()
+  const sourceIdByAssetLocation = new Map<string, string>()
   const sourceRows: Insertable<GenerationJobSourceTable>[] = []
-  const inputRows: Insertable<GenerationJobInputTable>[] = []
   const materializedRequestInputs: PlannedJobRequestInput[] = []
 
   for (const plannedInput of input.requestPayload.inputs) {
@@ -72,28 +75,70 @@ export async function materializeJobInputs(
         sourceType,
       })
 
-      const role = plannedInput.targetHandleId || 'reference'
-
       for (const assetRef of assetRefs) {
         if (!('assetId' in assetRef))
           continue
-        const inputKey = `${assetRef.assetId}\u0000${role}`
-        if (insertedInputKeys.has(inputKey))
+        sourceIdByAssetLocation.set(
+          `${plannedInput.edgeId}\u0000${runtimeItem.key}\u0000${assetRef.assetId}`,
+          sourceId,
+        )
+      }
+      sortOrder += 1
+    }
+    materializedRequestInputs.push({ ...plannedInput, items: materializedItems })
+  }
+
+  const materializedRequestPayload = {
+    ...input.requestPayload,
+    inputs: materializedRequestInputs,
+  }
+  const providerRequest = materializeGenerationProviderRequest({
+    requestId: input.jobId,
+    requestPayload: materializedRequestPayload,
+  })
+  const promptSlot = providerRequest.textSlots.find(slot => slot.slotId === 'prompt')
+
+  if (input.requestPayload.promptTemplates?.prompt && promptSlot?.source === 'inline') {
+    sourceRows.push({
+      assetId: null,
+      elementId: null,
+      id: createId(),
+      jobId: input.jobId,
+      nodeId: input.requestPayload.nodeId,
+      organizationId: input.organizationId,
+      resolvedText: promptSlot.resolvedText,
+      snapshot: {
+        kind: 'promptTemplate',
+        references: promptSlot.inputReferences,
+        resolvedText: promptSlot.resolvedText,
+        template: input.requestPayload.promptTemplates.prompt,
+      } as unknown as GenerationJobSourceTable['snapshot'],
+      sortOrder,
+      sourceType: 'text',
+    })
+    sortOrder += 1
+  }
+
+  const inputRows: Insertable<GenerationJobInputTable>[] = []
+  for (const plannedInput of selectedProviderRequestInputs(materializedRequestPayload)) {
+    const role = plannedInput.targetHandleId || 'reference'
+    for (const runtimeItem of plannedInput.items) {
+      for (const assetRef of assetReferencesFromValue(runtimeItem.value)) {
+        if (!('assetId' in assetRef))
           continue
-        insertedInputKeys.add(inputKey)
         inputRows.push({
           assetId: assetRef.assetId,
           jobId: input.jobId,
           organizationId: input.organizationId,
           role,
           sortOrder: inputSortOrder,
-          sourceId,
+          sourceId: sourceIdByAssetLocation.get(
+            `${plannedInput.edgeId}\u0000${runtimeItem.key}\u0000${assetRef.assetId}`,
+          ) ?? null,
         })
         inputSortOrder += 1
       }
-      sortOrder += 1
     }
-    materializedRequestInputs.push({ ...plannedInput, items: materializedItems })
   }
 
   await withDatabaseTransaction(database, async (trx) => {
@@ -109,14 +154,19 @@ export async function materializeJobInputs(
       await trx.insertInto('generationJobSources').values(sourceRows).execute()
     if (inputRows.length > 0)
       await trx.insertInto('generationJobInputs').values(inputRows).execute()
+    await trx.updateTable('generationJobs')
+      .set({ resolvedPrompt: promptSlot?.resolvedText ?? null })
+      .where('organizationId', '=', input.organizationId)
+      .where('id', '=', input.jobId)
+      .execute()
   })
 
   logRunEngine('info', 'generation_job.inputs.materialized', {
     generationJobId: input.jobId,
-    inputAssetCount: insertedInputKeys.size,
+    inputAssetCount: inputRows.length,
     organizationId: input.organizationId,
     sourceCount: sortOrder,
     runId: input.flowRunId,
   })
-  return { ...input.requestPayload, inputs: materializedRequestInputs }
+  return materializedRequestPayload
 }
