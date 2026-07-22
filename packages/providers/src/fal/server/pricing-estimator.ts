@@ -224,14 +224,18 @@ function estimateFalMinutes(input: {
   request: ProviderCostRequest
 }): ProviderCostEstimate {
   const outputDuration = requestedOutputDurationSeconds(input.request)
+  const audioInputDuration = estimatedInputDurationSeconds(input.request, 'audio')
+  const videoInputDuration = estimatedInputDurationSeconds(input.request, 'video')
   const seconds = outputDuration
-    ?? estimatedInputDurationSeconds(input.request, 'audio')
+    ?? audioInputDuration + videoInputDuration
   if (!(seconds > 0))
     return unavailable('input_metadata_unavailable')
   return estimateFromQuantity({
     formulaVersion: outputDuration
       ? 'fal-generated-audio-minutes-v1'
-      : 'fal-input-audio-minutes-v1',
+      : videoInputDuration > 0
+        ? 'fal-input-media-minutes-v2'
+        : 'fal-input-audio-minutes-v1',
     quantity: multiplyProviderCostDecimals(
       divideProviderCostDecimals(seconds, 60),
       input.request.outputCount,

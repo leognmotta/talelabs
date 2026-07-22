@@ -43,7 +43,15 @@ const AUDIO_ASSET: ProviderCostInputAsset = {
   mediaType: 'audio',
   width: null,
 }
+const VIDEO_ASSET: ProviderCostInputAsset = {
+  assetId: 'fixture-video',
+  durationSeconds: '30',
+  height: 720,
+  mediaType: 'video',
+  width: 1280,
+}
 const EXPECTED_FORMULA_AMOUNTS_USD: Readonly<Record<string, string>> = {
+  'catalog-fixed-output-unit-v1': '0.04',
   'fal-duration-seconds-v2': '3.2',
   'fal-flat-generation-unit-v1': '0.1',
   'fal-flat-output-image-v1': '0.1',
@@ -51,6 +59,7 @@ const EXPECTED_FORMULA_AMOUNTS_USD: Readonly<Record<string, string>> = {
   'fal-flux-2-pro-megapixel-tiers-v1': '0.115',
   'fal-generated-audio-minutes-v1': '0.05',
   'fal-input-audio-minutes-v1': '0.05',
+  'fal-input-media-minutes-v2': '0.05',
   'fal-mai-image-token-estimate-v1': '0.049378',
   'fal-nano-banana-lite-token-estimate-v1': '0.042078125',
   'fal-seedance-fast-video-tokens-v1': '0.6048',
@@ -63,6 +72,10 @@ const EXPECTED_FORMULA_AMOUNTS_USD: Readonly<Record<string, string>> = {
   'openrouter-seedance-video-tokens-v1': '0.53802',
   'openrouter-speech-token-estimate-v1': '0.04293',
   'openrouter-video-duration-skus-v1': '0.8',
+}
+const EXPECTED_FIXED_OUTPUT_AMOUNTS_USD: Readonly<Record<string, string>> = {
+  'google/lyria-3-clip-preview': '0.04',
+  'google/lyria-3-pro-preview': '0.08',
 }
 
 function inputAssetsForOperation(operationId: string): ProviderCostInputAsset[] {
@@ -116,6 +129,15 @@ function costRequestScenarios(input: {
     label: 'defaults',
     request: costRequest(input),
   }]
+  if (input.binding.operationId === 'isolateVoice') {
+    scenarios.push({
+      label: 'video-input',
+      request: {
+        ...costRequest(input),
+        inputAssets: [VIDEO_ASSET],
+      },
+    })
+  }
   for (const settingId of operation.settingIds) {
     const setting = input.model.settings.find(candidate => candidate.id === settingId)
     if (!setting)
@@ -396,6 +418,16 @@ for (const model of MODEL_CATALOG_MODELS) {
       })
       if (estimate.status === 'estimated') {
         estimatedScenarioCount += 1
+        if (
+          scenario.label === 'defaults'
+          && EXPECTED_FIXED_OUTPUT_AMOUNTS_USD[model.id]
+        ) {
+          assert.equal(
+            estimate.amountUsd,
+            EXPECTED_FIXED_OUTPUT_AMOUNTS_USD[model.id],
+            `${model.id} returned the wrong fixed output price`,
+          )
+        }
         if (!formulaExamples.has(estimate.basis.formulaVersion)) {
           formulaExamples.set(estimate.basis.formulaVersion, {
             amountUsd: estimate.amountUsd,

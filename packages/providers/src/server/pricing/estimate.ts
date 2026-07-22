@@ -12,6 +12,7 @@ import { estimateOpenRouterImageCost } from '../../openrouter/server/image-prici
 import { estimateOpenRouterTokenCost } from '../../openrouter/server/token-pricing-estimator.js'
 import { estimateOpenRouterVideoCost } from '../../openrouter/server/video-pricing-estimator.js'
 import { addProviderCostDecimals } from './decimal.js'
+import { estimateFixedOutputProviderCost } from './fixed-output.js'
 
 /** Estimates one candidate provider request from a request-scoped rate snapshot. */
 export function estimateProviderCost(input: {
@@ -21,6 +22,9 @@ export function estimateProviderCost(input: {
   request: ProviderCostRequest
 }): ProviderCostEstimate {
   const binding = input.request.binding
+  const fixedOutputEstimate = estimateFixedOutputProviderCost(input.request)
+  if (fixedOutputEstimate)
+    return fixedOutputEstimate
   if (binding.provider === 'fal') {
     const rate = input.pricing.rates.find(candidate =>
       candidate.provider === 'fal'

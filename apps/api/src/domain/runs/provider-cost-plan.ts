@@ -203,7 +203,9 @@ function predictionForJob(input: {
   if (outputValueType !== 'AudioSet')
     return undefined
   const configuredDuration = Number(input.node.settings.duration)
-  const inputDuration = input.assets.find(asset => asset.mediaType === 'audio')?.durationSeconds
+  const inputDuration = input.assets.find(asset => (
+    asset.mediaType === 'audio' || asset.mediaType === 'video'
+  ))?.durationSeconds
   const duration = input.node.operationId === 'textToSpeech'
     ? Math.max(1, input.textCharacterCount / 15)
     : Number.isFinite(configuredDuration) && configuredDuration > 0
