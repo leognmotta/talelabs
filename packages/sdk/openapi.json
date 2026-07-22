@@ -15013,6 +15013,52 @@
                                 "items": {
                                   "type": "object",
                                   "properties": {
+                                    "inputReferences": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "assetId": {
+                                            "type": "string"
+                                          },
+                                          "index": {
+                                            "type": "integer",
+                                            "minimum": 0
+                                          },
+                                          "itemKey": {
+                                            "type": "string"
+                                          },
+                                          "mediaType": {
+                                            "type": "string",
+                                            "enum": [
+                                              "audio",
+                                              "image",
+                                              "video"
+                                            ]
+                                          },
+                                          "partIndex": {
+                                            "type": "integer",
+                                            "minimum": 0
+                                          },
+                                          "slotId": {
+                                            "type": "string"
+                                          },
+                                          "sourceNodeId": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "required": [
+                                          "assetId",
+                                          "index",
+                                          "itemKey",
+                                          "mediaType",
+                                          "partIndex",
+                                          "slotId",
+                                          "sourceNodeId"
+                                        ],
+                                        "additionalProperties": false
+                                      }
+                                    },
                                     "parts": {
                                       "type": "array",
                                       "items": {
@@ -15071,6 +15117,7 @@
                                     }
                                   },
                                   "required": [
+                                    "inputReferences",
                                     "parts",
                                     "resolvedText",
                                     "slotId",

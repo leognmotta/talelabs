@@ -317,6 +317,15 @@ export const assetsMediaTypeEnum = {
 export type AssetsMediaTypeEnumKey =
   (typeof assetsMediaTypeEnum)[keyof typeof assetsMediaTypeEnum];
 
+export const inputReferencesMediaTypeEnum = {
+  audio: "audio",
+  image: "image",
+  video: "video",
+} as const;
+
+export type InputReferencesMediaTypeEnumKey =
+  (typeof inputReferencesMediaTypeEnum)[keyof typeof inputReferencesMediaTypeEnum];
+
 export const partsSourceEnum = {
   connected: "connected",
   inline: "inline",
@@ -1537,6 +1546,41 @@ export type PostRunsIdBrowserJobsClaim200 = {
        * @type array
        */
       textSlots: {
+        /**
+         * @type array
+         */
+        inputReferences: {
+          /**
+           * @type string
+           */
+          assetId: string;
+          /**
+           * @minLength 0
+           * @type integer
+           */
+          index: number;
+          /**
+           * @type string
+           */
+          itemKey: string;
+          /**
+           * @type string
+           */
+          mediaType: InputReferencesMediaTypeEnumKey;
+          /**
+           * @minLength 0
+           * @type integer
+           */
+          partIndex: number;
+          /**
+           * @type string
+           */
+          slotId: string;
+          /**
+           * @type string
+           */
+          sourceNodeId: string;
+        }[];
         /**
          * @type array
          */

@@ -638,6 +638,17 @@ export const postRunsIdBrowserJobsClaim200Schema = z.object({
           .catchall(z.union([z.boolean(), z.string(), z.number()])),
         textSlots: z.array(
           z.object({
+            inputReferences: z.array(
+              z.object({
+                assetId: z.string(),
+                index: z.int().min(0),
+                itemKey: z.string(),
+                mediaType: z.enum(["audio", "image", "video"]),
+                partIndex: z.int().min(0),
+                slotId: z.string(),
+                sourceNodeId: z.string(),
+              }),
+            ),
             parts: z.array(
               z.object({
                 edgeId: z.nullable(z.string()),
