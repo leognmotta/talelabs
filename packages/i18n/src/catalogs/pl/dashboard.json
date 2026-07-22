@@ -41,6 +41,20 @@
   },
   "flows": {
     "actionFailed": "Nie udało się wykonać działania w przepływie pracy.",
+    "promptComposer": {
+      "empty": "Nie wybrano multimediów",
+      "groups": {
+        "audio": "Audio",
+        "image": "Obrazy",
+        "video": "Wideo"
+      },
+      "invalid": "To odwołanie nie odpowiada już wybranemu wejściu. Wybierz inne odwołanie.",
+      "references": {
+        "audio": "audio {{index}}",
+        "image": "obraz {{index}}",
+        "video": "wideo {{index}}"
+      }
+    },
     "description": "Rozmieść wielokrotnego użytku dane kreatywne i etapy generowania na wizualnym obszarze roboczym.",
     "create": "Utwórz przepływ",
     "createDescription": "Nadaj nowemu wizualnemu przepływowi jasną nazwę.",

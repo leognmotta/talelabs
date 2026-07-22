@@ -41,6 +41,20 @@
   },
   "flows": {
     "actionFailed": "L’action sur le Flux n’a pas pu aboutir.",
+    "promptComposer": {
+      "empty": "Aucun média sélectionné",
+      "groups": {
+        "audio": "Audio",
+        "image": "Images",
+        "video": "Vidéo"
+      },
+      "invalid": "Cette référence ne correspond plus à une entrée sélectionnée. Choisissez une autre référence.",
+      "references": {
+        "audio": "audio {{index}}",
+        "image": "image {{index}}",
+        "video": "vidéo {{index}}"
+      }
+    },
     "description": "Organisez les ressources créatives réutilisables et les étapes de génération sur un canevas visuel.",
     "create": "Créer un Flux",
     "createDescription": "Donnez un nom clair à votre nouveau workflow visuel.",

@@ -41,6 +41,20 @@
   },
   "flows": {
     "actionFailed": "Acțiunea asupra fluxului nu a putut fi finalizată.",
+    "promptComposer": {
+      "empty": "Niciun fișier media selectat",
+      "groups": {
+        "audio": "Audio",
+        "image": "Imagini",
+        "video": "Video"
+      },
+      "invalid": "Această referință nu mai corespunde unei intrări selectate. Alege altă referință.",
+      "references": {
+        "audio": "audio {{index}}",
+        "image": "imagine {{index}}",
+        "video": "video {{index}}"
+      }
+    },
     "description": "Aranjează intrări creative reutilizabile și pași de generare pe o pânză vizuală.",
     "create": "Creează flux",
     "createDescription": "Alege un nume clar pentru noul flux de lucru vizual.",

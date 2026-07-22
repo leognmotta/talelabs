@@ -41,6 +41,20 @@
   },
   "flows": {
     "actionFailed": "The Flow action could not be completed.",
+    "promptComposer": {
+      "empty": "No selected media inputs",
+      "groups": {
+        "audio": "Audio",
+        "image": "Images",
+        "video": "Video"
+      },
+      "invalid": "This reference no longer matches a selected input. Choose another reference.",
+      "references": {
+        "audio": "audio {{index}}",
+        "image": "image {{index}}",
+        "video": "video {{index}}"
+      }
+    },
     "description": "Arrange reusable creative inputs and generation steps on a visual canvas.",
     "create": "Create Flow",
     "createDescription": "Give your new visual workflow a clear name.",

@@ -41,6 +41,20 @@
   },
   "flows": {
     "actionFailed": "De workflowactie kon niet worden voltooid.",
+    "promptComposer": {
+      "empty": "Geen media geselecteerd",
+      "groups": {
+        "audio": "Audio",
+        "image": "Afbeeldingen",
+        "video": "Video"
+      },
+      "invalid": "Deze verwijzing komt niet meer overeen met een geselecteerde invoer. Kies een andere verwijzing.",
+      "references": {
+        "audio": "audio {{index}}",
+        "image": "afbeelding {{index}}",
+        "video": "video {{index}}"
+      }
+    },
     "description": "Orden herbruikbare creatieve invoer en generatiestappen op een visueel canvas.",
     "create": "Workflow maken",
     "createDescription": "Geef je nieuwe visuele workflow een duidelijke naam.",

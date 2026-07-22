@@ -41,6 +41,20 @@
   },
   "flows": {
     "actionFailed": "No se pudo completar la acción del Flujo.",
+    "promptComposer": {
+      "empty": "No hay contenido multimedia seleccionado",
+      "groups": {
+        "audio": "Audio",
+        "image": "Imágenes",
+        "video": "Vídeo"
+      },
+      "invalid": "Esta referencia ya no coincide con una entrada seleccionada. Elige otra referencia.",
+      "references": {
+        "audio": "audio {{index}}",
+        "image": "imagen {{index}}",
+        "video": "vídeo {{index}}"
+      }
+    },
     "description": "Organiza entradas creativas reutilizables y pasos de generación en un lienzo visual.",
     "create": "Crear Flujo",
     "createDescription": "Pon un nombre claro a tu nuevo flujo de trabajo visual.",

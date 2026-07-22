@@ -41,6 +41,20 @@
   },
   "flows": {
     "actionFailed": "Non è stato possibile completare l’azione sul Flusso.",
+    "promptComposer": {
+      "empty": "Nessun contenuto multimediale selezionato",
+      "groups": {
+        "audio": "Audio",
+        "image": "Immagini",
+        "video": "Video"
+      },
+      "invalid": "Questo riferimento non corrisponde più a un input selezionato. Scegli un altro riferimento.",
+      "references": {
+        "audio": "audio {{index}}",
+        "image": "immagine {{index}}",
+        "video": "video {{index}}"
+      }
+    },
     "description": "Organizza input creativi riutilizzabili e passaggi di generazione su una tela visuale.",
     "create": "Crea Flusso",
     "createDescription": "Assegna un nome chiaro al nuovo flusso di lavoro visuale.",

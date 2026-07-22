@@ -41,6 +41,20 @@
   },
   "flows": {
     "actionFailed": "Die Workflow-Aktion konnte nicht abgeschlossen werden.",
+    "promptComposer": {
+      "empty": "Keine Medien ausgewählt",
+      "groups": {
+        "audio": "Audio",
+        "image": "Bilder",
+        "video": "Video"
+      },
+      "invalid": "Diese Referenz entspricht keiner ausgewählten Eingabe mehr. Wähle eine andere Referenz.",
+      "references": {
+        "audio": "Audio {{index}}",
+        "image": "Bild {{index}}",
+        "video": "Video {{index}}"
+      }
+    },
     "description": "Ordne wiederverwendbare kreative Eingaben und Generierungsschritte auf einer visuellen Arbeitsfläche an.",
     "create": "Workflow erstellen",
     "createDescription": "Gib deinem neuen visuellen Workflow einen eindeutigen Namen.",
