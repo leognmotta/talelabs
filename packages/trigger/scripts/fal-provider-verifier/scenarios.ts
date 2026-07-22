@@ -27,6 +27,27 @@ import { defaultSettings } from '../openrouter-provider-verifier/settings.js'
 import { fakeFalProvider } from './fake-provider.js'
 import { currentFalRoutes, pinnedFalRoute } from './routes.js'
 
+function exercisedInputMappings(
+  route: ReturnType<typeof currentFalRoutes>[number],
+) {
+  const omittedSlotIds = new Set<string>()
+  for (const contract of Object.values(route.operation.inputs)) {
+    for (const slotId of contract.oneOf?.slice(1) ?? [])
+      omittedSlotIds.add(slotId)
+  }
+  return route.binding.requestProfile.inputMappings.filter(
+    mapping => !omittedSlotIds.has(mapping.targetSlotId),
+  )
+}
+
+function exercisedOrderedInputs(
+  route: ReturnType<typeof currentFalRoutes>[number],
+) {
+  return exercisedInputMappings(route).map(
+    mapping => mediaInput(mapping.targetSlotId, mapping.mediaType),
+  )
+}
+
 async function exerciseQueueLifecycle(
   adapter: NormalizedGenerationProviderAdapter,
   route: ReturnType<typeof currentFalRoutes>[number],
@@ -35,9 +56,7 @@ async function exerciseQueueLifecycle(
     settings?: Record<string, boolean | number | string>
   } = {},
 ) {
-  const orderedInputs = route.binding.requestProfile.inputMappings.map(
-    mapping => mediaInput(mapping.targetSlotId, mapping.mediaType),
-  )
+  const orderedInputs = exercisedOrderedInputs(route)
   const outputCount = input.outputCount ?? 1
   const submission = await adapter.submit(
     providerRequest({
@@ -125,7 +144,7 @@ function assertRequestShape(
   }
   if (profile.kind === 'image' && profile.requestedCountField)
     expected[profile.requestedCountField] = outputCount
-  for (const mapping of profile.inputMappings) {
+  for (const mapping of exercisedInputMappings(route)) {
     const url = `https://signed.invalid/asset-${mapping.mediaType}-${mapping.targetSlotId}`
     expected[mapping.field] = mapping.cardinality === 'single' ? url : [url]
   }
@@ -282,9 +301,7 @@ export async function verifyFalManagedCancellationLifecycle() {
       submitted = true
     },
     request: providerRequest({
-      orderedInputs: route.binding.requestProfile.inputMappings.map(
-        mapping => mediaInput(mapping.targetSlotId, mapping.mediaType),
-      ),
+      orderedInputs: exercisedOrderedInputs(route),
       route,
     }),
     resolvedAdapter: {
@@ -309,9 +326,7 @@ export async function verifyFalManagedCancellationLifecycle() {
   const resumed = await runGenerationProviderLifecycle({
     providerSubmittedAt: new Date(),
     request: providerRequest({
-      orderedInputs: route.binding.requestProfile.inputMappings.map(
-        mapping => mediaInput(mapping.targetSlotId, mapping.mediaType),
-      ),
+      orderedInputs: exercisedOrderedInputs(route),
       route,
     }),
     resolvedAdapter: {
@@ -357,9 +372,7 @@ export async function verifyFalTerminalErrorClassification() {
     runGenerationProviderLifecycle({
       beforeSubmit: async () => undefined,
       request: providerRequest({
-        orderedInputs: route.binding.requestProfile.inputMappings.map(
-          mapping => mediaInput(mapping.targetSlotId, mapping.mediaType),
-        ),
+        orderedInputs: exercisedOrderedInputs(route),
         route,
       }),
       resolvedAdapter: {

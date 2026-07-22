@@ -13,17 +13,20 @@ import { fakeFalProvider } from './fake-provider.js'
 import { currentFalRoutes } from './routes.js'
 
 async function captureFalSubmission(input: {
-  mediaType?: 'audio' | 'video'
   route: ReturnType<typeof currentFalRoutes>[number]
   settings?: Record<string, boolean | number | string>
+  targetSlotId?: string
 }) {
   const provider = fakeFalProvider({ mediaType: 'audio' })
-  const orderedInputs = input.route.binding.requestProfile.inputMappings.map(
-    mapping => mediaInput(
-      mapping.targetSlotId,
-      input.mediaType ?? mapping.mediaType,
-    ),
-  )
+  const mappings = input.targetSlotId
+    ? input.route.binding.requestProfile.inputMappings.filter(
+        mapping => mapping.targetSlotId === input.targetSlotId,
+      )
+    : input.route.binding.requestProfile.inputMappings
+  const orderedInputs = mappings.map(mapping => mediaInput(
+    mapping.targetSlotId,
+    mapping.mediaType,
+  ))
   await createFalProviderAdapter({
     binding: input.route.binding,
     client: provider.client,
@@ -106,19 +109,22 @@ export async function verifyElevenLabsRequestProfiles() {
   assert.equal('video_url' in voiceChange, false)
 
   const isolationRoute = route('elevenlabs/audio-isolation')
-  const audioIsolation = await captureFalSubmission({ route: isolationRoute })
+  const audioIsolation = await captureFalSubmission({
+    route: isolationRoute,
+    targetSlotId: 'sourceAudio',
+  })
   assert.equal(
     audioIsolation.audio_url,
-    'https://signed.invalid/asset-audio-sourceMedia',
+    'https://signed.invalid/asset-audio-sourceAudio',
   )
   assert.equal('video_url' in audioIsolation, false)
   const videoIsolation = await captureFalSubmission({
-    mediaType: 'video',
     route: isolationRoute,
+    targetSlotId: 'sourceVideo',
   })
   assert.equal(
     videoIsolation.video_url,
-    'https://signed.invalid/asset-video-sourceMedia',
+    'https://signed.invalid/asset-video-sourceVideo',
   )
   assert.equal('audio_url' in videoIsolation, false)
 }
