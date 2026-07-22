@@ -21,15 +21,46 @@ export function currentMockRuntimeOutput(
   visiting: ReadonlySet<string>,
   resolveRequest: FlowMockRequestResolver,
 ): FlowGenerationPreviewOutput | null {
+  return currentMockRuntimeOutputs(
+    state,
+    nodeId,
+    visiting,
+    resolveRequest,
+  )[0] ?? null
+}
+
+/** Returns every current output in provider order for prompt-input selection. */
+export function currentMockRuntimeOutputs(
+  state: FlowMockRuntimeState,
+  nodeId: string,
+  visiting: ReadonlySet<string>,
+  resolveRequest: FlowMockRequestResolver,
+): readonly FlowGenerationPreviewOutput[] {
   const preview = state.input.previews[nodeId]
   if (preview?.status !== 'succeeded')
-    return null
-  if (preview.resultSets?.length)
-    return preview.output
+    return []
   const request = resolveRequest(nodeId, visiting)
   if (!request || preview.fingerprint !== fingerprintGenerationMockRequest(request))
-    return null
-  return preview.output
+    return []
+  if (preview.resultSets?.length) {
+    const collections = preview.resultSets.map(resultSet => (
+      resultSet.outputs.map(result => result.output)
+    ))
+    const commonLength = Math.min(...collections.map(outputs => outputs.length))
+    const compatible = Array.from({ length: commonLength }, (_, index) => (
+      collections.every(collection => (
+        collection[index]?.kind === collections[0]?.[index]?.kind
+        && collection[index]?.valueType === collections[0]?.[index]?.valueType
+        && (
+          collection[index]?.kind !== 'media'
+          || collections[0]?.[index]?.kind !== 'media'
+          || collection[index].mediaType === collections[0][index].mediaType
+        )
+      ))
+    )).every(Boolean)
+    return compatible ? collections[0]!.slice(0, commonLength) : []
+  }
+  return preview.output ? [preview.output] : []
 }
 
 /** Resolves text supplied through one connected upstream node output. */

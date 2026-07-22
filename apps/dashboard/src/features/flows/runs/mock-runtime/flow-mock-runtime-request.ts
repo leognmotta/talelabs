@@ -4,8 +4,10 @@ import type { GenerationMockRequest } from '../../generation/flow-generation-pre
 import type { FlowMockRuntimeState } from './flow-mock-runtime-state'
 
 import {
+  coercePromptTemplate,
   isGenerationNodeType,
   resolveAdaptiveGenerationState,
+  resolvePromptTemplate,
 } from '@talelabs/flows'
 import { getCanvasGenerationModel } from '../../generation/flow-generation-contract'
 import {
@@ -14,7 +16,10 @@ import {
 } from '../../generation/flow-generation-preview-request'
 import { getFlowInputState } from '../../generation/flow-input-state'
 import { incomingMockRuntimeEdges } from './flow-mock-runtime-edges'
-import { executableMockRuntimeInputCount } from './flow-mock-runtime-inputs'
+import {
+  executableMockRuntimeInputCount,
+  promptMockRuntimeInputs,
+} from './flow-mock-runtime-inputs'
 import { generationInputSlots } from './flow-mock-runtime-node-scope'
 import {
   connectedMockRuntimeText,
@@ -46,23 +51,45 @@ export function createMockRuntimeRequest(
     const slotId = edge.targetHandle!
     connectionCounts[slotId] = (connectionCounts[slotId] ?? 0) + 1
   }
-  const textInputs = Object.fromEntries(
-    ['instructions', 'lyrics', 'prompt'].map((slotId) => {
-      const connected = connectedMockRuntimeText(
+  const slots = generationInputSlots(node)
+  const connectedText = Object.fromEntries(
+    ['instructions', 'lyrics', 'prompt'].map(slotId => [
+      slotId,
+      connectedMockRuntimeText(
         state,
         nodeId,
         slotId,
         nextVisiting,
         resolveRequest,
-      )
-      return [slotId, connected ?? String(node.data[slotId] ?? '')]
-    }),
+      ),
+    ]),
   )
-  const slots = generationInputSlots(node)
+  const promptResolution = connectedText.prompt === null
+    ? resolvePromptTemplate({
+        inputs: promptMockRuntimeInputs(
+          state,
+          nodeId,
+          slots,
+          nextVisiting,
+          resolveRequest,
+        ),
+        template: coercePromptTemplate(node.data.prompt),
+      })
+    : null
+  if (promptResolution && !promptResolution.ok) {
+    state.requestCache.set(nodeId, null)
+    return null
+  }
+  const textInputs = {
+    instructions: connectedText.instructions
+      ?? String(node.data.instructions ?? ''),
+    lyrics: connectedText.lyrics ?? String(node.data.lyrics ?? ''),
+    prompt: connectedText.prompt ?? promptResolution?.resolvedText ?? '',
+  }
   const itemCounts = Object.fromEntries(slots.map(slot => [
     slot.id,
     ['instructions', 'lyrics', 'prompt'].includes(slot.id)
-      ? (String(textInputs[slot.id] ?? '').trim().length > 0 ? 1 : 0)
+      ? (String((textInputs as Record<string, string>)[slot.id] ?? '').trim().length > 0 ? 1 : 0)
       : executableMockRuntimeInputCount(
           state,
           nodeId,
