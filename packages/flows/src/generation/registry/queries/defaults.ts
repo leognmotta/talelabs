@@ -1,8 +1,11 @@
+/** Default persisted node data derived from the canonical generation registry. */
+
 import type {
   GenerationNodeType,
   GenerationOutputType,
 } from '../types.js'
 
+import { promptTemplateFromText } from '../../../prompts/schema.js'
 import {
   DEFAULT_GENERATION_MODEL_IDS,
   DEFAULT_GENERATION_MODEL_IDS_BY_NODE,
@@ -14,6 +17,11 @@ import {
   getGenerationOperationsForNodeType,
 } from './nodes.js'
 
+function emptyPromptTemplate() {
+  return promptTemplateFromText('')
+}
+
+/** Builds current default data for the legacy media-family node entrypoint. */
 export function getDefaultGenerationData(mediaType: GenerationOutputType) {
   const model
     = GENERATION_MODEL_REGISTRY[DEFAULT_GENERATION_MODEL_IDS[mediaType]]
@@ -21,8 +29,12 @@ export function getDefaultGenerationData(mediaType: GenerationOutputType) {
     inputSelections: Object.fromEntries(
       model.inputSlots.map(slot => [slot.id, { mode: 'auto' as const }]),
     ),
-    ...(mediaType === 'image' || mediaType === 'video' ? { prompt: '' } : {}),
-    ...(mediaType === 'text' ? { instructions: '', prompt: '' } : {}),
+    ...(mediaType === 'image' || mediaType === 'video'
+      ? { prompt: emptyPromptTemplate() }
+      : {}),
+    ...(mediaType === 'text'
+      ? { instructions: '', prompt: emptyPromptTemplate() }
+      : {}),
     modelContractVersion: GENERATION_MODEL_CONTRACT_VERSION,
     modelId: model.id,
     operationId: model.defaultOperationId,
@@ -32,6 +44,7 @@ export function getDefaultGenerationData(mediaType: GenerationOutputType) {
   }
 }
 
+/** Builds current default data for one model-adaptive generation node family. */
 export function getDefaultGenerationDataForNodeType(
   nodeType: Exclude<GenerationNodeType, 'audioGeneration'>,
 ) {
@@ -50,12 +63,16 @@ export function getDefaultGenerationDataForNodeType(
       ]),
     ),
     ...(nodeType === 'imageGeneration' || nodeType === 'videoGeneration'
-      ? { prompt: '' }
+      ? { prompt: emptyPromptTemplate() }
       : {}),
-    ...(nodeType === 'llm' ? { instructions: '', prompt: '' } : {}),
-    ...(nodeType === 'musicGeneration' ? { lyrics: '', prompt: '' } : {}),
+    ...(nodeType === 'llm'
+      ? { instructions: '', prompt: emptyPromptTemplate() }
+      : {}),
+    ...(nodeType === 'musicGeneration'
+      ? { lyrics: '', prompt: emptyPromptTemplate() }
+      : {}),
     ...(nodeType === 'soundEffectGeneration' || nodeType === 'speechGeneration'
-      ? { prompt: '' }
+      ? { prompt: emptyPromptTemplate() }
       : {}),
     modelContractVersion: GENERATION_MODEL_CONTRACT_VERSION,
     modelId: model.id,
@@ -66,6 +83,7 @@ export function getDefaultGenerationDataForNodeType(
   }
 }
 
+/** Builds the current image-generation defaults. */
 export function getDefaultImageGenerationData() {
   return getDefaultGenerationData('image')
 }

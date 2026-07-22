@@ -14,6 +14,7 @@ import {
   isGenerationSettingValueValid,
   matchesGenerationCondition,
 } from '../../generation/registry/index.js'
+import { PromptTemplateSchema } from '../../prompts/schema.js'
 
 /** Strict schema for node types with no persisted configuration. */
 export const EmptyNodeDataSchema = z.strictObject({})
@@ -320,13 +321,23 @@ export const ImageGenerationNodeDataSchemaV6
   = ImageGenerationNodeDataSchemaV6Base.superRefine((data, context) => {
     refineGenerationNodeData(data, context, 'image')
   })
-/** Current image base with canonical provider-neutral identity and crop. */
+/** Version 7 image base with canonical provider-neutral identity and crop. */
 export const ImageGenerationNodeDataSchemaV7Base = ImageGenerationNodeDataSchemaV6Base.extend({
   crop: FlowImageCropSchema.optional(),
 })
-/** Current canonical image generation node data schema. */
+/** Version 7 image schema retained for structured-prompt migration. */
 export const ImageGenerationNodeDataSchemaV7
   = ImageGenerationNodeDataSchemaV7Base.superRefine((data, context) => {
+    refineGenerationNodeData(data, context, 'image')
+  })
+/** Current image base with a structured provider-neutral prompt. */
+export const ImageGenerationNodeDataSchemaV8Base = GenerationNodeDataSchemaBase.extend({
+  crop: FlowImageCropSchema.optional(),
+  prompt: PromptTemplateSchema,
+})
+/** Current canonical image generation node data schema. */
+export const ImageGenerationNodeDataSchemaV8
+  = ImageGenerationNodeDataSchemaV8Base.superRefine((data, context) => {
     refineGenerationNodeData(data, context, 'image')
   })
 /** Version 1 video-node schema retained for saved draft migration. */
@@ -343,15 +354,24 @@ export const VideoGenerationNodeDataSchemaV1
   })
 /** Version 2 video-node schema retained for saved draft migration. */
 export const VideoGenerationNodeDataSchemaV2 = createGenerationNodeDataSchema('video')
-/** Current video base with canonical provider-neutral model identity. */
+/** Version 3 video base with canonical provider-neutral model identity. */
 export const VideoGenerationNodeDataSchemaV3Base = GenerationNodeDataSchemaBase.extend(
   {
     prompt: z.string().max(16_000),
   },
 )
-/** Current canonical video generation node data schema. */
+/** Version 3 video schema retained for structured-prompt migration. */
 export const VideoGenerationNodeDataSchemaV3
   = VideoGenerationNodeDataSchemaV3Base.superRefine((data, context) => {
+    refineGenerationNodeData(data, context, 'video')
+  })
+/** Current video base with a structured provider-neutral prompt. */
+export const VideoGenerationNodeDataSchemaV4Base = GenerationNodeDataSchemaBase.extend({
+  prompt: PromptTemplateSchema,
+})
+/** Current canonical video generation node data schema. */
+export const VideoGenerationNodeDataSchemaV4
+  = VideoGenerationNodeDataSchemaV4Base.superRefine((data, context) => {
     refineGenerationNodeData(data, context, 'video')
   })
 /** Version 1 generic audio-node schema retained for saved draft migration. */
@@ -368,12 +388,17 @@ export const AudioGenerationNodeDataSchemaV1
   })
 /** Current canonical generic audio generation node data schema. */
 export const AudioGenerationNodeDataSchemaV2 = createGenerationNodeDataSchema('audio')
-/** Current canonical speech generation node data schema. */
+/** Version 1 speech schema retained for structured-prompt migration. */
 export const SpeechGenerationNodeDataSchemaV1 = createIntentGenerationNodeDataSchema(
   'speechGeneration',
   { prompt: z.string().max(16_000) },
 )
-/** Current canonical music generation node data schema. */
+/** Current canonical speech data with a structured prompt. */
+export const SpeechGenerationNodeDataSchemaV2 = createIntentGenerationNodeDataSchema(
+  'speechGeneration',
+  { prompt: PromptTemplateSchema },
+)
+/** Version 1 music schema retained for structured-prompt migration. */
 export const MusicGenerationNodeDataSchemaV1 = createIntentGenerationNodeDataSchema(
   'musicGeneration',
   {
@@ -381,11 +406,25 @@ export const MusicGenerationNodeDataSchemaV1 = createIntentGenerationNodeDataSch
     prompt: z.string().max(16_000),
   },
 )
-/** Current canonical sound-effect generation node data schema. */
+/** Current canonical music data with structured prompt and plain lyrics. */
+export const MusicGenerationNodeDataSchemaV2 = createIntentGenerationNodeDataSchema(
+  'musicGeneration',
+  {
+    lyrics: z.string().max(16_000),
+    prompt: PromptTemplateSchema,
+  },
+)
+/** Version 1 sound-effect schema retained for structured-prompt migration. */
 export const SoundEffectGenerationNodeDataSchemaV1
   = createIntentGenerationNodeDataSchema(
     'soundEffectGeneration',
     { prompt: z.string().max(16_000) },
+  )
+/** Current canonical sound-effect data with a structured prompt. */
+export const SoundEffectGenerationNodeDataSchemaV2
+  = createIntentGenerationNodeDataSchema(
+    'soundEffectGeneration',
+    { prompt: PromptTemplateSchema },
   )
 /** Current canonical voice-changer node data schema. */
 export const VoiceChangerNodeDataSchemaV1 = createIntentGenerationNodeDataSchema(
@@ -395,14 +434,26 @@ export const VoiceChangerNodeDataSchemaV1 = createIntentGenerationNodeDataSchema
 export const VoiceIsolationNodeDataSchemaV1 = createIntentGenerationNodeDataSchema(
   'voiceIsolation',
 )
-/** Current LLM base with provider-neutral text-generation fields. */
+/** Version 1 LLM base retained for structured-prompt migration. */
 export const LlmNodeDataSchemaV1Base = GenerationNodeDataSchemaBase.extend({
   instructions: z.string().max(16_000),
   locked: z.boolean(),
   prompt: z.string().max(16_000),
 })
-/** Current canonical LLM node data schema. */
+/** Version 1 LLM schema retained for structured-prompt migration. */
 export const LlmNodeDataSchemaV1 = LlmNodeDataSchemaV1Base.superRefine(
+  (data, context) => {
+    refineGenerationNodeData(data, context, 'text')
+  },
+)
+/** Current LLM base with plain instructions and a structured prompt. */
+export const LlmNodeDataSchemaV2Base = GenerationNodeDataSchemaBase.extend({
+  instructions: z.string().max(16_000),
+  locked: z.boolean(),
+  prompt: PromptTemplateSchema,
+})
+/** Current canonical LLM node data schema. */
+export const LlmNodeDataSchemaV2 = LlmNodeDataSchemaV2Base.superRefine(
   (data, context) => {
     refineGenerationNodeData(data, context, 'text')
   },

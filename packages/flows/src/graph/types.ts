@@ -1,6 +1,7 @@
 /** Core Flow graph value types: node types, handles, and graph shapes. */
 
 import type { z } from 'zod'
+import type { PromptTemplate } from '../prompts/contracts.js'
 
 /** Every registered Flow node type in the graph vocabulary. */
 export type FlowNodeType
@@ -178,24 +179,38 @@ export interface GenerationNodeData {
 }
 
 /** Image generation node data. */
-export type ImageGenerationNodeData = GenerationNodeData & { prompt: string }
+export type ImageGenerationNodeData = GenerationNodeData & {
+  /** Structured inline prompt resolved before provider execution. */
+  prompt: PromptTemplate
+}
 /** LLM node data: instructions plus prompt. */
 export type LlmNodeData = GenerationNodeData & {
+  /** Plain system instructions kept separate from the user prompt. */
   instructions: string
-  prompt: string
+  /** Structured inline prompt resolved before provider execution. */
+  prompt: PromptTemplate
 }
 /** Video generation node data. */
-export type VideoGenerationNodeData = GenerationNodeData & { prompt: string }
+export type VideoGenerationNodeData = GenerationNodeData & {
+  /** Structured inline prompt resolved before provider execution. */
+  prompt: PromptTemplate
+}
 /** Speech generation node data. */
-export type SpeechGenerationNodeData = GenerationNodeData & { prompt: string }
+export type SpeechGenerationNodeData = GenerationNodeData & {
+  /** Structured inline script resolved before provider execution. */
+  prompt: PromptTemplate
+}
 /** Music generation node data: lyrics plus prompt. */
 export type MusicGenerationNodeData = GenerationNodeData & {
+  /** Plain lyrics retained outside the structured prompt editor. */
   lyrics: string
-  prompt: string
+  /** Structured creative direction resolved before provider execution. */
+  prompt: PromptTemplate
 }
 /** Sound-effect generation node data. */
 export type SoundEffectGenerationNodeData = GenerationNodeData & {
-  prompt: string
+  /** Structured sound description resolved before provider execution. */
+  prompt: PromptTemplate
 }
 /** Voice-changer node data. */
 export type VoiceChangerNodeData = GenerationNodeData

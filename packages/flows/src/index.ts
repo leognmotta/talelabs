@@ -44,6 +44,9 @@ export {
 } from './graph/validation-nodes.js'
 export * from './graph/validation.js'
 export * from './nodes/registry/index.js'
+export * from './prompts/contracts.js'
+export * from './prompts/resolve.js'
+export * from './prompts/schema.js'
 export * from './runtime/index.js'
 
 const startupErrors = [

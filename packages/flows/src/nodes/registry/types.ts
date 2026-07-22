@@ -23,16 +23,22 @@ import {
   ImageGenerationNodeDataSchemaV5,
   ImageGenerationNodeDataSchemaV6,
   ImageGenerationNodeDataSchemaV7,
+  ImageGenerationNodeDataSchemaV8,
   LlmNodeDataSchemaV1,
+  LlmNodeDataSchemaV2,
   LockedNodeDataSchema,
   MusicGenerationNodeDataSchemaV1,
+  MusicGenerationNodeDataSchemaV2,
   SoundEffectGenerationNodeDataSchemaV1,
+  SoundEffectGenerationNodeDataSchemaV2,
   SpeechGenerationNodeDataSchemaV1,
+  SpeechGenerationNodeDataSchemaV2,
   TextNodeDataSchemaV1,
   TextNodeDataSchemaV2,
   VideoGenerationNodeDataSchemaV1,
   VideoGenerationNodeDataSchemaV2,
   VideoGenerationNodeDataSchemaV3,
+  VideoGenerationNodeDataSchemaV4,
   VoiceChangerNodeDataSchemaV1,
   VoiceIsolationNodeDataSchemaV1,
 } from '../data/schemas.js'
@@ -53,6 +59,14 @@ import {
 import {
   addGenerationModelContractVersion,
 } from '../migrations/index.js'
+import {
+  migrateImageGenerationNodeDataV7,
+  migrateLlmNodeDataV1,
+  migrateMusicGenerationNodeDataV1,
+  migrateSoundEffectGenerationNodeDataV1,
+  migrateSpeechGenerationNodeDataV1,
+  migrateVideoGenerationNodeDataV3,
+} from '../migrations/prompts.js'
 import { migrateVideoGenerationNodeDataV2 } from '../migrations/video.js'
 
 const textHandles = Object.freeze([
@@ -144,7 +158,7 @@ export const FLOW_NODE_TYPE_REGISTRY = Object.freeze({
     staticHandles: elementOutputHandles,
   },
   imageGeneration: {
-    currentVersion: 7,
+    currentVersion: 8,
     id: 'imageGeneration',
     migrations: {
       1: migrateImageGenerationNodeDataV1,
@@ -153,6 +167,7 @@ export const FLOW_NODE_TYPE_REGISTRY = Object.freeze({
       4: addGenerationModelContractVersion,
       5: migrateImageGenerationNodeDataV5,
       6: migrateImageGenerationNodeDataV6,
+      7: migrateImageGenerationNodeDataV7,
     },
     reference: 'none',
     schemas: {
@@ -163,39 +178,49 @@ export const FLOW_NODE_TYPE_REGISTRY = Object.freeze({
       5: ImageGenerationNodeDataSchemaV5,
       6: ImageGenerationNodeDataSchemaV6,
       7: ImageGenerationNodeDataSchemaV7,
+      8: ImageGenerationNodeDataSchemaV8,
     },
     staticHandles: imageGenerationOutputHandles,
   },
   llm: {
-    currentVersion: 1,
+    currentVersion: 2,
     id: 'llm',
-    migrations: {},
+    migrations: { 1: migrateLlmNodeDataV1 },
     reference: 'none',
-    schemas: { 1: LlmNodeDataSchemaV1 },
+    schemas: { 1: LlmNodeDataSchemaV1, 2: LlmNodeDataSchemaV2 },
     staticHandles: llmOutputHandles,
   },
   musicGeneration: {
-    currentVersion: 1,
+    currentVersion: 2,
     id: 'musicGeneration',
-    migrations: {},
+    migrations: { 1: migrateMusicGenerationNodeDataV1 },
     reference: 'none',
-    schemas: { 1: MusicGenerationNodeDataSchemaV1 },
+    schemas: {
+      1: MusicGenerationNodeDataSchemaV1,
+      2: MusicGenerationNodeDataSchemaV2,
+    },
     staticHandles: audioGenerationOutputHandles,
   },
   soundEffectGeneration: {
-    currentVersion: 1,
+    currentVersion: 2,
     id: 'soundEffectGeneration',
-    migrations: {},
+    migrations: { 1: migrateSoundEffectGenerationNodeDataV1 },
     reference: 'none',
-    schemas: { 1: SoundEffectGenerationNodeDataSchemaV1 },
+    schemas: {
+      1: SoundEffectGenerationNodeDataSchemaV1,
+      2: SoundEffectGenerationNodeDataSchemaV2,
+    },
     staticHandles: audioGenerationOutputHandles,
   },
   speechGeneration: {
-    currentVersion: 1,
+    currentVersion: 2,
     id: 'speechGeneration',
-    migrations: {},
+    migrations: { 1: migrateSpeechGenerationNodeDataV1 },
     reference: 'none',
-    schemas: { 1: SpeechGenerationNodeDataSchemaV1 },
+    schemas: {
+      1: SpeechGenerationNodeDataSchemaV1,
+      2: SpeechGenerationNodeDataSchemaV2,
+    },
     staticHandles: audioGenerationOutputHandles,
   },
   text: {
@@ -209,17 +234,19 @@ export const FLOW_NODE_TYPE_REGISTRY = Object.freeze({
     staticHandles: textHandles,
   },
   videoGeneration: {
-    currentVersion: 3,
+    currentVersion: 4,
     id: 'videoGeneration',
     migrations: {
       1: addGenerationModelContractVersion,
       2: migrateVideoGenerationNodeDataV2,
+      3: migrateVideoGenerationNodeDataV3,
     },
     reference: 'none',
     schemas: {
       1: VideoGenerationNodeDataSchemaV1,
       2: VideoGenerationNodeDataSchemaV2,
       3: VideoGenerationNodeDataSchemaV3,
+      4: VideoGenerationNodeDataSchemaV4,
     },
     staticHandles: videoGenerationOutputHandles,
   },
