@@ -12,6 +12,7 @@ import type { PlannedProviderCostNode } from '../src/domain/runs/provider-cost-p
 
 import assert from 'node:assert/strict'
 
+import { InMemoryCacheStore } from '@talelabs/cache'
 import {
   getCatalogProviderBindings,
   MODEL_CATALOG_MODELS,
@@ -24,6 +25,7 @@ import { requireCompleteProviderCostEstimate } from '../src/domain/runs/provider
 import { resolveProviderCostNodeRouting } from '../src/domain/runs/provider-cost-routing.js'
 import { publicRunCostEstimate } from '../src/domain/runs/provider-cost.service.js'
 import { HttpError } from '../src/middleware/error.js'
+import { verifyProviderPricingCancellation } from './verify-provider-pricing-cancellation.js'
 
 const LIVE = process.argv.includes('--live')
 const TEXT_CHARACTER_COUNT = 1000
@@ -228,7 +230,9 @@ function videoPricingSkus(): Record<string, string> {
 }
 
 const bindings = MODEL_CATALOG_MODELS.flatMap(model => model.bindings)
+let fakePricingRequestCount = 0
 const fakeFetch: typeof globalThis.fetch = async (request) => {
+  fakePricingRequestCount += 1
   const url = new URL(String(request))
   if (url.hostname === 'api.fal.ai') {
     return Response.json({
@@ -289,11 +293,92 @@ const fakeFetch: typeof globalThis.fetch = async (request) => {
   return new Response('not found', { status: 404 })
 }
 
+const pricingCache = new InMemoryCacheStore({ maxEntries: 20_000 })
 const pricing = await loadProviderPricingSnapshot({
   bindings,
-  ...(LIVE ? {} : { fetch: fakeFetch, resolveApiKey: () => 'fixture-key' }),
+  ...(LIVE
+    ? {}
+    : {
+        cache: pricingCache,
+        fetch: fakeFetch,
+        resolveApiKey: () => 'fixture-key',
+      }),
   now: () => new Date('2026-07-21T12:00:00.000Z'),
 })
+if (!LIVE) {
+  const coldPricingRequestCount = fakePricingRequestCount
+  const repeatedPricing = await loadProviderPricingSnapshot({
+    bindings,
+    cache: pricingCache,
+    fetch: fakeFetch,
+    now: () => new Date('2026-07-21T12:00:00.000Z'),
+    resolveApiKey: () => 'fixture-key',
+  })
+  assert.deepEqual(repeatedPricing, pricing)
+  assert.equal(fakePricingRequestCount, coldPricingRequestCount)
+
+  const concurrentCache = new InMemoryCacheStore({ maxEntries: 20_000 })
+  const concurrentStart = fakePricingRequestCount
+  const concurrentLoads = await Promise.all([
+    loadProviderPricingSnapshot({
+      bindings,
+      cache: concurrentCache,
+      fetch: fakeFetch,
+      now: () => new Date('2026-07-21T12:00:00.000Z'),
+      resolveApiKey: () => 'fixture-key',
+    }),
+    loadProviderPricingSnapshot({
+      bindings,
+      cache: concurrentCache,
+      fetch: fakeFetch,
+      now: () => new Date('2026-07-21T12:00:00.000Z'),
+      resolveApiKey: () => 'fixture-key',
+    }),
+  ])
+  const concurrentRequestCount = fakePricingRequestCount - concurrentStart
+  const isolatedCache = new InMemoryCacheStore({ maxEntries: 20_000 })
+  const isolatedStart = fakePricingRequestCount
+  const isolatedPricing = await loadProviderPricingSnapshot({
+    bindings,
+    cache: isolatedCache,
+    fetch: fakeFetch,
+    now: () => new Date('2026-07-21T12:00:00.000Z'),
+    resolveApiKey: () => 'fixture-key',
+  })
+  assert.equal(fakePricingRequestCount - isolatedStart, concurrentRequestCount)
+  assert.deepEqual(concurrentLoads, [isolatedPricing, isolatedPricing])
+
+  const falBinding = bindings.find(binding => binding.provider === 'fal')!
+  const negativeCache = new InMemoryCacheStore({ maxEntries: 10 })
+  let negativePricingRequestCount = 0
+  const missingRateFetch: typeof globalThis.fetch = async () => {
+    negativePricingRequestCount += 1
+    return Response.json({ prices: [] })
+  }
+  const missingRateInput = {
+    bindings: [falBinding],
+    cache: negativeCache,
+    fetch: missingRateFetch,
+    now: () => new Date('2026-07-21T12:00:00.000Z'),
+    resolveApiKey: () => 'fixture-key',
+  }
+  assert.deepEqual(
+    await loadProviderPricingSnapshot(missingRateInput),
+    { rates: [], version: 1 },
+  )
+  const coldNegativeRequestCount = negativePricingRequestCount
+  assert.deepEqual(
+    await loadProviderPricingSnapshot(missingRateInput),
+    { rates: [], version: 1 },
+  )
+  assert.equal(negativePricingRequestCount, coldNegativeRequestCount)
+
+  await verifyProviderPricingCancellation({
+    binding: falBinding,
+    fetch: fakeFetch,
+    requestCount: () => fakePricingRequestCount,
+  })
+}
 const failures: string[] = []
 const formulaExamples = new Map<string, {
   amountUsd: string
@@ -424,5 +509,5 @@ assert.throws(
 )
 
 console.log(
-  `Verified ${estimatedBindingCount} catalog bindings across ${estimatedScenarioCount} configuration scenarios${LIVE ? ' against live pricing metadata' : ` and ${formulaExamples.size + 1} exact formula cases covering every family with fake pricing HTTP`}, Credits cost routing, disabled BYOK estimation with priority routing, and the hard Credits admission gate.`,
+  `Verified ${estimatedBindingCount} catalog bindings across ${estimatedScenarioCount} configuration scenarios${LIVE ? ' against live pricing metadata' : ` and ${formulaExamples.size + 1} exact formula cases covering every family with fake pricing HTTP`}, provider-rate cache reuse, negative caching, abort-safe concurrent miss coalescing, Credits cost routing, disabled BYOK estimation with priority routing, and the hard Credits admission gate.`,
 )
