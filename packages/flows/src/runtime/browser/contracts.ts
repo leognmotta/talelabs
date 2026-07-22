@@ -78,6 +78,15 @@ const normalizedTextPartSchema = z
   .strict()
 const normalizedTextSlotSchema = z
   .object({
+    inputReferences: z.array(z.object({
+      assetId: z.string(),
+      index: nonnegativeInteger,
+      itemKey: z.string(),
+      mediaType: z.enum(['audio', 'image', 'video']),
+      partIndex: nonnegativeInteger,
+      slotId: z.string(),
+      sourceNodeId: z.string(),
+    }).strict()),
     parts: z.array(normalizedTextPartSchema),
     resolvedText: z.string(),
     slotId: z.string(),

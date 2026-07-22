@@ -20,7 +20,9 @@ import {
   GENERATION_CATALOG_REVISION,
   GENERATION_CATALOG_VERSION,
 } from '../../generation/registry/index.js'
+import { resolvePromptTemplate } from '../../prompts/resolve.js'
 import { hashFlowRunJob } from '../serialization/execution-hashes.js'
+import { promptTemplateInputsFromRequest } from '../values/provider-input-selections.js'
 import {
   createRuntimeItem,
   deriveRuntimeItemKey,
@@ -118,6 +120,9 @@ export function expandFlowRunJobs(input: {
       const requestPayload = createPlannedJobRequestPayload({
         catalogRevision: GENERATION_CATALOG_REVISION,
         catalogVersion: GENERATION_CATALOG_VERSION,
+        inputLimits: Object.fromEntries(
+          materialized.model.inputSlots.map(slot => [slot.id, slot.maxItems]),
+        ),
         inputs: plannedInputs,
         itemKey,
         modelContractVersion: String(materialized.node.data.modelContractVersion),
@@ -129,6 +134,37 @@ export function expandFlowRunJobs(input: {
         requestIndex,
         settings: materialized.settings,
       })
+      let promptReferencesValid = true
+      for (const [slotId, template] of Object.entries(
+        requestPayload.promptTemplates ?? {},
+      )) {
+        const connectedText = requestPayload.inputs.some(inputBinding => (
+          inputBinding.targetHandleId === slotId
+          && inputBinding.items.some(item => item.value.kind === 'text')
+        ))
+        if (connectedText)
+          continue
+        const resolution = resolvePromptTemplate({
+          inputs: promptTemplateInputsFromRequest(requestPayload),
+          template,
+        })
+        for (const issue of resolution.issues) {
+          promptReferencesValid = false
+          issues.push({
+            code: issue.code,
+            field: `nodes.${materialized.node.id}.data.${slotId}.parts.${issue.partIndex}`,
+            nodeId: materialized.node.id,
+            params: {
+              index: issue.index,
+              mediaType: issue.mediaType,
+              slotId: issue.slotId,
+            },
+            slotId: issue.slotId,
+          })
+        }
+      }
+      if (!promptReferencesValid)
+        continue
       workItems.push(Object.freeze({
         dimensions: coordinate.dimensions,
         expectedOutputCount: materialized.outputCount,

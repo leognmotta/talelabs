@@ -6,6 +6,7 @@ import type {
   PlannedRunInput,
 } from './planner-contracts.js'
 import { compareStableStrings } from '../../graph/ordering/stable.js'
+import { coercePromptTemplate } from '../../prompts/schema.js'
 
 function normalizedInlineText(node: FlowGraphNode) {
   return Object.freeze(Object.fromEntries(
@@ -34,10 +35,17 @@ function normalizedInputSelections(node: FlowGraphNode) {
   ))
 }
 
+function normalizedPromptTemplates(node: FlowGraphNode) {
+  return node.data.prompt === undefined
+    ? Object.freeze({})
+    : Object.freeze({ prompt: coercePromptTemplate(node.data.prompt) })
+}
+
 /** Canonical, provider-independent request identity used for job hashing. */
 export function createPlannedJobRequestPayload(input: {
   catalogRevision: string
   catalogVersion: number
+  inputLimits: Readonly<Record<string, number>>
   inputs: readonly PlannedRunInput[]
   itemKey: string
   modelContractVersion: string
@@ -53,6 +61,7 @@ export function createPlannedJobRequestPayload(input: {
     catalogRevision: input.catalogRevision,
     catalogVersion: input.catalogVersion,
     inline: normalizedInlineText(input.node),
+    inputLimits: Object.freeze({ ...input.inputLimits }),
     inputSelections: normalizedInputSelections(input.node),
     inputs: Object.freeze(input.inputs.map(plannedInput => Object.freeze({
       edgeId: plannedInput.edgeId,
@@ -68,8 +77,9 @@ export function createPlannedJobRequestPayload(input: {
     nodeId: input.node.id,
     operationId: input.operationId,
     outputCount: input.outputCount,
+    promptTemplates: normalizedPromptTemplates(input.node),
     requestIndex: input.requestIndex,
-    requestPayloadVersion: 3 as const,
+    requestPayloadVersion: 5 as const,
     settings: input.settings,
   })
 }

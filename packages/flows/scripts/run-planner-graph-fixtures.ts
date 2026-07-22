@@ -1,3 +1,5 @@
+/** Canonical graph-node and edge fixtures for run-planner verification. */
+
 import type {
   FlowGraphEdge,
   FlowGraphNode,
@@ -5,10 +7,12 @@ import type {
 } from '../src/index.js'
 
 import {
+  coercePromptTemplate,
   getDefaultNodeData,
   getFlowNodeTypeDefinition,
 } from '../src/index.js'
 
+/** Creates one current-version executable node with a structured prompt. */
 export function generationNode(
   id: string,
   type: Extract<
@@ -19,9 +23,10 @@ export function generationNode(
   position = 0,
 ): FlowGraphNode {
   const definition = getFlowNodeTypeDefinition(type)
+  const prompt = coercePromptTemplate(data.prompt ?? `prompt:${id}`)
   return {
     assetId: null,
-    data: { ...getDefaultNodeData(type), prompt: `prompt:${id}`, ...data },
+    data: { ...getDefaultNodeData(type), ...data, prompt },
     id,
     positionX: position,
     positionY: -position,
@@ -30,6 +35,7 @@ export function generationNode(
   }
 }
 
+/** Creates one current-version Asset or Text source node. */
 export function sourceNode(
   id: string,
   type: 'asset' | 'text',
@@ -49,6 +55,7 @@ export function sourceNode(
   }
 }
 
+/** Creates one deterministically ordered graph edge between fixture nodes. */
 export function edge(
   id: string,
   sourceNodeId: string,

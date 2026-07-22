@@ -20,6 +20,7 @@ import {
 } from './run-planner-assertions.js'
 import { edge, generationNode, sourceNode } from './run-planner-graph-fixtures.js'
 import { plannerInput, priorTextOutput } from './run-planner-input-fixtures.js'
+import { verifyRunPlannerPromptScenarios } from './run-planner-prompt-scenarios.js'
 import { verifyRunPlannerSnapshotScenarios } from './run-planner-snapshot-scenarios.js'
 
 const chainNodes = [
@@ -504,6 +505,7 @@ expectFailure(planFlowRun(plannerInput({
 })), 'run_item_dimension_limit', 'item-dimension limit')
 
 verifyRunPlannerSnapshotScenarios(allPlan)
+verifyRunPlannerPromptScenarios()
 
 if (errors.length > 0)
   throw new Error(`Invalid M5.1 run planner scenarios:\n${errors.join('\n')}`)

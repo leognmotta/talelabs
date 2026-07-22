@@ -1,6 +1,9 @@
+/** Stable errors raised while materializing normalized provider requests. */
+
 export class GenerationProviderRequestMaterializationError extends TypeError {
   readonly code:
     | 'provider_request_asset_unresolved'
+    | 'provider_request_prompt_reference_invalid'
     | 'provider_request_text_unresolved'
 
   constructor(code: GenerationProviderRequestMaterializationError['code']) {

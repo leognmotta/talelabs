@@ -6,6 +6,7 @@ import type {
 import type { PlannedJobRequestPayload } from '../planning/planner-contracts.js'
 
 import { hashFlowRunJob } from '../serialization/execution-hashes.js'
+import { selectedProviderRequestInputs } from './provider-input-selections.js'
 import { normalizedInputItem } from './provider-inputs.js'
 import { normalizedTextSlots } from './provider-text-slots.js'
 
@@ -25,7 +26,7 @@ export function materializeGenerationProviderRequest(input: {
     modelContractVersion: input.requestPayload.modelContractVersion,
     nodeId: input.requestPayload.nodeId,
     operationId: input.requestPayload.operationId,
-    orderedInputs: Object.freeze(input.requestPayload.inputs.map(
+    orderedInputs: Object.freeze(selectedProviderRequestInputs(input.requestPayload).map(
       (plannedInput, order) => Object.freeze({
         edgeId: plannedInput.edgeId,
         items: Object.freeze(plannedInput.items.map(normalizedInputItem)),

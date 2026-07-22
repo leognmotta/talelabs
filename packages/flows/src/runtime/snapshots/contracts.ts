@@ -9,6 +9,7 @@ import type {
 import { CatalogProviderBindingSchema } from '@talelabs/models-catalog'
 import { z } from 'zod'
 
+import { PromptTemplateSchema } from '../../prompts/schema.js'
 import { canonicalByteLength } from '../serialization/canonical-hash.js'
 import {
   CANONICAL_SERIALIZER_VERSION,
@@ -240,8 +241,7 @@ const plannedInputSchema = z.object({
   sourceNodeId: z.string(),
   targetHandleId: z.string(),
 }).strict()
-/** Strict runtime schema for one persisted provider-neutral job payload. */
-export const requestPayloadSchema = z.object({
+const requestPayloadBaseSchema = z.object({
   catalogRevision: z.string().regex(/^sha256:[0-9a-f]{64}$/),
   catalogVersion: positiveInteger,
   inline: stringMap,
@@ -255,9 +255,28 @@ export const requestPayloadSchema = z.object({
   operationId: z.string(),
   outputCount: positiveInteger,
   requestIndex: nonnegativeInteger,
-  requestPayloadVersion: z.literal(3),
   settings: settingMap,
 }).strict()
+const requestPayloadV3Schema = requestPayloadBaseSchema.extend({
+  inputLimits: z.record(z.string(), positiveInteger).optional(),
+  promptTemplates: z.record(z.string(), PromptTemplateSchema).optional(),
+  requestPayloadVersion: z.literal(3),
+}).strict()
+const requestPayloadV4Schema = requestPayloadBaseSchema.extend({
+  inputLimits: z.record(z.string(), positiveInteger),
+  promptTemplates: z.record(z.string(), PromptTemplateSchema),
+  requestPayloadVersion: z.literal(4),
+}).strict()
+const requestPayloadV5Schema = requestPayloadBaseSchema.extend({
+  inputLimits: z.record(z.string(), positiveInteger),
+  promptTemplates: z.record(z.string(), PromptTemplateSchema),
+  requestPayloadVersion: z.literal(5),
+}).strict()
+/** Strict runtime schema for current and explicitly supported job payloads. */
+export const requestPayloadSchema = z.discriminatedUnion(
+  'requestPayloadVersion',
+  [requestPayloadV3Schema, requestPayloadV4Schema, requestPayloadV5Schema],
+)
 
 /** Stable failure codes emitted while reading planned job requests. */
 export type FlowRunJobRequestReadErrorCode

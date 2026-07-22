@@ -102,11 +102,31 @@ export interface NormalizedGenerationTextPart {
   text: string
 }
 
+/** One structured prompt token resolved to an exact provider Asset input. */
+export interface NormalizedGenerationPromptInputReference {
+  /** Canonical Asset ID supplied to the provider request. */
+  assetId: string
+  /** Zero-based selected position within the semantic input slot. */
+  index: number
+  /** Runtime item identity that carried the Asset. */
+  itemKey: string
+  /** Media family verified against the prompt token. */
+  mediaType: 'audio' | 'image' | 'video'
+  /** Zero-based position of the token in the structured prompt. */
+  partIndex: number
+  /** Stable semantic input slot referenced by the token. */
+  slotId: string
+  /** Upstream Flow node that supplied the Asset. */
+  sourceNodeId: string
+}
+
 /**
  * One semantic text field as seen by a provider adapter. Connected text is
  * authoritative while the inline draft remains frozen for provenance.
  */
 export interface NormalizedGenerationTextSlot {
+  /** Exact input mappings used while resolving a structured inline prompt. */
+  inputReferences: readonly NormalizedGenerationPromptInputReference[]
   parts: readonly NormalizedGenerationTextPart[]
   resolvedText: string
   slotId: string

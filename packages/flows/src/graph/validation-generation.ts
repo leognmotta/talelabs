@@ -1,3 +1,5 @@
+/** Generation input selection and capability constraint validation. */
+
 import type {
   FlowGraphEdge,
   FlowGraphIssue,
@@ -23,6 +25,7 @@ import {
   sourceRuntimeItemCount,
 } from './validation-nodes.js'
 
+/** Validates manual media selection identity, availability, and slot limits. */
 export function validateGenerationSelections(
   nodesById: Map<string, FlowGraphNode>,
   edges: readonly FlowGraphEdge[],
@@ -73,7 +76,7 @@ export function validateGenerationSelections(
           `nodes.${node.id}.data.inputSelections.${slot.id}.assetIds`,
         )
       }
-      const candidates = new Set<string>()
+      const candidateOccurrences = new Map<string, number>()
       for (const edge of edges) {
         if (edge.targetNodeId !== node.id || edge.targetHandle !== slot.id)
           continue
@@ -85,16 +88,20 @@ export function validateGenerationSelections(
           context,
           slot.accepts,
         )) {
-          candidates.add(assetId)
+          candidateOccurrences.set(
+            assetId,
+            (candidateOccurrences.get(assetId) ?? 0) + 1,
+          )
         }
       }
 
       if (!requiredNodeIds?.has(node.id))
         continue
 
-      const validSelectedCount = selection.assetIds.filter(assetId =>
-        candidates.has(assetId),
-      ).length
+      const validSelectedCount = selection.assetIds.reduce(
+        (count, assetId) => count + (candidateOccurrences.get(assetId) ?? 0),
+        0,
+      )
       if (validSelectedCount > slot.maxItems) {
         addFlowGraphIssue(
           issues,
@@ -105,7 +112,7 @@ export function validateGenerationSelections(
       }
 
       for (const [assetIndex, assetId] of selection.assetIds.entries()) {
-        if (!candidates.has(assetId)) {
+        if (!candidateOccurrences.has(assetId)) {
           addFlowGraphIssue(
             issues,
             'selected_asset_not_candidate',
@@ -117,6 +124,7 @@ export function validateGenerationSelections(
   }
 }
 
+/** Evaluates generation input counts and model cross-field constraints. */
 export function validateGenerationConstraints(
   nodesById: Map<string, FlowGraphNode>,
   edges: readonly FlowGraphEdge[],
@@ -154,7 +162,7 @@ export function validateGenerationConstraints(
       FlowInputSelection
     >
     for (const slot of model.inputSlots) {
-      const candidates = new Set<string>()
+      const candidateOccurrences = new Map<string, number>()
       let opaqueRuntimeItems = 0
       for (const edge of edges.toSorted(compareFlowEdgesByPriority)) {
         if (edge.targetNodeId !== node.id || edge.targetHandle !== slot.id)
@@ -167,15 +175,31 @@ export function validateGenerationConstraints(
           context,
           slot.accepts,
         )
-        for (const assetId of assetIds) candidates.add(assetId)
+        for (const assetId of assetIds) {
+          candidateOccurrences.set(
+            assetId,
+            (candidateOccurrences.get(assetId) ?? 0) + 1,
+          )
+        }
         if (!assetIds.length)
           opaqueRuntimeItems += sourceRuntimeItemCount(sourceNode)
       }
       const selection = selections[slot.id]
       const selectedCandidateCount
         = selection?.mode === 'manual'
-          ? selection.assetIds.length
-          : Math.min(candidates.size, slot.maxItems)
+          ? selection.assetIds.reduce(
+              (count, assetId) => (
+                count + (candidateOccurrences.get(assetId) ?? 0)
+              ),
+              0,
+            )
+          : Math.min(
+              [...candidateOccurrences.values()].reduce(
+                (count, occurrences) => count + occurrences,
+                0,
+              ),
+              slot.maxItems,
+            )
       itemCounts[slot.id] = selectedCandidateCount + opaqueRuntimeItems
     }
     const adaptiveEvaluation = isAdaptiveGenerationNodeType(node.type)

@@ -6,6 +6,7 @@ import type {
   FlowGraphValidationContext,
   FlowNodeType,
 } from '../../graph/types.js'
+import type { PromptTemplate } from '../../prompts/contracts.js'
 import type {
   FLOW_RUN_PLAN_VERSION,
   FLOW_RUN_PLANNER_VERSION,
@@ -79,8 +80,7 @@ export interface PlannedJobRequestInput {
   targetHandleId: string
 }
 
-/** Immutable provider-neutral job identity persisted before dispatch. */
-export interface PlannedJobRequestPayload {
+interface PlannedJobRequestPayloadBase {
   catalogRevision: string
   catalogVersion: number
   inline: Readonly<Record<string, string>>
@@ -94,9 +94,38 @@ export interface PlannedJobRequestPayload {
   operationId: string
   outputCount: number
   requestIndex: number
-  requestPayloadVersion: 3
   settings: Readonly<Record<string, boolean | number | string>>
 }
+
+interface PlannedJobRequestPayloadV3 extends PlannedJobRequestPayloadBase {
+  /** Optional in legacy v3 payloads admitted before structured prompts. */
+  inputLimits?: Readonly<Record<string, number>>
+  /** Optional in legacy v3 payloads admitted before structured prompts. */
+  promptTemplates?: Readonly<Record<string, PromptTemplate>>
+  requestPayloadVersion: 3
+}
+
+interface StructuredPromptRequestPayload extends PlannedJobRequestPayloadBase {
+  /** Maximum selected media inputs retained for each semantic slot. */
+  inputLimits: Readonly<Record<string, number>>
+  /** Structured inline prompt fields captured independently from editor JSON. */
+  promptTemplates: Readonly<Record<string, PromptTemplate>>
+}
+
+interface PlannedJobRequestPayloadV4 extends StructuredPromptRequestPayload {
+  requestPayloadVersion: 4
+}
+
+interface PlannedJobRequestPayloadV5 extends StructuredPromptRequestPayload {
+  /** Preserves each selected connector occurrence, including repeated Assets. */
+  requestPayloadVersion: 5
+}
+
+/** Immutable provider-neutral job identity with explicit legacy compatibility. */
+export type PlannedJobRequestPayload
+  = | PlannedJobRequestPayloadV3
+    | PlannedJobRequestPayloadV4
+    | PlannedJobRequestPayloadV5
 
 /** One deterministically hashed provider request belonging to a work item. */
 export interface PlannedRequestShard {
