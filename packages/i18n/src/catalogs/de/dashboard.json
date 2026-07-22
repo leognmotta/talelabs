@@ -284,6 +284,8 @@
       "elevenAudioIsolation": "ElevenLabs Audio Isolation",
       "gpt4oMiniTts": "GPT-4o mini TTS",
       "gemini31FlashTtsPreview": "Gemini 3.1 Flash TTS Preview",
+      "lyria3ClipPreview": "Lyria 3 Clip Preview",
+      "lyria3ProPreview": "Lyria 3 Pro Preview",
       "stableAudio25": "Stable Audio 2.5"
     },
     "modelDescriptions": {
@@ -322,6 +324,8 @@
       "elevenAudioIsolation": "Gezielte Bereinigung gesprochener Sprache in verrauschten Aufnahmen.",
       "gpt4oMiniTts": "Ausdrucksstarke Sprache mit Steuerung von Stimme, Tempo und Darbietung.",
       "gemini31FlashTtsPreview": "Natürliche Spracherzeugung mit Gemini und auswählbarer Stimme.",
+      "lyria3ClipPreview": "30-sekündige Musikclips, Loops und Vorschauen aus einer Anweisung.",
+      "lyria3ProPreview": "Vollständige, strukturierte Songs mit Gesang, Texten und Arrangements aus einer Anweisung.",
       "stableAudio25": "Längere Musik und Sounddesign mit Dauer-, Seed- und Prompttreue-Steuerung."
     },
     "inputs": {
@@ -354,7 +358,10 @@
       "lyricsDescription": "Optionaler Liedtext nur für unterstützte Musikmodelle.",
       "sourceMedia": "Quellmedium",
       "sourceMediaDescription": "Ein Audio- oder Videoelement mit der ursprünglichen Darbietung.",
-      "sourceAudioDescription": "Ein Audioelement mit der ursprünglichen Darbietung."
+      "sourceAudio": "Quellaudio",
+      "sourceAudioDescription": "Ein Audioelement mit der ursprünglichen Darbietung.",
+      "sourceVideo": "Quellvideo",
+      "sourceVideoDescription": "Ein Videoelement mit der ursprünglichen Darbietung."
     },
     "settings": {
       "label": "Einstellungen",
@@ -687,6 +694,7 @@
       "inputs": {
         "railLabel": "Eingaben des Audioknotens",
         "limitReached": "Diese Eingabe hat das Modelllimit erreicht.",
+        "disconnectAlternative": "Trenne den anderen Quelleingang, um diesen zu verwenden.",
         "selectedCount": "{{count}} Medienelement ausgewählt",
         "inspect": "{{input}} prüfen",
         "connectedMedia": "Verbundenes Medium"

@@ -91,8 +91,9 @@ export const MusicGenerationFlowNode = memo(({
           slots={music.slots}
         />
         <AudioPreview
+          nodeId={id}
           readinessMessageKey={readinessMessageKey}
-          resolution={music.resolution}
+          resolution={{ ...music.resolution, readiness: effectiveReadiness }}
         />
       </GenerationNodePreviewArea>
       <GenerationNodePromptSection>

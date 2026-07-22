@@ -284,6 +284,8 @@
       "elevenAudioIsolation": "ElevenLabs Audio Isolation",
       "gpt4oMiniTts": "GPT-4o mini TTS",
       "gemini31FlashTtsPreview": "Gemini 3.1 Flash TTS Preview",
+      "lyria3ClipPreview": "Lyria 3 Clip Preview",
+      "lyria3ProPreview": "Lyria 3 Pro Preview",
       "stableAudio25": "Stable Audio 2.5"
     },
     "modelDescriptions": {
@@ -322,6 +324,8 @@
       "elevenAudioIsolation": "Nettoyage ciblé de la voix parlée dans les enregistrements bruités.",
       "gpt4oMiniTts": "Parole expressive avec contrôle de la voix, du rythme et de l’interprétation.",
       "gemini31FlashTtsPreview": "Génération de parole naturelle avec Gemini et une voix au choix.",
+      "lyria3ClipPreview": "Extraits musicaux de 30 secondes, boucles et aperçus à partir d’une consigne.",
+      "lyria3ProPreview": "Chansons complètes et structurées, avec voix, paroles et arrangements à partir d’une consigne.",
       "stableAudio25": "Musique longue et design sonore avec contrôle de la durée, de la graine et du respect des instructions."
     },
     "inputs": {
@@ -354,7 +358,10 @@
       "lyricsDescription": "Paroles facultatives, réservées aux modèles musicaux compatibles.",
       "sourceMedia": "Média source",
       "sourceMediaDescription": "Un élément audio ou vidéo contenant l’interprétation source.",
-      "sourceAudioDescription": "Un élément audio contenant l’interprétation source."
+      "sourceAudio": "Audio source",
+      "sourceAudioDescription": "Un élément audio contenant l’interprétation source.",
+      "sourceVideo": "Vidéo source",
+      "sourceVideoDescription": "Un élément vidéo contenant l’interprétation source."
     },
     "settings": {
       "label": "Paramètres",
@@ -687,6 +694,7 @@
       "inputs": {
         "railLabel": "Entrées du nœud audio",
         "limitReached": "Cette entrée a atteint la limite du modèle.",
+        "disconnectAlternative": "Déconnectez l’autre entrée source pour utiliser celle-ci.",
         "selectedCount": "{{count}} média sélectionné",
         "inspect": "Inspecter {{input}}",
         "connectedMedia": "Média connecté"

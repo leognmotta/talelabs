@@ -284,6 +284,8 @@
       "elevenAudioIsolation": "ElevenLabs Audio Isolation",
       "gpt4oMiniTts": "GPT-4o mini TTS",
       "gemini31FlashTtsPreview": "Gemini 3.1 Flash TTS Preview",
+      "lyria3ClipPreview": "Lyria 3 Clip Preview",
+      "lyria3ProPreview": "Lyria 3 Pro Preview",
       "stableAudio25": "Stable Audio 2.5"
     },
     "modelDescriptions": {
@@ -322,6 +324,8 @@
       "elevenAudioIsolation": "Limpeza focada da voz falada em gravações com ruído.",
       "gpt4oMiniTts": "Fala expressiva com controlo de voz, ritmo e interpretação.",
       "gemini31FlashTtsPreview": "Geração de fala natural com o Gemini e uma voz à escolha.",
+      "lyria3ClipPreview": "Excertos musicais de 30 segundos, loops e pré-visualizações a partir de instruções.",
+      "lyria3ProPreview": "Canções completas e estruturadas, com vozes, letras e arranjos a partir de instruções.",
       "stableAudio25": "Música longa e design sonoro com controlo de duração, semente e aderência à instrução."
     },
     "inputs": {
@@ -354,7 +358,10 @@
       "lyricsDescription": "Letra opcional, usada apenas por modelos de música compatíveis.",
       "sourceMedia": "Multimédia de origem",
       "sourceMediaDescription": "Um item de áudio ou vídeo com a interpretação original.",
-      "sourceAudioDescription": "Um item de áudio com a interpretação original."
+      "sourceAudio": "Áudio de origem",
+      "sourceAudioDescription": "Um item de áudio com a interpretação original.",
+      "sourceVideo": "Vídeo de origem",
+      "sourceVideoDescription": "Um item de vídeo com a interpretação original."
     },
     "settings": {
       "label": "Definições",
@@ -687,6 +694,7 @@
       "inputs": {
         "railLabel": "Entradas do nó de áudio",
         "limitReached": "Esta entrada atingiu o limite do modelo.",
+        "disconnectAlternative": "Desligue a outra entrada de origem para utilizar esta.",
         "selectedCount": "{{count}} item multimédia selecionado",
         "inspect": "Inspecionar {{input}}",
         "connectedMedia": "Multimédia ligada"

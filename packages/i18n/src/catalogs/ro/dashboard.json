@@ -284,6 +284,8 @@
       "elevenAudioIsolation": "ElevenLabs Audio Isolation",
       "gpt4oMiniTts": "GPT-4o mini TTS",
       "gemini31FlashTtsPreview": "Gemini 3.1 Flash TTS Preview",
+      "lyria3ClipPreview": "Lyria 3 Clip Preview",
+      "lyria3ProPreview": "Lyria 3 Pro Preview",
       "stableAudio25": "Stable Audio 2.5"
     },
     "modelDescriptions": {
@@ -322,6 +324,8 @@
       "elevenAudioIsolation": "Curățare concentrată a vocii vorbite din înregistrări cu zgomot.",
       "gpt4oMiniTts": "Vorbire expresivă cu control asupra vocii, ritmului și interpretării.",
       "gemini31FlashTtsPreview": "Generare naturală a vorbirii cu Gemini și o voce selectabilă.",
+      "lyria3ClipPreview": "Clipuri muzicale de 30 de secunde, bucle și previzualizări create dintr-o instrucțiune.",
+      "lyria3ProPreview": "Piese complete și structurate, cu voce, versuri și aranjamente create dintr-o instrucțiune.",
       "stableAudio25": "Muzică de durată și design sonor cu control pentru durată, sămânță și respectarea instrucțiunii."
     },
     "inputs": {
@@ -354,7 +358,10 @@
       "lyricsDescription": "Versuri opționale, doar pentru modelele muzicale compatibile.",
       "sourceMedia": "Media sursă",
       "sourceMediaDescription": "Un element audio sau video cu interpretarea originală.",
-      "sourceAudioDescription": "Un element audio cu interpretarea originală."
+      "sourceAudio": "Audio sursă",
+      "sourceAudioDescription": "Un element audio cu interpretarea originală.",
+      "sourceVideo": "Video sursă",
+      "sourceVideoDescription": "Un element video cu interpretarea originală."
     },
     "settings": {
       "label": "Setări",
@@ -687,6 +694,7 @@
       "inputs": {
         "railLabel": "Intrările nodului audio",
         "limitReached": "Această intrare a atins limita modelului.",
+        "disconnectAlternative": "Deconectați cealaltă intrare sursă pentru a o utiliza pe aceasta.",
         "selectedCount": "{{count}} element media selectat",
         "inspect": "Inspectează {{input}}",
         "connectedMedia": "Media conectată"

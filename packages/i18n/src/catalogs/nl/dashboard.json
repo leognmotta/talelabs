@@ -284,6 +284,8 @@
       "elevenAudioIsolation": "ElevenLabs Audio Isolation",
       "gpt4oMiniTts": "GPT-4o mini TTS",
       "gemini31FlashTtsPreview": "Gemini 3.1 Flash TTS Preview",
+      "lyria3ClipPreview": "Lyria 3 Clip Preview",
+      "lyria3ProPreview": "Lyria 3 Pro Preview",
       "stableAudio25": "Stable Audio 2.5"
     },
     "modelDescriptions": {
@@ -322,6 +324,8 @@
       "elevenAudioIsolation": "Gerichte opschoning van gesproken stem in rumoerige opnamen.",
       "gpt4oMiniTts": "Expressieve spraak met controle over stem, tempo en uitvoering.",
       "gemini31FlashTtsPreview": "Natuurlijke spraakgeneratie met Gemini en een selecteerbare stem.",
+      "lyria3ClipPreview": "Muziekclips van 30 seconden, loops en voorvertoningen vanuit een instructie.",
+      "lyria3ProPreview": "Volledige, gestructureerde nummers met zang, tekst en arrangementen vanuit een instructie.",
       "stableAudio25": "Langere muziek en sounddesign met controle over duur, seed en prompttrouw."
     },
     "inputs": {
@@ -354,7 +358,10 @@
       "lyricsDescription": "Optionele songtekst, alleen voor ondersteunde muziekmodellen.",
       "sourceMedia": "Bronmedia",
       "sourceMediaDescription": "Eén audio- of video-item met de oorspronkelijke uitvoering.",
-      "sourceAudioDescription": "Eén audio-item met de oorspronkelijke uitvoering."
+      "sourceAudio": "Bronaudio",
+      "sourceAudioDescription": "Eén audio-item met de oorspronkelijke uitvoering.",
+      "sourceVideo": "Bronvideo",
+      "sourceVideoDescription": "Eén video-item met de oorspronkelijke uitvoering."
     },
     "settings": {
       "label": "Instellingen",
@@ -687,6 +694,7 @@
       "inputs": {
         "railLabel": "Invoer van audioknooppunt",
         "limitReached": "Deze invoer heeft de modellimiet bereikt.",
+        "disconnectAlternative": "Koppel de andere broninvoer los om deze te gebruiken.",
         "selectedCount": "{{count}} media-item geselecteerd",
         "inspect": "{{input}} inspecteren",
         "connectedMedia": "Verbonden media"

@@ -84,6 +84,7 @@ export const SoundEffectGenerationFlowNode = memo(({
     >
       <GenerationNodePreviewArea nodeId={id}>
         <AudioPreview
+          nodeId={id}
           readinessMessageKey={readinessMessageKey}
           resolution={{ ...soundEffect.resolution, readiness: effectiveReadiness }}
         />

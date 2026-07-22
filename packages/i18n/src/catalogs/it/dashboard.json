@@ -284,6 +284,8 @@
       "elevenAudioIsolation": "ElevenLabs Audio Isolation",
       "gpt4oMiniTts": "GPT-4o mini TTS",
       "gemini31FlashTtsPreview": "Gemini 3.1 Flash TTS Preview",
+      "lyria3ClipPreview": "Lyria 3 Clip Preview",
+      "lyria3ProPreview": "Lyria 3 Pro Preview",
       "stableAudio25": "Stable Audio 2.5"
     },
     "modelDescriptions": {
@@ -322,6 +324,8 @@
       "elevenAudioIsolation": "Pulizia mirata della voce parlata nelle registrazioni rumorose.",
       "gpt4oMiniTts": "Parlato espressivo con controllo di voce, ritmo e interpretazione.",
       "gemini31FlashTtsPreview": "Generazione vocale naturale con Gemini e una voce selezionabile.",
+      "lyria3ClipPreview": "Clip musicali di 30 secondi, loop e anteprime a partire da un’istruzione.",
+      "lyria3ProPreview": "Brani completi e strutturati, con voci, testi e arrangiamenti a partire da un’istruzione.",
       "stableAudio25": "Musica di lunga durata e sound design con controlli di durata, seed e aderenza alle istruzioni."
     },
     "inputs": {
@@ -354,7 +358,10 @@
       "lyricsDescription": "Testo facoltativo, solo per i modelli musicali compatibili.",
       "sourceMedia": "Media sorgente",
       "sourceMediaDescription": "Un elemento audio o video con l’interpretazione originale.",
-      "sourceAudioDescription": "Un elemento audio con l’interpretazione originale."
+      "sourceAudio": "Audio sorgente",
+      "sourceAudioDescription": "Un elemento audio con l’interpretazione originale.",
+      "sourceVideo": "Video sorgente",
+      "sourceVideoDescription": "Un elemento video con l’interpretazione originale."
     },
     "settings": {
       "label": "Impostazioni",
@@ -687,6 +694,7 @@
       "inputs": {
         "railLabel": "Input del nodo audio",
         "limitReached": "Questo input ha raggiunto il limite del modello.",
+        "disconnectAlternative": "Disconnetti l’altro ingresso sorgente per usare questo.",
         "selectedCount": "{{count}} elemento multimediale selezionato",
         "inspect": "Controlla {{input}}",
         "connectedMedia": "Media collegato"

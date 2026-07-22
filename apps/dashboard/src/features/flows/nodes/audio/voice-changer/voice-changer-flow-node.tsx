@@ -71,6 +71,7 @@ export const VoiceChangerFlowNode = memo(({
           slots={voiceChanger.slots}
         />
         <AudioPreview
+          nodeId={id}
           readinessMessageKey={readinessMessageKey}
           resolution={voiceChanger.resolution}
         />

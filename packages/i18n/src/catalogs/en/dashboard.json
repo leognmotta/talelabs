@@ -284,6 +284,8 @@
       "elevenAudioIsolation": "ElevenLabs Audio Isolation",
       "gpt4oMiniTts": "GPT-4o mini TTS",
       "gemini31FlashTtsPreview": "Gemini 3.1 Flash TTS Preview",
+      "lyria3ClipPreview": "Lyria 3 Clip Preview",
+      "lyria3ProPreview": "Lyria 3 Pro Preview",
       "stableAudio25": "Stable Audio 2.5"
     },
     "modelDescriptions": {
@@ -322,6 +324,8 @@
       "elevenAudioIsolation": "Focused spoken-voice cleanup for noisy recordings.",
       "gpt4oMiniTts": "Expressive speech with voice, pace, and delivery direction.",
       "gemini31FlashTtsPreview": "Natural speech generation through Gemini with a selectable voice.",
+      "lyria3ClipPreview": "Thirty-second music clips, loops, and previews from a prompt.",
+      "lyria3ProPreview": "Full structured songs with vocals, lyrics, and arrangements from a prompt.",
       "stableAudio25": "Long-form music and sound design with duration, seed, and prompt-adherence controls."
     },
     "inputs": {
@@ -354,7 +358,10 @@
       "lyricsDescription": "Optional lyrics used only by supporting music models.",
       "sourceMedia": "Source media",
       "sourceMediaDescription": "One audio or video item containing the source performance.",
-      "sourceAudioDescription": "One audio item containing the source performance."
+      "sourceAudio": "Source audio",
+      "sourceAudioDescription": "One audio item containing the source performance.",
+      "sourceVideo": "Source video",
+      "sourceVideoDescription": "One video item containing the source performance."
     },
     "settings": {
       "label": "Settings",
@@ -687,6 +694,7 @@
       "inputs": {
         "railLabel": "Audio node inputs",
         "limitReached": "This input has reached the model limit.",
+        "disconnectAlternative": "Disconnect the other source input to use this one.",
         "selectedCount": "{{count}} media item selected",
         "inspect": "Inspect {{input}}",
         "connectedMedia": "Connected media"

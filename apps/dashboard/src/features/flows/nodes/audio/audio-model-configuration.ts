@@ -51,6 +51,11 @@ export function resolveAudioModelConfiguration(input: {
     input.targetModel,
     input.nodeType,
   )
+  const exclusiveGroups = new Map<string, string>()
+  for (const [groupId, contract] of Object.entries(targetOperation.inputs)) {
+    for (const slotId of contract.oneOf ?? [])
+      exclusiveGroups.set(slotId, groupId)
+  }
   return {
     activeInputContracts: generationInputContracts({
       model: input.targetModel,
@@ -59,7 +64,12 @@ export function resolveAudioModelConfiguration(input: {
         input.nodeType,
       ),
       slots: targetSlots,
-    }),
+    }).map(contract => ({
+      ...contract,
+      ...(exclusiveGroups.has(contract.id)
+        ? { exclusiveGroup: exclusiveGroups.get(contract.id)! }
+        : {}),
+    })),
     inputMaximums: Object.fromEntries(
       targetSlots.map(slot => [slot.id, slot.maxItems]),
     ),

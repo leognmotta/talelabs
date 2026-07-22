@@ -8,7 +8,6 @@ import { coercePromptTemplate } from '@talelabs/flows'
 import { useNodeConnections } from '@xyflow/react'
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useFlowGenerationPreview } from '../../../editor/flow-canvas-runtime-context'
 import { FlowNodeShell } from '../../shared/flow-node-shell'
 import { GenerationNodeFrame } from '../../shared/generation-node/generation-node-frame'
 import { GenerationNodePreviewArea } from '../../shared/generation-node/generation-node-preview-area'
@@ -25,19 +24,11 @@ export const SpeechGenerationFlowNode = memo(({
   type,
 }: NodeProps<CanvasNode>) => {
   const { t } = useTranslation()
-  const preview = useFlowGenerationPreview(id)
   const incomingConnections = useNodeConnections({ handleType: 'target', id })
   const speech = useSpeechGenerationNode({
     incomingConnections,
     node: { data, id, type },
   })
-  const audioPreviewUrl = preview
-    && 'output' in preview
-    && preview.output?.kind === 'media'
-    && preview.output.mediaType === 'audio'
-    ? preview.output.download.content
-    : undefined
-
   if (!speech.model || !speech.resolution) {
     return (
       <FlowNodeShell
@@ -92,8 +83,7 @@ export const SpeechGenerationFlowNode = memo(({
     >
       <GenerationNodePreviewArea nodeId={id}>
         <AudioPreview
-          pending={preview?.status === 'pending'}
-          previewUrl={audioPreviewUrl}
+          nodeId={id}
           readinessMessageKey={readinessMessageKey}
           resolution={{ ...speech.resolution, readiness: effectiveReadiness }}
         />

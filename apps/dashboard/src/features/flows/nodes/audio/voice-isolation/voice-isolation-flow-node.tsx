@@ -71,6 +71,7 @@ export const VoiceIsolationFlowNode = memo(({
           slots={isolation.slots}
         />
         <AudioPreview
+          nodeId={id}
           readinessMessageKey={readinessMessageKey}
           resolution={isolation.resolution}
         />

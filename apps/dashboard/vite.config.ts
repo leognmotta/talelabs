@@ -115,6 +115,10 @@ export default defineConfig(({ mode }) => {
           replacement: fileURLToPath(new URL('../../packages/i18n/src/catalogs.ts', import.meta.url)),
         },
         {
+          find: '@talelabs/models-catalog',
+          replacement: fileURLToPath(new URL('../../packages/models-catalog/src/index.ts', import.meta.url)),
+        },
+        {
           find: '@talelabs/assets',
           replacement: fileURLToPath(new URL('../../packages/assets/src/index.ts', import.meta.url)),
         },
