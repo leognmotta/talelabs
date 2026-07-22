@@ -1026,11 +1026,13 @@ Sound Effect
 
 Voice Changer
   data: shared generation configuration, no prompt
-  input: sourceMedia, AudioSet | VideoSet, exactly one selected runtime item
+  input: sourceMedia, AudioSet, exactly one selected runtime item
 
 Voice Isolation
   data: shared generation configuration, no prompt
-  input: sourceMedia, AudioSet | VideoSet, exactly one selected runtime item
+  inputs: sourceAudio, AudioSet; sourceVideo, VideoSet
+  constraint: exactly one source input is connected; the other stays visible
+    but disabled until the active source is disconnected
 
 all outputs:
   audio -> PortValue<AudioSet>
@@ -1042,7 +1044,9 @@ all outputs:
 contract evaluator. Connected Text is authoritative without erasing an inline
 draft. Unsupported handles and controls are absent. Model changes preserve
 compatible data, report reset settings, keep stable compatible edges, and never
-silently reinterpret the node's intent. Voice Isolation does not claim music
+silently reinterpret the node's intent. Voice Isolation remains one operation:
+either typed input maps to the provider's matching audio or video field, and
+both paths return AudioSet. Voice Isolation does not claim music
 stem separation. No custom-voice or Element-backed voice system is part of the
 first contract.
 

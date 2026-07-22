@@ -1,5 +1,6 @@
 /** Node registry contracts: versioned data schemas, migrations, handles. */
 
+import type { GenerationOutputType } from '../../generation/registry/types.js'
 import type {
   FlowHandleDefinition,
   FlowNodeType,
@@ -41,6 +42,7 @@ import {
   VideoGenerationNodeDataSchemaV4,
   VoiceChangerNodeDataSchemaV1,
   VoiceIsolationNodeDataSchemaV1,
+  VoiceIsolationNodeDataSchemaV2,
 } from '../data/schemas.js'
 import {
   migrateAssetNodeDataV1,
@@ -68,11 +70,27 @@ import {
   migrateVideoGenerationNodeDataV3,
 } from '../migrations/prompts.js'
 import { migrateVideoGenerationNodeDataV2 } from '../migrations/video.js'
+import { migrateVoiceIsolationNodeDataV1 } from '../migrations/voice-isolation.js'
+
+/** Canonical output-handle identity for each generated value family. */
+export const GENERATION_OUTPUT_HANDLE_IDS = Object.freeze({
+  audio: 'audio',
+  image: 'images',
+  text: 'text',
+  video: 'videos',
+} as const satisfies Record<GenerationOutputType, string>)
+
+/** Resolves the registered output handle used by generated prior results. */
+export function getGenerationOutputHandleId(
+  outputType: GenerationOutputType,
+) {
+  return GENERATION_OUTPUT_HANDLE_IDS[outputType]
+}
 
 const textHandles = Object.freeze([
   {
     direction: 'output',
-    id: 'text',
+    id: GENERATION_OUTPUT_HANDLE_IDS.text,
     maxConnections: null,
     minConnections: 0,
     valueTypes: ['Text'],
@@ -84,7 +102,7 @@ const llmOutputHandles = textHandles
 const imageGenerationOutputHandles = Object.freeze([
   {
     direction: 'output',
-    id: 'images',
+    id: GENERATION_OUTPUT_HANDLE_IDS.image,
     maxConnections: null,
     minConnections: 0,
     valueTypes: ['ImageSet'],
@@ -94,7 +112,7 @@ const imageGenerationOutputHandles = Object.freeze([
 const videoGenerationOutputHandles = Object.freeze([
   {
     direction: 'output',
-    id: 'videos',
+    id: GENERATION_OUTPUT_HANDLE_IDS.video,
     maxConnections: null,
     minConnections: 0,
     valueTypes: ['VideoSet'],
@@ -104,7 +122,7 @@ const videoGenerationOutputHandles = Object.freeze([
 const audioGenerationOutputHandles = Object.freeze([
   {
     direction: 'output',
-    id: 'audio',
+    id: GENERATION_OUTPUT_HANDLE_IDS.audio,
     maxConnections: null,
     minConnections: 0,
     valueTypes: ['AudioSet'],
@@ -259,11 +277,14 @@ export const FLOW_NODE_TYPE_REGISTRY = Object.freeze({
     staticHandles: audioGenerationOutputHandles,
   },
   voiceIsolation: {
-    currentVersion: 1,
+    currentVersion: 2,
     id: 'voiceIsolation',
-    migrations: {},
+    migrations: { 1: migrateVoiceIsolationNodeDataV1 },
     reference: 'none',
-    schemas: { 1: VoiceIsolationNodeDataSchemaV1 },
+    schemas: {
+      1: VoiceIsolationNodeDataSchemaV1,
+      2: VoiceIsolationNodeDataSchemaV2,
+    },
     staticHandles: audioGenerationOutputHandles,
   },
 } as const satisfies Record<FlowNodeType, FlowNodeTypeDefinition>)

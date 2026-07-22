@@ -430,8 +430,25 @@ export const SoundEffectGenerationNodeDataSchemaV2
 export const VoiceChangerNodeDataSchemaV1 = createIntentGenerationNodeDataSchema(
   'voiceChanger',
 )
-/** Current canonical voice-isolation node data schema. */
-export const VoiceIsolationNodeDataSchemaV1 = createIntentGenerationNodeDataSchema(
+/** Legacy voice-isolation data with the former union sourceMedia selection. */
+export const VoiceIsolationNodeDataSchemaV1
+  = GenerationNodeDataSchemaBase.superRefine((data, context) => {
+    const legacySelection = data.inputSelections.sourceMedia ?? { mode: 'auto' }
+    refineGenerationNodeData(
+      {
+        ...data,
+        inputSelections: {
+          sourceAudio: data.inputSelections.sourceAudio ?? legacySelection,
+          sourceVideo: data.inputSelections.sourceVideo ?? legacySelection,
+        },
+      },
+      context,
+      'audio',
+      'voiceIsolation',
+    )
+  })
+/** Current voice-isolation data with exclusive typed source selections. */
+export const VoiceIsolationNodeDataSchemaV2 = createIntentGenerationNodeDataSchema(
   'voiceIsolation',
 )
 /** Version 1 LLM base retained for structured-prompt migration. */

@@ -1,11 +1,17 @@
+/** Tenant-scoped database projections consumed by Flow run planning. */
+
 import type {
   FlowRuntimeValue,
   PriorNodeOutputDescriptor,
 } from '@talelabs/flows'
 
 import { db } from '@talelabs/db'
-import { createRuntimeItem } from '@talelabs/flows'
+import {
+  createRuntimeItem,
+  getGenerationOutputHandleId,
+} from '@talelabs/flows'
 
+/** Returns the persisted local user identity when the authenticated user exists. */
 export async function localUserIdOrNull(userId: string) {
   const user = await db.selectFrom('user')
     .select('id')
@@ -14,6 +20,7 @@ export async function localUserIdOrNull(userId: string) {
   return user?.id ?? null
 }
 
+/** Loads successful generated outputs as immutable prior-result candidates. */
 export async function listPriorOutputs(
   organizationId: string,
   flowId: string,
@@ -87,7 +94,7 @@ export async function listPriorOutputs(
         value,
       })],
       nodeId: first.nodeId,
-      outputHandleId: mediaType === 'text' ? 'text' : `${mediaType}s`,
+      outputHandleId: getGenerationOutputHandleId(mediaType),
       pinned: false,
     }
   })
