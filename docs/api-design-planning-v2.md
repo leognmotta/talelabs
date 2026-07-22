@@ -713,10 +713,13 @@ resolver against the final graph, node settings, selected item counts, and
 inline prompt or instructions. It rejects invalid input combinations and a stored `operationId`
 that differs from the rederived operation. `operationId` is therefore a derived
 compatibility and snapshot field, not a user-selected API setting. Image schema
-version 6, Video schema version 3, and LLM schema version 1 add the preserved
-inline `prompt`; LLM also preserves inline `instructions`. A
-connected Text edge to the semantic `prompt` handle is authoritative and is
-never implicitly concatenated with it. An explicit Image contract upgrade
+version 8, Video schema version 4, LLM schema version 2, and the prompt-bearing
+audio intent schemas at version 2 store the preserved inline prompt as the
+versioned provider-neutral `PromptTemplate`; LLM also preserves plain inline
+instructions and Music preserves plain lyrics. Historical string prompts
+upcast through their node schemas. A connected Text edge to the semantic
+`prompt` handle is authoritative and is never implicitly concatenated with the
+template. An explicit Image contract upgrade
 atomically rewrites a compatible legacy `references` edge to
 `imageReferences`; historical contracts are not mutated.
 

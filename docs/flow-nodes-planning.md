@@ -210,6 +210,9 @@ Saved edge identity defines source priority: ascending persistent edge ID is the
 canonical edge order in the editor, API hydration, graph snapshots, and planner.
 Automatic input selection must sort by that rule before applying model limits;
 it must never depend on browser insertion order or database row order.
+Every selected edge occurrence remains distinct in that order, even when two
+connected sources resolve to the same canonical Asset. Model limits and prompt
+input indices count occurrences rather than unique Asset IDs.
 
 The current `packages/flows` registry already follows this direction. Asset and
 generation nodes emit typed media sets, and model input slots state which set
@@ -927,6 +930,35 @@ output:
 One ordinary Text node produces one item. Several Text edges into a prompt slot
 compose in deterministic edge order. A Text Iterator is a separate future node.
 
+### Structured inline prompts
+
+Generation prompt drafts are stored as a narrow versioned `PromptTemplate`, not
+HTML or editor-specific JSON. Its ordered parts are literal text, explicit line
+breaks, and atomic media-input references identified by `slotId`, zero-based
+selected-input `index`, and expected `mediaType`. Historical string prompts
+upcast to one text-only template through the owning node schema version.
+
+The canvas derives `@` suggestions only from the node's current effective media
+selection. Names, filenames, thumbnails, and localized labels are presentation
+data and are never persisted in the template. A token that no longer matches
+the exact slot position and media family remains visible as invalid and blocks
+planning; it is never redirected to another input. A connected Text value on
+the prompt handle remains authoritative without deleting the inline template.
+
+Run planning captures the template in each immutable request. After same-run
+outputs become canonical Assets, the shared provider-neutral materializer
+resolves every token against that job's exact ordered selected inputs, persists
+the resolved plain text and token-to-input mapping, and then supplies ordinary
+`textSlots[].resolvedText` to both browser and managed provider execution.
+Provider adapters do not interpret prompt templates.
+
+Generation-job request payload version 4 made `promptTemplates` and the per-slot
+`inputLimits` map required, even when either map is empty. Version 5 preserves
+each ordered selected connector occurrence, including repeated references to
+the same canonical Asset. Readers retain strict compatibility for version 3,
+where the structured-prompt fields remain optional, and version 4, whose input
+selection semantics deduplicate repeated Asset IDs.
+
 ### Asset
 
 ```txt
@@ -964,12 +996,11 @@ data:
   modelId
   settings
   inputSelections
+  prompt: PromptTemplate
 
 inputs:
   prompt
-  context
-  references
-  model-specific slots
+  model-specific media slots
 
 output:
   images -> PortValue<ImageSet>

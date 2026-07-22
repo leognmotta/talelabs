@@ -657,8 +657,11 @@ create index "flowNodesAssetIdx" on "flowNodes" ("assetId") where "assetId" is n
   optional inline prompt, and per-input `auto` or ordered-manual Asset selection
   policy) lives in `"data"`; incoming edges remain the sole source of topology,
   so node data never duplicates source node IDs or handles. Image schema version
-  6, Video schema version 3, and LLM schema version 1 include the preserved
-  inline `prompt`; LLM also preserves inline `instructions`. The server
+  8, Video schema version 4, LLM schema version 2, and the prompt-bearing audio
+  intent schemas at version 2 store the preserved inline prompt as a narrow
+  versioned `PromptTemplate`; historical strings upcast in code with no SQL
+  migration. LLM also preserves plain inline `instructions`, and Music keeps
+  plain lyrics outside the template. The server
   rederives Image, Video, and LLM operations from the final graph and rejects
   client drift. Image contract upgrades rewrite the legacy
   `references` edge handle to `imageReferences` in the same graph mutation.
@@ -741,10 +744,12 @@ Two resolution rules the vision requires but React Flow does not provide, define
 - **Collection selection belongs to the consumer:** direct Asset inputs and
   upstream output collections resolve in deterministic order. Consumer policy
   chooses the exact subset at run time. Model maxima apply per target slot across
-  every source edge combined. Stale, incompatible, unavailable, singular-slot
-  overflow, and model-limit overflow block execution rather than being silently
-  truncated. `generationJobSources."snapshot"` freezes candidates and decisions;
-  `generationJobInputs` freezes only the exact provider subset.
+  every source edge combined. Each selected edge occurrence stays distinct even
+  when multiple sources resolve to the same Asset. Stale, incompatible,
+  unavailable, singular-slot overflow, and model-limit overflow block execution
+  rather than being silently truncated. `generationJobSources."snapshot"`
+  freezes candidates and decisions; `generationJobInputs` freezes only the exact
+  provider subset.
 - **`nodeOutput` resolution is run-aware:** inside a multi-node run, an upstream
   output resolves strictly to jobs with the same `flowRunId` and compatible item
   lineage. A concurrent manual run cannot swap an input mid-run. Across runs,
@@ -766,9 +771,9 @@ create table "generationJobInputs" (
                                                       -- owned by the model registry, validated app-side —
                                                       -- no check, new model capabilities need no migration
   "sortOrder" smallint not null,      -- no default: the exact provider payload order is
-                                      -- explicit, and the unique below makes ambiguity impossible
-  primary key ("jobId", "assetId", "role"),
-  unique ("jobId", "sortOrder"),      -- replayable ordering: no two inputs share a position
+                                      -- explicit, and the primary key makes ambiguity impossible
+  primary key ("jobId", "sortOrder"), -- occurrence identity: the same Asset and role may appear
+                                       -- more than once through distinct selected connectors
   foreign key ("jobId", "organizationId")
     references "generationJobs" ("id", "organizationId") on delete cascade,
   foreign key ("assetId", "organizationId")
@@ -1266,7 +1271,7 @@ where a."id" = $1
 order by s."sortOrder";
 
 -- "Which runs used this asset as an input?" (reverse provenance)
-select i."jobId", i."role", j."createdAt", j."status"
+select distinct i."jobId", i."role", j."createdAt", j."status"
 from "generationJobInputs" i
 join "generationJobs" j on j."id" = i."jobId"
 where i."assetId" = $1
