@@ -16,7 +16,6 @@ import {
   flowActiveRuns,
   flowRun,
   flowRunCostEstimate,
-  flowRunCostManifest,
   flowRuns,
 } from './flow-query-key-runs'
 import { flowList, flowLists, flowScope } from './flow-query-key-scope'
@@ -35,7 +34,6 @@ export const flowQueryKeys = {
   references: flowReferences,
   run: flowRun,
   runCostEstimate: flowRunCostEstimate,
-  runCostManifest: flowRunCostManifest,
   runRealtimeToken: flowRunRealtimeToken,
   runs: flowRuns,
   scope: flowScope,

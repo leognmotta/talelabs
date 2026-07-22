@@ -8,10 +8,13 @@ import type {
   RunCostEstimateFingerprintSource,
   RunCostEstimateScopeIndex,
 } from './run-cost-estimate-scope-fingerprint'
+import type {
+  RunCostEstimateManifestNodeScope,
+  RunCostEstimateManifestRequestState,
+} from './use-run-cost-estimate-manifest-transport'
 
 import { isGenerationNodeType } from '@talelabs/flows'
-import { ApiError, postFlowsIdRunCostEstimates } from '@talelabs/sdk'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import {
   createContext,
   use,
@@ -24,7 +27,6 @@ import {
   useState,
   useSyncExternalStore,
 } from 'react'
-import { getOrganizationRequestHeaders } from '../../../../shared/lib/organization-request'
 import { flowQueryKeys } from '../../data/query-keys/flow-query-keys'
 import { useCanvasStore, useCanvasStoreApi } from '../../editor/canvas-state/canvas-store-context'
 import { useFlowCanvasRuntime } from '../../editor/flow-canvas-runtime-context'
@@ -34,12 +36,11 @@ import {
   createRunCostEstimateScopeIndex,
 } from './run-cost-estimate-scope-fingerprint'
 import { useBoundedIncompleteEstimateRecovery } from './use-bounded-incomplete-estimate-recovery'
+import { useRunCostEstimateManifestTransport } from './use-run-cost-estimate-manifest-transport'
 
-const ESTIMATE_CACHE_LIFETIME_MS = 30 * 60_000
+const ESTIMATE_CACHE_LIFETIME_MS = 5 * 60_000
 const ESTIMATE_STALE_TIME_MS = 5 * 60_000
 const INCOMPLETE_ESTIMATE_STALE_TIME_MS = 30_000
-const ESTIMATE_REQUEST_RETRY_BASE_MS = 1_000
-const ESTIMATE_REQUEST_RETRY_LIMIT = 2
 const MANIFEST_BATCH_DELAY_MS = 250
 const MANIFEST_NODE_SCOPE_BATCH_SIZE = 24
 
@@ -163,26 +164,10 @@ function createScopeFingerprintStore(): ScopeFingerprintStore {
   }
 }
 
-function retryableEstimateRequestError(error: unknown): boolean {
-  return !(error instanceof ApiError)
-    || error.status === 429
-    || error.status >= 500
-}
-
 function isCompleteEstimate(
   estimate: RunCostEstimate | undefined,
 ): estimate is Extract<RunCostEstimate, { status: 'estimated' }> {
   return estimate?.status === 'estimated'
-}
-
-function unavailableEstimate(): RunCostEstimate {
-  return {
-    amountUsd: null,
-    currency: 'USD',
-    estimatedJobCount: 0,
-    status: 'unavailable',
-    unavailableJobCount: 1,
-  }
 }
 
 function hasFreshEstimate(input: {
@@ -245,6 +230,10 @@ export function FlowRunCostEstimateProvider({
     revision => revision + 1,
     0,
   )
+  const [manifestResultRevision, advanceManifestResultRevision] = useReducer(
+    revision => revision + 1,
+    0,
+  )
   const [estimateCacheNow, setEstimateCacheNow] = useState(Date.now)
   const refreshIncompleteEstimates = useCallback(
     () => setEstimateCacheNow(Date.now()),
@@ -263,6 +252,19 @@ export function FlowRunCostEstimateProvider({
     key: '',
     offset: 0,
   })
+  const [manifestRequestState, setManifestRequestState]
+    = useState<RunCostEstimateManifestRequestState>({
+      key: '',
+      status: 'idle',
+    })
+  const updateManifestRequestState = useCallback(
+    (state: RunCostEstimateManifestRequestState) => {
+      setManifestRequestState(state)
+      if (state.status === 'error' || state.status === 'success')
+        advanceManifestResultRevision()
+    },
+    [],
+  )
   const previousSourceRef = useRef<RunCostEstimateFingerprintSource | undefined>(
     undefined,
   )
@@ -385,14 +387,20 @@ export function FlowRunCostEstimateProvider({
   }, [queryClient, runtime.flowId, runtime.organizationId])
 
   const allScopeFingerprint = index.all ?? ''
-  const allQueryKey = runCostEstimateQueryKey({
+  const allQueryKey = useMemo(() => runCostEstimateQueryKey({
     command: { mode: 'all' },
     executionMode: runtime.executionMode,
     executionRuntime: runtime.executionRuntime,
     flowId: runtime.flowId,
     organizationId: runtime.organizationId,
     scopeFingerprint: allScopeFingerprint,
-  })
+  }), [
+    allScopeFingerprint,
+    runtime.executionMode,
+    runtime.executionRuntime,
+    runtime.flowId,
+    runtime.organizationId,
+  ])
   const includeAll = includeAllInBatch
     && Boolean(allScopeFingerprint)
     && !hasFreshEstimate({
@@ -400,160 +408,75 @@ export function FlowRunCostEstimateProvider({
       queryClient,
       queryKey: allQueryKey,
     })
-  const nodeIds = batchNodeIds.filter((nodeId) => {
-    const scopeFingerprint = index.nodes[nodeId]
-    return scopeFingerprint
-      && !hasFreshEstimate({
-        now: estimateCacheNow,
-        queryClient,
-        queryKey: runCostEstimateQueryKey({
-          command: { mode: 'node', targetNodeId: nodeId },
-          executionMode: runtime.executionMode,
-          executionRuntime: runtime.executionRuntime,
-          flowId: runtime.flowId,
-          organizationId: runtime.organizationId,
-          scopeFingerprint,
-        }),
-      })
-  })
-
-  const enabled = coordinatorRequested
-    && !dirty
-    && (includeAll || nodeIds.length > 0)
-  const manifestQuery = useQuery({
-    enabled,
-    queryFn: ({ signal }) => postFlowsIdRunCostEstimates(
-      {
-        data: {
-          executionMode: runtime.executionMode,
-          executionRuntime: runtime.executionRuntime,
-          expectedFlowRevision: serverRevision,
-          fundingSource: 'credits',
-          includeAll,
-          nodeIds,
-        },
-        id: runtime.flowId,
-      },
-      {
-        headers: getOrganizationRequestHeaders(runtime.organizationId),
-        signal,
-      },
-    ),
-    queryKey: flowQueryKeys.runCostManifest({
-      estimateContextHash: index.manifest,
-      executionMode: runtime.executionMode,
-      executionRuntime: runtime.executionRuntime,
-      flowId: runtime.flowId,
-      flowRevision: serverRevision,
-      includeAll,
-      nodeIds,
-      organizationId: runtime.organizationId,
-    }),
-    refetchOnWindowFocus: false,
-    retry: (failureCount, error) => failureCount < ESTIMATE_REQUEST_RETRY_LIMIT
-      && retryableEstimateRequestError(error),
-    retryDelay: failureCount => Math.min(
-      ESTIMATE_REQUEST_RETRY_BASE_MS * 2 ** failureCount,
-      4_000,
-    ),
-    staleTime: INCOMPLETE_ESTIMATE_STALE_TIME_MS,
-  })
-  const recordEstimateRecoveryScopes = useBoundedIncompleteEstimateRecovery({
-    active: coordinatorRequested && !dirty,
-    groupKey: incompleteRecoveryGroupKey,
-    recover: refreshIncompleteEstimates,
-    recovering: manifestQuery.isFetching,
-  })
-
-  useEffect(() => {
-    const manifest = manifestQuery.data
-    if (!manifest || manifest.flowRevision !== serverRevision)
-      return
-    if (manifest.allCostEstimate) {
-      queryClient.setQueryData(allQueryKey, manifest.allCostEstimate)
-    }
-    for (const node of manifest.nodes) {
-      const scopeFingerprint = index.nodes[node.nodeId]
-      if (!scopeFingerprint)
-        continue
-      queryClient.setQueryData(runCostEstimateQueryKey({
-        command: { mode: 'node', targetNodeId: node.nodeId },
-        executionMode: runtime.executionMode,
-        executionRuntime: runtime.executionRuntime,
-        flowId: runtime.flowId,
-        organizationId: runtime.organizationId,
-        scopeFingerprint,
-      }), node.costEstimate)
-    }
-    const estimatesByNodeId = new Map(
-      manifest.nodes.map(node => [node.nodeId, node.costEstimate]),
-    )
-    recordEstimateRecoveryScopes([
-      ...(includeAll
-        ? [{
-            complete: isCompleteEstimate(manifest.allCostEstimate),
-            id: 'all',
-          }]
-        : []),
-      ...nodeIds.map(nodeId => ({
-        complete: isCompleteEstimate(estimatesByNodeId.get(nodeId)),
-        id: `node:${nodeId}`,
-      })),
-    ])
-  }, [
-    allQueryKey,
-    index,
-    includeAll,
-    manifestQuery.data,
-    nodeIds,
-    queryClient,
-    recordEstimateRecoveryScopes,
-    runtime.executionMode,
-    runtime.executionRuntime,
-    runtime.flowId,
-    runtime.organizationId,
-    serverRevision,
-  ])
-
-  useEffect(() => {
-    if (!manifestQuery.isError || manifestQuery.isFetching)
-      return
-    if (includeAll)
-      queryClient.setQueryData(allQueryKey, unavailableEstimate())
-    for (const nodeId of nodeIds) {
+  const nodeScopes = useMemo(() => {
+    // Terminal writes invalidate this cache-read memo without moving its expiry clock.
+    void manifestResultRevision
+    return batchNodeIds.flatMap((nodeId) => {
       const scopeFingerprint = index.nodes[nodeId]
       if (!scopeFingerprint)
-        continue
-      queryClient.setQueryData(runCostEstimateQueryKey({
+        return []
+      const queryKey = runCostEstimateQueryKey({
         command: { mode: 'node', targetNodeId: nodeId },
         executionMode: runtime.executionMode,
         executionRuntime: runtime.executionRuntime,
         flowId: runtime.flowId,
         organizationId: runtime.organizationId,
         scopeFingerprint,
-      }), unavailableEstimate())
-    }
-    recordEstimateRecoveryScopes([
-      ...(includeAll ? [{ complete: false, id: 'all' }] : []),
-      ...nodeIds.map(nodeId => ({
-        complete: false,
-        id: `node:${nodeId}`,
-      })),
-    ])
+      })
+      return hasFreshEstimate({
+        now: estimateCacheNow,
+        queryClient,
+        queryKey,
+      })
+        ? []
+        : [{ nodeId, queryKey } satisfies RunCostEstimateManifestNodeScope]
+    })
   }, [
-    allQueryKey,
-    includeAll,
+    batchNodeIds,
+    estimateCacheNow,
     index.nodes,
-    manifestQuery.isError,
-    manifestQuery.isFetching,
-    nodeIds,
+    manifestResultRevision,
     queryClient,
-    recordEstimateRecoveryScopes,
     runtime.executionMode,
     runtime.executionRuntime,
     runtime.flowId,
     runtime.organizationId,
   ])
+  const enabled = coordinatorRequested
+    && !dirty
+    && (includeAll || nodeScopes.length > 0)
+  const manifestRequestKey = [
+    manifestBatchKey,
+    runtime.organizationId,
+    runtime.flowId,
+    runtime.executionMode,
+    runtime.executionRuntime,
+    serverRevision,
+    includeAll,
+    ...nodeScopes.map(scope => `${scope.nodeId}:${index.nodes[scope.nodeId]}`),
+  ].join('\u0001')
+  const manifestRequestFetching = manifestRequestState.key === manifestRequestKey
+    && manifestRequestState.status === 'fetching'
+  const recordEstimateRecoveryScopes = useBoundedIncompleteEstimateRecovery({
+    active: coordinatorRequested && !dirty,
+    groupKey: incompleteRecoveryGroupKey,
+    recover: refreshIncompleteEstimates,
+    recovering: manifestRequestFetching,
+  })
+  useRunCostEstimateManifestTransport({
+    active: enabled,
+    ...(includeAll ? { allQueryKey } : {}),
+    executionMode: runtime.executionMode,
+    executionRuntime: runtime.executionRuntime,
+    expectedFlowRevision: serverRevision,
+    flowId: runtime.flowId,
+    includeAll,
+    nodeScopes,
+    onRecoveryScopes: recordEstimateRecoveryScopes,
+    onRequestStateChange: updateManifestRequestState,
+    organizationId: runtime.organizationId,
+    requestKey: manifestRequestKey,
+  })
 
   useEffect(() => {
     const batchEnd = manifestBatchOffset + batchNodeIds.length
@@ -562,8 +485,13 @@ export function FlowRunCostEstimateProvider({
       || dirty
       || batchNodeIds.length === 0
       || batchEnd >= batchedRequestedScopes.nodeIds.length
-      || manifestQuery.isFetching
-      || (enabled && !manifestQuery.isSuccess && !manifestQuery.isError)
+      || manifestRequestFetching
+      || (enabled
+        && (
+          manifestRequestState.key !== manifestRequestKey
+          || (manifestRequestState.status !== 'success'
+            && manifestRequestState.status !== 'error')
+        ))
     ) {
       return undefined
     }
@@ -580,9 +508,10 @@ export function FlowRunCostEstimateProvider({
     enabled,
     manifestBatchKey,
     manifestBatchOffset,
-    manifestQuery.isError,
-    manifestQuery.isFetching,
-    manifestQuery.isSuccess,
+    manifestRequestFetching,
+    manifestRequestKey,
+    manifestRequestState.key,
+    manifestRequestState.status,
   ])
 
   return (

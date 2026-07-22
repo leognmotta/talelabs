@@ -22,7 +22,6 @@ import { toPersistedGraph } from '../../editor/persistence/flow-graph-serializat
 
 const RUN_COST_SCOPE_HASH_DOMAIN = 'talelabs:run-cost-scope:v1'
 const RUN_COST_SOURCE_HASH_DOMAIN = 'talelabs:run-cost-source:v1'
-const RUN_COST_MANIFEST_HASH_DOMAIN = 'talelabs:run-cost-manifest:v1'
 
 type PersistedGraph = ReturnType<typeof toPersistedGraph>
 
@@ -30,8 +29,6 @@ type PersistedGraph = ReturnType<typeof toPersistedGraph>
 export interface RunCostEstimateScopeIndex {
   /** Whole-Flow estimate scope when requested by the current batch. */
   all?: string
-  /** Cache partition covering every scope in this index. */
-  manifest: string
   /** Direct-node estimate scopes keyed by generation node id. */
   nodes: Readonly<Record<string, string>>
   /** Coarse graph fingerprint used to skip repeated work for position-only edits. */
@@ -339,11 +336,6 @@ export function createRunCostEstimateScopeIndex(input: {
   const accumulatedNodes = { ...previous?.nodes, ...nodes }
   return {
     ...(all ? { all } : {}),
-    manifest: hashCanonicalValue(RUN_COST_MANIFEST_HASH_DOMAIN, {
-      all: input.includeAll ? all : undefined,
-      nodes,
-      version: 1,
-    }),
     nodes: accumulatedNodes,
     source: input.source.source,
   }

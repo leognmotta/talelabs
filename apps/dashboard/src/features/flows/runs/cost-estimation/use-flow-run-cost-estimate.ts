@@ -21,6 +21,7 @@ import { useBoundedIncompleteEstimateRecovery } from './use-bounded-incomplete-e
 
 const ESTIMATE_REQUEST_RETRY_BASE_MS = 1_000
 const ESTIMATE_REQUEST_RETRY_LIMIT = 2
+const ESTIMATE_STALE_TIME_MS = 5 * 60_000
 const INCOMPLETE_ESTIMATE_STALE_TIME_MS = 30_000
 
 type CompleteRunCostEstimate = Extract<RunCostEstimate, { status: 'estimated' }>
@@ -104,6 +105,7 @@ export function useFlowRunCostEstimate(input: {
   })
   const query = useQuery({
     enabled: queryEnabled,
+    gcTime: ESTIMATE_STALE_TIME_MS,
     queryFn: async ({ signal }) => {
       const response = await postFlowsIdRunPlans(
         {
@@ -130,7 +132,9 @@ export function useFlowRunCostEstimate(input: {
       ESTIMATE_REQUEST_RETRY_BASE_MS * 2 ** failureCount,
       4_000,
     ),
-    staleTime: INCOMPLETE_ESTIMATE_STALE_TIME_MS,
+    staleTime: query => query.state.data?.status === 'estimated'
+      ? ESTIMATE_STALE_TIME_MS
+      : INCOMPLETE_ESTIMATE_STALE_TIME_MS,
   })
   const refetchEstimate = query.refetch
   const recoverIncompleteEstimate = useCallback(() => {
