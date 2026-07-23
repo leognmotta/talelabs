@@ -17,7 +17,8 @@
     "build": "tsc",
     "check-types": "tsc --noEmit",
     "dev:build": "tsc --watch --preserveWatchOutput",
-    "migrate": "tsx src/migrate.ts"
+    "migrate": "tsx src/migrate.ts",
+    "verify:direct-create-migration": "tsx scripts/verify-direct-create-migration.ts"
   },
   "dependencies": {
     "dotenv": "^17.2.3",

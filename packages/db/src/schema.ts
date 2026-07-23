@@ -53,16 +53,17 @@ export type AssetSource = 'generation' | 'upload'
 export type AssetVisibility = 'private' | 'public'
 /** Canonical Asset processing lifecycle. */
 export type AssetProcessingState = 'failed' | 'processing' | 'ready'
-/** Presentation surface that owns one ordinary editable Flow identity. */
-export type FlowSurface = 'canvas' | 'create'
 /** Supported Flow graph-selection run modes. */
 export type FlowRunMode
   = | 'all'
+    | 'direct'
     | 'downstream'
     | 'node'
     | 'selection'
     | 'tool'
     | 'upstream'
+/** Immutable request source for one durable run. */
+export type FlowRunSource = 'create' | 'flow'
 /** Durable Flow run lifecycle states. */
 export type FlowRunStatus
   = | 'canceled'
@@ -214,12 +215,29 @@ export interface FlowTable {
   organizationId: string
   createdBy: string | null
   name: string
-  surface: Generated<FlowSurface>
   assetFolderId: string | null
   viewport: GeneratedJsonColumn
   revision: GeneratedBigIntColumn
   createdAt: GeneratedTimestamp
   updatedAt: GeneratedTimestamp
+}
+
+/** Lightweight identity grouping related graph-free Create requests. */
+export interface CreateSessionTable {
+  /** Stable route and history identity. */
+  id: string
+  /** Tenant owning the session and every related run. */
+  organizationId: string
+  /** User who created and privately lists the session. */
+  createdBy: string | null
+  /** Optional user-authored label; the UI supplies a localized fallback. */
+  name: string | null
+  /** Initial session creation instant. */
+  createdAt: GeneratedTimestamp
+  /** Latest rename or admitted direct request instant. */
+  updatedAt: GeneratedTimestamp
+  /** Soft-delete instant; generated Assets and run provenance remain durable. */
+  deletedAt: NullableTimestamp
 }
 
 /** Durable immutable Flow run table contract. */
@@ -228,7 +246,11 @@ export interface FlowRunTable {
   organizationId: string
   createdBy: string | null
   flowId: string | null
+  /** Create session grouping direct runs; null for Flow-backed runs. */
+  createSessionId: Generated<string | null>
   mode: FlowRunMode
+  /** Whether immutable work came from a saved Flow or a direct request. */
+  source: Generated<FlowRunSource>
   /** Driver selected at admission; existing rows default to managed. */
   executionRuntime: Generated<'browser' | 'managed'>
   targetNodeId: string | null
@@ -564,6 +586,7 @@ export interface Database {
   assetFavorites: AssetFavoriteTable
   assetTags: AssetTagTable
   assets: AssetTable
+  createSessions: CreateSessionTable
   elementReferences: ElementReferenceTable
   elements: ElementTable
   flowEdges: FlowEdgeTable
