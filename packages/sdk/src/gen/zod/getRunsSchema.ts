@@ -22,6 +22,9 @@ import { errorResponseSchema } from "./errorResponseSchema.ts";
 import { runListResponseSchema } from "./runListResponseSchema.ts";
 
 export const getRunsQueryParamsSchema = z.object({
+  get createSessionId() {
+    return cuid2Schema.optional();
+  },
   get cursor() {
     return cursorSchema
       .describe("Opaque cursor returned by a previous list response")

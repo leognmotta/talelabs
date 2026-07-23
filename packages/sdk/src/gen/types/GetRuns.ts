@@ -18,6 +18,11 @@ export type GetRunsQueryParamsSourceEnumKey =
 
 export type GetRunsQueryParams = {
   /**
+   * @pattern ^[a-z][0-9a-z]+$
+   * @type string | undefined
+   */
+  createSessionId?: Cuid2;
+  /**
    * @description Opaque cursor returned by a previous list response
    * @type string | undefined
    */

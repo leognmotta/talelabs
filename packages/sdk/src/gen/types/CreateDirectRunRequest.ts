@@ -225,4 +225,9 @@ export type CreateDirectRunRequest = {
   settings: {
     [key: string]: boolean | number | string;
   };
+  /**
+   * @pattern ^[a-z][0-9a-z]+$
+   * @type string | undefined
+   */
+  createSessionId?: Cuid2;
 };

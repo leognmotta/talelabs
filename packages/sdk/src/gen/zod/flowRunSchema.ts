@@ -22,6 +22,13 @@ export const flowRunSchema = z.object({
   ),
   executionMode: z.enum(["live", "debug"]),
   executionRuntime: z.enum(["managed", "browser"]),
+  createSessionId: z.nullable(
+    z
+      .string()
+      .min(2)
+      .max(32)
+      .regex(/^[a-z][0-9a-z]+$/),
+  ),
   flowId: z.nullable(
     z
       .string()

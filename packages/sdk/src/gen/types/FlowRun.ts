@@ -103,6 +103,13 @@ export type FlowRun = {
    * @pattern ^[a-z][0-9a-z]+$
    * @type string
    */
+  createSessionId: string | null;
+  /**
+   * @minLength 2
+   * @maxLength 32
+   * @pattern ^[a-z][0-9a-z]+$
+   * @type string
+   */
   flowId: string | null;
   /**
    * @type string

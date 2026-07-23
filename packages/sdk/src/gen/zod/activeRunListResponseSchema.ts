@@ -11,6 +11,13 @@ export const activeRunListResponseSchema = z.object({
   data: z
     .array(
       z.object({
+        createSessionId: z.nullable(
+          z
+            .string()
+            .min(2)
+            .max(32)
+            .regex(/^[a-z][0-9a-z]+$/),
+        ),
         executionRuntime: z.enum(["managed", "browser"]),
         flowId: z.nullable(
           z

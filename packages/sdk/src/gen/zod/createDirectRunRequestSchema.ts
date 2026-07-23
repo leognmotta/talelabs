@@ -66,4 +66,7 @@ export const createDirectRunRequestSchema = z.object({
   settings: z
     .object({})
     .catchall(z.union([z.boolean(), z.string(), z.number()])),
+  get createSessionId() {
+    return cuid2Schema.optional();
+  },
 }) as unknown as z.ZodType<CreateDirectRunRequest>;
