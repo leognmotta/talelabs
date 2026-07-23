@@ -8,9 +8,10 @@
 > retired and was deleted by migration `027_reset_elements`. The shipped
 > Elements feature is specified only in `docs/elements.md`.
 >
-> **Create note (2026-07-23):** Create is a browser-local direct-generation
-> playground with no Flow/session/graph identity. It admits source `create` runs
-> through the run domain and shares compilation, browser/managed execution,
+> **Create note (2026-07-23):** Create is a direct-generation playground with
+> lightweight durable session identity and browser-local drafts. It has no Flow
+> or graph identity. Source `create` runs carry a required `createSessionId`
+> through the run domain and share compilation, browser/managed execution,
 > providers, output finalization, and canonical Assets with Flow runs.
 
 Supersedes `api-design-planning.md` (deprecated). Companion to `db-design-planning-v2.md` — every endpoint here maps onto that schema and its contracts; nothing is invented API-side that the DB doc doesn't back.
@@ -115,6 +116,7 @@ type ApiError = {
 | Tags     | `GET /tags` · `POST /tags` · `DELETE /tags/:id`                                                                                                                                                                                                                                                                 |
 | Flows    | `GET /flows` · `POST /flows` · `GET /flows/:id` · `PATCH /flows/:id` · `DELETE /flows/:id` · `GET /flows/:id/graph` · `GET /flows/:id/references` · `POST /flows/:id/graph` · `GET /flows/:id/nodes/:nodeId/results`                                                                                            |
 | Elements | `GET /elements` · `POST /elements` · `GET /elements/:id` · `PATCH /elements/:id` · `DELETE /elements/:id` · `PATCH /elements/:id/references`                                                                                                                                                                     |
+| Create Sessions | `GET /create-sessions` · `GET /create-sessions/:id` · `PATCH /create-sessions/:id` · `DELETE /create-sessions/:id`                                                                                                                                                                                         |
 | Runs     | `POST /flows/:id/run-plans` · `POST /runs` · `POST /runs/create/estimate` · `POST /runs/create` · `GET /runs` · `GET /runs/active` · `GET /runs/:id` · `POST /runs/:id/cancel` · `POST /runs/:id/retry` · `POST /runs/:id/realtime-token`                                                                                  |
 | Config   | `GET /config/generation`                                                                                                                                                                                                                                                                                        |
 
@@ -634,8 +636,9 @@ DELETE /flows/:id                     -> 204                      (graph cascade
 ```
 
 Every Flow is an ordinary spatial document. The API has no Create surface
-discriminator, filter, session identity, or clone-to-canvas action. Create
-drafts and history never use Flow CRUD.
+discriminator, filter, or clone-to-canvas action. Create drafts and history
+never use Flow CRUD; the separate lightweight Create-session API owns only
+route, naming, and history-grouping identity.
 
 ### `GET /flows/:id/graph` — open the canvas
 
@@ -756,10 +759,28 @@ type RunSource = "flow" | "create";
 
 Flow sources freeze one persisted graph revision and accept `node`,
 `downstream`, `upstream`, `selection`, or `all`. Create sources freeze one
-direct generation request, use mode `direct`, and have `flowId = null`. Both
-carry the same generic `ExecutionPlan`, private execution contracts, durable
-jobs, browser/managed drivers, cancellation, retry, realtime, accounting, and
-canonical output Assets.
+direct generation request, use mode `direct`, have `flowId = null`, and carry a
+required `createSessionId`. Both carry the same generic `ExecutionPlan`, private
+execution contracts, durable jobs, browser/managed drivers, cancellation,
+retry, realtime, accounting, and canonical output Assets.
+
+### Create sessions
+
+```txt
+GET    /create-sessions?search=&limit=&cursor=
+GET    /create-sessions/:id
+PATCH  /create-sessions/:id { name }
+DELETE /create-sessions/:id
+```
+
+These routes are tenant- and creator-scoped. A session contains no draft,
+messages, graph, model configuration, or generated outputs. Deletion is a
+presentation-only soft delete: run history, generation provenance, and
+canonical Assets remain durable.
+
+There is no standalone Create-session creation endpoint. Opening `/create`
+creates nothing. The first `POST /runs/create` with no `createSessionId`
+atomically creates the session and first run.
 
 ### `POST /runs/create/estimate` - estimate one direct request
 
@@ -793,20 +814,28 @@ after locking authoritative Asset rows; this estimate is never trusted input.
 
 The creative body is the same as the estimate request plus the selected
 `fundingSource`, `executionRuntime`, and optional non-secret browser provider
-identifiers. Provider credentials and private bindings are forbidden.
+identifiers. It also accepts optional `createSessionId`; omission means this is
+the first run of a new session. Provider credentials and private bindings are
+forbidden.
 
 `Idempotency-Key` is required and follows the same organization-scoped replay
 rules as Flow admission. The server authenticates and authorizes the caller,
 normalizes supported legacy slot aliases, validates settings and structured
 prompt references, enforces shared active-run capacity, locks every referenced
 tenant Asset in stable ID order, recompiles from those locked facts,
-recalculates cost, resolves one exact private binding, and inserts:
+recalculates cost, resolves one exact private binding, locks and validates an
+existing creator-owned Create session or creates one, and inserts:
 
 ```txt
-run source=create, mode=direct, flowId=null
+create session + run source=create, mode=direct, flowId=null
+             and createSessionId=<required durable session>
 -> immutable direct source + generic ExecutionPlan
 -> ordinary durable step/item/generation-job rows
 ```
+
+Session creation and first-run admission are one transaction. A failed
+admission cannot leave an empty session. Later admissions and retries preserve
+the same session ID and touch its `updatedAt` ordering field.
 
 Managed execution dispatches the existing Trigger.dev orchestrator. Browser
 execution returns the existing browser manifest and keeps credentials local.
@@ -993,12 +1022,12 @@ The query chooses exactly one history shape:
 
 ```txt
 ?source=flow&flowId=&limit=&cursor=
-?source=create&limit=&cursor=
+?source=create&createSessionId=&limit=&cursor=
 ```
 
 Flow history is tenant- and Flow-scoped. Create history is tenant-scoped,
-filtered to the authenticated creator, requires `flowId is null`, and has no
-session grouping.
+filtered to the authenticated creator, requires the creator-owned
+`createSessionId`, and requires `flowId is null`.
 
 The cursor page is a bounded presentation read: it selects run summary fields,
 aggregated step counts, one validated representative request projection, and a

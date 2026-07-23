@@ -22,16 +22,16 @@ open /create
 
 Create has:
 
-- one route, `/create`;
-- one browser-local mutable draft;
-- same-tab recovery storage for that unsent draft;
-- durable creator-scoped run history;
+- `/create` for a new unsaved session draft;
+- `/create/:sessionId` for an existing durable Create session;
+- one browser-local mutable draft per new or persisted session;
+- same-tab recovery storage for each unsent draft;
+- durable creator-scoped run history grouped by session;
 - the same model catalog, generation compiler, execution runtimes, provider
   adapters, accounting, and Asset ingestion used by Flows.
 
 Create has no:
 
-- session;
 - Flow identity;
 - graph, node, edge, viewport, or graph revision;
 - graph autosave or revision-conflict workflow;
@@ -100,10 +100,13 @@ The mutable Create draft contains only presentation and request facts:
 - normalized provider-neutral settings;
 - ordered canonical Asset IDs assigned to semantic input slots.
 
-The draft is keyed by the authenticated user and active organization, not by a
-Flow or run. It may be recovered from same-tab storage after navigation or a
-refresh. Opening or editing `/create` must not create a database row and must
-not issue a graph-save request.
+The draft is keyed by the authenticated user, active organization, and either
+the durable Create session ID or the reserved new-session key. It may be
+recovered from same-tab storage after navigation or a refresh. Opening or
+editing `/create` must not create a database row and must not issue a graph-save
+request. The first Generate from a new draft atomically creates the lightweight
+Create session and its first run, then replace-navigates to
+`/create/:sessionId`.
 
 Asset uploads still create canonical Assets through the Asset system. Adding an
 uploaded or existing Asset to the draft stores only its canonical identity and
@@ -119,6 +122,8 @@ must never be dropped merely because its historical slot name changed.
 `POST /runs/create` admits one direct generation command. Its bounded public
 request contains:
 
+- optional `createSessionId`, omitted only when the first run should create a
+  new session;
 - `mediaMode` and `audioIntent` when the mode is Audio;
 - `modelContractVersion`, `modelId`, and `operationId`;
 - `promptTemplates`;
@@ -150,8 +155,11 @@ The server independently:
 10. applies shared active-run capacity policy;
 11. resolves advisory cost with the existing cost router;
 12. resolves and freezes one exact private provider binding;
-13. persists one immutable run and its ordinary generation job;
-14. dispatches through the selected existing runtime.
+13. locks and validates the requested creator-owned Create session, or creates
+    one when `createSessionId` is omitted;
+14. persists that session relationship, one immutable run, and its ordinary
+    generation job in the same transaction;
+15. dispatches through the selected existing runtime.
 
 Admission uses the run domain's stable organization-scoped idempotency
 boundary. Reusing a key with a different request is rejected. A retry clones
@@ -177,13 +185,14 @@ type RunSource =
     }
   | {
       kind: 'create'
+      createSessionId: string
       request: FrozenDirectGenerationRequest
     }
 ```
 
 A Flow run references a persisted Flow and freezes the exact graph evidence
-used by DAG planning. A Create run has `flowId = null`, mode `direct`, and
-source `create`.
+used by DAG planning. A Create run has `flowId = null`, a required durable
+`createSessionId`, mode `direct`, and source `create`.
 
 The current immutable snapshot envelope contains:
 
@@ -234,17 +243,19 @@ and Asset state, never from the unsent local draft.
 
 ## History And Observation
 
-`GET /runs?source=create` returns cursor-paginated direct history filtered by:
+`GET /runs?source=create&createSessionId=...` returns cursor-paginated direct
+history filtered by:
 
 - active organization;
 - authenticated creator;
+- the required creator-owned Create session;
 - run source `create`;
 - `flowId is null`.
 
-Create history is not grouped by a session or Flow. Its newest page is a
-separate refreshable query. Older pages are immutable, retained with a bounded
-`maxPages`, and are not invalidated by ordinary realtime transitions, focus,
-or reconnect.
+Create history is grouped by its lightweight session, never by a Flow. Its
+newest page is a separate refreshable query. Older pages are immutable,
+retained with a bounded `maxPages`, and are not invalidated by ordinary
+realtime transitions, focus, or reconnect.
 
 `GET /runs/active` is a lean identity read: it does not load snapshots, jobs,
 outputs, or signed media URLs. Run detail remains the explicit hydrated read.
@@ -286,8 +297,11 @@ continuation.
 
 ## Route And Persistence Rules
 
-- `/create` is the only Create route.
-- `/create/:id` does not exist.
+- `/create` opens a new browser-local draft and creates no database row.
+- `/create/:sessionId` opens one creator-owned durable session and its
+  cursor-paginated run history.
+- The first Generate on `/create` creates the session and first run atomically,
+  then replace-navigates to the durable route.
 - Create does not call Flow create, graph batch-save, rename, delete, or clone
   endpoints.
 - Flow list endpoints contain only ordinary Flows and have no surface filter.
@@ -315,7 +329,7 @@ This feature does not add:
 
 - conversations, agents, or tool use;
 - server-side Create drafts;
-- templates or reusable Create sessions;
+- session templates, presets, sharing, or collaboration;
 - graph synthesis;
 - Create-specific provider routing;
 - new provider protocols;
@@ -329,21 +343,26 @@ decision and must define its own explicit user intent and provenance semantics.
 
 The feature is acceptable only when:
 
-1. opening and editing `/create` creates no Flow and sends no graph mutation;
-2. Generate issues one direct admission request;
-3. the run is source `create`, mode `direct`, and has `flowId = null`;
-4. the snapshot contains a direct source and generic execution plan with no
+1. opening and editing `/create` creates no Flow, session row, or graph
+   mutation;
+2. the first Generate atomically creates one lightweight session and one direct
+   run, then replace-navigates to `/create/:sessionId`;
+3. later Generate actions reuse that creator-owned session;
+4. the run is source `create`, mode `direct`, has `flowId = null`, and has a
+   required `createSessionId`;
+5. the snapshot contains a direct source and generic execution plan with no
    graph data;
-5. direct and Flow generation use the same `compileGenerationJob()` function;
-6. browser BYOK and managed debug execution use the existing fake-provider
+6. direct and Flow generation use the same `compileGenerationJob()` function;
+7. browser BYOK and managed debug execution use the existing fake-provider
    verification paths;
-7. every referenced Asset is tenant-validated and locked;
-8. Image, Video, Speech, Music, and Sound Effect requests compile;
-9. estimate and admission produce the same canonical job shape;
-10. cancellation, retry, realtime recovery, accounting, finalization, and
+8. every referenced Asset is tenant-validated and locked;
+9. Image, Video, Speech, Music, and Sound Effect requests compile;
+10. estimate and admission produce the same canonical job shape;
+11. cancellation, retry, realtime recovery, accounting, finalization, and
     canonical Asset ingestion remain shared;
-11. outputs hydrate after refresh;
-12. Create history is cursor-paginated, creator-scoped, and bounded;
-13. Canvas planning and browser/managed snapshot parity remain unchanged;
-14. no Create identity appears in the Flow library;
-15. compatible legacy input aliases survive model-contract upgrades.
+12. outputs hydrate after refresh;
+13. Create history is session-scoped, cursor-paginated, creator-scoped, and
+    bounded;
+14. Canvas planning and browser/managed snapshot parity remain unchanged;
+15. no Create identity appears in the Flow library;
+16. compatible legacy input aliases survive model-contract upgrades.

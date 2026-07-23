@@ -47,10 +47,13 @@ The active MVP entities are:
 Assets
 Flows
 Elements   (shipped 2026-07-18 — simplified reference collections)
+Create Sessions (lightweight direct-history identity; never a Flow or graph)
 ```
 
-Create was approved on 2026-07-22 as a direct presentation surface over an
-ordinary Flow, not as another entity or runtime. Its R0-R5 delivery contract is
+Create was approved on 2026-07-22 as a direct-generation surface over the
+shared run engine. It uses lightweight durable sessions for routes and grouped
+history, but never persists a Flow, graph, server-side draft, or parallel
+runtime. Its binding delivery contract is
 `docs/feature-research/direct-ai-asset-creation.md`.
 
 Elements shipped after the M4 Assets + Canvas loop as a simplified reusable
@@ -71,7 +74,7 @@ or multi-output Element nodes.
 6. User-owned run UX and end-to-end QA
 7. One real provider vertical slice
 8. Reliability and internal MVP staging
-9. Direct Create surface over the proven Flow execution spine
+9. Direct Create sessions over the proven shared execution spine
 10. Billing and credits as a separate productization phase
 ```
 

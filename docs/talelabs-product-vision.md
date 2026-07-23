@@ -31,7 +31,7 @@ Each entity has one clear responsibility:
 ```txt
 Assets = media the user owns and can reuse
 Flows  = ordinary editable graphs and the visual environment for advanced work
-Create = browser-local direct Image, Video, and Audio generation
+Create = lightweight sessions for direct Image, Video, and Audio generation
 ```
 
 Elements are the third product entity since 2026-07-18: named, ordered
@@ -306,15 +306,19 @@ Assets directly to a generation node without first creating an Element.
 
 ## Create And Flows
 
-Create is one stateless direct-generation playground. Its unsent request is
-recovered only from browser-local same-tab storage; it has no session, Flow
-identity, graph, revision, autosave, or conversion into Canvas. Its durable
-runs are creator-scoped execution history, not editable documents.
+Create is a direct-generation playground split into lightweight durable
+sessions. A session provides a stable route, user-authored name, and
+creator-scoped run history. It is not an editable document: the unsent request
+is recovered from browser-local same-tab storage keyed by session, while the
+server stores no Create draft, Flow identity, graph, revision, or autosave.
+There is no implicit conversion into Canvas.
 
 Flows are the advanced spatial creative surface. Their persisted graphs own DAG
 selection, topology, dependency planning, and multi-step authoring.
 
-Create and Flows share generation compilation and execution, not persistence.
+Create and Flows share generation compilation and execution, not editable
+document persistence. Create persists only session identity and durable run
+history; Flows persist graphs.
 After validating current-catalog request facts, Create calls the same
 provider-neutral generation-job compiler that the Flow planner calls after
 resolving graph dependencies. Both produce the same generic execution-plan and
@@ -889,23 +893,6 @@ Storyboard = sequential scene and shot structure
 
 Do not build Storyboard as part of the first sellable loop.
 
-### Simple AI Generation Page
-
-A dedicated simple generation page may return later for users who want a direct form instead of opening a Flow. This corresponds to the earlier Generate page concept.
-
-It would provide a fast path for one-off image, video, or audio generation while still using the same underlying systems:
-
-```txt
-same Assets
-same Elements
-same model configuration
-same generation jobs
-same billing rules
-same output ingestion
-```
-
-It must not become a second independent generation architecture. A simple generation could internally create a lightweight session or one-step Flow, but that implementation decision belongs to later planning.
-
 ### Additional Deferred Layers
 
 Other possible later layers include:
@@ -960,7 +947,7 @@ Credits belong in the header, account, usage, and billing experiences rather tha
 8. Treat multiple connected context sources as a core generation capability, not a later migration.
 9. Preserve immutable generation provenance when execution work resumes.
 10. Add new surfaces only when they extend the core loop and have evidence behind them.
-11. Defer Storyboard, simple Generate, editing, collaboration, Recipes, and Tools until the core loop works.
+11. Defer Storyboard, editing, collaboration, Recipes, and Tools until the core loop works.
 12. Keep models behind a creative, capability-aware interface.
 13. Keep provider integrations replaceable so direct APIs can be added as TaleLabs scales.
 14. Keep storage, async jobs, tenant isolation, and generation reliability as foundational infrastructure.

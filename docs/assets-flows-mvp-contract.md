@@ -43,12 +43,15 @@ Assets
 Elements
 ```
 
-`Create` is a stateless direct-generation playground, not a durable product
-entity or another graph surface. Its unsent mutable draft is recovered only
-from browser-local same-tab storage. It has no session, Flow identity, node,
-edge, graph revision, graph autosave, or conversion into Canvas.
+`Create` is a direct-generation playground organized into lightweight durable
+sessions. A session is only a stable route and history grouping identity; it is
+not a graph document. The unsent mutable draft is recovered from browser-local
+same-tab storage keyed by session. Create has no Flow identity, node, edge,
+graph revision, graph autosave, or implicit conversion into Canvas.
 
-Create and Flows share generation compilation and execution, not persistence.
+Create and Flows share generation compilation and execution, not editable
+document persistence. Create persists session identity and durable runs; Flows
+persist spatial graphs.
 Create validates one direct request and invokes the same provider-neutral
 generation-job compiler used by the Flow planner after DAG resolution. Both
 produce a generic immutable execution plan, execute through the same browser or
@@ -232,11 +235,12 @@ the code-owned model inventory here.
 ## Persistence And Compatibility
 
 - Flow graphs remain normalized in `flows`, `flowNodes`, and `flowEdges`.
-- Create drafts never enter those tables. `/create` uses browser-local recovery
-  and has no Flow/session/graph identity.
+- Create drafts never enter those tables. `/create` is a new local draft and
+  `/create/:sessionId` reopens one durable history grouping. First Generate
+  creates the session and run atomically. The session contains no graph.
 - Durable runs have a discriminated `flow | create` source. A Create run has
-  `flowId = null`, mode `direct`, a bounded frozen request, and the same generic
-  execution plan consumed by Flow runs.
+  `flowId = null`, a required `createSessionId`, mode `direct`, a bounded frozen
+  request, and the same generic execution plan consumed by Flow runs.
 - Flow browsing has no Create surface filter, and there is no Create-to-Canvas
   clone or conversion contract.
 - `flowNodes` has no Element foreign key in the active schema.
