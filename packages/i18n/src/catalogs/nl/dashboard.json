@@ -162,6 +162,7 @@
       "elapsed_one": "Loopt al {{count}} seconde",
       "elapsed_other": "Loopt al {{count}} seconden",
       "loadEarlier": "Eerdere laden",
+      "scrollToLatest": "Naar het nieuwste",
       "retry": "Aanvraag opnieuw proberen",
       "reuseRequest": "Aanvraag hergebruiken",
       "requestReused": "Aanvraag hersteld in de editor",

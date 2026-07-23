@@ -162,6 +162,7 @@
       "elapsed_one": "Działa od {{count}} sekundy",
       "elapsed_other": "Działa od {{count}} sekund",
       "loadEarlier": "Wczytaj wcześniejsze",
+      "scrollToLatest": "Przejdź do najnowszych",
       "retry": "Ponów żądanie",
       "reuseRequest": "Użyj żądania ponownie",
       "requestReused": "Przywrócono żądanie w edytorze",

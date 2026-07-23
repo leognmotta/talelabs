@@ -173,6 +173,7 @@
       "elapsed_one": "Em execução há {{count}} segundo",
       "elapsed_other": "Em execução há {{count}} segundos",
       "loadEarlier": "Carregar anteriores",
+      "scrollToLatest": "Ir para o mais recente",
       "retry": "Tentar solicitação novamente",
       "reuseRequest": "Reutilizar solicitação",
       "requestReused": "Solicitação restaurada no compositor",

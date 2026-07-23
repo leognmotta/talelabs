@@ -162,6 +162,7 @@
       "elapsed_one": "En ejecución durante {{count}} segundo",
       "elapsed_other": "En ejecución durante {{count}} segundos",
       "loadEarlier": "Cargar anteriores",
+      "scrollToLatest": "Ir a lo más reciente",
       "retry": "Reintentar solicitud",
       "reuseRequest": "Reutilizar solicitud",
       "requestReused": "Solicitud restaurada en el compositor",

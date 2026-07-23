@@ -173,6 +173,7 @@
       "elapsed_one": "Running for {{count}} second",
       "elapsed_other": "Running for {{count}} seconds",
       "loadEarlier": "Load earlier",
+      "scrollToLatest": "Scroll to latest",
       "retry": "Retry request",
       "reuseRequest": "Reuse request",
       "requestReused": "Request restored in the composer",

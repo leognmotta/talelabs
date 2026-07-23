@@ -162,6 +162,7 @@
       "elapsed_one": "Rulează de {{count}} secundă",
       "elapsed_other": "Rulează de {{count}} secunde",
       "loadEarlier": "Încarcă solicitările anterioare",
+      "scrollToLatest": "Mergeți la cel mai recent rezultat",
       "retry": "Reîncearcă solicitarea",
       "reuseRequest": "Refolosește solicitarea",
       "requestReused": "Solicitare restaurată în editor",

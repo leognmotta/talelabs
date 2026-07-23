@@ -162,6 +162,7 @@
       "elapsed_one": "Läuft seit {{count}} Sekunde",
       "elapsed_other": "Läuft seit {{count}} Sekunden",
       "loadEarlier": "Ältere laden",
+      "scrollToLatest": "Zum neuesten Eintrag",
       "retry": "Anfrage wiederholen",
       "reuseRequest": "Anfrage wiederverwenden",
       "requestReused": "Anfrage im Editor wiederhergestellt",
