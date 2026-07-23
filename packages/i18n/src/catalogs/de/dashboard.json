@@ -155,6 +155,9 @@
     },
     "history": {
       "label": "Anfrage- und Ergebnisverlauf",
+      "view": "Verlaufsansicht",
+      "timelineView": "Zeitleistenansicht",
+      "gridView": "Rasteransicht",
       "request": "Generierungsanfrage",
       "mediaInput": "Medieneingabe",
       "requestTitle": "{{model}}, {{operation}}, {{count}} Ausgabe",

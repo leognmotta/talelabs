@@ -166,6 +166,9 @@
     },
     "history": {
       "label": "Histórico de solicitações e resultados",
+      "view": "Visualização do histórico",
+      "timelineView": "Visualização em linha do tempo",
+      "gridView": "Visualização em grade",
       "request": "Solicitação de geração",
       "mediaInput": "Entrada de mídia",
       "requestTitle": "{{model}}, {{operation}}, {{count}} saída",

@@ -166,6 +166,9 @@
     },
     "history": {
       "label": "Histórico de pedidos e resultados",
+      "view": "Vista do histórico",
+      "timelineView": "Vista de cronologia",
+      "gridView": "Vista em grelha",
       "request": "Pedido de geração",
       "mediaInput": "Entrada multimédia",
       "requestTitle": "{{model}}, {{operation}}, {{count}} saída",

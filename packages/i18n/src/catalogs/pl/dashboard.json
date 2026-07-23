@@ -155,6 +155,9 @@
     },
     "history": {
       "label": "Historia żądań i wyników",
+      "view": "Widok historii",
+      "timelineView": "Widok osi czasu",
+      "gridView": "Widok siatki",
       "request": "Żądanie generowania",
       "mediaInput": "Dane multimedialne",
       "requestTitle": "{{model}}, {{operation}}, {{count}} wynik",

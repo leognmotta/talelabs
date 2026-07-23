@@ -155,6 +155,9 @@
     },
     "history": {
       "label": "Aanvraag- en resultaatgeschiedenis",
+      "view": "Geschiedenisweergave",
+      "timelineView": "Tijdlijnweergave",
+      "gridView": "Rasterweergave",
       "request": "Generatieaanvraag",
       "mediaInput": "Media-invoer",
       "requestTitle": "{{model}}, {{operation}}, {{count}} uitvoer",

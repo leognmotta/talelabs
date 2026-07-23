@@ -155,6 +155,9 @@
     },
     "history": {
       "label": "Historique des demandes et résultats",
+      "view": "Affichage de l’historique",
+      "timelineView": "Vue chronologique",
+      "gridView": "Vue en grille",
       "request": "Demande de génération",
       "mediaInput": "Entrée multimédia",
       "requestTitle": "{{model}}, {{operation}}, {{count}} sortie",

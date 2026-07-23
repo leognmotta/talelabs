@@ -155,6 +155,9 @@
     },
     "history": {
       "label": "Istoricul solicitărilor și rezultatelor",
+      "view": "Vizualizarea istoricului",
+      "timelineView": "Vizualizare cronologică",
+      "gridView": "Vizualizare grilă",
       "request": "Solicitare de generare",
       "mediaInput": "Intrare media",
       "requestTitle": "{{model}}, {{operation}}, {{count}} rezultat",
