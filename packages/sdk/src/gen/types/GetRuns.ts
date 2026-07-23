@@ -6,77 +6,26 @@
 import type { Cuid2 } from "./Cuid2.ts";
 import type { Cursor } from "./Cursor.ts";
 import type { ErrorResponse } from "./ErrorResponse.ts";
-import type { PaginationLimit } from "./PaginationLimit.ts";
 import type { RunListResponse } from "./RunListResponse.ts";
 
-export const getRunsQueryParamsBrowserWorkEnum = {
-  pending: "pending",
-} as const;
-
-export type GetRunsQueryParamsBrowserWorkEnumKey =
-  (typeof getRunsQueryParamsBrowserWorkEnum)[keyof typeof getRunsQueryParamsBrowserWorkEnum];
-
-export const getRunsQueryParamsExecutionRuntimeEnum = {
-  managed: "managed",
-  browser: "browser",
-} as const;
-
-export type GetRunsQueryParamsExecutionRuntimeEnumKey =
-  (typeof getRunsQueryParamsExecutionRuntimeEnum)[keyof typeof getRunsQueryParamsExecutionRuntimeEnum];
-
-export const getRunsQueryParamsScopeEnum = {
-  all: "all",
-  mine: "mine",
-} as const;
-
-export type GetRunsQueryParamsScopeEnumKey =
-  (typeof getRunsQueryParamsScopeEnum)[keyof typeof getRunsQueryParamsScopeEnum];
-
-export const getRunsQueryParamsStatusEnum = {
-  pending: "pending",
-  running: "running",
-  succeeded: "succeeded",
-  partial: "partial",
-  failed: "failed",
-  canceled: "canceled",
-} as const;
-
-export type GetRunsQueryParamsStatusEnumKey =
-  (typeof getRunsQueryParamsStatusEnum)[keyof typeof getRunsQueryParamsStatusEnum];
-
 export type GetRunsQueryParams = {
-  /**
-   * @type string | undefined
-   */
-  browserWork?: GetRunsQueryParamsBrowserWorkEnumKey;
   /**
    * @description Opaque cursor returned by a previous list response
    * @type string | undefined
    */
   cursor?: Cursor;
   /**
-   * @type string | undefined
-   */
-  executionRuntime?: GetRunsQueryParamsExecutionRuntimeEnumKey;
-  /**
    * @pattern ^[a-z][0-9a-z]+$
-   * @type string | undefined
+   * @type string
    */
-  flowId?: Cuid2;
+  flowId: Cuid2;
   /**
-   * @default 50
+   * @minLength 1
+   * @maxLength 20
+   * @default 20
    * @type integer | undefined
    */
-  limit?: PaginationLimit;
-  /**
-   * @default "all"
-   * @type string | undefined
-   */
-  scope?: GetRunsQueryParamsScopeEnumKey;
-  /**
-   * @type string | undefined
-   */
-  status?: GetRunsQueryParamsStatusEnumKey;
+  limit?: number;
 };
 
 /**

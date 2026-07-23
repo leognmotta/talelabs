@@ -27,7 +27,7 @@ function getGetRunsUrl() {
  * {@link /runs}
  */
 export async function getRuns(
-  { params }: { params?: GetRunsQueryParams } = {},
+  { params }: { params: GetRunsQueryParams },
   config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;

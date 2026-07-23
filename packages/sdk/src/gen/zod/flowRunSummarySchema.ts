@@ -63,6 +63,7 @@ export const flowRunSummarySchema = z.object({
   get assetOutputs() {
     return z.array(flowRunAssetOutputSchema);
   },
+  assetOutputsTruncated: z.boolean(),
   nodeCounts: z.object({}).catchall(z.int().min(0)),
   requestSummary: z.nullable(
     z.object({

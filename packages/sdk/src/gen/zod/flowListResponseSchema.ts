@@ -5,11 +5,11 @@
 
 import * as z from "zod";
 import type { FlowListResponse } from "../types/FlowListResponse.ts";
-import { flowSchema } from "./flowSchema.ts";
+import { flowListItemSchema } from "./flowListItemSchema.ts";
 
 export const flowListResponseSchema = z.object({
   get data() {
-    return z.array(flowSchema);
+    return z.array(flowListItemSchema);
   },
   nextCursor: z.nullable(z.string().min(1).max(2048)),
 }) as unknown as z.ZodType<FlowListResponse>;

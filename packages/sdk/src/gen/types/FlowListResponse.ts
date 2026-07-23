@@ -3,13 +3,13 @@
  * Do not edit manually.
  */
 
-import type { Flow } from "./Flow.ts";
+import type { FlowListItem } from "./FlowListItem.ts";
 
 export type FlowListResponse = {
   /**
    * @type array
    */
-  data: Flow[];
+  data: FlowListItem[];
   /**
    * @minLength 1
    * @maxLength 2048

@@ -639,10 +639,11 @@ export const getRunsIdBrowserManifest200Schema = z.object({
       status: z.enum(["pending", "running", "succeeded", "failed", "canceled"]),
     }),
   ),
-  manifestVersion: z.literal(2),
+  manifestVersion: z.literal(3),
   run: z.object({
     executionMode: z.enum(["debug", "live"]),
     executionRuntime: z.enum(["browser"]),
+    flowId: z.nullable(z.string()),
     flowRevision: z.int().min(0),
     id: z.string(),
     planHash: z.string(),

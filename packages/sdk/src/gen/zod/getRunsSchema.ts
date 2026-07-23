@@ -19,34 +19,18 @@ import type {
 import { cuid2Schema } from "./cuid2Schema.ts";
 import { cursorSchema } from "./cursorSchema.ts";
 import { errorResponseSchema } from "./errorResponseSchema.ts";
-import { paginationLimitSchema } from "./paginationLimitSchema.ts";
 import { runListResponseSchema } from "./runListResponseSchema.ts";
 
 export const getRunsQueryParamsSchema = z.object({
-  browserWork: z.optional(z.enum(["pending"])),
   get cursor() {
     return cursorSchema
       .describe("Opaque cursor returned by a previous list response")
       .optional();
   },
-  executionRuntime: z.optional(z.enum(["managed", "browser"])),
   get flowId() {
-    return cuid2Schema.optional();
+    return cuid2Schema;
   },
-  get limit() {
-    return paginationLimitSchema.default(50).optional();
-  },
-  scope: z.enum(["all", "mine"]).default("all"),
-  status: z.optional(
-    z.enum([
-      "pending",
-      "running",
-      "succeeded",
-      "partial",
-      "failed",
-      "canceled",
-    ]),
-  ),
+  limit: z.optional(z.coerce.number().int().min(1).max(20).default(20)),
 }) as unknown as z.ZodType<GetRunsQueryParams>;
 
 /**

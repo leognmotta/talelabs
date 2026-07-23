@@ -8,6 +8,13 @@ import type { RunRealtimeToken } from "../types/RunRealtimeToken.ts";
 import { timestampSchema } from "./timestampSchema.ts";
 
 export const runRealtimeTokenSchema = z.object({
+  flowId: z.nullable(
+    z
+      .string()
+      .min(2)
+      .max(32)
+      .regex(/^[a-z][0-9a-z]+$/),
+  ),
   triggerRunId: z.string(),
   publicAccessToken: z.string(),
   get expiresAt() {

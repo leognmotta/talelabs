@@ -327,7 +327,7 @@ export type JobsStatusEnumKey =
   (typeof jobsStatusEnum)[keyof typeof jobsStatusEnum];
 
 export const getRunsIdBrowserManifest200ManifestVersionEnum = {
-  "2": 2,
+  "3": 3,
 } as const;
 
 export type GetRunsIdBrowserManifest200ManifestVersionEnumKey =
@@ -1485,6 +1485,10 @@ export type GetRunsIdBrowserManifest200 = {
      * @type string
      */
     executionRuntime: RunExecutionRuntimeEnumKey;
+    /**
+     * @type string
+     */
+    flowId: string | null;
     /**
      * @minLength 0
      * @type integer

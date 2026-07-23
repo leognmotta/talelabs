@@ -1482,7 +1482,7 @@
           "data": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/Flow"
+              "$ref": "#/components/schemas/FlowListItem"
             }
           },
           "nextCursor": {
@@ -1495,6 +1495,74 @@
         "required": [
           "data",
           "nextCursor"
+        ]
+      },
+      "FlowListItem": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Flow"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "activeRunStatus": {
+                "type": "string",
+                "nullable": true,
+                "enum": [
+                  "pending",
+                  "running",
+                  null
+                ]
+              },
+              "latestOutput": {
+                "type": "object",
+                "nullable": true,
+                "properties": {
+                  "assetId": {
+                    "$ref": "#/components/schemas/Cuid2"
+                  },
+                  "thumbnailUrl": {
+                    "type": "string",
+                    "nullable": true,
+                    "format": "uri"
+                  },
+                  "type": {
+                    "$ref": "#/components/schemas/AssetType"
+                  }
+                },
+                "required": [
+                  "assetId",
+                  "thumbnailUrl",
+                  "type"
+                ]
+              }
+            },
+            "required": [
+              "activeRunStatus",
+              "latestOutput"
+            ]
+          }
+        ]
+      },
+      "FlowViewport": {
+        "type": "object",
+        "properties": {
+          "x": {
+            "type": "number"
+          },
+          "y": {
+            "type": "number"
+          },
+          "zoom": {
+            "type": "number",
+            "minimum": 0.05,
+            "maximum": 8
+          }
+        },
+        "required": [
+          "x",
+          "y",
+          "zoom"
         ]
       },
       "Flow": {
@@ -1539,27 +1607,6 @@
           "createdBy",
           "createdAt",
           "updatedAt"
-        ]
-      },
-      "FlowViewport": {
-        "type": "object",
-        "properties": {
-          "x": {
-            "type": "number"
-          },
-          "y": {
-            "type": "number"
-          },
-          "zoom": {
-            "type": "number",
-            "minimum": 0.05,
-            "maximum": 8
-          }
-        },
-        "required": [
-          "x",
-          "y",
-          "zoom"
         ]
       },
       "CreateFlowRequest": {
@@ -2676,6 +2723,9 @@
               "$ref": "#/components/schemas/FlowRunAssetOutput"
             }
           },
+          "assetOutputsTruncated": {
+            "type": "boolean"
+          },
           "nodeCounts": {
             "type": "object",
             "additionalProperties": {
@@ -2911,6 +2961,7 @@
           "completedAt",
           "summary",
           "assetOutputs",
+          "assetOutputsTruncated",
           "nodeCounts",
           "requestSummary"
         ]
@@ -2963,6 +3014,57 @@
           "thumbnailUrl",
           "type",
           "url"
+        ]
+      },
+      "ActiveRunListResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "executionRuntime": {
+                  "type": "string",
+                  "enum": [
+                    "managed",
+                    "browser"
+                  ]
+                },
+                "flowId": {
+                  "type": "string",
+                  "nullable": true,
+                  "minLength": 2,
+                  "maxLength": 32,
+                  "pattern": "^[a-z][0-9a-z]+$"
+                },
+                "id": {
+                  "$ref": "#/components/schemas/Cuid2"
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "pending",
+                    "running",
+                    "succeeded",
+                    "partial",
+                    "failed",
+                    "canceled"
+                  ]
+                }
+              },
+              "required": [
+                "executionRuntime",
+                "flowId",
+                "id",
+                "status"
+              ]
+            },
+            "maxItems": 200
+          }
+        },
+        "required": [
+          "data"
         ]
       },
       "FlowRun": {
@@ -3496,6 +3598,13 @@
       "RunRealtimeToken": {
         "type": "object",
         "properties": {
+          "flowId": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 2,
+            "maxLength": 32,
+            "pattern": "^[a-z][0-9a-z]+$"
+          },
           "triggerRunId": {
             "type": "string"
           },
@@ -3507,6 +3616,7 @@
           }
         },
         "required": [
+          "flowId",
           "triggerRunId",
           "publicAccessToken",
           "expiresAt"
@@ -9399,17 +9509,6 @@
         "parameters": [
           {
             "schema": {
-              "type": "string",
-              "enum": [
-                "pending"
-              ]
-            },
-            "required": false,
-            "name": "browserWork",
-            "in": "query"
-          },
-          {
-            "schema": {
               "$ref": "#/components/schemas/Cursor"
             },
             "required": false,
@@ -9419,59 +9518,21 @@
           },
           {
             "schema": {
-              "type": "string",
-              "enum": [
-                "managed",
-                "browser"
-              ]
-            },
-            "required": false,
-            "name": "executionRuntime",
-            "in": "query"
-          },
-          {
-            "schema": {
               "$ref": "#/components/schemas/Cuid2"
             },
-            "required": false,
+            "required": true,
             "name": "flowId",
             "in": "query"
           },
           {
             "schema": {
-              "$ref": "#/components/schemas/PaginationLimit"
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 20,
+              "default": 20
             },
             "required": false,
             "name": "limit",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": "string",
-              "enum": [
-                "all",
-                "mine"
-              ],
-              "default": "all"
-            },
-            "required": false,
-            "name": "scope",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": "string",
-              "enum": [
-                "pending",
-                "running",
-                "succeeded",
-                "partial",
-                "failed",
-                "canceled"
-              ]
-            },
-            "required": false,
-            "name": "status",
             "in": "query"
           }
         ],
@@ -9579,6 +9640,122 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/FlowRun"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Active organization required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Resource state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Organization request rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/runs/active": {
+      "get": {
+        "tags": [
+          "Runs"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "managed",
+                "browser"
+              ]
+            },
+            "required": true,
+            "name": "executionRuntime",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "mine"
+              ],
+              "default": "all"
+            },
+            "required": false,
+            "name": "scope",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Active run identities",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActiveRunListResponse"
                 }
               }
             }
@@ -12997,7 +13174,7 @@
                     "manifestVersion": {
                       "type": "number",
                       "enum": [
-                        2
+                        3
                       ]
                     },
                     "run": {
@@ -13015,6 +13192,10 @@
                           "enum": [
                             "browser"
                           ]
+                        },
+                        "flowId": {
+                          "type": "string",
+                          "nullable": true
                         },
                         "flowRevision": {
                           "type": "integer",
@@ -13044,6 +13225,7 @@
                       "required": [
                         "executionMode",
                         "executionRuntime",
+                        "flowId",
                         "flowRevision",
                         "id",
                         "planHash",
@@ -17633,6 +17815,146 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/GenerationConfigResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Active organization required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Resource state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Organization request rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/config/generation/browser-availability": {
+      "post": {
+        "tags": [
+          "Config"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "modelId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "operationId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "providers": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "fal",
+                        "openrouter"
+                      ]
+                    },
+                    "maxItems": 8
+                  }
+                },
+                "required": [
+                  "modelId",
+                  "operationId",
+                  "providers"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Browser execution readiness without private binding facts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "catalogRevision": {
+                      "type": "string",
+                      "pattern": "^sha256:[0-9a-f]{64}$"
+                    },
+                    "executable": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "catalogRevision",
+                    "executable"
+                  ]
                 }
               }
             }

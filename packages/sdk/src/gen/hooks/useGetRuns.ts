@@ -24,13 +24,13 @@ import type {
 import { getRuns } from "../clients/getRuns.ts";
 import { queryOptions, useQuery } from "@tanstack/react-query";
 
-export const getRunsQueryKey = (params?: GetRunsQueryParams) =>
+export const getRunsQueryKey = (params: GetRunsQueryParams) =>
   [{ url: "/runs" }, ...(params ? [params] : [])] as const;
 
 export type GetRunsQueryKey = ReturnType<typeof getRunsQueryKey>;
 
 export function getRunsQueryOptions(
-  { params }: { params?: GetRunsQueryParams } = {},
+  { params }: { params: GetRunsQueryParams },
   config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const queryKey = getRunsQueryKey(params);
@@ -66,7 +66,7 @@ export function useGetRuns<
   TQueryData = GetRunsQueryResponse,
   TQueryKey extends QueryKey = GetRunsQueryKey,
 >(
-  { params }: { params?: GetRunsQueryParams } = {},
+  { params }: { params: GetRunsQueryParams },
   options: {
     query?: Partial<
       QueryObserverOptions<

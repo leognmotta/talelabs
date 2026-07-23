@@ -223,6 +223,10 @@ export type FlowRunSummary = {
    */
   assetOutputs: FlowRunAssetOutput[];
   /**
+   * @type boolean
+   */
+  assetOutputsTruncated: boolean;
+  /**
    * @type object
    */
   nodeCounts: {

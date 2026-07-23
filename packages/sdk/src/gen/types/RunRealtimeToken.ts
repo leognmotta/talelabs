@@ -7,6 +7,13 @@ import type { Timestamp } from "./Timestamp.ts";
 
 export type RunRealtimeToken = {
   /**
+   * @minLength 2
+   * @maxLength 32
+   * @pattern ^[a-z][0-9a-z]+$
+   * @type string
+   */
+  flowId: string | null;
+  /**
    * @type string
    */
   triggerRunId: string;
