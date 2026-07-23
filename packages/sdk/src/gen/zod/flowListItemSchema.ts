@@ -5,25 +5,27 @@
 
 import * as z from "zod";
 import type { FlowListItem } from "../types/FlowListItem.ts";
-import { assetTypeSchema } from "./assetTypeSchema.ts";
 import { cuid2Schema } from "./cuid2Schema.ts";
-import { flowSchema } from "./flowSchema.ts";
+import { flowViewportSchema } from "./flowViewportSchema.ts";
+import { timestampSchema } from "./timestampSchema.ts";
+import { userIdSchema } from "./userIdSchema.ts";
 
-export const flowListItemSchema = z
-  .lazy(() => flowSchema)
-  .and(
-    z.object({
-      activeRunStatus: z.nullable(z.enum(["pending", "running"])),
-      latestOutput: z.nullable(
-        z.object({
-          get assetId() {
-            return cuid2Schema;
-          },
-          thumbnailUrl: z.nullable(z.url()),
-          get type() {
-            return assetTypeSchema;
-          },
-        }),
-      ),
-    }),
-  ) as unknown as z.ZodType<FlowListItem>;
+export const flowListItemSchema = z.object({
+  get id() {
+    return cuid2Schema;
+  },
+  name: z.string(),
+  revision: z.int().min(0),
+  get viewport() {
+    return flowViewportSchema;
+  },
+  get createdBy() {
+    return userIdSchema.nullable();
+  },
+  get createdAt() {
+    return timestampSchema;
+  },
+  get updatedAt() {
+    return timestampSchema;
+  },
+}) as unknown as z.ZodType<FlowListItem>;

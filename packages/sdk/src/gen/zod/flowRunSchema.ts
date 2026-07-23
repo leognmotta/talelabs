@@ -29,7 +29,15 @@ export const flowRunSchema = z.object({
       .max(32)
       .regex(/^[a-z][0-9a-z]+$/),
   ),
-  mode: z.enum(["node", "downstream", "upstream", "selection", "all"]),
+  mode: z.enum([
+    "node",
+    "downstream",
+    "upstream",
+    "selection",
+    "all",
+    "direct",
+  ]),
+  source: z.enum(["flow", "create"]),
   targetNodeId: z.nullable(
     z
       .string()

@@ -40,10 +40,19 @@ export const flowRunModeEnum = {
   upstream: "upstream",
   selection: "selection",
   all: "all",
+  direct: "direct",
 } as const;
 
 export type FlowRunModeEnumKey =
   (typeof flowRunModeEnum)[keyof typeof flowRunModeEnum];
+
+export const flowRunSourceEnum = {
+  flow: "flow",
+  create: "create",
+} as const;
+
+export type FlowRunSourceEnumKey =
+  (typeof flowRunSourceEnum)[keyof typeof flowRunSourceEnum];
 
 export const flowRunStatusEnum = {
   pending: "pending",
@@ -99,6 +108,10 @@ export type FlowRun = {
    * @type string
    */
   mode: FlowRunModeEnumKey;
+  /**
+   * @type string
+   */
+  source: FlowRunSourceEnumKey;
   /**
    * @minLength 2
    * @maxLength 32

@@ -15,7 +15,6 @@ export const flowSchema = z.object({
     return cuid2Schema;
   },
   name: z.string(),
-  surface: z.enum(["canvas", "create"]),
   revision: z.int().min(0),
   get viewport() {
     return flowViewportSchema;

@@ -27,7 +27,7 @@ function getGetFlowsUrl() {
  * {@link /flows}
  */
 export async function getFlows(
-  { params }: { params: GetFlowsQueryParams },
+  { params }: { params?: GetFlowsQueryParams } = {},
   config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;

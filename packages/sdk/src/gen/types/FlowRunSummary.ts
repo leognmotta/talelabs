@@ -40,10 +40,19 @@ export const flowRunSummaryModeEnum = {
   upstream: "upstream",
   selection: "selection",
   all: "all",
+  direct: "direct",
 } as const;
 
 export type FlowRunSummaryModeEnumKey =
   (typeof flowRunSummaryModeEnum)[keyof typeof flowRunSummaryModeEnum];
+
+export const flowRunSummarySourceEnum = {
+  flow: "flow",
+  create: "create",
+} as const;
+
+export type FlowRunSummarySourceEnumKey =
+  (typeof flowRunSummarySourceEnum)[keyof typeof flowRunSummarySourceEnum];
 
 export const flowRunSummaryStatusEnum = {
   pending: "pending",
@@ -154,6 +163,10 @@ export type FlowRunSummary = {
    * @type string
    */
   mode: FlowRunSummaryModeEnumKey;
+  /**
+   * @type string
+   */
+  source: FlowRunSummarySourceEnumKey;
   /**
    * @minLength 2
    * @maxLength 32

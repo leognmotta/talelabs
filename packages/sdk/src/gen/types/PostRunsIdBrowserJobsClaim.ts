@@ -433,10 +433,6 @@ export type PostRunsIdBrowserJobsClaim200 = {
       /**
        * @type string
        */
-      nodeId: string;
-      /**
-       * @type string
-       */
       operationId: string;
       providerBinding:
         | (
@@ -1446,6 +1442,10 @@ export type PostRunsIdBrowserJobsClaim200 = {
                   };
                 };
           };
+      /**
+       * @type string
+       */
+      stepId: string;
     };
     /**
      * @type string
@@ -1508,15 +1508,15 @@ export type PostRunsIdBrowserJobsClaim200 = {
       /**
        * @type string
        */
-      nodeId: string;
-      /**
-       * @type string
-       */
       providerJobId: string | null;
       /**
        * @type string, date-time
        */
       providerSubmittedAt: string | null;
+      /**
+       * @type string
+       */
+      stepId: string;
       /**
        * @type string
        */

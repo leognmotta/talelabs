@@ -21,18 +21,19 @@ import { errorResponseSchema } from "./errorResponseSchema.ts";
 import { flowListResponseSchema } from "./flowListResponseSchema.ts";
 import { paginationLimitSchema } from "./paginationLimitSchema.ts";
 
-export const getFlowsQueryParamsSchema = z.object({
-  get cursor() {
-    return cursorSchema
-      .describe("Opaque cursor returned by a previous list response")
-      .optional();
-  },
-  get limit() {
-    return paginationLimitSchema.default(50).optional();
-  },
-  search: z.optional(z.string().min(1).max(100)),
-  surface: z.enum(["canvas", "create"]),
-}) as unknown as z.ZodType<GetFlowsQueryParams>;
+export const getFlowsQueryParamsSchema = z
+  .object({
+    get cursor() {
+      return cursorSchema
+        .describe("Opaque cursor returned by a previous list response")
+        .optional();
+    },
+    get limit() {
+      return paginationLimitSchema.default(50).optional();
+    },
+    search: z.optional(z.string().min(1).max(100)),
+  })
+  .optional() as unknown as z.ZodType<GetFlowsQueryParams>;
 
 /**
  * @description Flow list page

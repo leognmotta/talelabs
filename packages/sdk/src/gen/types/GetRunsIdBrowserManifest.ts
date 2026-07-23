@@ -327,7 +327,7 @@ export type JobsStatusEnumKey =
   (typeof jobsStatusEnum)[keyof typeof jobsStatusEnum];
 
 export const getRunsIdBrowserManifest200ManifestVersionEnum = {
-  "3": 3,
+  "4": 4,
 } as const;
 
 export type GetRunsIdBrowserManifest200ManifestVersionEnumKey =
@@ -347,6 +347,14 @@ export const runExecutionRuntimeEnum = {
 
 export type RunExecutionRuntimeEnumKey =
   (typeof runExecutionRuntimeEnum)[keyof typeof runExecutionRuntimeEnum];
+
+export const runSourceEnum = {
+  create: "create",
+  flow: "flow",
+} as const;
+
+export type RunSourceEnumKey =
+  (typeof runSourceEnum)[keyof typeof runSourceEnum];
 
 export const runStatusEnum2 = {
   pending: "pending",
@@ -380,10 +388,6 @@ export type GetRunsIdBrowserManifest200 = {
        * @type string
        */
       modelId: string;
-      /**
-       * @type string
-       */
-      nodeId: string;
       /**
        * @type string
        */
@@ -1396,6 +1400,10 @@ export type GetRunsIdBrowserManifest200 = {
                   };
                 };
           };
+      /**
+       * @type string
+       */
+      stepId: string;
     };
     /**
      * @type string
@@ -1432,10 +1440,6 @@ export type GetRunsIdBrowserManifest200 = {
      */
     mediaType: JobsMediaTypeEnumKey;
     /**
-     * @type string
-     */
-    nodeId: string;
-    /**
      * @type integer
      */
     outputCount: number;
@@ -1460,6 +1464,10 @@ export type GetRunsIdBrowserManifest200 = {
      * @type integer
      */
     requestIndex: number;
+    /**
+     * @type string
+     */
+    stepId: string;
     /**
      * @type string
      */
@@ -1493,7 +1501,7 @@ export type GetRunsIdBrowserManifest200 = {
      * @minLength 0
      * @type integer
      */
-    flowRevision: number;
+    flowRevision: number | null;
     /**
      * @type string
      */
@@ -1506,6 +1514,10 @@ export type GetRunsIdBrowserManifest200 = {
      * @type string
      */
     snapshotHash: string;
+    /**
+     * @type string
+     */
+    source: RunSourceEnumKey;
     /**
      * @type string
      */

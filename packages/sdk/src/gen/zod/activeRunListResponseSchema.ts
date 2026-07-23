@@ -22,6 +22,7 @@ export const activeRunListResponseSchema = z.object({
         get id() {
           return cuid2Schema;
         },
+        source: z.enum(["flow", "create"]),
         status: z.enum([
           "pending",
           "running",

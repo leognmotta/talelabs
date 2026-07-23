@@ -3,8 +3,6 @@
  * Do not edit manually.
  */
 
-import type { Cuid2 } from "./Cuid2.ts";
-
 export const flowRunNodeItemStatusEnum = {
   pending: "pending",
   running: "running",
@@ -20,10 +18,11 @@ export type FlowRunNodeItemStatusEnumKey =
 
 export type FlowRunNodeItem = {
   /**
-   * @pattern ^[a-z][0-9a-z]+$
+   * @minLength 1
+   * @maxLength 200
    * @type string
    */
-  nodeId: Cuid2;
+  nodeId: string;
   /**
    * @type string
    */

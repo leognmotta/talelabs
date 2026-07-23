@@ -15,6 +15,7 @@ export const runRealtimeTokenSchema = z.object({
       .max(32)
       .regex(/^[a-z][0-9a-z]+$/),
   ),
+  source: z.enum(["flow", "create"]),
   triggerRunId: z.string(),
   publicAccessToken: z.string(),
   get expiresAt() {

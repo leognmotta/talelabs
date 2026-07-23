@@ -5,6 +5,14 @@
 
 import type { Timestamp } from "./Timestamp.ts";
 
+export const runRealtimeTokenSourceEnum = {
+  flow: "flow",
+  create: "create",
+} as const;
+
+export type RunRealtimeTokenSourceEnumKey =
+  (typeof runRealtimeTokenSourceEnum)[keyof typeof runRealtimeTokenSourceEnum];
+
 export type RunRealtimeToken = {
   /**
    * @minLength 2
@@ -13,6 +21,10 @@ export type RunRealtimeToken = {
    * @type string
    */
   flowId: string | null;
+  /**
+   * @type string
+   */
+  source: RunRealtimeTokenSourceEnumKey;
   /**
    * @type string
    */

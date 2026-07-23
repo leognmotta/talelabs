@@ -8,6 +8,14 @@ import type { Cursor } from "./Cursor.ts";
 import type { ErrorResponse } from "./ErrorResponse.ts";
 import type { RunListResponse } from "./RunListResponse.ts";
 
+export const getRunsQueryParamsSourceEnum = {
+  flow: "flow",
+  create: "create",
+} as const;
+
+export type GetRunsQueryParamsSourceEnumKey =
+  (typeof getRunsQueryParamsSourceEnum)[keyof typeof getRunsQueryParamsSourceEnum];
+
 export type GetRunsQueryParams = {
   /**
    * @description Opaque cursor returned by a previous list response
@@ -15,17 +23,22 @@ export type GetRunsQueryParams = {
    */
   cursor?: Cursor;
   /**
-   * @pattern ^[a-z][0-9a-z]+$
-   * @type string
-   */
-  flowId: Cuid2;
-  /**
    * @minLength 1
    * @maxLength 20
    * @default 20
    * @type integer | undefined
    */
   limit?: number;
+  /**
+   * @default "flow"
+   * @type string | undefined
+   */
+  source?: GetRunsQueryParamsSourceEnumKey;
+  /**
+   * @pattern ^[a-z][0-9a-z]+$
+   * @type string | undefined
+   */
+  flowId?: Cuid2;
 };
 
 /**

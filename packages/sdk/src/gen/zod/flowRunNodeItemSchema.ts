@@ -5,12 +5,9 @@
 
 import * as z from "zod";
 import type { FlowRunNodeItem } from "../types/FlowRunNodeItem.ts";
-import { cuid2Schema } from "./cuid2Schema.ts";
 
 export const flowRunNodeItemSchema = z.object({
-  get nodeId() {
-    return cuid2Schema;
-  },
+  nodeId: z.string().min(1).max(200),
   itemKey: z.string(),
   sortOrder: z.int().min(0),
   status: z.enum([

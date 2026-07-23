@@ -27,10 +27,11 @@ export const getRunsQueryParamsSchema = z.object({
       .describe("Opaque cursor returned by a previous list response")
       .optional();
   },
+  limit: z.coerce.number().int().min(1).max(20).default(20),
+  source: z.enum(["flow", "create"]).default("flow"),
   get flowId() {
-    return cuid2Schema;
+    return cuid2Schema.optional();
   },
-  limit: z.optional(z.coerce.number().int().min(1).max(20).default(20)),
 }) as unknown as z.ZodType<GetRunsQueryParams>;
 
 /**

@@ -55,7 +55,6 @@ export const postRunsIdBrowserJobsClaim200Schema = z.object({
       ),
       executionContract: z.object({
         modelId: z.string(),
-        nodeId: z.string(),
         operationId: z.string(),
         providerBinding: z.union([
           z.union([
@@ -631,6 +630,7 @@ export const postRunsIdBrowserJobsClaim200Schema = z.object({
             ]),
           }),
         ]),
+        stepId: z.string(),
       }),
       executionMode: z.enum(["debug", "live"]),
       inputAssets: z.array(
@@ -649,9 +649,9 @@ export const postRunsIdBrowserJobsClaim200Schema = z.object({
         id: z.string(),
         itemKey: z.string(),
         mediaType: z.enum(["image", "video", "audio", "text"]),
-        nodeId: z.string(),
         providerJobId: z.nullable(z.string()),
         providerSubmittedAt: z.nullable(z.iso.datetime()),
+        stepId: z.string(),
         submissionState: z.enum(["not_started", "submitting", "submitted"]),
         status: z.enum(["running"]),
       }),

@@ -13,9 +13,7 @@ export const flowRunJobSchema = z.object({
   get id() {
     return cuid2Schema;
   },
-  get nodeId() {
-    return cuid2Schema;
-  },
+  nodeId: z.string().min(1).max(200),
   itemKey: z.string(),
   requestIndex: z.int().min(0),
   mediaType: z.enum(["image", "video", "audio", "text"]),

@@ -24,13 +24,13 @@ import type {
 import { getFlows } from "../clients/getFlows.ts";
 import { queryOptions, useQuery } from "@tanstack/react-query";
 
-export const getFlowsQueryKey = (params: GetFlowsQueryParams) =>
+export const getFlowsQueryKey = (params?: GetFlowsQueryParams) =>
   [{ url: "/flows" }, ...(params ? [params] : [])] as const;
 
 export type GetFlowsQueryKey = ReturnType<typeof getFlowsQueryKey>;
 
 export function getFlowsQueryOptions(
-  { params }: { params: GetFlowsQueryParams },
+  { params }: { params?: GetFlowsQueryParams } = {},
   config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const queryKey = getFlowsQueryKey(params);
@@ -66,7 +66,7 @@ export function useGetFlows<
   TQueryData = GetFlowsQueryResponse,
   TQueryKey extends QueryKey = GetFlowsQueryKey,
 >(
-  { params }: { params: GetFlowsQueryParams },
+  { params }: { params?: GetFlowsQueryParams } = {},
   options: {
     query?: Partial<
       QueryObserverOptions<

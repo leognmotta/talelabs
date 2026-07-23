@@ -8,5 +8,4 @@ import type { CreateFlowRequest } from "../types/CreateFlowRequest.ts";
 
 export const createFlowRequestSchema = z.object({
   name: z.string().min(1).max(255),
-  surface: z.enum(["canvas", "create"]),
 }) as unknown as z.ZodType<CreateFlowRequest>;

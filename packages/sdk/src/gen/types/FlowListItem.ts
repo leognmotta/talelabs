@@ -3,39 +3,40 @@
  * Do not edit manually.
  */
 
-import type { AssetType } from "./AssetType.ts";
 import type { Cuid2 } from "./Cuid2.ts";
-import type { Flow } from "./Flow.ts";
+import type { FlowViewport } from "./FlowViewport.ts";
+import type { Timestamp } from "./Timestamp.ts";
+import type { UserId } from "./UserId.ts";
 
-export const flowListItemActiveRunStatusEnum = {
-  pending: "pending",
-  running: "running",
-} as const;
-
-export type FlowListItemActiveRunStatusEnumKey =
-  (typeof flowListItemActiveRunStatusEnum)[keyof typeof flowListItemActiveRunStatusEnum];
-
-export type FlowListItem = Flow & {
+export type FlowListItem = {
+  /**
+   * @pattern ^[a-z][0-9a-z]+$
+   * @type string
+   */
+  id: Cuid2;
   /**
    * @type string
    */
-  activeRunStatus: FlowListItemActiveRunStatusEnumKey | null;
+  name: string;
+  /**
+   * @minLength 0
+   * @type integer
+   */
+  revision: number;
   /**
    * @type object
    */
-  latestOutput: {
-    /**
-     * @pattern ^[a-z][0-9a-z]+$
-     * @type string
-     */
-    assetId: Cuid2;
-    /**
-     * @type string, uri
-     */
-    thumbnailUrl: string | null;
-    /**
-     * @type string
-     */
-    type: AssetType;
-  } | null;
+  viewport: FlowViewport;
+  /**
+   * @type string
+   */
+  createdBy: UserId | null;
+  /**
+   * @type string, date-time
+   */
+  createdAt: Timestamp;
+  /**
+   * @type string, date-time
+   */
+  updatedAt: Timestamp;
 };

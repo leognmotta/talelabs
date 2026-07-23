@@ -22,6 +22,14 @@ export const getRunsActiveQueryParamsScopeEnum = {
 export type GetRunsActiveQueryParamsScopeEnumKey =
   (typeof getRunsActiveQueryParamsScopeEnum)[keyof typeof getRunsActiveQueryParamsScopeEnum];
 
+export const getRunsActiveQueryParamsSourceEnum = {
+  flow: "flow",
+  create: "create",
+} as const;
+
+export type GetRunsActiveQueryParamsSourceEnumKey =
+  (typeof getRunsActiveQueryParamsSourceEnum)[keyof typeof getRunsActiveQueryParamsSourceEnum];
+
 export type GetRunsActiveQueryParams = {
   /**
    * @type string
@@ -32,6 +40,10 @@ export type GetRunsActiveQueryParams = {
    * @type string | undefined
    */
   scope?: GetRunsActiveQueryParamsScopeEnumKey;
+  /**
+   * @type string | undefined
+   */
+  source?: GetRunsActiveQueryParamsSourceEnumKey;
 };
 
 /**

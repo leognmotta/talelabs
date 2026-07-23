@@ -35,10 +35,11 @@ export type FlowRunJob = {
    */
   id: Cuid2;
   /**
-   * @pattern ^[a-z][0-9a-z]+$
+   * @minLength 1
+   * @maxLength 200
    * @type string
    */
-  nodeId: Cuid2;
+  nodeId: string;
   /**
    * @type string
    */

@@ -22,6 +22,7 @@ import { errorResponseSchema } from "./errorResponseSchema.ts";
 export const getRunsActiveQueryParamsSchema = z.object({
   executionRuntime: z.enum(["managed", "browser"]),
   scope: z.optional(z.enum(["all", "mine"]).default("all")),
+  source: z.optional(z.enum(["flow", "create"])),
 }) as unknown as z.ZodType<GetRunsActiveQueryParams>;
 
 /**

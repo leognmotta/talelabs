@@ -5,14 +5,11 @@
 
 import * as z from "zod";
 import type { FlowRunNodeState } from "../types/FlowRunNodeState.ts";
-import { cuid2Schema } from "./cuid2Schema.ts";
 import { flowRunJobSchema } from "./flowRunJobSchema.ts";
 import { flowRunNodeItemSchema } from "./flowRunNodeItemSchema.ts";
 
 export const flowRunNodeStateSchema = z.object({
-  get nodeId() {
-    return cuid2Schema;
-  },
+  nodeId: z.string().min(1).max(200),
   status: z.enum([
     "pending",
     "running",

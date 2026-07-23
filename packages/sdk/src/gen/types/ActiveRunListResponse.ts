@@ -13,6 +13,14 @@ export const dataExecutionRuntimeEnum = {
 export type DataExecutionRuntimeEnumKey =
   (typeof dataExecutionRuntimeEnum)[keyof typeof dataExecutionRuntimeEnum];
 
+export const dataSourceEnum = {
+  flow: "flow",
+  create: "create",
+} as const;
+
+export type DataSourceEnumKey =
+  (typeof dataSourceEnum)[keyof typeof dataSourceEnum];
+
 export const dataStatusEnum = {
   pending: "pending",
   running: "running",
@@ -46,6 +54,10 @@ export type ActiveRunListResponse = {
      * @type string
      */
     id: Cuid2;
+    /**
+     * @type string
+     */
+    source: DataSourceEnumKey;
     /**
      * @type string
      */

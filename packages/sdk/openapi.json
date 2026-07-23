@@ -1498,50 +1498,39 @@
         ]
       },
       "FlowListItem": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/Flow"
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Cuid2"
           },
-          {
-            "type": "object",
-            "properties": {
-              "activeRunStatus": {
-                "type": "string",
-                "nullable": true,
-                "enum": [
-                  "pending",
-                  "running",
-                  null
-                ]
-              },
-              "latestOutput": {
-                "type": "object",
-                "nullable": true,
-                "properties": {
-                  "assetId": {
-                    "$ref": "#/components/schemas/Cuid2"
-                  },
-                  "thumbnailUrl": {
-                    "type": "string",
-                    "nullable": true,
-                    "format": "uri"
-                  },
-                  "type": {
-                    "$ref": "#/components/schemas/AssetType"
-                  }
-                },
-                "required": [
-                  "assetId",
-                  "thumbnailUrl",
-                  "type"
-                ]
-              }
-            },
-            "required": [
-              "activeRunStatus",
-              "latestOutput"
-            ]
+          "name": {
+            "type": "string"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "viewport": {
+            "$ref": "#/components/schemas/FlowViewport"
+          },
+          "createdBy": {
+            "$ref": "#/components/schemas/UserId"
+          },
+          "createdAt": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "updatedAt": {
+            "$ref": "#/components/schemas/Timestamp"
           }
+        },
+        "required": [
+          "id",
+          "name",
+          "revision",
+          "viewport",
+          "createdBy",
+          "createdAt",
+          "updatedAt"
         ]
       },
       "FlowViewport": {
@@ -1574,13 +1563,6 @@
           "name": {
             "type": "string"
           },
-          "surface": {
-            "type": "string",
-            "enum": [
-              "canvas",
-              "create"
-            ]
-          },
           "revision": {
             "type": "integer",
             "minimum": 0
@@ -1601,7 +1583,6 @@
         "required": [
           "id",
           "name",
-          "surface",
           "revision",
           "viewport",
           "createdBy",
@@ -1610,27 +1591,6 @@
         ]
       },
       "CreateFlowRequest": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 255
-          },
-          "surface": {
-            "type": "string",
-            "enum": [
-              "canvas",
-              "create"
-            ]
-          }
-        },
-        "required": [
-          "name",
-          "surface"
-        ]
-      },
-      "CloneFlowToCanvasRequest": {
         "type": "object",
         "properties": {
           "name": {
@@ -2642,7 +2602,15 @@
               "downstream",
               "upstream",
               "selection",
-              "all"
+              "all",
+              "direct"
+            ]
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "flow",
+              "create"
             ]
           },
           "targetNodeId": {
@@ -2950,6 +2918,7 @@
           "executionRuntime",
           "flowId",
           "mode",
+          "source",
           "targetNodeId",
           "status",
           "planHash",
@@ -3041,6 +3010,13 @@
                 "id": {
                   "$ref": "#/components/schemas/Cuid2"
                 },
+                "source": {
+                  "type": "string",
+                  "enum": [
+                    "flow",
+                    "create"
+                  ]
+                },
                 "status": {
                   "type": "string",
                   "enum": [
@@ -3057,6 +3033,7 @@
                 "executionRuntime",
                 "flowId",
                 "id",
+                "source",
                 "status"
               ]
             },
@@ -3066,6 +3043,252 @@
         "required": [
           "data"
         ]
+      },
+      "DirectRunEstimateResponse": {
+        "type": "object",
+        "properties": {
+          "costEstimate": {
+            "$ref": "#/components/schemas/RunCostEstimate"
+          },
+          "executionPlanHash": {
+            "type": "string"
+          },
+          "expectedOutputCount": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true
+          },
+          "plannedJobCount": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true
+          }
+        },
+        "required": [
+          "costEstimate",
+          "executionPlanHash",
+          "expectedOutputCount",
+          "plannedJobCount"
+        ]
+      },
+      "EstimateDirectRunRequest": {
+        "type": "object",
+        "properties": {
+          "audioIntent": {
+            "type": "string",
+            "enum": [
+              "speechGeneration",
+              "musicGeneration",
+              "soundEffectGeneration",
+              "voiceChanger",
+              "voiceIsolation"
+            ]
+          },
+          "executionMode": {
+            "type": "string",
+            "enum": [
+              "live",
+              "debug"
+            ],
+            "default": "live"
+          },
+          "inline": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "maxLength": 16000
+            }
+          },
+          "inputs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "assetId": {
+                  "$ref": "#/components/schemas/Cuid2"
+                },
+                "slotId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100
+                }
+              },
+              "required": [
+                "assetId",
+                "slotId"
+              ],
+              "additionalProperties": false
+            },
+            "maxItems": 32
+          },
+          "mediaMode": {
+            "type": "string",
+            "enum": [
+              "audio",
+              "image",
+              "video"
+            ]
+          },
+          "modelContractVersion": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "modelId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "operationId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "outputCount": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 16
+          },
+          "promptTemplates": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "parts": {
+                  "type": "array",
+                  "items": {
+                    "oneOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "text": {
+                            "type": "string"
+                          },
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "text"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "text",
+                          "type"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "index": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "mediaType": {
+                            "type": "string",
+                            "enum": [
+                              "image",
+                              "video",
+                              "audio"
+                            ]
+                          },
+                          "slotId": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 128
+                          },
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "input"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "index",
+                          "mediaType",
+                          "slotId",
+                          "type"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "break"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "type"
+                        ],
+                        "additionalProperties": false
+                      }
+                    ]
+                  },
+                  "maxItems": 1024
+                },
+                "version": {
+                  "type": "number",
+                  "enum": [
+                    1
+                  ]
+                }
+              },
+              "required": [
+                "parts",
+                "version"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "settings": {
+            "type": "object",
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "string",
+                  "maxLength": 16000
+                }
+              ]
+            }
+          },
+          "executionRuntime": {
+            "type": "string",
+            "enum": [
+              "managed"
+            ],
+            "default": "managed"
+          },
+          "fundingSource": {
+            "type": "string",
+            "enum": [
+              "credits"
+            ],
+            "default": "credits"
+          }
+        },
+        "required": [
+          "inline",
+          "inputs",
+          "mediaMode",
+          "modelContractVersion",
+          "modelId",
+          "operationId",
+          "outputCount",
+          "promptTemplates",
+          "settings"
+        ],
+        "additionalProperties": false
       },
       "FlowRun": {
         "type": "object",
@@ -3131,7 +3354,15 @@
               "downstream",
               "upstream",
               "selection",
-              "all"
+              "all",
+              "direct"
+            ]
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "flow",
+              "create"
             ]
           },
           "targetNodeId": {
@@ -3220,6 +3451,7 @@
           "executionRuntime",
           "flowId",
           "mode",
+          "source",
           "targetNodeId",
           "status",
           "planHash",
@@ -3237,7 +3469,9 @@
         "type": "object",
         "properties": {
           "nodeId": {
-            "$ref": "#/components/schemas/Cuid2"
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
           },
           "status": {
             "type": "string",
@@ -3275,7 +3509,9 @@
         "type": "object",
         "properties": {
           "nodeId": {
-            "$ref": "#/components/schemas/Cuid2"
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
           },
           "itemKey": {
             "type": "string"
@@ -3325,7 +3561,9 @@
             "$ref": "#/components/schemas/Cuid2"
           },
           "nodeId": {
-            "$ref": "#/components/schemas/Cuid2"
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
           },
           "itemKey": {
             "type": "string"
@@ -3414,6 +3652,238 @@
           "outputIndex",
           "text"
         ]
+      },
+      "CreateDirectRunRequest": {
+        "type": "object",
+        "properties": {
+          "audioIntent": {
+            "type": "string",
+            "enum": [
+              "speechGeneration",
+              "musicGeneration",
+              "soundEffectGeneration",
+              "voiceChanger",
+              "voiceIsolation"
+            ]
+          },
+          "byokProviders": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "fal",
+                "openrouter"
+              ]
+            },
+            "maxItems": 8
+          },
+          "executionMode": {
+            "type": "string",
+            "enum": [
+              "live",
+              "debug"
+            ],
+            "default": "live"
+          },
+          "executionRuntime": {
+            "type": "string",
+            "enum": [
+              "managed",
+              "browser"
+            ],
+            "default": "managed"
+          },
+          "fundingSource": {
+            "type": "string",
+            "enum": [
+              "credits",
+              "byok"
+            ]
+          },
+          "inline": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "maxLength": 16000
+            }
+          },
+          "inputs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "assetId": {
+                  "$ref": "#/components/schemas/Cuid2"
+                },
+                "slotId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100
+                }
+              },
+              "required": [
+                "assetId",
+                "slotId"
+              ],
+              "additionalProperties": false
+            },
+            "maxItems": 32
+          },
+          "mediaMode": {
+            "type": "string",
+            "enum": [
+              "audio",
+              "image",
+              "video"
+            ]
+          },
+          "modelContractVersion": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "modelId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "operationId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "outputCount": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 16
+          },
+          "promptTemplates": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "parts": {
+                  "type": "array",
+                  "items": {
+                    "oneOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "text": {
+                            "type": "string"
+                          },
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "text"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "text",
+                          "type"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "index": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "mediaType": {
+                            "type": "string",
+                            "enum": [
+                              "image",
+                              "video",
+                              "audio"
+                            ]
+                          },
+                          "slotId": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 128
+                          },
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "input"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "index",
+                          "mediaType",
+                          "slotId",
+                          "type"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "break"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "type"
+                        ],
+                        "additionalProperties": false
+                      }
+                    ]
+                  },
+                  "maxItems": 1024
+                },
+                "version": {
+                  "type": "number",
+                  "enum": [
+                    1
+                  ]
+                }
+              },
+              "required": [
+                "parts",
+                "version"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "settings": {
+            "type": "object",
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "string",
+                  "maxLength": 16000
+                }
+              ]
+            }
+          }
+        },
+        "required": [
+          "fundingSource",
+          "inline",
+          "inputs",
+          "mediaMode",
+          "modelContractVersion",
+          "modelId",
+          "operationId",
+          "outputCount",
+          "promptTemplates",
+          "settings"
+        ],
+        "additionalProperties": false
       },
       "CreateRunRequest": {
         "type": "object",
@@ -3605,6 +4075,13 @@
             "maxLength": 32,
             "pattern": "^[a-z][0-9a-z]+$"
           },
+          "source": {
+            "type": "string",
+            "enum": [
+              "flow",
+              "create"
+            ]
+          },
           "triggerRunId": {
             "type": "string"
           },
@@ -3617,6 +4094,7 @@
         },
         "required": [
           "flowId",
+          "source",
           "triggerRunId",
           "publicAccessToken",
           "expiresAt"
@@ -8378,18 +8856,6 @@
             "required": false,
             "name": "search",
             "in": "query"
-          },
-          {
-            "schema": {
-              "type": "string",
-              "enum": [
-                "canvas",
-                "create"
-              ]
-            },
-            "required": true,
-            "name": "surface",
-            "in": "query"
           }
         ],
         "responses": {
@@ -8492,115 +8958,6 @@
         "responses": {
           "201": {
             "description": "Flow created",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Flow"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Validation error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Authentication required",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Active organization required",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Resource not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Resource state conflict",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "429": {
-            "description": "Organization request rate limit exceeded",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/flows/{id}/clone-to-canvas": {
-      "post": {
-        "tags": [
-          "Flows"
-        ],
-        "parameters": [
-          {
-            "schema": {
-              "$ref": "#/components/schemas/Cuid2"
-            },
-            "required": true,
-            "name": "id",
-            "in": "path"
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CloneFlowToCanvasRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Create session cloned into a canvas Flow",
             "content": {
               "application/json": {
                 "schema": {
@@ -9518,14 +9875,6 @@
           },
           {
             "schema": {
-              "$ref": "#/components/schemas/Cuid2"
-            },
-            "required": true,
-            "name": "flowId",
-            "in": "query"
-          },
-          {
-            "schema": {
               "type": "integer",
               "minimum": 1,
               "maximum": 20,
@@ -9533,6 +9882,27 @@
             },
             "required": false,
             "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "flow",
+                "create"
+              ],
+              "default": "flow"
+            },
+            "required": false,
+            "name": "source",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "$ref": "#/components/schemas/Cuid2"
+            },
+            "required": false,
+            "name": "flowId",
             "in": "query"
           }
         ],
@@ -9747,6 +10117,18 @@
             "required": false,
             "name": "scope",
             "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "flow",
+                "create"
+              ]
+            },
+            "required": false,
+            "name": "source",
+            "in": "query"
           }
         ],
         "responses": {
@@ -9756,6 +10138,204 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ActiveRunListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Active organization required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Resource state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Organization request rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/runs/create/estimate": {
+      "post": {
+        "tags": [
+          "Runs"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EstimateDirectRunRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Direct run cost estimate",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DirectRunEstimateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Active organization required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Resource state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Organization request rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/runs/create": {
+      "post": {
+        "tags": [
+          "Runs"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDirectRunRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Direct run admitted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FlowRun"
                 }
               }
             }
@@ -10776,9 +11356,6 @@
                               "modelId": {
                                 "type": "string"
                               },
-                              "nodeId": {
-                                "type": "string"
-                              },
                               "operationId": {
                                 "type": "string"
                               },
@@ -13046,13 +13623,16 @@
                                     "additionalProperties": false
                                   }
                                 ]
+                              },
+                              "stepId": {
+                                "type": "string"
                               }
                             },
                             "required": [
                               "modelId",
-                              "nodeId",
                               "operationId",
-                              "providerBinding"
+                              "providerBinding",
+                              "stepId"
                             ],
                             "additionalProperties": false
                           },
@@ -13102,9 +13682,6 @@
                               "text"
                             ]
                           },
-                          "nodeId": {
-                            "type": "string"
-                          },
                           "outputCount": {
                             "type": "integer",
                             "minimum": 0,
@@ -13133,6 +13710,9 @@
                             "type": "integer",
                             "minimum": 0
                           },
+                          "stepId": {
+                            "type": "string"
+                          },
                           "submissionState": {
                             "type": "string",
                             "enum": [
@@ -13158,13 +13738,13 @@
                           "id",
                           "itemKey",
                           "mediaType",
-                          "nodeId",
                           "outputCount",
                           "provider",
                           "providerJobId",
                           "providerSubmittedAt",
                           "requestHash",
                           "requestIndex",
+                          "stepId",
                           "submissionState",
                           "status"
                         ],
@@ -13174,7 +13754,7 @@
                     "manifestVersion": {
                       "type": "number",
                       "enum": [
-                        3
+                        4
                       ]
                     },
                     "run": {
@@ -13199,6 +13779,7 @@
                         },
                         "flowRevision": {
                           "type": "integer",
+                          "nullable": true,
                           "minimum": 0
                         },
                         "id": {
@@ -13209,6 +13790,13 @@
                         },
                         "snapshotHash": {
                           "type": "string"
+                        },
+                        "source": {
+                          "type": "string",
+                          "enum": [
+                            "create",
+                            "flow"
+                          ]
                         },
                         "status": {
                           "type": "string",
@@ -13230,6 +13818,7 @@
                         "id",
                         "planHash",
                         "snapshotHash",
+                        "source",
                         "status"
                       ],
                       "additionalProperties": false
@@ -13478,9 +14067,6 @@
                               "modelId": {
                                 "type": "string"
                               },
-                              "nodeId": {
-                                "type": "string"
-                              },
                               "operationId": {
                                 "type": "string"
                               },
@@ -15748,13 +16334,16 @@
                                     "additionalProperties": false
                                   }
                                 ]
+                              },
+                              "stepId": {
+                                "type": "string"
                               }
                             },
                             "required": [
                               "modelId",
-                              "nodeId",
                               "operationId",
-                              "providerBinding"
+                              "providerBinding",
+                              "stepId"
                             ],
                             "additionalProperties": false
                           },
@@ -15831,9 +16420,6 @@
                                   "text"
                                 ]
                               },
-                              "nodeId": {
-                                "type": "string"
-                              },
                               "providerJobId": {
                                 "type": "string",
                                 "nullable": true
@@ -15842,6 +16428,9 @@
                                 "type": "string",
                                 "nullable": true,
                                 "format": "date-time"
+                              },
+                              "stepId": {
+                                "type": "string"
                               },
                               "submissionState": {
                                 "type": "string",
@@ -15863,9 +16452,9 @@
                               "id",
                               "itemKey",
                               "mediaType",
-                              "nodeId",
                               "providerJobId",
                               "providerSubmittedAt",
+                              "stepId",
                               "submissionState",
                               "status"
                             ],
