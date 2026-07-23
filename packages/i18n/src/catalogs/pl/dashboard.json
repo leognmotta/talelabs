@@ -30,6 +30,7 @@
   },
   "navigation": {
     "assets": "Pliki",
+    "create": "Utwórz",
     "elements": "Elementy",
     "flows": "Przepływy pracy",
     "generalSettings": "Ustawienia ogólne",
@@ -38,6 +39,154 @@
     "profile": "Profil",
     "settings": "Ustawienia",
     "toggleSidebar": "Pokaż lub ukryj pasek boczny"
+  },
+  "create": {
+    "couldNotLoad": "Nie udało się załadować widoku Utwórz",
+    "couldNotLoadDescription": "Sprawdź połączenie i spróbuj ponownie.",
+    "openInFlow": "Otwórz w przepływie pracy",
+    "openInFlowFailed": "Nie udało się otworzyć sesji w przepływie pracy.",
+    "cloneName": "{{name}} - przepływ pracy",
+    "modelUnavailable": "Model niedostępny",
+    "emptyState": {
+      "title": "Co chcesz stworzyć?",
+      "description": "Opisz pomysł lub dodaj materiał referencyjny. Twoje wygenerowane materiały pojawią się tutaj.",
+      "recent": "Ostatnie projekty"
+    },
+    "modes": { "image": "Obraz", "video": "Wideo", "audio": "Dźwięk" },
+    "audioIntents": {
+      "label": "Zadanie dźwiękowe",
+      "speechGeneration": "Mowa",
+      "musicGeneration": "Muzyka",
+      "soundEffectGeneration": "Efekt dźwiękowy",
+      "voiceChanger": "Zmiana głosu",
+      "voiceIsolation": "Izolacja głosu"
+    },
+    "composer": {
+      "label": "Żądanie generowania multimediów",
+      "imageLabel": "Opisz obraz",
+      "imagePlaceholder": "Opisz temat, scenę, oświetlenie i styl…",
+      "videoLabel": "Opisz wideo",
+      "videoPlaceholder": "Opisz ruch, kamerę i scenę…",
+      "speechLabel": "Wprowadź tekst wypowiedzi",
+      "speechPlaceholder": "Napisz słowa, które mają zostać wypowiedziane…",
+      "musicLabel": "Opisz muzykę",
+      "musicPlaceholder": "Opisz nastrój, instrumenty, tempo i styl…",
+      "soundEffectLabel": "Opisz dźwięk",
+      "soundEffectPlaceholder": "Opisz potrzebny efekt dźwiękowy…",
+      "lyricsLabel": "Tekst piosenki",
+      "lyricsPlaceholder": "Dodaj opcjonalny tekst piosenki…"
+    },
+    "commands": {
+      "generate": "Generuj"
+    },
+    "attachments": {
+      "title": "Dane wejściowe żądania",
+      "add": "Dodaj",
+      "choose": "Wybierz",
+      "open": "Otwórz {{name}}",
+      "remove": "Usuń {{name}} z tego żądania",
+      "moveEarlier": "Przesuń {{name}} wcześniej",
+      "moveLater": "Przesuń {{name}} później",
+      "unsupported": "Ta rola wejściowa nie przyjmuje żadnego dostępnego typu pliku.",
+      "notReady": "Ten plik jest nadal przetwarzany.",
+      "wrongType": "Ten typ pliku nie jest tutaj obsługiwany.",
+      "wrongFormat": "Wybrany model nie obsługuje tego formatu pliku."
+    },
+    "settings": {
+      "title": "Ustawienia",
+      "description": "Sterowanie modelem, wynikiem i wykonaniem",
+      "open": "Otwórz ustawienia widoku Utwórz",
+      "model": "Model",
+      "output": "Wynik",
+      "execution": "Wykonanie"
+    },
+    "execution": {
+      "browser": "BYOK w przeglądarce",
+      "managed": "Zarządzane",
+      "debug": "Debugowanie",
+      "connectedProviders": "Połączono: {{providers}}",
+      "noProvider": "Połącz obsługiwany klucz dostawcy, aby generować w przeglądarce."
+    },
+    "debug": {
+      "title": "Włączono wyniki testowe",
+      "description": "Następne żądanie użyje deterministycznych danych testowych, nie wykona płatnego wywołania dostawcy i zapisze zerowy koszt."
+    },
+    "cost": { "mock": "Test, koszt zerowy" },
+    "validation": {
+      "modelUnavailable": "Wybierz model dostępny dla tego zadania.",
+      "incomplete": "Uzupełnij wymagany prompt lub dane multimedialne.",
+      "invalid": "Sprawdź żądanie i zastąp nieprawidłowe odwołania do multimediów.",
+      "connectProvider": "Połącz obsługiwany klucz dostawcy w Bezpiecznym magazynie.",
+      "saveFailed": "Zapisz to żądanie przed generowaniem.",
+      "savingEstimate": "Zapisywanie żądania przed oszacowaniem kosztu…",
+      "estimating": "Poczekaj na pełne oszacowanie kosztu…",
+      "estimateUnavailable": "Przed generowaniem wymagane jest pełne oszacowanie kosztu."
+    },
+    "sync": { "idle": "Wersja robocza", "saving": "Zapisywanie…", "saved": "Zapisano", "error": "Nie udało się zapisać" },
+    "modelDetach": {
+      "notice_one": "Usunięto jedno niezgodne wejście z tego żądania. Plik nadal jest dostępny.",
+      "notice_other": "Usunięto {{count}} niezgodnych wejść z tego żądania. Pliki nadal są dostępne."
+    },
+    "sessions": {
+      "title": "Sesje",
+      "description": "Ostatnie sesje bezpośredniego tworzenia",
+      "new": "Nowa sesja",
+      "search": "Szukaj sesji",
+      "searchPlaceholder": "Szukaj sesji…",
+      "recent": "Ostatnie",
+      "empty": "Nie ma jeszcze żadnych sesji.",
+      "noResults": "Nie znaleziono sesji.",
+      "loadMore": "Wczytaj więcej",
+      "draft": "Wersja robocza",
+      "untitled": "Sesja bez nazwy",
+      "rename": "Zmień nazwę sesji",
+      "renameDescription": "Wybierz nazwę, która ułatwi znalezienie tej sesji tworzenia.",
+      "renamed": "Zmieniono nazwę sesji",
+      "delete": "Usuń sesję",
+      "deleteDescription": "Usunąć {{name}}? Historia żądań zostanie trwale usunięta, ale wygenerowane i przesłane pliki pozostaną dostępne.",
+      "deleted": "Usunięto sesję",
+      "deleting": "Usuwanie…",
+      "actionFailed": "Nie udało się wykonać działania na sesji."
+    },
+    "history": {
+      "label": "Historia żądań i wyników",
+      "request": "Żądanie generowania",
+      "mediaInput": "Dane multimedialne",
+      "requestTitle": "{{model}}, {{operation}}, {{count}} wynik",
+      "requestTitle_one": "{{model}}, {{operation}}, {{count}} wynik",
+      "requestTitle_other": "{{model}}, {{operation}}, {{count}} wyniki",
+      "noPrompt": "Brak promptu tekstowego",
+      "noOutput": "To żądanie nie utworzyło pliku multimedialnego.",
+      "partialOutput": "Niektóre wyniki są dostępne, ale żądanie nie zostało w pełni ukończone.",
+      "keepWorking": "Możesz kontynuować pracę podczas wykonywania tego żądania.",
+      "elapsed_one": "Działa od {{count}} sekundy",
+      "elapsed_other": "Działa od {{count}} sekund",
+      "loadEarlier": "Wczytaj wcześniejsze",
+      "retry": "Ponów żądanie",
+      "reuseRequest": "Użyj żądania ponownie",
+      "requestReused": "Przywrócono żądanie w edytorze",
+      "requestUnavailable": "Pełne historyczne żądanie nie jest już dostępne.",
+      "generateFailed": "Nie udało się uruchomić żądania.",
+      "cancelFailed": "Nie udało się anulować żądania.",
+      "retryFailed": "Nie udało się ponowić żądania."
+    },
+    "runStatus": {
+      "pending": "W kolejce",
+      "running": "Generowanie",
+      "succeeded": "Ukończono",
+      "partial": "Ukończono częściowo",
+      "failed": "Niepowodzenie",
+      "canceled": "Anulowano"
+    },
+    "results": {
+      "generatedMedia": "Wygenerowany wynik {{index}}",
+      "openAsset": "Otwórz plik",
+      "useAsReference": "Użyj jako odniesienia",
+      "makeVideo": "Utwórz wideo",
+      "referenceAdded": "Wynik dodano do następnego żądania",
+      "videoPrepared": "Przygotowano żądanie wideo na podstawie tego obrazu",
+      "couldNotReuse": "Ten wynik nie jest zgodny z żadnym dostępnym wejściem."
+    }
   },
   "flows": {
     "actionFailed": "Nie udało się wykonać działania w przepływie pracy.",

@@ -30,6 +30,7 @@
   },
   "navigation": {
     "assets": "Assets",
+    "create": "Create",
     "elements": "Elements",
     "flows": "Flows",
     "generalSettings": "General settings",
@@ -38,6 +39,165 @@
     "profile": "Profile",
     "settings": "Settings",
     "toggleSidebar": "Toggle sidebar"
+  },
+  "create": {
+    "couldNotLoad": "Could not load Create",
+    "couldNotLoadDescription": "Check your connection and try again.",
+    "openInFlow": "Open in Flow",
+    "openInFlowFailed": "The session could not be opened in a Flow.",
+    "cloneName": "{{name}} - Flow",
+    "modelUnavailable": "Model unavailable",
+    "emptyState": {
+      "title": "What will you create?",
+      "description": "Describe an idea or add a reference. Your generations will appear here.",
+      "recent": "Recent creations"
+    },
+    "modes": {
+      "image": "Image",
+      "video": "Video",
+      "audio": "Audio"
+    },
+    "audioIntents": {
+      "label": "Audio task",
+      "speechGeneration": "Speech",
+      "musicGeneration": "Music",
+      "soundEffectGeneration": "Sound effect",
+      "voiceChanger": "Voice changer",
+      "voiceIsolation": "Voice isolation"
+    },
+    "composer": {
+      "label": "Media generation request",
+      "imageLabel": "Describe the image",
+      "imagePlaceholder": "Describe the subject, scene, lighting, and style…",
+      "videoLabel": "Describe the video",
+      "videoPlaceholder": "Describe the motion, camera, and scene…",
+      "speechLabel": "Enter the speech",
+      "speechPlaceholder": "Write the words to speak…",
+      "musicLabel": "Describe the music",
+      "musicPlaceholder": "Describe the mood, instruments, tempo, and style…",
+      "soundEffectLabel": "Describe the sound",
+      "soundEffectPlaceholder": "Describe the sound effect you need…",
+      "lyricsLabel": "Lyrics",
+      "lyricsPlaceholder": "Add optional lyrics…"
+    },
+    "commands": {
+      "generate": "Generate"
+    },
+    "attachments": {
+      "title": "Request inputs",
+      "add": "Add",
+      "choose": "Choose",
+      "open": "Open {{name}}",
+      "remove": "Remove {{name}} from this request",
+      "moveEarlier": "Move {{name}} earlier",
+      "moveLater": "Move {{name}} later",
+      "unsupported": "This input role does not accept an available Asset type.",
+      "notReady": "This Asset is still processing.",
+      "wrongType": "This Asset type is not supported here.",
+      "wrongFormat": "This file format is not supported by the selected model."
+    },
+    "settings": {
+      "title": "Settings",
+      "description": "Model, output, and execution controls",
+      "open": "Open Create settings",
+      "model": "Model",
+      "output": "Output",
+      "execution": "Execution"
+    },
+    "execution": {
+      "browser": "Browser BYOK",
+      "managed": "Managed",
+      "debug": "Debug",
+      "connectedProviders": "Connected: {{providers}}",
+      "noProvider": "Connect a supported provider key to generate in your browser."
+    },
+    "debug": {
+      "title": "Mock output is enabled",
+      "description": "The next request uses deterministic fixtures, makes no paid provider call, and records zero cost."
+    },
+    "cost": {
+      "mock": "Mock, zero cost"
+    },
+    "validation": {
+      "modelUnavailable": "Choose an available model for this task.",
+      "incomplete": "Complete the required prompt or media input.",
+      "invalid": "Review the request and replace any invalid media reference.",
+      "connectProvider": "Connect a supported provider key in Secure Store.",
+      "saveFailed": "Save this request before generating.",
+      "savingEstimate": "Saving the request before estimating cost…",
+      "estimating": "Wait for the complete cost estimate…",
+      "estimateUnavailable": "A complete cost estimate is required before generating."
+    },
+    "sync": {
+      "idle": "Draft",
+      "saving": "Saving…",
+      "saved": "Saved",
+      "error": "Save failed"
+    },
+    "modelDetach": {
+      "notice_one": "One incompatible input was removed from this request. The Asset is still available.",
+      "notice_other": "{{count}} incompatible inputs were removed from this request. The Assets are still available."
+    },
+    "sessions": {
+      "title": "Sessions",
+      "description": "Recent direct creation sessions",
+      "new": "New session",
+      "search": "Search sessions",
+      "searchPlaceholder": "Search sessions…",
+      "recent": "Recent",
+      "empty": "No sessions yet.",
+      "noResults": "No sessions found.",
+      "loadMore": "Load more",
+      "draft": "Draft",
+      "untitled": "Untitled session",
+      "rename": "Rename session",
+      "renameDescription": "Choose a name that makes this creation session easy to find.",
+      "renamed": "Session renamed",
+      "delete": "Delete session",
+      "deleteDescription": "Delete {{name}}? Its request history is removed permanently, but generated and uploaded Assets remain available.",
+      "deleted": "Session deleted",
+      "deleting": "Deleting…",
+      "actionFailed": "The session action could not be completed."
+    },
+    "history": {
+      "label": "Request and result history",
+      "request": "Generation request",
+      "mediaInput": "Media input",
+      "requestTitle": "{{model}}, {{operation}}, {{count}} output",
+      "requestTitle_one": "{{model}}, {{operation}}, {{count}} output",
+      "requestTitle_other": "{{model}}, {{operation}}, {{count}} outputs",
+      "noPrompt": "No text prompt",
+      "noOutput": "This request did not produce a media Asset.",
+      "partialOutput": "Some outputs are available; the request did not complete fully.",
+      "keepWorking": "You can keep working while this request runs.",
+      "elapsed_one": "Running for {{count}} second",
+      "elapsed_other": "Running for {{count}} seconds",
+      "loadEarlier": "Load earlier",
+      "retry": "Retry request",
+      "reuseRequest": "Reuse request",
+      "requestReused": "Request restored in the composer",
+      "requestUnavailable": "The complete historical request is no longer available.",
+      "generateFailed": "The request could not be started.",
+      "cancelFailed": "The request could not be canceled.",
+      "retryFailed": "The request could not be retried."
+    },
+    "runStatus": {
+      "pending": "Queued",
+      "running": "Generating",
+      "succeeded": "Completed",
+      "partial": "Partially completed",
+      "failed": "Failed",
+      "canceled": "Canceled"
+    },
+    "results": {
+      "generatedMedia": "Generated result {{index}}",
+      "openAsset": "Open Asset",
+      "useAsReference": "Use as reference",
+      "makeVideo": "Make video",
+      "referenceAdded": "Result added to the next request",
+      "videoPrepared": "Video request prepared from this image",
+      "couldNotReuse": "This result is not compatible with an available input."
+    }
   },
   "flows": {
     "actionFailed": "The Flow action could not be completed.",

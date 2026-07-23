@@ -30,6 +30,7 @@
   },
   "navigation": {
     "assets": "Ficheiros",
+    "create": "Criar",
     "elements": "Elementos",
     "flows": "Fluxos",
     "generalSettings": "Definições gerais",
@@ -38,6 +39,165 @@
     "profile": "Perfil",
     "settings": "Definições",
     "toggleSidebar": "Alternar barra lateral"
+  },
+  "create": {
+    "couldNotLoad": "Não foi possível carregar Criar",
+    "couldNotLoadDescription": "Verifique a ligação e tente novamente.",
+    "openInFlow": "Abrir num Fluxo",
+    "openInFlowFailed": "Não foi possível abrir a sessão num Fluxo.",
+    "cloneName": "{{name}} - Fluxo",
+    "modelUnavailable": "Modelo indisponível",
+    "emptyState": {
+      "title": "O que vai criar?",
+      "description": "Descreva uma ideia ou adicione uma referência. As suas gerações aparecerão aqui.",
+      "recent": "Criações recentes"
+    },
+    "modes": {
+      "image": "Imagem",
+      "video": "Vídeo",
+      "audio": "Áudio"
+    },
+    "audioIntents": {
+      "label": "Tarefa de áudio",
+      "speechGeneration": "Fala",
+      "musicGeneration": "Música",
+      "soundEffectGeneration": "Efeito sonoro",
+      "voiceChanger": "Alterar voz",
+      "voiceIsolation": "Isolar voz"
+    },
+    "composer": {
+      "label": "Pedido de geração de multimédia",
+      "imageLabel": "Descreva a imagem",
+      "imagePlaceholder": "Descreva o tema, a cena, a iluminação e o estilo…",
+      "videoLabel": "Descreva o vídeo",
+      "videoPlaceholder": "Descreva o movimento, a câmara e a cena…",
+      "speechLabel": "Introduza a fala",
+      "speechPlaceholder": "Escreva as palavras a dizer…",
+      "musicLabel": "Descreva a música",
+      "musicPlaceholder": "Descreva o ambiente, os instrumentos, o ritmo e o estilo…",
+      "soundEffectLabel": "Descreva o som",
+      "soundEffectPlaceholder": "Descreva o efeito sonoro de que necessita…",
+      "lyricsLabel": "Letra",
+      "lyricsPlaceholder": "Adicione uma letra opcional…"
+    },
+    "commands": {
+      "generate": "Gerar"
+    },
+    "attachments": {
+      "title": "Entradas do pedido",
+      "add": "Adicionar",
+      "choose": "Escolher",
+      "open": "Abrir {{name}}",
+      "remove": "Remover {{name}} deste pedido",
+      "moveEarlier": "Mover {{name}} para antes",
+      "moveLater": "Mover {{name}} para depois",
+      "unsupported": "Esta função de entrada não aceita um tipo de ficheiro disponível.",
+      "notReady": "Este ficheiro ainda está a ser processado.",
+      "wrongType": "Este tipo de ficheiro não é suportado aqui.",
+      "wrongFormat": "Este formato de ficheiro não é suportado pelo modelo selecionado."
+    },
+    "settings": {
+      "title": "Definições",
+      "description": "Controlos de modelo, saída e execução",
+      "open": "Abrir definições de Criar",
+      "model": "Modelo",
+      "output": "Saída",
+      "execution": "Execução"
+    },
+    "execution": {
+      "browser": "BYOK no navegador",
+      "managed": "Gerida",
+      "debug": "Depuração",
+      "connectedProviders": "Ligados: {{providers}}",
+      "noProvider": "Ligue uma chave de fornecedor suportado para gerar no navegador."
+    },
+    "debug": {
+      "title": "A saída simulada está ativada",
+      "description": "O próximo pedido utiliza fixtures determinísticas, não faz chamadas pagas a fornecedores e regista custo zero."
+    },
+    "cost": {
+      "mock": "Simulação, custo zero"
+    },
+    "validation": {
+      "modelUnavailable": "Escolha um modelo disponível para esta tarefa.",
+      "incomplete": "Preencha o prompt ou o conteúdo multimédia obrigatório.",
+      "invalid": "Reveja o pedido e substitua qualquer referência multimédia inválida.",
+      "connectProvider": "Ligue uma chave de fornecedor suportado no Armazenamento Seguro.",
+      "saveFailed": "Guarde este pedido antes de gerar.",
+      "savingEstimate": "A guardar o pedido antes de estimar o custo…",
+      "estimating": "Aguarde pela estimativa de custo completa…",
+      "estimateUnavailable": "É necessária uma estimativa de custo completa antes de gerar."
+    },
+    "sync": {
+      "idle": "Rascunho",
+      "saving": "A guardar…",
+      "saved": "Guardado",
+      "error": "Falha ao guardar"
+    },
+    "modelDetach": {
+      "notice_one": "Uma entrada incompatível foi removida deste pedido. O ficheiro continua disponível.",
+      "notice_other": "{{count}} entradas incompatíveis foram removidas deste pedido. Os ficheiros continuam disponíveis."
+    },
+    "sessions": {
+      "title": "Sessões",
+      "description": "Sessões recentes de criação direta",
+      "new": "Nova sessão",
+      "search": "Pesquisar sessões",
+      "searchPlaceholder": "Pesquisar sessões…",
+      "recent": "Recentes",
+      "empty": "Ainda não existem sessões.",
+      "noResults": "Não foram encontradas sessões.",
+      "loadMore": "Carregar mais",
+      "draft": "Rascunho",
+      "untitled": "Sessão sem título",
+      "rename": "Mudar o nome da sessão",
+      "renameDescription": "Escolha um nome que torne esta sessão de criação fácil de encontrar.",
+      "renamed": "Nome da sessão alterado",
+      "delete": "Eliminar sessão",
+      "deleteDescription": "Eliminar {{name}}? O histórico de pedidos será removido permanentemente, mas os ficheiros gerados e enviados continuarão disponíveis.",
+      "deleted": "Sessão eliminada",
+      "deleting": "A eliminar…",
+      "actionFailed": "Não foi possível concluir a ação da sessão."
+    },
+    "history": {
+      "label": "Histórico de pedidos e resultados",
+      "request": "Pedido de geração",
+      "mediaInput": "Entrada multimédia",
+      "requestTitle": "{{model}}, {{operation}}, {{count}} saída",
+      "requestTitle_one": "{{model}}, {{operation}}, {{count}} saída",
+      "requestTitle_other": "{{model}}, {{operation}}, {{count}} saídas",
+      "noPrompt": "Sem prompt de texto",
+      "noOutput": "Este pedido não produziu um ficheiro multimédia.",
+      "partialOutput": "Estão disponíveis algumas saídas; o pedido não foi concluído na totalidade.",
+      "keepWorking": "Pode continuar a trabalhar enquanto este pedido é executado.",
+      "elapsed_one": "Em execução há {{count}} segundo",
+      "elapsed_other": "Em execução há {{count}} segundos",
+      "loadEarlier": "Carregar anteriores",
+      "retry": "Tentar novamente o pedido",
+      "reuseRequest": "Reutilizar pedido",
+      "requestReused": "Pedido restaurado no compositor",
+      "requestUnavailable": "O pedido histórico completo já não está disponível.",
+      "generateFailed": "Não foi possível iniciar o pedido.",
+      "cancelFailed": "Não foi possível cancelar o pedido.",
+      "retryFailed": "Não foi possível tentar novamente o pedido."
+    },
+    "runStatus": {
+      "pending": "Em fila",
+      "running": "A gerar",
+      "succeeded": "Concluído",
+      "partial": "Parcialmente concluído",
+      "failed": "Falhou",
+      "canceled": "Cancelado"
+    },
+    "results": {
+      "generatedMedia": "Resultado gerado {{index}}",
+      "openAsset": "Abrir ficheiro",
+      "useAsReference": "Usar como referência",
+      "makeVideo": "Criar vídeo",
+      "referenceAdded": "Resultado adicionado ao próximo pedido",
+      "videoPrepared": "Pedido de vídeo preparado a partir desta imagem",
+      "couldNotReuse": "Este resultado não é compatível com uma entrada disponível."
+    }
   },
   "flows": {
     "actionFailed": "Não foi possível concluir a ação do Fluxo.",

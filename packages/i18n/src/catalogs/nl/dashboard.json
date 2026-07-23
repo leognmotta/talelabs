@@ -30,6 +30,7 @@
   },
   "navigation": {
     "assets": "Bestanden",
+    "create": "Maken",
     "elements": "Elementen",
     "flows": "Workflows",
     "generalSettings": "Algemene instellingen",
@@ -38,6 +39,154 @@
     "profile": "Profiel",
     "settings": "Instellingen",
     "toggleSidebar": "Zijbalk tonen of verbergen"
+  },
+  "create": {
+    "couldNotLoad": "Maken kon niet worden geladen",
+    "couldNotLoadDescription": "Controleer je verbinding en probeer het opnieuw.",
+    "openInFlow": "Openen in workflow",
+    "openInFlowFailed": "De sessie kon niet in een workflow worden geopend.",
+    "cloneName": "{{name}} - workflow",
+    "modelUnavailable": "Model niet beschikbaar",
+    "emptyState": {
+      "title": "Wat ga je maken?",
+      "description": "Beschrijf een idee of voeg een referentie toe. Je generaties verschijnen hier.",
+      "recent": "Recente creaties"
+    },
+    "modes": { "image": "Afbeelding", "video": "Video", "audio": "Audio" },
+    "audioIntents": {
+      "label": "Audiotaak",
+      "speechGeneration": "Spraak",
+      "musicGeneration": "Muziek",
+      "soundEffectGeneration": "Geluidseffect",
+      "voiceChanger": "Stem wijzigen",
+      "voiceIsolation": "Stem isoleren"
+    },
+    "composer": {
+      "label": "Aanvraag voor mediageneratie",
+      "imageLabel": "Beschrijf de afbeelding",
+      "imagePlaceholder": "Beschrijf het onderwerp, de scène, belichting en stijl…",
+      "videoLabel": "Beschrijf de video",
+      "videoPlaceholder": "Beschrijf de beweging, camera en scène…",
+      "speechLabel": "Voer de gesproken tekst in",
+      "speechPlaceholder": "Schrijf de woorden die moeten worden uitgesproken…",
+      "musicLabel": "Beschrijf de muziek",
+      "musicPlaceholder": "Beschrijf de sfeer, instrumenten, het tempo en de stijl…",
+      "soundEffectLabel": "Beschrijf het geluid",
+      "soundEffectPlaceholder": "Beschrijf het gewenste geluidseffect…",
+      "lyricsLabel": "Songtekst",
+      "lyricsPlaceholder": "Voeg optioneel een songtekst toe…"
+    },
+    "commands": {
+      "generate": "Genereren"
+    },
+    "attachments": {
+      "title": "Invoer voor aanvraag",
+      "add": "Toevoegen",
+      "choose": "Kiezen",
+      "open": "{{name}} openen",
+      "remove": "{{name}} uit deze aanvraag verwijderen",
+      "moveEarlier": "{{name}} naar voren verplaatsen",
+      "moveLater": "{{name}} naar achteren verplaatsen",
+      "unsupported": "Deze invoerrol accepteert geen beschikbaar bestandstype.",
+      "notReady": "Dit bestand wordt nog verwerkt.",
+      "wrongType": "Dit bestandstype wordt hier niet ondersteund.",
+      "wrongFormat": "Deze bestandsindeling wordt niet ondersteund door het geselecteerde model."
+    },
+    "settings": {
+      "title": "Instellingen",
+      "description": "Besturing voor model, uitvoer en uitvoering",
+      "open": "Instellingen voor Maken openen",
+      "model": "Model",
+      "output": "Uitvoer",
+      "execution": "Uitvoering"
+    },
+    "execution": {
+      "browser": "Browser-BYOK",
+      "managed": "Beheerd",
+      "debug": "Debug",
+      "connectedProviders": "Verbonden: {{providers}}",
+      "noProvider": "Verbind een ondersteunde providersleutel om in je browser te genereren."
+    },
+    "debug": {
+      "title": "Mockuitvoer is ingeschakeld",
+      "description": "De volgende aanvraag gebruikt deterministische testgegevens, doet geen betaalde provideraanroep en registreert geen kosten."
+    },
+    "cost": { "mock": "Mock, geen kosten" },
+    "validation": {
+      "modelUnavailable": "Kies een beschikbaar model voor deze taak.",
+      "incomplete": "Vul de vereiste prompt of media-invoer in.",
+      "invalid": "Controleer de aanvraag en vervang ongeldige mediaverwijzingen.",
+      "connectProvider": "Verbind een ondersteunde providersleutel in Veilige opslag.",
+      "saveFailed": "Sla deze aanvraag op voordat je genereert.",
+      "savingEstimate": "Aanvraag opslaan vóór de kostenraming…",
+      "estimating": "Wacht op de volledige kostenraming…",
+      "estimateUnavailable": "Vóór het genereren is een volledige kostenraming vereist."
+    },
+    "sync": { "idle": "Concept", "saving": "Opslaan…", "saved": "Opgeslagen", "error": "Opslaan mislukt" },
+    "modelDetach": {
+      "notice_one": "Eén incompatibele invoer is uit deze aanvraag verwijderd. Het bestand blijft beschikbaar.",
+      "notice_other": "{{count}} incompatibele invoeren zijn uit deze aanvraag verwijderd. De bestanden blijven beschikbaar."
+    },
+    "sessions": {
+      "title": "Sessies",
+      "description": "Recente sessies voor direct maken",
+      "new": "Nieuwe sessie",
+      "search": "Sessies zoeken",
+      "searchPlaceholder": "Sessies zoeken…",
+      "recent": "Recent",
+      "empty": "Nog geen sessies.",
+      "noResults": "Geen sessies gevonden.",
+      "loadMore": "Meer laden",
+      "draft": "Concept",
+      "untitled": "Naamloze sessie",
+      "rename": "Sessie hernoemen",
+      "renameDescription": "Kies een naam waarmee je deze maaksessie gemakkelijk terugvindt.",
+      "renamed": "Sessie hernoemd",
+      "delete": "Sessie verwijderen",
+      "deleteDescription": "{{name}} verwijderen? De aanvraaggeschiedenis wordt permanent verwijderd, maar gegenereerde en geüploade bestanden blijven beschikbaar.",
+      "deleted": "Sessie verwijderd",
+      "deleting": "Verwijderen…",
+      "actionFailed": "De sessieactie kon niet worden voltooid."
+    },
+    "history": {
+      "label": "Aanvraag- en resultaatgeschiedenis",
+      "request": "Generatieaanvraag",
+      "mediaInput": "Media-invoer",
+      "requestTitle": "{{model}}, {{operation}}, {{count}} uitvoer",
+      "requestTitle_one": "{{model}}, {{operation}}, {{count}} uitvoer",
+      "requestTitle_other": "{{model}}, {{operation}}, {{count}} uitvoerresultaten",
+      "noPrompt": "Geen tekstprompt",
+      "noOutput": "Deze aanvraag heeft geen mediabestand opgeleverd.",
+      "partialOutput": "Enkele resultaten zijn beschikbaar; de aanvraag is niet volledig voltooid.",
+      "keepWorking": "Je kunt doorwerken terwijl deze aanvraag wordt uitgevoerd.",
+      "elapsed_one": "Loopt al {{count}} seconde",
+      "elapsed_other": "Loopt al {{count}} seconden",
+      "loadEarlier": "Eerdere laden",
+      "retry": "Aanvraag opnieuw proberen",
+      "reuseRequest": "Aanvraag hergebruiken",
+      "requestReused": "Aanvraag hersteld in de editor",
+      "requestUnavailable": "De volledige historische aanvraag is niet meer beschikbaar.",
+      "generateFailed": "De aanvraag kon niet worden gestart.",
+      "cancelFailed": "De aanvraag kon niet worden geannuleerd.",
+      "retryFailed": "De aanvraag kon niet opnieuw worden geprobeerd."
+    },
+    "runStatus": {
+      "pending": "In wachtrij",
+      "running": "Genereren",
+      "succeeded": "Voltooid",
+      "partial": "Gedeeltelijk voltooid",
+      "failed": "Mislukt",
+      "canceled": "Geannuleerd"
+    },
+    "results": {
+      "generatedMedia": "Gegenereerd resultaat {{index}}",
+      "openAsset": "Bestand openen",
+      "useAsReference": "Als referentie gebruiken",
+      "makeVideo": "Video maken",
+      "referenceAdded": "Resultaat toegevoegd aan de volgende aanvraag",
+      "videoPrepared": "Videoaanvraag voorbereid met deze afbeelding",
+      "couldNotReuse": "Dit resultaat is niet compatibel met beschikbare invoer."
+    }
   },
   "flows": {
     "actionFailed": "De workflowactie kon niet worden voltooid.",

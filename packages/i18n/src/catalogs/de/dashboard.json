@@ -30,6 +30,7 @@
   },
   "navigation": {
     "assets": "Dateien",
+    "create": "Erstellen",
     "elements": "Elemente",
     "flows": "Workflows",
     "generalSettings": "Allgemeine Einstellungen",
@@ -38,6 +39,154 @@
     "profile": "Profil",
     "settings": "Einstellungen",
     "toggleSidebar": "Seitenleiste ein- oder ausblenden"
+  },
+  "create": {
+    "couldNotLoad": "Erstellen konnte nicht geladen werden",
+    "couldNotLoadDescription": "Prüfe deine Verbindung und versuche es erneut.",
+    "openInFlow": "Im Workflow öffnen",
+    "openInFlowFailed": "Die Sitzung konnte nicht in einem Workflow geöffnet werden.",
+    "cloneName": "{{name}} - Workflow",
+    "modelUnavailable": "Modell nicht verfügbar",
+    "emptyState": {
+      "title": "Was möchtest du erstellen?",
+      "description": "Beschreibe eine Idee oder füge eine Referenz hinzu. Deine Ergebnisse erscheinen hier.",
+      "recent": "Letzte Kreationen"
+    },
+    "modes": { "image": "Bild", "video": "Video", "audio": "Audio" },
+    "audioIntents": {
+      "label": "Audioaufgabe",
+      "speechGeneration": "Sprache",
+      "musicGeneration": "Musik",
+      "soundEffectGeneration": "Soundeffekt",
+      "voiceChanger": "Stimme ändern",
+      "voiceIsolation": "Stimme isolieren"
+    },
+    "composer": {
+      "label": "Anfrage zur Mediengenerierung",
+      "imageLabel": "Beschreibe das Bild",
+      "imagePlaceholder": "Beschreibe Motiv, Szene, Beleuchtung und Stil…",
+      "videoLabel": "Beschreibe das Video",
+      "videoPlaceholder": "Beschreibe Bewegung, Kamera und Szene…",
+      "speechLabel": "Sprechtext eingeben",
+      "speechPlaceholder": "Schreibe den Text, der gesprochen werden soll…",
+      "musicLabel": "Beschreibe die Musik",
+      "musicPlaceholder": "Beschreibe Stimmung, Instrumente, Tempo und Stil…",
+      "soundEffectLabel": "Beschreibe den Klang",
+      "soundEffectPlaceholder": "Beschreibe den benötigten Soundeffekt…",
+      "lyricsLabel": "Liedtext",
+      "lyricsPlaceholder": "Optionalen Liedtext hinzufügen…"
+    },
+    "commands": {
+      "generate": "Generieren"
+    },
+    "attachments": {
+      "title": "Eingaben der Anfrage",
+      "add": "Hinzufügen",
+      "choose": "Auswählen",
+      "open": "{{name}} öffnen",
+      "remove": "{{name}} aus dieser Anfrage entfernen",
+      "moveEarlier": "{{name}} nach vorn verschieben",
+      "moveLater": "{{name}} nach hinten verschieben",
+      "unsupported": "Diese Eingaberolle akzeptiert keinen verfügbaren Dateityp.",
+      "notReady": "Diese Datei wird noch verarbeitet.",
+      "wrongType": "Dieser Dateityp wird hier nicht unterstützt.",
+      "wrongFormat": "Dieses Dateiformat wird vom ausgewählten Modell nicht unterstützt."
+    },
+    "settings": {
+      "title": "Einstellungen",
+      "description": "Modell-, Ausgabe- und Ausführungssteuerung",
+      "open": "Einstellungen für Erstellen öffnen",
+      "model": "Modell",
+      "output": "Ausgabe",
+      "execution": "Ausführung"
+    },
+    "execution": {
+      "browser": "Browser-BYOK",
+      "managed": "Verwaltet",
+      "debug": "Debug",
+      "connectedProviders": "Verbunden: {{providers}}",
+      "noProvider": "Verbinde einen unterstützten Anbieterschlüssel, um im Browser zu generieren."
+    },
+    "debug": {
+      "title": "Mock-Ausgabe ist aktiviert",
+      "description": "Die nächste Anfrage verwendet deterministische Testdaten, führt keinen kostenpflichtigen Anbieteraufruf aus und erfasst keine Kosten."
+    },
+    "cost": { "mock": "Mock, keine Kosten" },
+    "validation": {
+      "modelUnavailable": "Wähle ein verfügbares Modell für diese Aufgabe.",
+      "incomplete": "Vervollständige den erforderlichen Prompt oder die Medieneingabe.",
+      "invalid": "Prüfe die Anfrage und ersetze ungültige Medienreferenzen.",
+      "connectProvider": "Verbinde einen unterstützten Anbieterschlüssel im sicheren Speicher.",
+      "saveFailed": "Speichere diese Anfrage vor der Generierung.",
+      "savingEstimate": "Anfrage wird vor der Kostenschätzung gespeichert…",
+      "estimating": "Warte auf die vollständige Kostenschätzung…",
+      "estimateUnavailable": "Vor der Generierung ist eine vollständige Kostenschätzung erforderlich."
+    },
+    "sync": { "idle": "Entwurf", "saving": "Wird gespeichert…", "saved": "Gespeichert", "error": "Speichern fehlgeschlagen" },
+    "modelDetach": {
+      "notice_one": "Eine inkompatible Eingabe wurde aus dieser Anfrage entfernt. Die Datei bleibt verfügbar.",
+      "notice_other": "{{count}} inkompatible Eingaben wurden aus dieser Anfrage entfernt. Die Dateien bleiben verfügbar."
+    },
+    "sessions": {
+      "title": "Sitzungen",
+      "description": "Letzte Sitzungen zur direkten Erstellung",
+      "new": "Neue Sitzung",
+      "search": "Sitzungen durchsuchen",
+      "searchPlaceholder": "Sitzungen durchsuchen…",
+      "recent": "Zuletzt verwendet",
+      "empty": "Noch keine Sitzungen.",
+      "noResults": "Keine Sitzungen gefunden.",
+      "loadMore": "Mehr laden",
+      "draft": "Entwurf",
+      "untitled": "Unbenannte Sitzung",
+      "rename": "Sitzung umbenennen",
+      "renameDescription": "Wähle einen Namen, mit dem diese Erstellungssitzung leicht zu finden ist.",
+      "renamed": "Sitzung umbenannt",
+      "delete": "Sitzung löschen",
+      "deleteDescription": "{{name}} löschen? Der Anfrageverlauf wird dauerhaft entfernt, generierte und hochgeladene Dateien bleiben jedoch verfügbar.",
+      "deleted": "Sitzung gelöscht",
+      "deleting": "Wird gelöscht…",
+      "actionFailed": "Die Sitzungsaktion konnte nicht abgeschlossen werden."
+    },
+    "history": {
+      "label": "Anfrage- und Ergebnisverlauf",
+      "request": "Generierungsanfrage",
+      "mediaInput": "Medieneingabe",
+      "requestTitle": "{{model}}, {{operation}}, {{count}} Ausgabe",
+      "requestTitle_one": "{{model}}, {{operation}}, {{count}} Ausgabe",
+      "requestTitle_other": "{{model}}, {{operation}}, {{count}} Ausgaben",
+      "noPrompt": "Kein Text-Prompt",
+      "noOutput": "Diese Anfrage hat keine Mediendatei erzeugt.",
+      "partialOutput": "Einige Ausgaben sind verfügbar; die Anfrage wurde nicht vollständig abgeschlossen.",
+      "keepWorking": "Du kannst weiterarbeiten, während diese Anfrage ausgeführt wird.",
+      "elapsed_one": "Läuft seit {{count}} Sekunde",
+      "elapsed_other": "Läuft seit {{count}} Sekunden",
+      "loadEarlier": "Ältere laden",
+      "retry": "Anfrage wiederholen",
+      "reuseRequest": "Anfrage wiederverwenden",
+      "requestReused": "Anfrage im Editor wiederhergestellt",
+      "requestUnavailable": "Die vollständige historische Anfrage ist nicht mehr verfügbar.",
+      "generateFailed": "Die Anfrage konnte nicht gestartet werden.",
+      "cancelFailed": "Die Anfrage konnte nicht abgebrochen werden.",
+      "retryFailed": "Die Anfrage konnte nicht wiederholt werden."
+    },
+    "runStatus": {
+      "pending": "In Warteschlange",
+      "running": "Wird generiert",
+      "succeeded": "Abgeschlossen",
+      "partial": "Teilweise abgeschlossen",
+      "failed": "Fehlgeschlagen",
+      "canceled": "Abgebrochen"
+    },
+    "results": {
+      "generatedMedia": "Generiertes Ergebnis {{index}}",
+      "openAsset": "Datei öffnen",
+      "useAsReference": "Als Referenz verwenden",
+      "makeVideo": "Video erstellen",
+      "referenceAdded": "Ergebnis zur nächsten Anfrage hinzugefügt",
+      "videoPrepared": "Videoanfrage aus diesem Bild vorbereitet",
+      "couldNotReuse": "Dieses Ergebnis ist mit keiner verfügbaren Eingabe kompatibel."
+    }
   },
   "flows": {
     "actionFailed": "Die Workflow-Aktion konnte nicht abgeschlossen werden.",

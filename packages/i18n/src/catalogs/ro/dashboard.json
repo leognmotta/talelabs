@@ -30,6 +30,7 @@
   },
   "navigation": {
     "assets": "Fișiere",
+    "create": "Creează",
     "elements": "Elemente",
     "flows": "Fluxuri de lucru",
     "generalSettings": "Setări generale",
@@ -38,6 +39,154 @@
     "profile": "Profil",
     "settings": "Setări",
     "toggleSidebar": "Afișează sau ascunde bara laterală"
+  },
+  "create": {
+    "couldNotLoad": "Nu s-a putut încărca pagina Creează",
+    "couldNotLoadDescription": "Verifică conexiunea și încearcă din nou.",
+    "openInFlow": "Deschide într-un flux de lucru",
+    "openInFlowFailed": "Sesiunea nu a putut fi deschisă într-un flux de lucru.",
+    "cloneName": "{{name}} - flux de lucru",
+    "modelUnavailable": "Model indisponibil",
+    "emptyState": {
+      "title": "Ce vei crea?",
+      "description": "Descrie o idee sau adaugă o referință. Generările tale vor apărea aici.",
+      "recent": "Creații recente"
+    },
+    "modes": { "image": "Imagine", "video": "Video", "audio": "Audio" },
+    "audioIntents": {
+      "label": "Sarcină audio",
+      "speechGeneration": "Vorbire",
+      "musicGeneration": "Muzică",
+      "soundEffectGeneration": "Efect sonor",
+      "voiceChanger": "Schimbare voce",
+      "voiceIsolation": "Izolare voce"
+    },
+    "composer": {
+      "label": "Solicitare de generare media",
+      "imageLabel": "Descrie imaginea",
+      "imagePlaceholder": "Descrie subiectul, scena, iluminarea și stilul…",
+      "videoLabel": "Descrie videoclipul",
+      "videoPlaceholder": "Descrie mișcarea, camera și scena…",
+      "speechLabel": "Introdu textul vorbit",
+      "speechPlaceholder": "Scrie cuvintele care vor fi rostite…",
+      "musicLabel": "Descrie muzica",
+      "musicPlaceholder": "Descrie atmosfera, instrumentele, tempoul și stilul…",
+      "soundEffectLabel": "Descrie sunetul",
+      "soundEffectPlaceholder": "Descrie efectul sonor de care ai nevoie…",
+      "lyricsLabel": "Versuri",
+      "lyricsPlaceholder": "Adaugă versuri opționale…"
+    },
+    "commands": {
+      "generate": "Generează"
+    },
+    "attachments": {
+      "title": "Datele solicitării",
+      "add": "Adaugă",
+      "choose": "Alege",
+      "open": "Deschide {{name}}",
+      "remove": "Elimină {{name}} din această solicitare",
+      "moveEarlier": "Mută {{name}} mai devreme",
+      "moveLater": "Mută {{name}} mai târziu",
+      "unsupported": "Acest rol de intrare nu acceptă niciun tip de fișier disponibil.",
+      "notReady": "Acest fișier este încă în curs de procesare.",
+      "wrongType": "Acest tip de fișier nu este acceptat aici.",
+      "wrongFormat": "Acest format de fișier nu este acceptat de modelul selectat."
+    },
+    "settings": {
+      "title": "Setări",
+      "description": "Comenzi pentru model, rezultat și execuție",
+      "open": "Deschide setările paginii Creează",
+      "model": "Model",
+      "output": "Rezultat",
+      "execution": "Execuție"
+    },
+    "execution": {
+      "browser": "BYOK în browser",
+      "managed": "Gestionată",
+      "debug": "Depanare",
+      "connectedProviders": "Conectați: {{providers}}",
+      "noProvider": "Conectează o cheie de furnizor acceptată pentru a genera în browser."
+    },
+    "debug": {
+      "title": "Rezultatul simulat este activat",
+      "description": "Următoarea solicitare folosește date de test deterministe, nu face apeluri plătite la furnizori și înregistrează cost zero."
+    },
+    "cost": { "mock": "Simulare, cost zero" },
+    "validation": {
+      "modelUnavailable": "Alege un model disponibil pentru această sarcină.",
+      "incomplete": "Completează promptul sau intrarea media necesară.",
+      "invalid": "Verifică solicitarea și înlocuiește referințele media nevalide.",
+      "connectProvider": "Conectează o cheie de furnizor acceptată în Spațiul de stocare securizat.",
+      "saveFailed": "Salvează această solicitare înainte de generare.",
+      "savingEstimate": "Se salvează solicitarea înainte de estimarea costului…",
+      "estimating": "Așteaptă estimarea completă a costului…",
+      "estimateUnavailable": "Este necesară o estimare completă a costului înainte de generare."
+    },
+    "sync": { "idle": "Ciornă", "saving": "Se salvează…", "saved": "Salvat", "error": "Salvarea a eșuat" },
+    "modelDetach": {
+      "notice_one": "O intrare incompatibilă a fost eliminată din această solicitare. Fișierul rămâne disponibil.",
+      "notice_other": "{{count}} intrări incompatibile au fost eliminate din această solicitare. Fișierele rămân disponibile."
+    },
+    "sessions": {
+      "title": "Sesiuni",
+      "description": "Sesiuni recente de creare directă",
+      "new": "Sesiune nouă",
+      "search": "Caută sesiuni",
+      "searchPlaceholder": "Caută sesiuni…",
+      "recent": "Recente",
+      "empty": "Nu există încă sesiuni.",
+      "noResults": "Nu s-au găsit sesiuni.",
+      "loadMore": "Încarcă mai multe",
+      "draft": "Ciornă",
+      "untitled": "Sesiune fără titlu",
+      "rename": "Redenumește sesiunea",
+      "renameDescription": "Alege un nume care face această sesiune de creare ușor de găsit.",
+      "renamed": "Sesiune redenumită",
+      "delete": "Șterge sesiunea",
+      "deleteDescription": "Ștergi {{name}}? Istoricul solicitărilor va fi eliminat definitiv, dar fișierele generate și încărcate vor rămâne disponibile.",
+      "deleted": "Sesiune ștearsă",
+      "deleting": "Se șterge…",
+      "actionFailed": "Acțiunea asupra sesiunii nu a putut fi finalizată."
+    },
+    "history": {
+      "label": "Istoricul solicitărilor și rezultatelor",
+      "request": "Solicitare de generare",
+      "mediaInput": "Intrare media",
+      "requestTitle": "{{model}}, {{operation}}, {{count}} rezultat",
+      "requestTitle_one": "{{model}}, {{operation}}, {{count}} rezultat",
+      "requestTitle_other": "{{model}}, {{operation}}, {{count}} rezultate",
+      "noPrompt": "Fără prompt text",
+      "noOutput": "Această solicitare nu a produs niciun fișier media.",
+      "partialOutput": "Unele rezultate sunt disponibile, dar solicitarea nu s-a finalizat complet.",
+      "keepWorking": "Poți continua să lucrezi cât timp se execută această solicitare.",
+      "elapsed_one": "Rulează de {{count}} secundă",
+      "elapsed_other": "Rulează de {{count}} secunde",
+      "loadEarlier": "Încarcă solicitările anterioare",
+      "retry": "Reîncearcă solicitarea",
+      "reuseRequest": "Refolosește solicitarea",
+      "requestReused": "Solicitare restaurată în editor",
+      "requestUnavailable": "Solicitarea istorică completă nu mai este disponibilă.",
+      "generateFailed": "Solicitarea nu a putut fi pornită.",
+      "cancelFailed": "Solicitarea nu a putut fi anulată.",
+      "retryFailed": "Solicitarea nu a putut fi reîncercată."
+    },
+    "runStatus": {
+      "pending": "În coadă",
+      "running": "Se generează",
+      "succeeded": "Finalizată",
+      "partial": "Finalizată parțial",
+      "failed": "Eșuată",
+      "canceled": "Anulată"
+    },
+    "results": {
+      "generatedMedia": "Rezultat generat {{index}}",
+      "openAsset": "Deschide fișierul",
+      "useAsReference": "Folosește ca referință",
+      "makeVideo": "Creează video",
+      "referenceAdded": "Rezultat adăugat la următoarea solicitare",
+      "videoPrepared": "Solicitare video pregătită din această imagine",
+      "couldNotReuse": "Acest rezultat nu este compatibil cu nicio intrare disponibilă."
+    }
   },
   "flows": {
     "actionFailed": "Acțiunea asupra fluxului nu a putut fi finalizată.",
