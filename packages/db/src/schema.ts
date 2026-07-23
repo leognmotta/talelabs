@@ -53,6 +53,8 @@ export type AssetSource = 'generation' | 'upload'
 export type AssetVisibility = 'private' | 'public'
 /** Canonical Asset processing lifecycle. */
 export type AssetProcessingState = 'failed' | 'processing' | 'ready'
+/** Presentation surface that owns one ordinary editable Flow identity. */
+export type FlowSurface = 'canvas' | 'create'
 /** Supported Flow graph-selection run modes. */
 export type FlowRunMode
   = | 'all'
@@ -212,6 +214,7 @@ export interface FlowTable {
   organizationId: string
   createdBy: string | null
   name: string
+  surface: Generated<FlowSurface>
   assetFolderId: string | null
   viewport: GeneratedJsonColumn
   revision: GeneratedBigIntColumn
