@@ -3,6 +3,14 @@
  * Do not edit manually.
  */
 
+export const createFlowRequestSurfaceEnum = {
+  canvas: "canvas",
+  create: "create",
+} as const;
+
+export type CreateFlowRequestSurfaceEnumKey =
+  (typeof createFlowRequestSurfaceEnum)[keyof typeof createFlowRequestSurfaceEnum];
+
 export type CreateFlowRequest = {
   /**
    * @minLength 1
@@ -10,4 +18,8 @@ export type CreateFlowRequest = {
    * @type string
    */
   name: string;
+  /**
+   * @type string
+   */
+  surface: CreateFlowRequestSurfaceEnumKey;
 };

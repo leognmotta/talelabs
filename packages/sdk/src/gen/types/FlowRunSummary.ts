@@ -4,6 +4,7 @@
  */
 
 import type { Cuid2 } from "./Cuid2.ts";
+import type { FlowRunAssetOutput } from "./FlowRunAssetOutput.ts";
 import type { Timestamp } from "./Timestamp.ts";
 
 export const browserExecutionStatusEnum = {
@@ -55,6 +56,61 @@ export const flowRunSummaryStatusEnum = {
 
 export type FlowRunSummaryStatusEnumKey =
   (typeof flowRunSummaryStatusEnum)[keyof typeof flowRunSummaryStatusEnum];
+
+export const inputsMediaTypesEnum = {
+  audio: "audio",
+  image: "image",
+  video: "video",
+} as const;
+
+export type InputsMediaTypesEnumKey =
+  (typeof inputsMediaTypesEnum)[keyof typeof inputsMediaTypesEnum];
+
+export const requestSummaryMediaTypeEnum = {
+  image: "image",
+  video: "video",
+  audio: "audio",
+  text: "text",
+} as const;
+
+export type RequestSummaryMediaTypeEnumKey =
+  (typeof requestSummaryMediaTypeEnum)[keyof typeof requestSummaryMediaTypeEnum];
+
+export const partsTypeEnum = {
+  text: "text",
+} as const;
+
+export type PartsTypeEnumKey =
+  (typeof partsTypeEnum)[keyof typeof partsTypeEnum];
+
+export const partsMediaTypeEnum = {
+  image: "image",
+  video: "video",
+  audio: "audio",
+} as const;
+
+export type PartsMediaTypeEnumKey =
+  (typeof partsMediaTypeEnum)[keyof typeof partsMediaTypeEnum];
+
+export const partsTypeEnum2 = {
+  input: "input",
+} as const;
+
+export type PartsTypeEnum2Key =
+  (typeof partsTypeEnum2)[keyof typeof partsTypeEnum2];
+
+export const partsTypeEnum3 = {
+  break: "break",
+} as const;
+
+export type PartsTypeEnum3Key =
+  (typeof partsTypeEnum3)[keyof typeof partsTypeEnum3];
+
+export const versionEnum = {
+  "1": 1,
+} as const;
+
+export type VersionEnumKey = (typeof versionEnum)[keyof typeof versionEnum];
 
 export type FlowRunSummary = {
   /**
@@ -163,9 +219,134 @@ export type FlowRunSummary = {
     plannedJobCount: number;
   };
   /**
+   * @type array
+   */
+  assetOutputs: FlowRunAssetOutput[];
+  /**
    * @type object
    */
   nodeCounts: {
     [key: string]: number;
   };
+  /**
+   * @type object
+   */
+  requestSummary: {
+    /**
+     * @type object
+     */
+    inline: {
+      [key: string]: string;
+    };
+    /**
+     * @type array
+     */
+    inputs: {
+      /**
+       * @type array
+       */
+      assetIds: (Cuid2 | string)[];
+      /**
+       * @type array
+       */
+      mediaTypes: InputsMediaTypesEnumKey[];
+      /**
+       * @minLength 1
+       * @maxLength 100
+       * @type string
+       */
+      slotId: string;
+    }[];
+    /**
+     * @type string
+     */
+    mediaType: RequestSummaryMediaTypeEnumKey;
+    /**
+     * @minLength 1
+     * @maxLength 200
+     * @type string
+     */
+    modelId: string;
+    /**
+     * @minLength 1
+     * @maxLength 100
+     * @type string
+     */
+    modelContractVersion: string;
+    /**
+     * @minLength 1
+     * @maxLength 100
+     * @type string
+     */
+    nodeType: string;
+    /**
+     * @minLength 1
+     * @maxLength 100
+     * @type string
+     */
+    operationId: string;
+    /**
+     * @type integer
+     */
+    outputCount: number;
+    /**
+     * @type object
+     */
+    promptTemplates: {
+      [key: string]: {
+        /**
+         * @type array
+         */
+        parts: (
+          | {
+              /**
+               * @type string
+               */
+              text: string;
+              /**
+               * @type string
+               */
+              type: PartsTypeEnumKey;
+            }
+          | {
+              /**
+               * @minLength 0
+               * @type integer
+               */
+              index: number;
+              /**
+               * @type string
+               */
+              mediaType: PartsMediaTypeEnumKey;
+              /**
+               * @minLength 1
+               * @maxLength 128
+               * @type string
+               */
+              slotId: string;
+              /**
+               * @type string
+               */
+              type: PartsTypeEnum2Key;
+            }
+          | {
+              /**
+               * @type string
+               */
+              type: PartsTypeEnum3Key;
+            }
+        )[];
+        /**
+         * @type number
+         */
+        version: VersionEnumKey;
+      };
+    };
+    /**
+     * @type object
+     */
+    settings: {
+      [key: string]: boolean | number | string;
+    };
+  } | null;
 };

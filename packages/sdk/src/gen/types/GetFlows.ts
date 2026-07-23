@@ -8,6 +8,14 @@ import type { ErrorResponse } from "./ErrorResponse.ts";
 import type { FlowListResponse } from "./FlowListResponse.ts";
 import type { PaginationLimit } from "./PaginationLimit.ts";
 
+export const getFlowsQueryParamsSurfaceEnum = {
+  canvas: "canvas",
+  create: "create",
+} as const;
+
+export type GetFlowsQueryParamsSurfaceEnumKey =
+  (typeof getFlowsQueryParamsSurfaceEnum)[keyof typeof getFlowsQueryParamsSurfaceEnum];
+
 export type GetFlowsQueryParams = {
   /**
    * @description Opaque cursor returned by a previous list response
@@ -25,6 +33,10 @@ export type GetFlowsQueryParams = {
    * @type string | undefined
    */
   search?: string;
+  /**
+   * @type string
+   */
+  surface: GetFlowsQueryParamsSurfaceEnumKey;
 };
 
 /**

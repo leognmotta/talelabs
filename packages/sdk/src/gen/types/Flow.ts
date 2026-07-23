@@ -8,6 +8,14 @@ import type { FlowViewport } from "./FlowViewport.ts";
 import type { Timestamp } from "./Timestamp.ts";
 import type { UserId } from "./UserId.ts";
 
+export const flowSurfaceEnum = {
+  canvas: "canvas",
+  create: "create",
+} as const;
+
+export type FlowSurfaceEnumKey =
+  (typeof flowSurfaceEnum)[keyof typeof flowSurfaceEnum];
+
 export type Flow = {
   /**
    * @pattern ^[a-z][0-9a-z]+$
@@ -18,6 +26,10 @@ export type Flow = {
    * @type string
    */
   name: string;
+  /**
+   * @type string
+   */
+  surface: FlowSurfaceEnumKey;
   /**
    * @minLength 0
    * @type integer

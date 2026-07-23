@@ -6,6 +6,7 @@
 import * as z from "zod";
 import type { FlowRunSummary } from "../types/FlowRunSummary.ts";
 import { cuid2Schema } from "./cuid2Schema.ts";
+import { flowRunAssetOutputSchema } from "./flowRunAssetOutputSchema.ts";
 import { timestampSchema } from "./timestampSchema.ts";
 
 export const flowRunSummarySchema = z.object({
@@ -59,5 +60,57 @@ export const flowRunSummarySchema = z.object({
     plannedItemCount: z.int().min(0),
     plannedJobCount: z.int().min(0),
   }),
+  get assetOutputs() {
+    return z.array(flowRunAssetOutputSchema);
+  },
   nodeCounts: z.object({}).catchall(z.int().min(0)),
+  requestSummary: z.nullable(
+    z.object({
+      inline: z.object({}).catchall(z.string().max(16000)),
+      inputs: z
+        .array(
+          z.object({
+            get assetIds() {
+              return z.array(cuid2Schema).max(32);
+            },
+            mediaTypes: z.array(z.enum(["audio", "image", "video"])).max(32),
+            slotId: z.string().min(1).max(100),
+          }),
+        )
+        .max(16),
+      mediaType: z.enum(["image", "video", "audio", "text"]),
+      modelId: z.string().min(1).max(200),
+      modelContractVersion: z.string().min(1).max(100),
+      nodeType: z.string().min(1).max(100),
+      operationId: z.string().min(1).max(100),
+      outputCount: z.int().gt(0),
+      promptTemplates: z.object({}).catchall(
+        z.object({
+          parts: z
+            .array(
+              z.union([
+                z.object({
+                  text: z.string(),
+                  type: z.enum(["text"]),
+                }),
+                z.object({
+                  index: z.int().min(0),
+                  mediaType: z.enum(["image", "video", "audio"]),
+                  slotId: z.string().min(1).max(128),
+                  type: z.enum(["input"]),
+                }),
+                z.object({
+                  type: z.enum(["break"]),
+                }),
+              ]),
+            )
+            .max(1024),
+          version: z.literal(1),
+        }),
+      ),
+      settings: z
+        .object({})
+        .catchall(z.union([z.boolean(), z.string(), z.number()])),
+    }),
+  ),
 }) as unknown as z.ZodType<FlowRunSummary>;

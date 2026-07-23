@@ -1506,6 +1506,13 @@
           "name": {
             "type": "string"
           },
+          "surface": {
+            "type": "string",
+            "enum": [
+              "canvas",
+              "create"
+            ]
+          },
           "revision": {
             "type": "integer",
             "minimum": 0
@@ -1526,6 +1533,7 @@
         "required": [
           "id",
           "name",
+          "surface",
           "revision",
           "viewport",
           "createdBy",
@@ -1555,6 +1563,27 @@
         ]
       },
       "CreateFlowRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "surface": {
+            "type": "string",
+            "enum": [
+              "canvas",
+              "create"
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "surface"
+        ]
+      },
+      "CloneFlowToCanvasRequest": {
         "type": "object",
         "properties": {
           "name": {
@@ -2641,12 +2670,227 @@
               "plannedJobCount"
             ]
           },
+          "assetOutputs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FlowRunAssetOutput"
+            }
+          },
           "nodeCounts": {
             "type": "object",
             "additionalProperties": {
               "type": "integer",
               "minimum": 0
             }
+          },
+          "requestSummary": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "inline": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string",
+                  "maxLength": 16000
+                }
+              },
+              "inputs": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "assetIds": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Cuid2"
+                      },
+                      "maxItems": 32
+                    },
+                    "mediaTypes": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "enum": [
+                          "audio",
+                          "image",
+                          "video"
+                        ]
+                      },
+                      "maxItems": 32
+                    },
+                    "slotId": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 100
+                    }
+                  },
+                  "required": [
+                    "assetIds",
+                    "mediaTypes",
+                    "slotId"
+                  ]
+                },
+                "maxItems": 16
+              },
+              "mediaType": {
+                "type": "string",
+                "enum": [
+                  "image",
+                  "video",
+                  "audio",
+                  "text"
+                ]
+              },
+              "modelId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "modelContractVersion": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              },
+              "nodeType": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              },
+              "operationId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              },
+              "outputCount": {
+                "type": "integer",
+                "minimum": 0,
+                "exclusiveMinimum": true
+              },
+              "promptTemplates": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "object",
+                  "properties": {
+                    "parts": {
+                      "type": "array",
+                      "items": {
+                        "oneOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "text": {
+                                "type": "string"
+                              },
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "text"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "text",
+                              "type"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "index": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "mediaType": {
+                                "type": "string",
+                                "enum": [
+                                  "image",
+                                  "video",
+                                  "audio"
+                                ]
+                              },
+                              "slotId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 128
+                              },
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "input"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "index",
+                              "mediaType",
+                              "slotId",
+                              "type"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "break"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "type"
+                            ],
+                            "additionalProperties": false
+                          }
+                        ]
+                      },
+                      "maxItems": 1024
+                    },
+                    "version": {
+                      "type": "number",
+                      "enum": [
+                        1
+                      ]
+                    }
+                  },
+                  "required": [
+                    "parts",
+                    "version"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "settings": {
+                "type": "object",
+                "additionalProperties": {
+                  "anyOf": [
+                    {
+                      "type": "boolean"
+                    },
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
+                }
+              }
+            },
+            "required": [
+              "inline",
+              "inputs",
+              "mediaType",
+              "modelId",
+              "modelContractVersion",
+              "nodeType",
+              "operationId",
+              "outputCount",
+              "promptTemplates",
+              "settings"
+            ]
           }
         },
         "required": [
@@ -2666,7 +2910,59 @@
           "startedAt",
           "completedAt",
           "summary",
-          "nodeCounts"
+          "assetOutputs",
+          "nodeCounts",
+          "requestSummary"
+        ]
+      },
+      "FlowRunAssetOutput": {
+        "type": "object",
+        "properties": {
+          "assetId": {
+            "$ref": "#/components/schemas/Cuid2"
+          },
+          "visibility": {
+            "$ref": "#/components/schemas/AssetVisibility"
+          },
+          "jobId": {
+            "$ref": "#/components/schemas/Cuid2"
+          },
+          "mimeType": {
+            "type": "string"
+          },
+          "outputIndex": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "thumbnailUrl": {
+            "type": "string",
+            "nullable": true,
+            "format": "uri"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "image",
+              "video",
+              "audio",
+              "document"
+            ]
+          },
+          "url": {
+            "type": "string",
+            "nullable": true,
+            "format": "uri"
+          }
+        },
+        "required": [
+          "assetId",
+          "visibility",
+          "jobId",
+          "mimeType",
+          "outputIndex",
+          "thumbnailUrl",
+          "type",
+          "url"
         ]
       },
       "FlowRun": {
@@ -2995,56 +3291,6 @@
           "errorMessage",
           "assetOutputs",
           "textOutputs"
-        ]
-      },
-      "FlowRunAssetOutput": {
-        "type": "object",
-        "properties": {
-          "assetId": {
-            "$ref": "#/components/schemas/Cuid2"
-          },
-          "visibility": {
-            "$ref": "#/components/schemas/AssetVisibility"
-          },
-          "jobId": {
-            "$ref": "#/components/schemas/Cuid2"
-          },
-          "mimeType": {
-            "type": "string"
-          },
-          "outputIndex": {
-            "type": "integer",
-            "minimum": 0
-          },
-          "thumbnailUrl": {
-            "type": "string",
-            "nullable": true,
-            "format": "uri"
-          },
-          "type": {
-            "type": "string",
-            "enum": [
-              "image",
-              "video",
-              "audio",
-              "document"
-            ]
-          },
-          "url": {
-            "type": "string",
-            "nullable": true,
-            "format": "uri"
-          }
-        },
-        "required": [
-          "assetId",
-          "visibility",
-          "jobId",
-          "mimeType",
-          "outputIndex",
-          "thumbnailUrl",
-          "type",
-          "url"
         ]
       },
       "FlowRunTextOutput": {
@@ -8022,6 +8268,18 @@
             "required": false,
             "name": "search",
             "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "canvas",
+                "create"
+              ]
+            },
+            "required": true,
+            "name": "surface",
+            "in": "query"
           }
         ],
         "responses": {
@@ -8124,6 +8382,115 @@
         "responses": {
           "201": {
             "description": "Flow created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Flow"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Active organization required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Resource state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Organization request rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/flows/{id}/clone-to-canvas": {
+      "post": {
+        "tags": [
+          "Flows"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "$ref": "#/components/schemas/Cuid2"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CloneFlowToCanvasRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Create session cloned into a canvas Flow",
             "content": {
               "application/json": {
                 "schema": {
