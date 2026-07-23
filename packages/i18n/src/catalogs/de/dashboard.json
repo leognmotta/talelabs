@@ -14,6 +14,8 @@
     "name": "Name",
     "next": "Weiter",
     "password": "Passwort",
+    "showPassword": "Passwort anzeigen",
+    "hidePassword": "Passwort ausblenden",
     "previous": "Zurück",
     "role": "Rolle",
     "reload": "Neu laden",

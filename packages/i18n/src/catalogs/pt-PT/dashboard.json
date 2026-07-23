@@ -14,6 +14,8 @@
     "name": "Nome",
     "next": "Seguinte",
     "password": "Palavra-passe",
+    "showPassword": "Mostrar palavra-passe",
+    "hidePassword": "Ocultar palavra-passe",
     "previous": "Anterior",
     "role": "Função",
     "reload": "Recarregar",

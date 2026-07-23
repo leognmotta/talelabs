@@ -14,6 +14,8 @@
     "name": "Nazwa",
     "next": "Następna",
     "password": "Hasło",
+    "showPassword": "Pokaż hasło",
+    "hidePassword": "Ukryj hasło",
     "previous": "Poprzednia",
     "role": "Rola",
     "reload": "Odśwież stronę",

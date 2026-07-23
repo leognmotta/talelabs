@@ -14,6 +14,8 @@
     "name": "Nome",
     "next": "Successivo",
     "password": "Password",
+    "showPassword": "Mostra la password",
+    "hidePassword": "Nascondi la password",
     "previous": "Precedente",
     "role": "Ruolo",
     "reload": "Ricarica",
