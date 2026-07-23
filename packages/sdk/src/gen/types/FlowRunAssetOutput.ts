@@ -23,6 +23,15 @@ export type FlowRunAssetOutput = {
    */
   assetId: Cuid2;
   /**
+   * @minLength 0
+   * @type number
+   */
+  durationSeconds: number | null;
+  /**
+   * @type integer
+   */
+  height: number | null;
+  /**
    * @type string
    */
   visibility: AssetVisibility;
@@ -52,4 +61,8 @@ export type FlowRunAssetOutput = {
    * @type string, uri
    */
   url: string | null;
+  /**
+   * @type integer
+   */
+  width: number | null;
 };

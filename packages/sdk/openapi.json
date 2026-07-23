@@ -3006,6 +3006,17 @@
           "assetId": {
             "$ref": "#/components/schemas/Cuid2"
           },
+          "durationSeconds": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 0
+          },
+          "height": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": 0,
+            "exclusiveMinimum": true
+          },
           "visibility": {
             "$ref": "#/components/schemas/AssetVisibility"
           },
@@ -3037,17 +3048,26 @@
             "type": "string",
             "nullable": true,
             "format": "uri"
+          },
+          "width": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": 0,
+            "exclusiveMinimum": true
           }
         },
         "required": [
           "assetId",
+          "durationSeconds",
+          "height",
           "visibility",
           "jobId",
           "mimeType",
           "outputIndex",
           "thumbnailUrl",
           "type",
-          "url"
+          "url",
+          "width"
         ]
       },
       "ActiveRunListResponse": {

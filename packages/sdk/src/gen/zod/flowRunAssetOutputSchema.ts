@@ -12,6 +12,8 @@ export const flowRunAssetOutputSchema = z.object({
   get assetId() {
     return cuid2Schema;
   },
+  durationSeconds: z.nullable(z.number().min(0)),
+  height: z.nullable(z.int().gt(0)),
   get visibility() {
     return assetVisibilitySchema;
   },
@@ -23,4 +25,5 @@ export const flowRunAssetOutputSchema = z.object({
   thumbnailUrl: z.nullable(z.url()),
   type: z.enum(["image", "video", "audio", "document"]),
   url: z.nullable(z.url()),
+  width: z.nullable(z.int().gt(0)),
 }) as unknown as z.ZodType<FlowRunAssetOutput>;
