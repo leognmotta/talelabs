@@ -146,7 +146,7 @@
       "renameDescription": "Wähle einen Namen, mit dem diese Erstellungssitzung leicht zu finden ist.",
       "renamed": "Sitzung umbenannt",
       "delete": "Sitzung löschen",
-      "deleteDescription": "{{name}} löschen? Der Anfrageverlauf wird dauerhaft entfernt, generierte und hochgeladene Dateien bleiben jedoch verfügbar.",
+      "deleteDescription": "{{name}} löschen? Die Sitzung verschwindet aus Erstellen, generierte und hochgeladene Dateien bleiben jedoch verfügbar.",
       "deleted": "Sitzung gelöscht",
       "deleting": "Wird gelöscht…",
       "actionFailed": "Die Sitzungsaktion konnte nicht abgeschlossen werden."

@@ -157,7 +157,7 @@
       "renameDescription": "Choose a name that makes this creation session easy to find.",
       "renamed": "Session renamed",
       "delete": "Delete session",
-      "deleteDescription": "Delete {{name}}? Its request history is removed permanently, but generated and uploaded Assets remain available.",
+      "deleteDescription": "Delete {{name}}? It will disappear from Create, but its generated and uploaded Assets remain available.",
       "deleted": "Session deleted",
       "deleting": "Deleting…",
       "actionFailed": "The session action could not be completed."

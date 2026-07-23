@@ -146,7 +146,7 @@
       "renameDescription": "Elige un nombre que permita encontrar fácilmente esta sesión de creación.",
       "renamed": "Nombre de la sesión cambiado",
       "delete": "Eliminar sesión",
-      "deleteDescription": "¿Eliminar {{name}}? Su historial de solicitudes se borrará de forma permanente, pero los archivos generados y subidos seguirán disponibles.",
+      "deleteDescription": "¿Eliminar {{name}}? La sesión desaparecerá de Crear, pero los archivos generados y subidos seguirán disponibles.",
       "deleted": "Sesión eliminada",
       "deleting": "Eliminando…",
       "actionFailed": "No se pudo completar la acción de la sesión."

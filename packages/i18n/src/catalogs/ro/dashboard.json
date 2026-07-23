@@ -146,7 +146,7 @@
       "renameDescription": "Alege un nume care face această sesiune de creare ușor de găsit.",
       "renamed": "Sesiune redenumită",
       "delete": "Șterge sesiunea",
-      "deleteDescription": "Ștergi {{name}}? Istoricul solicitărilor va fi eliminat definitiv, dar fișierele generate și încărcate vor rămâne disponibile.",
+      "deleteDescription": "Ștergi {{name}}? Sesiunea va dispărea din Creează, dar fișierele generate și încărcate vor rămâne disponibile.",
       "deleted": "Sesiune ștearsă",
       "deleting": "Se șterge…",
       "actionFailed": "Acțiunea asupra sesiunii nu a putut fi finalizată."

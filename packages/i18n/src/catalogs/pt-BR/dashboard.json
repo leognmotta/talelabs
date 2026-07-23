@@ -157,7 +157,7 @@
       "renameDescription": "Escolha um nome que facilite encontrar esta sessão de criação.",
       "renamed": "Sessão renomeada",
       "delete": "Excluir sessão",
-      "deleteDescription": "Excluir {{name}}? O histórico de solicitações será removido permanentemente, mas os arquivos gerados e enviados continuarão disponíveis.",
+      "deleteDescription": "Excluir {{name}}? A sessão desaparecerá de Criar, mas os arquivos gerados e enviados continuarão disponíveis.",
       "deleted": "Sessão excluída",
       "deleting": "Excluindo…",
       "actionFailed": "Não foi possível concluir a ação da sessão."

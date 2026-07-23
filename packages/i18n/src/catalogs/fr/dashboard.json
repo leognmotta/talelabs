@@ -146,7 +146,7 @@
       "renameDescription": "Choisissez un nom qui facilite la recherche de cette session de création.",
       "renamed": "Session renommée",
       "delete": "Supprimer la session",
-      "deleteDescription": "Supprimer {{name}} ? Son historique de demandes sera définitivement supprimé, mais les fichiers générés et importés resteront disponibles.",
+      "deleteDescription": "Supprimer {{name}} ? La session disparaîtra de Créer, mais les fichiers générés et importés resteront disponibles.",
       "deleted": "Session supprimée",
       "deleting": "Suppression…",
       "actionFailed": "L’action sur la session n’a pas pu aboutir."

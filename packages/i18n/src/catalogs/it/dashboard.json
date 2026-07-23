@@ -146,7 +146,7 @@
       "renameDescription": "Scegli un nome che renda facile trovare questa sessione di creazione.",
       "renamed": "Sessione rinominata",
       "delete": "Elimina sessione",
-      "deleteDescription": "Eliminare {{name}}? La cronologia delle richieste verrà rimossa definitivamente, ma i file generati e caricati resteranno disponibili.",
+      "deleteDescription": "Eliminare {{name}}? La sessione scomparirà da Crea, ma i file generati e caricati resteranno disponibili.",
       "deleted": "Sessione eliminata",
       "deleting": "Eliminazione…",
       "actionFailed": "Non è stato possibile completare l’azione sulla sessione."

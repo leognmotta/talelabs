@@ -146,7 +146,7 @@
       "renameDescription": "Wybierz nazwę, która ułatwi znalezienie tej sesji tworzenia.",
       "renamed": "Zmieniono nazwę sesji",
       "delete": "Usuń sesję",
-      "deleteDescription": "Usunąć {{name}}? Historia żądań zostanie trwale usunięta, ale wygenerowane i przesłane pliki pozostaną dostępne.",
+      "deleteDescription": "Usunąć {{name}}? Sesja zniknie z sekcji Utwórz, ale wygenerowane i przesłane pliki pozostaną dostępne.",
       "deleted": "Usunięto sesję",
       "deleting": "Usuwanie…",
       "actionFailed": "Nie udało się wykonać działania na sesji."

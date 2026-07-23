@@ -146,7 +146,7 @@
       "renameDescription": "Kies een naam waarmee je deze maaksessie gemakkelijk terugvindt.",
       "renamed": "Sessie hernoemd",
       "delete": "Sessie verwijderen",
-      "deleteDescription": "{{name}} verwijderen? De aanvraaggeschiedenis wordt permanent verwijderd, maar gegenereerde en geüploade bestanden blijven beschikbaar.",
+      "deleteDescription": "{{name}} verwijderen? De sessie verdwijnt uit Maken, maar gegenereerde en geüploade bestanden blijven beschikbaar.",
       "deleted": "Sessie verwijderd",
       "deleting": "Verwijderen…",
       "actionFailed": "De sessieactie kon niet worden voltooid."

@@ -157,7 +157,7 @@
       "renameDescription": "Escolha um nome que torne esta sessão de criação fácil de encontrar.",
       "renamed": "Nome da sessão alterado",
       "delete": "Eliminar sessão",
-      "deleteDescription": "Eliminar {{name}}? O histórico de pedidos será removido permanentemente, mas os ficheiros gerados e enviados continuarão disponíveis.",
+      "deleteDescription": "Eliminar {{name}}? A sessão desaparecerá de Criar, mas os ficheiros gerados e enviados continuarão disponíveis.",
       "deleted": "Sessão eliminada",
       "deleting": "A eliminar…",
       "actionFailed": "Não foi possível concluir a ação da sessão."
