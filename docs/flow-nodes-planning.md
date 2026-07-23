@@ -1193,8 +1193,11 @@ Planning stages:
 7. Build PortValue arrays with stable keys, dimensions, and lineage.
 8. Expand explicit batch dimensions into PlannedNodeExecution[] work items.
 9. Apply model limits and create immutable source/input snapshots.
-10. Create run, run-item, and generation-job records transactionally.
-11. Dispatch durable executor work through Trigger.dev.
+10. Call the shared provider-neutral `compileGenerationJob()` for every
+    generation request shard.
+11. Assemble generic executable steps and jobs into one `ExecutionPlan`.
+12. Create run, step, item, and generation-job records transactionally.
+13. Dispatch durable executor work through Trigger.dev.
 ```
 
 The browser submits only command IDs and the expected revision, never graph
@@ -1210,13 +1213,45 @@ locked in stable ID order and revalidated as ready and not purging. Any revision
 change causes the admission transaction to roll back and retry; a run must never
 contain graph topology from one revision and node configuration from another.
 
-The resulting `graphSnapshot` is immutable and contains the selected executable
-subgraph, captured Flow revision, full node configuration, deterministic edge
-order, execution plan, and static resolved context required by that run. Exact
+The resulting immutable run snapshot is stored in the historical
+`graphSnapshot` column but uses a discriminated source contract. A Flow source
+freezes the selected executable subgraph, captured Flow revision, full node
+configuration, deterministic edge order, and graph plan hash. The separate
+generic `ExecutionPlan` contains only source-neutral executable steps,
+dependencies, work items, and canonical generation-job request shards. Exact
 provider inputs remain separately frozen in generation source/input provenance.
 Later edits affect only future runs. Trigger tasks receive run/job identities and
 load immutable state from PostgreSQL; the graph document is not copied into the
 Trigger payload.
+
+### Shared Generation Compiler
+
+Graph planning ends before provider-neutral job compilation. The stable shared
+boundary is:
+
+```txt
+Flow graph planning and input materialization
+  -> compileGenerationJob()
+  -> ExecutionPlan
+
+Direct Create request validation and locked Asset projection
+  -> compileGenerationJob()
+  -> ExecutionPlan
+```
+
+`compileGenerationJob()` owns the canonical request-payload version, prompt
+templates, inline fields, normalized settings, ordered resolved inputs, input
+selection, output count, catalog/model/operation identity, and deterministic
+request hash. The Flow planner supplies graph-resolved inputs; Create supplies
+one already validated ordered Asset-input list. Create does not construct a
+transient graph and does not invoke DAG planning.
+
+The immutable run source is either `flow`, which freezes a persisted Flow and
+revision, or `create`, which freezes one bounded direct request and has no Flow
+reference. Both expose the same `ExecutionPlan` and exact execution contracts
+to browser and managed workers. The generation-job executor, input
+materializer, provider adapter, output finalizer, accounting, and canonical
+Asset ingestion must not branch on the source.
 
 The M5 planner returns explicit work items for both simple and iterative graphs:
 

@@ -8,10 +8,10 @@
 > retired and was deleted by migration `027_reset_elements`. The shipped
 > Elements feature is specified only in `docs/elements.md`.
 >
-> **Create note (2026-07-22):** direct creation is an approved presentation of
-> ordinary Flows. Existing graph, estimate, run, browser, managed, and Asset
-> endpoints remain surface-agnostic; only Flow browse/create and the
-> server-owned clone expose presentation identity.
+> **Create note (2026-07-23):** Create is a browser-local direct-generation
+> playground with no Flow/session/graph identity. It admits source `create` runs
+> through the run domain and shares compilation, browser/managed execution,
+> providers, output finalization, and canonical Assets with Flow runs.
 
 Supersedes `api-design-planning.md` (deprecated). Companion to `db-design-planning-v2.md` — every endpoint here maps onto that schema and its contracts; nothing is invented API-side that the DB doc doesn't back.
 
@@ -115,7 +115,7 @@ type ApiError = {
 | Tags     | `GET /tags` · `POST /tags` · `DELETE /tags/:id`                                                                                                                                                                                                                                                                 |
 | Flows    | `GET /flows` · `POST /flows` · `GET /flows/:id` · `PATCH /flows/:id` · `DELETE /flows/:id` · `GET /flows/:id/graph` · `GET /flows/:id/references` · `POST /flows/:id/graph` · `GET /flows/:id/nodes/:nodeId/results`                                                                                            |
 | Elements | `GET /elements` · `POST /elements` · `GET /elements/:id` · `PATCH /elements/:id` · `DELETE /elements/:id` · `PATCH /elements/:id/references`                                                                                                                                                                     |
-| Runs     | `POST /flows/:id/run-plans` · `POST /runs` · `GET /runs` · `GET /runs/:id` · `POST /runs/:id/cancel` · `POST /runs/:id/retry` · `POST /runs/:id/realtime-token`                                                                                                                                                         |
+| Runs     | `POST /flows/:id/run-plans` · `POST /runs` · `POST /runs/create/estimate` · `POST /runs/create` · `GET /runs` · `GET /runs/active` · `GET /runs/:id` · `POST /runs/:id/cancel` · `POST /runs/:id/retry` · `POST /runs/:id/realtime-token`                                                                                  |
 | Config   | `GET /config/generation`                                                                                                                                                                                                                                                                                        |
 
 Elements shipped as simplified reference collections (`docs/elements.md`). The
@@ -626,27 +626,16 @@ elsewhere in this document are historical and equally retired.
 ### CRUD
 
 ```
-GET    /flows?surface=canvas|create&search=&limit=&cursor=
-                                        -> 200 ListResponse<Flow> (sorted updatedAt desc)
-POST   /flows { name, surface }          -> 201 Flow               (revision 0, empty graph)
+GET    /flows?search=&limit=&cursor=   -> 200 ListResponse<Flow> (sorted updatedAt desc)
+POST   /flows { name }                 -> 201 Flow               (revision 0, empty graph)
 GET    /flows/:id                     -> 200 Flow                 (meta only — graph is separate)
 PATCH  /flows/:id { name?, viewport? }-> 200 Flow                 (viewport saves do not bump revision)
 DELETE /flows/:id                     -> 204                      (graph cascades; runs/jobs history survives)
-POST   /flows/:id/clone-to-canvas { name }
-                                      -> 201 Flow                 (server-cloned canvas graph; runs stay put)
 ```
 
-Every Flow response includes `surface: 'canvas' | 'create'`. The Flows library
-always requests `surface=canvas`; Create session history always requests
-`surface=create`. The server rejects `clone-to-canvas` unless the source is a
-Create Flow. Graph sync, cost estimation, run admission, cancellation, retry,
-realtime, and result reads never branch on this field.
-
-Flow list rows also carry nullable `activeRunStatus` and `latestOutput`
-presentation fields. The API derives them in bounded page-wide queries for the
-Create surface, signs only thumbnail/poster access, and returns null activity
-for canvas browse rows. Clients do not subscribe every session row to run
-detail or load original output media for the rail.
+Every Flow is an ordinary spatial document. The API has no Create surface
+discriminator, filter, session identity, or clone-to-canvas action. Create
+drafts and history never use Flow CRUD.
 
 ### `GET /flows/:id/graph` — open the canvas
 
@@ -758,10 +747,71 @@ Response: `200 ListResponse<RunJob & { runId: string }>` — newest first, outpu
 
 ## Runs
 
-The execution surface. One spine: every execution is a run. M5 accepts `node`,
-`downstream`, `upstream`, `selection`, and `all` against the same durable
-mock-provider engine. `tool` remains unavailable until the versioned Tool
-product ships.
+The execution surface. One spine: every execution is a durable run with a
+discriminated source:
+
+```ts
+type RunSource = "flow" | "create";
+```
+
+Flow sources freeze one persisted graph revision and accept `node`,
+`downstream`, `upstream`, `selection`, or `all`. Create sources freeze one
+direct generation request, use mode `direct`, and have `flowId = null`. Both
+carry the same generic `ExecutionPlan`, private execution contracts, durable
+jobs, browser/managed drivers, cancellation, retry, realtime, accounting, and
+canonical output Assets.
+
+### `POST /runs/create/estimate` - estimate one direct request
+
+The request contains current-catalog creative facts only:
+
+```ts
+{
+  mediaMode: "image" | "video" | "audio";
+  audioIntent?: "speechGeneration" | "musicGeneration"
+    | "soundEffectGeneration" | "voiceChanger" | "voiceIsolation";
+  modelContractVersion: string;
+  modelId: string;
+  operationId: string;
+  promptTemplates: Record<string, PromptTemplate>;
+  inline: Record<string, string>;
+  settings: Record<string, boolean | number | string>;
+  inputs: { assetId: string; slotId: string }[];
+  outputCount: number;
+  executionMode?: "live" | "debug";
+  executionRuntime: "managed";
+  fundingSource: "credits";
+}
+```
+
+The server validates the current catalog contract and tenant-scoped Asset
+facts, calls the shared generation-job compiler, and resolves advisory cost
+from the generic plan. It inserts nothing. Admission repeats the same work
+after locking authoritative Asset rows; this estimate is never trusted input.
+
+### `POST /runs/create` - admit one direct generation request
+
+The creative body is the same as the estimate request plus the selected
+`fundingSource`, `executionRuntime`, and optional non-secret browser provider
+identifiers. Provider credentials and private bindings are forbidden.
+
+`Idempotency-Key` is required and follows the same organization-scoped replay
+rules as Flow admission. The server authenticates and authorizes the caller,
+normalizes supported legacy slot aliases, validates settings and structured
+prompt references, enforces shared active-run capacity, locks every referenced
+tenant Asset in stable ID order, recompiles from those locked facts,
+recalculates cost, resolves one exact private binding, and inserts:
+
+```txt
+run source=create, mode=direct, flowId=null
+-> immutable direct source + generic ExecutionPlan
+-> ordinary durable step/item/generation-job rows
+```
+
+Managed execution dispatches the existing Trigger.dev orchestrator. Browser
+execution returns the existing browser manifest and keeps credentials local.
+There is no Flow create, graph save, or transient graph projection in this
+request path.
 
 ### `POST /flows/:id/run-plans` - preflight a canvas command
 
@@ -835,7 +885,7 @@ Credits-funded admission reloads current prices and recalculates its binding
 choice and quote; the preflight amount is never accepted as admission input.
 BYOK admission selects by priority without loading pricing metadata.
 
-### `POST /runs` — execute a node, branch, selection, or Flow
+### `POST /runs` — admit a Flow node, branch, selection, or full graph
 
 **Admission control comes before credits exist.** Idempotency prevents _duplicate_ runs, not _many_ runs — different keys create unlimited executions, and Trigger.dev concurrency only queues them; every admitted job eventually spends provider money.
 
@@ -888,8 +938,9 @@ adding paid work.
 
 There is deliberately **no prompt/model/settings in this body**: node draft
 configuration and connected context (Text nodes, Asset nodes, and upstream
-outputs) are read server-side and frozen into the run's `graphSnapshot` and job
-provenance rows. The server is authoritative for what executes.
+outputs) are read server-side and frozen into the run snapshot's `flow` source,
+generic execution plan, and job provenance rows. The server is authoritative
+for what executes.
 
 Server sequence (admission transaction followed by durable dispatch): verify the
 expected Flow revision → select the mode-specific executable subgraph → resolve direct
@@ -938,13 +989,36 @@ truth.
 
 ### `GET /runs`
 
-Query: `?flowId=&status=&limit=&cursor=` → `200 ListResponse<FlowRunSummary>` — lean by design: node states and outputs are unbounded per run, so lists carry progress counts and the detail endpoint carries the rest.
+The query chooses exactly one history shape:
+
+```txt
+?source=flow&flowId=&limit=&cursor=
+?source=create&limit=&cursor=
+```
+
+Flow history is tenant- and Flow-scoped. Create history is tenant-scoped,
+filtered to the authenticated creator, requires `flowId is null`, and has no
+session grouping.
+
+The cursor page is a bounded presentation read: it selects run summary fields,
+aggregated step counts, one validated representative request projection, and a
+fixed maximum number of thumbnail/poster outputs. It does not load or validate
+the complete immutable snapshot for every row and does not sign every output.
+The newest refreshable page is observed separately from bounded immutable
+archive pages on the client.
 
 ```ts
 type FlowRunSummary = Omit<FlowRun, "nodes"> & {
   nodeCounts: Partial<Record<FlowRunNodeState["status"], number>>;
 };
 ```
+
+### `GET /runs/active`
+
+Returns only active run identity, source, nullable `flowId`, runtime, and status
+for realtime/browser recovery. It never loads snapshots, jobs, outputs, or
+signed media URLs. Browser discovery is creator-scoped; managed recovery
+retains the existing organization scope.
 
 ### `POST /runs/:id/cancel`
 
@@ -972,7 +1046,8 @@ Retry is a new immutable run, never a transition that reopens the source run.
 - reject with `409 provider_settlement_incomplete` while any source job has
   pending/unknown provider settlement or a provider-result checkpoint remains
   `staging`;
-- derive work from the source run snapshot, not the current mutable Flow;
+- derive work from the source run snapshot, not the current mutable Flow or
+  browser-local Create draft;
 - include failed/skipped/canceled work and its required dependency closure;
 - freeze every reused successful output and validate that each referenced Asset
   is still tenant-owned and usable;
@@ -980,7 +1055,7 @@ Retry is a new immutable run, never a transition that reopens the source run.
   version before dispatching through the ordinary run path;
 - source run is never mutated → `202 FlowRun` for the newly admitted run;
 - an unsafe partial closure or unavailable compatible snapshot reader →
-  `409 retry_not_available`; the user may instead rerun the current Flow.
+  `409 retry_not_available`; the user may instead submit a new current request.
 
 If partial retry cannot preserve these rules in the first M5 increment, the
 endpoint performs a whole-snapshot retry. It must not mix source snapshot data
@@ -989,9 +1064,10 @@ with the current canvas.
 ### `POST /runs/:id/realtime-token`
 
 Issue a short-lived Trigger.dev Realtime token authorized for exactly the
-tenant-owned parent run being viewed. The token is only a progress-notification
-channel: the dashboard refetches `GET /runs/:id` after relevant events and uses
-the PostgreSQL-backed response as authoritative state.
+tenant-owned parent run being viewed. The response carries the run source and
+nullable Flow identity so the dashboard invalidates the exact live-history
+prefix. The token is only a progress-notification channel: the dashboard
+refetches PostgreSQL-backed run state after relevant events.
 
 ---
 

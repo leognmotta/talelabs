@@ -31,7 +31,7 @@ Each entity has one clear responsibility:
 ```txt
 Assets = media the user owns and can reuse
 Flows  = ordinary editable graphs and the visual environment for advanced work
-Create = the direct presentation of one-step Image, Video, and Audio Flows
+Create = browser-local direct Image, Video, and Audio generation
 ```
 
 Elements are the third product entity since 2026-07-18: named, ordered
@@ -306,21 +306,28 @@ Assets directly to a generation node without first creating an Element.
 
 ## Create And Flows
 
-Create and the canvas are two presentations of the same Flow contract. Create
-projects one direct request into registered Asset input nodes, one registered
-generation node, and typed edges; the canvas presents the editable spatial
-graph. Both use canonical validation, planning, immutable snapshots, browser or
-managed execution, provider adapters, output finalization, and Asset ingestion.
-The execution stack must not know which surface originated a job.
+Create is one stateless direct-generation playground. Its unsent request is
+recovered only from browser-local same-tab storage; it has no session, Flow
+identity, graph, revision, autosave, or conversion into Canvas. Its durable
+runs are creator-scoped execution history, not editable documents.
 
-Create provides Image, Video, and task-specific Audio generation, durable
-session/run history, model-adaptive controls, exact `PromptTemplate` media
-references, result continuation, and a server-owned clone into a canvas Flow.
-It is deterministic direct generation, not general chat or an autonomous
-agent. `docs/feature-research/direct-ai-asset-creation.md` is the detailed
-approved interaction and delivery contract.
+Flows are the advanced spatial creative surface. Their persisted graphs own DAG
+selection, topology, dependency planning, and multi-step authoring.
 
-Flows are the advanced spatial creative surface.
+Create and Flows share generation compilation and execution, not persistence.
+After validating current-catalog request facts, Create calls the same
+provider-neutral generation-job compiler that the Flow planner calls after
+resolving graph dependencies. Both produce the same generic execution-plan and
+immutable job contracts, use browser or managed execution, reuse provider
+adapters and output finalization, and ingest canonical Assets. The execution
+stack does not know whether a job originated from Create or a Flow.
+
+Create provides Image, Video, and task-specific Audio generation,
+model-adaptive controls, exact `PromptTemplate` media references, durable run
+and result history, and explicit continuation into its next local request. It
+is deterministic direct generation, not general chat or an autonomous agent.
+`docs/feature-research/direct-ai-asset-creation.md` is the detailed approved
+interaction and delivery contract.
 
 The canonical technical model for Flow handles, runtime values, reference sets,
 batch items, lineage, generation execution, iteration, full-flow orchestration,
@@ -411,7 +418,7 @@ The canvas must not require complexity for simple creation. A Flow containing on
 The product should make this path quick:
 
 ```txt
-Create Flow -> enter prompt -> choose model/settings -> run node -> receive Asset
+New Flow -> enter prompt -> choose model/settings -> run node -> receive Asset
 ```
 
 Users can progressively add Assets, prior outputs, and branches when their creative process becomes more complex.

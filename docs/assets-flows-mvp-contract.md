@@ -12,11 +12,11 @@ MVP navigation.
 The MVP has three durable product entities and two creation surfaces:
 
 ```txt
-Assets = canonical reusable media
-Flows  = editable creative documents and the ordinary execution graph
+Assets   = canonical reusable media
+Flows    = editable creative documents and the spatial execution graph
 Elements = optional ordered image-reference collections
 
-Create = direct Image, Video, and Audio creation over an ordinary Flow
+Create = browser-local direct Image, Video, and Audio generation
 Canvas = spatial editing of an ordinary Flow
 ```
 
@@ -43,13 +43,17 @@ Assets
 Elements
 ```
 
-`Create` is a presentation surface, not a fourth persistence or runtime model.
-Each Create session is an ordinary Flow with `surface=create`; each canvas
-document uses `surface=canvas`. Both synchronize registered nodes and typed
-edges, admit the same immutable Flow snapshots, execute through the same
-browser or managed drivers, and ingest outputs as canonical Assets. Create
-projects direct requests into Asset nodes plus one registered generation node.
-It owns no planner, Trigger task, generation-job executor, provider adapter,
+`Create` is a stateless direct-generation playground, not a durable product
+entity or another graph surface. Its unsent mutable draft is recovered only
+from browser-local same-tab storage. It has no session, Flow identity, node,
+edge, graph revision, graph autosave, or conversion into Canvas.
+
+Create and Flows share generation compilation and execution, not persistence.
+Create validates one direct request and invokes the same provider-neutral
+generation-job compiler used by the Flow planner after DAG resolution. Both
+produce a generic immutable execution plan, execute through the same browser or
+managed drivers, and ingest outputs as canonical Assets. Create owns no Flow
+projection, planner, Trigger task, generation-job executor, provider adapter,
 input materializer, output finalizer, or result format.
 
 ## Elements Are Active
@@ -228,11 +232,13 @@ the code-owned model inventory here.
 ## Persistence And Compatibility
 
 - Flow graphs remain normalized in `flows`, `flowNodes`, and `flowEdges`.
-- `flows.surface` is the non-null presentation discriminator `canvas | create`.
-  Browse APIs filter it server-side; it never changes planning or execution.
-- Deleting a Create session deletes its Flow identity and graph but preserves
-  historical runs and every canonical Asset. `Open in Flow` server-clones the
-  current graph into a new `surface=canvas` identity; it does not move runs.
+- Create drafts never enter those tables. `/create` uses browser-local recovery
+  and has no Flow/session/graph identity.
+- Durable runs have a discriminated `flow | create` source. A Create run has
+  `flowId = null`, mode `direct`, a bounded frozen request, and the same generic
+  execution plan consumed by Flow runs.
+- Flow browsing has no Create surface filter, and there is no Create-to-Canvas
+  clone or conversion contract.
 - `flowNodes` has no Element foreign key in the active schema.
 - A cleanup migration removes legacy Element nodes and their incident edges;
   standalone Element records and Assets are not deleted.
