@@ -1,3 +1,4 @@
+/** Provides the shared Base UI dropdown-menu primitives and visual states. */
 import { Menu as MenuPrimitive } from '@base-ui/react/menu'
 import { IconCheck, IconChevronRight } from '@tabler/icons-react'
 
@@ -152,6 +153,7 @@ function DropdownMenuSubTrigger({
           data-inset:pl-9.5
           data-popup-open:bg-accent data-popup-open:text-accent-foreground
           data-open:bg-accent data-open:text-accent-foreground
+          data-disabled:cursor-not-allowed data-disabled:opacity-50
           [&_svg]:pointer-events-none [&_svg]:shrink-0
           [&_svg:not([class*='size-'])]:size-4
         `,

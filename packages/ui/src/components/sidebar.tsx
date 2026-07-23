@@ -1,3 +1,5 @@
+/** Responsive application sidebar primitives and their shared state contract. */
+
 import type { VariantProps } from 'class-variance-authority'
 import { mergeProps } from '@base-ui/react/merge-props'
 import { useRender } from '@base-ui/react/use-render'
@@ -425,7 +427,13 @@ function SidebarSeparator({
     <Separator
       data-slot="sidebar-separator"
       data-sidebar="separator"
-      className={cn('mx-2 w-auto bg-sidebar-border', className)}
+      className={cn(
+        `
+          mx-2 bg-sidebar-border
+          data-horizontal:w-[calc(100%-1rem)]
+        `,
+        className,
+      )}
       {...props}
     />
   )
@@ -585,6 +593,11 @@ const sidebarMenuButtonVariants = cva(
     variants: {
       variant: {
         default: 'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
+        muted:
+          `
+            bg-sidebar-accent/50 text-sidebar-foreground
+            hover:bg-sidebar-accent hover:text-sidebar-accent-foreground
+          `,
         outline:
           `
             bg-background shadow-[0_0_0_1px_var(--sidebar-border)]
