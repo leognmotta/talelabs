@@ -1,6 +1,6 @@
 # TaleLabs MVP Execution Plan
 
-**Status:** active source of truth, updated 2026-07-14.
+**Status:** active source of truth, updated 2026-07-22.
 
 This plan implements the binding scope in
 `docs/assets-flows-mvp-contract.md`. It replaces the former Elements-first and
@@ -49,6 +49,10 @@ Flows
 Elements   (shipped 2026-07-18 — simplified reference collections)
 ```
 
+Create was approved on 2026-07-22 as a direct presentation surface over an
+ordinary Flow, not as another entity or runtime. Its R0-R5 delivery contract is
+`docs/feature-research/direct-ai-asset-creation.md`.
+
 Elements shipped after the M4 Assets + Canvas loop as a simplified reusable
 reference collection with a single-output (`references → ImageSet`) Element
 node — see `docs/elements.md`. The earlier deferral applied only to the retired
@@ -67,7 +71,8 @@ or multi-output Element nodes.
 6. User-owned run UX and end-to-end QA
 7. One real provider vertical slice
 8. Reliability and internal MVP staging
-9. Billing and credits as a separate productization phase
+9. Direct Create surface over the proven Flow execution spine
+10. Billing and credits as a separate productization phase
 ```
 
 The user approved the adaptive node behavior and M5 scope on 2026-07-14.
@@ -83,7 +88,7 @@ Multi-role Element / reusable-context packs (the retired experiment; simplified 
 Tools and public API/MCP execution
 Recipes or community templates
 Storyboard
-simple Generate page
+autonomous Create Agent or general chat
 video editor or cuts
 projects
 collaboration and comments

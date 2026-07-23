@@ -1,6 +1,6 @@
 # Direct AI Asset Creation
 
-**Status:** architecture-reviewed feature proposal, awaiting product approval
+**Status:** approved implementation contract (2026-07-22)
 
 **Last researched:** 2026-07-22
 
@@ -60,9 +60,10 @@ TaleLabs to generating a first Asset. It also gives users who do not yet need a
 canvas a complete product loop. The Flow canvas remains TaleLabs' advanced and
 differentiating surface.
 
-Adding this research file does not approve or schedule the feature. After UX
-approval, its stable contract must be incorporated into the binding product,
-Flow, database, API, and execution documents before implementation.
+The user approved this document as the R0-R5 implementation contract on
+2026-07-22. Its stable product, Flow, database, API, and execution boundaries
+are incorporated into the binding documents; the evidence and competitor
+research below remain explanatory rather than separate sources of truth.
 
 ### Reader map
 
@@ -674,9 +675,8 @@ Create Session
   -> every result ingested as a canonical Asset
 ```
 
-This research recommends one explicit Flow `surface` discriminator, not a
-parallel generation schema. It still requires product approval and updates to
-the binding database/API documents before implementation:
+Create uses one explicit Flow `surface` discriminator, not a parallel
+generation schema:
 
 ```txt
 canvas = visible in the Flows library and editor
@@ -2260,7 +2260,7 @@ or user-authored content in analytics payloads.
 
 ### R0: Product approval and architecture proof
 
-Before implementation:
+Approved on 2026-07-22. Before the remaining implementation:
 
 - collect competitor screenshots for the states listed below;
 - approve desktop and narrow layouts;

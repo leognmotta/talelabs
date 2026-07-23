@@ -7,6 +7,11 @@
 > document (source/master kinds, roles, readiness, dormant endpoints) is
 > retired and was deleted by migration `027_reset_elements`. The shipped
 > Elements feature is specified only in `docs/elements.md`.
+>
+> **Create note (2026-07-22):** direct creation is an approved presentation of
+> ordinary Flows. Existing graph, estimate, run, browser, managed, and Asset
+> endpoints remain surface-agnostic; only Flow browse/create and the
+> server-owned clone expose presentation identity.
 
 Supersedes `api-design-planning.md` (deprecated). Companion to `db-design-planning-v2.md` — every endpoint here maps onto that schema and its contracts; nothing is invented API-side that the DB doc doesn't back.
 
@@ -621,12 +626,27 @@ elsewhere in this document are historical and equally retired.
 ### CRUD
 
 ```
-GET    /flows?search=&limit=&cursor=  -> 200 ListResponse<Flow>   (sorted updatedAt desc)
-POST   /flows { name }                -> 201 Flow                 (revision 0, empty graph)
+GET    /flows?surface=canvas|create&search=&limit=&cursor=
+                                        -> 200 ListResponse<Flow> (sorted updatedAt desc)
+POST   /flows { name, surface }          -> 201 Flow               (revision 0, empty graph)
 GET    /flows/:id                     -> 200 Flow                 (meta only — graph is separate)
 PATCH  /flows/:id { name?, viewport? }-> 200 Flow                 (viewport saves do not bump revision)
 DELETE /flows/:id                     -> 204                      (graph cascades; runs/jobs history survives)
+POST   /flows/:id/clone-to-canvas { name }
+                                      -> 201 Flow                 (server-cloned canvas graph; runs stay put)
 ```
+
+Every Flow response includes `surface: 'canvas' | 'create'`. The Flows library
+always requests `surface=canvas`; Create session history always requests
+`surface=create`. The server rejects `clone-to-canvas` unless the source is a
+Create Flow. Graph sync, cost estimation, run admission, cancellation, retry,
+realtime, and result reads never branch on this field.
+
+Flow list rows also carry nullable `activeRunStatus` and `latestOutput`
+presentation fields. The API derives them in bounded page-wide queries for the
+Create surface, signs only thumbnail/poster access, and returns null activity
+for canvas browse rows. Clients do not subscribe every session row to run
+detail or load original output media for the rail.
 
 ### `GET /flows/:id/graph` — open the canvas
 

@@ -1,6 +1,6 @@
 # TaleLabs Assets + Flows MVP Contract
 
-**Status:** active source of truth, updated 2026-07-14.
+**Status:** active source of truth, updated 2026-07-22.
 
 This document defines the product boundary until the first sellable creative
 loop is validated. It supersedes every older requirement that makes Elements a
@@ -9,11 +9,15 @@ MVP navigation.
 
 ## Product Boundary
 
-The MVP has two product entities:
+The MVP has three durable product entities and two creation surfaces:
 
 ```txt
 Assets = canonical reusable media
-Flows  = visual creative documents
+Flows  = editable creative documents and the ordinary execution graph
+Elements = optional ordered image-reference collections
+
+Create = direct Image, Video, and Audio creation over an ordinary Flow
+Canvas = spatial editing of an ordinary Flow
 ```
 
 The product loop is:
@@ -30,13 +34,23 @@ find or upload an Asset
 -> reuse that Asset in another step
 ```
 
-The primary navigation is exactly:
+The primary creative navigation is:
 
 ```txt
+Create
 Flows
 Assets
 Elements
 ```
+
+`Create` is a presentation surface, not a fourth persistence or runtime model.
+Each Create session is an ordinary Flow with `surface=create`; each canvas
+document uses `surface=canvas`. Both synchronize registered nodes and typed
+edges, admit the same immutable Flow snapshots, execute through the same
+browser or managed drivers, and ingest outputs as canonical Assets. Create
+projects direct requests into Asset nodes plus one registered generation node.
+It owns no planner, Trigger task, generation-job executor, provider adapter,
+input materializer, output finalizer, or result format.
 
 ## Elements Are Active
 
@@ -214,6 +228,11 @@ the code-owned model inventory here.
 ## Persistence And Compatibility
 
 - Flow graphs remain normalized in `flows`, `flowNodes`, and `flowEdges`.
+- `flows.surface` is the non-null presentation discriminator `canvas | create`.
+  Browse APIs filter it server-side; it never changes planning or execution.
+- Deleting a Create session deletes its Flow identity and graph but preserves
+  historical runs and every canonical Asset. `Open in Flow` server-clones the
+  current graph into a new `surface=canvas` identity; it does not move runs.
 - `flowNodes` has no Element foreign key in the active schema.
 - A cleanup migration removes legacy Element nodes and their incident edges;
   standalone Element records and Assets are not deleted.

@@ -16,7 +16,7 @@ The product is not a generic directory of AI models and it is not initially an e
 The active product loop is:
 
 ```txt
-Assets -> Flows -> Generated Assets -> Continued Iteration
+Create or Flows -> Generated Assets -> Assets -> Continued Iteration
 ```
 
 The first sellable foundation is built around two primary product entities:
@@ -30,7 +30,8 @@ Each entity has one clear responsibility:
 
 ```txt
 Assets = media the user owns and can reuse
-Flows  = the visual environment where users create
+Flows  = ordinary editable graphs and the visual environment for advanced work
+Create = the direct presentation of one-step Image, Video, and Audio Flows
 ```
 
 Elements are the third product entity since 2026-07-18: named, ordered
@@ -45,13 +46,17 @@ canonical Asset before user-owned paid acceptance.
 
 ## Product Navigation
 
-The initial navigation is deliberately narrow:
+The creative navigation is deliberately narrow:
 
 ```txt
+Create
 Flows
 Assets
 Elements
 ```
+
+The root redirect remains `/flows`; adding Create does not silently change an
+existing user's entry route.
 
 ## Build Order
 
@@ -70,7 +75,8 @@ The implementation order is:
 9. Billing and credits only after the creative loop is proven
 ```
 
-Flows are the main product experience and long-term differentiator. Assets come
+Create is the lowest-friction path to one useful Asset. Flows remain the
+advanced product experience and long-term differentiator. Assets come
 first because every reference, generation input, and generation output depends
 on a trustworthy media system. Generation-node UX comes next because it defines
 the actual creative contract the later run engine and provider adapters must
@@ -298,9 +304,23 @@ edits never rewrite an admitted run.
 Elements are optional accelerators. A user must still be able to connect raw
 Assets directly to a generation node without first creating an Element.
 
-## Flows
+## Create And Flows
 
-Flows are the main creative product surface.
+Create and the canvas are two presentations of the same Flow contract. Create
+projects one direct request into registered Asset input nodes, one registered
+generation node, and typed edges; the canvas presents the editable spatial
+graph. Both use canonical validation, planning, immutable snapshots, browser or
+managed execution, provider adapters, output finalization, and Asset ingestion.
+The execution stack must not know which surface originated a job.
+
+Create provides Image, Video, and task-specific Audio generation, durable
+session/run history, model-adaptive controls, exact `PromptTemplate` media
+references, result continuation, and a server-owned clone into a canvas Flow.
+It is deterministic direct generation, not general chat or an autonomous
+agent. `docs/feature-research/direct-ai-asset-creation.md` is the detailed
+approved interaction and delivery contract.
+
+Flows are the advanced spatial creative surface.
 
 The canonical technical model for Flow handles, runtime values, reference sets,
 batch items, lineage, generation execution, iteration, full-flow orchestration,
