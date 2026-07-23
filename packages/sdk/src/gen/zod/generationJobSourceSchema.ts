@@ -5,14 +5,11 @@
 
 import * as z from "zod";
 import type { GenerationJobSource } from "../types/GenerationJobSource.ts";
-import { cuid2Schema } from "./cuid2Schema.ts";
 
 export const generationJobSourceSchema = z.object({
   sortOrder: z.int().min(0),
   sourceType: z.enum(["text", "element", "asset", "nodeOutput"]),
-  get nodeId() {
-    return cuid2Schema;
-  },
+  nodeId: z.string().min(1),
   elementId: z.nullable(
     z
       .string()

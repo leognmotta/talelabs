@@ -1112,7 +1112,8 @@
             ]
           },
           "nodeId": {
-            "$ref": "#/components/schemas/Cuid2"
+            "type": "string",
+            "minLength": 1
           },
           "elementId": {
             "type": "string",

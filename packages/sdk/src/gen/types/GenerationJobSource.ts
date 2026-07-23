@@ -3,8 +3,6 @@
  * Do not edit manually.
  */
 
-import type { Cuid2 } from "./Cuid2.ts";
-
 export const generationJobSourceSourceTypeEnum = {
   text: "text",
   element: "element",
@@ -26,10 +24,10 @@ export type GenerationJobSource = {
    */
   sourceType: GenerationJobSourceSourceTypeEnumKey;
   /**
-   * @pattern ^[a-z][0-9a-z]+$
+   * @minLength 1
    * @type string
    */
-  nodeId: Cuid2;
+  nodeId: string;
   /**
    * @minLength 2
    * @maxLength 32
