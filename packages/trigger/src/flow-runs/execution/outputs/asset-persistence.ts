@@ -9,7 +9,6 @@ import type {
 import { db } from '@talelabs/db'
 import { idempotencyKeys } from '@trigger.dev/sdk'
 
-import { ensureFlowOutputFolder } from '../../../assets/outputs/folders.js'
 import { assetIngestTask } from '../../../tasks/assets/ingest.task.js'
 import { logRunEngine } from '../../observability/logging.js'
 
@@ -32,12 +31,14 @@ export async function persistAssetOutputIfJobRunning(input: {
     })
     const run = await trx
       .selectFrom('flowRuns')
-      .select('status')
+      .select(['assetFolderId', 'projectId', 'status'])
       .where('organizationId', '=', input.job.organizationId)
       .where('id', '=', input.job.flowRunId)
       .forUpdate()
       .executeTakeFirst()
-    if (run?.status === 'canceled')
+    if (!run)
+      throw new Error('generation_run_not_found')
+    if (run.status === 'canceled')
       return { persisted: false as const }
     const job = await trx
       .updateTable('generationJobs')
@@ -51,40 +52,19 @@ export async function persistAssetOutputIfJobRunning(input: {
     if (!job)
       return { persisted: false as const }
 
-    const outputFolder = input.job.flowId
-      ? await ensureFlowOutputFolder(trx, {
-          flowId: input.job.flowId,
-          organizationId: input.job.organizationId,
-        })
-      : null
-    const folderId
-      = outputFolder?.status === 'ready' ? outputFolder.folderId : null
-    if (outputFolder && outputFolder.status !== 'ready') {
-      logRunEngine('warn', 'generation_job.asset_output.folder_unavailable', {
-        flowId: input.job.flowId,
-        generationJobId: input.job.id,
-        organizationId: input.job.organizationId,
-        reason: outputFolder.status,
-        runId: input.job.flowRunId,
-      })
-    }
-
     const existingAsset = await trx
       .selectFrom('assets')
-      .select(['folderId', 'id', 'processingState'])
+      .select(['folderId', 'id', 'processingState', 'projectId'])
       .where('organizationId', '=', input.job.organizationId)
       .where('generationJobId', '=', input.job.id)
       .where('outputIndex', '=', input.outputIndex)
       .executeTakeFirst()
     if (existingAsset) {
-      if (existingAsset.folderId === null && folderId !== null) {
-        await trx
-          .updateTable('assets')
-          .set({ folderId })
-          .where('organizationId', '=', input.job.organizationId)
-          .where('id', '=', existingAsset.id)
-          .where('folderId', 'is', null)
-          .execute()
+      if (
+        existingAsset.folderId !== run.assetFolderId
+        || existingAsset.projectId !== run.projectId
+      ) {
+        throw new Error('generation_asset_destination_mismatch')
       }
       return {
         assetId: existingAsset.id,
@@ -98,7 +78,7 @@ export async function persistAssetOutputIfJobRunning(input: {
       .insertInto('assets')
       .values({
         createdBy: input.job.createdBy,
-        folderId,
+        folderId: run.assetFolderId,
         generationJobId: input.job.id,
         id: input.assetId,
         metadata: input.metadata ? { ...input.metadata } : undefined,
@@ -106,6 +86,7 @@ export async function persistAssetOutputIfJobRunning(input: {
         name: `Generated ${input.job.model}`,
         organizationId: input.job.organizationId,
         outputIndex: input.outputIndex,
+        projectId: run.projectId,
         processingState: 'processing',
         source: 'generation',
         storageKey: input.key,
