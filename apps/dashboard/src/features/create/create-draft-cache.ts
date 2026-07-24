@@ -14,12 +14,13 @@ const CACHE_PREFIX = 'talelabs.createDraft.v2.'
 function cacheKey(input: {
   createSessionId: null | string
   organizationId: string
+  projectId?: null | string
   userId: string
 }) {
   return [
     input.organizationId,
     input.userId,
-    input.createSessionId ?? 'new',
+    input.createSessionId ?? `new:${input.projectId ?? 'private'}`,
   ].join('.')
 }
 
@@ -29,6 +30,8 @@ export function readCreateDraftCache(input: {
   createSessionId: null | string
   /** Active organization owning referenced Assets. */
   organizationId: string
+  /** Project scopes only the unsaved new-session draft. */
+  projectId?: null | string
   /** Authenticated user owning browser-local recovery state. */
   userId: string
 }): CreateDraft | null {
@@ -57,6 +60,8 @@ export function writeCreateDraftCache(input: {
   draft: CreateDraft
   /** Active organization owning referenced Assets. */
   organizationId: string
+  /** Project scopes only the unsaved new-session draft. */
+  projectId?: null | string
   /** Authenticated user owning browser-local recovery state. */
   userId: string
 }) {
@@ -77,6 +82,8 @@ export function deleteCreateDraftCache(input: {
   createSessionId: null | string
   /** Active organization owning referenced Assets. */
   organizationId: string
+  /** Project scopes only the unsaved new-session draft. */
+  projectId?: null | string
   /** Authenticated user owning browser-local recovery state. */
   userId: string
 }) {

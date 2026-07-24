@@ -1,10 +1,8 @@
 /** Capability-driven Asset attachment roles for the current Create request. */
-
 import type { GenerationInputSlotDefinition } from '@talelabs/flows'
 import type { Asset } from '@talelabs/sdk'
 import type { CreateDraft } from './create-draft'
 import type { CreateDraftResolution } from './create-resolution'
-
 import {
   IconArrowLeft,
   IconArrowRight,
@@ -64,22 +62,20 @@ function fileMatchesSlot(
       : file.type.startsWith('audio/')
         ? 'audio'
         : null
-
   return assetType !== null && createAssetMatchesInputSlot({
     mimeType: file.type,
     type: assetType,
   }, slot)
 }
-
 function slotFileAccept(slot: GenerationInputSlotDefinition) {
   if (slot.acceptedMedia?.mimeTypes.length)
     return slot.acceptedMedia.mimeTypes.join(',')
   return createInputSlotAssetTypes(slot).map(type => `${type}/*`).join(',')
 }
-
-/** Renders semantic attachment fields and reuses the global Asset picker. */
+/** Renders semantic attachment fields and reuses organization-visible Assets. */
 export function CreateAttachments({
   draft,
+  projectId,
   resolution,
   onAdd,
   onRemove,
@@ -87,6 +83,8 @@ export function CreateAttachments({
 }: {
   /** Current request with stable browser-local attachment identities. */
   draft: CreateDraft
+  /** Project destination for new attachment uploads. */
+  projectId: null | string
   /** Existing catalog resolution defining visible semantic slots. */
   resolution: CreateDraftResolution
   /** Adds one canonical Asset to a semantic slot. */
@@ -99,7 +97,7 @@ export function CreateAttachments({
   const { t } = useTranslation()
   const viewer = useAssetViewerUrlState()
   const organizationId = useActiveOrganizationId()
-  const foldersQuery = useFoldersQuery()
+  const foldersQuery = useFoldersQuery(true, projectId)
   const [pickerSlotId, setPickerSlotId] = useState<null | string>(null)
   const draftRef = useRef(draft)
   const resolutionRef = useRef(resolution)
@@ -139,6 +137,7 @@ export function CreateAttachments({
       if (slotId)
         ownUploadBatchesRef.current.set(batchId, slotId)
     },
+    projectId,
   })
 
   useEffect(() => {
@@ -536,6 +535,7 @@ export function CreateAttachments({
       {pickerSlot && (
         <AssetLibraryDialog
           allowedTypes={pickerAllowedTypes}
+          uploadProjectId={projectId}
           isAssetDisabled={(asset: Asset) => {
             if (!isCreateInputSlotAddable({
               draft,

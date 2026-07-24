@@ -12,8 +12,9 @@ import type {
   FlowRunAssetOutput,
   FlowRunSummary,
 } from '@talelabs/sdk'
-import type { CreateDraft } from './create-draft'
+import type { AssetDestinationSelection } from '../projects/asset-destination-picker'
 
+import type { CreateDraft } from './create-draft'
 import { listCredentialStatuses } from '@talelabs/providers/browser'
 import {
   getAssetsId,
@@ -24,8 +25,8 @@ import {
 import { useQueryClient } from '@tanstack/react-query'
 import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { toast } from 'sonner'
 
+import { toast } from 'sonner'
 import { getApiErrorMessage } from '../../shared/lib/api-error'
 import { getOrganizationRequestHeaders } from '../../shared/lib/organization-request'
 import { flowQueryKeys } from '../flows/data/query-keys/flow-query-keys'
@@ -33,6 +34,8 @@ import {
   publishBrowserRunHint,
   rememberActiveBrowserRun,
 } from '../flows/runs/browser-runtime/browser-run-hints'
+import { isActiveRunStatus } from '../flows/runs/observation/flow-run-status'
+import { invalidateTerminalOutputQueries } from '../generation/runs/terminal-output-invalidation'
 import {
   createDraftFromRunSummary,
   createDraftUsingAsset,
@@ -43,12 +46,16 @@ import { createSessionQueryKeys } from './data/create-session-query-keys'
 export function useCreateRunActions(input: {
   /** Current local draft used only for explicit output continuation. */
   draft: CreateDraft
+  /** Optional one-run generated-Asset folder override. */
+  destinationFolderId: AssetDestinationSelection
   /** Durable session identity, or null until the first run is admitted. */
   createSessionId: null | string
   /** Opens existing browser credential settings. */
   openSecureStore: () => void
   /** Active tenant owning related runs and Assets. */
   organizationId: string
+  /** Project assigned when the first run creates a durable session. */
+  projectId?: null | string
   /** Current compiled public direct request, or null while invalid. */
   request: CreateDirectRunRequest | null
   /** Replaces only the current browser-local request. */
@@ -63,8 +70,10 @@ export function useCreateRunActions(input: {
   const {
     draft,
     createSessionId,
+    destinationFolderId,
     openSecureStore,
     organizationId,
+    projectId,
     onSessionCreated,
     request,
     replaceDraft,
@@ -82,6 +91,13 @@ export function useCreateRunActions(input: {
     void queryClient.invalidateQueries({
       queryKey: createSessionQueryKeys.lists(organizationId),
     })
+    if (!isActiveRunStatus(run.status)) {
+      void invalidateTerminalOutputQueries({
+        organizationId,
+        queryClient,
+        runId: run.id,
+      })
+    }
     void queryClient.invalidateQueries({
       exact: true,
       queryKey: flowQueryKeys.activeRuns(organizationId),
@@ -144,6 +160,10 @@ export function useCreateRunActions(input: {
           data: {
             ...directRequest,
             createSessionId: createSessionId ?? undefined,
+            ...(destinationFolderId === undefined
+              ? {}
+              : { destination: { folderId: destinationFolderId } }),
+            projectId,
           },
         },
         {
@@ -166,9 +186,11 @@ export function useCreateRunActions(input: {
   }, [
     observeRun,
     createSessionId,
+    destinationFolderId,
     openSecureStore,
     organizationId,
     onSessionCreated,
+    projectId,
     rememberBrowserRun,
     request,
     t,

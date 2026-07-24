@@ -6,8 +6,9 @@
  */
 
 import type { CreateSession, GenerationConfigResponse } from '@talelabs/sdk'
-import type { CreateDraft } from './create-draft'
+import type { AssetDestinationSelection } from '../projects/asset-destination-picker'
 
+import type { CreateDraft } from './create-draft'
 import { Alert, AlertDescription } from '@talelabs/ui/components/alert'
 import { Button } from '@talelabs/ui/components/button'
 import { cn } from '@talelabs/ui/lib/utils'
@@ -22,8 +23,8 @@ import {
   useState,
 } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router'
 
+import { useNavigate } from 'react-router'
 import { DARK_THEME_CLASS_NAME } from '../../shared/lib/theme'
 import { useAssetViewerUrlState } from '../assets/viewer/use-asset-viewer-url-state'
 import { flowCanvasSearchParams } from '../flows/editor/persistence/flow-canvas-search-params'
@@ -33,9 +34,10 @@ import {
   useGenerationFundingPreference,
 } from '../settings/generation-funding-preference'
 import { useSettingsTabState } from '../settings/settings-state'
+import { CreateAmbientGradient } from './create-ambient-gradient'
 import { CreateComposer } from './create-composer'
 import { createDirectRequest } from './create-direct-request'
-import { createEmptyCreateDraft, hasCreateDraftContent } from './create-draft'
+import { hasCreateDraftContent } from './create-draft'
 import {
   deleteCreateDraftCache,
   writeCreateDraftCache,
@@ -43,6 +45,7 @@ import {
 import { createDraftReducer } from './create-draft-reducer'
 import { CreateEmptyStage } from './create-empty-stage'
 import { resolveCreateDraft } from './create-resolution'
+import { CreateWorkspaceSettings } from './create-workspace-settings'
 import { useCreateRunHistoryQuery } from './data/create-run-history.queries'
 import {
   getCreateHistoryViewPreference,
@@ -64,7 +67,9 @@ export function CreateWorkspace({
   generationConfig,
   initialDraft,
   organizationId,
+  projectId,
   userId,
+  onInitialDraftPersisted,
 }: {
   /** Existing account capability controlling debug-mode visibility. */
   canUseDebugMode: boolean
@@ -76,8 +81,12 @@ export function CreateWorkspace({
   initialDraft: CreateDraft
   /** Active tenant owning referenced Assets and admitted runs. */
   organizationId: string
+  /** Project route scope for new-session ownership and canonical navigation. */
+  projectId?: null | string
   /** Authenticated user used for local recovery and browser execution. */
   userId: string
+  /** Clears an immediate route handoff after local recovery owns the draft. */
+  onInitialDraftPersisted: () => void
 }) {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -158,6 +167,10 @@ export function CreateWorkspace({
     getCreateHistoryViewPreference,
   )
   const [admissionPending, setAdmissionPending] = useState(false)
+  const [destinationFolderId, setDestinationFolderId]
+    = useState<AssetDestinationSelection>(undefined)
+  const [workspaceSettingsSection, setWorkspaceSettingsSection]
+    = useState<'location' | 'outputFolder' | null>(null)
   const [scrollTargetRunId, setScrollTargetRunId] = useState<null | string>(null)
   const composerDockRef = useRef<HTMLDivElement>(null)
   const workspaceRef = useRef<HTMLDivElement>(null)
@@ -167,9 +180,18 @@ export function CreateWorkspace({
       createSessionId,
       draft: state.draft,
       organizationId,
+      projectId,
       userId,
     })
-  }, [createSessionId, organizationId, state.draft, userId])
+    onInitialDraftPersisted()
+  }, [
+    createSessionId,
+    onInitialDraftPersisted,
+    organizationId,
+    projectId,
+    state.draft,
+    userId,
+  ])
 
   useLayoutEffect(() => {
     const composerDock = composerDockRef.current
@@ -204,25 +226,51 @@ export function CreateWorkspace({
       createSessionId: sessionId,
       draft: state.draft,
       organizationId,
+      projectId,
       userId,
     })
     deleteCreateDraftCache({
       createSessionId: null,
       organizationId,
+      projectId,
       userId,
     })
-    navigate(`/create/${sessionId}`, { replace: true })
-  }, [navigate, organizationId, state.draft, userId])
+    navigate(projectId
+      ? `/projects/${projectId}/create/${sessionId}`
+      : `/create/${sessionId}`, { replace: true })
+  }, [navigate, organizationId, projectId, state.draft, userId])
   const runActions = useCreateRunActions({
     createSessionId,
+    destinationFolderId,
     draft: state.draft,
     onSessionCreated: handleSessionCreated,
     openSecureStore,
     organizationId,
+    projectId,
     replaceDraft,
     request: directRequest,
     userId,
   })
+  const handleDraftProjectChange = useCallback((nextProjectId: null | string) => {
+    if (nextProjectId !== (projectId ?? null)) {
+      writeCreateDraftCache({
+        createSessionId: null,
+        draft: state.draft,
+        organizationId,
+        projectId: nextProjectId,
+        userId,
+      })
+      deleteCreateDraftCache({
+        createSessionId: null,
+        organizationId,
+        projectId,
+        userId,
+      })
+    }
+    navigate(nextProjectId
+      ? `/projects/${nextProjectId}/create`
+      : '/create')
+  }, [navigate, organizationId, projectId, state.draft, userId])
   const historyPresentationProps = {
     generationConfig,
     hasEarlier: historyQuery.hasEarlier,
@@ -301,7 +349,10 @@ export function CreateWorkspace({
   }
 
   const composer = (
-    <div className="pointer-events-auto mx-auto w-full max-w-[920px] space-y-2">
+    <div className="
+      pointer-events-auto relative z-10 mx-auto w-full max-w-[920px] space-y-2
+    "
+    >
       {state.notice && (
         <Alert>
           <AlertDescription className="flex flex-wrap items-center gap-2">
@@ -325,6 +376,7 @@ export function CreateWorkspace({
         draft={state.draft}
         estimateState={estimateState}
         generationConfig={generationConfig}
+        projectId={createSession?.projectId ?? projectId ?? null}
         resolution={resolution}
         onAddAttachment={attachment =>
           dispatch({ attachment, type: 'addAttachment' })}
@@ -370,10 +422,20 @@ export function CreateWorkspace({
       <CreateSessionPicker
         currentSession={createSession}
         organizationId={organizationId}
-        onCreateNew={() => {
-          dispatch({ draft: createEmptyCreateDraft(), type: 'replace' })
-          setScrollTargetRunId(null)
-        }}
+        projectId={projectId}
+        onLocationOpen={() => setWorkspaceSettingsSection('location')}
+        onOutputFolderOpen={() =>
+          setWorkspaceSettingsSection('outputFolder')}
+      />
+      <CreateWorkspaceSettings
+        createSession={createSession}
+        destination={destinationFolderId}
+        organizationId={organizationId}
+        projectId={projectId}
+        section={workspaceSettingsSection}
+        onDestinationChange={setDestinationFolderId}
+        onDraftProjectChange={handleDraftProjectChange}
+        onClose={() => setWorkspaceSettingsSection(null)}
       />
       {hasRuns && (
         <div className="absolute top-4 right-4 z-30">
@@ -391,7 +453,7 @@ export function CreateWorkspace({
         ref={workspaceRef}
       >
         <main className={cn(
-          'min-h-0 overflow-hidden',
+          'relative z-10 min-h-0 overflow-hidden',
           hasRuns ? 'absolute inset-0' : 'flex-1',
         )}
         >
@@ -410,7 +472,7 @@ export function CreateWorkspace({
         <div
           className={cn(
             `
-              pointer-events-none z-20 px-3 pt-3
+              pointer-events-none relative z-20 px-3 pt-3
               pb-[max(0.75rem,env(safe-area-inset-bottom))]
               sm:px-6 sm:pb-5
             `,
@@ -418,6 +480,16 @@ export function CreateWorkspace({
           )}
           ref={composerDockRef}
         >
+          {createSessionId === null
+            ? (
+                <CreateAmbientGradient
+                  className="
+                    absolute top-0 left-1/2 z-0 h-80 w-[calc(100%-1.5rem)]
+                    max-w-[920px] -translate-1/2
+                  "
+                />
+              )
+            : null}
           {composer}
         </div>
       </div>

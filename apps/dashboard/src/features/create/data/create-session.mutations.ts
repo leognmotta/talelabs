@@ -5,6 +5,7 @@
  * session identity used to group direct runs.
  */
 
+import type { RenameCreateSessionRequest } from '@talelabs/sdk'
 import {
   deleteCreateSessionsId,
   patchCreateSessionsId,
@@ -12,15 +13,19 @@ import {
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { getOrganizationRequestHeaders } from '../../../shared/lib/organization-request'
+import { projectQueryKeys } from '../../projects/project-query-keys'
 import { createSessionQueryKeys } from './create-session-query-keys'
 
-/** Renames one owned Create session and refreshes its list/detail projections. */
-export function useRenameCreateSessionMutation(organizationId: string) {
+/** Updates one session identity/location and refreshes every scoped projection. */
+export function useUpdateCreateSessionMutation(organizationId: string) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (input: { id: string, name: string }) =>
+    mutationFn: (input: {
+      data: RenameCreateSessionRequest
+      id: string
+    }) =>
       patchCreateSessionsId(
-        { data: { name: input.name }, id: input.id },
+        { data: input.data, id: input.id },
         { headers: getOrganizationRequestHeaders(organizationId) },
       ),
     onSuccess: (session) => {
@@ -30,6 +35,9 @@ export function useRenameCreateSessionMutation(organizationId: string) {
       )
       void queryClient.invalidateQueries({
         queryKey: createSessionQueryKeys.lists(organizationId),
+      })
+      void queryClient.invalidateQueries({
+        queryKey: projectQueryKeys.scope(organizationId),
       })
     },
   })
@@ -50,6 +58,9 @@ export function useDeleteCreateSessionMutation(organizationId: string) {
       })
       void queryClient.invalidateQueries({
         queryKey: createSessionQueryKeys.lists(organizationId),
+      })
+      void queryClient.invalidateQueries({
+        queryKey: projectQueryKeys.scope(organizationId),
       })
     },
   })

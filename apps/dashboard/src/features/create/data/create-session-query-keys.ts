@@ -19,8 +19,12 @@ export function createSessionLists(organizationId: null | string) {
 export function createSessionList(
   organizationId: null | string,
   search: string,
+  projectId?: null | string,
 ) {
-  return [...createSessionLists(organizationId), { search }] as const
+  return [
+    ...createSessionLists(organizationId),
+    { projectId, search },
+  ] as const
 }
 
 /** Key for one durable Create session. */

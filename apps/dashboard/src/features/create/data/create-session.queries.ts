@@ -35,7 +35,10 @@ export function useCreateSessionQuery(sessionId: null | string) {
 }
 
 /** Loads a bounded searched session rail with explicit older-page fetching. */
-export function useCreateSessionListQuery(search: string) {
+export function useCreateSessionListQuery(
+  search: string,
+  projectId?: null | string,
+) {
   const organizationId = useActiveOrganizationId()
   return useInfiniteQuery({
     enabled: Boolean(organizationId),
@@ -48,6 +51,7 @@ export function useCreateSessionListQuery(search: string) {
           params: {
             cursor: pageParam || undefined,
             limit: CREATE_SESSION_PAGE_SIZE,
+            projectId: projectId === null ? 'private' : projectId,
             search: search || undefined,
           },
         },
@@ -56,7 +60,7 @@ export function useCreateSessionListQuery(search: string) {
           signal,
         },
       ),
-    queryKey: createSessionQueryKeys.list(organizationId, search),
+    queryKey: createSessionQueryKeys.list(organizationId, search, projectId),
     staleTime: 15_000,
   })
 }

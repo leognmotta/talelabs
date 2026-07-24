@@ -1,8 +1,8 @@
 /**
- * Compact navigation for durable direct Create sessions.
+ * Compact header navigation for durable direct Create sessions.
  *
- * The searchable picker exposes session identity and management without
- * reserving workspace width or owning any generation, draft, or Flow state.
+ * The searchable picker groups session identity and its compact action menu
+ * without owning generation or draft state.
  */
 
 import type { CreateSession } from '@talelabs/sdk'
@@ -10,6 +10,8 @@ import type { CreateSession } from '@talelabs/sdk'
 import {
   IconDots,
   IconEdit,
+  IconFolderCog,
+  IconMapPin,
   IconMessage,
   IconMessagePlus,
   IconTrash,
@@ -30,15 +32,11 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@talelabs/ui/components/dropdown-menu'
 import { Separator } from '@talelabs/ui/components/separator'
 import { Spinner } from '@talelabs/ui/components/spinner'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@talelabs/ui/components/tooltip'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
@@ -53,14 +51,20 @@ import { RenameCreateSessionDialog } from './rename-create-session-dialog'
 export function CreateSessionPicker({
   currentSession,
   organizationId,
-  onCreateNew,
+  projectId,
+  onLocationOpen,
+  onOutputFolderOpen,
 }: {
   /** Durable session selected by the current route, when one exists. */
   currentSession: CreateSession | null
   /** Tenant used by rename and delete mutations. */
   organizationId: string
-  /** Clears the unsaved draft when New is already the active route. */
-  onCreateNew: () => void
+  /** Fixed Project scope, or undefined for the Private Create surface. */
+  projectId?: null | string
+  /** Opens the Project-location dialog outside fixed Project scope. */
+  onLocationOpen: () => void
+  /** Opens the next-run output-folder dialog. */
+  onOutputFolderOpen: () => void
 }) {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -69,7 +73,10 @@ export function CreateSessionPicker({
   const [renameSession, setRenameSession] = useState<CreateSession | null>(null)
   const [deleteSession, setDeleteSession] = useState<CreateSession | null>(null)
   const debouncedSearch = useDebouncedSearch(search)
-  const query = useCreateSessionListQuery(debouncedSearch)
+  const query = useCreateSessionListQuery(debouncedSearch, projectId)
+  const createPath = projectId
+    ? `/projects/${projectId}/create`
+    : '/create'
   const sessions = useMemo(
     () => query.data?.pages.flatMap(page => page.data) ?? [],
     [query.data?.pages],
@@ -81,14 +88,11 @@ export function CreateSessionPicker({
   }
   const createNew = () => {
     closePicker()
-    if (currentSession)
-      navigate('/create')
-    else
-      onCreateNew()
+    navigate(createPath)
   }
   const handleDeleted = (sessionId: string) => {
     if (sessionId === currentSession?.id)
-      navigate('/create', { replace: true })
+      navigate(createPath, { replace: true })
   }
 
   return (
@@ -120,8 +124,11 @@ export function CreateSessionPicker({
                 setSearch('')
             }}
             onValueChange={(session) => {
-              if (session && session.id !== currentSession?.id)
-                navigate(`/create/${session.id}`)
+              if (session && session.id !== currentSession?.id) {
+                navigate(session.projectId
+                  ? `/projects/${session.projectId}/create/${session.id}`
+                  : `/create/${session.id}`)
+              }
               closePicker()
             }}
           >
@@ -237,37 +244,36 @@ export function CreateSessionPicker({
             "
             orientation="vertical"
           />
-          <Tooltip>
-            <TooltipTrigger
-              aria-label={t('create.sessions.new')}
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              aria-label={t('common.moreOptions')}
               className="rounded-none"
               render={<Button size="icon-lg" variant="ghost" />}
-              onClick={createNew}
             >
-              <IconMessagePlus />
-            </TooltipTrigger>
-            <TooltipContent side="bottom">
-              {t('create.sessions.new')}
-            </TooltipContent>
-          </Tooltip>
-          {currentSession && (
-            <>
-              <Separator
-                className="
-                  h-5!
-                  data-vertical:self-center
-                "
-                orientation="vertical"
-              />
-              <DropdownMenu>
-                <DropdownMenuTrigger
-                  aria-label={t('common.moreOptions')}
-                  className="rounded-none"
-                  render={<Button size="icon-lg" variant="ghost" />}
-                >
-                  <IconDots />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start">
+              <IconDots />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuGroup>
+                {currentSession && (
+                  <DropdownMenuItem onClick={createNew}>
+                    <IconMessagePlus />
+                    {t('create.sessions.new')}
+                  </DropdownMenuItem>
+                )}
+                {typeof projectId !== 'string' && (
+                  <DropdownMenuItem onClick={onLocationOpen}>
+                    <IconMapPin />
+                    {t('projects.location')}
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem onClick={onOutputFolderOpen}>
+                  <IconFolderCog />
+                  {t('projects.outputFolder')}
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+              {currentSession && (
+                <>
+                  <DropdownMenuSeparator />
                   <DropdownMenuGroup>
                     <DropdownMenuItem
                       onClick={() => setRenameSession(currentSession)}
@@ -283,10 +289,10 @@ export function CreateSessionPicker({
                       {t('create.sessions.delete')}
                     </DropdownMenuItem>
                   </DropdownMenuGroup>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </>
-          )}
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
       <RenameCreateSessionDialog

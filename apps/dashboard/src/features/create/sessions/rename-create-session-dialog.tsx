@@ -18,7 +18,7 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
 import { getApiErrorMessage } from '../../../shared/lib/api-error'
-import { useRenameCreateSessionMutation } from '../data/create-session.mutations'
+import { useUpdateCreateSessionMutation } from '../data/create-session.mutations'
 
 /** Commits a user-authored session name without changing its runs or draft. */
 export function RenameCreateSessionDialog({
@@ -34,7 +34,7 @@ export function RenameCreateSessionDialog({
   onOpenChange: (open: boolean) => void
 }) {
   const { t } = useTranslation()
-  const renameSession = useRenameCreateSessionMutation(organizationId)
+  const renameSession = useUpdateCreateSessionMutation(organizationId)
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -44,7 +44,7 @@ export function RenameCreateSessionDialog({
     if (!session || !name)
       return
     try {
-      await renameSession.mutateAsync({ id: session.id, name })
+      await renameSession.mutateAsync({ data: { name }, id: session.id })
       onOpenChange(false)
       toast.success(t('create.sessions.renamed'))
     }
