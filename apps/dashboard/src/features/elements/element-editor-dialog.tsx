@@ -41,6 +41,12 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
+import {
+  ProjectLocationControl,
+} from '../projects/project-location-control'
+import {
+  ProjectLocationDialog,
+} from '../projects/project-location-dialog'
 import { ELEMENT_KINDS, elementKindLabelKey } from './element-kind-meta'
 import { useElementMutations } from './element-mutations'
 import { useElementDetailQuery } from './element-queries'
@@ -73,10 +79,12 @@ export function ElementEditorDialog({
   elementId,
   onOpenChange,
   open,
+  projectId,
 }: {
   elementId: null | string
   onOpenChange: (open: boolean) => void
   open: boolean
+  projectId?: null | string
 }) {
   const { t } = useTranslation()
   const detailQuery = useElementDetailQuery(open ? elementId : null)
@@ -104,6 +112,7 @@ export function ElementEditorDialog({
               <ElementEditorForm
                 initialDetail={detailQuery.data ?? null}
                 key={detailQuery.data?.id ?? 'new'}
+                projectId={projectId}
                 onClose={() => onOpenChange(false)}
               />
             )}
@@ -116,9 +125,11 @@ export function ElementEditorDialog({
 function ElementEditorForm({
   initialDetail,
   onClose,
+  projectId,
 }: {
   initialDetail: ElementDetail | null
   onClose: () => void
+  projectId?: null | string
 }) {
   const { t } = useTranslation()
   const mutations = useElementMutations()
@@ -134,9 +145,14 @@ function ElementEditorForm({
       reference ? [toReferenceDraft(reference)] : [],
     ),
   )
+  const [locationOpen, setLocationOpen] = useState(false)
+  const [locationProjectId, setLocationProjectId] = useState<null | string>(
+    initialDetail?.projectId ?? projectId ?? null,
+  )
   const [pickerOpen, setPickerOpen] = useState(false)
 
   const editing = Boolean(initialDetail)
+  const projectScoped = typeof projectId === 'string'
   const saving = mutations.create.isPending || mutations.update.isPending
 
   async function save() {
@@ -152,6 +168,7 @@ function ElementEditorForm({
             description: description.trim(),
             kind,
             name: trimmedName,
+            projectId: locationProjectId,
           },
           id: initialDetail.id,
         })
@@ -163,6 +180,7 @@ function ElementEditorForm({
           description: description.trim() || undefined,
           kind,
           name: trimmedName,
+          projectId: locationProjectId,
         })
         toast.success(t('elements.created'))
       }
@@ -231,6 +249,21 @@ function ElementEditorForm({
             onChange={event => setDescription(event.target.value)}
           />
         </div>
+        {projectScoped
+          ? null
+          : (
+              <div className="
+                flex items-center justify-between gap-4 rounded-lg border px-3
+                py-2
+              "
+              >
+                <Label>{t('projects.location')}</Label>
+                <ProjectLocationControl
+                  projectId={locationProjectId}
+                  onClick={() => setLocationOpen(true)}
+                />
+              </div>
+            )}
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between">
             <Label>{t('elements.references')}</Label>
@@ -359,9 +392,25 @@ function ElementEditorForm({
       <ElementReferencePickerDialog
         initialReferences={references}
         open={pickerOpen}
+        uploadProjectId={locationProjectId}
         onCommit={setReferences}
         onOpenChange={setPickerOpen}
       />
+      {projectScoped
+        ? null
+        : (
+            <ProjectLocationDialog
+              currentProjectId={locationProjectId}
+              includeFolder={false}
+              open={locationOpen}
+              pending={false}
+              onConfirm={async (nextProjectId) => {
+                setLocationProjectId(nextProjectId)
+                setLocationOpen(false)
+              }}
+              onOpenChange={setLocationOpen}
+            />
+          )}
     </>
   )
 }

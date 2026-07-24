@@ -12,6 +12,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { getOrganizationRequestHeaders } from '../../shared/lib/organization-request'
 import { useActiveOrganizationId } from '../organizations/organization-scope-context'
+import { projectQueryKeys } from '../projects/project-query-keys'
 import { invalidateElementCache } from './element-query-cache'
 
 /** Mutations for one organization's Elements with shared cache invalidation. */
@@ -19,7 +20,12 @@ export function useElementMutations() {
   const organizationId = useActiveOrganizationId()
   const queryClient = useQueryClient()
   const headers = getOrganizationRequestHeaders(organizationId!)
-  const invalidate = () => invalidateElementCache(queryClient, organizationId!)
+  const invalidate = () => Promise.all([
+    invalidateElementCache(queryClient, organizationId!),
+    queryClient.invalidateQueries({
+      queryKey: projectQueryKeys.scope(organizationId),
+    }),
+  ])
 
   return {
     create: useMutation({

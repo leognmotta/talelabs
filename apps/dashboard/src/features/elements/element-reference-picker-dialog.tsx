@@ -35,11 +35,13 @@ export function ElementReferencePickerDialog({
   onCommit,
   onOpenChange,
   open,
+  uploadProjectId,
 }: {
   initialReferences: ElementReferenceDraft[]
   onCommit: (references: ElementReferenceDraft[]) => void
   onOpenChange: (open: boolean) => void
   open: boolean
+  uploadProjectId: null | string
 }) {
   const { t } = useTranslation()
   const [pending, setPending] = useState<ElementReferenceDraft[]>([])
@@ -106,6 +108,7 @@ export function ElementReferencePickerDialog({
   return (
     <AssetLibraryDialog
       allowedTypes={['image']}
+      uploadProjectId={uploadProjectId}
       footer={(
         <>
           <span className="text-sm text-muted-foreground">

@@ -19,12 +19,16 @@ export const ELEMENT_LIBRARY_PAGE_SIZE = 60
 export function useElementListInfiniteQuery(filters: {
   assetId?: string
   kind?: ElementKind
+  projectId?: null | string
   search?: string
 }) {
   const organizationId = useActiveOrganizationId()
   const params: GetElementsQueryParams = {
     ...(filters.assetId ? { assetId: filters.assetId } : {}),
     ...(filters.kind ? { kind: filters.kind } : {}),
+    ...(filters.projectId !== undefined
+      ? { projectId: filters.projectId ?? 'private' }
+      : {}),
     ...(filters.search ? { search: filters.search } : {}),
     limit: ELEMENT_LIBRARY_PAGE_SIZE,
   }
