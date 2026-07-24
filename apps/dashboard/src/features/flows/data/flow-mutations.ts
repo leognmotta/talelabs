@@ -1,11 +1,16 @@
-/** Optimistic create, rename, and delete mutations for organization Flows. */
+/** Optimistic create, rename, location, and delete mutations for Flows. */
 
-import type { Flow, FlowListResponse } from '@talelabs/sdk'
+import type {
+  Flow,
+  FlowListResponse,
+  UpdateFlowRequest,
+} from '@talelabs/sdk'
 import type { InfiniteData } from '@tanstack/react-query'
 
 import { deleteFlowsId, patchFlowsId, postFlows } from '@talelabs/sdk'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { getOrganizationRequestHeaders } from '../../../shared/lib/organization-request'
+import { projectQueryKeys } from '../../projects/project-query-keys'
 import {
   hasOrganizationScopeCache,
   patchFlowLists,
@@ -17,11 +22,12 @@ import { flowQueryKeys } from './query-keys/flow-query-keys'
 export function useCreateFlowMutation() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ name, organizationId }: {
+    mutationFn: ({ name, organizationId, projectId }: {
       name: string
       organizationId: string
+      projectId?: null | string
     }) => postFlows(
-      { data: { name } },
+      { data: { name, projectId } },
       { headers: getOrganizationRequestHeaders(organizationId) },
     ),
     onSuccess: (flow, { organizationId }) => {
@@ -33,9 +39,14 @@ export function useCreateFlowMutation() {
       )
     },
     onSettled: (_data, _error, { organizationId }) => {
-      void queryClient.invalidateQueries({
-        queryKey: flowQueryKeys.lists(organizationId),
-      })
+      void Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: flowQueryKeys.lists(organizationId),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: projectQueryKeys.scope(organizationId),
+        }),
+      ])
     },
   })
 }
@@ -89,9 +100,48 @@ export function useRenameFlowMutation() {
       )
     },
     onSettled: (_data, _error, { organizationId }) => {
-      void queryClient.invalidateQueries({
-        queryKey: flowQueryKeys.lists(organizationId),
-      })
+      void Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: flowQueryKeys.lists(organizationId),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: projectQueryKeys.scope(organizationId),
+        }),
+      ])
+    },
+  })
+}
+
+/** Updates a Flow's future Project/output location without rewriting runs. */
+export function useUpdateFlowLocationMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ data, id, organizationId }: {
+      data: UpdateFlowRequest
+      id: string
+      organizationId: string
+    }) => patchFlowsId(
+      { data, id },
+      { headers: getOrganizationRequestHeaders(organizationId) },
+    ),
+    onSuccess: (flow, { organizationId }) => {
+      if (!hasOrganizationScopeCache(queryClient, organizationId))
+        return
+      patchFlowLists(queryClient, organizationId, flow.id, flow)
+      queryClient.setQueryData(
+        flowQueryKeys.detail(organizationId, flow.id),
+        flow,
+      )
+    },
+    onSettled: (_data, _error, { organizationId }) => {
+      void Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: flowQueryKeys.lists(organizationId),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: projectQueryKeys.scope(organizationId),
+        }),
+      ])
     },
   })
 }
@@ -132,9 +182,14 @@ export function useDeleteFlowMutation() {
       })
     },
     onSettled: (_data, _error, { organizationId }) => {
-      void queryClient.invalidateQueries({
-        queryKey: flowQueryKeys.lists(organizationId),
-      })
+      void Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: flowQueryKeys.lists(organizationId),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: projectQueryKeys.scope(organizationId),
+        }),
+      ])
     },
   })
 }

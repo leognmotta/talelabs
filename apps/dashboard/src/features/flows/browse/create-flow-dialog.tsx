@@ -29,9 +29,12 @@ import { useCreateFlowMutation } from '../data/flow-mutations'
 export function CreateFlowDialog({
   onOpenChange,
   open,
+  projectId,
 }: {
   onOpenChange: (open: boolean) => void
   open: boolean
+  /** Project assigned to the new Flow, or undefined for Private creation. */
+  projectId?: null | string
 }) {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -55,11 +58,14 @@ export function CreateFlowDialog({
       const flow = await createFlow.mutateAsync({
         name: value,
         organizationId,
+        projectId,
       })
       setName('')
       onOpenChange(false)
       toast.success(t('flows.created'))
-      navigate(`/flows/${flow.id}`)
+      navigate(projectId
+        ? `/projects/${projectId}/flows/${flow.id}`
+        : `/flows/${flow.id}`)
     }
     catch (error) {
       toast.error(getApiErrorMessage(error, 'flows.actionFailed'))

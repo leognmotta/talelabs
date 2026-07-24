@@ -18,6 +18,7 @@ import {
 } from '@talelabs/ui/components/input-group'
 import { useDeferredValue, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useParams } from 'react-router'
 import {
   MediaLibraryGrid,
   MediaLibrarySkeleton,
@@ -26,17 +27,21 @@ import { useFlowListQuery } from '../data/flow-list.query'
 import { CreateFlowDialog } from './create-flow-dialog'
 import { DeleteFlowDialog } from './delete-flow-dialog'
 import { FlowCard } from './flow-card'
+import { FlowLocationDialog } from './flow-location-dialog'
 import { RenameFlowDialog } from './rename-flow-dialog'
 
 /** Owns browse-screen dialog targets while TanStack Query owns Flow server state. */
 export function FlowsScreen() {
   const { t } = useTranslation()
+  const { projectId } = useParams<{ projectId: string }>()
   const [createOpen, setCreateOpen] = useState(false)
   const [deleteFlow, setDeleteFlow] = useState<Flow | null>(null)
+  const [locationFlow, setLocationFlow] = useState<Flow | null>(null)
   const [renameFlow, setRenameFlow] = useState<Flow | null>(null)
   const [search, setSearch] = useState('')
   const deferredSearch = useDeferredValue(search.trim())
-  const query = useFlowListQuery(deferredSearch)
+  const projectScoped = typeof projectId === 'string'
+  const query = useFlowListQuery(deferredSearch, projectId)
   const flows = query.data?.pages.flatMap(page => page.data) ?? []
 
   return (
@@ -118,6 +123,9 @@ export function FlowsScreen() {
                         key={flow.id}
                         flow={flow}
                         onDelete={setDeleteFlow}
+                        onMove={
+                          projectScoped ? undefined : setLocationFlow
+                        }
                         onRename={setRenameFlow}
                       />
                     ))}
@@ -137,11 +145,23 @@ export function FlowsScreen() {
                   )}
                 </>
               )}
-      <CreateFlowDialog open={createOpen} onOpenChange={setCreateOpen} />
+      <CreateFlowDialog
+        open={createOpen}
+        projectId={projectId}
+        onOpenChange={setCreateOpen}
+      />
       <RenameFlowDialog
         flow={renameFlow}
         onOpenChange={open => !open && setRenameFlow(null)}
       />
+      {projectScoped
+        ? null
+        : (
+            <FlowLocationDialog
+              flow={locationFlow}
+              onOpenChange={open => !open && setLocationFlow(null)}
+            />
+          )}
       <DeleteFlowDialog
         flow={deleteFlow}
         onOpenChange={open => !open && setDeleteFlow(null)}

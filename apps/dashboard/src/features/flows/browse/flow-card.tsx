@@ -5,6 +5,7 @@ import {
   IconDots,
   IconEdit,
   IconGitBranch,
+  IconMapPin,
   IconTrash,
 } from '@tabler/icons-react'
 import { Button } from '@talelabs/ui/components/button'
@@ -27,10 +28,12 @@ import {
 export function FlowCard({
   flow,
   onDelete,
+  onMove,
   onRename,
 }: {
   flow: Flow
   onDelete: (flow: Flow) => void
+  onMove?: (flow: Flow) => void
   onRename: (flow: Flow) => void
 }) {
   const { t } = useTranslation()
@@ -38,6 +41,9 @@ export function FlowCard({
     dateStyle: 'medium',
     timeStyle: 'short',
   }).format(new Date(flow.updatedAt))
+  const href = flow.projectId
+    ? `/projects/${flow.projectId}/flows/${flow.id}`
+    : `/flows/${flow.id}`
 
   return (
     <article className="group min-w-0">
@@ -48,7 +54,7 @@ export function FlowCard({
           focus-visible:ring-2 focus-visible:ring-ring
           focus-visible:ring-offset-2 focus-visible:ring-offset-background
         "
-        to={`/flows/${flow.id}`}
+        to={href}
       >
         <MediaLibraryCardPreview className="group-hover:ring-foreground/30">
           <div data-flow-card-grid className="absolute inset-0 opacity-40" />
@@ -89,6 +95,14 @@ export function FlowCard({
                   <IconEdit />
                   {t('flows.rename')}
                 </DropdownMenuItem>
+                {onMove
+                  ? (
+                      <DropdownMenuItem onClick={() => onMove(flow)}>
+                        <IconMapPin />
+                        {t('projects.changeLocation')}
+                      </DropdownMenuItem>
+                    )
+                  : null}
                 <DropdownMenuItem variant="destructive" onClick={() => onDelete(flow)}>
                   <IconTrash />
                   {t('flows.delete')}
@@ -105,7 +119,7 @@ export function FlowCard({
               focus-visible:ring-2 focus-visible:ring-ring
             "
             title={flow.name}
-            to={`/flows/${flow.id}`}
+            to={href}
           >
             {flow.name}
           </Link>

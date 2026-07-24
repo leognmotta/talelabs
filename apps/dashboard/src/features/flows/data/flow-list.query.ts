@@ -11,10 +11,14 @@ import { flowQueryKeys } from './query-keys/flow-query-keys'
 const FLOW_PAGE_SIZE = 40
 
 /** Loads the searchable infinite Flow list for the active organization. */
-export function useFlowListQuery(search: string) {
+export function useFlowListQuery(
+  search: string,
+  projectId?: null | string,
+) {
   const organizationId = useActiveOrganizationId()
   const params: GetFlowsQueryParams = {
     limit: FLOW_PAGE_SIZE,
+    projectId: projectId === null ? 'private' : projectId,
     search: search || undefined,
   }
   return useInfiniteQuery({
