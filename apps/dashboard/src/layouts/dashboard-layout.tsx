@@ -58,8 +58,16 @@ export function DashboardLayout({
   theme: ThemePreference
 }) {
   const { t } = useTranslation()
-  const isFlowEditor = Boolean(useMatch('/flows/:flowId'))
-  const isCreate = Boolean(useMatch('/create/*'))
+  const privateFlowEditorMatch = useMatch('/flows/:flowId')
+  const projectFlowEditorMatch = useMatch(
+    '/projects/:projectId/flows/:flowId',
+  )
+  const privateCreateMatch = useMatch('/create/*')
+  const projectCreateMatch = useMatch('/projects/:projectId/create/*')
+  const projectBriefMatch = useMatch('/projects/:projectId/brief')
+  const isFlowEditor = Boolean(privateFlowEditorMatch || projectFlowEditorMatch)
+  const isCreate = Boolean(privateCreateMatch || projectCreateMatch)
+  const isProjectBrief = Boolean(projectBriefMatch)
   const [settingsTab, setSettingsTab] = useSettingsTabState()
   const activeSettingsTab = settingsTab ?? 'general'
   const isSettingsOpen = settingsTab !== null
@@ -201,7 +209,9 @@ export function DashboardLayout({
                     'flex min-h-0 flex-1 flex-col',
                     isCreate
                       ? 'overflow-hidden'
-                      : 'gap-6 overflow-y-auto p-6',
+                      : isProjectBrief
+                        ? 'overflow-y-auto'
+                        : 'gap-6 overflow-y-auto p-6',
                   )}
                 >
                   <Outlet />

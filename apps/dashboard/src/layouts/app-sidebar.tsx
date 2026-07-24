@@ -1,10 +1,11 @@
-/** Dashboard navigation sidebar: primary sections and account controls. */
+/** Dashboard navigation sidebar: global shell and contextual feature variants. */
 
 import type { ComponentProps, ReactNode } from 'react'
 import type { SettingsTab } from '../features/settings/settings-state'
 
 import {
   IconFolderOpen,
+  IconFolders,
   IconGitBranch,
   IconLogout,
   IconSparkles,
@@ -17,15 +18,18 @@ import {
   SidebarSeparator,
   SidebarTrigger,
 } from '@talelabs/ui/components/sidebar'
-
+import { cn } from '@talelabs/ui/lib/utils'
 import { useTranslation } from 'react-i18next'
+import { useMatch } from 'react-router'
+
 import { OrganizationSwitcher } from '../features/organizations/organization-switcher'
+import { ProjectContextSidebar } from '../features/projects/sidebar/project-context-sidebar'
 import { TaleLabsLogo } from '../shared/components/talelabs-logo'
 import { ElementIcon } from '../shared/domain-icons'
 import { NavMain } from './nav-main'
 import { NavUser } from './nav-user'
 
-/** Dashboard navigation sidebar: primary sections, org switcher, account menu. */
+/** Renders the global sidebar shell with route-selected navigation content. */
 export function AppSidebar({
   activeOrganizationId,
   email,
@@ -38,17 +42,27 @@ export function AppSidebar({
   onSwitchOrganization,
   ...props
 }: ComponentProps<typeof Sidebar> & {
+  /** Active organization identity for the global organization switcher. */
   activeOrganizationId: string | null
+  /** Signed-in user's email address. */
   email: string | undefined
+  /** Global search trigger rendered above primary navigation. */
   globalSearch: ReactNode
+  /** Signed-in user's display name. */
   name: string | undefined
+  /** Creates an organization and returns its identity when successful. */
   onCreateOrganization: (name: string, slug: string) => Promise<string | null>
+  /** Opens organization invitation settings. */
   onOpenInviteMemberSettings: () => void
+  /** Opens the requested account or organization settings tab. */
   onOpenSettings: (tab?: SettingsTab) => void
+  /** Ends the active session. */
   onSignOut: () => Promise<void>
+  /** Activates another organization and returns its identity when successful. */
   onSwitchOrganization: (organizationId: string) => Promise<string | null>
 }) {
   const { t } = useTranslation()
+  const projectId = useMatch('/projects/:projectId/*')?.params.projectId ?? null
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -84,39 +98,54 @@ export function AppSidebar({
             variant="icon"
           />
         </div>
-        <OrganizationSwitcher
-          activeOrganizationId={activeOrganizationId}
-          onCreateOrganization={onCreateOrganization}
-          onSwitchOrganization={onSwitchOrganization}
-        />
+        {!projectId && (
+          <OrganizationSwitcher
+            activeOrganizationId={activeOrganizationId}
+            onCreateOrganization={onCreateOrganization}
+            onSwitchOrganization={onSwitchOrganization}
+          />
+        )}
       </SidebarHeader>
-      <SidebarContent>
-        {globalSearch}
-        <SidebarSeparator />
-        <NavMain
-          items={[
-            {
-              title: t('navigation.create'),
-              url: '/create',
-              icon: <IconSparkles />,
-            },
-            {
-              title: t('navigation.flows'),
-              url: '/flows',
-              icon: <IconGitBranch />,
-            },
-            {
-              title: t('navigation.assets'),
-              url: '/assets',
-              icon: <IconFolderOpen />,
-            },
-            {
-              title: t('navigation.elements'),
-              url: '/elements',
-              icon: <ElementIcon />,
-            },
-          ]}
-        />
+      <SidebarContent className={cn(projectId && 'min-h-0 overflow-hidden')}>
+        {projectId
+          ? (
+              <ProjectContextSidebar projectId={projectId} />
+            )
+          : (
+              <>
+                {globalSearch}
+                <SidebarSeparator />
+                <NavMain
+                  items={[
+                    {
+                      title: t('navigation.create'),
+                      url: '/create',
+                      icon: <IconSparkles />,
+                    },
+                    {
+                      title: t('navigation.projects'),
+                      url: '/projects',
+                      icon: <IconFolders />,
+                    },
+                    {
+                      title: t('navigation.flows'),
+                      url: '/flows',
+                      icon: <IconGitBranch />,
+                    },
+                    {
+                      title: t('navigation.assets'),
+                      url: '/assets',
+                      icon: <IconFolderOpen />,
+                    },
+                    {
+                      title: t('navigation.elements'),
+                      url: '/elements',
+                      icon: <ElementIcon />,
+                    },
+                  ]}
+                />
+              </>
+            )}
       </SidebarContent>
       <SidebarFooter>
         <NavUser

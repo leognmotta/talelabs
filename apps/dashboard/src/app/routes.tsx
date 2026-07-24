@@ -33,6 +33,7 @@ import {
   removeOrganizationProductQueries,
 } from '../features/organizations/organization-query-cache'
 import { useOrganizationSession } from '../features/organizations/use-organization-session'
+import { ProjectRouteBoundary } from '../features/projects/project-route-boundary'
 import {
   cancelAllUploads,
   cancelOrganizationUploads,
@@ -81,6 +82,21 @@ const ElementsScreen = lazy(async () => {
 const FlowEditorScreen = lazy(async () => {
   const module = await import('../features/flows/editor/flow-editor-screen')
   return { default: module.FlowEditorScreen }
+})
+
+const ProjectsScreen = lazy(async () => {
+  const module = await import('../features/projects/projects-screen')
+  return { default: module.ProjectsScreen }
+})
+
+const ProjectHomeScreen = lazy(async () => {
+  const module = await import('../features/projects/project-home-screen')
+  return { default: module.ProjectHomeScreen }
+})
+
+const ProjectBriefScreen = lazy(async () => {
+  const module = await import('../features/projects/brief/project-brief-screen')
+  return { default: module.ProjectBriefScreen }
 })
 
 /** Composes public and protected routes around the current account session. */
@@ -439,6 +455,22 @@ export function DashboardRoutes() {
             )}
           />
           <Route
+            path="elements/:elementId"
+            element={(
+              <ErrorBoundary
+                fallback={({ resetErrorBoundary }) => (
+                  <ErrorFallback
+                    description={t('elements.couldNotLoadDescription')}
+                    onRetry={resetErrorBoundary}
+                    title={t('elements.couldNotLoad')}
+                  />
+                )}
+              >
+                <ElementsScreen />
+              </ErrorBoundary>
+            )}
+          />
+          <Route
             path="flows/:flowId"
             element={(
               <ErrorBoundary
@@ -454,6 +486,47 @@ export function DashboardRoutes() {
               </ErrorBoundary>
             )}
           />
+          <Route
+            path="projects"
+            element={(
+              <ErrorBoundary
+                fallback={({ resetErrorBoundary }) => (
+                  <ErrorFallback
+                    description={t('projects.couldNotLoadDescription')}
+                    onRetry={resetErrorBoundary}
+                    title={t('projects.couldNotLoad')}
+                  />
+                )}
+              >
+                <ProjectsScreen />
+              </ErrorBoundary>
+            )}
+          />
+          <Route
+            path="projects/:projectId"
+            element={(
+              <ErrorBoundary
+                fallback={({ resetErrorBoundary }) => (
+                  <ErrorFallback
+                    description={t('projects.couldNotLoadDescription')}
+                    onRetry={resetErrorBoundary}
+                    title={t('projects.couldNotLoad')}
+                  />
+                )}
+              >
+                <ProjectRouteBoundary />
+              </ErrorBoundary>
+            )}
+          >
+            <Route index element={<ProjectHomeScreen />} />
+            <Route path="create/:sessionId?" element={<CreateScreen />} />
+            <Route path="assets" element={<AssetsScreen />} />
+            <Route path="flows" element={<FlowsScreen />} />
+            <Route path="flows/:flowId" element={<FlowEditorScreen />} />
+            <Route path="elements" element={<ElementsScreen />} />
+            <Route path="elements/:elementId" element={<ElementsScreen />} />
+            <Route path="brief" element={<ProjectBriefScreen />} />
+          </Route>
           <Route path="*" element={<Navigate to="/flows" replace />} />
         </Route>
         <Route path="*" element={<Navigate to="/flows" replace />} />
