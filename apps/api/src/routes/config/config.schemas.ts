@@ -10,6 +10,19 @@ import { AssetTypeSchema } from '../../schemas/common.js'
 
 const GenerationOutputTypeSchema = z.enum(['audio', 'image', 'text', 'video'])
 
+/** Connected browser providers considered by the canonical binding selector. */
+export const BrowserGenerationAvailabilityRequestSchema = z.object({
+  modelId: z.string().min(1).max(200),
+  operationId: z.string().min(1).max(100),
+  providers: z.array(z.enum(['fal', 'openrouter'])).max(8),
+})
+
+/** Provider-neutral browser execution readiness for one model operation. */
+export const BrowserGenerationAvailabilityResponseSchema = z.object({
+  catalogRevision: z.string().regex(/^sha256:[0-9a-f]{64}$/),
+  executable: z.boolean(),
+})
+
 const FlowValueTypeSchema = z.enum([
   'Text',
   'Asset',

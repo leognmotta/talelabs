@@ -499,8 +499,8 @@ const node: PlannedProviderCostNode = {
     request: providerNeutralSeedanceRequest,
   }],
   modelId: seedanceModel.id,
-  nodeId: 'seedance-node',
   operationId: 'textToVideo',
+  stepId: 'seedance-step',
 }
 const managed = resolveProviderCostNodeRouting({
   costEstimationEnabled: true,
@@ -531,7 +531,7 @@ const unavailableRoute = resolveProviderCostNodeRouting({
 assert.ok(unavailableRoute)
 const unavailableRunEstimate = publicRunCostEstimate({
   plannedJobCount: 1,
-  routes: new Map([[node.nodeId, unavailableRoute]]),
+  routes: new Map([[node.stepId, unavailableRoute]]),
 })
 assert.throws(
   () => requireCompleteProviderCostEstimate(unavailableRunEstimate),

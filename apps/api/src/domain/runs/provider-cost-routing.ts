@@ -124,7 +124,7 @@ export function resolveProviderCostNodeRouting(input: {
   costRoutingEnabled: boolean
   /** Runtime- and credential-eligible bindings in catalog priority order. */
   eligibleBindings: readonly CatalogProviderBinding[]
-  /** Planned node requests evaluated identically for every candidate. */
+  /** Planned step requests evaluated identically for every candidate. */
   node: PlannedProviderCostNode
   /** Request-scoped mutable pricing metadata. */
   pricing: ProviderPricingSnapshot

@@ -44,7 +44,7 @@ async function requireBrowserJob(
   if (job.browserFenceToken !== input.fenceToken)
     throw new HttpError(409, 'browser_run_lease_lost', 'Browser job ownership is no longer active.')
   const contract = run.artifact.snapshot.executionContracts.find(
-    candidate => candidate.nodeId === job.nodeId,
+    candidate => candidate.stepId === job.nodeId,
   )
   if (!contract)
     throw new HttpError(409, 'invalid_snapshot', 'The browser run snapshot is invalid.')

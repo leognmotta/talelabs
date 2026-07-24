@@ -7,7 +7,7 @@
  */
 
 import type {
-  FlowRunPlan,
+  ExecutionPlan,
   FlowRunSnapshotExecutionContract,
   FlowRunSnapshotProviderCostEstimate,
   FlowRunSnapshotProviderSelection,
@@ -16,6 +16,7 @@ import type {
   CatalogProviderBinding,
   CatalogProviderId,
 } from '@talelabs/models-catalog'
+import type { ProviderCostNodeRouting } from './provider-cost-routing.js'
 
 import {
   getCatalogModel,
@@ -26,16 +27,28 @@ import {
 import { flowRunPlanValidationError } from './planning-error.js'
 
 interface GenerationExecutionContractPlan {
-  executionNodes: readonly Pick<
-    FlowRunPlan['executionNodes'][number],
+  steps: readonly Pick<
+    ExecutionPlan['steps'][number],
     | 'catalogRevision'
     | 'catalogVersion'
     | 'modelContractVersion'
     | 'modelId'
     | 'modelRevision'
-    | 'nodeId'
     | 'operationId'
+    | 'stepId'
   >[]
+}
+
+interface LegacyGenerationExecutionContractPlan {
+  executionNodes: readonly {
+    catalogRevision: string
+    catalogVersion: number
+    modelContractVersion: string
+    modelId: string
+    modelRevision: number
+    nodeId: string
+    operationId: string
+  }[]
 }
 
 /** Admission-resolved binding and optional immutable cost-routing evidence. */
@@ -46,6 +59,28 @@ export interface ResolvedGenerationExecutionBinding {
   providerCostEstimate?: FlowRunSnapshotProviderCostEstimate
   /** Private policy explanation for the selected binding. */
   providerSelection?: FlowRunSnapshotProviderSelection
+}
+
+/** Projects generic cost-routing decisions into snapshot execution bindings. */
+export function resolvedGenerationExecutionBindings(
+  routes: ReadonlyMap<string, ProviderCostNodeRouting>,
+): Map<string, ResolvedGenerationExecutionBinding> {
+  return new Map([...routes].map(([stepId, route]) => {
+    const providerCostEstimate: FlowRunSnapshotProviderCostEstimate | undefined
+      = route.estimate.status === 'estimated'
+        ? {
+            ...route.estimate,
+            jobCount: route.jobEstimates.size,
+            quoteVersion: 1,
+          }
+        : undefined
+    const providerSelection: FlowRunSnapshotProviderSelection = route.selection
+    return [stepId, {
+      binding: route.binding,
+      ...(providerCostEstimate ? { providerCostEstimate } : {}),
+      providerSelection,
+    }] as const
+  }))
 }
 
 /**
@@ -66,47 +101,49 @@ export interface ResolvedGenerationExecutionBinding {
  * @throws When a model revision or provider route cannot resolve exactly.
  */
 export function generationExecutionContracts(
-  plan: GenerationExecutionContractPlan,
+  plan: GenerationExecutionContractPlan | LegacyGenerationExecutionContractPlan,
   executionRuntime: 'browser' | 'managed' = 'managed',
   executionMode: 'debug' | 'live' = 'live',
   availableProviders: ReadonlySet<CatalogProviderId> = new Set(),
   resolvedBindings: ReadonlyMap<string, ResolvedGenerationExecutionBinding> = new Map(),
 ): FlowRunSnapshotExecutionContract[] {
-  return plan.executionNodes.map((node) => {
-    const model = getCatalogModel(node.modelId)
-    const resolved = resolvedBindings.get(node.nodeId)
+  const steps = 'steps' in plan
+    ? plan.steps
+    : plan.executionNodes.map(node => ({ ...node, stepId: node.nodeId }))
+  return steps.map((step) => {
+    const model = getCatalogModel(step.modelId)
+    const resolved = resolvedBindings.get(step.stepId)
     const binding = resolved?.binding ?? (
       executionMode === 'live'
         ? selectProviderBinding({
             availableProviders,
             executionRuntime,
-            modelId: node.modelId,
-            operationId: node.operationId,
+            modelId: step.modelId,
+            operationId: step.operationId,
           })
-        : getCatalogProviderBinding(node.modelId, node.operationId)
+        : getCatalogProviderBinding(step.modelId, step.operationId)
     )
     if (
       !model
       || !binding
-      || binding.operationId !== node.operationId
-      || node.catalogRevision !== MODEL_CATALOG.catalogRevision
-      || node.catalogVersion !== MODEL_CATALOG.catalogVersion
-      || node.modelRevision !== model.revision
+      || binding.operationId !== step.operationId
+      || step.catalogRevision !== MODEL_CATALOG.catalogRevision
+      || step.catalogVersion !== MODEL_CATALOG.catalogVersion
+      || step.modelRevision !== model.revision
     ) {
       throw flowRunPlanValidationError([{
         code: 'generation_provider_route_unavailable',
-        field: `nodes.${node.nodeId}.modelId`,
+        field: `steps.${step.stepId}.modelId`,
       }])
     }
     return {
       adapterVersion: binding.adapterVersion,
-      catalogRevision: node.catalogRevision,
-      catalogVersion: node.catalogVersion,
-      modelContractVersion: node.modelContractVersion,
-      modelId: node.modelId,
-      modelRevision: node.modelRevision,
-      nodeId: node.nodeId,
-      operationId: node.operationId,
+      catalogRevision: step.catalogRevision,
+      catalogVersion: step.catalogVersion,
+      modelContractVersion: step.modelContractVersion,
+      modelId: step.modelId,
+      modelRevision: step.modelRevision,
+      operationId: step.operationId,
       provider: binding.provider,
       ...(resolved?.providerCostEstimate
         ? { providerCostEstimate: resolved.providerCostEstimate }
@@ -117,6 +154,7 @@ export function generationExecutionContracts(
       providerLifecycle: binding.lifecycle,
       providerModel: binding.nativeModelId,
       providerRouteVersion: binding.routeVersion,
+      stepId: step.stepId,
       ...(resolved?.providerSelection
         ? { providerSelection: resolved.providerSelection }
         : {}),

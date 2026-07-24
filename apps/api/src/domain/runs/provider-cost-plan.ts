@@ -6,7 +6,7 @@
  */
 
 import type {
-  FlowRunPlan,
+  ExecutionPlan,
   PlannedJobRequestPayload,
 } from '@talelabs/flows'
 import type {
@@ -15,6 +15,7 @@ import type {
 } from '@talelabs/providers/server'
 
 import {
+  generationJobInputTargetSlotId,
   promptTemplateResolvedText,
   selectedProviderRequestInputs,
 } from '@talelabs/flows'
@@ -27,14 +28,14 @@ export interface PlannedProviderCostJob {
   request: Omit<ProviderCostRequest, 'binding'>
 }
 
-/** Planned jobs grouped under one generation node and its one selected route. */
+/** Planned jobs grouped under one execution step and its selected route. */
 export interface PlannedProviderCostNode {
   /** Every provider request shard emitted for the node. */
   jobs: readonly PlannedProviderCostJob[]
   /** Canonical creative model ID. */
   modelId: string
-  /** Stable planned node ID. */
-  nodeId: string
+  /** Stable source-neutral execution-step ID. */
+  stepId: string
   /** Provider-neutral model operation. */
   operationId: string
 }
@@ -47,8 +48,8 @@ interface PredictedOutput {
   width: number | null
 }
 
-function outputKey(nodeId: string, itemKey: string): string {
-  return `${nodeId}\u0000${itemKey}`
+function outputKey(stepId: string, itemKey: string): string {
+  return `${stepId}\u0000${itemKey}`
 }
 
 function expectedTextOutputCharacters(settings: Readonly<Record<string, boolean | number | string>>): number {
@@ -68,6 +69,7 @@ function textCharacterCount(input: {
   const connectedBySlot = new Map<string, number>()
   let unresolved = false
   for (const plannedInput of input.payload.inputs) {
+    const targetSlotId = generationJobInputTargetSlotId(plannedInput)
     for (const runtimeItem of plannedInput.items) {
       if (runtimeItem.value.kind !== 'text')
         continue
@@ -84,8 +86,8 @@ function textCharacterCount(input: {
         count = expectedTextOutputCharacters({ responseLength: 'auto' })
       }
       connectedBySlot.set(
-        plannedInput.targetHandleId,
-        (connectedBySlot.get(plannedInput.targetHandleId) ?? 0) + count,
+        targetSlotId,
+        (connectedBySlot.get(targetSlotId) ?? 0) + count,
       )
     }
   }
@@ -169,21 +171,21 @@ function predictedImageDimensions(
 
 function predictionForJob(input: {
   assets: readonly ProviderCostInputAsset[]
-  node: FlowRunPlan['executionNodes'][number]
+  step: ExecutionPlan['steps'][number]
   textCharacterCount: number
 }): PredictedOutput | undefined {
-  const outputValueType = input.node.outputValueType
+  const outputValueType = input.step.outputValueType
   if (outputValueType === 'Text') {
     return {
       durationSeconds: null,
       height: null,
       mediaType: 'text',
-      textCharacterCount: expectedTextOutputCharacters(input.node.settings),
+      textCharacterCount: expectedTextOutputCharacters(input.step.settings),
       width: null,
     }
   }
   if (outputValueType === 'ImageSet') {
-    const dimensions = predictedImageDimensions(input.node.settings)
+    const dimensions = predictedImageDimensions(input.step.settings)
     return {
       durationSeconds: null,
       ...dimensions,
@@ -193,7 +195,7 @@ function predictionForJob(input: {
   }
   if (outputValueType === 'VideoSet') {
     return {
-      durationSeconds: String(input.node.settings.durationSeconds ?? 6),
+      durationSeconds: String(input.step.settings.durationSeconds ?? 6),
       height: null,
       mediaType: 'video',
       textCharacterCount: null,
@@ -202,11 +204,11 @@ function predictionForJob(input: {
   }
   if (outputValueType !== 'AudioSet')
     return undefined
-  const configuredDuration = Number(input.node.settings.duration)
+  const configuredDuration = Number(input.step.settings.duration)
   const inputDuration = input.assets.find(asset => (
     asset.mediaType === 'audio' || asset.mediaType === 'video'
   ))?.durationSeconds
-  const duration = input.node.operationId === 'textToSpeech'
+  const duration = input.step.operationId === 'textToSpeech'
     ? Math.max(1, input.textCharacterCount / 15)
     : Number.isFinite(configuredDuration) && configuredDuration > 0
       ? configuredDuration
@@ -224,14 +226,14 @@ function predictionForJob(input: {
 export function plannedProviderCostNodes(input: {
   /** Existing Asset metadata keyed by canonical Asset ID. */
   assetsById: ReadonlyMap<string, ProviderCostInputAsset>
-  /** Provider-neutral immutable Flow plan. */
-  plan: FlowRunPlan
+  /** Provider-neutral immutable execution plan. */
+  plan: ExecutionPlan
 }): PlannedProviderCostNode[] {
   const predictions = new Map<string, PredictedOutput>()
   const result: PlannedProviderCostNode[] = []
-  for (const node of input.plan.executionNodes) {
+  for (const step of input.plan.steps) {
     const jobs: PlannedProviderCostJob[] = []
-    for (const item of node.workItems) {
+    for (const item of step.workItems) {
       for (const shard of item.requestShards) {
         const text = textCharacterCount({
           payload: shard.requestPayload,
@@ -247,8 +249,8 @@ export function plannedProviderCostNodes(input: {
           request: {
             hasUnresolvedInputs: text.unresolved || assets.unresolved,
             inputAssets: assets.assets,
-            modelId: node.modelId,
-            operationId: node.operationId,
+            modelId: step.modelId,
+            operationId: step.operationId,
             outputCount: shard.requestPayload.outputCount,
             settings: shard.requestPayload.settings,
             textCharacterCount: text.count,
@@ -256,18 +258,18 @@ export function plannedProviderCostNodes(input: {
         })
         const prediction = predictionForJob({
           assets: assets.assets,
-          node,
+          step,
           textCharacterCount: text.count,
         })
         if (prediction)
-          predictions.set(outputKey(node.nodeId, item.itemKey), prediction)
+          predictions.set(outputKey(step.stepId, item.itemKey), prediction)
       }
     }
     result.push({
       jobs,
-      modelId: node.modelId,
-      nodeId: node.nodeId,
-      operationId: node.operationId,
+      modelId: step.modelId,
+      operationId: step.operationId,
+      stepId: step.stepId,
     })
   }
   return result

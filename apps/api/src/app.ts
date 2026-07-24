@@ -16,6 +16,7 @@ import { registerOpenApi } from './openapi.js'
 import { registerAccountRoutes } from './routes/account/account.routes.js'
 import { registerAssetRoutes } from './routes/assets/assets.routes.js'
 import { registerConfigRoutes } from './routes/config/config.routes.js'
+import { registerCreateSessionRoutes } from './routes/create-sessions/create-sessions.routes.js'
 import { registerElementRoutes } from './routes/elements/elements.routes.js'
 import { registerFlowRoutes } from './routes/flows/flows.routes.js'
 import { registerFolderRoutes } from './routes/folders/folders.routes.js'
@@ -32,6 +33,7 @@ const defaultProductRouteRegistrars = [
   registerUploadRoutes,
   registerAssetRoutes,
   registerElementRoutes,
+  registerCreateSessionRoutes,
   registerFlowRoutes,
   registerRunRoutes,
   registerConfigRoutes,

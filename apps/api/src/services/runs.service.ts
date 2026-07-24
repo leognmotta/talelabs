@@ -23,9 +23,17 @@ export {
   finalizeBrowserTextOutput,
 } from '../domain/runs/browser-runtime/browser-output.service.js'
 export { cancelRun } from '../domain/runs/cancellation.service.js'
+export {
+  admitDirectGeneration,
+  estimateDirectGeneration,
+} from '../domain/runs/direct-generation.service.js'
 export { preflightFlowRun } from '../domain/runs/planning.service.js'
 export { getFlowRunCostManifest } from '../domain/runs/provider-cost-manifest.service.js'
-export { getRunDetail, listRuns } from '../domain/runs/read.service.js'
+export {
+  getRunDetail,
+  listActiveRuns,
+  listRunHistory,
+} from '../domain/runs/read.service.js'
 export { createRunRealtimeToken } from '../domain/runs/realtime.service.js'
 export { reconcileRuns } from '../domain/runs/reconciliation.service.js'
 export { retryRun } from '../domain/runs/retry.service.js'

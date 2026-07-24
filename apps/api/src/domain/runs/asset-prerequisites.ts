@@ -11,7 +11,10 @@ export function assetReferencesFromValue(value: unknown) {
     && Array.isArray((value as { assets?: unknown }).assets)
   ) {
     return (value as { assets: readonly unknown[] }).assets.filter(
-      (asset): asset is { assetId: string } => Boolean(
+      (asset): asset is {
+        assetId: string
+        source?: 'priorOutput' | 'sameRunOutput' | 'staticAsset'
+      } => Boolean(
         asset
         && typeof asset === 'object'
         && 'assetId' in asset

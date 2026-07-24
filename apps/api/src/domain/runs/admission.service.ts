@@ -1,51 +1,39 @@
 /** Transactional Flow run admission, immutable snapshot persistence, and dispatch. */
 
-import type {
-  FlowRunNodeItemTable,
-  FlowRunNodeTable,
-  GenerationJobInputTable,
-  GenerationJobSourceTable,
-  GenerationJobTable,
-  JsonValue,
-} from '@talelabs/db'
-import type {
-  FlowRunSnapshotProviderCostEstimate,
-  FlowRunSnapshotProviderSelection,
-  PlannedJobRequestPayload,
-} from '@talelabs/flows'
+import type { JsonValue } from '@talelabs/db'
 import type { ProviderCostInputAsset } from '@talelabs/providers/server'
-import type { Insertable } from 'kysely'
 
 import type { RunMode } from './contracts.js'
 import { createId } from '@paralleldrive/cuid2'
 import { db } from '@talelabs/db'
 import {
-  BROWSER_EXECUTION_ENABLED,
   CANONICAL_SERIALIZER_VERSION,
   createFlowRunSnapshotArtifact,
+  executionPlanFromFlowRunPlan,
   FLOW_RUN_LIMITS,
   FLOW_RUN_SNAPSHOT_VERSION,
+  flowRunSourceFromPlan,
   GENERATION_CATALOG_REVISION,
-  GENERATION_MODEL_REGISTRY,
   hashFlowRunRequest,
-  promptTemplateResolvedText,
-  selectedProviderRequestInputs,
 } from '@talelabs/flows'
 import { loadProviderPricingSnapshot } from '@talelabs/providers/server'
 
 import { FLOW_RUN_EXECUTOR_CONTRACT_VERSION } from '@talelabs/trigger'
 import { acquireFlowRunAdmissionLocks } from '../../data/flow-run-admission.data.js'
 import { localUserIdOrNull } from '../../data/flow-run-planning.data.js'
-import { insertRunExecutionRows } from '../../data/run-persistence.data.js'
 import { HttpError, TenantResourceNotFoundError } from '../../middleware/error.js'
 import {
-  assetReferencesFromValue,
-  collectPlanPreExistingAssetIds,
-} from './asset-prerequisites.js'
+  assertRunAdmissionCapacity,
+  assertRunRuntimePolicy,
+} from './admission-policy.js'
+import { collectPlanPreExistingAssetIds } from './asset-prerequisites.js'
 import { commandFromAdmissionBody } from './contracts.js'
 import { dispatchFlowRun } from './dispatch.service.js'
-import { generationExecutionContracts } from './generation-execution-contracts.js'
-import { jsonb } from './jsonb.js'
+import { persistRunExecutionPlan } from './execution-persistence.js'
+import {
+  generationExecutionContracts,
+  resolvedGenerationExecutionBindings,
+} from './generation-execution-contracts.js'
 import { logRunEngine } from './logging.js'
 import { loadFlowRunPlan } from './planning.service.js'
 import { availableProvidersForRun } from './provider-availability.js'
@@ -56,22 +44,6 @@ import {
   resolvePlanProviderCosts,
 } from './provider-cost.service.js'
 import { getRunDetail } from './read.service.js'
-
-function initialResolvedPrompt(payload: PlannedJobRequestPayload): null | string {
-  const connected = payload.inputs.flatMap(input => (
-    input.targetHandleId === 'prompt'
-      ? input.items.flatMap(item => item.value.kind === 'text' ? [item.value.text] : [])
-      : []
-  ))
-  if (connected.length > 0) {
-    return connected.includes(null)
-      ? null
-      : connected.join('\n')
-  }
-  return payload.promptTemplates?.prompt
-    ? promptTemplateResolvedText(payload.promptTemplates.prompt)
-    : payload.inline.prompt ?? null
-}
 
 /** Admits and persists one tenant-scoped immutable Flow run transactionally. */
 export async function admitFlowRun(input: {
@@ -94,18 +66,7 @@ export async function admitFlowRun(input: {
   const executionMode = input.body.executionMode ?? 'live'
   const executionRuntime = input.body.executionRuntime ?? 'managed'
   const fundingSource = input.body.fundingSource
-  if (executionRuntime === 'browser' && !BROWSER_EXECUTION_ENABLED)
-    throw new HttpError(409, 'invalid_execution_runtime', 'Browser execution is unavailable.')
-  if (
-    (fundingSource === 'credits' && executionRuntime !== 'managed')
-    || (fundingSource === 'byok' && executionRuntime !== 'browser')
-  ) {
-    throw new HttpError(
-      409,
-      'invalid_execution_runtime',
-      'The selected funding source is unavailable for this execution runtime.',
-    )
-  }
+  assertRunRuntimePolicy({ executionRuntime, fundingSource })
   if (!input.idempotencyKey)
     throw new HttpError(400, 'idempotency_key_required', 'Idempotency-Key is required.')
 
@@ -127,7 +88,7 @@ export async function admitFlowRun(input: {
         'Idempotency-Key was already used for a different run request.',
       )
     }
-    return getRunDetail(input.organizationId, existing.id)
+    return getRunDetail(input.organizationId, existing.id, input.userId)
   }
 
   const command = commandFromAdmissionBody(input.body)
@@ -143,6 +104,7 @@ export async function admitFlowRun(input: {
       'The saved Flow plan changed before admission.',
     )
   }
+  const executionPlan = executionPlanFromFlowRunPlan(plan)
 
   const availableProviders = availableProvidersForRun(
     executionRuntime,
@@ -152,7 +114,7 @@ export async function admitFlowRun(input: {
     availableProviders,
     executionMode,
     executionRuntime,
-    plan,
+    plan: executionPlan,
   })
   const costEstimationEnabled = fundingSource === 'credits'
   const pricing = costEstimationEnabled
@@ -187,24 +149,7 @@ export async function admitFlowRun(input: {
       return
     }
 
-    const activeRunCount = await trx.selectFrom('flowRuns')
-      .select(eb => eb.fn.countAll<number>().as('count'))
-      .where('organizationId', '=', input.organizationId)
-      .where('status', 'in', ['pending', 'running'])
-      .executeTakeFirst()
-    if (Number(activeRunCount?.count ?? 0) >= FLOW_RUN_LIMITS.organizationActiveRuns) {
-      throw new HttpError(
-        429,
-        'organization_run_capacity_exceeded',
-        'This organization has too many active Flow runs.',
-        [{
-          code: 'organization_run_capacity_exceeded',
-          field: 'organizationId',
-          message: 'organization_run_capacity_exceeded',
-          params: { maximum: FLOW_RUN_LIMITS.organizationActiveRuns },
-        }],
-      )
-    }
+    await assertRunAdmissionCapacity({ organizationId: input.organizationId, trx })
 
     const current = await trx.selectFrom('flows')
       .select('revision')
@@ -291,39 +236,23 @@ export async function admitFlowRun(input: {
       candidatesByNode,
       costEstimationEnabled,
       costRoutingEnabled: costEstimationEnabled && executionMode === 'live',
-      plan,
+      plan: executionPlan,
       pricing,
     })
     if (costEstimationEnabled) {
       requireCompleteProviderCostEstimate(publicRunCostEstimate({
-        plannedJobCount: plan.summary.plannedJobCount,
+        plannedJobCount: executionPlan.summary.plannedJobCount,
         routes: costRoutes,
       }))
     }
-    const resolvedBindings = new Map([...costRoutes].map(([nodeId, route]) => {
-      const providerCostEstimate: FlowRunSnapshotProviderCostEstimate | undefined
-        = route.estimate.status === 'estimated'
-          ? {
-              ...route.estimate,
-              jobCount: route.jobEstimates.size,
-              quoteVersion: 1,
-            }
-          : undefined
-      const providerSelection: FlowRunSnapshotProviderSelection = route.selection
-      return [nodeId, {
-        binding: route.binding,
-        ...(providerCostEstimate ? { providerCostEstimate } : {}),
-        providerSelection,
-      }] as const
-    }))
+    const resolvedBindings = resolvedGenerationExecutionBindings(costRoutes)
     const contracts = generationExecutionContracts(
-      plan,
+      executionPlan,
       executionRuntime,
       executionMode,
       availableProviders,
       resolvedBindings,
     )
-    const contractsByNode = new Map(contracts.map(contract => [contract.nodeId, contract]))
     const artifact = createFlowRunSnapshotArtifact({
       adapterContractVersion: 'normalized-generation-v3',
       canonicalSerializerVersion: CANONICAL_SERIALIZER_VERSION,
@@ -332,9 +261,9 @@ export async function admitFlowRun(input: {
       executionMode,
       executionRuntime,
       executorVersion: FLOW_RUN_EXECUTOR_CONTRACT_VERSION,
-      plan,
-      plannerVersion: plan.plannerVersion,
+      executionPlan,
       snapshotVersion: FLOW_RUN_SNAPSHOT_VERSION,
+      source: flowRunSourceFromPlan(plan),
     })
     if (artifact.bytes > FLOW_RUN_LIMITS.snapshotBytes) {
       throw new HttpError(
@@ -366,131 +295,19 @@ export async function admitFlowRun(input: {
       retryOfRunId: null,
       snapshotHash: artifact.hash,
       snapshotVersion: FLOW_RUN_SNAPSHOT_VERSION,
+      source: 'flow',
       status: 'pending',
       targetNodeId: input.body.targetNodeId ?? null,
     }).execute()
 
-    const nodeRows: Insertable<FlowRunNodeTable>[] = []
-    const itemRows: Insertable<FlowRunNodeItemTable>[] = []
-    const jobRows: Insertable<GenerationJobTable>[] = []
-    const sourceRows: Insertable<GenerationJobSourceTable>[] = []
-    const inputRows: Insertable<GenerationJobInputTable>[] = []
-    for (const node of plan.executionNodes) {
-      const model = GENERATION_MODEL_REGISTRY[node.modelId]
-      const executionContract = contractsByNode.get(node.nodeId)!
-      nodeRows.push({
-        flowRunId: runId,
-        nodeId: node.nodeId,
-        organizationId: input.organizationId,
-        status: 'pending',
-      })
-      for (const item of node.workItems) {
-        itemRows.push({
-          dimensions: jsonb(item.dimensions as JsonValue),
-          flowRunId: runId,
-          itemKey: item.itemKey,
-          lineage: jsonb(item.lineage as unknown as JsonValue),
-          nodeId: node.nodeId,
-          organizationId: input.organizationId,
-          sortOrder: item.sortOrder,
-          status: 'pending',
-        })
-        for (const shard of item.requestShards) {
-          const jobId = createId()
-          jobRows.push({
-            adapterVersion: executionContract.adapterVersion,
-            createdBy,
-            flowId: input.body.flowId,
-            flowRunId: runId,
-            id: jobId,
-            idempotencyKey: `${runId}:${node.nodeId}:${item.itemKey}:${shard.requestIndex}`,
-            itemKey: item.itemKey,
-            mediaType: (model?.mediaType ?? 'image') as any,
-            model: node.modelId,
-            catalogRevision: GENERATION_CATALOG_REVISION,
-            nodeId: node.nodeId,
-            operation: node.operationId,
-            organizationId: input.organizationId,
-            provider: executionContract.provider,
-            providerCostEstimate: (() => {
-              const estimate = costRoutes.get(node.nodeId)?.jobEstimates.get(shard.jobHash)
-              return estimate?.status === 'estimated'
-                ? jsonb({ ...estimate, quoteVersion: 1 } as unknown as JsonValue)
-                : null
-            })(),
-            providerEndpoint: executionContract.providerEndpoint,
-            providerEndpointTag: executionContract.providerEndpointTag,
-            providerLifecycle: executionContract.providerLifecycle as unknown as JsonValue,
-            providerModel: executionContract.providerModel,
-            providerRouteVersion: executionContract.providerRouteVersion,
-            requestHash: shard.jobHash,
-            requestIndex: shard.requestIndex,
-            requestPayload: shard.requestPayload as unknown as JsonValue,
-            resolvedPrompt: initialResolvedPrompt(shard.requestPayload),
-            settings: node.settings as JsonValue,
-            status: 'pending',
-          })
-          let sourceOrder = 0
-          let inputOrder = 0
-          const sourceIdByAssetLocation = new Map<string, string>()
-          for (const plannedInput of shard.requestPayload.inputs) {
-            for (const runtimeItem of plannedInput.items) {
-              const sourceId = createId()
-              const assetRefs = assetReferencesFromValue(runtimeItem.value)
-              sourceRows.push({
-                assetId: assetRefs[0]?.assetId ?? null,
-                elementId: null,
-                id: sourceId,
-                jobId,
-                nodeId: plannedInput.sourceNodeId,
-                organizationId: input.organizationId,
-                resolvedText: (runtimeItem.value as any).text ?? null,
-                snapshot: runtimeItem as unknown as JsonValue,
-                sortOrder: sourceOrder,
-                sourceType: assetRefs.length > 0
-                  ? (assetRefs[0] as any).source === 'priorOutput'
-                      ? 'nodeOutput'
-                      : 'asset'
-                  : (runtimeItem.value as any).origin?.generationJobId
-                      ? 'nodeOutput'
-                      : 'text',
-              })
-              for (const assetRef of assetRefs) {
-                sourceIdByAssetLocation.set(
-                  `${plannedInput.edgeId}\u0000${runtimeItem.key}\u0000${assetRef.assetId}`,
-                  sourceId,
-                )
-              }
-              sourceOrder += 1
-            }
-          }
-          for (const plannedInput of selectedProviderRequestInputs(shard.requestPayload)) {
-            const role = plannedInput.targetHandleId || 'reference'
-            for (const runtimeItem of plannedInput.items) {
-              for (const assetRef of assetReferencesFromValue(runtimeItem.value)) {
-                inputRows.push({
-                  assetId: assetRef.assetId,
-                  jobId,
-                  organizationId: input.organizationId,
-                  role,
-                  sortOrder: inputOrder,
-                  sourceId: sourceIdByAssetLocation.get(
-                    `${plannedInput.edgeId}\u0000${runtimeItem.key}\u0000${assetRef.assetId}`,
-                  ) ?? null,
-                })
-                inputOrder += 1
-              }
-            }
-          }
-        }
-      }
-    }
-    await insertRunExecutionRows({
-      inputs: inputRows,
-      items: itemRows,
-      jobs: jobRows,
-      nodes: nodeRows,
-      sources: sourceRows,
+    await persistRunExecutionPlan({
+      contracts,
+      createdBy,
+      executionPlan,
+      flowId: input.body.flowId,
+      organizationId: input.organizationId,
+      routes: costRoutes,
+      runId,
       trx,
     })
   })
@@ -509,5 +326,5 @@ export async function admitFlowRun(input: {
     replayed: admittedRunId !== runId,
     runId: admittedRunId,
   })
-  return getRunDetail(input.organizationId, admittedRunId)
+  return getRunDetail(input.organizationId, admittedRunId, input.userId)
 }

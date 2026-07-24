@@ -1,6 +1,6 @@
 /** Provider-cost preparation, selection orchestration, and public summaries. */
 
-import type { FlowRunPlan } from '@talelabs/flows'
+import type { ExecutionPlan } from '@talelabs/flows'
 import type {
   CatalogProviderBinding,
   CatalogProviderId,
@@ -67,12 +67,12 @@ export function providerCostCandidateBindings(input: {
   availableProviders: ReadonlySet<CatalogProviderId>
   /** Runtime where the eventual provider request would execute. */
   executionRuntime: 'browser' | 'managed'
-  /** Provider-neutral immutable Flow plan. */
-  plan: FlowRunPlan
+  /** Provider-neutral immutable execution plan. */
+  plan: ExecutionPlan
 }): Map<string, CatalogProviderBinding[]> {
-  return new Map(input.plan.executionNodes.map(node => [
-    node.nodeId,
-    getCatalogProviderBindings(node.modelId, node.operationId).filter(binding =>
+  return new Map(input.plan.steps.map(step => [
+    step.stepId,
+    getCatalogProviderBindings(step.modelId, step.operationId).filter(binding =>
       binding.executionRuntimes.includes(input.executionRuntime)
       && input.availableProviders.has(binding.provider),
     ),
@@ -87,14 +87,14 @@ export function providerCostCandidateBindingsForMode(input: {
   executionMode: 'debug' | 'live'
   /** Runtime where a live provider request would execute. */
   executionRuntime: 'browser' | 'managed'
-  /** Provider-neutral immutable Flow plan. */
-  plan: FlowRunPlan
+  /** Provider-neutral immutable execution plan. */
+  plan: ExecutionPlan
 }): Map<string, CatalogProviderBinding[]> {
   if (input.executionMode === 'live')
     return providerCostCandidateBindings(input)
-  return new Map(input.plan.executionNodes.map((node) => {
-    const binding = getCatalogProviderBinding(node.modelId, node.operationId)
-    return [node.nodeId, binding ? [binding] : []]
+  return new Map(input.plan.steps.map((step) => {
+    const binding = getCatalogProviderBinding(step.modelId, step.operationId)
+    return [step.stepId, binding ? [binding] : []]
   }))
 }
 
@@ -102,39 +102,39 @@ export function providerCostCandidateBindingsForMode(input: {
 export function resolvePlanProviderCosts(input: {
   /** Locked or tenant-scoped Asset metadata used by formulas. */
   assetsById: ReadonlyMap<string, ProviderCostInputAsset>
-  /** Candidate bindings grouped by planned node ID. */
+  /** Candidate bindings grouped by planned step ID. */
   candidatesByNode: ReadonlyMap<string, readonly CatalogProviderBinding[]>
   /** Whether the selected funding source permits cost calculation. */
   costEstimationEnabled: boolean
   /** Whether complete cost estimates may override catalog priority. */
   costRoutingEnabled: boolean
-  /** Provider-neutral immutable Flow plan. */
-  plan: FlowRunPlan
+  /** Provider-neutral immutable execution plan. */
+  plan: ExecutionPlan
   /** Request-scoped mutable pricing metadata. */
   pricing: ProviderPricingSnapshot
 }): Map<string, ProviderCostNodeRouting> {
   if (!input.costEstimationEnabled) {
-    return new Map(input.plan.executionNodes.flatMap((node) => {
+    return new Map(input.plan.steps.flatMap((step) => {
       const route = resolveProviderPriorityRouting(
-        input.candidatesByNode.get(node.nodeId) ?? [],
+        input.candidatesByNode.get(step.stepId) ?? [],
       )
-      return route ? [[node.nodeId, route] as const] : []
+      return route ? [[step.stepId, route] as const] : []
     }))
   }
   const routes = new Map<string, ProviderCostNodeRouting>()
-  for (const node of plannedProviderCostNodes({
+  for (const step of plannedProviderCostNodes({
     assetsById: input.assetsById,
     plan: input.plan,
   })) {
     const route = resolveProviderCostNodeRouting({
       costEstimationEnabled: input.costEstimationEnabled,
       costRoutingEnabled: input.costRoutingEnabled,
-      eligibleBindings: input.candidatesByNode.get(node.nodeId) ?? [],
-      node,
+      eligibleBindings: input.candidatesByNode.get(step.stepId) ?? [],
+      node: step,
       pricing: input.pricing,
     })
     if (route)
-      routes.set(node.nodeId, route)
+      routes.set(step.stepId, route)
   }
   return routes
 }

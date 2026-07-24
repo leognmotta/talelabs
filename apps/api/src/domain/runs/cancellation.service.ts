@@ -15,18 +15,26 @@ import { getRunDetail } from './read.service.js'
 export async function cancelRun(input: {
   organizationId: string
   runId: string
+  userId: string
 }) {
   const now = new Date()
   const cancellation = await db.transaction().execute(async (trx) => {
     await lockBrowserRunFence(trx, input)
     const run = await trx
       .selectFrom('flowRuns')
-      .select(['executionRuntime', 'id', 'status', 'triggerRunId'])
+      .select([
+        'createdBy',
+        'executionRuntime',
+        'id',
+        'source',
+        'status',
+        'triggerRunId',
+      ])
       .where('organizationId', '=', input.organizationId)
       .where('id', '=', input.runId)
       .forUpdate()
       .executeTakeFirst()
-    if (!run)
+    if (!run || (run.source === 'create' && run.createdBy !== input.userId))
       throw new TenantResourceNotFoundError()
     if (!['pending', 'running'].includes(run.status)) {
       throw new HttpError(
@@ -132,5 +140,5 @@ export async function cancelRun(input: {
       })
     }
   }
-  return getRunDetail(input.organizationId, input.runId)
+  return getRunDetail(input.organizationId, input.runId, input.userId)
 }

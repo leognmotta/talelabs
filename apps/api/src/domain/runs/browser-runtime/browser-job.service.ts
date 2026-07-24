@@ -2,7 +2,7 @@
 
 import type { Database, Transaction } from '@talelabs/db'
 import type {
-  FlowRunPlan,
+  ExecutionPlan,
   FlowRunSnapshot,
   NormalizedGenerationMediaAsset,
   ReadableFlowRunPlanSnapshot,
@@ -45,7 +45,7 @@ async function selectClaimCandidates(input: {
   activeJobIds: string[]
   limit: number
   organizationId: string
-  plan: FlowRunPlan
+  plan: ExecutionPlan
   runId: string
   trx: Transaction<Database>
 }) {
@@ -74,19 +74,19 @@ async function selectClaimCandidates(input: {
       .execute(),
   ])
   const executionNodeIds = new Set<string>(
-    input.plan.executionNodes.map(node => node.nodeId),
+    input.plan.steps.map(step => step.stepId),
   )
   const activeJobIds = new Set(input.activeJobIds)
   const nodeStatus = new Map(nodes.map(node => [node.nodeId, node.status]))
   const predecessors = new Map<string, string[]>()
-  for (const edge of input.plan.capturedEdges) {
+  for (const edge of input.plan.dependencies) {
     if (
-      executionNodeIds.has(edge.sourceNodeId)
-      && executionNodeIds.has(edge.targetNodeId)
+      executionNodeIds.has(edge.sourceStepId)
+      && executionNodeIds.has(edge.targetStepId)
     ) {
-      predecessors.set(edge.targetNodeId, [
-        ...(predecessors.get(edge.targetNodeId) ?? []),
-        edge.sourceNodeId,
+      predecessors.set(edge.targetStepId, [
+        ...(predecessors.get(edge.targetStepId) ?? []),
+        edge.sourceStepId,
       ])
     }
   }
@@ -304,9 +304,9 @@ async function materializeClaimedJob(input: {
       id: claimed.id,
       itemKey: claimed.itemKey,
       mediaType: claimed.mediaType,
-      nodeId: claimed.nodeId,
       providerJobId: claimed.providerJobId,
       providerSubmittedAt: claimed.providerSubmittedAt?.toISOString() ?? null,
+      stepId: claimed.nodeId,
       submissionState: claimed.browserSubmissionState,
       status: 'running',
     },
@@ -490,7 +490,7 @@ export async function claimBrowserRunJobs(input: {
       activeJobIds: protectedJobIds,
       limit: Math.min(input.limit, BROWSER_RUN_MAX_CLAIM_COUNT),
       organizationId: input.organizationId,
-      plan: run.artifact.snapshot.plan,
+      plan: run.artifact.snapshot.executionPlan,
       runId: input.runId,
       trx,
     })

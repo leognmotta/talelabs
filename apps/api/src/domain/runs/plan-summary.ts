@@ -21,7 +21,9 @@ export function summaryFromPlan(plan: FlowRunPlan & { planHash: string }) {
 /** Extracts a safe plan summary from one persisted run snapshot. */
 export function extractPlanSummary(run: { graphSnapshot: JsonValue }) {
   const snapshot = run.graphSnapshot as any
-  const summary = snapshot?.plan?.summary ?? {}
+  const summary = snapshot?.executionPlan?.summary
+    ?? snapshot?.plan?.summary
+    ?? {}
   return {
     expectedOutputCount: Number(summary.expectedOutputCount ?? 0),
     plannedExecutableCount: Number(summary.plannedExecutableCount ?? 0),

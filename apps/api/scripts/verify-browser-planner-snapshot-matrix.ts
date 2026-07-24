@@ -12,8 +12,9 @@ import {
   BrowserRunRecoveryEntrySchema,
   CANONICAL_SERIALIZER_VERSION,
   createFlowRunSnapshotArtifact,
-  FLOW_RUN_PLANNER_VERSION,
+  executionPlanFromFlowRunPlan,
   FLOW_RUN_SNAPSHOT_VERSION,
+  flowRunSourceFromPlan,
   GENERATION_CATALOG_REVISION,
   hashFlowRunRequest,
   planFlowRun,
@@ -91,7 +92,6 @@ function executionContracts(
       modelContractVersion: node.modelContractVersion,
       modelId: node.modelId,
       modelRevision: node.modelRevision,
-      nodeId: node.nodeId,
       operationId: node.operationId,
       provider: binding.provider,
       providerBinding: binding,
@@ -100,6 +100,7 @@ function executionContracts(
       providerLifecycle: binding.lifecycle as GenerationProviderLifecycle,
       providerModel: binding.nativeModelId,
       providerRouteVersion: binding.routeVersion,
+      stepId: node.nodeId,
     }
   })
 }
@@ -248,7 +249,6 @@ function verifyBrowserRecoveryContracts(
         id: `job-${node.nodeId}-${requestIndex}`,
         itemKey: item.itemKey,
         mediaType: 'text',
-        nodeId: node.nodeId,
         outputCount: request.requestPayload.outputCount,
         provider: getCatalogProviderBinding(node.modelId, node.operationId)?.provider
           ?? 'openrouter',
@@ -256,6 +256,7 @@ function verifyBrowserRecoveryContracts(
         providerSubmittedAt: null,
         requestHash: request.jobHash,
         requestIndex: request.requestIndex,
+        stepId: node.nodeId,
         submissionState: 'not_started' as const,
         status: 'pending' as const,
       })),
@@ -264,14 +265,16 @@ function verifyBrowserRecoveryContracts(
   const manifest = BrowserRunManifestSchema.parse({
     cancellations: [],
     jobs,
-    manifestVersion: 2,
+    manifestVersion: 4,
     run: {
       executionMode: 'debug',
       executionRuntime: 'browser',
+      flowId: plan.flowId,
       flowRevision: plan.flowRevision,
       id: 'browser-run-matrix',
       planHash: plan.planHash,
       snapshotHash,
+      source: 'flow',
       status: 'pending',
     },
   })
@@ -409,17 +412,17 @@ for (const runtime of ['managed', 'browser'] as const) {
     else {
       planHashesByCommand.set(scenario.command.mode, plan.planHash)
     }
-    const snapshot: FlowRunSnapshot<FlowRunPlan> = {
+    const snapshot: FlowRunSnapshot = {
       adapterContractVersion: 'normalized-generation-v3',
       canonicalSerializerVersion: CANONICAL_SERIALIZER_VERSION,
       catalogRevision: GENERATION_CATALOG_REVISION,
       executionContracts: executionContracts(plan, runtime),
       executionMode: 'debug',
+      executionPlan: executionPlanFromFlowRunPlan(plan),
       executionRuntime: runtime,
       executorVersion: 'browser-matrix-v1',
-      plan,
-      plannerVersion: FLOW_RUN_PLANNER_VERSION,
       snapshotVersion: FLOW_RUN_SNAPSHOT_VERSION,
+      source: flowRunSourceFromPlan(plan),
     }
     const artifact = createFlowRunSnapshotArtifact(snapshot)
     const replay = createFlowRunSnapshotArtifact(snapshot)

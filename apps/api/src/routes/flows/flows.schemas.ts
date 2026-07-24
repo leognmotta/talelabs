@@ -38,8 +38,11 @@ export const FlowSchema = z.object({
   updatedAt: TimestampSchema,
 }).openapi('Flow')
 
+/** Cursor-list Flow row. */
+export const FlowListItemSchema = FlowSchema.openapi('FlowListItem')
+
 /** Cursor page of Flows. */
-export const FlowListResponseSchema = createListResponseSchema(FlowSchema)
+export const FlowListResponseSchema = createListResponseSchema(FlowListItemSchema)
   .openapi('FlowListResponse')
 
 /** Search and pagination for the Flow list. */

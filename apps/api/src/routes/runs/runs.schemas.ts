@@ -1,38 +1,34 @@
 /** Public OpenAPI schemas for Flow run commands, state, and outputs. */
 
 import { z } from '@hono/zod-openapi'
-import {
-  BROWSER_RUN_MAX_OUTPUT_BYTES,
-  BrowserRunManifestSchema,
-  BrowserRunClaimResponseSchema as RuntimeBrowserRunClaimResponseSchema,
-} from '@talelabs/flows'
+import { PromptTemplateSchema } from '@talelabs/flows'
 
 import {
   AssetVisibilitySchema,
   Cuid2Schema,
   CursorSchema,
   NullableCuid2Schema,
-  PaginationLimitSchema,
   TimestampSchema,
 } from '../../schemas/common.js'
+import {
+  FlowRunExecutionModeSchema,
+  FlowRunExecutionRuntimeSchema,
+  FlowRunFundingSourceSchema,
+  FlowRunModeSchema,
+  RunModeSchema,
+  RunSourceSchema,
+} from './run-admission.schemas.js'
 
-/** Supported Flow graph-selection modes. */
-export const FlowRunModeSchema = z.enum([
-  'node',
-  'downstream',
-  'upstream',
-  'selection',
-  'all',
-])
-
-/** Provider execution mode selected for a run. */
-export const FlowRunExecutionModeSchema = z.enum(['live', 'debug'])
-
-/** Environment responsible for provider lifecycle execution. */
-export const FlowRunExecutionRuntimeSchema = z.enum(['managed', 'browser'])
-
-/** Account source responsible for provider spend on an admitted run. */
-export const FlowRunFundingSourceSchema = z.enum(['credits', 'byok'])
+export {
+  CreateDirectRunRequestSchema,
+  EstimateDirectRunRequestSchema,
+  FlowRunExecutionModeSchema,
+  FlowRunExecutionRuntimeSchema,
+  FlowRunFundingSourceSchema,
+  FlowRunModeSchema,
+  RunModeSchema,
+  RunSourceSchema,
+} from './run-admission.schemas.js'
 
 /** Durable Flow run lifecycle statuses. */
 export const FlowRunStatusSchema = z.enum([
@@ -118,7 +114,8 @@ export const FlowRunPlanRequestSchema = z
   })
   .openapi('FlowRunPlanRequest')
 
-const RunCostEstimateSchema = z.discriminatedUnion('status', [
+/** Public advisory cost estimate shared by Flow and direct run admission. */
+export const RunCostEstimateSchema = z.discriminatedUnion('status', [
   z.object({
     amountUsd: z.string().regex(/^\d+(?:\.\d+)?$/),
     currency: z.literal('USD'),
@@ -166,6 +163,14 @@ export const CreateFlowRunRequestSchema = CreateRunRequestSchema.omit({
   flowId: true,
 }).openapi('CreateFlowRunRequest')
 
+/** Direct Create estimate response derived from a compiled execution plan. */
+export const DirectRunEstimateResponseSchema = z.object({
+  costEstimate: RunCostEstimateSchema,
+  executionPlanHash: z.string(),
+  expectedOutputCount: z.number().int().positive(),
+  plannedJobCount: z.number().int().positive(),
+}).openapi('DirectRunEstimateResponse')
+
 /** Bounded planning summary returned before run admission. */
 export const FlowRunPlanResponseSchema = z
   .object({
@@ -186,6 +191,8 @@ export const FlowRunPlanResponseSchema = z
 export const FlowRunAssetOutputSchema = z
   .object({
     assetId: Cuid2Schema,
+    durationSeconds: z.number().nonnegative().nullable(),
+    height: z.number().int().positive().nullable(),
     visibility: AssetVisibilitySchema,
     jobId: Cuid2Schema,
     mimeType: z.string(),
@@ -193,6 +200,7 @@ export const FlowRunAssetOutputSchema = z
     thumbnailUrl: z.url().nullable(),
     type: z.enum(['image', 'video', 'audio', 'document']),
     url: z.url().nullable(),
+    width: z.number().int().positive().nullable(),
   })
   .openapi('FlowRunAssetOutput')
 
@@ -209,7 +217,7 @@ export const FlowRunTextOutputSchema = z
 export const FlowRunJobSchema = z
   .object({
     id: Cuid2Schema,
-    nodeId: Cuid2Schema,
+    nodeId: z.string().min(1).max(200),
     itemKey: z.string(),
     requestIndex: z.number().int().nonnegative(),
     mediaType: GenerationJobMediaTypeSchema,
@@ -226,7 +234,7 @@ export const FlowRunJobSchema = z
 /** Materialized runtime item belonging to one Flow node. */
 export const FlowRunNodeItemSchema = z
   .object({
-    nodeId: Cuid2Schema,
+    nodeId: z.string().min(1).max(200),
     itemKey: z.string(),
     sortOrder: z.number().int().nonnegative(),
     status: FlowRunNodeStatusSchema,
@@ -238,7 +246,7 @@ export const FlowRunNodeItemSchema = z
 /** Durable execution state for one Flow node. */
 export const FlowRunNodeStateSchema = z
   .object({
-    nodeId: Cuid2Schema,
+    nodeId: z.string().min(1).max(200),
     status: FlowRunNodeStatusSchema,
     items: z.array(FlowRunNodeItemSchema),
     jobs: z.array(FlowRunJobSchema),
@@ -258,8 +266,10 @@ export const FlowRunSchema = z
       .nullable(),
     executionMode: FlowRunExecutionModeSchema,
     executionRuntime: FlowRunExecutionRuntimeSchema,
+    createSessionId: NullableCuid2Schema,
     flowId: NullableCuid2Schema,
-    mode: FlowRunModeSchema,
+    mode: RunModeSchema,
+    source: RunSourceSchema,
     targetNodeId: NullableCuid2Schema,
     status: FlowRunStatusSchema,
     planHash: z.string(),
@@ -282,6 +292,8 @@ export const FlowRunSchema = z
 /** Short-lived Trigger.dev realtime token scoped to one run. */
 export const RunRealtimeTokenSchema = z
   .object({
+    flowId: NullableCuid2Schema,
+    source: RunSourceSchema,
     triggerRunId: z.string(),
     publicAccessToken: z.string(),
     expiresAt: TimestampSchema,
@@ -300,19 +312,69 @@ export const RetryRunRequestSchema = z
 /** Compact Flow run representation used by history lists. */
 export const FlowRunSummarySchema = FlowRunSchema.omit({ nodes: true })
   .extend({
+    assetOutputs: z.array(FlowRunAssetOutputSchema),
+    assetOutputsTruncated: z.boolean(),
     nodeCounts: z.record(z.string(), z.number().int().nonnegative()),
+    requestSummary: z
+      .object({
+        inline: z.record(z.string(), z.string().max(16_000)),
+        inputs: z.array(z.object({
+          assetIds: z.array(Cuid2Schema).max(32),
+          mediaTypes: z.array(z.enum(['audio', 'image', 'video'])).max(32),
+          slotId: z.string().min(1).max(100),
+        })).max(16),
+        mediaType: GenerationJobMediaTypeSchema,
+        modelId: z.string().min(1).max(200),
+        modelContractVersion: z.string().min(1).max(100),
+        nodeType: z.string().min(1).max(100),
+        operationId: z.string().min(1).max(100),
+        outputCount: z.number().int().positive(),
+        promptTemplates: z.record(z.string(), PromptTemplateSchema),
+        settings: z.record(
+          z.string(),
+          z.union([z.boolean(), z.number().finite(), z.string()]),
+        ),
+      })
+      .nullable(),
   })
   .openapi('FlowRunSummary')
 
 /** Cursor-paginated filters for Flow run history. */
 export const RunListQuerySchema = z.object({
-  browserWork: z.enum(['pending']).optional(),
+  createSessionId: Cuid2Schema.optional(),
   cursor: CursorSchema.optional(),
-  executionRuntime: FlowRunExecutionRuntimeSchema.optional(),
+  limit: z.coerce.number().int().min(1).max(20).default(20),
+  source: RunSourceSchema.default('flow'),
   flowId: Cuid2Schema.optional(),
-  limit: PaginationLimitSchema,
-  scope: z.enum(['all', 'mine']).default('all'),
-  status: FlowRunStatusSchema.optional(),
+}).superRefine((value, context) => {
+  if (value.source === 'flow' && !value.flowId) {
+    context.addIssue({
+      code: 'custom',
+      message: 'flowId is required for Flow history.',
+      path: ['flowId'],
+    })
+  }
+  if (value.source === 'create' && value.flowId) {
+    context.addIssue({
+      code: 'custom',
+      message: 'flowId is not accepted for Create history.',
+      path: ['flowId'],
+    })
+  }
+  if (value.source === 'create' && !value.createSessionId) {
+    context.addIssue({
+      code: 'custom',
+      message: 'createSessionId is required for Create history.',
+      path: ['createSessionId'],
+    })
+  }
+  if (value.source === 'flow' && value.createSessionId) {
+    context.addIssue({
+      code: 'custom',
+      message: 'createSessionId is not accepted for Flow history.',
+      path: ['createSessionId'],
+    })
+  }
 })
 
 /** Cursor-paginated Flow run history response. */
@@ -323,198 +385,24 @@ export const RunListResponseSchema = z
   })
   .openapi('RunListResponse')
 
-/** Browser executor identity scoped to one tab and lease. */
-export const BrowserExecutorSchema = z.object({
-  executorId: z.string().min(16).max(200),
+/** Filters for bounded active-run discovery without history presentation. */
+export const ActiveRunListQuerySchema = z.object({
+  executionRuntime: FlowRunExecutionRuntimeSchema,
+  scope: z.enum(['all', 'mine']).default('all'),
+  source: RunSourceSchema.optional(),
 })
 
-/** Current PostgreSQL lease generation required by every fenced operation. */
-export const BrowserLeaseActorSchema = BrowserExecutorSchema.extend({
-  fenceToken: z.number().int().positive(),
+/** Lean active-run identity used by realtime and browser recovery. */
+export const ActiveRunListItemSchema = z.object({
+  createSessionId: NullableCuid2Schema,
+  executionRuntime: FlowRunExecutionRuntimeSchema,
+  flowId: NullableCuid2Schema,
+  id: Cuid2Schema,
+  source: RunSourceSchema,
+  status: FlowRunStatusSchema,
 })
 
-/** URL-query form of the current lease generation. */
-export const BrowserLeaseQuerySchema = BrowserExecutorSchema.extend({
-  fenceToken: z.coerce.number().int().positive(),
-})
-
-/** Browser lease response used for acquisition and heartbeat renewal. */
-export const BrowserRunLeaseSchema = z.object({
-  executorId: z.string(),
-  fenceToken: z.number().int().positive(),
-  leaseExpiresAt: TimestampSchema,
-})
-
-/** Bounded claim request for dependency-ready browser jobs. */
-export const BrowserRunClaimRequestSchema = BrowserLeaseActorSchema.extend({
-  activeJobIds: z.array(Cuid2Schema).max(4).default([]),
-  limit: z.number().int().min(1).max(4).default(2),
-})
-
-/** Runtime-validated private claim response; never contains credentials. */
-export const BrowserRunClaimResponseSchema
-  = RuntimeBrowserRunClaimResponseSchema
-
-/** Strict authoritative browser recovery manifest response. */
-export const BrowserRunManifestResponseSchema = BrowserRunManifestSchema
-
-/** Opens the one-shot provider-submission boundary for a fenced browser job. */
-export const BrowserBeginSubmissionRequestSchema = BrowserLeaseActorSchema
-
-/** One-shot submission boundary timestamps bounded by the current lease. */
-export const BrowserBeginSubmissionResponseSchema = z.object({
-  submissionExpiresAt: TimestampSchema,
-  submittedAt: TimestampSchema,
-})
-
-/** Persists asynchronous identity and unverified browser-reported facts. */
-export const BrowserJobCheckpointRequestSchema = BrowserLeaseActorSchema.extend(
-  {
-    facts: z
-      .object({
-        providerCostUsd: z.number().nonnegative().optional(),
-        providerGenerationId: z.string().min(1).optional(),
-      })
-      .strict()
-      .optional(),
-    providerJobId: z.string().min(1).optional(),
-  },
-)
-
-/** Acknowledges the durable provider-processing checkpoint. */
-export const BrowserJobCheckpointResponseSchema = z.object({
-  checkpointedAt: TimestampSchema,
-})
-
-/** Exact object-upload grant request for one planned media output. */
-export const BrowserOutputGrantRequestSchema = BrowserLeaseActorSchema.extend({
-  contentLength: z.number().int().positive().max(BROWSER_RUN_MAX_OUTPUT_BYTES),
-  contentMd5: z
-    .base64()
-    .length(24)
-    .refine(value => value.endsWith('=='))
-    .optional(),
-  mimeType: z.string().min(1).max(255),
-  outputIndex: z.number().int().nonnegative(),
-})
-
-/** Short-lived browser upload target with no durable recovery fields. */
-export const BrowserOutputGrantSchema = z.object({
-  alreadyUploaded: z.boolean(),
-  expiresAt: NullableTimestampSchema,
-  headers: z.record(z.string(), z.string()),
-  uploadUrl: z.url().nullable(),
-})
-
-/** Canonical media finalization request after direct upload verification. */
-export const BrowserFinalizeMediaRequestSchema = BrowserLeaseActorSchema.extend(
-  {
-    metadata: z
-      .record(
-        z.string().min(1).max(100),
-        z.union([z.boolean(), z.number(), z.string().max(2_000)]),
-      )
-      .refine(value => Object.keys(value).length <= 64)
-      .optional(),
-    mimeType: z.string().min(1).max(255),
-    outputIndex: z.number().int().nonnegative(),
-  },
-)
-
-/** Canonical text finalization request for one planned output. */
-export const BrowserFinalizeTextRequestSchema = BrowserLeaseActorSchema.extend({
-  outputIndex: z.number().int().nonnegative(),
-  text: z.string().max(1_000_000),
-})
-
-/** Browser job completion request carrying only safe accounting facts. */
-export const BrowserCompleteJobRequestSchema = BrowserLeaseActorSchema.extend({
-  facts: z
-    .object({
-      providerCostUsd: z.number().nonnegative().optional(),
-      providerGenerationId: z.string().min(1).optional(),
-    })
-    .strict()
-    .optional(),
-})
-
-/** Allowlisted browser failure without raw provider text or credentials. */
-export const BrowserFailJobRequestSchema = BrowserLeaseActorSchema.extend({
-  code: z.enum([
-    'invalid_job_request',
-    'invalid_snapshot',
-    'generation_failed',
-    'provider_authentication',
-    'provider_insufficient_balance',
-    'provider_rate_limited',
-    'provider_rejected',
-    'provider_response_invalid',
-    'provider_submission_uncertain',
-    'provider_timeout',
-    'provider_unavailable',
-    'run_execution_failed',
-  ]),
-  retryAfterMs: z.number().int().positive().max(300_000).optional(),
-  safeToResubmit: z.boolean().optional(),
-})
-
-/** Parameters for a job nested under its owning run. */
-export const BrowserRunJobParamsSchema = RunParamsSchema.extend({
-  jobId: Cuid2Schema,
-})
-
-/** Idempotent output persistence and canonical processing result. */
-export const BrowserFinalizeOutputResponseSchema = z.object({
-  state: z.enum(['canceled', 'processing', 'succeeded']),
-})
-
-/** Browser job completion or durable Asset-processing result. */
-export const BrowserCompleteJobResponseSchema = z.object({
-  state: z.enum(['canceled', 'processing', 'succeeded']),
-})
-
-/** Retry, cancellation, supersession, or terminal failure result for a browser job. */
-export const BrowserFailJobResponseSchema = z.union([
-  z.object({ failed: z.literal(true) }),
-  z.object({ state: z.literal('canceled') }),
-  z.object({ nextEligibleAt: TimestampSchema, state: z.literal('retrying') }),
-  z.object({ state: z.literal('superseded') }),
-])
-
-/** Safe provider-cancellation outcome reported by a browser executor. */
-export const BrowserCancellationRequestSchema = BrowserLeaseActorSchema.extend({
-  final: z.boolean(),
-  result: z.enum(['accepted', 'rejected', 'unavailable', 'unsupported']),
-})
-
-/** Authoritative cancellation reconciliation state. */
-export const BrowserCancellationResponseSchema = z.object({
-  cancellationReconciled: z.boolean(),
-  state: z.literal('canceled'),
-})
-
-/** Stable non-secret browser executor conditions presented to the run owner. */
-export const BrowserExecutorCodeSchema = z.enum([
-  'browser_api_unavailable',
-  'browser_authorization_failed',
-  'browser_executor_failed',
-  'browser_journal_unavailable',
-  'browser_locks_unavailable',
-  'browser_manifest_invalid',
-  'browser_run_not_found',
-  'credential_required',
-  'credential_store_unavailable',
-  'provider_cancellation_pending',
-])
-
-/** Authoritative browser executor state update without raw error text. */
-export const BrowserExecutorStatusRequestSchema = z.object({
-  code: BrowserExecutorCodeSchema.nullable(),
-  status: z.enum(['blocked', 'canceling', 'error', 'ready', 'retrying']),
-})
-
-/** Persisted safe browser executor status returned to the owning user. */
-export const BrowserExecutorStatusResponseSchema
-  = BrowserExecutorStatusRequestSchema.extend({
-    updatedAt: TimestampSchema,
-  })
+/** Bounded active-run discovery response with no snapshots or output media. */
+export const ActiveRunListResponseSchema = z
+  .object({ data: z.array(ActiveRunListItemSchema).max(200) })
+  .openapi('ActiveRunListResponse')

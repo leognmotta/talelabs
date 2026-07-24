@@ -52,7 +52,7 @@ export const AssetSchema = z.object({
 export const GenerationJobSourceSchema = z.object({
   sortOrder: z.number().int().nonnegative(),
   sourceType: z.enum(['text', 'element', 'asset', 'nodeOutput']),
-  nodeId: Cuid2Schema,
+  nodeId: z.string().min(1),
   elementId: NullableCuid2Schema,
   assetId: NullableCuid2Schema,
   resolvedText: z.string().nullable(),

@@ -1,9 +1,10 @@
 /** Bounded relational row cloning for immutable Flow run retries. */
 
-import type { Database, Transaction } from '@talelabs/db'
+import type { Database, JsonValue, Transaction } from '@talelabs/db'
 
 import { createId } from '@paralleldrive/cuid2'
 
+import { jsonb } from '../domain/runs/jsonb.js'
 import { chunkRunRows } from './run-persistence.data.js'
 
 /** Clones one immutable run's relational execution rows in bounded bulk writes. */
@@ -77,10 +78,10 @@ export async function cloneRunExecutionRowsForRetry(input: {
   }
 
   for (const values of chunkRunRows(items.map(item => ({
-    dimensions: item.dimensions,
+    dimensions: jsonb(item.dimensions as JsonValue),
     flowRunId: input.retryRunId,
     itemKey: item.itemKey,
-    lineage: item.lineage,
+    lineage: jsonb(item.lineage as JsonValue),
     nodeId: item.nodeId,
     organizationId: input.organizationId,
     sortOrder: item.sortOrder,

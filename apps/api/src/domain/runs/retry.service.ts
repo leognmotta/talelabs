@@ -1,4 +1,4 @@
-/** Immutable Flow run retry admission and execution-row cloning. */
+/** Immutable durable run retry admission and execution-row cloning. */
 
 import type { JsonValue } from '@talelabs/db'
 
@@ -7,17 +7,21 @@ import { db } from '@talelabs/db'
 import {
   BROWSER_EXECUTION_ENABLED,
   createFlowRunSnapshotArtifact,
-  FLOW_RUN_LIMITS,
   FlowRunSnapshotReadError,
   hashFlowRunRequest,
   readFlowRunSnapshotArtifact,
 } from '@talelabs/flows'
 import { FLOW_RUN_EXECUTOR_CONTRACT_VERSION } from '@talelabs/trigger'
 
+import {
+  lockOwnedCreateSessionRow,
+  touchCreateSessionRow,
+} from '../../data/create-sessions.data.js'
 import { acquireFlowRunAdmissionLocks } from '../../data/flow-run-admission.data.js'
 import { localUserIdOrNull } from '../../data/flow-run-planning.data.js'
 import { cloneRunExecutionRowsForRetry } from '../../data/run-retry.data.js'
 import { HttpError, TenantResourceNotFoundError } from '../../middleware/error.js'
+import { assertRunAdmissionCapacity } from './admission-policy.js'
 import { dispatchFlowRun } from './dispatch.service.js'
 import {
   assertFlowRunExecutionModeAuthorized,
@@ -60,7 +64,7 @@ export async function retryRun(input: {
         'Idempotency-Key was already used for a different run request.',
       )
     }
-    return getRunDetail(input.organizationId, existing.id)
+    return getRunDetail(input.organizationId, existing.id, input.userId)
   }
 
   const retryRunId = createId()
@@ -96,8 +100,29 @@ export async function retryRun(input: {
       .where('id', '=', input.runId)
       .forUpdate()
       .executeTakeFirst()
-    if (!original)
+    if (
+      !original
+      || (original.source === 'create' && original.createdBy !== input.userId)
+    ) {
       throw new TenantResourceNotFoundError()
+    }
+    if (original.source === 'create') {
+      if (!original.createSessionId) {
+        throw new HttpError(
+          409,
+          'retry_not_available',
+          'This Create run is not associated with a session.',
+        )
+      }
+      const createSession = await lockOwnedCreateSessionRow({
+        id: original.createSessionId,
+        organizationId: input.organizationId,
+        trx,
+        userId: input.userId,
+      })
+      if (!createSession)
+        throw new TenantResourceNotFoundError()
+    }
     const executionMode = input.executionMode
       ?? executionModeFromSnapshot(original.graphSnapshot)
     const executionRuntime = input.executionRuntime ?? original.executionRuntime
@@ -187,18 +212,7 @@ export async function retryRun(input: {
       )
     }
 
-    const activeRunCount = await trx.selectFrom('flowRuns')
-      .select(eb => eb.fn.countAll<number>().as('count'))
-      .where('organizationId', '=', input.organizationId)
-      .where('status', 'in', ['pending', 'running'])
-      .executeTakeFirst()
-    if (Number(activeRunCount?.count ?? 0) >= FLOW_RUN_LIMITS.organizationActiveRuns) {
-      throw new HttpError(
-        429,
-        'organization_run_capacity_exceeded',
-        'This organization has too many active Flow runs.',
-      )
-    }
+    await assertRunAdmissionCapacity({ organizationId: input.organizationId, trx })
 
     const inputAssetIds = await trx.selectFrom('generationJobs as job')
       .innerJoin('generationJobInputs as input', join => join
@@ -244,6 +258,7 @@ export async function retryRun(input: {
       browserExecutorStatus: executionRuntime === 'browser' ? 'ready' : null,
       browserExecutorUpdatedAt: executionRuntime === 'browser' ? new Date() : null,
       createdBy,
+      createSessionId: original.createSessionId,
       executorVersion: FLOW_RUN_EXECUTOR_CONTRACT_VERSION,
       flowId: original.flowId,
       executionRuntime,
@@ -256,6 +271,7 @@ export async function retryRun(input: {
       retryOfRunId: original.id,
       snapshotHash: retrySnapshot.hash,
       snapshotVersion: retrySnapshot.snapshot.snapshotVersion,
+      source: original.source,
       status: 'pending',
       targetNodeId: original.targetNodeId,
     }).execute()
@@ -266,6 +282,13 @@ export async function retryRun(input: {
       sourceRunId: input.runId,
       trx,
     })
+    if (original.createSessionId) {
+      await touchCreateSessionRow(
+        trx,
+        input.organizationId,
+        original.createSessionId,
+      )
+    }
   })
 
   const admittedRuntime = await db.selectFrom('flowRuns')
@@ -281,5 +304,5 @@ export async function retryRun(input: {
       runId: retryRunId,
     })
   }
-  return getRunDetail(input.organizationId, admittedRunId)
+  return getRunDetail(input.organizationId, admittedRunId, input.userId)
 }

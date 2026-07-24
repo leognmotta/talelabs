@@ -10,10 +10,17 @@ import {
   SELECTABLE_FLOW_NODE_TYPES,
   valueTypeToAssetTypes,
 } from '@talelabs/flows'
-import { SELECTABLE_CATALOG_MODELS } from '@talelabs/models-catalog'
+import {
+  SELECTABLE_CATALOG_MODELS,
+  selectProviderBinding,
+} from '@talelabs/models-catalog'
 
 import { commonErrorResponses } from '../product.responses.js'
-import { GenerationConfigResponseSchema } from './config.schemas.js'
+import {
+  BrowserGenerationAvailabilityRequestSchema,
+  BrowserGenerationAvailabilityResponseSchema,
+  GenerationConfigResponseSchema,
+} from './config.schemas.js'
 import { serializeGenerationCondition } from './generation-config-serialization.js'
 
 const getGenerationConfigRoute = createRoute({
@@ -25,6 +32,33 @@ const getGenerationConfigRoute = createRoute({
       description: 'Product-controlled generation configuration',
       content: {
         'application/json': { schema: GenerationConfigResponseSchema },
+      },
+    },
+    ...commonErrorResponses,
+  },
+})
+
+const postBrowserGenerationAvailabilityRoute = createRoute({
+  method: 'post',
+  path: '/config/generation/browser-availability',
+  tags: ['Config'],
+  request: {
+    body: {
+      content: {
+        'application/json': {
+          schema: BrowserGenerationAvailabilityRequestSchema,
+        },
+      },
+      required: true,
+    },
+  },
+  responses: {
+    200: {
+      description: 'Browser execution readiness without private binding facts',
+      content: {
+        'application/json': {
+          schema: BrowserGenerationAvailabilityResponseSchema,
+        },
       },
     },
     ...commonErrorResponses,
@@ -254,5 +288,24 @@ export function registerConfigRoutes(app: OpenAPIHono<ApiEnv>) {
     c.header('Cache-Control', 'private, max-age=300')
     c.header('ETag', `"generation-config-${GENERATION_CATALOG_REVISION}"`)
     return c.json(generationConfig, 200)
+  })
+  app.openapi(postBrowserGenerationAvailabilityRoute, (c) => {
+    const { modelId, operationId, providers } = c.req.valid('json')
+    const selectable = generationConfig.models.some(model =>
+      model.id === modelId
+      && model.capabilities.operations.some(operation => operation.id === operationId),
+    )
+    const binding = selectable
+      ? selectProviderBinding({
+          availableProviders: new Set(providers),
+          executionRuntime: 'browser',
+          modelId,
+          operationId,
+        })
+      : undefined
+    return c.json({
+      catalogRevision: GENERATION_CATALOG_REVISION,
+      executable: Boolean(binding),
+    }, 200)
   })
 }

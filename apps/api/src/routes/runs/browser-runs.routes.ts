@@ -47,8 +47,8 @@ import {
   BrowserRunJobParamsSchema,
   BrowserRunLeaseSchema,
   BrowserRunManifestResponseSchema,
-  RunParamsSchema,
-} from './runs.schemas.js'
+} from './browser-run.schemas.js'
+import { RunParamsSchema } from './runs.schemas.js'
 
 const acquireBrowserLeaseRoute = createRoute({
   method: 'put',

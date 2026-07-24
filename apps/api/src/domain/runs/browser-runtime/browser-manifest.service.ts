@@ -54,7 +54,7 @@ export async function getBrowserRunManifest(input: {
         return []
       }
       const executionContract = artifact.snapshot.executionContracts.find(
-        contract => contract.nodeId === job.nodeId,
+        contract => contract.stepId === job.nodeId,
       )
       if (!executionContract)
         throw new Error('browser_cancellation_contract_missing')
@@ -73,7 +73,7 @@ export async function getBrowserRunManifest(input: {
         requestPayload: job.requestPayload,
       })
       const executionContract = artifact.snapshot.executionContracts.find(
-        contract => contract.nodeId === job.nodeId,
+        contract => contract.stepId === job.nodeId,
       )
       if (!executionContract)
         throw new Error('browser_job_contract_missing')
@@ -83,25 +83,31 @@ export async function getBrowserRunManifest(input: {
         id: job.id,
         itemKey: job.itemKey,
         mediaType: job.mediaType,
-        nodeId: job.nodeId,
         outputCount: request.outputCount,
         provider: executionContract.providerBinding.provider,
         providerJobId: job.providerJobId,
         providerSubmittedAt: job.providerSubmittedAt?.toISOString() ?? null,
         requestHash: job.requestHash,
         requestIndex: Number(job.requestIndex),
+        stepId: job.nodeId,
         submissionState: job.browserSubmissionState,
         status: job.status,
       }
     }),
-    manifestVersion: 2,
+    manifestVersion: 4,
     run: {
       executionMode: readFlowRunExecutionMode(artifact.snapshot.executionMode),
       executionRuntime: 'browser',
-      flowRevision: artifact.snapshot.plan.flowRevision,
+      flowId: run.flowId,
+      flowRevision: artifact.snapshot.source.kind === 'flow'
+        ? artifact.snapshot.source.flowRevision
+        : null,
       id: run.id,
-      planHash: artifact.snapshot.plan.planHash,
+      planHash: artifact.snapshot.source.kind === 'flow'
+        ? artifact.snapshot.source.flowPlanHash
+        : artifact.snapshot.executionPlan.executionPlanHash,
       snapshotHash: run.snapshotHash,
+      source: artifact.snapshot.source.kind,
       status: run.status,
     },
   })

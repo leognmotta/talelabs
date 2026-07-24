@@ -16,6 +16,7 @@ import { db } from '@talelabs/db'
 import {
   compareFlowEdgesByPriority,
   createFlowRunGraphSelectionIndex,
+  executionPlanFromFlowRunPlan,
   hashCanonicalValue,
   planFlowRun,
   selectFlowRunGraph,
@@ -368,7 +369,10 @@ export async function preflightLoadedFlowRuns(input: {
     }
   })
   const availableProviders = availableProvidersForRun(executionRuntime)
-  const candidatesByPlan = plans.map(plan => plan
+  const executionPlans = plans.map(plan => plan
+    ? executionPlanFromFlowRunPlan(plan)
+    : null)
+  const candidatesByPlan = executionPlans.map(plan => plan
     ? providerCostCandidateBindingsForMode({
         availableProviders,
         executionMode,
@@ -405,13 +409,13 @@ export async function preflightLoadedFlowRuns(input: {
       candidatesByNode: candidatesByPlan[index]!,
       costEstimationEnabled: true,
       costRoutingEnabled: executionMode === 'live',
-      plan,
+      plan: executionPlans[index]!,
       pricing,
     })
     return {
       ...summaryFromPlan(plan),
       costEstimate: publicRunCostEstimate({
-        plannedJobCount: plan.summary.plannedJobCount,
+        plannedJobCount: executionPlans[index]!.summary.plannedJobCount,
         routes,
       }),
     }
