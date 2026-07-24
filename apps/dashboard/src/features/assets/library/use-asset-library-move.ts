@@ -25,13 +25,23 @@ export function useAssetLibraryMove({
   libraryRef,
   moveAssets,
   moveFolder,
+  projectId,
 }: {
   assets: Asset[]
   clearSelection: () => void
   folders: Folder[]
   libraryRef: RefObject<HTMLElement | null>
-  moveAssets: (assets: Asset[], destinationFolderId: null | string) => Promise<unknown>
-  moveFolder: (folder: Folder, destinationFolderId: null | string) => Promise<unknown>
+  moveAssets: (
+    assets: Asset[],
+    destinationFolderId: null | string,
+    destinationProjectId?: null | string,
+  ) => Promise<unknown>
+  moveFolder: (
+    folder: Folder,
+    destinationFolderId: null | string,
+    destinationProjectId?: null | string,
+  ) => Promise<unknown>
+  projectId?: null | string
 }) {
   const { t } = useTranslation()
   const assetMap = useMemo(
@@ -59,12 +69,19 @@ export function useAssetLibraryMove({
   async function moveLibraryItems(
     source: LibraryDragData,
     destinationFolderId: null | string,
+    destinationProjectId: null | string | undefined = projectId,
+    explicitDestinationLabel?: string,
   ) {
-    const validation = validateLibraryMove(
-      source,
-      destinationFolderId,
-      folders,
-    )
+    const sourceProjectIds = isAssetDragData(source)
+      ? source.assetIds.map(id => assetMap.get(id)?.projectId)
+      : [folderMap.get(source.folderId)?.projectId]
+    const changesProject = destinationProjectId !== undefined
+      && sourceProjectIds.some(
+        sourceProjectId => sourceProjectId !== destinationProjectId,
+      )
+    const validation = changesProject
+      ? { allowed: true as const }
+      : validateLibraryMove(source, destinationFolderId, folders)
 
     if (!validation.allowed) {
       const message = getRejectionMessage(validation.reason)
@@ -73,10 +90,13 @@ export function useAssetLibraryMove({
       return false
     }
 
-    const destination
-      = destinationFolderId === null
-        ? t('assets.rootFolder')
-        : (folderMap.get(destinationFolderId)?.name ?? t('assets.rootFolder'))
+    const destination = explicitDestinationLabel
+      ?? (destinationFolderId === null
+        ? t(projectId
+            ? 'projects.projectRoot'
+            : 'assets.rootFolder')
+        : (folderMap.get(destinationFolderId)?.name
+          ?? t('assets.rootFolder')))
 
     try {
       let message: string
@@ -89,7 +109,11 @@ export function useAssetLibraryMove({
         if (movingAssets.length !== source.assetIds.length)
           throw new Error('Asset selection is stale')
 
-        const move = moveAssets(movingAssets, destinationFolderId)
+        const move = moveAssets(
+          movingAssets,
+          destinationFolderId,
+          destinationProjectId,
+        )
         clearSelection()
         await move
         message = t('assets.filesMoved', {
@@ -102,7 +126,11 @@ export function useAssetLibraryMove({
         if (!folder)
           throw new Error('Folder selection is stale')
 
-        const move = moveFolder(folder, destinationFolderId)
+        const move = moveFolder(
+          folder,
+          destinationFolderId,
+          destinationProjectId,
+        )
         clearSelection()
         await move
         message = t('assets.folderMoved', { destination, name: folder.name })

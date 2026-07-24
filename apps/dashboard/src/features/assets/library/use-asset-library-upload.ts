@@ -1,6 +1,6 @@
 /** Asset library entry point into the dashboard-wide background upload queue. */
 
-import type { Folder } from '@talelabs/sdk'
+import type { AssetUploadFolderSnapshot } from '../../uploads/upload.types'
 import type { AssetUploadSelection } from '../upload/asset-upload-selection-contract'
 
 import { useRef } from 'react'
@@ -19,11 +19,14 @@ export function useAssetLibraryUpload({
   folderId,
   folders,
   onBatchEnqueued,
+  projectId,
 }: {
   folderId: null | string
-  folders: Folder[]
+  folders: readonly AssetUploadFolderSnapshot[]
   /** Reports each enqueued batch so callers can track their own uploads. */
   onBatchEnqueued?: (batchId: string) => void
+  /** Project captured by every folder and Asset registration in the batch. */
+  projectId?: null | string
 }) {
   const { t } = useTranslation()
   const organizationId = useActiveOrganizationId()
@@ -55,6 +58,7 @@ export function useAssetLibraryUpload({
       folders,
       organizationId,
       parentFolderId: folderId,
+      projectId,
     })
     if (!batchId) {
       toast.error(t('errors.organization_context_changed'))

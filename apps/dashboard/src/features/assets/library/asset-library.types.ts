@@ -9,12 +9,22 @@ export type AssetLibraryView = 'grid' | 'list'
 export type AssetSort = 'createdAt' | 'name' | 'sizeBytes'
 /** Presentation mode controlling which library controls and selection behavior appear. */
 export type AssetLibraryPresentation = 'dialog' | 'page'
+/** Aggregate sentinel kept distinct from the physical root folder. */
+export const ASSET_LIBRARY_ALL_FOLDERS = 'all'
+
+/** One source entity selected for generated-Asset filtering. */
+export type AssetGeneratedByFilter
+  = | { id: string, kind: 'createSession' }
+    | { id: string, kind: 'flow' }
 
 /** Server-backed filters that identify one Asset-list cache entry. */
 export interface AssetLibraryFilters {
   archived: boolean
   favorite: boolean
+  generatedBy?: AssetGeneratedByFilter
   order: 'asc' | 'desc'
+  /** Undefined includes every location; null selects Private. */
+  projectId?: null | string
   search: string
   sort: AssetSort
   source?: AssetSource
@@ -27,6 +37,7 @@ export interface AssetLibraryProps {
   allowedTypes?: AssetType[]
   className?: string
   filters?: AssetLibraryFilters
+  /** Aggregate sentinel, physical root null, or one physical folder id. */
   folderId?: null | string
   initialFolderId?: null | string
   /** Localized reason an Asset cannot be selected right now, or null. */
@@ -40,7 +51,11 @@ export interface AssetLibraryProps {
   onUploadBatch?: (batchId: string) => void
   onViewChange?: (view: AssetLibraryView) => void
   presentation?: AssetLibraryPresentation
+  /** Fixed Project scope, with null representing Private and undefined global. */
+  projectId?: null | string
   selectedAssetIds?: string[]
+  /** Project destination for new uploads when it differs from the browse scope. */
+  uploadProjectId?: null | string
   view?: AssetLibraryView
 }
 

@@ -12,6 +12,9 @@ import {
   getAssetLibraryViewPreference,
   storeAssetLibraryViewPreference,
 } from './asset-library-view-preference'
+import {
+  ASSET_LIBRARY_ALL_FOLDERS,
+} from './asset-library.types'
 
 /** Synchronizes folder, filters, search, sort, and view with shareable URL state. */
 export function useAssetLibraryUrlState() {
@@ -28,7 +31,11 @@ export function useAssetLibraryUrlState() {
   const filters: AssetLibraryFilters = {
     archived: state.archived,
     favorite: state.favorite,
+    ...(state.generatedBy ? { generatedBy: state.generatedBy } : {}),
     order: state.order,
+    ...(state.projectId
+      ? { projectId: state.projectId === 'private' ? null : state.projectId }
+      : {}),
     search: state.search,
     sort: state.sort,
     ...(state.source ? { source: state.source } : {}),
@@ -37,20 +44,33 @@ export function useAssetLibraryUrlState() {
   }
 
   const setFilters = useCallback((nextFilters: AssetLibraryFilters) => {
+    const nextProjectId = nextFilters.projectId === null
+      ? 'private'
+      : nextFilters.projectId ?? null
+    const locationChanged = nextProjectId !== state.projectId
     void setState({
       archived: nextFilters.archived,
       favorite: nextFilters.favorite,
+      ...(locationChanged
+        ? { folderId: nextProjectId === null ? null : 'root' }
+        : {}),
+      generatedBy: nextFilters.generatedBy ?? null,
       order: nextFilters.order,
+      projectId: nextProjectId,
       search: nextFilters.search || null,
       sort: nextFilters.sort,
       source: nextFilters.source ?? null,
       tagId: nextFilters.tagId ?? null,
       type: nextFilters.type ?? null,
     })
-  }, [setState])
+  }, [setState, state.projectId])
 
   const setFolderId = useCallback((folderId: null | string) => {
-    void setState({ folderId }, { history: 'push' })
+    void setState({
+      folderId: folderId === ASSET_LIBRARY_ALL_FOLDERS
+        ? null
+        : folderId ?? 'root',
+    }, { history: 'push' })
   }, [setState])
 
   const setView = useCallback((view: AssetLibraryView) => {
@@ -63,7 +83,11 @@ export function useAssetLibraryUrlState() {
 
   return {
     filters,
-    folderId: state.folderId,
+    folderId: state.folderId === null
+      ? ASSET_LIBRARY_ALL_FOLDERS
+      : state.folderId === 'root'
+        ? null
+        : state.folderId,
     setFilters,
     setFolderId,
     setView,

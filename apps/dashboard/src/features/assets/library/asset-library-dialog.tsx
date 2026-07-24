@@ -24,7 +24,9 @@ export function AssetLibraryDialog({
   onSelect,
   onUploadBatch,
   open,
+  projectId,
   selectedAssetIds,
+  uploadProjectId,
 }: {
   allowedTypes?: AssetType[]
   /** Sticky commit bar rendered under the library, owned by the caller. */
@@ -37,7 +39,11 @@ export function AssetLibraryDialog({
   /** Reports each upload batch started from inside this dialog. */
   onUploadBatch?: (batchId: string) => void
   open: boolean
+  /** Fixed Project scope for the Assets and folders shown in the dialog. */
+  projectId?: null | string
   selectedAssetIds?: string[]
+  /** Project destination for new uploads when browsing remains organization-wide. */
+  uploadProjectId?: null | string
 }) {
   const { t } = useTranslation()
   const selecting = mode === 'select'
@@ -69,7 +75,9 @@ export function AssetLibraryDialog({
           onSelect={onSelect}
           onUploadBatch={onUploadBatch}
           presentation="dialog"
+          projectId={projectId}
           selectedAssetIds={selectedAssetIds}
+          uploadProjectId={uploadProjectId}
         />
         {footer && (
           <div className="

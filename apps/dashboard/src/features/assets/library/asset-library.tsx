@@ -41,6 +41,7 @@ import { AssetGrid } from './asset-grid'
 import { AssetLibraryDialogs } from './asset-library-dialogs'
 import { AssetLibraryEmpty } from './asset-library-empty'
 import { AssetLibraryHeader } from './asset-library-header'
+import { AssetLibraryOrganizationFilters } from './asset-library-organization-filters'
 import { AssetLibraryPagination } from './asset-library-pagination'
 import { AssetLibrarySkeleton } from './asset-library-skeleton'
 import { AssetLibraryToolbar } from './asset-library-toolbar'
@@ -67,7 +68,9 @@ export function AssetLibrary({
   onUploadBatch,
   onViewChange,
   presentation = 'page',
+  projectId,
   selectedAssetIds,
+  uploadProjectId,
   view: controlledView,
 }: AssetLibraryProps) {
   const { t } = useTranslation()
@@ -83,13 +86,19 @@ export function AssetLibrary({
     view: controlledView,
   })
   const { filters, folderId, view } = controls
+  const aggregate = folderId === 'all'
+  const physicalFolderId = aggregate ? null : folderId
+  const browseProjectId = projectId === undefined
+    ? filters.projectId
+    : projectId
   const search = filters.search.trim()
   const deferredSearch = useDeferredValue(search)
-  const foldersQuery = useFoldersQuery()
+  const foldersQuery = useFoldersQuery(true, browseProjectId)
   const tagsQuery = useTagsQuery()
   const assetsQuery = useAssetLibraryQuery({
     ...filters,
     folderId,
+    projectId: browseProjectId,
     search: deferredSearch,
     type: allowedTypes?.length ? allowedTypes : filters.type,
   })
@@ -108,9 +117,16 @@ export function AssetLibrary({
     [foldersQuery.data?.data],
   )
   const upload = useAssetLibraryUpload({
-    folderId,
+    folderId: uploadProjectId === undefined
+      || folders.find(folder => folder.id === physicalFolderId)?.projectId
+      === uploadProjectId
+      ? physicalFolderId
+      : null,
     folders,
     onBatchEnqueued: onUploadBatch,
+    projectId: uploadProjectId === undefined
+      ? browseProjectId
+      : uploadProjectId,
   })
   const tags = useMemo(
     () => tagsQuery.data?.data ?? [],
@@ -128,10 +144,13 @@ export function AssetLibrary({
       * ASSET_LIBRARY_PAGE_SIZE
       + assets.length
   const currentFolders
-    = filters.archived || filters.favorite || filters.tagId
+    = aggregate
+      || filters.archived
+      || filters.favorite
+      || filters.tagId
       ? []
       : folders
-          .filter(folder => folder.parentId === folderId)
+          .filter(folder => folder.parentId === physicalFolderId)
           .filter(
             folder =>
               !deferredSearch
@@ -145,8 +164,8 @@ export function AssetLibrary({
   )
   const visibleFolderIds = currentFolders.map(folder => folder.id)
   const path = useMemo(
-    () => getFolderPath(folders, folderId),
-    [folderId, folders],
+    () => getFolderPath(folders, physicalFolderId),
+    [folders, physicalFolderId],
   )
   const selection = useAssetLibrarySelection({
     assets,
@@ -175,18 +194,25 @@ export function AssetLibrary({
     clearSelection: selection.clear,
     folders,
     libraryRef,
-    moveAssets: (movingAssets, destinationFolderId) =>
+    moveAssets: (
+      movingAssets,
+      destinationFolderId,
+      destinationProjectId,
+    ) =>
       assetMutations.move.mutateAsync({
         assets: movingAssets,
         destinationFolderId,
         organizationId: organizationId!,
+        projectId: destinationProjectId,
       }),
-    moveFolder: (folder, destinationFolderId) =>
+    moveFolder: (folder, destinationFolderId, destinationProjectId) =>
       folderMutations.update.mutateAsync({
         id: folder.id,
         organizationId: organizationId!,
         parentId: destinationFolderId,
+        projectId: destinationProjectId,
       }),
+    projectId: browseProjectId,
   })
 
   const interactions: AssetLibraryInteractions = {
@@ -216,7 +242,9 @@ export function AssetLibrary({
     || filters.source
     || filters.archived
     || filters.favorite
-    || filters.tagId,
+    || filters.tagId
+    || filters.projectId !== undefined
+    || filters.generatedBy,
   )
   const dialogPresentation = presentation === 'dialog'
 
@@ -275,9 +303,24 @@ export function AssetLibrary({
           onNavigateToFolder={navigateToFolder}
           path={path}
           presentation={presentation}
+          aggregate={aggregate}
+          projectScoped={Boolean(browseProjectId)}
         />
         <AssetLibraryToolbar
           filters={filters}
+          organizationFilters={
+            presentation === 'page' && projectId === undefined
+              ? (
+                  <AssetLibraryOrganizationFilters
+                    filters={filters}
+                    onFiltersChange={controls.updateFilters}
+                    onLocationChange={(nextProjectId) => {
+                      controls.updateFilters({ projectId: nextProjectId })
+                    }}
+                  />
+                )
+              : undefined
+          }
           onFiltersChange={controls.updateFilters}
           onViewChange={controls.updateView}
           presentation={presentation}
@@ -372,10 +415,14 @@ export function AssetLibrary({
       <AssetLibraryDialogs
         actions={libraryActions}
         assetMutations={assetMutations}
-        folderId={folderId}
+        fixedProjectId={
+          typeof projectId === 'string' ? projectId : undefined
+        }
+        folderId={physicalFolderId}
         folderMutations={folderMutations}
         folders={folders}
         moveLibraryItems={move.moveLibraryItems}
+        projectId={browseProjectId}
       />
     </section>
   )

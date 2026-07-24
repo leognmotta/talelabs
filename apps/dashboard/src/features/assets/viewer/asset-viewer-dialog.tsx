@@ -12,6 +12,7 @@ import {
 import { Separator } from '@talelabs/ui/components/separator'
 import { Skeleton } from '@talelabs/ui/components/skeleton'
 import { useTranslation } from 'react-i18next'
+import { Navigate, useParams } from 'react-router'
 import { AddToElementDialog } from '../../elements/add-to-element-dialog'
 import { ElementMembershipBadges } from '../../elements/element-membership-badges'
 import { useAssetDetailQuery } from '../data/asset-queries'
@@ -30,11 +31,23 @@ import { useAssetViewerUrlState } from './use-asset-viewer-url-state'
 /** Keeps the selected Asset deep-linkable while presenting media and provenance. */
 export function AssetViewerDialog() {
   const { i18n, t } = useTranslation()
+  const { projectId } = useParams<{ projectId: string }>()
   const { assetId, closeAsset } = useAssetViewerUrlState()
   const detail = useAssetDetailQuery(assetId)
   const asset = detail.data
   const locale = i18n.resolvedLanguage ?? 'en'
   const controller = useAssetViewerActions({ asset, onPurged: closeAsset })
+
+  if (asset && (projectId ?? null) !== asset.projectId) {
+    return (
+      <Navigate
+        replace
+        to={asset.projectId
+          ? `/projects/${asset.projectId}/assets?asset=${asset.id}`
+          : `/assets?asset=${asset.id}`}
+      />
+    )
+  }
 
   return (
     <Dialog
@@ -184,7 +197,7 @@ export function AssetViewerDialog() {
           </aside>
         </div>
         <MoveToFolderDialog
-          folders={controller.folders}
+          fixedProjectId={projectId}
           key={controller.dialogs.moveAsset?.id ?? 'move-viewer-asset'}
           onMove={controller.onMove}
           onOpenChange={open => !open && controller.dialogs.setMoveAsset(null)}

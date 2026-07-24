@@ -18,6 +18,7 @@ import { AssetUploadMenu } from '../upload/asset-upload-menu'
 
 /** Reports the active folder context without owning navigation or query state. */
 export function AssetLibraryHeader({
+  aggregate,
   mode,
   onChooseFiles,
   onChooseFolder,
@@ -25,7 +26,9 @@ export function AssetLibraryHeader({
   onNavigateToFolder,
   path,
   presentation,
+  projectScoped,
 }: {
+  aggregate: boolean
   mode: 'manage' | 'select'
   onChooseFiles: () => void
   onChooseFolder: () => void
@@ -33,21 +36,29 @@ export function AssetLibraryHeader({
   onNavigateToFolder: (folderId: null | string) => void
   path: Folder[]
   presentation: AssetLibraryPresentation
+  projectScoped: boolean
 }) {
   const { t } = useTranslation()
+  const rootLabel = t(projectScoped
+    ? 'projects.projectRoot'
+    : 'assets.privateLibrary')
   const breadcrumb = (
     <Breadcrumb aria-label={t('assets.folderPath')}>
       <BreadcrumbList>
         <BreadcrumbItem>
-          {path.length === 0
+          {aggregate
             ? (
-                <BreadcrumbPage>{t('assets.privateLibrary')}</BreadcrumbPage>
+                <BreadcrumbPage>{t('projects.allAssets')}</BreadcrumbPage>
               )
-            : (
-                <button type="button" onClick={() => onNavigateToFolder(null)}>
-                  {t('assets.privateLibrary')}
-                </button>
-              )}
+            : path.length === 0
+              ? (
+                  <BreadcrumbPage>{rootLabel}</BreadcrumbPage>
+                )
+              : (
+                  <button type="button" onClick={() => onNavigateToFolder(null)}>
+                    {rootLabel}
+                  </button>
+                )}
         </BreadcrumbItem>
         {path.map((folder, index) => (
           <Fragment key={folder.id}>
@@ -83,7 +94,7 @@ export function AssetLibraryHeader({
           </h1>
           {presentation === 'page' && <div className="mt-1">{breadcrumb}</div>}
         </div>
-        {mode === 'manage' && (
+        {mode === 'manage' && !aggregate && (
           <Button type="button" variant="outline" onClick={onCreateFolder}>
             <IconFolderPlus data-icon="inline-start" />
             {t('assets.newFolder')}

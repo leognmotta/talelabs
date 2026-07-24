@@ -23,20 +23,27 @@ import { AssetPurgeDialog } from '../viewer/asset-purge-dialog'
 export function AssetLibraryDialogs({
   actions,
   assetMutations,
+  fixedProjectId,
   folderId,
   folderMutations,
   folders,
   moveLibraryItems,
+  projectId,
 }: {
   actions: ReturnType<typeof useAssetLibraryActions>
   assetMutations: ReturnType<typeof useAssetMutations>
+  /** Explicit Project route scope that locks cross-Project moves. */
+  fixedProjectId?: string
   folderId: null | string
   folderMutations: ReturnType<typeof useFolderMutations>
   folders: Folder[]
   moveLibraryItems: (
     source: LibraryDragData,
     destinationFolderId: null | string,
+    destinationProjectId?: null | string,
+    destinationLabel?: string,
   ) => Promise<boolean>
+  projectId?: null | string
 }) {
   const { t } = useTranslation()
   const organizationId = useActiveOrganizationId()
@@ -58,14 +65,18 @@ export function AssetLibraryDialogs({
   return (
     <>
       <MoveToFolderDialog
-        folders={folders}
+        fixedProjectId={fixedProjectId}
         key={
           moveTarget?.type === 'folder'
             ? moveTarget.folder.id
             : (moveTarget?.assets.map(asset => asset.id).join(':')
               ?? 'move-items')
         }
-        onMove={async (destination) => {
+        onMove={async (
+          destination,
+          destinationProjectId,
+          destinationLabel,
+        ) => {
           if (!moveTarget)
             return
 
@@ -83,7 +94,12 @@ export function AssetLibraryDialogs({
                   type: 'folder',
                 }
           setMoveTarget(null)
-          await moveLibraryItems(source, destination)
+          await moveLibraryItems(
+            source,
+            destination,
+            destinationProjectId,
+            destinationLabel,
+          )
         }}
         onOpenChange={open => !open && setMoveTarget(null)}
         open={Boolean(moveTarget)}
@@ -173,6 +189,7 @@ export function AssetLibraryDialogs({
                   name,
                   organizationId: organizationId!,
                   parentId: folderId,
+                  projectId,
                 }),
                 'assets.folderCreated',
               ))

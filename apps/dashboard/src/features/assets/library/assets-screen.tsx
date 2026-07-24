@@ -1,5 +1,6 @@
 /** Route-level composition for the workspace Asset library. */
 
+import { useParams } from 'react-router'
 import { useAssetViewerUrlState } from '../viewer/use-asset-viewer-url-state'
 import { AssetLibrary } from './asset-library'
 import { useAssetLibraryUrlState } from './use-asset-library-url-state'
@@ -8,6 +9,7 @@ import { useAssetLibraryUrlState } from './use-asset-library-url-state'
 export function AssetsScreen() {
   const urlState = useAssetLibraryUrlState()
   const viewer = useAssetViewerUrlState()
+  const { projectId } = useParams<{ projectId: string }>()
 
   return (
     <AssetLibrary
@@ -18,6 +20,7 @@ export function AssetsScreen() {
       onFolderChange={urlState.setFolderId}
       onOpenAsset={asset => viewer.openAsset(asset.id)}
       onViewChange={urlState.setView}
+      projectId={projectId}
       view={urlState.view}
     />
   )

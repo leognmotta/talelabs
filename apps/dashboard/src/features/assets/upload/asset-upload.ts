@@ -25,6 +25,7 @@ export async function uploadAsset(input: {
   onRegistrationReady?: (uploadId: string) => void
   onStageChange?: (state: 'hashing' | 'registering' | 'uploading') => void
   organizationId: string
+  projectId: null | string
   registrationUploadId?: string
   signal: AbortSignal
 }): Promise<Asset> {
@@ -86,6 +87,7 @@ export async function uploadAsset(input: {
       data: {
         uploadId: registrationUploadId,
         folderId: input.folderId ?? undefined,
+        projectId: input.projectId,
       },
     },
     {

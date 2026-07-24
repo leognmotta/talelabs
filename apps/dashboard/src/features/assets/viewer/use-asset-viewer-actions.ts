@@ -9,7 +9,6 @@ import { toast } from 'sonner'
 import { getApiErrorMessage } from '../../../shared/lib/api-error'
 import { useActiveOrganizationId } from '../../organizations/organization-scope-context'
 import { useAssetMutations } from '../data/asset-mutations'
-import { useFoldersQuery } from '../data/folder-query'
 import { useTagMutations } from '../data/tag-mutations'
 import { useTagsQuery } from '../data/tag-query'
 
@@ -25,16 +24,11 @@ export function useAssetViewerActions({
   const organizationId = useActiveOrganizationId()
   const assetMutations = useAssetMutations()
   const tagMutations = useTagMutations()
-  const foldersQuery = useFoldersQuery(Boolean(asset))
   const tagsQuery = useTagsQuery(Boolean(asset))
   const [addToElementAsset, setAddToElementAsset] = useState<Asset | null>(null)
   const [moveAsset, setMoveAsset] = useState<Asset | null>(null)
   const [purgeAsset, setPurgeAsset] = useState<Asset | null>(null)
   const [renameAsset, setRenameAsset] = useState<Asset | null>(null)
-  const folders = useMemo(
-    () => foldersQuery.data?.data ?? [],
-    [foldersQuery.data?.data],
-  )
   const tags = useMemo(
     () => tagsQuery.data?.data ?? [],
     [tagsQuery.data?.data],
@@ -164,28 +158,30 @@ export function useAssetViewerActions({
       setPurgeAsset,
       setRenameAsset,
     },
-    folders,
     mutations: assetMutations,
-    onMove: async (destinationFolderId: null | string) => {
+    onMove: async (
+      destinationFolderId: null | string,
+      destinationProjectId: null | string,
+      destinationLabel: string,
+    ) => {
       if (!moveAsset)
         return
 
       const assetToMove = moveAsset
-      const destination
-        = destinationFolderId === null
-          ? t('assets.rootFolder')
-          : (folders.find(folder => folder.id === destinationFolderId)
-              ?.name ?? t('assets.rootFolder'))
       setMoveAsset(null)
       const moved = await runAction(() =>
         assetMutations.move.mutateAsync({
           assets: [assetToMove],
           destinationFolderId,
           organizationId: requireOrganizationId(),
+          projectId: destinationProjectId,
         }),
       )
       if (moved) {
-        toast.success(t('assets.filesMoved', { count: 1, destination }))
+        toast.success(t('assets.filesMoved', {
+          count: 1,
+          destination: destinationLabel,
+        }))
       }
     },
     onPurge: async () => {

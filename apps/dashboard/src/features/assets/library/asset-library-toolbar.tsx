@@ -1,6 +1,7 @@
 /** Search, filters, sorting, upload, and view controls for the Asset library. */
 
 import type { Tag } from '@talelabs/sdk'
+import type { ReactNode } from 'react'
 import type {
   AssetLibraryFilters,
   AssetLibraryPresentation,
@@ -45,6 +46,7 @@ export function AssetLibraryToolbar({
   filters,
   onFiltersChange,
   onViewChange,
+  organizationFilters,
   presentation = 'page',
   searchPending,
   tags,
@@ -53,6 +55,7 @@ export function AssetLibraryToolbar({
   filters: AssetLibraryFilters
   onFiltersChange: (filters: Partial<AssetLibraryFilters>) => void
   onViewChange: (view: AssetLibraryView) => void
+  organizationFilters?: ReactNode
   presentation?: AssetLibraryPresentation
   searchPending: boolean
   tags: Tag[]
@@ -81,7 +84,8 @@ export function AssetLibraryToolbar({
   const tagLabel = tags.find(tag => tag.id === filters.tagId)?.name ?? t('assets.allTags')
   const hasActiveFilters = Boolean(
     filters.search || filters.type || filters.source || filters.tagId
-    || filters.favorite || filters.archived,
+    || filters.favorite || filters.archived
+    || filters.projectId !== undefined || filters.generatedBy,
   )
 
   return (
@@ -180,6 +184,7 @@ export function AssetLibraryToolbar({
           </SelectContent>
         </Select>
       </ButtonGroup>
+      {organizationFilters}
       <ToggleGroup
         multiple
         spacing={0}
@@ -215,6 +220,8 @@ export function AssetLibraryToolbar({
             source: undefined,
             tagId: undefined,
             type: undefined,
+            generatedBy: undefined,
+            projectId: undefined,
           })}
         >
           <IconX data-icon="inline-start" />

@@ -2,6 +2,8 @@
 
 import type { Folder } from '@talelabs/sdk'
 
+type FolderPathItem = Pick<Folder, 'id' | 'name' | 'parentId'>
+
 /** Formats asset size for presentation without changing canonical data. */
 export function formatAssetSize(bytes: number | null, locale: string) {
   if (bytes === null)
@@ -31,12 +33,15 @@ export function formatDuration(seconds: number | null) {
 }
 
 /** Builds a root-to-leaf folder path and stops safely if ancestry is cyclic. */
-export function getFolderPath(folders: Folder[], folderId: null | string) {
+export function getFolderPath<T extends FolderPathItem>(
+  folders: readonly T[],
+  folderId: null | string,
+) {
   if (!folderId)
     return []
 
   const byId = new Map(folders.map(folder => [folder.id, folder]))
-  const path: Folder[] = []
+  const path: T[] = []
   const seen = new Set<string>()
   let current = byId.get(folderId)
 
