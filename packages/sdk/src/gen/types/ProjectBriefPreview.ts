@@ -3,8 +3,6 @@
  * Do not edit manually.
  */
 
-import type { Timestamp } from "./Timestamp.ts";
-
 export type ProjectBriefPreview = {
   /**
    * @type object
@@ -21,5 +19,8 @@ export type ProjectBriefPreview = {
    * @type integer
    */
   revision: number;
-  updatedAt: Timestamp & any;
+  /**
+   * @type string, date-time
+   */
+  updatedAt: string | null;
 };

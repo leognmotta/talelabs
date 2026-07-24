@@ -9,7 +9,10 @@ import type { ProjectCoverAsset } from "./ProjectCoverAsset.ts";
 import type { Timestamp } from "./Timestamp.ts";
 
 export type Project = {
-  archivedAt: Timestamp & any;
+  /**
+   * @type string, date-time
+   */
+  archivedAt: string | null;
   /**
    * @type object
    */

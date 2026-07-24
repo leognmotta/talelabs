@@ -4,7 +4,6 @@
  */
 
 import type { ProjectMentionResolution } from "./ProjectMentionResolution.ts";
-import type { Timestamp } from "./Timestamp.ts";
 import type { UserId } from "./UserId.ts";
 
 export type ProjectBrief = {
@@ -27,7 +26,10 @@ export type ProjectBrief = {
    * @type integer
    */
   revision: number;
-  updatedAt: Timestamp & any;
+  /**
+   * @type string, date-time
+   */
+  updatedAt: string | null;
   /**
    * @type string
    */

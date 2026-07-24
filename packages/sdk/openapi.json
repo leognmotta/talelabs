@@ -691,14 +691,9 @@
         "type": "object",
         "properties": {
           "archivedAt": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Timestamp"
-              },
-              {
-                "nullable": true
-              }
-            ]
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
           },
           "counts": {
             "$ref": "#/components/schemas/ProjectCounts"
@@ -873,14 +868,9 @@
             "minimum": 0
           },
           "updatedAt": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Timestamp"
-              },
-              {
-                "nullable": true
-              }
-            ]
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
           }
         },
         "required": [
@@ -1147,14 +1137,9 @@
             "minimum": 0
           },
           "updatedAt": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Timestamp"
-              },
-              {
-                "nullable": true
-              }
-            ]
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
           },
           "updatedBy": {
             "$ref": "#/components/schemas/UserId"
