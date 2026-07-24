@@ -1157,6 +1157,32 @@
       "ProjectMentionResolution": {
         "type": "object",
         "properties": {
+          "asset": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "height": {
+                "type": "integer",
+                "nullable": true,
+                "minimum": 0,
+                "exclusiveMinimum": true
+              },
+              "type": {
+                "$ref": "#/components/schemas/AssetType"
+              },
+              "width": {
+                "type": "integer",
+                "nullable": true,
+                "minimum": 0,
+                "exclusiveMinimum": true
+              }
+            },
+            "required": [
+              "height",
+              "type",
+              "width"
+            ]
+          },
           "available": {
             "type": "boolean"
           },
@@ -1176,6 +1202,7 @@
           }
         },
         "required": [
+          "asset",
           "available",
           "entityId",
           "entityType",

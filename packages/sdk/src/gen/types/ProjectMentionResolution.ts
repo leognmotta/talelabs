@@ -3,10 +3,28 @@
  * Do not edit manually.
  */
 
+import type { AssetType } from "./AssetType.ts";
 import type { Cuid2 } from "./Cuid2.ts";
 import type { ProjectMentionType } from "./ProjectMentionType.ts";
 
 export type ProjectMentionResolution = {
+  /**
+   * @type object
+   */
+  asset: {
+    /**
+     * @type integer
+     */
+    height: number | null;
+    /**
+     * @type string
+     */
+    type: AssetType;
+    /**
+     * @type integer
+     */
+    width: number | null;
+  } | null;
   /**
    * @type boolean
    */

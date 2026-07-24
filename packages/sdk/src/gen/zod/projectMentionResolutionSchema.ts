@@ -5,10 +5,20 @@
 
 import * as z from "zod";
 import type { ProjectMentionResolution } from "../types/ProjectMentionResolution.ts";
+import { assetTypeSchema } from "./assetTypeSchema.ts";
 import { cuid2Schema } from "./cuid2Schema.ts";
 import { projectMentionTypeSchema } from "./projectMentionTypeSchema.ts";
 
 export const projectMentionResolutionSchema = z.object({
+  asset: z.nullable(
+    z.object({
+      height: z.nullable(z.int().gt(0)),
+      get type() {
+        return assetTypeSchema;
+      },
+      width: z.nullable(z.int().gt(0)),
+    }),
+  ),
   available: z.boolean(),
   get entityId() {
     return cuid2Schema;
