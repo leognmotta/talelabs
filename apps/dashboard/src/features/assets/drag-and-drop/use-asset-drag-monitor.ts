@@ -13,7 +13,10 @@ import {
 export function useAssetDragMonitor({
   onDrop,
 }: {
-  onDrop: (source: LibraryDragData, destinationFolderId: string) => void
+  onDrop: (
+    source: LibraryDragData,
+    destinationFolderId: null | string,
+  ) => void
 }) {
   const onDropRef = useRef(onDrop)
   const [activeDragData, setActiveDragData] = useState<LibraryDragData | null>(null)

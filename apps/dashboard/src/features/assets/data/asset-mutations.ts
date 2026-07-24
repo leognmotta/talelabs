@@ -32,6 +32,7 @@ export function useAssetMutations() {
       optimisticAssetMutationOptions(queryClient, {
         affectsFolderMetadata: true,
         affectsFlowReferences: true,
+        affectsProjectMetadata: true,
         mutationFn: ({ id, organizationId }: {
           id: string
           organizationId: string
@@ -59,6 +60,7 @@ export function useAssetMutations() {
         affectsElementReferences: true,
         affectsFolderMetadata: true,
         affectsFlowReferences: true,
+        affectsProjectMetadata: true,
         mutationFn: ({ id, organizationId }: {
           id: string
           organizationId: string
@@ -83,6 +85,7 @@ export function useAssetMutations() {
       optimisticAssetMutationOptions(queryClient, {
         affectsFolderMetadata: true,
         affectsFlowReferences: true,
+        affectsProjectMetadata: true,
         mutationFn: ({ id, organizationId }: {
           id: string
           organizationId: string
@@ -96,28 +99,34 @@ export function useAssetMutations() {
     ),
     update: useMutation(
       optimisticAssetMutationOptions(queryClient, {
-        affectsFolderMetadata: variables => variables.folderId !== undefined,
+        affectsFolderMetadata: variables =>
+          variables.folderId !== undefined
+          || variables.projectId !== undefined,
         affectsFlowReferences: true,
+        affectsProjectMetadata: true,
         mutationFn: ({
           folderId,
           id,
           name,
           organizationId,
+          projectId,
         }: {
           folderId?: null | string
           id: string
           name?: string
           organizationId: string
+          projectId?: null | string
         }) => patchAssetsId(
-          { id, data: { folderId, name } },
+          { id, data: { folderId, name, projectId } },
           { headers: getOrganizationRequestHeaders(organizationId) },
         ),
         getServerAssets: asset => [asset],
-        getUpdates: ({ folderId, id, name }) => [{
+        getUpdates: ({ folderId, id, name, projectId }) => [{
           id,
           patch: {
             ...(folderId !== undefined ? { folderId } : {}),
             ...(name !== undefined ? { name } : {}),
+            ...(projectId !== undefined ? { projectId } : {}),
           },
         }],
       }),
@@ -125,6 +134,7 @@ export function useAssetMutations() {
     move: useMutation(
       optimisticAssetMutationOptions(queryClient, {
         affectsFolderMetadata: true,
+        affectsProjectMetadata: true,
         getFolderMove: ({ assets, destinationFolderId }) => ({
           assets,
           destinationFolderId,
@@ -133,25 +143,31 @@ export function useAssetMutations() {
           assets,
           destinationFolderId,
           organizationId,
+          projectId,
         }: {
           assets: Asset[]
           destinationFolderId: null | string
           organizationId: string
+          projectId?: null | string
         }) => postAssetsMove(
           {
             data: {
               assetIds: assets.map(asset => asset.id),
               folderId: destinationFolderId,
+              projectId,
             },
           },
           { headers: getOrganizationRequestHeaders(organizationId) },
         ),
         getServerAssets: response => response.data,
-        getUpdates: ({ assets, destinationFolderId }) =>
+        getUpdates: ({ assets, destinationFolderId, projectId }) =>
           assets.map(asset => ({
             asset,
             id: asset.id,
-            patch: { folderId: destinationFolderId },
+            patch: {
+              folderId: destinationFolderId,
+              ...(projectId !== undefined ? { projectId } : {}),
+            },
           })),
       }),
     ),

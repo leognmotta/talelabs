@@ -48,7 +48,12 @@ export function useAssetLibraryQuery(filters: {
   archived: boolean
   favorite: boolean
   folderId: null | string
+  generatedBy?: {
+    id: string
+    kind: 'createSession' | 'flow'
+  }
   order: 'asc' | 'desc'
+  projectId?: null | string
   search: string
   sort: 'createdAt' | 'name' | 'sizeBytes'
   source?: AssetSource
@@ -59,9 +64,18 @@ export function useAssetLibraryQuery(filters: {
   const params: GetAssetsQueryParams = {
     archived: filters.archived,
     favorite: filters.favorite || undefined,
-    folderId: filters.folderId ?? 'root',
+    folderId: filters.folderId === 'all'
+      ? undefined
+      : filters.folderId ?? 'root',
+    generatedByCreateSessionId: filters.generatedBy?.kind === 'createSession'
+      ? filters.generatedBy.id
+      : undefined,
+    generatedByFlowId: filters.generatedBy?.kind === 'flow'
+      ? filters.generatedBy.id
+      : undefined,
     limit: ASSET_LIBRARY_PAGE_SIZE,
     order: filters.order,
+    projectId: filters.projectId === null ? 'private' : filters.projectId,
     search: filters.search || undefined,
     sort: filters.sort,
     source: filters.source,

@@ -1,6 +1,6 @@
 /** Non-serializable Files, controllers, and retry metadata for queued uploads. */
 
-import type { Folder } from '@talelabs/sdk'
+import type { AssetUploadFolderSnapshot } from './upload.types'
 
 /** File and retry data retained only while an item may still execute. */
 export interface RuntimeUploadItem {
@@ -17,13 +17,15 @@ export interface RuntimeUploadBatch {
   /** Cancels folder preparation and every item execution in the batch. */
   controller: AbortController
   /** Existing folder snapshot used to avoid duplicate directory creation. */
-  folders: Folder[]
+  folders: AssetUploadFolderSnapshot[]
   /** Stable batch ID shared with visible Zustand state. */
   id: string
   /** Tenant boundary captured when the batch was enqueued. */
   organizationId: string
   /** Root destination selected when the batch was enqueued. */
   parentFolderId: null | string
+  /** Immutable Project location captured when the upload batch starts. */
+  projectId: null | string
   /** Whether relative folder paths have resolved to canonical folder IDs. */
   prepared: boolean
 }

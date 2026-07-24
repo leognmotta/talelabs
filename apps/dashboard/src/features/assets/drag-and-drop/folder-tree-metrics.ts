@@ -1,11 +1,17 @@
 /** Cycle-safe folder depth and ancestry calculations used by move admission. */
 
-import type { Folder } from '@talelabs/sdk'
+/** Minimal hierarchy facts required by folder move validation. */
+export interface FolderTreeNode {
+  /** Stable folder identity. */
+  id: string
+  /** Immediate parent identity, or null at the location root. */
+  parentId: null | string
+}
 
 /** Returns a folder's one-based depth, stopping if malformed ancestry cycles. */
 export function getFolderDepth(
   folderId: string,
-  foldersById: Map<string, Folder>,
+  foldersById: ReadonlyMap<string, FolderTreeNode>,
 ) {
   let depth = 0
   let current = foldersById.get(folderId)
@@ -21,8 +27,11 @@ export function getFolderDepth(
 }
 
 /** Returns the maximum depth of the subtree rooted at one folder. */
-export function getFolderSubtreeDepth(folderId: string, folders: Folder[]) {
-  const children = new Map<null | string, Folder[]>()
+export function getFolderSubtreeDepth(
+  folderId: string,
+  folders: readonly FolderTreeNode[],
+) {
+  const children = new Map<null | string, FolderTreeNode[]>()
 
   for (const folder of folders) {
     const siblings = children.get(folder.parentId) ?? []
@@ -48,7 +57,7 @@ export function getFolderSubtreeDepth(folderId: string, folders: Folder[]) {
 export function isFolderDescendant(
   sourceFolderId: string,
   destinationFolderId: string,
-  foldersById: Map<string, Folder>,
+  foldersById: ReadonlyMap<string, FolderTreeNode>,
 ) {
   let current = foldersById.get(destinationFolderId)
   const seen = new Set<string>()

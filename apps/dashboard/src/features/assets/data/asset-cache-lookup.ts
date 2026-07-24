@@ -29,6 +29,15 @@ export function assetMatchesFilters(asset: Asset, filters: GetAssetsQueryParams)
   ) {
     return false
   }
+  if (filters.projectId === 'private' && asset.projectId !== null)
+    return false
+  if (
+    filters.projectId
+    && filters.projectId !== 'private'
+    && filters.projectId !== asset.projectId
+  ) {
+    return false
+  }
 
   if (filters.folderId === 'root' && asset.folderId !== null)
     return false

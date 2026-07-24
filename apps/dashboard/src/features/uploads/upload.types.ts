@@ -30,6 +30,7 @@ export interface UploadBatchState {
   itemIds: string[]
   kind: UploadBatchKind
   organizationId: string
+  projectId: null | string
 }
 
 /** State of one upload item within a batch. */
@@ -44,6 +45,7 @@ export interface UploadItemState {
   id: string
   mimeType: string
   organizationId: string
+  projectId: null | string
   progress: number
   relativePath: null | string
   sizeBytes: number
@@ -56,13 +58,21 @@ export interface AssetUploadInput {
   relativePath: null | string
 }
 
+/** Minimal folder identity captured by directory-aware upload preparation. */
+export type AssetUploadFolderSnapshot = Pick<
+  Folder,
+  'id' | 'name' | 'parentId'
+>
+
 /** Inputs to enqueue an Asset upload batch into the queue. */
 export interface EnqueueAssetUploadBatchInput {
   destinationLabel: null | string
   files: AssetUploadInput[]
-  folders: Folder[]
+  folders: readonly AssetUploadFolderSnapshot[]
   organizationId: string
   parentFolderId: null | string
+  /** Project captured when the batch is enqueued, or null for Private. */
+  projectId?: null | string
 }
 
 /** Upload statuses that count as in-flight. */

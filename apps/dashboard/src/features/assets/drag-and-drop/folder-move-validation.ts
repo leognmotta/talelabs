@@ -1,7 +1,7 @@
 /** Admission rules for moving Assets and folder subtrees within the library. */
 
-import type { Folder } from '@talelabs/sdk'
 import type { LibraryDragData } from './asset-drag-data'
+import type { FolderTreeNode } from './folder-tree-metrics'
 
 import {
   getFolderDepth,
@@ -23,7 +23,7 @@ export type MoveValidation
 export function validateFolderMove(
   source: { folderId: string, parentId: null | string },
   destinationFolderId: null | string,
-  folders: Folder[],
+  folders: readonly FolderTreeNode[],
 ): MoveValidation {
   if (destinationFolderId === source.folderId)
     return { allowed: false, reason: 'self' }
@@ -52,7 +52,7 @@ export function validateFolderMove(
 export function validateLibraryMove(
   source: LibraryDragData,
   destinationFolderId: null | string,
-  folders: Folder[],
+  folders: readonly FolderTreeNode[],
 ): MoveValidation {
   if (source.type === 'asset') {
     return source.sourceFolderId === destinationFolderId

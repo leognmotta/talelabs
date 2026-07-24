@@ -35,6 +35,7 @@ export function enqueueAssetUploadBatch(input: EnqueueAssetUploadBatchInput) {
       id: itemId,
       mimeType: entry.file.type,
       organizationId: input.organizationId,
+      projectId: input.projectId ?? null,
       progress: 0,
       relativePath: entry.relativePath,
       sizeBytes: entry.file.size,
@@ -48,13 +49,15 @@ export function enqueueAssetUploadBatch(input: EnqueueAssetUploadBatchInput) {
     itemIds,
     kind: 'assets',
     organizationId: input.organizationId,
+    projectId: input.projectId ?? null,
   }
   uploadQueueState.runtime.batches.set(batchId, {
     controller: new AbortController(),
-    folders: input.folders,
+    folders: [...input.folders],
     id: batchId,
     organizationId: input.organizationId,
     parentFolderId: input.parentFolderId,
+    projectId: input.projectId ?? null,
     prepared: items.every(item => item.relativePath === null),
   })
   uploadStore.getState().addBatch(batch, items)

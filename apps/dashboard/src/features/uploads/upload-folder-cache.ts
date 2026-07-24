@@ -11,7 +11,11 @@ import { upsertFolderCache } from '../assets/data/folder-cache-update'
 export function createUploadFolderCacheHandler(queryClient: QueryClient) {
   return async function createFolder(
     organizationId: string,
-    input: { name: string, parentId: null | string },
+    input: {
+      name: string
+      parentId: null | string
+      projectId: null | string
+    },
     signal: AbortSignal,
   ) {
     const folder = await postFolders({ data: input }, {
@@ -20,7 +24,7 @@ export function createUploadFolderCacheHandler(queryClient: QueryClient) {
     })
     upsertFolderCache(queryClient, organizationId, folder)
     await queryClient.invalidateQueries({
-      queryKey: assetQueryKeys.folders(organizationId),
+      queryKey: assetQueryKeys.folderScope(organizationId),
       refetchType: 'none',
     })
     return folder

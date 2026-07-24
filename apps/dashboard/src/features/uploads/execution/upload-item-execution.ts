@@ -64,6 +64,7 @@ export async function executeUploadItem(
         file: runtime.file,
         folderId: initialItem.destinationFolderId,
         organizationId: batch.organizationId,
+        projectId: batch.projectId,
         registrationUploadId: runtime.registrationUploadId,
         signal: controller.signal,
         onProgress: progress => updateUploadProgress(itemId, runtime, progress),

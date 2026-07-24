@@ -3,6 +3,7 @@
 import { deleteFoldersId, patchFoldersId, postFolders } from '@talelabs/sdk'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { getOrganizationRequestHeaders } from '../../../shared/lib/organization-request'
+import { projectQueryKeys } from '../../projects/project-query-keys'
 import {
   patchMatchingAssets,
 } from './asset-cache-patch'
@@ -13,6 +14,7 @@ import {
 } from './asset-cache-snapshot'
 import { assetQueryKeys } from './asset-query-keys'
 import {
+  findFolderInCacheSnapshot,
   invalidateFolderCache,
   restoreFolderCache,
   snapshotFolderCache,
@@ -41,9 +43,16 @@ export function useFolderMutations() {
         name: string
         organizationId: string
         parentId?: null | string
+        projectId?: null | string
         signal?: AbortSignal
       }) => postFolders(
-        { data: { name: data.name, parentId: data.parentId } },
+        {
+          data: {
+            name: data.name,
+            parentId: data.parentId,
+            projectId: data.projectId,
+          },
+        },
         {
           headers: getOrganizationRequestHeaders(data.organizationId),
           signal,
@@ -51,7 +60,7 @@ export function useFolderMutations() {
       ),
       onMutate: async ({ organizationId, parentId }) => {
         await queryClient.cancelQueries({
-          queryKey: assetQueryKeys.folders(organizationId),
+          queryKey: assetQueryKeys.folderScope(organizationId),
         })
         const snapshot = snapshotFolderCache(queryClient, organizationId)
         if (parentId)
@@ -65,7 +74,6 @@ export function useFolderMutations() {
         )) {
           restoreFolderCache(
             queryClient,
-            context.organizationId,
             context.snapshot,
           )
         }
@@ -75,12 +83,13 @@ export function useFolderMutations() {
           return
         upsertFolderCache(queryClient, organizationId, folder)
       },
-      onSettled: (_data, error, { organizationId }) => {
-        void invalidateFolderCache(
-          queryClient,
-          organizationId,
-          error ? 'active' : 'none',
-        )
+      onSettled: (_data, _error, { organizationId }) => {
+        void Promise.all([
+          invalidateFolderCache(queryClient, organizationId),
+          queryClient.invalidateQueries({
+            queryKey: projectQueryKeys.scope(organizationId),
+          }),
+        ])
       },
     }),
     remove: useMutation({
@@ -93,11 +102,11 @@ export function useFolderMutations() {
       ),
       onMutate: async ({ id, organizationId }) => {
         await queryClient.cancelQueries({
-          queryKey: assetQueryKeys.folders(organizationId),
+          queryKey: assetQueryKeys.folderScope(organizationId),
         })
         const folders = snapshotFolderCache(queryClient, organizationId)
         const assets = await snapshotAssetCache(queryClient, organizationId)
-        const removedFolder = folders?.data.find(folder => folder.id === id)
+        const removedFolder = findFolderInCacheSnapshot(folders, id)
         const removedIds = removeFolderTreeCache(queryClient, organizationId, id)
         if (removedFolder?.parentId) {
           adjustFolderItemCountCache(
@@ -122,7 +131,6 @@ export function useFolderMutations() {
         )) {
           restoreFolderCache(
             queryClient,
-            context.organizationId,
             context.folders,
           )
           restoreAssetCache(queryClient, context.assets)
@@ -132,6 +140,9 @@ export function useFolderMutations() {
         void Promise.all([
           invalidateFolderCache(queryClient, organizationId),
           invalidateAssetCache(queryClient, organizationId),
+          queryClient.invalidateQueries({
+            queryKey: projectQueryKeys.scope(organizationId),
+          }),
         ])
       },
     }),
@@ -141,25 +152,34 @@ export function useFolderMutations() {
         name,
         organizationId,
         parentId,
+        projectId,
       }: {
         id: string
         name?: string
         organizationId: string
         parentId?: null | string
+        projectId?: null | string
       }) => patchFoldersId(
-        { id, data: { name, parentId } },
+        { id, data: { name, parentId, projectId } },
         { headers: getOrganizationRequestHeaders(organizationId) },
       ),
-      onMutate: async ({ id, name, organizationId, parentId }) => {
+      onMutate: async ({
+        id,
+        name,
+        organizationId,
+        parentId,
+        projectId,
+      }) => {
         const patch = {
           ...(name !== undefined ? { name } : {}),
           ...(parentId !== undefined ? { parentId } : {}),
+          ...(projectId !== undefined ? { projectId } : {}),
         }
         await queryClient.cancelQueries({
-          queryKey: assetQueryKeys.folders(organizationId),
+          queryKey: assetQueryKeys.folderScope(organizationId),
         })
         const snapshot = snapshotFolderCache(queryClient, organizationId)
-        const currentFolder = snapshot?.data.find(folder => folder.id === id)
+        const currentFolder = findFolderInCacheSnapshot(snapshot, id)
         if (
           patch.parentId !== undefined
           && patch.parentId !== currentFolder?.parentId
@@ -191,7 +211,6 @@ export function useFolderMutations() {
         )) {
           restoreFolderCache(
             queryClient,
-            context.organizationId,
             context.snapshot,
           )
         }
@@ -202,7 +221,12 @@ export function useFolderMutations() {
         upsertFolderCache(queryClient, organizationId, folder)
       },
       onSettled: (_data, _error, { organizationId }) => {
-        void invalidateFolderCache(queryClient, organizationId)
+        void Promise.all([
+          invalidateFolderCache(queryClient, organizationId),
+          queryClient.invalidateQueries({
+            queryKey: projectQueryKeys.scope(organizationId),
+          }),
+        ])
       },
     }),
   }

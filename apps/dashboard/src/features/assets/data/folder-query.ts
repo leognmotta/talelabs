@@ -11,14 +11,26 @@ import {
 } from './asset-query-timing'
 
 /** Loads the organization folder tree and polls while it contains processing Assets. */
-export function useFoldersQuery(enabled = true) {
+export function useFoldersQuery(
+  enabled = true,
+  projectId?: null | string,
+) {
   const organizationId = useActiveOrganizationId()
   return useQuery({
-    queryKey: assetQueryKeys.folders(organizationId),
-    queryFn: ({ signal }) => getFolders({
-      headers: getOrganizationRequestHeaders(organizationId!),
-      signal,
-    }),
+    queryKey: projectId === undefined
+      ? assetQueryKeys.folders(organizationId)
+      : assetQueryKeys.projectFolders(organizationId, projectId),
+    queryFn: ({ signal }) => getFolders(
+      {
+        params: {
+          projectId: projectId === null ? 'private' : projectId,
+        },
+      },
+      {
+        headers: getOrganizationRequestHeaders(organizationId!),
+        signal,
+      },
+    ),
     enabled: enabled && Boolean(organizationId),
     staleTime: 60_000,
     refetchInterval: query => query.state.data?.data.some(

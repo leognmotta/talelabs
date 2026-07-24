@@ -1,10 +1,12 @@
 /** Optimistic Asset mutation transaction with cache snapshot and rollback ownership. */
 
-import type { Asset, FolderListResponse } from '@talelabs/sdk'
+import type { Asset } from '@talelabs/sdk'
 import type { QueryClient, UseMutationOptions } from '@tanstack/react-query'
+import type { FolderCacheSnapshot } from './folder-cache-snapshot'
 
 import { invalidateElementCache } from '../../elements/element-query-cache'
 import { flowQueryKeys } from '../../flows/data/query-keys/flow-query-keys'
+import { projectQueryKeys } from '../../projects/project-query-keys'
 import {
   patchAssetCache,
 } from './asset-cache-patch'
@@ -31,7 +33,7 @@ export interface OptimisticAssetUpdate {
 
 interface AssetMutationContext {
   assets: Awaited<ReturnType<typeof snapshotAssetCache>>
-  folders?: FolderListResponse
+  folders?: FolderCacheSnapshot
   organizationId: string
 }
 
@@ -45,6 +47,7 @@ export function optimisticAssetMutationOptions<
     affectsElementReferences?: boolean
     affectsFolderMetadata?: boolean | ((variables: TVariables) => boolean)
     affectsFlowReferences?: boolean
+    affectsProjectMetadata?: boolean
     getFolderMove?: (variables: TVariables) => {
       assets: Asset[]
       destinationFolderId: null | string
@@ -65,10 +68,10 @@ export function optimisticAssetMutationOptions<
         updates.map(update => update.id),
       )
       const folderMove = options.getFolderMove?.(variables)
-      let folders: FolderListResponse | undefined
+      let folders: FolderCacheSnapshot | undefined
       if (folderMove) {
         await queryClient.cancelQueries({
-          queryKey: assetQueryKeys.folders(organizationId),
+          queryKey: assetQueryKeys.folderScope(organizationId),
         })
         folders = snapshotFolderCache(queryClient, organizationId)
       }
@@ -105,7 +108,6 @@ export function optimisticAssetMutationOptions<
       if (snapshot?.folders) {
         restoreFolderCache(
           queryClient,
-          snapshot.organizationId,
           snapshot.folders,
         )
       }
@@ -132,6 +134,11 @@ export function optimisticAssetMutationOptions<
         ...(options.affectsFlowReferences
           ? [queryClient.invalidateQueries({
               queryKey: flowQueryKeys.allReferences(organizationId),
+            })]
+          : []),
+        ...(options.affectsProjectMetadata
+          ? [queryClient.invalidateQueries({
+              queryKey: projectQueryKeys.scope(organizationId),
             })]
           : []),
         ...(affectsFolderMetadata

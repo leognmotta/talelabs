@@ -3,8 +3,10 @@
 import type { Folder, FolderListResponse } from '@talelabs/sdk'
 import type { QueryClient } from '@tanstack/react-query'
 
-import { assetQueryKeys } from './asset-query-keys'
-import { snapshotFolderCache } from './folder-cache-snapshot'
+import {
+  foldersInCacheSnapshot,
+  snapshotFolderCache,
+} from './folder-cache-snapshot'
 
 /** Returns the root folder id and every descendant id, tolerating malformed cycles. */
 export function getFolderTreeIds(folders: Folder[], rootId: string) {
@@ -38,16 +40,17 @@ export function removeFolderTreeCache(
   organizationId: string,
   rootId: string,
 ) {
-  const current = snapshotFolderCache(queryClient, organizationId)
-  if (!current)
-    return new Set([rootId])
-
-  const ids = getFolderTreeIds(current.data, rootId)
-  queryClient.setQueryData<FolderListResponse>(
-    assetQueryKeys.folders(organizationId),
-    {
-      data: current.data.filter(folder => !ids.has(folder.id)),
-    },
+  const snapshot = snapshotFolderCache(queryClient, organizationId)
+  const ids = getFolderTreeIds(
+    foldersInCacheSnapshot(snapshot),
+    rootId,
   )
+  for (const [queryKey, current] of snapshot) {
+    if (current) {
+      queryClient.setQueryData<FolderListResponse>(queryKey, {
+        data: current.data.filter(folder => !ids.has(folder.id)),
+      })
+    }
+  }
   return ids
 }

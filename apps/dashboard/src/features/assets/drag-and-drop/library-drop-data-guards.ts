@@ -14,7 +14,8 @@ import {
 export function isFolderDropTargetData(
   data: Record<string, unknown>,
 ): data is FolderDropTargetData {
-  return data.type === 'folder-drop-target' && typeof data.folderId === 'string'
+  return data.type === 'folder-drop-target'
+    && (data.folderId === null || typeof data.folderId === 'string')
 }
 
 /** Validates an unknown payload as either supported library draggable. */

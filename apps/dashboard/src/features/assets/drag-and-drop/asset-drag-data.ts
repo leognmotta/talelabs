@@ -22,8 +22,8 @@ export interface FolderDragData extends Record<string, unknown> {
 
 /** Drop-target payload attached to a folder row or card. */
 export interface FolderDropTargetData extends Record<string, unknown> {
-  /** Folder that would receive a valid drop. */
-  folderId: string
+  /** Folder that would receive a valid drop, or root when null. */
+  folderId: null | string
   /** Payload discriminator. */
   type: 'folder-drop-target'
 }

@@ -18,6 +18,13 @@ function assetScope(organizationId: null | string) {
   ] as const
 }
 
+function folderScope(organizationId: null | string) {
+  return [
+    ...organizationScope(organizationId),
+    'folders',
+  ] as const
+}
+
 /** Hierarchical, organization-scoped keys for Asset lists, details, folders, and tags. */
 export const assetQueryKeys = {
   scope: organizationScope,
@@ -31,9 +38,26 @@ export const assetQueryKeys = {
     ...assetScope(organizationId),
     'detail',
   ] as const,
+  folderScope,
   folders: (organizationId: null | string) => [
-    ...organizationScope(organizationId),
-    'folders',
+    ...folderScope(organizationId),
+    'all',
+  ] as const,
+  projectFolders: (
+    organizationId: null | string,
+    projectId: null | string,
+  ) => [
+    ...folderScope(organizationId),
+    'project',
+    projectId,
+  ] as const,
+  projectFolderTree: (
+    organizationId: null | string,
+    projectId: null | string,
+  ) => [
+    ...folderScope(organizationId),
+    'project-tree',
+    projectId,
   ] as const,
   tags: (organizationId: null | string) => [
     ...organizationScope(organizationId),

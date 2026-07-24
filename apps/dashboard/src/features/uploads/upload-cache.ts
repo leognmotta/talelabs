@@ -13,7 +13,11 @@ export interface UploadCacheAdapter {
   /** Creates one folder and publishes it into the organization folder cache. */
   createFolder: (
     organizationId: string,
-    input: { name: string, parentId: null | string },
+    input: {
+      name: string
+      parentId: null | string
+      projectId: null | string
+    },
     signal: AbortSignal,
   ) => Promise<Folder>
 }

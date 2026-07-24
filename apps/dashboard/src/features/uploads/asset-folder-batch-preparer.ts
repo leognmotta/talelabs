@@ -1,3 +1,5 @@
+/** Resolves and creates upload folder paths inside one exact Project scope. */
+
 import type { UploadCacheAdapter } from './upload-cache'
 import type { RuntimeUploadBatch } from './upload-runtime'
 import type { UploadItemState } from './upload.types'
@@ -19,6 +21,7 @@ function batchItems(batchId: string) {
     .filter((item): item is UploadItemState => Boolean(item)) ?? []
 }
 
+/** Reports whether a queued upload batch currently targets any given folder. */
 export function assetFolderBatchTargetsFolders(
   batch: RuntimeUploadBatch,
   folderIds: ReadonlySet<string>,
@@ -58,6 +61,7 @@ export function assetFolderBatchTargetsFolders(
   })
 }
 
+/** Creates missing path segments and assigns every queued upload destination. */
 export async function prepareAssetFolderBatch(
   batch: RuntimeUploadBatch,
   cache: UploadCacheAdapter,
@@ -106,7 +110,7 @@ export async function prepareAssetFolderBatch(
     const existing = folderByParentAndName.get(getFolderKey(parentId, name))
     const folder = existing ?? await cache.createFolder(
       batch.organizationId,
-      { name, parentId },
+      { name, parentId, projectId: batch.projectId },
       batch.controller.signal,
     )
     assertActive()

@@ -45,89 +45,95 @@ export function applyAssetMoveToFolderCache(
   if (movingAssets.length === 0)
     return
 
-  queryClient.setQueryData<FolderListResponse>(
-    assetQueryKeys.folders(organizationId),
-    (current) => {
-      if (!current)
-        return current
+  const entries = queryClient.getQueriesData<FolderListResponse>({
+    queryKey: assetQueryKeys.folderScope(organizationId),
+  })
+  for (const [queryKey] of entries) {
+    queryClient.setQueryData<FolderListResponse>(
+      queryKey,
+      (current) => {
+        if (!current)
+          return current
 
-      const foldersById = new Map(
-        current.data.map(folder => [folder.id, folder]),
-      )
-      const itemCountDeltas = new Map<string, number>()
-      const sizeDeltas = new Map<string, number>()
-      const removedThumbnails = new Map<string, Set<string>>()
-      const assetsBySource = new Map<string, typeof movingAssets>()
-      for (const asset of movingAssets) {
-        if (!asset.folderId)
-          continue
-
-        const sourceAssets = assetsBySource.get(asset.folderId) ?? []
-        sourceAssets.push(asset)
-        assetsBySource.set(asset.folderId, sourceAssets)
-      }
-
-      for (const [sourceFolderId, sourceAssets] of assetsBySource) {
-        addDelta(itemCountDeltas, sourceFolderId, -sourceAssets.length)
-        addSizeDeltaToLineage(
-          foldersById,
-          sizeDeltas,
-          sourceFolderId,
-          -sourceAssets.reduce(
-            (total, asset) => total + (asset.sizeBytes ?? 0),
-            0,
-          ),
+        const foldersById = new Map(
+          current.data.map(folder => [folder.id, folder]),
         )
-        removedThumbnails.set(
-          sourceFolderId,
-          new Set(
-            sourceAssets.flatMap(asset =>
-              asset.thumbnailUrl ? [asset.thumbnailUrl] : [],
+        const itemCountDeltas = new Map<string, number>()
+        const sizeDeltas = new Map<string, number>()
+        const removedThumbnails = new Map<string, Set<string>>()
+        const assetsBySource = new Map<string, typeof movingAssets>()
+        for (const asset of movingAssets) {
+          if (!asset.folderId)
+            continue
+
+          const sourceAssets = assetsBySource.get(asset.folderId) ?? []
+          sourceAssets.push(asset)
+          assetsBySource.set(asset.folderId, sourceAssets)
+        }
+
+        for (const [sourceFolderId, sourceAssets] of assetsBySource) {
+          addDelta(itemCountDeltas, sourceFolderId, -sourceAssets.length)
+          addSizeDeltaToLineage(
+            foldersById,
+            sizeDeltas,
+            sourceFolderId,
+            -sourceAssets.reduce(
+              (total, asset) => total + (asset.sizeBytes ?? 0),
+              0,
             ),
-          ),
+          )
+          removedThumbnails.set(
+            sourceFolderId,
+            new Set(
+              sourceAssets.flatMap(asset =>
+                asset.thumbnailUrl ? [asset.thumbnailUrl] : [],
+              ),
+            ),
+          )
+        }
+
+        if (destinationFolderId) {
+          addDelta(itemCountDeltas, destinationFolderId, movingAssets.length)
+          addSizeDeltaToLineage(
+            foldersById,
+            sizeDeltas,
+            destinationFolderId,
+            movingAssets.reduce(
+              (total, asset) => total + (asset.sizeBytes ?? 0),
+              0,
+            ),
+          )
+        }
+
+        const destinationThumbnails = movingAssets.flatMap(asset =>
+          asset.thumbnailUrl ? [asset.thumbnailUrl] : [],
         )
-      }
 
-      if (destinationFolderId) {
-        addDelta(itemCountDeltas, destinationFolderId, movingAssets.length)
-        addSizeDeltaToLineage(
-          foldersById,
-          sizeDeltas,
-          destinationFolderId,
-          movingAssets.reduce(
-            (total, asset) => total + (asset.sizeBytes ?? 0),
-            0,
-          ),
-        )
-      }
+        return {
+          data: current.data.map((folder) => {
+            const itemCountDelta = itemCountDeltas.get(folder.id) ?? 0
+            const sizeDelta = sizeDeltas.get(folder.id) ?? 0
+            const thumbnailsToRemove = removedThumbnails.get(folder.id)
+            const retainedThumbnails = thumbnailsToRemove
+              ? folder.thumbnailUrls.filter(url => !thumbnailsToRemove.has(url))
+              : folder.thumbnailUrls
+            const thumbnailUrls
+              = folder.id === destinationFolderId
+                ? [
+                    ...new Set([...destinationThumbnails, ...retainedThumbnails]),
+                  ].slice(0, 4)
+                : retainedThumbnails
 
-      const destinationThumbnails = movingAssets.flatMap(asset =>
-        asset.thumbnailUrl ? [asset.thumbnailUrl] : [],
-      )
-
-      return {
-        data: current.data.map((folder) => {
-          const itemCountDelta = itemCountDeltas.get(folder.id) ?? 0
-          const sizeDelta = sizeDeltas.get(folder.id) ?? 0
-          const thumbnailsToRemove = removedThumbnails.get(folder.id)
-          const retainedThumbnails = thumbnailsToRemove
-            ? folder.thumbnailUrls.filter(url => !thumbnailsToRemove.has(url))
-            : folder.thumbnailUrls
-          const thumbnailUrls
-            = folder.id === destinationFolderId
-              ? [
-                  ...new Set([...destinationThumbnails, ...retainedThumbnails]),
-                ].slice(0, 4)
-              : retainedThumbnails
-
-          return {
-            ...folder,
-            itemCount: Math.max(0, folder.itemCount + itemCountDelta),
-            thumbnailUrls,
-            totalSizeBytes: Math.max(0, folder.totalSizeBytes + sizeDelta),
-          }
-        }),
-      }
-    },
-  )
+            return {
+              ...folder,
+              assetCount: Math.max(0, folder.assetCount + itemCountDelta),
+              itemCount: Math.max(0, folder.itemCount + itemCountDelta),
+              thumbnailUrls,
+              totalSizeBytes: Math.max(0, folder.totalSizeBytes + sizeDelta),
+            }
+          }),
+        }
+      },
+    )
+  }
 }

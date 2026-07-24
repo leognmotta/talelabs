@@ -1,8 +1,8 @@
 /** Folder drop-target registration with live move-admission feedback. */
 
-import type { Folder } from '@talelabs/sdk'
 import type { RefObject } from 'react'
 import type { LibraryDragData } from './asset-drag-data'
+import type { FolderTreeNode } from './folder-tree-metrics'
 
 import { dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
 import { useEffect, useRef, useState } from 'react'
@@ -18,11 +18,14 @@ export function useFolderDropTarget({
   elementRef,
   folder,
   folders,
+  onHoverChange,
 }: {
   activeDragData: LibraryDragData | null
   elementRef: RefObject<HTMLElement | null>
-  folder: Folder
-  folders: Folder[]
+  folder: FolderTreeNode
+  folders: readonly FolderTreeNode[]
+  /** Reports temporary hover expansion for contextual folder trees. */
+  onHoverChange?: (over: boolean) => void
 }) {
   const folderRef = useRef(folder)
   const foldersRef = useRef(folders)
@@ -43,11 +46,20 @@ export function useFolderDropTarget({
       canDrop: ({ source }) => isLibraryDragData(source.data),
       getData: () => ({ type: 'folder-drop-target', folderId: folderRef.current.id }),
       getDropEffect: () => 'move',
-      onDragEnter: () => setIsOver(true),
-      onDragLeave: () => setIsOver(false),
-      onDrop: () => setIsOver(false),
+      onDragEnter: () => {
+        setIsOver(true)
+        onHoverChange?.(true)
+      },
+      onDragLeave: () => {
+        setIsOver(false)
+        onHoverChange?.(false)
+      },
+      onDrop: () => {
+        setIsOver(false)
+        onHoverChange?.(false)
+      },
     })
-  }, [elementRef])
+  }, [elementRef, onHoverChange])
 
   if (!activeDragData)
     return 'idle'
