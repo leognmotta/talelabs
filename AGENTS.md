@@ -7,11 +7,12 @@ docs/assets-flows-mvp-contract.md
 docs/talelabs-product-vision.md
 ```
 
-That document defines what TaleLabs is. The current product reset narrows the
-active product to an Asset foundation and a visual creation canvas:
+That document defines what TaleLabs is. The active product is an Asset
+foundation, direct creation, a visual creation canvas, and an optional Project
+organization layer:
 
 ```txt
-Assets -> Flows -> Generated Assets -> Continued Iteration
+Create or Flows -> Generated Assets -> Assets -> Projects -> Continued Iteration
 ```
 
 Keep implementation aligned with this active build order unless the user
@@ -26,6 +27,7 @@ explicitly changes it:
 6. Provider-independent durable run engine with deterministic mock adapters
 7. User-owned run UX and end-to-end QA
 8. Real provider integration
+9. Projects and generated-Asset organization
 ```
 
 Elements are an active product entity since 2026-07-18: an Element is a
@@ -38,6 +40,13 @@ design; never reintroduce per-kind schemas, asset roles, source/master kinds,
 readiness rules, or multi-output Element nodes without a new explicit product
 decision. Do not describe Elements with version labels — there is one
 Elements feature, in active development.
+
+Projects are the approved organization milestone since 2026-07-24. A Project
+is one optional, organization-scoped home for Assets, Asset folders, Create
+sessions, Flows, Elements, and a Project Brief. Project routes must compose the
+existing feature surfaces instead of creating parallel implementations.
+`docs/feature-research/projects-and-asset-organization.md` is the binding
+Project implementation specification.
 
 The user approved the generation-node product design and M5 run-engine scope on
 2026-07-14. M5 may implement Trigger.dev orchestration, immutable run snapshots,
@@ -53,6 +62,7 @@ Source-of-truth design documents:
 docs/assets-flows-mvp-contract.md = binding active MVP boundary
 docs/talelabs-product-vision.md   = product direction and scope
 docs/elements.md                  = binding Elements design
+docs/feature-research/projects-and-asset-organization.md = binding Projects and Asset organization design
 docs/flow-nodes-planning.md       = Flow node, runtime-value, batching, execution, and Tool semantics
 docs/db-design-planning-v2.md     = database schema (PostgreSQL, Kysely, camelCase)
 docs/api-design-planning-v2.md    = API contract for the base features
@@ -69,7 +79,9 @@ Before planning or implementing a researched capability, read its file under
 database/API designs, and execution plan. Adding a research document must not
 silently add the feature to an MVP milestone.
 
-Deprecated documents — do not implement from these; they describe retired architectures (the Generate/Projects/Brands/Products/Characters era and the failed multi-role Element experiment):
+Deprecated documents — do not implement from these; they describe the retired
+Generate/Brand/Product/Character product suite, its unrelated historical
+Project model, and the failed multi-role Element experiment:
 
 ```txt
 docs/db-design-planning.md
