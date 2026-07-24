@@ -40,6 +40,8 @@ export interface DirectGenerationRequest {
   byokProviders?: ('fal' | 'openrouter')[]
   /** Existing Create session; omitted when first generation creates one. */
   createSessionId?: string
+  /** Per-request output destination override, including an explicit root. */
+  destination?: { folderId: null | string }
   /** Paid-boundary policy for this request. */
   executionMode: 'debug' | 'live'
   /** Environment that executes provider lifecycle work. */
@@ -63,6 +65,8 @@ export interface DirectGenerationRequest {
   operationId: string
   /** Expected provider output count. */
   outputCount: number
+  /** Project assigned when admission creates the first session. */
+  projectId?: null | string
   /** Narrow structured prompt fields. */
   promptTemplates: Record<string, PromptTemplate>
   /** Provider-neutral scalar settings. */

@@ -3,7 +3,7 @@
 import type { JsonValue } from '@talelabs/db'
 
 import { createId } from '@paralleldrive/cuid2'
-import { db } from '@talelabs/db'
+import { db, lockFolderStructure } from '@talelabs/db'
 import {
   BROWSER_EXECUTION_ENABLED,
   createFlowRunSnapshotArtifact,
@@ -21,6 +21,10 @@ import { acquireFlowRunAdmissionLocks } from '../../data/flow-run-admission.data
 import { localUserIdOrNull } from '../../data/flow-run-planning.data.js'
 import { cloneRunExecutionRowsForRetry } from '../../data/run-retry.data.js'
 import { HttpError, TenantResourceNotFoundError } from '../../middleware/error.js'
+import {
+  lockActiveProjects,
+  lockProjectScopes,
+} from '../projects/project-scope.js'
 import { assertRunAdmissionCapacity } from './admission-policy.js'
 import { dispatchFlowRun } from './dispatch.service.js'
 import {
@@ -94,6 +98,25 @@ export async function retryRun(input: {
       return
     }
 
+    const initialDestination = await trx.selectFrom('flowRuns')
+      .select(['assetFolderId', 'projectId'])
+      .where('organizationId', '=', input.organizationId)
+      .where('id', '=', input.runId)
+      .executeTakeFirst()
+    if (!initialDestination)
+      throw new TenantResourceNotFoundError()
+    await lockProjectScopes(
+      trx,
+      input.organizationId,
+      [initialDestination.projectId],
+    )
+    await lockActiveProjects(
+      trx,
+      input.organizationId,
+      [initialDestination.projectId],
+    )
+    await lockFolderStructure(trx, input.organizationId)
+
     const original = await trx.selectFrom('flowRuns')
       .selectAll()
       .where('organizationId', '=', input.organizationId)
@@ -143,6 +166,23 @@ export async function retryRun(input: {
         'invalid_state',
         'Only failed, partial, or canceled runs can be retried.',
       )
+    }
+    if (original.assetFolderId) {
+      let folderQuery = trx.selectFrom('folders')
+        .select('id')
+        .where('organizationId', '=', input.organizationId)
+        .where('id', '=', original.assetFolderId)
+      folderQuery = original.projectId
+        ? folderQuery.where('projectId', '=', original.projectId)
+        : folderQuery.where('projectId', 'is', null)
+      const destinationFolder = await folderQuery.forShare().executeTakeFirst()
+      if (!destinationFolder) {
+        throw new HttpError(
+          409,
+          'retry_not_available',
+          'The captured output folder is no longer available.',
+        )
+      }
     }
     const unsettledProviderJob = await trx.selectFrom('generationJobs')
       .select(['id', 'providerSettlementStatus'])
@@ -255,6 +295,7 @@ export async function retryRun(input: {
     }
 
     await trx.insertInto('flowRuns').values({
+      assetFolderId: original.assetFolderId,
       browserExecutorStatus: executionRuntime === 'browser' ? 'ready' : null,
       browserExecutorUpdatedAt: executionRuntime === 'browser' ? new Date() : null,
       createdBy,
@@ -267,6 +308,7 @@ export async function retryRun(input: {
       idempotencyKey: input.idempotencyKey!,
       mode: original.mode,
       organizationId: input.organizationId,
+      projectId: original.projectId,
       requestHash,
       retryOfRunId: original.id,
       snapshotHash: retrySnapshot.hash,

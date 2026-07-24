@@ -3,7 +3,7 @@
 import { z } from '@hono/zod-openapi'
 import { PromptTemplateSchema } from '@talelabs/flows'
 
-import { Cuid2Schema } from '../../schemas/common.js'
+import { Cuid2Schema, NullableCuid2Schema } from '../../schemas/common.js'
 
 /** Supported Flow graph-selection modes. */
 export const FlowRunModeSchema = z.enum([
@@ -77,6 +77,10 @@ const CreateDirectRunBaseSchema = z.object({
 export const CreateDirectRunRequestSchema = CreateDirectRunBaseSchema
   .extend({
     createSessionId: Cuid2Schema.optional(),
+    destination: z.object({
+      folderId: NullableCuid2Schema,
+    }).strict().optional(),
+    projectId: NullableCuid2Schema.optional(),
   })
   .openapi('CreateDirectRunRequest')
 

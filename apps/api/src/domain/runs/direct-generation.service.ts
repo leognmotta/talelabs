@@ -11,7 +11,7 @@ import type { DirectGenerationRequest } from './direct-generation-resolution.js'
 import type { PublicRunCostEstimate } from './provider-cost.service.js'
 
 import { createId } from '@paralleldrive/cuid2'
-import { db } from '@talelabs/db'
+import { db, lockFolderStructure } from '@talelabs/db'
 import {
   CANONICAL_SERIALIZER_VERSION,
   createFlowRunSnapshotArtifact,
@@ -29,6 +29,14 @@ import {
 } from '../../data/create-sessions.data.js'
 import { acquireFlowRunAdmissionLocks } from '../../data/flow-run-admission.data.js'
 import { HttpError } from '../../middleware/error.js'
+import {
+  resolveAssetDestination,
+} from '../projects/asset-destination.js'
+import {
+  lockActiveProject,
+  lockProjectScopes,
+  touchProject,
+} from '../projects/project-scope.js'
 import {
   assertRunAdmissionCapacity,
   assertRunRuntimePolicy,
@@ -235,20 +243,75 @@ export async function admitDirectGeneration(input: {
       organizationId: input.organizationId,
       trx,
     })
-    const createSessionId = await resolveCreateSessionForAdmission({
-      createSessionId: input.body.createSessionId ?? null,
-      createdBy,
-      newSessionId,
-      organizationId: input.organizationId,
-      trx,
-    })
-    if (!createSessionId) {
+    const existingSession = input.body.createSessionId
+      ? await trx.selectFrom('createSessions')
+          .select('projectId')
+          .where('id', '=', input.body.createSessionId)
+          .where('organizationId', '=', input.organizationId)
+          .where('createdBy', '=', createdBy)
+          .where('deletedAt', 'is', null)
+          .executeTakeFirst()
+      : null
+    if (input.body.createSessionId && !existingSession) {
       throw new HttpError(
         404,
         'not_found',
         'Create session not found.',
       )
     }
+    if (
+      existingSession
+      && input.body.projectId !== undefined
+      && input.body.projectId !== existingSession.projectId
+    ) {
+      throw new HttpError(
+        404,
+        'not_found',
+        'Create session not found.',
+      )
+    }
+    const sourceProjectId = existingSession
+      ? existingSession.projectId
+      : input.body.projectId ?? null
+    await lockProjectScopes(
+      trx,
+      input.organizationId,
+      [sourceProjectId],
+    )
+    await lockActiveProject(
+      trx,
+      input.organizationId,
+      sourceProjectId,
+    )
+    await lockFolderStructure(trx, input.organizationId)
+    const createSession = await resolveCreateSessionForAdmission({
+      createSessionId: input.body.createSessionId ?? null,
+      createdBy,
+      newSessionId,
+      organizationId: input.organizationId,
+      projectId: sourceProjectId,
+      trx,
+    })
+    if (!createSession || createSession.projectId !== sourceProjectId) {
+      throw new HttpError(
+        404,
+        'not_found',
+        'Create session not found.',
+      )
+    }
+    const createSessionId = createSession.id
+    const destination = await resolveAssetDestination({
+      explicit: input.body.destination,
+      organizationId: input.organizationId,
+      source: {
+        assetFolderId: createSession.assetFolderId,
+        id: createSession.id,
+        kind: 'create',
+        name: createSession.name,
+        projectId: createSession.projectId,
+      },
+      trx,
+    })
 
     const lockedAssets = await loadDirectGenerationAssets({
       assetIds: requestAssetIds(input.body),
@@ -328,6 +391,8 @@ export async function admitDirectGeneration(input: {
       idempotencyKey,
       mode: 'direct',
       organizationId: input.organizationId,
+      assetFolderId: destination.folderId,
+      projectId: destination.projectId,
       requestHash,
       retryOfRunId: null,
       snapshotHash: artifact.hash,
@@ -350,6 +415,11 @@ export async function admitDirectGeneration(input: {
       trx,
       input.organizationId,
       createSessionId,
+    )
+    await touchProject(
+      trx,
+      input.organizationId,
+      destination.projectId,
     )
   })
 

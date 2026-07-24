@@ -5,7 +5,7 @@ import type { ProviderCostInputAsset } from '@talelabs/providers/server'
 
 import type { RunMode } from './contracts.js'
 import { createId } from '@paralleldrive/cuid2'
-import { db } from '@talelabs/db'
+import { db, lockFolderStructure } from '@talelabs/db'
 import {
   CANONICAL_SERIALIZER_VERSION,
   createFlowRunSnapshotArtifact,
@@ -22,6 +22,12 @@ import { FLOW_RUN_EXECUTOR_CONTRACT_VERSION } from '@talelabs/trigger'
 import { acquireFlowRunAdmissionLocks } from '../../data/flow-run-admission.data.js'
 import { localUserIdOrNull } from '../../data/flow-run-planning.data.js'
 import { HttpError, TenantResourceNotFoundError } from '../../middleware/error.js'
+import { resolveAssetDestination } from '../projects/asset-destination.js'
+import {
+  lockActiveProject,
+  lockProjectScopes,
+  touchProject,
+} from '../projects/project-scope.js'
 import {
   assertRunAdmissionCapacity,
   assertRunRuntimePolicy,
@@ -56,6 +62,7 @@ export async function admitFlowRun(input: {
     flowId: string
     fundingSource: 'byok' | 'credits'
     mode: RunMode
+    destination?: { folderId: null | string }
     selectedNodeIds?: string[]
     targetNodeId?: string
   }
@@ -151,14 +158,37 @@ export async function admitFlowRun(input: {
 
     await assertRunAdmissionCapacity({ organizationId: input.organizationId, trx })
 
+    const initialFlow = await trx.selectFrom('flows')
+      .select('projectId')
+      .where('organizationId', '=', input.organizationId)
+      .where('id', '=', input.body.flowId)
+      .executeTakeFirst()
+    if (!initialFlow)
+      throw new TenantResourceNotFoundError()
+    await lockProjectScopes(
+      trx,
+      input.organizationId,
+      [initialFlow.projectId],
+    )
+    await lockActiveProject(
+      trx,
+      input.organizationId,
+      initialFlow.projectId,
+    )
+    await lockFolderStructure(trx, input.organizationId)
     const current = await trx.selectFrom('flows')
-      .select('revision')
+      .select(['assetFolderId', 'name', 'projectId', 'revision'])
       .where('organizationId', '=', input.organizationId)
       .where('id', '=', input.body.flowId)
       .forUpdate()
       .executeTakeFirst()
-    if (!current)
-      throw new TenantResourceNotFoundError()
+    if (!current || current.projectId !== initialFlow.projectId) {
+      throw new HttpError(
+        409,
+        'source_location_changed',
+        'The Flow location changed during run admission.',
+      )
+    }
     if (Number(current.revision) !== input.body.expectedFlowRevision) {
       throw new HttpError(
         409,
@@ -278,8 +308,21 @@ export async function admitFlowRun(input: {
         }],
       )
     }
+    const destination = await resolveAssetDestination({
+      explicit: input.body.destination,
+      organizationId: input.organizationId,
+      source: {
+        assetFolderId: current.assetFolderId,
+        id: input.body.flowId,
+        kind: 'flow',
+        name: current.name,
+        projectId: current.projectId,
+      },
+      trx,
+    })
 
     await trx.insertInto('flowRuns').values({
+      assetFolderId: destination.folderId,
       browserExecutorStatus: executionRuntime === 'browser' ? 'ready' : null,
       browserExecutorUpdatedAt: executionRuntime === 'browser' ? new Date() : null,
       createdBy,
@@ -291,6 +334,7 @@ export async function admitFlowRun(input: {
       idempotencyKey: input.idempotencyKey!,
       mode: input.body.mode,
       organizationId: input.organizationId,
+      projectId: destination.projectId,
       requestHash,
       retryOfRunId: null,
       snapshotHash: artifact.hash,
@@ -310,6 +354,11 @@ export async function admitFlowRun(input: {
       runId,
       trx,
     })
+    await touchProject(
+      trx,
+      input.organizationId,
+      destination.projectId,
+    )
   })
 
   if (admittedRunId === runId && executionRuntime === 'managed') {

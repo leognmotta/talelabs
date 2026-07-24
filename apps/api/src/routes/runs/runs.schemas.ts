@@ -142,6 +142,9 @@ export const RunCostEstimateSchema = z.discriminatedUnion('status', [
 /** Request body for admitting a tenant-scoped Flow run. */
 export const CreateRunRequestSchema = z
   .object({
+    destination: z.object({
+      folderId: NullableCuid2Schema,
+    }).strict().optional(),
     executionMode: FlowRunExecutionModeSchema.default('live'),
     executionRuntime: FlowRunExecutionRuntimeSchema.default('managed'),
     expectedPlanHash: z
@@ -267,8 +270,10 @@ export const FlowRunSchema = z
     executionMode: FlowRunExecutionModeSchema,
     executionRuntime: FlowRunExecutionRuntimeSchema,
     createSessionId: NullableCuid2Schema,
+    assetFolderId: NullableCuid2Schema,
     flowId: NullableCuid2Schema,
     mode: RunModeSchema,
+    projectId: NullableCuid2Schema,
     source: RunSourceSchema,
     targetNodeId: NullableCuid2Schema,
     status: FlowRunStatusSchema,

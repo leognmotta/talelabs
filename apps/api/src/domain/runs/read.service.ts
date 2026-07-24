@@ -19,8 +19,8 @@ import { requestSummaryFromJob } from './request-summary.js'
 import { safeFailureFields } from './response-safety.js'
 
 const RUN_HISTORY_OUTPUT_LIMIT = 16
-
 const runHistoryProjection = [
+  'assetFolderId',
   'browserExecutorCode',
   'browserExecutorStatus',
   'browserExecutorUpdatedAt',
@@ -33,13 +33,13 @@ const runHistoryProjection = [
   'flowId',
   'id',
   'mode',
+  'projectId',
   'source',
   'snapshotHash',
   'startedAt',
   'status',
   'targetNodeId',
 ] as const
-
 function browserExecutionFromRun(run: {
   browserExecutorCode: string | null
   browserExecutorStatus:
@@ -166,6 +166,7 @@ export async function getRunDetail(
     browserExecution: browserExecutionFromRun(run),
     executionMode: executionModeFromSnapshot(run.graphSnapshot),
     executionRuntime: run.executionRuntime,
+    assetFolderId: run.assetFolderId,
     createSessionId: run.createSessionId,
     flowId: run.flowId,
     mode: run.mode as
@@ -176,6 +177,7 @@ export async function getRunDetail(
     | 'selection'
     | 'upstream',
     source: run.source,
+    projectId: run.projectId,
     targetNodeId: run.targetNodeId,
     status: run.status,
     planHash: ((run.graphSnapshot as any)?.source?.flowPlanHash
@@ -561,6 +563,7 @@ export async function listRunHistory(input: {
       browserExecution: browserExecutionFromRun(run),
       executionMode: run.executionMode === 'debug' ? 'debug' as const : 'live' as const,
       executionRuntime: run.executionRuntime,
+      assetFolderId: run.assetFolderId,
       createSessionId: run.createSessionId,
       flowId: run.flowId,
       mode: run.mode as
@@ -571,6 +574,7 @@ export async function listRunHistory(input: {
       | 'selection'
       | 'upstream',
       source: run.source,
+      projectId: run.projectId,
       targetNodeId: run.targetNodeId,
       status: run.status,
       planHash: run.planHash ?? '',
