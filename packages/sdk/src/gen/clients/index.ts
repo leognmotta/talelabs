@@ -24,6 +24,7 @@ export * from "./getFlowsId.ts";
 export * from "./getFlowsIdGraph.ts";
 export * from "./getFlowsIdReferences.ts";
 export * from "./getFolders.ts";
+export * from "./getFoldersTree.ts";
 export * from "./getMe.ts";
 export * from "./getProjects.ts";
 export * from "./getProjectsProjectid.ts";
