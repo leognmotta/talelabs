@@ -1,7 +1,10 @@
 # TaleLabs — API Design v2
 
-> **Active MVP override (2026-07-14):** the product API used by the dashboard is
-> Assets + Flows. See `assets-flows-mvp-contract.md`.
+> **Active MVP override (2026-07-24):** the product API used by the dashboard is
+> Create + Assets + Flows + Elements, with Projects as the optional
+> organization layer. See `assets-flows-mvp-contract.md`,
+> `elements.md`, and
+> `feature-research/projects-and-asset-organization.md`.
 >
 > **Elements note (2026-07-18):** every Element contract that appeared in this
 > document (source/master kinds, roles, readiness, dormant endpoints) is
@@ -17,12 +20,12 @@
 Supersedes `api-design-planning.md` (deprecated). Companion to `db-design-planning-v2.md` — every endpoint here maps onto that schema and its contracts; nothing is invented API-side that the DB doc doesn't back.
 
 Scope: the active base features in build order — **Assets → Folders → Flows
-(graph sync) → provider-independent mock engine → controlled provider
-integration**. M5 accepts node, downstream, upstream, selection, and full-flow
-run modes against deterministic provider mocks. Deferred: Tools, Recipes,
-credits enforcement (`/runs/estimate`, `402`), bulk operations, collaboration,
-and Elements. Narrow Trigger.dev run-status realtime is part of M5; general
-collaboration/realtime editing is deferred.
+(graph sync) → provider-independent engine → controlled provider integration →
+Direct Create → Projects and generated-Asset organization**. M5 accepts node,
+downstream, upstream, selection, and full-flow run modes. Deferred: Tools,
+Recipes, credits enforcement, broad bulk operations, and collaboration. Narrow
+Trigger.dev run-status realtime is part of M5; general collaboration/realtime
+editing is deferred.
 
 This is the **internal product API** consumed by the TaleLabs web app — not a public API. When a public surface ships, it gets its own versioned contract and auth scheme.
 
@@ -117,6 +120,7 @@ type ApiError = {
 | Flows    | `GET /flows` · `POST /flows` · `GET /flows/:id` · `PATCH /flows/:id` · `DELETE /flows/:id` · `GET /flows/:id/graph` · `GET /flows/:id/references` · `POST /flows/:id/graph` · `GET /flows/:id/nodes/:nodeId/results`                                                                                            |
 | Elements | `GET /elements` · `POST /elements` · `GET /elements/:id` · `PATCH /elements/:id` · `DELETE /elements/:id` · `PATCH /elements/:id/references`                                                                                                                                                                     |
 | Create Sessions | `GET /create-sessions` · `GET /create-sessions/:id` · `PATCH /create-sessions/:id` · `DELETE /create-sessions/:id`                                                                                                                                                                                         |
+| Projects | `GET/POST /projects` · `GET/PATCH /projects/:projectId` · `POST /projects/:projectId/archive` · `POST /projects/:projectId/restore` · `GET /projects/:projectId/home` · `GET/PUT /projects/:projectId/brief` · `GET /projects/:projectId/brief/mentions` · `POST /projects/:projectId/brief/mentions/resolve` |
 | Runs     | `POST /flows/:id/run-plans` · `POST /runs` · `POST /runs/create/estimate` · `POST /runs/create` · `GET /runs` · `GET /runs/active` · `GET /runs/:id` · `POST /runs/:id/cancel` · `POST /runs/:id/retry` · `POST /runs/:id/realtime-token`                                                                                  |
 | Config   | `GET /config/generation`                                                                                                                                                                                                                                                                                        |
 
@@ -128,8 +132,27 @@ retired multi-role Element endpoints were deleted, not deferred.
 ## Shared resource shapes
 
 ```ts
+type Project = {
+  id: string;
+  name: string;
+  description: string;
+  coverAssetId: string | null;
+  defaultAssetFolderId: string | null;
+  archivedAt: string | null;
+  counts: {
+    assets: number;
+    folders: number;
+    flows: number;
+    createSessions: number;
+    elements: number;
+  };
+  createdAt: string;
+  updatedAt: string;
+};
+
 type Folder = {
   id: string;
+  projectId: string | null; // null = Private
   parentId: string | null;
   name: string;
   itemCount: number;
@@ -166,6 +189,7 @@ type Asset = {
   height: number | null;
   durationSeconds: number | null;
   folderId: string | null;
+  projectId: string | null; // null = Private
   generationJobId: string | null;
   outputIndex: number | null;
   lifecycle: AssetLifecycle;
@@ -252,6 +276,7 @@ type ElementDetail = Element & {
 
 type Flow = {
   id: string;
+  projectId: string | null;
   name: string;
   revision: number;
   viewport: { x: number; y: number; zoom: number };
@@ -309,7 +334,9 @@ type JobStatus = "pending" | "running" | "succeeded" | "failed" | "canceled";
 
 type FlowRun = {
   id: string;
+  assetFolderId: string | null; // immutable captured output destination
   flowId: string | null;
+  projectId: string | null; // immutable captured ownership
   mode: RunMode;
   targetNodeId: string | null;
   status: RunStatus;
@@ -487,6 +514,36 @@ Response: `201` → `Asset` (`200` on replay). Grant invalid/expired/object miss
 
 ---
 
+## Projects
+
+Projects are optional organization-scoped homes, not parallel creative
+documents. Their routes compose the existing Assets, folders, Create, Flows,
+Elements, and Brief surfaces:
+
+```txt
+GET    /projects?archive=&search=&limit=&cursor=
+POST   /projects { name, description? }
+GET    /projects/:projectId
+PATCH  /projects/:projectId {
+  name?, description?, coverAssetId?, defaultAssetFolderId?
+}
+POST   /projects/:projectId/archive
+POST   /projects/:projectId/restore
+GET    /projects/:projectId/home
+GET    /projects/:projectId/brief
+PUT    /projects/:projectId/brief { baseRevision, document }
+GET    /projects/:projectId/brief/mentions
+POST   /projects/:projectId/brief/mentions/resolve
+```
+
+Project list/detail responses include grouped counts and an optional bounded
+cover projection. Cover Assets and default folders must belong to the same
+Project. Brief writes are revision-checked and mention reads are bounded. All
+Project routes use the active organization boundary; cross-tenant IDs remain
+indistinguishable from missing resources.
+
+---
+
 ## Assets
 
 **One canonical listing endpoint.** The global library, the canvas asset picker, and the reference selector are all `GET /assets` + filters — no per-surface variants. `?assetId=` on `GET /elements` answers Element membership; managing an Element's references uses `PATCH /elements/:id/references` (`docs/elements.md`). There is no `GET /elements/:id/assets` role-management subresource.
@@ -498,6 +555,9 @@ Response: `201` → `Asset` (`200` on replay). Grant invalid/expired/object miss
 | `type`      | `AssetType` (repeatable)             | `?type=image&type=video`                       |
 | `source`    | `AssetSource`                        |                                                |
 | `folderId`  | string \| `'root'`                   | `'root'` = no folder                           |
+| `projectId` | string \| `'private'`                | omitted = every location; `'private'` = null   |
+| `generatedByFlowId` | string                       | generated outputs attributed to one Flow       |
+| `generatedByCreateSessionId` | string              | generated outputs attributed to one session    |
 | `favorite`  | boolean                              | current user's favorites only                  |
 | `tagId`     | string (repeatable)                  | any selected tag                               |
 | `search`    | string                               | `ilike` on name (pg_trgm later; same contract) |
@@ -505,7 +565,10 @@ Response: `201` → `Asset` (`200` on replay). Grant invalid/expired/object miss
 | `sort`      | `createdAt` \| `name` \| `sizeBytes` | default `createdAt`                            |
 | `order`     | `asc` \| `desc`                      | default `desc`                                 |
 
-Purging/purged assets never appear in listings. Response: `200 ListResponse<Asset>`.
+Omitting `folderId` is an aggregate across every folder in the selected
+location; `folderId=root` selects only the physical root. The two generated-by
+filters are mutually exclusive. Purging/purged Assets never appear in
+listings. Response: `200 ListResponse<Asset>`.
 
 ### `GET /assets/:id`
 
@@ -514,7 +577,7 @@ Response: `200 AssetDetail` — render-complete for the panel: media, element li
 ### `PATCH /assets/:id`
 
 ```ts
-{ name?: string; folderId?: string | null }
+{ name?: string; folderId?: string | null; projectId?: string | null }
 ```
 
 Response: `200 Asset`.
@@ -522,12 +585,13 @@ Response: `200 Asset`.
 ### `POST /assets/move`
 
 ```ts
-{ assetIds: string[]; folderId: string | null }
+{ assetIds: string[]; folderId: string | null; projectId?: string | null }
 ```
 
 Moves up to 100 unique Assets in one organization-scoped transaction. The
-server locks and validates the complete selection and destination before any
-row changes, so the operation either moves every Asset or none. Response:
+server locks and validates the complete selection, Project, and destination
+folder before any row changes, so the operation either moves every Asset or
+none. Response:
 `200 { data: Asset[] }` in request order.
 
 ### `DELETE /assets/:id` → archive, `204`.
@@ -540,9 +604,14 @@ Guarded: `purgeRequestedAt` set → `409 invalid_state` ("permanent deletion in 
 
 Requires the client to have shown explicit confirmation (the endpoint exists so the destructive path is a distinct, auditable call — never an overload of DELETE). Marks intent (archiving if still live), dispatches the durable purge task with an explicitly global `idempotencyKey` derived from `assetId`, and returns without waiting for storage deletion. Reconciliation uses the same scope and key.
 
-**Purge must not destroy media an active generation still needs.** Purge and run creation coordinate through row locks with a fixed ordering (asset row first, always):
+**Purge must not destroy media an active generation still needs or leave a
+stale Project cover.** Project-owned mutations use Project scope → Project row
+→ Asset → Element. Purge clears a matching cover, touches the Project, then
+checks active generation use:
 
-- Purge: `select … for update` the asset row, then check `generationJobInputs` joined to jobs in `('pending','running')` — referenced by an active job → `409 invalid_state` ("asset is in use by a running generation"), nothing marked.
+- Purge: lock the owning Project before `select … for update` on the Asset, then
+  check `generationJobInputs` joined to jobs in `('pending','running')` —
+  referenced by an active job → `409 invalid_state`, nothing marked.
 - Run creation: locks its selected input asset rows (same order: by asset id) inside the creation transaction and applies the full input rule from the Runs section — `purging`/`purged` → `404` on the field; `processing`/`failed` → `409 invalid_state`. Only `ready` assets reach a provider.
 
 Because both paths take the same lock in the same order, the race has exactly two
@@ -595,15 +664,19 @@ Favorite and tag assignment endpoints accept live and archived Assets. Purging o
 Small org-scoped tree; full list, client assembles.
 
 ```
-GET    /folders                          -> 200 { data: Folder[] }   (no pagination)
-POST   /folders { name, parentId? }      -> 201 Folder
-PATCH  /folders/:id { name?, parentId? } -> 200 Folder   (parentId: null = move to root)
+GET    /folders?projectId=               -> 200 { data: Folder[] }   (no pagination)
+POST   /folders { name, parentId?, projectId? } -> 201 Folder
+PATCH  /folders/:id { name?, parentId?, projectId? } -> 200 Folder
 DELETE /folders/:id                      -> 204
 ```
 
 - Move validation runs the recursive-CTE ancestor walk **inside the write transaction**; a cycle → `400 validation_error`.
 - **Operational bounds that keep the MVP's full list, no-pagination response honest:** at most **500 folders per organization** (checked on create) and **32 levels of depth** (checked on create/move by the same ancestor CTE that already guards cycles — no extra query). Exceeding either → `400 validation_error`. Supporting larger trees requires paginated or folder-scoped metadata before raising this cap.
-- Delete semantics (mirrors FKs): subfolders cascade; contained assets drop to no-folder, never deleted.
+- Project/Private subtree moves update descendant folders, contained Assets, and
+  bound Flow/Create source folders atomically. `parentId: null` means the
+  selected Project or Private physical root.
+- Delete semantics (mirrors FKs): subfolders cascade; contained Assets drop to
+  the same Project/Private root, never delete.
 
 ---
 
@@ -628,10 +701,12 @@ elsewhere in this document are historical and equally retired.
 ### CRUD
 
 ```
-GET    /flows?search=&limit=&cursor=   -> 200 ListResponse<Flow> (sorted updatedAt desc)
-POST   /flows { name }                 -> 201 Flow               (revision 0, empty graph)
+GET    /flows?search=&projectId=&limit=&cursor= -> 200 ListResponse<Flow>
+POST   /flows { name, projectId? }     -> 201 Flow               (revision 0, empty graph)
 GET    /flows/:id                     -> 200 Flow                 (meta only — graph is separate)
-PATCH  /flows/:id { name?, viewport? }-> 200 Flow                 (viewport saves do not bump revision)
+PATCH  /flows/:id {
+  name?, viewport?, projectId?, assetFolderId?
+}                                      -> 200 Flow
 DELETE /flows/:id                     -> 204                      (graph cascades; runs/jobs history survives)
 ```
 
@@ -764,12 +839,18 @@ required `createSessionId`. Both carry the same generic `ExecutionPlan`, private
 execution contracts, durable jobs, browser/managed drivers, cancellation,
 retry, realtime, accounting, and canonical output Assets.
 
+Admission validates and captures immutable `projectId` and `assetFolderId`.
+Every Project-owned Flow/Create session lazily receives a Project-scoped
+managed output folder. An explicit request destination wins for that run
+without replacing the source default. Browser and managed finalizers consume
+the captured destination and never re-resolve mutable source or Project state.
+
 ### Create sessions
 
 ```txt
-GET    /create-sessions?search=&limit=&cursor=
+GET    /create-sessions?search=&projectId=&limit=&cursor=
 GET    /create-sessions/:id
-PATCH  /create-sessions/:id { name }
+PATCH  /create-sessions/:id { name?, projectId?, assetFolderId? }
 DELETE /create-sessions/:id
 ```
 
@@ -815,8 +896,11 @@ after locking authoritative Asset rows; this estimate is never trusted input.
 The creative body is the same as the estimate request plus the selected
 `fundingSource`, `executionRuntime`, and optional non-secret browser provider
 identifiers. It also accepts optional `createSessionId`; omission means this is
-the first run of a new session. Provider credentials and private bindings are
-forbidden.
+the first run of a new session. New sessions accept optional
+`projectId: string | null`; every admission accepts optional
+`destination: { folderId: string | null }` as a one-run override. Existing
+sessions keep their own Project identity. Provider credentials and private
+bindings are forbidden.
 
 `Idempotency-Key` is required and follows the same organization-scoped replay
 rules as Flow admission. The server authenticates and authorizes the caller,
@@ -943,6 +1027,7 @@ Request:
   expectedFlowRevision: number;
   expectedPlanHash?: string;
   mode: "node" | "downstream" | "upstream" | "selection" | "all";
+  destination?: { folderId: string | null }; // one-run override
   targetNodeId?: string; // required for node/downstream/upstream
   selectedNodeIds?: string[]; // required only for selection; unique and bounded
 }
@@ -1083,6 +1168,8 @@ Retry is a new immutable run, never a transition that reopens the source run.
 - store `retryOfRunId`, a new snapshot/hash, and the current compatible executor
   version before dispatching through the ordinary run path;
 - source run is never mutated → `202 FlowRun` for the newly admitted run;
+- a captured non-root output folder that no longer exists rejects before
+  insertion with `409 retry_not_available`;
 - an unsafe partial closure or unavailable compatible snapshot reader →
   `409 retry_not_available`; the user may instead submit a new current request.
 

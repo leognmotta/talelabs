@@ -1,6 +1,6 @@
 # TaleLabs MVP Execution Plan
 
-**Status:** active source of truth, updated 2026-07-22.
+**Status:** active source of truth, updated 2026-07-24.
 
 This plan implements the binding scope in
 `docs/assets-flows-mvp-contract.md`. It replaces the former Elements-first and
@@ -48,6 +48,7 @@ Assets
 Flows
 Elements   (shipped 2026-07-18 — simplified reference collections)
 Create Sessions (lightweight direct-history identity; never a Flow or graph)
+Projects (optional organization layer over existing creative entities)
 ```
 
 Create was approved on 2026-07-22 as a direct-generation surface over the
@@ -75,7 +76,8 @@ or multi-output Element nodes.
 7. One real provider vertical slice
 8. Reliability and internal MVP staging
 9. Direct Create sessions over the proven shared execution spine
-10. Billing and credits as a separate productization phase
+10. Projects and generated-Asset organization
+11. Billing and credits as a separate productization phase
 ```
 
 The user approved the adaptive node behavior and M5 scope on 2026-07-14.
@@ -93,7 +95,6 @@ Recipes or community templates
 Storyboard
 autonomous Create Agent or general chat
 video editor or cuts
-projects
 collaboration and comments
 triggers, schedules, and webhooks
 public galleries or share links
@@ -142,6 +143,7 @@ explicit user decision after exercising the product.
 | M4: Canvas product reset | Complete, user approved | Every approved creative node is model-adaptive and its canvas UX is accepted. |
 | M5: Provider-independent run engine | Approved | Durable runs execute immutable canvas inputs and persist canonical output Assets; deterministic mock adapters remain available for offline verification. |
 | M6: Provider integration | Active - implementation verification | Four pinned OpenRouter route families (image, video, speech, and chat) use the M5 engine with no fallback; paid acceptance is tracked in `docs/m6-real-provider-integration.md`. |
+| M6.5: Projects and Asset organization | Implemented, engineering verification active | Optional Project ownership composes existing creative surfaces and captures generated-Asset destinations immutably. |
 | M7: MVP candidate | Pending | Reliability, tenancy, staging, and user acceptance gates pass. |
 
 ---
@@ -621,7 +623,8 @@ not required until production volume demonstrates the need.
 
 ## Approved Next Milestone - Projects And Asset Organization
 
-**Status:** approved for implementation on 2026-07-24.
+**Status:** implemented on 2026-07-24; engineering verification and user-owned
+browser QA remain.
 
 Implement the organization layer defined by
 `docs/feature-research/projects-and-asset-organization.md`:

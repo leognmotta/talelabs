@@ -1,8 +1,9 @@
 # TaleLabs — Database Design v2 (PostgreSQL)
 
-> **Active MVP override (2026-07-18):** the runtime product spine is
-> **Assets → Flows → Generated Assets → Continued Iteration**, with simplified
-> Elements as reusable reference collections. Migration
+> **Active MVP override (2026-07-24):** the runtime product spine is
+> **Create or Flows → Generated Assets → Assets → Projects → Continued
+> Iteration**, with simplified Elements as reusable reference collections and
+> Projects as the optional organization layer. Migration
 > `027_reset_elements` dropped the failed multi-role Element schema and data;
 > sections 5–6 below describe the current v2 tables. See
 > `assets-flows-mvp-contract.md` and `elements.md`.
@@ -13,13 +14,19 @@
 > source `create`, `flowId = null`, a required `createSessionId`, the shared
 > immutable execution plan, ordinary generation jobs, and canonical Assets.
 
-Supersedes `db-design-planning.md`. The active MVP is designed around **Assets → Flows → Generated Assets → Continued Iteration**.
+Supersedes `db-design-planning.md`. The active MVP is designed around **Create
+or Flows → Generated Assets → Assets → Projects → Continued Iteration**.
 
-In scope: Assets, folders, Asset tags and favorites, the normalized Flow graph,
-immutable run snapshots, durable generation jobs, explicit iteration, and
-multi-context generation executed through Trigger.dev.
+In scope: Assets, Project-scoped Asset folders, Asset tags and favorites,
+Projects and Project Briefs, optional Project ownership for creative entities,
+the normalized Flow graph, immutable run snapshots and output destinations,
+durable generation jobs, explicit iteration, and multi-context generation
+executed through Trigger.dev.
 
-Out of scope (deferred, with seams noted in [Future-proofing](#future-proofing)): billing/credits enforcement (though **costs are recorded from day one** — see `generationJobs`), Recipes, Tools, Storyboard, collaboration, projects, public galleries.
+Out of scope (deferred, with seams noted in [Future-proofing](#future-proofing)):
+billing/credits enforcement (though **costs are recorded from day one** — see
+`generationJobs`), Recipes, Tools, Storyboard, collaboration, and public
+galleries.
 
 Execution has **one spine**: every Flow command (`node`, `downstream`,
 `upstream`, `selection`, or `all`) and every direct Create command creates a
@@ -29,12 +36,13 @@ steps. Future Tools reuse this spine. Credit-system design has its own planning
 document: `credits-planning.md`.
 
 Retired from v1 — these do not return: `brands`, `products`, `characters`,
-`brand_characters`, `project_*` tables, job-level `character_id`, `credit_source`,
+`brand_characters`, the old `project_*` suite, job-level `character_id`, `credit_source`,
 and `featured_at`. The retired multi-role Element **experiment** does not return
 either (dropped by migration `027_reset_elements`); simplified Elements —
 `elements` + `elementReferences`, sections 5–6 — did ship and are an active MVP
-entity (`docs/elements.md`). Flows are the creative document; Tags, folders, and
-favorites provide lightweight Asset-library organization.
+entity (`docs/elements.md`). The current `projects` and `projectBriefs` tables
+are the approved optional organization layer and are unrelated to the retired
+suite.
 
 Requires PostgreSQL 15+ (`unique nulls not distinct`, column-targeted `on delete set null`).
 
@@ -134,7 +142,10 @@ contract is at-most-once with explicit uncertainty.
 - Migration order: `folders` → `flows` → `createSessions` → `flowRuns` →
   `generationJobs` → `flowRunNodes` → `assets` → `elements` →
   `elementReferences` → `flowNodes` → `flowEdges` →
-  `generationJobSources` → `generationJobInputs`.
+  `generationJobSources` → `generationJobInputs` → `projects` +
+  `projectBriefs` + Project ownership/destination columns. Migration 036 adds
+  the Project layer; migration 037 repairs covers referencing purge-requested
+  Assets.
 
 ---
 
@@ -147,7 +158,14 @@ erDiagram
     organization ||--o{ flows : owns
     organization ||--o{ createSessions : owns
     organization ||--o{ generationJobs : owns
+    organization ||--o{ projects : owns
 
+    projects ||--o{ folders : organizes
+    projects ||--o{ assets : organizes
+    projects ||--o{ flows : organizes
+    projects ||--o{ createSessions : organizes
+    projects ||--o{ elements : organizes
+    projects ||--|| projectBriefs : documents
     folders ||--o{ folders : nests
     folders ||--o{ assets : contains
     flows ||--o{ flowNodes : has
@@ -175,6 +193,35 @@ Asset and Folder name search uses PostgreSQL trigram indexes:
 ```sql
 create extension if not exists pg_trgm;
 ```
+
+### 0. Projects and immutable generated-Asset destinations
+
+Migration `036_projects_and_asset_organization` extends the baseline tables
+below. It is authoritative wherever an older table excerpt omits a Project
+column:
+
+- `projects` owns `name`, `description`, optional same-Project
+  `coverAssetId`/`defaultAssetFolderId`, archive state, attribution, and
+  timestamps. `projectBriefs` is a one-to-one bounded Tiptap JSON document with
+  a compare-and-set revision and server-derived searchable text.
+- `folders`, `assets`, `flows`, `createSessions`, and `elements` carry nullable
+  `projectId`. Null means Private. Asset folders never mix Project scopes, and
+  subtree moves update the complete folder/Asset/source subtree atomically.
+- `createSessions` gains `assetFolderId`. `flowRuns` gains immutable
+  `projectId` and `assetFolderId`; both are captured at admission and protected
+  by the run-snapshot immutability trigger.
+- Composite tenant FKs plus deferred scope triggers enforce same-organization
+  and same-Project folders, Assets, sources, defaults, covers, and run
+  destinations. The managed-folder unique key is
+  `("organizationId", "projectId", "systemRole") nulls not distinct`.
+- Every Project-owned Flow and Create session lazily receives its own managed
+  output folder. A one-run explicit folder override wins without replacing that
+  source default. Admission captures: explicit override → source output folder
+  → Project default → Project root; Private sources retain the existing managed
+  output-folder behavior.
+- Migration `037_clear_purged_project_covers` clears legacy Project covers that
+  reference an Asset already queued for permanent purge. New purge requests
+  use the fixed lock order Project scope → Project row → Asset → Element.
 
 ### 1. Folders — manual asset organization
 
@@ -547,7 +594,17 @@ create index "assetsNameSearchIdx"
 
 Notes:
 
-- **Two-tier deletion, and rows are never hard-deleted.** Archive sets `"deletedAt"` (reversible). Permanent deletion — the vision's explicit-confirmation action — is a **durable purge task with honest ordering**: mark `"purgeRequestedAt"` (also archiving if still live, so the library's partial indexes already exclude it), the task deletes the R2 objects with retries, and `"purgedAt"` is set **only after storage deletion succeeds** — the database never claims destruction that hasn't happened. The result is a tombstone row. Purge gets the same crash-window protection as job dispatch: initial dispatch and reconciliation use the same explicitly global Trigger.dev idempotency key derived from `assetId`; the sweep re-triggers any asset stuck in `"purgeRequestedAt" is not null and "purgedAt" is null` (served by `"assetsPurgePendingIdx"`), and **restore is guarded** — un-archiving requires `"purgeRequestedAt" is null`, so a user can never restore an asset whose storage is being destroyed. **Purge also coordinates with active generations** through row locks with fixed ordering (asset row first, always): purge locks the asset and rejects if `generationJobInputs` references it from a `pending`/`running` job; run creation locks its selected input assets (ordered by id) and rejects purging/purged ones — the race serializes to exactly one of two clean rejections. Multi-node runs, which create downstream jobs later, will need run-level input leases or copied static references — a seam for that phase, deliberately not built now. This is what reconciles "permanent deletion" with "immutable generation provenance": the media is genuinely gone, but `generationJobInputs` and `flowNodes` references stay intact and render as a tombstone placeholder instead of silently vanishing from history. Because rows persist, no cascade ever erases provenance; `generationJobInputs."assetId"` deliberately has **no** `on delete cascade`, so an accidental hard `DELETE` fails loudly on the FK instead of quietly rewriting job history.
+- **Two-tier deletion, and rows are never hard-deleted.** Archive sets
+  `"deletedAt"` (reversible). Permanent deletion marks
+  `"purgeRequestedAt"`, dispatches the idempotent durable purge task, and sets
+  `"purgedAt"` only after storage deletion succeeds. Restore is guarded by
+  `"purgeRequestedAt" is null`. Project-owned purge uses the fixed lock order
+  Project scope → Project row → Asset → Element, clears a matching Project
+  cover, and touches the Project in the same transaction. It rejects an Asset
+  consumed by a `pending`/`running` generation; run admission locks its exact
+  input Assets in stable ID order and rejects purge-requested/purged inputs.
+  The tombstone preserves immutable `generationJobInputs` and `flowNodes`
+  provenance, while the media is genuinely destroyed.
 - `"generationJobId"` on the asset (not `outputAssetId` on the job): one run can produce multiple outputs; uploads have `null`. Full provenance (model, settings, resolved prompt, inputs, elements) is one join away — never duplicated onto the asset. The `check` makes the link mandatory for `source = 'generation'` — a generated asset without its job is a contract violation, not a nullable edge case.
 - `"visibility"` is a write-time policy snapshot, never inferred later from
   `source`. Existing rows and uploads remain `private`; the current temporary
@@ -1239,9 +1296,9 @@ Seams that exist without speculative tables:
 - **Public delivery / showcase:** `assets.visibility` is the durable storage
   policy snapshot. A future showcase adds a separate moderation/feature
   decision and must never list every public Asset automatically.
-- **Projects:** deliberately dropped with the new vision. Flows are the creative
-  documents; folders, tags, and favorites organize the Asset library without
-  another ownership layer.
+- **Projects shipped (2026-07-24):** optional Project ownership composes the
+  existing Assets, folders, Flows, Create sessions, and Elements surfaces.
+  Projects never replace Flow documents or add a generic item abstraction.
 - **Create direct runs:** source `create` runs use mode `direct` and
   `"flowId" = null`, while `createSessionId` groups related direct history. They
   persist the same generic execution plan and generation jobs as Flow runs
@@ -1260,7 +1317,8 @@ Seams that exist without speculative tables:
   orchestration and reconciliation contract, including `node`.
 - **No recipe, tool, or collaboration tables yet** — seams documented above, built when their layer ships.
 - **No graph-history/versioning tables** — autosave overwrites under revision CAS; version history is a later product layer.
-- **No projects** — the vision retires them; flows are the document, folders organize assets.
+- **No generic `projectItems` table** — each optional `projectId` remains on its
+  authoritative entity, and Flows remain the creative documents.
 
 ---
 
