@@ -1,7 +1,7 @@
 /** Focus-lazy Tiptap composer for text plus stable media-input references. */
-/* eslint-disable better-tailwindcss/no-unknown-classes -- React Flow behavior hooks intentionally live on editor and menu DOM. */
 
 import type { PromptTemplate, PromptTemplateMediaType } from '@talelabs/flows'
+import type { Editor, JSONContent } from '@tiptap/core'
 import type { FocusEvent, MouseEvent as ReactMouseEvent } from 'react'
 import type { PromptComposerInput, PromptComposerSuggestionCopy } from './prompt-composer-types'
 
@@ -32,6 +32,22 @@ function promptPartSize(part: PromptTemplate['parts'][number]) {
 
 function promptContentSize(template: PromptTemplate) {
   return template.parts.reduce((size, part) => size + promptPartSize(part), 0)
+}
+
+function normalizedPlainText(text: string) {
+  return text.replaceAll('\r\n', '\n').replaceAll('\r', '\n')
+}
+
+function plainTextEditorContent(normalizedText: string): JSONContent[] {
+  const content: JSONContent[] = []
+  const lines = normalizedText.split('\n')
+  for (const [index, line] of lines.entries()) {
+    if (index > 0)
+      content.push({ type: 'hardBreak' })
+    if (line)
+      content.push({ text: line, type: 'text' })
+  }
+  return content
 }
 
 function promptPositionAtPoint(input: {
@@ -83,7 +99,8 @@ function mediaReferenceLabel(
   return t(`flows.promptComposer.references.${mediaType}`, { index: index + 1 })
 }
 
-function PromptTemplatePreview({
+/** Renders one lightweight read-only structured prompt without mounting Tiptap. */
+export function PromptTemplatePreview({
   inputs,
   invalidTooltip,
   placeholder,
@@ -140,6 +157,7 @@ function PromptTemplatePreview({
 
 function ActivePromptComposer({
   ariaDescribedBy,
+  focusOnCreate,
   id,
   initialFocusPosition,
   inputs,
@@ -150,8 +168,10 @@ function ActivePromptComposer({
   onBlur,
   onChange,
   onInputReferenceSelectStart,
+  interactionClassName,
 }: {
   ariaDescribedBy?: string
+  focusOnCreate: boolean
   id: string
   initialFocusPosition: null | number
   inputs: readonly PromptComposerInput[]
@@ -160,6 +180,7 @@ function ActivePromptComposer({
   onBlur: (event: FocusEvent<HTMLDivElement>) => void
   onChange: (template: PromptTemplate) => void
   onInputReferenceSelectStart: () => void
+  interactionClassName?: string
   placeholder: string
   template: PromptTemplate
 }) {
@@ -175,6 +196,7 @@ function ActivePromptComposer({
   })
   const onChangeRef = useRef(onChange)
   const onInputReferenceSelectStartRef = useRef(onInputReferenceSelectStart)
+  const editorRef = useRef<Editor | null>(null)
   const templateRef = useRef(template)
   onChangeRef.current = onChange
   onInputReferenceSelectStartRef.current = onInputReferenceSelectStart
@@ -197,7 +219,8 @@ function ActivePromptComposer({
     getCopy: () => copyRef.current,
     getInputs: () => suggestionsRef.current,
     onSelectStart: () => onInputReferenceSelectStartRef.current(),
-  }), [])
+    interactionClassName,
+  }), [interactionClassName])
   const editor = useEditor({
     content: promptTemplateToEditorJson({
       inputs,
@@ -213,6 +236,34 @@ function ActivePromptComposer({
         'id': id,
         'role': 'textbox',
       },
+      handlePaste: (view, event) => {
+        const plainText = event.clipboardData?.getData('text/plain')
+        const activeEditor = editorRef.current
+        if (!plainText || !activeEditor)
+          return false
+        const { from, to } = view.state.selection
+        const remainingTemplate = promptTemplateFromEditorJson(
+          view.state.tr.deleteSelection().doc.toJSON(),
+        )
+        const availableCharacters = Math.max(
+          0,
+          MAX_PROMPT_CHARACTERS - promptContentSize(remainingTemplate),
+        )
+        const acceptedText = normalizedPlainText(plainText)
+          .slice(0, availableCharacters)
+        const inserted = activeEditor
+          .chain()
+          .focus()
+          .insertContentAt(
+            { from, to },
+            plainTextEditorContent(acceptedText),
+            { updateSelection: true },
+          )
+          .run()
+        if (inserted)
+          event.preventDefault()
+        return inserted
+      },
     },
     extensions: [
       Document,
@@ -225,6 +276,8 @@ function ActivePromptComposer({
     ],
     immediatelyRender: true,
     onCreate: ({ editor: createdEditor }) => {
+      if (!focusOnCreate)
+        return
       queueMicrotask(() => createdEditor.commands.focus(
         initialFocusPosition ?? 'end',
       ))
@@ -236,6 +289,7 @@ function ActivePromptComposer({
     },
     shouldRerenderOnTransaction: false,
   }, [])
+  editorRef.current = editor
 
   useEffect(() => {
     if (!editor)
@@ -252,7 +306,7 @@ function ActivePromptComposer({
 
   return (
     <div
-      className="relative"
+      className={cn('relative', interactionClassName)}
       onBlur={onBlur}
       onKeyDown={event => event.stopPropagation()}
       onPointerDown={event => event.stopPropagation()}
@@ -270,40 +324,56 @@ function ActivePromptComposer({
   )
 }
 
-/** Renders a light preview until focus mounts the narrow Tiptap editor. */
-export function PromptComposer({
-  ariaDescribedBy,
-  disabled = false,
-  id,
-  inputs,
-  label,
-  placeholder,
-  template,
-  onChange,
-}: {
+/** Configures the shared narrow prompt editor and its optional lazy preview. */
+export interface PromptComposerProps {
   /** Optional help copy associated with the editable region. */
   ariaDescribedBy?: string
-  /** Prevents inline edits while connected text is authoritative. */
+  /** Optional surface styling composed with the neutral editor shell. */
+  className?: string
+  /** Prevents inline edits while another text input is authoritative. */
   disabled?: boolean
   /** Stable DOM identity for labels and accessibility relationships. */
   id: string
+  /** Surface-specific event-isolation classes, such as React Flow hooks. */
+  interactionClassName?: string
+  /** Mounts the editable document immediately for a singular composer surface. */
+  mountEditorImmediately?: boolean
   /** Effective selected media inputs available to `@` suggestions. */
   inputs: readonly PromptComposerInput[]
   /** Localized accessible editor name. */
   label: string
   /** Localized empty prompt guidance. */
   placeholder: string
+  /** Optional surface styling for the focus-lazy preview. */
+  previewClassName?: string
   /** Persisted structured prompt value. */
   template: PromptTemplate
   /** Persists one normalized prompt-template update. */
   onChange: (template: PromptTemplate) => void
-}) {
+}
+
+/** Renders the narrow prompt editor eagerly or behind its lightweight preview. */
+export function PromptComposer({
+  ariaDescribedBy,
+  className,
+  disabled = false,
+  id,
+  interactionClassName,
+  inputs,
+  label,
+  mountEditorImmediately = false,
+  placeholder,
+  previewClassName,
+  template,
+  onChange,
+}: PromptComposerProps) {
   const { t } = useTranslation()
   const [active, setActive] = useState(false)
   const pendingFocusPositionRef = useRef<null | number>(null)
   const pointerFocusPendingRef = useRef(false)
   const inputReferenceSelectionPendingRef = useRef(false)
   const previewRef = useRef<HTMLDivElement>(null)
+  const editorActive = mountEditorImmediately || active
   const invalidTooltip = t('flows.promptComposer.invalid')
   const valid = promptTemplateIsValid(template, inputs)
 
@@ -373,8 +443,8 @@ export function PromptComposer({
       aria-invalid={!valid}
       className={cn(
         `
-          nodrag nopan nowheel no-scrollbar max-h-60 min-h-10 overflow-y-auto
-          overscroll-y-contain rounded-lg border p-2.5 text-xs/relaxed
+          no-scrollbar max-h-60 min-h-10 overflow-y-auto overscroll-y-contain
+          rounded-lg border p-2.5 text-xs/relaxed
           transition-[background-color,border-color]
           duration-(--flow-motion-fast) ease-(--flow-motion-ease)
           motion-reduce:transition-none
@@ -387,6 +457,8 @@ export function PromptComposer({
             focus-within:bg-background/80
             hover:bg-muted/55
           `,
+        interactionClassName,
+        className,
       )}
       onFocus={(event) => {
         if (
@@ -402,14 +474,16 @@ export function PromptComposer({
       onClick={handleClick}
       onMouseDown={handleMouseDown}
     >
-      {active && !disabled
+      {editorActive && !disabled
         ? (
             <ActivePromptComposer
               ariaDescribedBy={ariaDescribedBy}
+              focusOnCreate={!mountEditorImmediately}
               id={id}
               initialFocusPosition={pendingFocusPositionRef.current}
               inputs={inputs}
               invalidTooltip={invalidTooltip}
+              interactionClassName={interactionClassName}
               label={label}
               placeholder={placeholder}
               template={template}
@@ -423,7 +497,7 @@ export function PromptComposer({
               ref={previewRef}
               aria-describedby={ariaDescribedBy}
               aria-label={label}
-              className="h-5 truncate outline-none"
+              className={cn('h-5 truncate outline-none', previewClassName)}
               id={id}
               role="textbox"
               tabIndex={disabled ? -1 : 0}

@@ -1,11 +1,11 @@
 /** Semantic equality guards for the shared generation prompt-input index. */
 
+import type { PromptComposerInput } from '../../../../generation/prompt-composer/prompt-composer-types'
 import type {
   CanvasEdge,
   CanvasNode,
   FlowGenerationPreview,
 } from '../../../editor/flow-canvas-types'
-import type { PromptComposerInput } from '../prompt-composer/prompt-composer-types'
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value)

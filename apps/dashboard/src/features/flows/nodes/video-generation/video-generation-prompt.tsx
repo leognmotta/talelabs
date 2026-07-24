@@ -5,8 +5,8 @@ import type {
   PromptTemplate,
   VideoInputAvailability,
 } from '@talelabs/flows'
+import type { PromptComposerInput } from '../../../generation/prompt-composer/prompt-composer-types'
 import type { FlowInputState } from '../../editor/flow-canvas-types'
-import type { PromptComposerInput } from '../shared/prompt-composer/prompt-composer-types'
 
 import { useTranslation } from 'react-i18next'
 import { GenerationPromptField } from '../shared/generation-node/generation-prompt-field'

@@ -14,7 +14,7 @@ import {
   ContextMenuShortcut,
 } from '@talelabs/ui/components/context-menu'
 import { useTranslation } from 'react-i18next'
-import { RunCostEstimate } from '../../runs/cost-estimation/run-cost-estimate'
+import { GenerationRunCostEstimate } from '../../../generation/runs/generation-run-cost-estimate'
 import {
   isRunCostEstimateReady,
   useFlowRunCostEstimate,
@@ -89,7 +89,7 @@ export function FlowCanvasSelectionContextMenu({
                   <IconPlayerPlay />
                   {t('flows.nodeToolbar.run')}
                   <ContextMenuShortcut>
-                    <RunCostEstimate showTooltip={false} state={nodeCost} />
+                    <GenerationRunCostEstimate showTooltip={false} state={nodeCost} />
                   </ContextMenuShortcut>
                 </ContextMenuItem>
                 <ContextMenuItem
@@ -99,7 +99,7 @@ export function FlowCanvasSelectionContextMenu({
                   <IconPlayerPlay />
                   {t('flows.nodeToolbar.runFromHere')}
                   <ContextMenuShortcut>
-                    <RunCostEstimate showTooltip={false} state={fromHereCost} />
+                    <GenerationRunCostEstimate showTooltip={false} state={fromHereCost} />
                   </ContextMenuShortcut>
                 </ContextMenuItem>
                 <ContextMenuItem
@@ -109,7 +109,7 @@ export function FlowCanvasSelectionContextMenu({
                   <IconPlayerPlay />
                   {t('flows.nodeToolbar.runTillHere')}
                   <ContextMenuShortcut>
-                    <RunCostEstimate showTooltip={false} state={tillHereCost} />
+                    <GenerationRunCostEstimate showTooltip={false} state={tillHereCost} />
                   </ContextMenuShortcut>
                 </ContextMenuItem>
               </>
@@ -122,7 +122,7 @@ export function FlowCanvasSelectionContextMenu({
           <IconPlayerPlay />
           {t('flows.runSelection')}
           <ContextMenuShortcut>
-            <RunCostEstimate showTooltip={false} state={selectionCost} />
+            <GenerationRunCostEstimate showTooltip={false} state={selectionCost} />
           </ContextMenuShortcut>
         </ContextMenuItem>
       </ContextMenuGroup>

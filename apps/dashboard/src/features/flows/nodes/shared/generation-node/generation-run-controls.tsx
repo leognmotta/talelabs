@@ -13,8 +13,8 @@ import {
 import { Spinner } from '@talelabs/ui/components/spinner'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { GenerationRunCostEstimate } from '../../../../generation/runs/generation-run-cost-estimate'
 import { useFlowCanvasRuntime, useFlowGenerationPreview } from '../../../editor/flow-canvas-runtime-context'
-import { RunCostEstimate } from '../../../runs/cost-estimation/run-cost-estimate'
 import {
   isRunCostEstimateReady,
   useFlowRunCostEstimate,
@@ -65,7 +65,7 @@ export function GenerationRunControls({
       className="nodrag nopan flex items-center gap-1"
       data-flow-run-actions
     >
-      <RunCostEstimate
+      <GenerationRunCostEstimate
         className="
           rounded-md border border-border/60 bg-background/70 px-1.5 py-1
         "
@@ -133,7 +133,7 @@ export function GenerationRunControls({
                   {t('flows.nodeToolbar.runFromHereDescription')}
                 </span>
               </span>
-              <RunCostEstimate showTooltip={false} state={fromHereCost} />
+              <GenerationRunCostEstimate showTooltip={false} state={fromHereCost} />
             </DropdownMenuItem>
             <DropdownMenuItem
               className="items-start justify-between gap-4 py-3"
@@ -146,7 +146,7 @@ export function GenerationRunControls({
                   {t('flows.nodeToolbar.runTillHereDescription')}
                 </span>
               </span>
-              <RunCostEstimate showTooltip={false} state={tillHereCost} />
+              <GenerationRunCostEstimate showTooltip={false} state={tillHereCost} />
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

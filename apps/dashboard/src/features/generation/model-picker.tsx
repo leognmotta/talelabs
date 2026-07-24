@@ -1,3 +1,5 @@
+/** Searchable, provider-neutral generation model selection control. */
+
 import type { GenerationModelLogoId } from '@talelabs/flows'
 
 import { Badge } from '@talelabs/ui/components/badge'
@@ -6,8 +8,8 @@ import { cn } from '@talelabs/ui/lib/utils'
 import { useMemo } from 'react'
 import { SearchablePicker } from '../../shared/components/searchable-picker'
 import { ModelLogo } from './model-logo'
-/* eslint-disable better-tailwindcss/no-unknown-classes -- React Flow uses these interaction classes as behavior hooks. */
 
+/** Presentation option derived from the public generation catalog. */
 export interface ModelPickerOption {
   capabilities: string[]
   category: {
@@ -22,6 +24,7 @@ export interface ModelPickerOption {
   recommended: boolean
 }
 
+/** Renders grouped searchable models without owning configuration state. */
 export function ModelPicker({
   ariaLabel,
   emptyMessage,
@@ -133,8 +136,8 @@ export function ModelPicker({
           aria-label={ariaLabel}
           className={cn(
             `
-              nodrag nopan h-9 w-full min-w-0 justify-start gap-2 rounded-md
-              border-border/70 bg-muted/25 px-2.5 text-xs font-normal
+              h-9 w-full min-w-0 justify-start gap-2 rounded-md border-border/70
+              bg-muted/25 px-2.5 text-xs font-normal
               hover:bg-muted/35
             `,
             triggerClassName,

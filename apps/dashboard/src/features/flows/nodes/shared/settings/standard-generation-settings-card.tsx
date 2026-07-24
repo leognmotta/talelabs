@@ -3,10 +3,10 @@
 import type { FlowGenerationSettingsInspectorProps } from '../../../generation/flow-generation-settings-inspector'
 
 import { useTranslation } from 'react-i18next'
+import { GenerationSettingsList } from '../../../../generation/configuration/generation-settings-list'
 import { useFlowGenerationSettings } from '../../../generation/use-flow-generation-settings'
 import { GenerationOperationField } from './generation-operation-field'
 import { GenerationSettingsCard } from './generation-settings-card'
-import { GenerationSettingsList } from './generation-settings-list'
 
 /** Displays generic catalog settings for generation families without a specialized card. */
 export function StandardGenerationSettingsCard({

@@ -5,12 +5,10 @@ import type { FlowSaveStatus, PersistedCanvasGraph } from '../flow-canvas-types'
 
 import { FLOW_GRAPH_LIMITS } from '@talelabs/flows'
 import { getFlowsIdGraph } from '@talelabs/sdk'
-import { ApiError } from '@talelabs/sdk/client'
 import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
-import { getApiErrorCode } from '../../../../shared/lib/api-error'
 import { getOrganizationRequestHeaders } from '../../../../shared/lib/organization-request'
 import { flowQueryKeys } from '../../data/query-keys/flow-query-keys'
 import { useCanvasStoreApi } from '../canvas-state/canvas-store-context'
@@ -29,11 +27,14 @@ import {
 } from './flow-graph-diff-replay'
 import { toPersistedGraph } from './flow-graph-serialization'
 import { toCanvasNodes } from './flow-node-serialization'
+import {
+  isFlowGraphRevisionConflict,
+  MAX_FLOW_GRAPH_CONFLICT_REPLAYS,
+  reconcileFlowGraphRevisionConflict,
+} from './flow-revision-conflict-reconciliation'
 import { saveFlowGraph } from './flow-save'
 
 const AUTOSAVE_DELAY_MS = 750
-const MAX_CONFLICT_REPLAYS = 3
-
 function graphReferencesChanged(
   baseline: PersistedCanvasGraph,
   diff: ReturnType<typeof createFlowGraphDiff>,
@@ -169,71 +170,68 @@ export function useFlowAutosave(input: {
         commitStatus(stillDirty ? 'unsaved' : 'saved')
       }
       catch (error) {
-        if (
-          !(error instanceof ApiError)
-          || error.status !== 409
-          || getApiErrorCode(error) !== 'revision_conflict'
-        ) {
+        if (!isFlowGraphRevisionConflict(error)) {
           commitSaveError()
           return
         }
         conflictCount += 1
-        if (conflictCount > MAX_CONFLICT_REPLAYS) {
+        if (conflictCount > MAX_FLOW_GRAPH_CONFLICT_REPLAYS) {
           commitSaveError()
           return
         }
 
         commitStatus('conflict')
-        let server: FlowGraphResponse
+        let reconciliation: Awaited<
+          ReturnType<typeof reconcileFlowGraphRevisionConflict>
+        >
         try {
-          server = await getFlowsIdGraph(
-            { id: flowId },
-            { headers: getOrganizationRequestHeaders(organizationId) },
-          )
+          reconciliation = await reconcileFlowGraphRevisionConflict({
+            baseline: baselineRef.current,
+            flowId,
+            getLocalGraph: () => {
+              const latestState = store.getState()
+              return toPersistedGraph(
+                latestState.nodes,
+                latestState.edges,
+              )
+            },
+            organizationId,
+          })
         }
         catch {
           commitSaveError()
           return
         }
-        const serverGraph = { nodes: server.nodes, edges: server.edges }
-        // Capture after the awaited refetch so edits made during conflict
-        // resolution are included in the rebased graph.
         const latestState = store.getState()
-        const latestGraph = toPersistedGraph(
-          latestState.nodes,
-          latestState.edges,
-        )
-        const localDiff = createFlowGraphDiff(
-          baselineRef.current,
-          latestGraph,
-        )
-        const replay = replayFlowGraphDiff(serverGraph, localDiff)
-        if (replay.droppedEdgeIds.length) {
+        if (reconciliation.droppedEdgeIds.length) {
           toast.warning(t('flows.saveStatus.connectionsDropped', {
-            count: replay.droppedEdgeIds.length,
+            count: reconciliation.droppedEdgeIds.length,
           }))
         }
-        baselineRef.current = serverGraph
-        revisionRef.current = server.revision
+        baselineRef.current = {
+          edges: reconciliation.server.edges,
+          nodes: reconciliation.server.nodes,
+        }
+        revisionRef.current = reconciliation.server.revision
         store.setState({
-          edges: toCanvasEdges(replay.graph.edges),
+          edges: toCanvasEdges(reconciliation.target.edges),
           editingImageCropNodeId: null,
           future: [],
           graphRevision: Math.max(
             latestState.graphRevision,
-            server.revision,
+            reconciliation.server.revision,
           ) + 1,
-          nodes: toCanvasNodes(replay.graph.nodes),
+          nodes: toCanvasNodes(reconciliation.target.nodes),
           past: [],
           positionHistoryActive: false,
-          savedRevision: server.revision,
-          serverRevision: server.revision,
+          savedRevision: reconciliation.server.revision,
+          serverRevision: reconciliation.server.revision,
           selectedEdgeIds: [],
           selectedNodeIds: [],
         })
         queryClient.setQueryData(
           flowQueryKeys.graph(organizationId, flowId),
-          server,
+          reconciliation.server,
         )
       }
     }

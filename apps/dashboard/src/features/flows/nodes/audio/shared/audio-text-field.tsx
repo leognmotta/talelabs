@@ -5,8 +5,8 @@ import type {
   GenerationInputSlotDefinition,
   PromptTemplate,
 } from '@talelabs/flows'
+import type { PromptComposerInput } from '../../../../generation/prompt-composer/prompt-composer-types'
 import type { FlowInputState } from '../../../editor/flow-canvas-types'
-import type { PromptComposerInput } from '../../shared/prompt-composer/prompt-composer-types'
 
 import { FlowNodeTextarea } from '../../shared/flow-node-textarea'
 import { GenerationPromptField } from '../../shared/generation-node/generation-prompt-field'

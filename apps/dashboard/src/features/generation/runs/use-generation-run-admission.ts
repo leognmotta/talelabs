@@ -11,42 +11,50 @@ import apiClient from '@talelabs/sdk/client'
 import { useQueryClient } from '@tanstack/react-query'
 import { useCallback } from 'react'
 
-import { getOrganizationRequestHeaders } from '../../../../shared/lib/organization-request'
-import { publishBrowserRunHint, rememberActiveBrowserRun } from '../browser-runtime/browser-run-hints'
+import { getOrganizationRequestHeaders } from '../../../shared/lib/organization-request'
+import {
+  publishBrowserRunHint,
+  rememberActiveBrowserRun,
+} from '../../flows/runs/browser-runtime/browser-run-hints'
 
 /** Client graph-selection command admitted as an immutable Flow run. */
-export interface FlowRunCommandRequest {
+export interface GenerationRunCommandRequest {
   mode: 'all' | 'downstream' | 'node' | 'selection' | 'upstream'
   selectedNodeIds?: string[]
   targetNodeId?: string
 }
 
+/** Confirmed ordinary Flow revision ready for immutable run admission. */
+export interface SavedGenerationRunTarget {
+  /** Ordinary Flow identity owning the request graph and durable run. */
+  flowId: string
+  /** Confirmed graph revision captured by admission. */
+  revision: number
+}
+
 /** Saves current graph edits before admitting and observing a Flow run. */
-export function useFlowRunAdmission(input: {
+export function useGenerationRunAdmission(input: {
+  /** Saves or lazily creates the ordinary Flow before admission. */
+  ensureSaved: () => Promise<null | SavedGenerationRunTarget>
   executionMode: FlowRunExecutionMode
   executionRuntime: FlowRunExecutionRuntime
-  flowId: string
   fundingSource: 'byok' | 'credits'
   observeRun: (run: FlowRun) => void
   organizationId: string
-  saveNow: (options?: {
-    reconcileWithServer?: boolean
-  }) => Promise<null | number>
   userId: string | undefined
 }) {
   const queryClient = useQueryClient()
   const {
+    ensureSaved,
     executionMode,
     executionRuntime,
-    flowId,
     fundingSource,
     observeRun,
     organizationId,
-    saveNow,
     userId,
   } = input
   return useCallback(
-    async (command: FlowRunCommandRequest) => {
+    async (command: GenerationRunCommandRequest) => {
       let byokProviders: ('fal' | 'openrouter')[] | undefined
       if (executionMode === 'live' && executionRuntime === 'browser') {
         if (!userId)
@@ -62,14 +70,14 @@ export function useFlowRunAdmission(input: {
           return { reason: 'credential_required' as const }
         byokProviders = credentials.map(status => status.providerId)
       }
-      const revision = await saveNow()
-      if (revision === null)
+      const saved = await ensureSaved()
+      if (saved === null)
         return { reason: 'save_failed' as const }
       const response = await apiClient<FlowRun>({
         data: {
           executionMode,
           executionRuntime,
-          expectedFlowRevision: revision,
+          expectedFlowRevision: saved.revision,
           fundingSource,
           mode: command.mode,
           ...(byokProviders ? { byokProviders } : {}),
@@ -84,7 +92,7 @@ export function useFlowRunAdmission(input: {
           'Idempotency-Key': globalThis.crypto.randomUUID(),
         },
         method: 'POST',
-        url: `/flows/${flowId}/runs`,
+        url: `/flows/${saved.flowId}/runs`,
       })
       observeRun(response.data)
       if (response.data.executionRuntime === 'browser' && userId) {
@@ -94,19 +102,24 @@ export function useFlowRunAdmission(input: {
           userId,
           response.data.id,
         )
-        publishBrowserRunHint(organizationId, userId, response.data.id)
+        publishBrowserRunHint(
+          response.data.flowId,
+          organizationId,
+          response.data.source,
+          userId,
+          response.data.id,
+        )
       }
       return { run: response.data }
     },
     [
+      ensureSaved,
       executionMode,
       executionRuntime,
-      flowId,
       fundingSource,
       observeRun,
       organizationId,
       queryClient,
-      saveNow,
       userId,
     ],
   )

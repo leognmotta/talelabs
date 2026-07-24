@@ -5,13 +5,13 @@ import type {
   PromptTemplateMediaType,
 } from '@talelabs/flows'
 import type { TFunction } from 'i18next'
+import type { PromptComposerInput } from '../../../../generation/prompt-composer/prompt-composer-types'
 import type {
   CanvasEdge,
   CanvasNode,
   FlowGenerationPreviewOutput,
 } from '../../../editor/flow-canvas-types'
 import type { FlowNodePortCanvas } from '../ports/flow-node-port-preview'
-import type { PromptComposerInput } from '../prompt-composer/prompt-composer-types'
 
 import {
   compareFlowEdgesByPriority,

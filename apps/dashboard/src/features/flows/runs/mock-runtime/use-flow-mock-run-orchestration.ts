@@ -19,9 +19,9 @@ import { toast } from 'sonner'
 
 import { getApiErrorMessage } from '../../../../shared/lib/api-error'
 import { getOrganizationRequestHeaders } from '../../../../shared/lib/organization-request'
+import { useGenerationRunAdmission } from '../../../generation/runs/use-generation-run-admission'
 import { useSettingsTabState } from '../../../settings/settings-state'
 import { generationPreviewHistory } from '../../generation/flow-generation-preview-history'
-import { useFlowRunAdmission } from '../admission/use-flow-run-admission'
 import { publishBrowserRunHint, rememberActiveBrowserRun } from '../browser-runtime/browser-run-hints'
 import { activePreviewNodeIdsFromClosure } from '../observation/flow-run-active-selection'
 import { isActiveRunStatus } from '../observation/flow-run-status'
@@ -61,6 +61,10 @@ export function useFlowMockRunOrchestration(input: {
     t,
     userId,
   } = input
+  const ensureSaved = useCallback(async () => {
+    const revision = await saveNow()
+    return revision === null ? null : { flowId, revision }
+  }, [flowId, saveNow])
   const [, setSettingsTab] = useSettingsTabState()
   const queryClient = useQueryClient()
   const openSecureStore = useCallback(() => {
@@ -128,14 +132,13 @@ export function useFlowMockRunOrchestration(input: {
     },
     [locale, previewsRef, referenceDataRef, store],
   )
-  const admitRun = useFlowRunAdmission({
+  const admitRun = useGenerationRunAdmission({
+    ensureSaved,
     executionMode,
     executionRuntime,
-    flowId,
     fundingSource,
     observeRun,
     organizationId,
-    saveNow,
     userId,
   })
 
@@ -228,7 +231,13 @@ export function useFlowMockRunOrchestration(input: {
         observeRun(run)
         if (run.executionRuntime === 'browser' && userId) {
           rememberActiveBrowserRun(queryClient, organizationId, userId, run.id)
-          publishBrowserRunHint(organizationId, userId, run.id)
+          publishBrowserRunHint(
+            run.flowId,
+            organizationId,
+            run.source,
+            userId,
+            run.id,
+          )
         }
       }
       catch (error) {

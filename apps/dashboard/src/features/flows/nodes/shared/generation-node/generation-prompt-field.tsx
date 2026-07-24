@@ -2,9 +2,9 @@
 
 import type { PromptTemplate } from '@talelabs/flows'
 import type { ReactNode } from 'react'
-import type { PromptComposerInput } from '../prompt-composer/prompt-composer-types'
+import type { PromptComposerInput } from '../../../../generation/prompt-composer/prompt-composer-types'
 
-import { PromptComposer } from '../prompt-composer/prompt-composer'
+import { FlowPromptComposer } from './flow-prompt-composer'
 
 /** Edits an inline prompt and switches to connected-state presentation when wired. */
 export function GenerationPromptField({
@@ -39,7 +39,7 @@ export function GenerationPromptField({
         {label}
       </label>
       <div className="relative">
-        <PromptComposer
+        <FlowPromptComposer
           ariaDescribedBy={externalPromptConnected ? helpId : undefined}
           disabled={externalPromptConnected}
           id={textareaId}

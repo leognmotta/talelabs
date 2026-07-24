@@ -2,6 +2,7 @@
 
 import type { GenerationInputSlotDefinition } from '@talelabs/flows'
 import type { TFunction } from 'i18next'
+import type { PromptComposerInput } from '../../../../generation/prompt-composer/prompt-composer-types'
 import type { CanvasStore } from '../../../editor/canvas-state/canvas-store'
 import type {
   CanvasEdge,
@@ -9,7 +10,6 @@ import type {
   FlowGenerationPreview,
   FlowReferenceData,
 } from '../../../editor/flow-canvas-types'
-import type { PromptComposerInput } from '../prompt-composer/prompt-composer-types'
 
 import {
   compareFlowEdgesByPriority,

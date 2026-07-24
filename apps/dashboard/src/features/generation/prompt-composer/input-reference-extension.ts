@@ -25,6 +25,7 @@ type InputReferenceMenuRendererProps
 
 function suggestionMenu(input: {
   getCopy: () => PromptComposerSuggestionCopy
+  interactionClassName?: string
 }) {
   let component: null | ReactRenderer<
     InputReferenceMenuHandle,
@@ -35,6 +36,7 @@ function suggestionMenu(input: {
   function menuProps(props: SuggestionProps<PromptComposerSuggestion>) {
     return {
       copy: input.getCopy(),
+      interactionClassName: input.interactionClassName,
       items: props.items,
       onSelect: props.command,
     }
@@ -59,6 +61,7 @@ function suggestionMenu(input: {
         editor: props.editor,
         props: menuProps(props),
       })
+      nextComponent.element.style.zIndex = '50'
       component = nextComponent
       unmount = props.mount(nextComponent.element)
     },
@@ -72,6 +75,7 @@ function suggestionMenu(input: {
 export function createInputReferenceExtension(input: {
   getCopy: () => PromptComposerSuggestionCopy
   getInputs: () => readonly PromptComposerSuggestion[]
+  interactionClassName?: string
   onSelectStart: () => void
 }) {
   return Node.create({
@@ -129,7 +133,10 @@ export function createInputReferenceExtension(input: {
           ))
         },
         pluginKey: SuggestionPluginKey,
-        render: () => suggestionMenu({ getCopy: input.getCopy }),
+        render: () => suggestionMenu({
+          getCopy: input.getCopy,
+          interactionClassName: input.interactionClassName,
+        }),
       })]
     },
     atom: true,
@@ -145,8 +152,8 @@ export function createInputReferenceExtension(input: {
         'span',
         mergeAttributes({
           'class': node.attrs.invalid
-            ? 'nodrag nopan nowheel inline-flex cursor-text rounded-md border border-destructive/60 bg-destructive/10 px-1.5 py-0.5 align-baseline font-medium text-destructive'
-            : 'nodrag nopan nowheel inline-flex cursor-text rounded-md border border-border/70 bg-muted px-1.5 py-0.5 align-baseline font-medium text-foreground',
+            ? 'inline-flex cursor-text rounded-md border border-destructive/60 bg-destructive/10 px-1.5 py-0.5 align-baseline font-medium text-destructive'
+            : 'inline-flex cursor-text rounded-md border border-border/70 bg-muted px-1.5 py-0.5 align-baseline font-medium text-foreground',
           'contenteditable': 'false',
           'data-index': String(node.attrs.index),
           'data-media-type': node.attrs.mediaType,

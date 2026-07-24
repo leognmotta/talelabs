@@ -71,6 +71,7 @@ export function GenerationSettingsCard({
               searchAriaLabel={searchAriaLabel}
               searchPlaceholder={searchPlaceholder}
               selectedLabel={selectedModelLabel}
+              triggerClassName="nodrag nopan"
               unavailableLabel={unavailableLabel}
               value={value}
               onValueChange={onModelChange}

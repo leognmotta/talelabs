@@ -9,8 +9,8 @@ import type { ModelPickerOption } from '../../../../generation/model-picker'
 import type { FlowGenerationSettingsPresentation } from '../../../generation/flow-generation-settings-inspector'
 
 import { useTranslation } from 'react-i18next'
+import { GenerationSettingsList } from '../../../../generation/configuration/generation-settings-list'
 import { GenerationSettingsCard } from './generation-settings-card'
-import { GenerationSettingsList } from './generation-settings-list'
 
 /** Resolves model-adaptive settings presentation before rendering the common card. */
 export function AdaptiveGenerationSettingsCard({

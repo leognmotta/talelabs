@@ -14,12 +14,12 @@ import {
 import { useUpdateNodeInternals } from '@xyflow/react'
 import { useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { promptTemplateIsValid } from '../../../../generation/prompt-composer/prompt-template-adapter'
 import { useCanvasStoreApi } from '../../../editor/canvas-state/canvas-store-context'
 import { setCanvasSelection } from '../../../editor/canvas-state/canvas-ui-actions'
 import { useFlowCanvasRuntime, useFlowGenerationPreview } from '../../../editor/flow-canvas-runtime-context'
 import { createFlowGenerationCanvasBridge } from '../../../generation/flow-generation-canvas-bridge'
 import { getCanvasGenerationModel } from '../../../generation/flow-generation-contract'
-import { promptTemplateIsValid } from '../prompt-composer/prompt-template-adapter'
 import { generationConnectionCounts } from './generation-node-controller-values'
 import { useGenerationPromptInputs } from './generation-prompt-input-context'
 

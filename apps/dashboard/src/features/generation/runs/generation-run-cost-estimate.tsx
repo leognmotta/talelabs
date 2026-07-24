@@ -1,6 +1,6 @@
-/** Compact, localized cost prerequisite presentation for canvas run controls. */
+/** Compact localized presentation for canonical generation cost preflight. */
 
-import type { RunCostEstimateState } from './use-flow-run-cost-estimate'
+import type { GenerationRunCostEstimateState } from './use-saved-generation-run-cost-estimate'
 
 import { Spinner } from '@talelabs/ui/components/spinner'
 import {
@@ -22,7 +22,7 @@ function formattedUsd(amountUsd: string, locale: string): string {
 }
 
 /** Renders estimate progress or the required approximate USD amount. */
-export function RunCostEstimate({
+export function GenerationRunCostEstimate({
   className,
   showTooltip = true,
   state,
@@ -32,7 +32,7 @@ export function RunCostEstimate({
   /** Whether this standalone presentation owns a keyboard-accessible tooltip. */
   showTooltip?: boolean
   /** Server-recalculated estimate state from the saved-plan query. */
-  state: RunCostEstimateState
+  state: GenerationRunCostEstimateState
 }) {
   const { i18n, t } = useTranslation()
   if (state.status === 'not-required' || state.status === 'idle')
