@@ -195,7 +195,7 @@ behavior, not for displaying an architectural pattern.
 The active dashboard loop is:
 
 ```txt
-Assets -> Flows -> Generated Assets -> Continued Iteration
+Create or Flows -> Generated Assets -> Assets -> Projects -> Continued Iteration
 ```
 
 - Assets provide durable upload, organization, preview, and reuse.
@@ -210,9 +210,14 @@ Assets -> Flows -> Generated Assets -> Continued Iteration
   Never reintroduce the retired multi-role/consistency Element architecture
   (asset roles, source/master kinds, readiness, per-kind schemas, or
   multi-output Element nodes) without a new explicit product decision.
+- Projects are the approved optional organization layer (approved 2026-07-24).
+  Project routes reuse the existing Create, Assets, Flows, and Elements
+  surfaces under Project scope. The contextual Project sidebar, Project Home,
+  Project Brief, nested Asset-folder tree, and output-destination behavior are
+  defined by `docs/feature-research/projects-and-asset-organization.md`.
 
 The dashboard opens into the usable Flow workspace, not a marketing page or the
-retired Generate/Projects product.
+retired historical Generate/Brand/Product/Character product suite.
 
 ## Framework Compatibility
 
