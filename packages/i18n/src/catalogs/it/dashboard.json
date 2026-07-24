@@ -107,6 +107,8 @@
       "description": "Controlli di modello, output ed esecuzione",
       "open": "Apri le impostazioni di Crea",
       "model": "Modello",
+      "organization": "Organizzazione dei file",
+      "organizationOpen": "Apri organizzazione dei file",
       "output": "Output",
       "execution": "Esecuzione"
     },
@@ -951,6 +953,9 @@
     "descriptionPlaceholder": "Aggiungi una breve descrizione",
     "descriptionText": "Tieni insieme file e lavori creativi correlati.",
     "destinationAutomatic": "Destinazione automatica",
+    "destinationDefault": "Usa destinazione predefinita",
+    "destinationProjectDefault": "Usa impostazione predefinita del Progetto",
+    "destinationProjectDefaultFolder": "Predefinita del Progetto · {{folder}}",
     "destinationUnavailable": "Cartella non disponibile",
     "edit": "Modifica Progetto",
     "editDescription": "Aggiorna nome, descrizione e destinazione predefinita del Progetto.",

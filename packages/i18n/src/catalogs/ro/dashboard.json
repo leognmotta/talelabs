@@ -107,6 +107,8 @@
       "description": "Comenzi pentru model, rezultat și execuție",
       "open": "Deschide setările paginii Creează",
       "model": "Model",
+      "organization": "Organizarea fișierelor",
+      "organizationOpen": "Deschide organizarea fișierelor",
       "output": "Rezultat",
       "execution": "Execuție"
     },
@@ -951,6 +953,9 @@
     "descriptionPlaceholder": "Adăugați o descriere scurtă",
     "descriptionText": "Păstrați împreună fișierele și lucrările creative asociate.",
     "destinationAutomatic": "Destinație automată",
+    "destinationDefault": "Folosește destinația implicită",
+    "destinationProjectDefault": "Folosește setarea implicită a Proiectului",
+    "destinationProjectDefaultFolder": "Setarea implicită a Proiectului · {{folder}}",
     "destinationUnavailable": "Dosar indisponibil",
     "edit": "Editați Proiectul",
     "editDescription": "Actualizați numele, descrierea și destinația implicită a acestui Proiect.",

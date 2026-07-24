@@ -107,6 +107,8 @@
       "description": "Controles de modelo, salida y ejecución",
       "open": "Abrir configuración de Crear",
       "model": "Modelo",
+      "organization": "Organización de archivos",
+      "organizationOpen": "Abrir organización de archivos",
       "output": "Salida",
       "execution": "Ejecución"
     },
@@ -951,6 +953,9 @@
     "descriptionPlaceholder": "Añade una breve descripción",
     "descriptionText": "Mantén juntos los archivos y el trabajo creativo relacionados.",
     "destinationAutomatic": "Destino automático",
+    "destinationDefault": "Usar destino predeterminado",
+    "destinationProjectDefault": "Usar valor predeterminado del Proyecto",
+    "destinationProjectDefaultFolder": "Predeterminado del Proyecto · {{folder}}",
     "destinationUnavailable": "Carpeta no disponible",
     "edit": "Editar Proyecto",
     "editDescription": "Actualiza el nombre, la descripción y el destino predeterminado de este Proyecto.",

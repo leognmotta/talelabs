@@ -107,6 +107,8 @@
       "description": "Modell-, Ausgabe- und Ausführungssteuerung",
       "open": "Einstellungen für Erstellen öffnen",
       "model": "Modell",
+      "organization": "Dateiorganisation",
+      "organizationOpen": "Dateiorganisation öffnen",
       "output": "Ausgabe",
       "execution": "Ausführung"
     },
@@ -951,6 +953,9 @@
     "descriptionPlaceholder": "Kurze Beschreibung hinzufügen",
     "descriptionText": "Halte zusammengehörige Dateien und kreative Arbeit an einem Ort.",
     "destinationAutomatic": "Automatisches Ziel",
+    "destinationDefault": "Standardziel verwenden",
+    "destinationProjectDefault": "Projektstandard verwenden",
+    "destinationProjectDefaultFolder": "Projektstandard · {{folder}}",
     "destinationUnavailable": "Ordner nicht verfügbar",
     "edit": "Projekt bearbeiten",
     "editDescription": "Ändere Name, Beschreibung und Standardziel dieses Projekts.",

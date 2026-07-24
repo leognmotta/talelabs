@@ -107,6 +107,8 @@
       "description": "Sterowanie modelem, wynikiem i wykonaniem",
       "open": "Otwórz ustawienia widoku Utwórz",
       "model": "Model",
+      "organization": "Organizacja plików",
+      "organizationOpen": "Otwórz organizację plików",
       "output": "Wynik",
       "execution": "Wykonanie"
     },
@@ -951,6 +953,9 @@
     "descriptionPlaceholder": "Dodaj krótki opis",
     "descriptionText": "Przechowuj powiązane pliki i prace twórcze razem.",
     "destinationAutomatic": "Automatyczne miejsce docelowe",
+    "destinationDefault": "Użyj domyślnego miejsca docelowego",
+    "destinationProjectDefault": "Użyj domyślnego ustawienia Projektu",
+    "destinationProjectDefaultFolder": "Domyślne ustawienie Projektu · {{folder}}",
     "destinationUnavailable": "Folder niedostępny",
     "edit": "Edytuj Projekt",
     "editDescription": "Zmień nazwę, opis i domyślne miejsce docelowe tego Projektu.",

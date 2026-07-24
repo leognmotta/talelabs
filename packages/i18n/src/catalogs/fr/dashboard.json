@@ -107,6 +107,8 @@
       "description": "Contrôles du modèle, de la sortie et de l’exécution",
       "open": "Ouvrir les paramètres de Créer",
       "model": "Modèle",
+      "organization": "Organisation des fichiers",
+      "organizationOpen": "Ouvrir l’organisation des fichiers",
       "output": "Sortie",
       "execution": "Exécution"
     },
@@ -951,6 +953,9 @@
     "descriptionPlaceholder": "Ajoutez une courte description",
     "descriptionText": "Regroupez les fichiers et travaux créatifs associés.",
     "destinationAutomatic": "Destination automatique",
+    "destinationDefault": "Utiliser la destination par défaut",
+    "destinationProjectDefault": "Utiliser la valeur par défaut du Projet",
+    "destinationProjectDefaultFolder": "Valeur par défaut du Projet · {{folder}}",
     "destinationUnavailable": "Dossier indisponible",
     "edit": "Modifier le Projet",
     "editDescription": "Modifiez le nom, la description et la destination par défaut de ce Projet.",

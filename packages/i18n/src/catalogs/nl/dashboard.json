@@ -107,6 +107,8 @@
       "description": "Besturing voor model, uitvoer en uitvoering",
       "open": "Instellingen voor Maken openen",
       "model": "Model",
+      "organization": "Bestandsorganisatie",
+      "organizationOpen": "Bestandsorganisatie openen",
       "output": "Uitvoer",
       "execution": "Uitvoering"
     },
@@ -951,6 +953,9 @@
     "descriptionPlaceholder": "Voeg een korte beschrijving toe",
     "descriptionText": "Houd bij elkaar horende bestanden en creatief werk samen.",
     "destinationAutomatic": "Automatische bestemming",
+    "destinationDefault": "Standaardbestemming gebruiken",
+    "destinationProjectDefault": "Projectstandaard gebruiken",
+    "destinationProjectDefaultFolder": "Projectstandaard · {{folder}}",
     "destinationUnavailable": "Map niet beschikbaar",
     "edit": "Project bewerken",
     "editDescription": "Werk de naam, beschrijving en standaardbestemming van dit Project bij.",
