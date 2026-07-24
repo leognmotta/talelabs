@@ -33,6 +33,11 @@ export const TimestampSchema = z.iso.datetime().openapi('Timestamp', {
   example: '2026-07-10T12:00:00.000Z',
 })
 
+// Keep nullable timestamps inline for the same generator compatibility reason
+// as nullable IDs. Kubb cannot emit `.nullable()` after an OpenAPI allOf ref.
+/** A nullable ISO-8601 UTC timestamp kept inline in OpenAPI. */
+export const NullableTimestampSchema = z.iso.datetime().nullable()
+
 /** An opaque pagination cursor from a prior list response. */
 export const CursorSchema = z.string().trim().min(1).max(2048).openapi('Cursor', {
   description: 'Opaque cursor returned by a previous list response',
