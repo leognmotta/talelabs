@@ -619,12 +619,50 @@ shared structured events, Trigger.dev telemetry and alerts, Sentry, and an
 internal PostgreSQL-backed Run Inspector. A centralized OpenTelemetry backend is
 not required until production volume demonstrates the need.
 
+## Approved Next Milestone - Projects And Asset Organization
+
+**Status:** approved for implementation on 2026-07-24.
+
+Implement the organization layer defined by
+`docs/feature-research/projects-and-asset-organization.md`:
+
+```txt
+Project identity and lifecycle
+-> optional Project ownership on Assets, folders, Create sessions, Flows, and Elements
+-> immutable Project and folder destination capture at run admission
+-> contextual Project routes and sidebar
+-> compact Project Home
+-> reusable Project-scoped Create, Assets, Flows, and Elements surfaces
+-> selected-path nested Asset-folder tree
+-> Tiptap-backed Project Brief with scoped mentions
+-> project-aware search, pagination, cache invalidation, and tenant isolation
+```
+
+This milestone must reuse the existing feature surfaces and shared generation
+runtime. Do not add generic `projectItems`, parallel Project-specific editors,
+Project permissions, smart collections, version stacks, or implicit generation
+context from the Brief.
+
+Generated Asset organization follows one shared precedence contract:
+
+```txt
+explicit request destination
+-> Flow or Create-session output folder
+-> Project default Asset folder
+-> Project root
+-> existing managed Private output folder
+```
+
+The resolved destination is validated and captured at admission. Browser and
+managed execution must produce the same Project and folder attribution.
+
 ## M7 - Internal MVP Candidate
 
 The MVP candidate requires:
 
 ```txt
 tenant-isolation audit
+Project ownership, folder-tree, and destination-isolation audit
 upload and generation failure recovery
 idempotency and replay verification
 bounded query and graph behavior

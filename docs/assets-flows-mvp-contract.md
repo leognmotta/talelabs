@@ -1,6 +1,6 @@
 # TaleLabs Assets + Flows MVP Contract
 
-**Status:** active source of truth, updated 2026-07-22.
+**Status:** active source of truth, updated 2026-07-24.
 
 This document defines the product boundary until the first sellable creative
 loop is validated. It supersedes every older requirement that makes Elements a
@@ -9,12 +9,14 @@ MVP navigation.
 
 ## Product Boundary
 
-The MVP has three durable product entities and two creation surfaces:
+The MVP has three durable creative entities, one optional organization entity,
+and two creation surfaces:
 
 ```txt
 Assets   = canonical reusable media
 Flows    = editable creative documents and the spatial execution graph
 Elements = optional ordered image-reference collections
+Projects = optional homes for related Assets, sessions, Flows, and Elements
 
 Create = browser-local direct Image, Video, and Audio generation
 Canvas = spatial editing of an ordinary Flow
@@ -38,6 +40,7 @@ The primary creative navigation is:
 
 ```txt
 Create
+Projects
 Flows
 Assets
 Elements
@@ -76,6 +79,25 @@ not return without a new explicit product decision.
 
 Elements remain optional accelerators: every Flow must stay fully usable with
 raw Assets connected directly to generation nodes.
+
+## Projects Are The Approved Organization Layer
+
+Projects were approved on 2026-07-24 as the next organization milestone.
+A Project is an optional, organization-scoped home for Assets, Asset folders,
+Create sessions, Flows, Elements, and the Project Brief. `projectId = null`
+continues to mean Private. Projects do not introduce a second permission system
+and folders remain Asset-only.
+
+Project routes compose the existing Create, Assets, Flows, and Elements
+features under Project scope. Do not create parallel Project-specific versions
+of those systems. Generated output destinations are resolved through one shared
+precedence contract and captured immutably at admission so browser and managed
+execution behave identically.
+
+`docs/feature-research/projects-and-asset-organization.md` is the approved
+implementation specification for Project data ownership, routing, contextual
+sidebar, selected-path folder tree, Project Home, Project Brief, output
+organization, scaling, and acceptance behavior.
 
 ## Active Flow Node Families
 

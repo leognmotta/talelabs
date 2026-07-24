@@ -19,7 +19,7 @@ The active product loop is:
 Create or Flows -> Generated Assets -> Assets -> Continued Iteration
 ```
 
-The first sellable foundation is built around two primary product entities:
+The first sellable foundation is built around two primary creative entities:
 
 ```txt
 Assets
@@ -38,6 +38,11 @@ Elements are the third product entity since 2026-07-18: named, ordered
 collections of reference image Assets that accelerate reuse without ever
 blocking the Asset-to-Flow generation loop.
 
+Projects are the optional organization layer approved on 2026-07-24. A Project
+groups related Assets, folders, Create sessions, Flows, Elements, and one
+Project Brief without replacing any of those entities or introducing
+Project-level permissions in the first release.
+
 The adaptive canvas, generation-node UX, and provider-independent M5 run engine
 were approved on 2026-07-14. The active product goal is M6 provider-integration
 verification: execute pinned OpenRouter routes through the approved durable run
@@ -50,6 +55,7 @@ The creative navigation is deliberately narrow:
 
 ```txt
 Create
+Projects
 Flows
 Assets
 Elements
@@ -72,7 +78,8 @@ The implementation order is:
 6. Provider-independent durable run engine with deterministic mock adapters
 7. User-owned run UX and end-to-end QA
 8. Real provider integration
-9. Billing and credits only after the creative loop is proven
+9. Projects and generated-Asset organization
+10. Billing and credits only after the creative loop is proven
 ```
 
 Create is the lowest-friction path to one useful Asset. Flows remain the
@@ -607,7 +614,18 @@ outputs, and run-all execution. Those runtime semantics must remain explicit.
 
 Assets and Flows belong to a user workspace or organization boundary. Tenant isolation is required for every read, write, selection, generation input, storage operation, and realtime room.
 
-The MVP does not need a separate Project entity. A Flow is the primary creative document, and folders organize Assets. Do not introduce Projects as an additional organizing layer until user behavior proves that Flows and folders are insufficient.
+Project is the approved optional organization entity. It answers which
+production, campaign, client, or creative effort an entity belongs to; folders
+continue to answer where an Asset is located. Assets, folders, Create sessions,
+Flows, and Elements each carry one nullable, tenant-scoped Project identity.
+Private content remains valid through `projectId = null`.
+
+Projects must not become a generic polymorphic container, a replacement for
+Flows, or a second authorization boundary in the first release. Project-scoped
+routes reuse the existing feature implementations, and generation captures its
+resolved Project and Asset-folder destination immutably at admission.
+`docs/feature-research/projects-and-asset-organization.md` is the approved
+implementation specification.
 
 ## Collaboration
 
