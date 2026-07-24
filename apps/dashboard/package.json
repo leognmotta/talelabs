@@ -9,7 +9,9 @@
     "build": "tsc -b && vite build",
     "check-types": "tsc -b",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "verify:create-input-contracts": "tsx scripts/verify-create-input-contracts.ts",
+    "verify:create-draft-upgrade": "tsx scripts/verify-create-draft-upgrade.ts"
   },
   "dependencies": {
     "@atlaskit/pragmatic-drag-and-drop": "^2.0.1",

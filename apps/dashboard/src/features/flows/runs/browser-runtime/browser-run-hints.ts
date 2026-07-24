@@ -10,8 +10,12 @@ export const BROWSER_RUN_HINT_EVENT = 'talelabs:browser-run-changed'
 
 /** Minimal hint exchanged between authenticated TaleLabs tabs. */
 export interface BrowserRunHint {
+  /** Flow identity used only for Flow-source history presentation. */
+  flowId: null | string
   /** Durable run whose authoritative state should be reconciled. */
   runId: string
+  /** Durable request source used to target the exact live history prefix. */
+  source: 'create' | 'flow'
   /** Stable hint kind; the receiver must still load server state. */
   type: 'run-changed'
 }
@@ -25,12 +29,28 @@ export function browserRunChannelName(organizationId: string, userId: string) {
 export function parseBrowserRunHint(value: unknown): BrowserRunHint | null {
   if (!value || typeof value !== 'object')
     return null
-  const candidate = value as { runId?: unknown, type?: unknown }
+  const candidate = value as {
+    flowId?: unknown
+    runId?: unknown
+    source?: unknown
+    type?: unknown
+  }
   return typeof candidate.runId === 'string'
     && candidate.runId.length > 0
     && candidate.runId.length <= 128
+    && (candidate.flowId === null || (
+      typeof candidate.flowId === 'string'
+      && candidate.flowId.length > 0
+      && candidate.flowId.length <= 128
+    ))
     && candidate.type === 'run-changed'
-    ? { runId: candidate.runId, type: candidate.type }
+    && (candidate.source === 'create' || candidate.source === 'flow')
+    ? {
+        flowId: candidate.flowId,
+        runId: candidate.runId,
+        source: candidate.source,
+        type: candidate.type,
+      }
     : null
 }
 
@@ -97,11 +117,18 @@ export function forgetActiveBrowserRun(
 
 /** Broadcasts a best-effort wakeup without carrying run state or credentials. */
 export function publishBrowserRunHint(
+  flowId: null | string,
   organizationId: string,
+  source: 'create' | 'flow',
   userId: string,
   runId: string,
 ) {
-  const hint = { runId, type: 'run-changed' } satisfies BrowserRunHint
+  const hint = {
+    flowId,
+    runId,
+    source,
+    type: 'run-changed',
+  } satisfies BrowserRunHint
   window.dispatchEvent(new CustomEvent(BROWSER_RUN_HINT_EVENT, { detail: hint }))
   let channel: BroadcastChannel | null = null
   try {

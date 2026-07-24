@@ -14,18 +14,22 @@ const REALTIME_INITIAL_CONNECT_TIMEOUT_MS = 5_000
 export function FlowRunRealtimeRunSubscription({
   accessToken,
   expiresAt,
+  flowId,
   onRealtimeError,
   onRealtimeRecovered,
   organizationId,
   runId,
+  source,
   triggerRunId,
 }: {
   accessToken: string
   expiresAt: string
+  flowId: null | string
   onRealtimeError: () => void
   onRealtimeRecovered: () => void
   organizationId: string
   runId: string
+  source: 'create' | 'flow'
   triggerRunId: string
 }) {
   const queryClient = useQueryClient()
@@ -43,6 +47,8 @@ export function FlowRunRealtimeRunSubscription({
         queryClient,
         organizationId,
         runId,
+        flowId,
+        source,
       )
     },
     skipColumns: ['payload', 'output'],

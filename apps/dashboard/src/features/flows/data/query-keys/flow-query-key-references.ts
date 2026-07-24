@@ -19,3 +19,21 @@ export function flowReferences(
 export function flowGenerationConfig(organizationId: null | string) {
   return [...flowScope(organizationId), 'generation-config'] as const
 }
+
+/** Key for one private-binding-safe browser execution availability projection. */
+export function flowBrowserGenerationAvailability(
+  organizationId: null | string,
+  catalogRevision: string,
+  modelId: string,
+  operationId: string,
+  providers: readonly string[],
+) {
+  return [
+    ...flowGenerationConfig(organizationId),
+    'browser-availability',
+    catalogRevision,
+    modelId,
+    operationId,
+    ...providers,
+  ] as const
+}

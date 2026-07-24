@@ -244,8 +244,9 @@ export async function executeBrowserJob(
       facts: result.facts,
     })
     if (completion.state === 'processing')
-      return
+      return 'processing' as const
     await clearBrowserJobJournal(scope.runId, claim.job.id)
+    return 'settled' as const
   }
   catch (error) {
     if (scope.signal.aborted) {
@@ -261,7 +262,7 @@ export async function executeBrowserJob(
         updatedAt: new Date().toISOString(),
         userId: scope.userId,
       }).catch(() => undefined)
-      return
+      return 'settled' as const
     }
     const candidate = error as { code?: string }
     const providerError
@@ -310,5 +311,6 @@ export async function executeBrowserJob(
     else {
       await clearBrowserJobJournal(scope.runId, claim.job.id)
     }
+    return 'settled' as const
   }
 }

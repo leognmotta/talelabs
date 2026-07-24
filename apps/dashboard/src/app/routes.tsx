@@ -63,6 +63,11 @@ const AssetsScreen = lazy(async () => {
   return { default: module.AssetsScreen }
 })
 
+const CreateScreen = lazy(async () => {
+  const module = await import('../features/create/create-screen')
+  return { default: module.CreateScreen }
+})
+
 const FlowsScreen = lazy(async () => {
   const module = await import('../features/flows/browse/flows-screen')
   return { default: module.FlowsScreen }
@@ -369,6 +374,22 @@ export function DashboardRoutes() {
           )}
         >
           <Route index element={<Navigate to="/flows" replace />} />
+          <Route
+            path="create/:sessionId?"
+            element={(
+              <ErrorBoundary
+                fallback={({ resetErrorBoundary }) => (
+                  <ErrorFallback
+                    description={t('create.couldNotLoadDescription')}
+                    onRetry={resetErrorBoundary}
+                    title={t('create.couldNotLoad')}
+                  />
+                )}
+              >
+                <CreateScreen />
+              </ErrorBoundary>
+            )}
+          />
           <Route
             path="assets"
             element={(

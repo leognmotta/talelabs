@@ -133,8 +133,22 @@ export function BrowserRunRoot({
       if (hint) {
         rememberActiveBrowserRun(queryClient, organizationId, userId, hint.runId)
         void queryClient.invalidateQueries({
+          exact: true,
           queryKey: flowQueryKeys.run(organizationId, hint.runId),
         })
+        if (hint.source === 'flow' && hint.flowId) {
+          void queryClient.invalidateQueries({
+            queryKey: flowQueryKeys.runLiveHistories(
+              organizationId,
+              hint.flowId,
+            ),
+          })
+        }
+        else if (hint.source === 'create') {
+          void queryClient.invalidateQueries({
+            queryKey: flowQueryKeys.createRunLiveHistories(organizationId),
+          })
+        }
         coordinator.wake()
       }
     }

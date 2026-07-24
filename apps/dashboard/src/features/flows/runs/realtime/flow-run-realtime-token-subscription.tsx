@@ -65,8 +65,16 @@ export function FlowRunRealtimeTokenSubscription({
       queryClient,
       organizationId,
       runId,
+      tokenQuery.data?.flowId ?? null,
+      tokenQuery.data?.source ?? 'flow',
     )
-  }, [organizationId, queryClient, runId])
+  }, [
+    organizationId,
+    queryClient,
+    runId,
+    tokenQuery.data?.flowId,
+    tokenQuery.data?.source,
+  ])
 
   useEffect(() => {
     if (!coolingDown)
@@ -102,10 +110,12 @@ export function FlowRunRealtimeTokenSubscription({
       key={`${tokenQuery.data.triggerRunId}:${tokenQuery.data.expiresAt}`}
       accessToken={tokenQuery.data.publicAccessToken}
       expiresAt={tokenQuery.data.expiresAt}
+      flowId={tokenQuery.data.flowId}
       onRealtimeError={handleRealtimeError}
       onRealtimeRecovered={handleRealtimeRecovered}
       organizationId={organizationId}
       runId={runId}
+      source={tokenQuery.data.source}
       triggerRunId={tokenQuery.data.triggerRunId}
     />
   )

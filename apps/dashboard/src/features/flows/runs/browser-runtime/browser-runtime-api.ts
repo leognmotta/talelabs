@@ -16,7 +16,7 @@ import {
 } from '@talelabs/flows'
 import {
   deleteRunsIdBrowserLease,
-  getRuns,
+  getRunsActive,
   getRunsId,
   getRunsIdBrowserManifest,
   postRunsIdBrowserJobsClaim,
@@ -55,12 +55,10 @@ function requestConfig(organizationId: string) {
 
 /** Lists active and cancellation-pending browser work through authoritative run state. */
 export async function listActiveBrowserRuns(organizationId: string) {
-  const response = await getRuns(
+  const response = await getRunsActive(
     {
       params: {
-        browserWork: 'pending',
         executionRuntime: 'browser',
-        limit: 100,
         scope: 'mine',
       },
     },

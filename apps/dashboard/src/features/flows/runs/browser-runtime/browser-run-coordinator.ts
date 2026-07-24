@@ -58,6 +58,12 @@ export class BrowserRunCoordinator {
   readonly #cancellationPendingRunIds = new Set<string>()
   readonly #inFlightJobs = new Set<string>()
   readonly #leases = new Map<string, BrowserCoordinatorLease>()
+  readonly #historyScopeByRun = new Map<string, {
+    flowId: null | string
+    source: 'create' | 'flow'
+  }>()
+
+  readonly #finalizationPendingRunIds = new Set<string>()
   readonly #credentialBlockedRunIds = new Set<string>()
   readonly #readyRunIds = new Set<string>()
   #roundRobinOffset = 0
@@ -90,6 +96,31 @@ export class BrowserRunCoordinator {
     state: PutRunsIdBrowserExecutorStatusMutationRequest,
   ) {
     await updateBrowserExecutorStatus(this.#input.organizationId, runId, state)
+    await this.#invalidateRunQueries(runId)
+  }
+
+  async #invalidateRunQueries(runId: string) {
+    const historyScope = this.#historyScopeByRun.get(runId)
+    await Promise.allSettled([
+      this.#input.queryClient.invalidateQueries({
+        exact: true,
+        queryKey: flowQueryKeys.run(this.#input.organizationId, runId),
+      }),
+      ...(historyScope?.source === 'flow' && historyScope.flowId
+        ? [this.#input.queryClient.invalidateQueries({
+            queryKey: flowQueryKeys.runLiveHistories(
+              this.#input.organizationId,
+              historyScope.flowId,
+            ),
+          })]
+        : historyScope?.source === 'create'
+          ? [this.#input.queryClient.invalidateQueries({
+              queryKey: flowQueryKeys.createRunLiveHistories(
+                this.#input.organizationId,
+              ),
+            })]
+          : []),
+    ])
   }
 
   async #reportRunFailure(runId: string, error: unknown) {
@@ -192,15 +223,15 @@ export class BrowserRunCoordinator {
     this.#cancellationPendingRunIds.delete(runId)
     this.#readyRunIds.delete(runId)
     this.#credentialBlockedRunIds.delete(runId)
+    this.#finalizationPendingRunIds.delete(runId)
     forgetActiveBrowserRun(
       this.#input.queryClient,
       this.#input.organizationId,
       this.#input.userId,
       runId,
     )
-    await this.#input.queryClient.invalidateQueries({
-      queryKey: flowQueryKeys.run(this.#input.organizationId, runId),
-    })
+    await this.#invalidateRunQueries(runId)
+    this.#historyScopeByRun.delete(runId)
   }
 
   async #reconcileCancellations(
@@ -231,9 +262,7 @@ export class BrowserRunCoordinator {
     }
     if (!reconciliationComplete) {
       this.#cancellationPendingRunIds.add(scope.runId)
-      await this.#input.queryClient.invalidateQueries({
-        queryKey: flowQueryKeys.run(scope.organizationId, scope.runId),
-      })
+      await this.#invalidateRunQueries(scope.runId)
       return
     }
     this.#cancellationPendingRunIds.delete(scope.runId)
@@ -295,6 +324,10 @@ export class BrowserRunCoordinator {
     }
     this.#leases.set(runId, scope)
     const manifest = await getBrowserManifest(scope)
+    this.#historyScopeByRun.set(runId, {
+      flowId: manifest.run.flowId,
+      source: manifest.run.source,
+    })
     if (manifest.run.status === 'canceled') {
       await this.#reconcileCancellations(scope, manifest)
       return
@@ -337,9 +370,10 @@ export class BrowserRunCoordinator {
       activeJobIds: [...this.#inFlightJobs],
       limit: Math.min(capacity, 1),
     })
-    await this.#input.queryClient.invalidateQueries({
-      queryKey: flowQueryKeys.run(this.#input.organizationId, runId),
-    })
+    if (claimed.jobs.length > 0) {
+      this.#finalizationPendingRunIds.delete(runId)
+      await this.#invalidateRunQueries(runId)
+    }
     for (const job of claimed.jobs) {
       if (this.#inFlightJobs.has(job.job.id))
         continue
@@ -347,18 +381,23 @@ export class BrowserRunCoordinator {
       void this.#queue
         .add(async () => {
           try {
-            await executeBrowserJob(job, {
+            const outcome = await executeBrowserJob(job, {
               ...scope,
               signal: this.#input.signal,
               userId: this.#input.userId,
             })
+            if (outcome === 'processing')
+              this.#finalizationPendingRunIds.add(runId)
           }
           finally {
             this.#inFlightJobs.delete(job.job.id)
-            await this.#input.queryClient.invalidateQueries({
-              queryKey: flowQueryKeys.run(this.#input.organizationId, runId),
+            await this.#invalidateRunQueries(runId)
+            this.#input.channel.postMessage({
+              flowId: manifest.run.flowId,
+              runId,
+              source: manifest.run.source,
+              type: 'run-changed',
             })
-            this.#input.channel.postMessage({ runId, type: 'run-changed' })
             this.wake()
           }
         })
@@ -387,6 +426,12 @@ export class BrowserRunCoordinator {
       : this.#nextDiscoveryRefreshMs()
     if (!hasActiveRuns)
       return discoveryRefreshMs
+    if (this.#finalizationPendingRunIds.size > 0) {
+      return Math.min(
+        discoveryRefreshMs,
+        BROWSER_MINIMUM_REFRESH_MS,
+      )
+    }
     if (this.#cancellationPendingRunIds.size > 0) {
       return Math.min(
         discoveryRefreshMs,
@@ -514,6 +559,8 @@ export class BrowserRunCoordinator {
         [...this.#leases.values()].map(releaseBrowserLease),
       )
       this.#leases.clear()
+      this.#historyScopeByRun.clear()
+      this.#finalizationPendingRunIds.clear()
       this.#cancellationPendingRunIds.clear()
     }
   }

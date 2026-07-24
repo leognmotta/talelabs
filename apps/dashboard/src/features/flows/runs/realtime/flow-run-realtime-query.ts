@@ -20,9 +20,20 @@ export function invalidateFlowRunAndActiveQueries(
   queryClient: QueryClient,
   organizationId: string,
   runId: string,
+  flowId: null | string,
+  source: 'create' | 'flow',
 ) {
   return Promise.allSettled([
     invalidateFlowRunQuery(queryClient, organizationId, runId),
+    ...(source === 'flow' && flowId
+      ? [queryClient.invalidateQueries({
+          queryKey: flowQueryKeys.runLiveHistories(organizationId, flowId),
+        })]
+      : source === 'create'
+        ? [queryClient.invalidateQueries({
+            queryKey: flowQueryKeys.createRunLiveHistories(organizationId),
+          })]
+        : []),
     queryClient.invalidateQueries({
       exact: true,
       queryKey: flowQueryKeys.activeRuns(organizationId),
