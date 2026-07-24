@@ -1,3 +1,5 @@
+/** Shared Base UI select primitives with TaleLabs sizing and menu styling. */
+
 'use client'
 
 import { Select as SelectPrimitive } from '@base-ui/react/select'
@@ -157,8 +159,9 @@ function SelectItem({
       data-slot="select-item"
       className={cn(
         `
-          relative flex w-full cursor-default items-center gap-2.5 rounded-2xl
-          py-2 pr-8 pl-3 text-sm font-medium outline-hidden select-none
+          relative flex w-full min-w-0 cursor-default items-center gap-2.5
+          rounded-2xl py-2 pr-8 pl-3 text-sm font-medium outline-hidden
+          select-none
           focus:bg-accent focus:text-accent-foreground
           not-data-[variant=destructive]:focus:**:text-accent-foreground
           data-disabled:cursor-not-allowed data-disabled:opacity-50
@@ -171,7 +174,7 @@ function SelectItem({
       {...props}
     >
       <SelectPrimitive.ItemText className="
-        flex flex-1 shrink-0 gap-2 whitespace-nowrap
+        flex min-w-0 flex-1 items-center gap-2 whitespace-nowrap
       "
       >
         {children}
