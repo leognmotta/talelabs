@@ -12,6 +12,12 @@ import type { PageCursor, SortOrder } from '../pagination/cursor.js'
 
 import { MAX_ELEMENT_REFERENCES } from '@talelabs/assets'
 import { db, sql } from '@talelabs/db'
+import {
+  lockActiveProject,
+  lockActiveProjects,
+  lockProjectScopes,
+  touchProject,
+} from '../domain/projects/project-scope.js'
 
 /** One persisted Element row. */
 export type ElementRecord = Selectable<ElementTable>
@@ -27,6 +33,7 @@ export interface ListElementRowsInput {
   limit: number
   order: SortOrder
   organizationId: string
+  projectId?: null | string
   search?: string
 }
 
@@ -42,6 +49,11 @@ export async function listElementRows(input: ListElementRowsInput) {
 
   if (input.kind)
     conditions.push(sql<boolean>`element."kind" = ${input.kind}`)
+
+  if (input.projectId === null)
+    conditions.push(sql<boolean>`element."projectId" is null`)
+  else if (input.projectId !== undefined)
+    conditions.push(sql<boolean>`element."projectId" = ${input.projectId}`)
 
   if (input.search) {
     const pattern = `%${escapeLike(input.search)}%`
@@ -186,8 +198,12 @@ export async function insertElementRowWithReferences(input: {
   kind: string
   name: string
   organizationId: string
+  projectId?: null | string
 }): Promise<CreateElementRowResult> {
   return db.transaction().execute(async (trx) => {
+    const projectId = input.projectId ?? null
+    await lockProjectScopes(trx, input.organizationId, [projectId])
+    await lockActiveProject(trx, input.organizationId, projectId)
     // Assets first (the new Element row is not yet visible to lock).
     const lockedAssets = await lockReferenceAssets(
       trx,
@@ -206,6 +222,7 @@ export async function insertElementRowWithReferences(input: {
         kind: input.kind,
         name: input.name,
         organizationId: input.organizationId,
+        projectId,
       })
       .returningAll()
       .executeTakeFirstOrThrow()
@@ -216,6 +233,7 @@ export async function insertElementRowWithReferences(input: {
       element.id,
       input.assetIds,
     )
+    await touchProject(trx, input.organizationId, projectId)
     return { element, status: 'created' as const }
   })
 }
@@ -238,21 +256,44 @@ export async function updateElementRowWithReferences(input: {
   kind?: string
   name?: string
   organizationId: string
+  projectId?: null | string
 }): Promise<UpdateElementRowResult> {
   return db.transaction().execute(async (trx) => {
+    const initial = await trx.selectFrom('elements')
+      .select('projectId')
+      .where('organizationId', '=', input.organizationId)
+      .where('id', '=', input.id)
+      .executeTakeFirst()
+    if (!initial)
+      return { status: 'element_not_found' as const }
+    const projectId = input.projectId !== undefined
+      ? input.projectId
+      : initial.projectId
+    await lockProjectScopes(
+      trx,
+      input.organizationId,
+      [initial.projectId, projectId],
+    )
+    await lockActiveProjects(
+      trx,
+      input.organizationId,
+      [initial.projectId, projectId],
+    )
     // Lock candidate Assets before the Element row (Assets → Element order).
     const lockedAssets = input.assetIds === undefined
       ? new Map()
       : await lockReferenceAssets(trx, input.organizationId, input.assetIds)
 
     const element = await trx.selectFrom('elements')
-      .select('id')
+      .select(['id', 'projectId'])
       .where('organizationId', '=', input.organizationId)
       .where('id', '=', input.id)
       .forUpdate()
       .executeTakeFirst()
 
     if (!element)
+      return { status: 'element_not_found' as const }
+    if (element.projectId !== initial.projectId)
       return { status: 'element_not_found' as const }
 
     if (input.assetIds !== undefined) {
@@ -271,6 +312,7 @@ export async function updateElementRowWithReferences(input: {
     const updated = await trx.updateTable('elements')
       .set({
         ...(input.name !== undefined ? { name: input.name } : {}),
+        projectId,
         ...(input.kind !== undefined ? { kind: input.kind } : {}),
         ...(input.description !== undefined
           ? { description: input.description }
@@ -282,17 +324,44 @@ export async function updateElementRowWithReferences(input: {
       .returningAll()
       .executeTakeFirstOrThrow()
 
+    await touchProject(trx, input.organizationId, initial.projectId)
+    if (projectId !== initial.projectId)
+      await touchProject(trx, input.organizationId, projectId)
     return { element: updated, status: 'updated' as const }
   })
 }
 
 /** Deletes one Element row; reference rows cascade, Assets are untouched. */
 export function deleteElementRow(organizationId: string, id: string) {
-  return db.deleteFrom('elements')
-    .where('organizationId', '=', organizationId)
-    .where('id', '=', id)
-    .returning('id')
-    .executeTakeFirst()
+  return db.transaction().execute(async (trx) => {
+    const initial = await trx.selectFrom('elements')
+      .select('projectId')
+      .where('organizationId', '=', organizationId)
+      .where('id', '=', id)
+      .executeTakeFirst()
+    if (!initial)
+      return undefined
+
+    await lockProjectScopes(trx, organizationId, [initial.projectId])
+    await lockActiveProjects(trx, organizationId, [initial.projectId])
+    const current = await trx.selectFrom('elements')
+      .select('projectId')
+      .where('organizationId', '=', organizationId)
+      .where('id', '=', id)
+      .forUpdate()
+      .executeTakeFirst()
+    if (!current || current.projectId !== initial.projectId)
+      return undefined
+
+    const deleted = await trx.deleteFrom('elements')
+      .where('organizationId', '=', organizationId)
+      .where('id', '=', id)
+      .returning('id')
+      .executeTakeFirst()
+    if (deleted)
+      await touchProject(trx, organizationId, current.projectId)
+    return deleted
+  })
 }
 
 /** One reference row joined with its canonical Asset. */
@@ -415,6 +484,20 @@ export async function mutateElementReferenceRows(input: {
   removeAssetIds: readonly string[]
 }): Promise<MutateElementReferenceRowsResult> {
   return db.transaction().execute(async (trx) => {
+    const initial = await trx.selectFrom('elements')
+      .select('projectId')
+      .where('organizationId', '=', input.organizationId)
+      .where('id', '=', input.elementId)
+      .executeTakeFirst()
+    if (!initial)
+      return { status: 'element_not_found' as const }
+
+    await lockProjectScopes(trx, input.organizationId, [initial.projectId])
+    await lockActiveProjects(
+      trx,
+      input.organizationId,
+      [initial.projectId],
+    )
     // Lock the add candidates (Assets → Element order) before the Element row.
     const lockedAssets = await lockReferenceAssets(
       trx,
@@ -423,13 +506,13 @@ export async function mutateElementReferenceRows(input: {
     )
 
     const element = await trx.selectFrom('elements')
-      .select('id')
+      .select(['id', 'projectId'])
       .where('organizationId', '=', input.organizationId)
       .where('id', '=', input.elementId)
       .forUpdate()
       .executeTakeFirst()
 
-    if (!element)
+    if (!element || element.projectId !== initial.projectId)
       return { status: 'element_not_found' as const }
 
     const currentRows = await trx.selectFrom('elementReferences')
@@ -476,6 +559,7 @@ export async function mutateElementReferenceRows(input: {
       .returningAll()
       .executeTakeFirstOrThrow()
 
+    await touchProject(trx, input.organizationId, updated.projectId)
     return {
       addedAssetIds,
       element: updated,

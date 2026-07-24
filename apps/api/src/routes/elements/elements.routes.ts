@@ -100,9 +100,11 @@ const mutateReferencesRoute = createRoute({
 /** Mounts every Element route on the product API. */
 export function registerElementRoutes(app: OpenAPIHono<ApiEnv>) {
   app.openapi(listRoute, async (c) => {
+    const query = c.req.valid('query')
     return c.json(await listElements({
-      ...c.req.valid('query'),
+      ...query,
       organizationId: c.var.organizationId,
+      projectId: query.projectId === 'private' ? null : query.projectId,
     }), 200)
   })
 
@@ -114,6 +116,7 @@ export function registerElementRoutes(app: OpenAPIHono<ApiEnv>) {
       kind: body.kind,
       name: body.name,
       organizationId: c.var.organizationId,
+      projectId: body.projectId,
       userId: c.var.userId,
     }), 201)
   })

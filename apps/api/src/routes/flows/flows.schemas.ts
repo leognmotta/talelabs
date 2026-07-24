@@ -29,8 +29,10 @@ export const FlowViewportSchema = z.object({
 
 /** Flow summary representation. */
 export const FlowSchema = z.object({
+  assetFolderId: NullableCuid2Schema,
   id: Cuid2Schema,
   name: z.string(),
+  projectId: NullableCuid2Schema,
   revision: z.number().int().nonnegative(),
   viewport: FlowViewportSchema,
   createdBy: UserIdSchema.nullable(),
@@ -50,6 +52,7 @@ export const FlowListQuerySchema = z.object({
   cursor: CursorSchema.optional(),
   limit: PaginationLimitSchema,
   search: z.string().trim().min(1).max(100).optional(),
+  projectId: z.union([Cuid2Schema, z.literal('private')]).optional(),
 })
 
 /** Path parameter carrying one Flow id. */
@@ -58,11 +61,14 @@ export const FlowParamsSchema = z.object({ id: Cuid2Schema })
 /** Create-Flow payload. */
 export const CreateFlowRequestSchema = z.object({
   name: z.string().trim().min(1).max(255),
+  projectId: NullableCuid2Schema.optional(),
 }).openapi('CreateFlowRequest')
 
 /** Update-Flow payload: name and/or viewport. */
 export const UpdateFlowRequestSchema = z.object({
+  assetFolderId: NullableCuid2Schema.optional(),
   name: z.string().trim().min(1).max(255).optional(),
+  projectId: NullableCuid2Schema.optional(),
   viewport: FlowViewportSchema.optional(),
 }).refine(value => Object.keys(value).length > 0, {
   message: 'At least one field is required',

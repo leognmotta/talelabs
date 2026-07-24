@@ -13,7 +13,12 @@ import type {
 import type { Selectable } from 'kysely'
 import type { PageCursor } from '../pagination/cursor.js'
 
-import { db, sql } from '@talelabs/db'
+import { db, lockFolderStructure, sql } from '@talelabs/db'
+import {
+  lockActiveProjects,
+  lockProjectScopes,
+  touchProject,
+} from '../domain/projects/project-scope.js'
 
 /** One persisted Create session row. */
 export type CreateSessionRecord = Selectable<CreateSessionTable>
@@ -26,6 +31,7 @@ export function listCreateSessionRows(input: {
   limit: number
   /** Active tenant scope. */
   organizationId: string
+  projectId?: null | string
   /** Optional case-insensitive name filter. */
   search?: string
   /** Authenticated session owner. */
@@ -36,6 +42,11 @@ export function listCreateSessionRows(input: {
     .where('organizationId', '=', input.organizationId)
     .where('createdBy', '=', input.userId)
     .where('deletedAt', 'is', null)
+
+  if (input.projectId === null)
+    query = query.where('projectId', 'is', null)
+  else if (input.projectId !== undefined)
+    query = query.where('projectId', '=', input.projectId)
 
   if (input.search) {
     const escaped = input.search.replace(/[\\%_]/g, match => `\\${match}`)
@@ -90,7 +101,7 @@ export async function lockOwnedCreateSessionRow(input: {
   trx: Transaction<Database>
 }) {
   return input.trx.selectFrom('createSessions')
-    .select('id')
+    .selectAll()
     .where('id', '=', input.id)
     .where('organizationId', '=', input.organizationId)
     .where('createdBy', '=', input.userId)
@@ -113,17 +124,23 @@ export async function resolveCreateSessionForAdmission(input: {
   newSessionId: string
   /** Active tenant scope. */
   organizationId: string
+  /** Optional Project location for a new session. */
+  projectId?: null | string
   /** Caller-owned admission transaction. */
   trx: Transaction<Database>
-}): Promise<null | string> {
+}): Promise<CreateSessionRecord | null> {
   if (!input.createSessionId) {
-    await input.trx.insertInto('createSessions').values({
-      createdBy: input.createdBy,
-      id: input.newSessionId,
-      name: null,
-      organizationId: input.organizationId,
-    }).execute()
-    return input.newSessionId
+    return input.trx.insertInto('createSessions')
+      .values({
+        createdBy: input.createdBy,
+        id: input.newSessionId,
+        name: null,
+        organizationId: input.organizationId,
+        assetFolderId: null,
+        projectId: input.projectId ?? null,
+      })
+      .returningAll()
+      .executeTakeFirstOrThrow()
   }
 
   const session = await lockOwnedCreateSessionRow({
@@ -132,7 +149,7 @@ export async function resolveCreateSessionForAdmission(input: {
     trx: input.trx,
     userId: input.createdBy,
   })
-  return session?.id ?? null
+  return session ?? null
 }
 
 /** Touches a session after a direct run is admitted into it. */
@@ -150,23 +167,118 @@ export function touchCreateSessionRow(
 
 /** Renames one owned, non-deleted session and returns the updated row. */
 export function renameCreateSessionRow(input: {
+  /** Optional default generated-Asset folder update. */
+  assetFolderId?: null | string
   /** Session identity. */
   id: string
   /** Trimmed user-authored label. */
-  name: string
+  name?: string
   /** Active tenant scope. */
   organizationId: string
+  /** Optional Project location update. */
+  projectId?: null | string
   /** Authenticated session owner. */
   userId: string
 }) {
-  return db.updateTable('createSessions')
-    .set({ name: input.name, updatedAt: new Date() })
-    .where('id', '=', input.id)
-    .where('organizationId', '=', input.organizationId)
-    .where('createdBy', '=', input.userId)
-    .where('deletedAt', 'is', null)
-    .returningAll()
-    .executeTakeFirst()
+  return db.transaction().execute(async (trx) => {
+    const initial = await trx.selectFrom('createSessions')
+      .select(['assetFolderId', 'projectId'])
+      .where('id', '=', input.id)
+      .where('organizationId', '=', input.organizationId)
+      .where('createdBy', '=', input.userId)
+      .where('deletedAt', 'is', null)
+      .executeTakeFirst()
+    if (!initial)
+      return undefined
+
+    let projectId = input.projectId !== undefined
+      ? input.projectId
+      : initial.projectId
+    let assetFolderId = input.assetFolderId !== undefined
+      ? input.assetFolderId
+      : initial.assetFolderId
+    if (
+      input.projectId !== undefined
+      && input.projectId !== initial.projectId
+      && input.assetFolderId === undefined
+    ) {
+      assetFolderId = null
+    }
+    if (assetFolderId) {
+      const folder = await trx.selectFrom('folders')
+        .select('projectId')
+        .where('organizationId', '=', input.organizationId)
+        .where('id', '=', assetFolderId)
+        .executeTakeFirst()
+      if (!folder || (
+        input.projectId !== undefined
+        && folder.projectId !== input.projectId
+      )) {
+        return undefined
+      }
+      projectId = folder.projectId
+    }
+    await lockProjectScopes(
+      trx,
+      input.organizationId,
+      [initial.projectId, projectId],
+    )
+    await lockActiveProjects(
+      trx,
+      input.organizationId,
+      [initial.projectId, projectId],
+    )
+    const coordinatesOutputFolder = (
+      input.assetFolderId !== undefined
+      || input.projectId !== undefined
+    )
+    if (coordinatesOutputFolder) {
+      await lockFolderStructure(trx, input.organizationId)
+    }
+    if (assetFolderId && coordinatesOutputFolder) {
+      const folder = await trx.selectFrom('folders')
+        .select('projectId')
+        .where('organizationId', '=', input.organizationId)
+        .where('id', '=', assetFolderId)
+        .forShare()
+        .executeTakeFirst()
+      if (!folder || folder.projectId !== projectId)
+        return undefined
+    }
+    const session = await trx.selectFrom('createSessions')
+      .select(['assetFolderId', 'id', 'projectId'])
+      .where('id', '=', input.id)
+      .where('organizationId', '=', input.organizationId)
+      .where('createdBy', '=', input.userId)
+      .where('deletedAt', 'is', null)
+      .forUpdate()
+      .executeTakeFirst()
+    if (!session)
+      return undefined
+    if (
+      session.assetFolderId !== initial.assetFolderId
+      || session.projectId !== initial.projectId
+    ) {
+      return undefined
+    }
+    const updated = await trx.updateTable('createSessions')
+      .set({
+        assetFolderId,
+        ...(input.name !== undefined ? { name: input.name } : {}),
+        projectId,
+        updatedAt: new Date(),
+      })
+      .where('id', '=', input.id)
+      .where('organizationId', '=', input.organizationId)
+      .where('createdBy', '=', input.userId)
+      .where('deletedAt', 'is', null)
+      .returningAll()
+      .executeTakeFirst()
+    await touchProject(trx, input.organizationId, initial.projectId)
+    if (projectId !== initial.projectId)
+      await touchProject(trx, input.organizationId, projectId)
+    return updated
+  })
 }
 
 /** Soft-deletes one owned session while preserving runs and output Assets. */
@@ -178,13 +290,45 @@ export function deleteCreateSessionRow(input: {
   /** Authenticated session owner. */
   userId: string
 }) {
-  const deletedAt = new Date()
-  return db.updateTable('createSessions')
-    .set({ deletedAt, updatedAt: deletedAt })
-    .where('id', '=', input.id)
-    .where('organizationId', '=', input.organizationId)
-    .where('createdBy', '=', input.userId)
-    .where('deletedAt', 'is', null)
-    .returning('id')
-    .executeTakeFirst()
+  return db.transaction().execute(async (trx) => {
+    const initial = await trx.selectFrom('createSessions')
+      .select('projectId')
+      .where('id', '=', input.id)
+      .where('organizationId', '=', input.organizationId)
+      .where('createdBy', '=', input.userId)
+      .where('deletedAt', 'is', null)
+      .executeTakeFirst()
+    if (!initial)
+      return undefined
+
+    await lockProjectScopes(trx, input.organizationId, [initial.projectId])
+    await lockActiveProjects(
+      trx,
+      input.organizationId,
+      [initial.projectId],
+    )
+    const current = await trx.selectFrom('createSessions')
+      .select('projectId')
+      .where('id', '=', input.id)
+      .where('organizationId', '=', input.organizationId)
+      .where('createdBy', '=', input.userId)
+      .where('deletedAt', 'is', null)
+      .forUpdate()
+      .executeTakeFirst()
+    if (!current || current.projectId !== initial.projectId)
+      return undefined
+
+    const deletedAt = new Date()
+    const deleted = await trx.updateTable('createSessions')
+      .set({ deletedAt, updatedAt: deletedAt })
+      .where('id', '=', input.id)
+      .where('organizationId', '=', input.organizationId)
+      .where('createdBy', '=', input.userId)
+      .where('deletedAt', 'is', null)
+      .returning('id')
+      .executeTakeFirst()
+    if (deleted)
+      await touchProject(trx, input.organizationId, current.projectId)
+    return deleted
+  })
 }

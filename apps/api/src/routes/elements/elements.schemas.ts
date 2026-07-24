@@ -10,6 +10,7 @@ import {
   createListResponseSchema,
   Cuid2Schema,
   CursorSchema,
+  NullableCuid2Schema,
   PaginationLimitSchema,
   TimestampSchema,
 } from '../../schemas/common.js'
@@ -37,6 +38,7 @@ export const ElementSchema = z.object({
   id: Cuid2Schema,
   name: z.string(),
   kind: ElementKindSchema,
+  projectId: NullableCuid2Schema,
   description: z.string(),
   referenceCount: z.number().int().nonnegative(),
   coverAsset: ElementReferenceAssetSchema.nullable(),
@@ -64,6 +66,7 @@ export const ElementListQuerySchema = z.object({
   assetId: Cuid2Schema.optional(),
   limit: PaginationLimitSchema,
   cursor: CursorSchema.optional(),
+  projectId: z.union([Cuid2Schema, z.literal('private')]).optional(),
 })
 
 /** Bounded list of reference Asset IDs. */
@@ -76,6 +79,7 @@ export const CreateElementRequestSchema = z.object({
   kind: ElementKindSchema,
   description: z.string().trim().max(2_000).optional(),
   assetIds: ElementReferenceIdsSchema.optional(),
+  projectId: NullableCuid2Schema.optional(),
 }).openapi('CreateElementRequest')
 
 /** Update payload; `assetIds` replaces the full ordered list when sent. */
@@ -84,6 +88,7 @@ export const UpdateElementRequestSchema = z.object({
   kind: ElementKindSchema.optional(),
   description: z.string().trim().max(2_000).optional(),
   assetIds: ElementReferenceIdsSchema.optional(),
+  projectId: NullableCuid2Schema.optional(),
 }).refine(value => Object.keys(value).length > 0, {
   message: 'At least one field is required',
 }).openapi('UpdateElementRequest')

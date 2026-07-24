@@ -11,7 +11,18 @@ import type {
 import type { Selectable, Transaction } from 'kysely'
 import type { PageCursor } from '../pagination/cursor.js'
 
-import { availableFolderName, db, sql } from '@talelabs/db'
+import {
+  availableFolderName,
+  db,
+  flowOutputFolderSystemRole,
+  sql,
+} from '@talelabs/db'
+import {
+  lockActiveProject,
+  lockActiveProjects,
+  lockProjectScopes,
+  touchProject,
+} from '../domain/projects/project-scope.js'
 import { lockFolderStructure } from './folders.data.js'
 
 /** Persisted Flow row returned by tenant-scoped data queries. */
@@ -73,11 +84,17 @@ export function listFlowRows(input: {
   cursor: PageCursor<'updatedAt'> | null
   limit: number
   organizationId: string
+  projectId?: null | string
   search?: string
 }) {
   let query = db.selectFrom('flows')
     .selectAll()
     .where('organizationId', '=', input.organizationId)
+
+  if (input.projectId === null)
+    query = query.where('projectId', 'is', null)
+  else if (input.projectId !== undefined)
+    query = query.where('projectId', '=', input.projectId)
 
   if (input.search) {
     query = query.where(
@@ -118,50 +135,127 @@ export function insertFlowRow(input: {
   id: string
   name: string
   organizationId: string
+  projectId?: null | string
 }) {
-  return db.insertInto('flows')
-    .values({
-      ...input,
-      viewport: { x: 0, y: 0, zoom: 1 },
-    })
-    .returningAll()
-    .executeTakeFirstOrThrow()
+  return db.transaction().execute(async (trx) => {
+    const projectId = input.projectId ?? null
+    await lockProjectScopes(trx, input.organizationId, [projectId])
+    await lockActiveProject(trx, input.organizationId, projectId)
+    const flow = await trx.insertInto('flows')
+      .values({
+        ...input,
+        projectId,
+        viewport: { x: 0, y: 0, zoom: 1 },
+      })
+      .returningAll()
+      .executeTakeFirstOrThrow()
+    await touchProject(trx, input.organizationId, projectId)
+    return flow
+  })
 }
 
 /** Updates Flow metadata and keeps its generated-Asset folder name aligned. */
 export function updateFlowRow(input: {
+  assetFolderId?: null | string
   id: string
   name?: string
   organizationId: string
+  projectId?: null | string
   viewport?: { x: number, y: number, zoom: number }
 }) {
   return db.transaction().execute(async (trx) => {
-    if (input.name !== undefined)
+    const initial = await trx.selectFrom('flows')
+      .select(['assetFolderId', 'projectId'])
+      .where('organizationId', '=', input.organizationId)
+      .where('id', '=', input.id)
+      .executeTakeFirst()
+    if (!initial)
+      return undefined
+    let projectId = input.projectId !== undefined
+      ? input.projectId
+      : initial.projectId
+    let assetFolderId = input.assetFolderId !== undefined
+      ? input.assetFolderId
+      : initial.assetFolderId
+    if (
+      input.projectId !== undefined
+      && input.projectId !== initial.projectId
+      && input.assetFolderId === undefined
+    ) {
+      assetFolderId = null
+    }
+    if (assetFolderId) {
+      const folder = await trx.selectFrom('folders')
+        .select('projectId')
+        .where('organizationId', '=', input.organizationId)
+        .where('id', '=', assetFolderId)
+        .executeTakeFirst()
+      if (!folder || (
+        input.projectId !== undefined
+        && folder.projectId !== input.projectId
+      )) {
+        return undefined
+      }
+      projectId = folder.projectId
+    }
+    await lockProjectScopes(
+      trx,
+      input.organizationId,
+      [initial.projectId, projectId],
+    )
+    await lockActiveProjects(
+      trx,
+      input.organizationId,
+      [initial.projectId, projectId],
+    )
+    const coordinatesOutputFolder = (
+      input.assetFolderId !== undefined
+      || input.name !== undefined
+      || input.projectId !== undefined
+    )
+    if (coordinatesOutputFolder) {
       await lockFolderStructure(trx, input.organizationId)
+    }
+
+    const outputFolder = assetFolderId && coordinatesOutputFolder
+      ? await trx.selectFrom('folders')
+          .select(['id', 'parentId', 'projectId', 'systemRole'])
+          .where('organizationId', '=', input.organizationId)
+          .where('id', '=', assetFolderId)
+          .forUpdate()
+          .executeTakeFirst()
+      : undefined
+    if (
+      assetFolderId
+      && coordinatesOutputFolder
+      && (!outputFolder || outputFolder.projectId !== projectId)
+    ) {
+      return undefined
+    }
 
     const current = await trx.selectFrom('flows')
-      .select(['assetFolderId', 'id'])
+      .select(['assetFolderId', 'id', 'projectId'])
       .where('organizationId', '=', input.organizationId)
       .where('id', '=', input.id)
       .forUpdate()
       .executeTakeFirst()
     if (!current)
       return undefined
+    if (
+      current.assetFolderId !== initial.assetFolderId
+      || current.projectId !== initial.projectId
+    ) {
+      return undefined
+    }
 
     if (input.name !== undefined && current.assetFolderId) {
-      const folder = await trx.selectFrom('folders')
-        .select(['id', 'parentId'])
-        .where('organizationId', '=', input.organizationId)
-        .where('id', '=', current.assetFolderId)
-        .forUpdate()
-        .executeTakeFirst()
-      if (folder) {
+      if (outputFolder?.systemRole === flowOutputFolderSystemRole(current.id)) {
         let siblingQuery = trx.selectFrom('folders')
           .select('name')
           .where('organizationId', '=', input.organizationId)
-          .where('id', '!=', folder.id)
-        siblingQuery = folder.parentId
-          ? siblingQuery.where('parentId', '=', folder.parentId)
+          .where('id', '!=', outputFolder.id)
+        siblingQuery = outputFolder.parentId
+          ? siblingQuery.where('parentId', '=', outputFolder.parentId)
           : siblingQuery.where('parentId', 'is', null)
         const siblings = await siblingQuery.execute()
         await trx.updateTable('folders')
@@ -178,9 +272,11 @@ export function updateFlowRow(input: {
       }
     }
 
-    return trx.updateTable('flows')
+    const flow = await trx.updateTable('flows')
       .set({
         ...(input.name !== undefined ? { name: input.name } : {}),
+        assetFolderId,
+        projectId,
         ...(input.viewport !== undefined ? { viewport: input.viewport } : {}),
         updatedAt: new Date(),
       })
@@ -188,16 +284,46 @@ export function updateFlowRow(input: {
       .where('id', '=', input.id)
       .returningAll()
       .executeTakeFirst()
+    if (!flow)
+      return flow
+    await touchProject(trx, input.organizationId, current.projectId)
+    if (projectId !== current.projectId)
+      await touchProject(trx, input.organizationId, projectId)
+    return flow
   })
 }
 
 /** Deletes one tenant-owned Flow and returns its identifier when it existed. */
 export function deleteFlowRow(organizationId: string, id: string) {
-  return db.deleteFrom('flows')
-    .where('organizationId', '=', organizationId)
-    .where('id', '=', id)
-    .returning('id')
-    .executeTakeFirst()
+  return db.transaction().execute(async (trx) => {
+    const initial = await trx.selectFrom('flows')
+      .select('projectId')
+      .where('organizationId', '=', organizationId)
+      .where('id', '=', id)
+      .executeTakeFirst()
+    if (!initial)
+      return undefined
+
+    await lockProjectScopes(trx, organizationId, [initial.projectId])
+    await lockActiveProjects(trx, organizationId, [initial.projectId])
+    const current = await trx.selectFrom('flows')
+      .select('projectId')
+      .where('organizationId', '=', organizationId)
+      .where('id', '=', id)
+      .forUpdate()
+      .executeTakeFirst()
+    if (!current || current.projectId !== initial.projectId)
+      return undefined
+
+    const deleted = await trx.deleteFrom('flows')
+      .where('organizationId', '=', organizationId)
+      .where('id', '=', id)
+      .returning('id')
+      .executeTakeFirst()
+    if (deleted)
+      await touchProject(trx, organizationId, current.projectId)
+    return deleted
+  })
 }
 
 async function getFlowDraftGraphRows(
@@ -346,12 +472,22 @@ export async function syncFlowGraphRows(input: {
 }) {
   try {
     return await db.transaction().execute(async (trx) => {
-      const flow = await trx.selectFrom('flows')
-        .select(['id', 'revision'])
+      const initial = await trx.selectFrom('flows')
+        .select('projectId')
         .where('organizationId', '=', input.organizationId)
         .where('id', '=', input.flowId)
         .executeTakeFirst()
-      if (!flow)
+      if (!initial)
+        return { status: 'not_found' as const }
+
+      await lockProjectScopes(trx, input.organizationId, [initial.projectId])
+      await lockActiveProjects(trx, input.organizationId, [initial.projectId])
+      const flow = await trx.selectFrom('flows')
+        .select(['id', 'projectId', 'revision'])
+        .where('organizationId', '=', input.organizationId)
+        .where('id', '=', input.flowId)
+        .executeTakeFirst()
+      if (!flow || flow.projectId !== initial.projectId)
         return { status: 'not_found' as const }
       if (Number(flow.revision) !== input.baseRevision)
         return { status: 'revision_conflict' as const }

@@ -88,7 +88,9 @@ function presentViewport(value: JsonValue) {
 function presentFlow(flow: NonNullable<Awaited<ReturnType<typeof findFlowById>>>) {
   return {
     id: flow.id,
+    assetFolderId: flow.assetFolderId,
     name: flow.name,
+    projectId: flow.projectId,
     revision: Number(flow.revision),
     viewport: presentViewport(flow.viewport),
     createdBy: flow.createdBy,
@@ -228,6 +230,7 @@ export async function listFlows(input: {
   cursor?: string
   limit: number
   organizationId: string
+  projectId?: null | string
   search?: string
 }) {
   const pagination = resolvePagination({
@@ -274,6 +277,7 @@ export async function createFlow(input: {
   createdBy: string
   name: string
   organizationId: string
+  projectId?: null | string
 }) {
   return presentFlow(await insertFlowRow({ ...input, id: createId() }))
 }
@@ -288,9 +292,11 @@ export async function getFlow(organizationId: string, id: string) {
 
 /** Updates Flow name and/or viewport. */
 export async function updateFlow(input: {
+  assetFolderId?: null | string
   id: string
   name?: string
   organizationId: string
+  projectId?: null | string
   viewport?: { x: number, y: number, zoom: number }
 }) {
   const flow = await updateFlowRow(input)

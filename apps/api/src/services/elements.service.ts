@@ -67,6 +67,7 @@ function presentElement(
     id: element.id,
     name: element.name,
     kind: element.kind as ElementKind,
+    projectId: element.projectId,
     description: element.description,
     referenceCount,
     coverAsset,
@@ -113,6 +114,7 @@ export async function listElements(input: {
   kind?: ElementKind
   limit: number
   organizationId: string
+  projectId?: null | string
   search?: string
 }) {
   const pagination = resolvePagination({
@@ -137,6 +139,7 @@ export async function listElements(input: {
     limit: pagination.value.limit,
     order: pagination.value.order,
     organizationId: input.organizationId,
+    projectId: input.projectId,
     search: input.search,
   })
   const page = buildCursorPage({
@@ -199,6 +202,7 @@ export async function createElement(input: {
   kind: ElementKind
   name: string
   organizationId: string
+  projectId?: null | string
   userId: string
 }) {
   assertReferenceInput(input.assetIds)
@@ -211,6 +215,7 @@ export async function createElement(input: {
     kind: input.kind,
     name: input.name,
     organizationId: input.organizationId,
+    projectId: input.projectId,
   })
   if (result.status !== 'created')
     throwReferenceReplacementError(result)
@@ -236,6 +241,7 @@ export async function updateElement(input: {
   kind?: ElementKind
   name?: string
   organizationId: string
+  projectId?: null | string
 }) {
   if (input.assetIds !== undefined)
     assertReferenceInput(input.assetIds)

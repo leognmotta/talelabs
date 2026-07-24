@@ -180,9 +180,11 @@ export function registerFlowRoutes(app: OpenAPIHono<ApiEnv>) {
   }))
 
   app.openapi(listRoute, async (c) => {
+    const query = c.req.valid('query')
     return c.json(await listFlows({
-      ...c.req.valid('query'),
+      ...query,
       organizationId: c.var.organizationId,
+      projectId: query.projectId === 'private' ? null : query.projectId,
     }), 200)
   })
 

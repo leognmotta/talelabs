@@ -26,8 +26,10 @@ import {
 function presentCreateSession(session: CreateSessionRecord) {
   return {
     createdAt: session.createdAt.toISOString(),
+    assetFolderId: session.assetFolderId,
     id: session.id,
     name: session.name,
+    projectId: session.projectId,
     updatedAt: session.updatedAt.toISOString(),
   }
 }
@@ -40,6 +42,7 @@ export async function listCreateSessions(input: {
   limit: number
   /** Active tenant scope. */
   organizationId: string
+  projectId?: null | string
   /** Optional user-authored name search. */
   search?: string
   /** Authenticated session owner. */
@@ -65,6 +68,7 @@ export async function listCreateSessions(input: {
     cursor: pagination.value.cursor,
     limit: pagination.value.limit,
     organizationId: input.organizationId,
+    projectId: input.projectId,
     search: input.search,
     userId: input.userId,
   })
@@ -102,12 +106,16 @@ export async function getCreateSession(input: {
 
 /** Renames one owned session. */
 export async function renameCreateSession(input: {
+  /** Optional selected default output folder. */
+  assetFolderId?: null | string
   /** Session route identity. */
   id: string
   /** Trimmed user-authored name. */
-  name: string
+  name?: string
   /** Active tenant scope. */
   organizationId: string
+  /** Optional Project location. */
+  projectId?: null | string
   /** Authenticated session owner. */
   userId: string
 }) {
