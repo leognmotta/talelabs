@@ -253,9 +253,11 @@ history filtered by:
 - `flowId is null`.
 
 Create history is grouped by its lightweight session, never by a Flow. Its
-newest page is a separate refreshable query. Older pages are immutable,
-retained with a bounded `maxPages`, and are not invalidated by ordinary
-realtime transitions, focus, or reconnect.
+newest page is a separate refreshable query. Older pages load only after an
+explicit opaque cursor transition, remain immutable in the client, and are not
+invalidated by ordinary realtime transitions, focus, or reconnect. The result
+surface preserves stable page, row, run, and output identities so rendering can
+adopt windowed virtualization without changing the API or history ownership.
 
 `GET /runs/active` is a lean identity read: it does not load snapshots, jobs,
 outputs, or signed media URLs. Run detail remains the explicit hydrated read.
@@ -362,7 +364,7 @@ The feature is acceptable only when:
     canonical Asset ingestion remain shared;
 12. outputs hydrate after refresh;
 13. Create history is session-scoped, cursor-paginated, creator-scoped, and
-    bounded;
+    bounded per server page and output projection;
 14. Canvas planning and browser/managed snapshot parity remain unchanged;
 15. no Create identity appears in the Flow library;
 16. compatible legacy input aliases survive model-contract upgrades.
