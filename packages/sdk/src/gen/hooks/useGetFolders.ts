@@ -6,6 +6,7 @@
 import type { Client, RequestConfig, ResponseErrorConfig } from "../../client";
 import type {
   GetFoldersQueryResponse,
+  GetFoldersQueryParams,
   GetFolders400,
   GetFolders401,
   GetFolders403,
@@ -23,14 +24,16 @@ import type {
 import { getFolders } from "../clients/getFolders.ts";
 import { queryOptions, useQuery } from "@tanstack/react-query";
 
-export const getFoldersQueryKey = () => [{ url: "/folders" }] as const;
+export const getFoldersQueryKey = (params?: GetFoldersQueryParams) =>
+  [{ url: "/folders" }, ...(params ? [params] : [])] as const;
 
 export type GetFoldersQueryKey = ReturnType<typeof getFoldersQueryKey>;
 
 export function getFoldersQueryOptions(
+  { params }: { params?: GetFoldersQueryParams } = {},
   config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
-  const queryKey = getFoldersQueryKey();
+  const queryKey = getFoldersQueryKey(params);
   return queryOptions<
     GetFoldersQueryResponse,
     ResponseErrorConfig<
@@ -47,7 +50,10 @@ export function getFoldersQueryOptions(
   >({
     queryKey,
     queryFn: async ({ signal }) => {
-      return getFolders({ ...config, signal: config.signal ?? signal });
+      return getFolders(
+        { params: params },
+        { ...config, signal: config.signal ?? signal },
+      );
     },
   });
 }
@@ -60,6 +66,7 @@ export function useGetFolders<
   TQueryData = GetFoldersQueryResponse,
   TQueryKey extends QueryKey = GetFoldersQueryKey,
 >(
+  { params }: { params?: GetFoldersQueryParams } = {},
   options: {
     query?: Partial<
       QueryObserverOptions<
@@ -83,11 +90,11 @@ export function useGetFolders<
 ) {
   const { query: queryConfig = {}, client: config = {} } = options ?? {};
   const { client: queryClient, ...resolvedOptions } = queryConfig;
-  const queryKey = resolvedOptions?.queryKey ?? getFoldersQueryKey();
+  const queryKey = resolvedOptions?.queryKey ?? getFoldersQueryKey(params);
 
   const query = useQuery(
     {
-      ...getFoldersQueryOptions(config),
+      ...getFoldersQueryOptions({ params }, config),
       ...resolvedOptions,
       queryKey,
     } as unknown as QueryObserverOptions,

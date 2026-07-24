@@ -3,10 +3,18 @@
  * Do not edit manually.
  */
 
+import type { Cuid2 } from "./Cuid2.ts";
 import type { Cursor } from "./Cursor.ts";
 import type { ErrorResponse } from "./ErrorResponse.ts";
 import type { FlowListResponse } from "./FlowListResponse.ts";
 import type { PaginationLimit } from "./PaginationLimit.ts";
+
+export const getFlowsQueryParamsProjectIdEnum = {
+  private: "private",
+} as const;
+
+export type GetFlowsQueryParamsProjectIdEnumKey =
+  (typeof getFlowsQueryParamsProjectIdEnum)[keyof typeof getFlowsQueryParamsProjectIdEnum];
 
 export type GetFlowsQueryParams = {
   /**
@@ -25,6 +33,7 @@ export type GetFlowsQueryParams = {
    * @type string | undefined
    */
   search?: string;
+  projectId?: Cuid2 | GetFlowsQueryParamsProjectIdEnumKey;
 };
 
 /**

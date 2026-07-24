@@ -9,6 +9,13 @@ import { cuid2Schema } from "./cuid2Schema.ts";
 import { timestampSchema } from "./timestampSchema.ts";
 
 export const createSessionSchema = z.object({
+  assetFolderId: z.nullable(
+    z
+      .string()
+      .min(2)
+      .max(32)
+      .regex(/^[a-z][0-9a-z]+$/),
+  ),
   get createdAt() {
     return timestampSchema;
   },
@@ -16,6 +23,13 @@ export const createSessionSchema = z.object({
     return cuid2Schema;
   },
   name: z.nullable(z.string()),
+  projectId: z.nullable(
+    z
+      .string()
+      .min(2)
+      .max(32)
+      .regex(/^[a-z][0-9a-z]+$/),
+  ),
   get updatedAt() {
     return timestampSchema;
   },

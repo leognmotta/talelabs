@@ -18,6 +18,13 @@ export const elementSchema = z.object({
   get kind() {
     return elementKindSchema;
   },
+  projectId: z.nullable(
+    z
+      .string()
+      .min(2)
+      .max(32)
+      .regex(/^[a-z][0-9a-z]+$/),
+  ),
   description: z.string(),
   referenceCount: z.int().min(0),
   get coverAsset() {

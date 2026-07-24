@@ -7,5 +7,17 @@ import * as z from "zod";
 import type { RenameCreateSessionRequest } from "../types/RenameCreateSessionRequest.ts";
 
 export const renameCreateSessionRequestSchema = z.object({
-  name: z.string().min(1).max(120),
+  assetFolderId: z
+    .string()
+    .min(2)
+    .max(32)
+    .regex(/^[a-z][0-9a-z]+$/)
+    .nullish(),
+  name: z.optional(z.string().min(1).max(120)),
+  projectId: z
+    .string()
+    .min(2)
+    .max(32)
+    .regex(/^[a-z][0-9a-z]+$/)
+    .nullish(),
 }) as unknown as z.ZodType<RenameCreateSessionRequest>;

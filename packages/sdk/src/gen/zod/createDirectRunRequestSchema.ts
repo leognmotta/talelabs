@@ -69,4 +69,21 @@ export const createDirectRunRequestSchema = z.object({
   get createSessionId() {
     return cuid2Schema.optional();
   },
+  destination: z.optional(
+    z.object({
+      folderId: z.nullable(
+        z
+          .string()
+          .min(2)
+          .max(32)
+          .regex(/^[a-z][0-9a-z]+$/),
+      ),
+    }),
+  ),
+  projectId: z
+    .string()
+    .min(2)
+    .max(32)
+    .regex(/^[a-z][0-9a-z]+$/)
+    .nullish(),
 }) as unknown as z.ZodType<CreateDirectRunRequest>;

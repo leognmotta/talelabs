@@ -23,6 +23,13 @@ export type Element = {
    */
   kind: ElementKind;
   /**
+   * @minLength 2
+   * @maxLength 32
+   * @pattern ^[a-z][0-9a-z]+$
+   * @type string
+   */
+  projectId: string | null;
+  /**
    * @type string
    */
   description: string;

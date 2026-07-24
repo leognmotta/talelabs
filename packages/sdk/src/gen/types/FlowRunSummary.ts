@@ -165,11 +165,25 @@ export type FlowRunSummary = {
    * @pattern ^[a-z][0-9a-z]+$
    * @type string
    */
+  assetFolderId: string | null;
+  /**
+   * @minLength 2
+   * @maxLength 32
+   * @pattern ^[a-z][0-9a-z]+$
+   * @type string
+   */
   flowId: string | null;
   /**
    * @type string
    */
   mode: FlowRunSummaryModeEnumKey;
+  /**
+   * @minLength 2
+   * @maxLength 32
+   * @pattern ^[a-z][0-9a-z]+$
+   * @type string
+   */
+  projectId: string | null;
   /**
    * @type string
    */

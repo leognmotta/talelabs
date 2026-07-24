@@ -28,6 +28,13 @@ export const getAssetsQueryParamsSortEnum = {
 export type GetAssetsQueryParamsSortEnumKey =
   (typeof getAssetsQueryParamsSortEnum)[keyof typeof getAssetsQueryParamsSortEnum];
 
+export const getAssetsQueryParamsProjectIdEnum = {
+  private: "private",
+} as const;
+
+export type GetAssetsQueryParamsProjectIdEnumKey =
+  (typeof getAssetsQueryParamsProjectIdEnum)[keyof typeof getAssetsQueryParamsProjectIdEnum];
+
 export type GetAssetsQueryParams = {
   type?: AssetType | AssetType[];
   /**
@@ -63,6 +70,7 @@ export type GetAssetsQueryParams = {
    * @type string | undefined
    */
   order?: SortOrder;
+  projectId?: Cuid2 | GetAssetsQueryParamsProjectIdEnumKey;
   /**
    * @default 50
    * @type integer | undefined

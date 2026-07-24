@@ -5,9 +5,23 @@
 
 export type RenameCreateSessionRequest = {
   /**
-   * @minLength 1
-   * @maxLength 120
+   * @minLength 2
+   * @maxLength 32
+   * @pattern ^[a-z][0-9a-z]+$
    * @type string
    */
-  name: string;
+  assetFolderId?: string | null;
+  /**
+   * @minLength 1
+   * @maxLength 120
+   * @type string | undefined
+   */
+  name?: string;
+  /**
+   * @minLength 2
+   * @maxLength 32
+   * @pattern ^[a-z][0-9a-z]+$
+   * @type string
+   */
+  projectId?: string | null;
 };

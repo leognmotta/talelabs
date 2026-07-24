@@ -8,7 +8,19 @@ import type { UpdateFlowRequest } from "../types/UpdateFlowRequest.ts";
 import { flowViewportSchema } from "./flowViewportSchema.ts";
 
 export const updateFlowRequestSchema = z.object({
+  assetFolderId: z
+    .string()
+    .min(2)
+    .max(32)
+    .regex(/^[a-z][0-9a-z]+$/)
+    .nullish(),
   name: z.optional(z.string().min(1).max(255)),
+  projectId: z
+    .string()
+    .min(2)
+    .max(32)
+    .regex(/^[a-z][0-9a-z]+$/)
+    .nullish(),
   get viewport() {
     return flowViewportSchema.optional();
   },

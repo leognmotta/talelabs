@@ -18,4 +18,10 @@ export const moveAssetsRequestSchema = z.object({
       .max(32)
       .regex(/^[a-z][0-9a-z]+$/),
   ),
+  projectId: z
+    .string()
+    .min(2)
+    .max(32)
+    .regex(/^[a-z][0-9a-z]+$/)
+    .nullish(),
 }) as unknown as z.ZodType<MoveAssetsRequest>;

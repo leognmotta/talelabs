@@ -13,10 +13,20 @@ import type {
   GetFolders409,
   GetFolders429,
   GetFolders500,
+  GetFoldersQueryParams,
   GetFoldersQueryResponse,
 } from "../types/GetFolders.ts";
+import { cuid2Schema } from "./cuid2Schema.ts";
 import { errorResponseSchema } from "./errorResponseSchema.ts";
 import { folderListResponseSchema } from "./folderListResponseSchema.ts";
+
+export const getFoldersQueryParamsSchema = z
+  .object({
+    get projectId() {
+      return z.union([cuid2Schema, z.enum(["private"])]).optional();
+    },
+  })
+  .optional() as unknown as z.ZodType<GetFoldersQueryParams>;
 
 /**
  * @description Complete folder tree

@@ -40,6 +40,9 @@ export const getElementsQueryParamsSchema = z
         .describe("Opaque cursor returned by a previous list response")
         .optional();
     },
+    get projectId() {
+      return z.union([cuid2Schema, z.enum(["private"])]).optional();
+    },
   })
   .optional() as unknown as z.ZodType<GetElementsQueryParams>;
 

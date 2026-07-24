@@ -7,11 +7,25 @@ import type { FlowViewport } from "./FlowViewport.ts";
 
 export type UpdateFlowRequest = {
   /**
+   * @minLength 2
+   * @maxLength 32
+   * @pattern ^[a-z][0-9a-z]+$
+   * @type string
+   */
+  assetFolderId?: string | null;
+  /**
    * @minLength 1
    * @maxLength 255
    * @type string | undefined
    */
   name?: string;
+  /**
+   * @minLength 2
+   * @maxLength 32
+   * @pattern ^[a-z][0-9a-z]+$
+   * @type string
+   */
+  projectId?: string | null;
   /**
    * @type object | undefined
    */

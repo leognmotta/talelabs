@@ -17,6 +17,7 @@ import type {
   GetCreateSessionsQueryResponse,
 } from "../types/GetCreateSessions.ts";
 import { createSessionListResponseSchema } from "./createSessionListResponseSchema.ts";
+import { cuid2Schema } from "./cuid2Schema.ts";
 import { cursorSchema } from "./cursorSchema.ts";
 import { errorResponseSchema } from "./errorResponseSchema.ts";
 import { paginationLimitSchema } from "./paginationLimitSchema.ts";
@@ -32,6 +33,9 @@ export const getCreateSessionsQueryParamsSchema = z
       return paginationLimitSchema.default(50).optional();
     },
     search: z.optional(z.string().max(200)),
+    get projectId() {
+      return z.union([cuid2Schema, z.enum(["private"])]).optional();
+    },
   })
   .optional() as unknown as z.ZodType<GetCreateSessionsQueryParams>;
 

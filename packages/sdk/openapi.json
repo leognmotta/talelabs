@@ -666,6 +666,650 @@
           "invitation"
         ]
       },
+      "ProjectListResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Project"
+            }
+          },
+          "nextCursor": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 1,
+            "maxLength": 2048
+          }
+        },
+        "required": [
+          "data",
+          "nextCursor"
+        ]
+      },
+      "Project": {
+        "type": "object",
+        "properties": {
+          "archivedAt": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Timestamp"
+              },
+              {
+                "nullable": true
+              }
+            ]
+          },
+          "counts": {
+            "$ref": "#/components/schemas/ProjectCounts"
+          },
+          "coverAsset": {
+            "$ref": "#/components/schemas/ProjectCoverAsset"
+          },
+          "coverAssetId": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 2,
+            "maxLength": 32,
+            "pattern": "^[a-z][0-9a-z]+$"
+          },
+          "createdAt": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "defaultAssetFolderId": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 2,
+            "maxLength": 32,
+            "pattern": "^[a-z][0-9a-z]+$"
+          },
+          "description": {
+            "type": "string"
+          },
+          "id": {
+            "$ref": "#/components/schemas/Cuid2"
+          },
+          "name": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "$ref": "#/components/schemas/Timestamp"
+          }
+        },
+        "required": [
+          "archivedAt",
+          "counts",
+          "coverAsset",
+          "coverAssetId",
+          "createdAt",
+          "defaultAssetFolderId",
+          "description",
+          "id",
+          "name",
+          "updatedAt"
+        ]
+      },
+      "ProjectCounts": {
+        "type": "object",
+        "properties": {
+          "assets": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "createSessions": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "elements": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "flows": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "folders": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "assets",
+          "createSessions",
+          "elements",
+          "flows",
+          "folders"
+        ]
+      },
+      "ProjectCoverAsset": {
+        "type": "object",
+        "nullable": true,
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Cuid2"
+          },
+          "mimeType": {
+            "type": "string"
+          },
+          "thumbnailUrl": {
+            "type": "string",
+            "nullable": true,
+            "format": "uri"
+          },
+          "type": {
+            "$ref": "#/components/schemas/AssetType"
+          }
+        },
+        "required": [
+          "id",
+          "mimeType",
+          "thumbnailUrl",
+          "type"
+        ]
+      },
+      "CreateProjectRequest": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string",
+            "maxLength": 500,
+            "default": ""
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "ProjectHome": {
+        "type": "object",
+        "properties": {
+          "brief": {
+            "$ref": "#/components/schemas/ProjectBriefPreview"
+          },
+          "project": {
+            "$ref": "#/components/schemas/Project"
+          },
+          "recentAssets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Asset"
+            },
+            "maxItems": 10
+          },
+          "recentWork": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProjectRecentWork"
+            },
+            "maxItems": 8
+          }
+        },
+        "required": [
+          "brief",
+          "project",
+          "recentAssets",
+          "recentWork"
+        ]
+      },
+      "ProjectBriefPreview": {
+        "type": "object",
+        "properties": {
+          "document": {
+            "type": "object",
+            "additionalProperties": {
+              "nullable": true
+            }
+          },
+          "empty": {
+            "type": "boolean"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "updatedAt": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Timestamp"
+              },
+              {
+                "nullable": true
+              }
+            ]
+          }
+        },
+        "required": [
+          "document",
+          "empty",
+          "revision",
+          "updatedAt"
+        ]
+      },
+      "Asset": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Cuid2"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/AssetType"
+          },
+          "source": {
+            "$ref": "#/components/schemas/AssetSource"
+          },
+          "visibility": {
+            "$ref": "#/components/schemas/AssetVisibility"
+          },
+          "mimeType": {
+            "type": "string"
+          },
+          "sizeBytes": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": 0
+          },
+          "width": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": 0,
+            "exclusiveMinimum": true
+          },
+          "height": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": 0,
+            "exclusiveMinimum": true
+          },
+          "durationSeconds": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 0
+          },
+          "folderId": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 2,
+            "maxLength": 32,
+            "pattern": "^[a-z][0-9a-z]+$"
+          },
+          "generationJobId": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 2,
+            "maxLength": 32,
+            "pattern": "^[a-z][0-9a-z]+$"
+          },
+          "outputIndex": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": 0
+          },
+          "projectId": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 2,
+            "maxLength": 32,
+            "pattern": "^[a-z][0-9a-z]+$"
+          },
+          "lifecycle": {
+            "$ref": "#/components/schemas/AssetLifecycle"
+          },
+          "processingState": {
+            "$ref": "#/components/schemas/AssetProcessingState"
+          },
+          "processingError": {
+            "type": "string",
+            "nullable": true
+          },
+          "favorite": {
+            "type": "boolean"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Tag"
+            }
+          },
+          "url": {
+            "type": "string",
+            "nullable": true,
+            "format": "uri"
+          },
+          "thumbnailUrl": {
+            "type": "string",
+            "nullable": true,
+            "format": "uri"
+          },
+          "createdBy": {
+            "$ref": "#/components/schemas/UserId"
+          },
+          "createdAt": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "updatedAt": {
+            "$ref": "#/components/schemas/Timestamp"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "type",
+          "source",
+          "visibility",
+          "mimeType",
+          "sizeBytes",
+          "width",
+          "height",
+          "durationSeconds",
+          "folderId",
+          "generationJobId",
+          "outputIndex",
+          "projectId",
+          "lifecycle",
+          "processingState",
+          "processingError",
+          "favorite",
+          "tags",
+          "url",
+          "thumbnailUrl",
+          "createdBy",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "AssetVisibility": {
+        "type": "string",
+        "enum": [
+          "private",
+          "public"
+        ]
+      },
+      "Tag": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Cuid2"
+          },
+          "name": {
+            "type": "string"
+          },
+          "createdAt": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "updatedAt": {
+            "$ref": "#/components/schemas/Timestamp"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "UserId": {
+        "type": "string",
+        "nullable": true,
+        "minLength": 1,
+        "maxLength": 255,
+        "example": "user_123"
+      },
+      "ProjectRecentWork": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "outputCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "flow",
+              "session"
+            ]
+          },
+          "updatedAt": {
+            "$ref": "#/components/schemas/Timestamp"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "outputCount",
+          "type",
+          "updatedAt"
+        ]
+      },
+      "UpdateProjectRequest": {
+        "type": "object",
+        "properties": {
+          "coverAssetId": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 2,
+            "maxLength": 32,
+            "pattern": "^[a-z][0-9a-z]+$"
+          },
+          "defaultAssetFolderId": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 2,
+            "maxLength": 32,
+            "pattern": "^[a-z][0-9a-z]+$"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          }
+        }
+      },
+      "ProjectBrief": {
+        "type": "object",
+        "properties": {
+          "document": {
+            "type": "object",
+            "additionalProperties": {
+              "nullable": true
+            }
+          },
+          "mentions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProjectMentionResolution"
+            },
+            "maxItems": 200
+          },
+          "plainText": {
+            "type": "string"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "updatedAt": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Timestamp"
+              },
+              {
+                "nullable": true
+              }
+            ]
+          },
+          "updatedBy": {
+            "$ref": "#/components/schemas/UserId"
+          }
+        },
+        "required": [
+          "document",
+          "mentions",
+          "plainText",
+          "revision",
+          "updatedAt",
+          "updatedBy"
+        ]
+      },
+      "ProjectMentionResolution": {
+        "type": "object",
+        "properties": {
+          "available": {
+            "type": "boolean"
+          },
+          "entityId": {
+            "$ref": "#/components/schemas/Cuid2"
+          },
+          "entityType": {
+            "$ref": "#/components/schemas/ProjectMentionType"
+          },
+          "label": {
+            "type": "string"
+          },
+          "thumbnailUrl": {
+            "type": "string",
+            "nullable": true,
+            "format": "uri"
+          }
+        },
+        "required": [
+          "available",
+          "entityId",
+          "entityType",
+          "label",
+          "thumbnailUrl"
+        ]
+      },
+      "ProjectMentionType": {
+        "type": "string",
+        "enum": [
+          "asset",
+          "element",
+          "flow",
+          "folder",
+          "session"
+        ]
+      },
+      "SaveProjectBriefRequest": {
+        "type": "object",
+        "properties": {
+          "document": {
+            "type": "object",
+            "additionalProperties": {
+              "nullable": true
+            }
+          },
+          "expectedRevision": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "document",
+          "expectedRevision"
+        ]
+      },
+      "ProjectMentionSearchResponse": {
+        "type": "object",
+        "properties": {
+          "groups": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProjectMentionGroup"
+            }
+          }
+        },
+        "required": [
+          "groups"
+        ]
+      },
+      "ProjectMentionGroup": {
+        "type": "object",
+        "properties": {
+          "entityType": {
+            "$ref": "#/components/schemas/ProjectMentionType"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProjectMentionResolution"
+            }
+          }
+        },
+        "required": [
+          "entityType",
+          "items"
+        ]
+      },
+      "ResolveProjectMentionsResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProjectMentionResolution"
+            },
+            "maxItems": 200
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "ResolveProjectMentionsRequest": {
+        "type": "object",
+        "properties": {
+          "mentions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProjectMention"
+            },
+            "maxItems": 200
+          }
+        },
+        "required": [
+          "mentions"
+        ]
+      },
+      "ProjectMention": {
+        "type": "object",
+        "properties": {
+          "entityId": {
+            "$ref": "#/components/schemas/Cuid2"
+          },
+          "entityType": {
+            "$ref": "#/components/schemas/ProjectMentionType"
+          },
+          "fallbackLabel": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          }
+        },
+        "required": [
+          "entityId",
+          "entityType",
+          "fallbackLabel"
+        ]
+      },
       "CreateUploadResponse": {
         "type": "object",
         "properties": {
@@ -751,170 +1395,6 @@
           "nextCursor"
         ]
       },
-      "Asset": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "$ref": "#/components/schemas/Cuid2"
-          },
-          "name": {
-            "type": "string"
-          },
-          "type": {
-            "$ref": "#/components/schemas/AssetType"
-          },
-          "source": {
-            "$ref": "#/components/schemas/AssetSource"
-          },
-          "visibility": {
-            "$ref": "#/components/schemas/AssetVisibility"
-          },
-          "mimeType": {
-            "type": "string"
-          },
-          "sizeBytes": {
-            "type": "integer",
-            "nullable": true,
-            "minimum": 0
-          },
-          "width": {
-            "type": "integer",
-            "nullable": true,
-            "minimum": 0,
-            "exclusiveMinimum": true
-          },
-          "height": {
-            "type": "integer",
-            "nullable": true,
-            "minimum": 0,
-            "exclusiveMinimum": true
-          },
-          "durationSeconds": {
-            "type": "number",
-            "nullable": true,
-            "minimum": 0
-          },
-          "folderId": {
-            "type": "string",
-            "nullable": true,
-            "minLength": 2,
-            "maxLength": 32,
-            "pattern": "^[a-z][0-9a-z]+$"
-          },
-          "generationJobId": {
-            "type": "string",
-            "nullable": true,
-            "minLength": 2,
-            "maxLength": 32,
-            "pattern": "^[a-z][0-9a-z]+$"
-          },
-          "outputIndex": {
-            "type": "integer",
-            "nullable": true,
-            "minimum": 0
-          },
-          "lifecycle": {
-            "$ref": "#/components/schemas/AssetLifecycle"
-          },
-          "processingState": {
-            "$ref": "#/components/schemas/AssetProcessingState"
-          },
-          "processingError": {
-            "type": "string",
-            "nullable": true
-          },
-          "favorite": {
-            "type": "boolean"
-          },
-          "tags": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Tag"
-            }
-          },
-          "url": {
-            "type": "string",
-            "nullable": true,
-            "format": "uri"
-          },
-          "thumbnailUrl": {
-            "type": "string",
-            "nullable": true,
-            "format": "uri"
-          },
-          "createdBy": {
-            "$ref": "#/components/schemas/UserId"
-          },
-          "createdAt": {
-            "$ref": "#/components/schemas/Timestamp"
-          },
-          "updatedAt": {
-            "$ref": "#/components/schemas/Timestamp"
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "type",
-          "source",
-          "visibility",
-          "mimeType",
-          "sizeBytes",
-          "width",
-          "height",
-          "durationSeconds",
-          "folderId",
-          "generationJobId",
-          "outputIndex",
-          "lifecycle",
-          "processingState",
-          "processingError",
-          "favorite",
-          "tags",
-          "url",
-          "thumbnailUrl",
-          "createdBy",
-          "createdAt",
-          "updatedAt"
-        ]
-      },
-      "AssetVisibility": {
-        "type": "string",
-        "enum": [
-          "private",
-          "public"
-        ]
-      },
-      "Tag": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "$ref": "#/components/schemas/Cuid2"
-          },
-          "name": {
-            "type": "string"
-          },
-          "createdAt": {
-            "$ref": "#/components/schemas/Timestamp"
-          },
-          "updatedAt": {
-            "$ref": "#/components/schemas/Timestamp"
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "createdAt",
-          "updatedAt"
-        ]
-      },
-      "UserId": {
-        "type": "string",
-        "nullable": true,
-        "minLength": 1,
-        "maxLength": 255,
-        "example": "user_123"
-      },
       "RegisterAssetRequest": {
         "type": "object",
         "properties": {
@@ -930,6 +1410,13 @@
           },
           "folderId": {
             "$ref": "#/components/schemas/Cuid2"
+          },
+          "projectId": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 2,
+            "maxLength": 32,
+            "pattern": "^[a-z][0-9a-z]+$"
           }
         },
         "required": [
@@ -962,6 +1449,13 @@
             "maxItems": 100
           },
           "folderId": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 2,
+            "maxLength": 32,
+            "pattern": "^[a-z][0-9a-z]+$"
+          },
+          "projectId": {
             "type": "string",
             "nullable": true,
             "minLength": 2,
@@ -1164,6 +1658,13 @@
             "minLength": 2,
             "maxLength": 32,
             "pattern": "^[a-z][0-9a-z]+$"
+          },
+          "projectId": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 2,
+            "maxLength": 32,
+            "pattern": "^[a-z][0-9a-z]+$"
           }
         }
       },
@@ -1256,6 +1757,13 @@
           "kind": {
             "$ref": "#/components/schemas/ElementKind"
           },
+          "projectId": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 2,
+            "maxLength": 32,
+            "pattern": "^[a-z][0-9a-z]+$"
+          },
           "description": {
             "type": "string"
           },
@@ -1277,6 +1785,7 @@
           "id",
           "name",
           "kind",
+          "projectId",
           "description",
           "referenceCount",
           "coverAsset",
@@ -1399,6 +1908,13 @@
               "$ref": "#/components/schemas/Cuid2"
             },
             "maxItems": 8
+          },
+          "projectId": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 2,
+            "maxLength": 32,
+            "pattern": "^[a-z][0-9a-z]+$"
           }
         },
         "required": [
@@ -1427,6 +1943,13 @@
               "$ref": "#/components/schemas/Cuid2"
             },
             "maxItems": 8
+          },
+          "projectId": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 2,
+            "maxLength": 32,
+            "pattern": "^[a-z][0-9a-z]+$"
           }
         }
       },
@@ -1499,6 +2022,13 @@
       "CreateSession": {
         "type": "object",
         "properties": {
+          "assetFolderId": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 2,
+            "maxLength": 32,
+            "pattern": "^[a-z][0-9a-z]+$"
+          },
           "createdAt": {
             "$ref": "#/components/schemas/Timestamp"
           },
@@ -1509,29 +2039,49 @@
             "type": "string",
             "nullable": true
           },
+          "projectId": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 2,
+            "maxLength": 32,
+            "pattern": "^[a-z][0-9a-z]+$"
+          },
           "updatedAt": {
             "$ref": "#/components/schemas/Timestamp"
           }
         },
         "required": [
+          "assetFolderId",
           "createdAt",
           "id",
           "name",
+          "projectId",
           "updatedAt"
         ]
       },
       "RenameCreateSessionRequest": {
         "type": "object",
         "properties": {
+          "assetFolderId": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 2,
+            "maxLength": 32,
+            "pattern": "^[a-z][0-9a-z]+$"
+          },
           "name": {
             "type": "string",
             "minLength": 1,
             "maxLength": 120
+          },
+          "projectId": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 2,
+            "maxLength": 32,
+            "pattern": "^[a-z][0-9a-z]+$"
           }
-        },
-        "required": [
-          "name"
-        ]
+        }
       },
       "FlowListResponse": {
         "type": "object",
@@ -1557,11 +2107,25 @@
       "FlowListItem": {
         "type": "object",
         "properties": {
+          "assetFolderId": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 2,
+            "maxLength": 32,
+            "pattern": "^[a-z][0-9a-z]+$"
+          },
           "id": {
             "$ref": "#/components/schemas/Cuid2"
           },
           "name": {
             "type": "string"
+          },
+          "projectId": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 2,
+            "maxLength": 32,
+            "pattern": "^[a-z][0-9a-z]+$"
           },
           "revision": {
             "type": "integer",
@@ -1581,8 +2145,10 @@
           }
         },
         "required": [
+          "assetFolderId",
           "id",
           "name",
+          "projectId",
           "revision",
           "viewport",
           "createdBy",
@@ -1614,11 +2180,25 @@
       "Flow": {
         "type": "object",
         "properties": {
+          "assetFolderId": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 2,
+            "maxLength": 32,
+            "pattern": "^[a-z][0-9a-z]+$"
+          },
           "id": {
             "$ref": "#/components/schemas/Cuid2"
           },
           "name": {
             "type": "string"
+          },
+          "projectId": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 2,
+            "maxLength": 32,
+            "pattern": "^[a-z][0-9a-z]+$"
           },
           "revision": {
             "type": "integer",
@@ -1638,8 +2218,10 @@
           }
         },
         "required": [
+          "assetFolderId",
           "id",
           "name",
+          "projectId",
           "revision",
           "viewport",
           "createdBy",
@@ -1654,6 +2236,13 @@
             "type": "string",
             "minLength": 1,
             "maxLength": 255
+          },
+          "projectId": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 2,
+            "maxLength": 32,
+            "pattern": "^[a-z][0-9a-z]+$"
           }
         },
         "required": [
@@ -1663,10 +2252,24 @@
       "UpdateFlowRequest": {
         "type": "object",
         "properties": {
+          "assetFolderId": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 2,
+            "maxLength": 32,
+            "pattern": "^[a-z][0-9a-z]+$"
+          },
           "name": {
             "type": "string",
             "minLength": 1,
             "maxLength": 255
+          },
+          "projectId": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 2,
+            "maxLength": 32,
+            "pattern": "^[a-z][0-9a-z]+$"
           },
           "viewport": {
             "$ref": "#/components/schemas/FlowViewport"
@@ -2652,6 +3255,13 @@
             "maxLength": 32,
             "pattern": "^[a-z][0-9a-z]+$"
           },
+          "assetFolderId": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 2,
+            "maxLength": 32,
+            "pattern": "^[a-z][0-9a-z]+$"
+          },
           "flowId": {
             "type": "string",
             "nullable": true,
@@ -2669,6 +3279,13 @@
               "all",
               "direct"
             ]
+          },
+          "projectId": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 2,
+            "maxLength": 32,
+            "pattern": "^[a-z][0-9a-z]+$"
           },
           "source": {
             "type": "string",
@@ -2981,8 +3598,10 @@
           "executionMode",
           "executionRuntime",
           "createSessionId",
+          "assetFolderId",
           "flowId",
           "mode",
+          "projectId",
           "source",
           "targetNodeId",
           "status",
@@ -3440,6 +4059,13 @@
             "maxLength": 32,
             "pattern": "^[a-z][0-9a-z]+$"
           },
+          "assetFolderId": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 2,
+            "maxLength": 32,
+            "pattern": "^[a-z][0-9a-z]+$"
+          },
           "flowId": {
             "type": "string",
             "nullable": true,
@@ -3457,6 +4083,13 @@
               "all",
               "direct"
             ]
+          },
+          "projectId": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 2,
+            "maxLength": 32,
+            "pattern": "^[a-z][0-9a-z]+$"
           },
           "source": {
             "type": "string",
@@ -3550,8 +4183,10 @@
           "executionMode",
           "executionRuntime",
           "createSessionId",
+          "assetFolderId",
           "flowId",
           "mode",
+          "projectId",
           "source",
           "targetNodeId",
           "status",
@@ -3973,6 +4608,29 @@
           },
           "createSessionId": {
             "$ref": "#/components/schemas/Cuid2"
+          },
+          "destination": {
+            "type": "object",
+            "properties": {
+              "folderId": {
+                "type": "string",
+                "nullable": true,
+                "minLength": 2,
+                "maxLength": 32,
+                "pattern": "^[a-z][0-9a-z]+$"
+              }
+            },
+            "required": [
+              "folderId"
+            ],
+            "additionalProperties": false
+          },
+          "projectId": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 2,
+            "maxLength": 32,
+            "pattern": "^[a-z][0-9a-z]+$"
           }
         },
         "required": [
@@ -3992,6 +4650,22 @@
       "CreateRunRequest": {
         "type": "object",
         "properties": {
+          "destination": {
+            "type": "object",
+            "properties": {
+              "folderId": {
+                "type": "string",
+                "nullable": true,
+                "minLength": 2,
+                "maxLength": 32,
+                "pattern": "^[a-z][0-9a-z]+$"
+              }
+            },
+            "required": [
+              "folderId"
+            ],
+            "additionalProperties": false
+          },
           "executionMode": {
             "type": "string",
             "enum": [
@@ -4069,6 +4743,22 @@
       "CreateFlowRunRequest": {
         "type": "object",
         "properties": {
+          "destination": {
+            "type": "object",
+            "properties": {
+              "folderId": {
+                "type": "string",
+                "nullable": true,
+                "minLength": 2,
+                "maxLength": 32,
+                "pattern": "^[a-z][0-9a-z]+$"
+              }
+            },
+            "required": [
+              "folderId"
+            ],
+            "additionalProperties": false
+          },
           "executionMode": {
             "type": "string",
             "enum": [
@@ -5893,6 +6583,14 @@
       "Folder": {
         "type": "object",
         "properties": {
+          "assetCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "childFolderCount": {
+            "type": "integer",
+            "minimum": 0
+          },
           "id": {
             "$ref": "#/components/schemas/Cuid2"
           },
@@ -5914,6 +6612,13 @@
             "type": "integer",
             "minimum": 0
           },
+          "projectId": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 2,
+            "maxLength": 32,
+            "pattern": "^[a-z][0-9a-z]+$"
+          },
           "totalSizeBytes": {
             "type": "integer",
             "minimum": 0
@@ -5934,11 +6639,14 @@
           }
         },
         "required": [
+          "assetCount",
+          "childFolderCount",
           "id",
           "parentId",
           "name",
           "itemCount",
           "processingItemCount",
+          "projectId",
           "totalSizeBytes",
           "thumbnailUrls",
           "createdAt",
@@ -5959,6 +6667,13 @@
             "minLength": 2,
             "maxLength": 32,
             "pattern": "^[a-z][0-9a-z]+$"
+          },
+          "projectId": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 2,
+            "maxLength": 32,
+            "pattern": "^[a-z][0-9a-z]+$"
           }
         },
         "required": [
@@ -5974,6 +6689,13 @@
             "maxLength": 255
           },
           "parentId": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 2,
+            "maxLength": 32,
+            "pattern": "^[a-z][0-9a-z]+$"
+          },
+          "projectId": {
             "type": "string",
             "nullable": true,
             "minLength": 2,
@@ -6664,6 +7386,1170 @@
         }
       }
     },
+    "/projects": {
+      "get": {
+        "tags": [
+          "Projects"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "active",
+                "archived",
+                "all"
+              ],
+              "default": "active"
+            },
+            "required": false,
+            "name": "archive",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "$ref": "#/components/schemas/Cursor"
+            },
+            "required": false,
+            "description": "Opaque cursor returned by a previous list response",
+            "name": "cursor",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "$ref": "#/components/schemas/PaginationLimit"
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "required": false,
+            "name": "search",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Project list page",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Active organization required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Resource state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Organization request rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Projects"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProjectRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Project created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Project"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Active organization required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Resource state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Organization request rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{projectId}": {
+      "get": {
+        "tags": [
+          "Projects"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "$ref": "#/components/schemas/Cuid2"
+            },
+            "required": true,
+            "name": "projectId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Project detail",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Project"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Active organization required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Resource state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Organization request rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Projects"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "$ref": "#/components/schemas/Cuid2"
+            },
+            "required": true,
+            "name": "projectId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProjectRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Project updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Project"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Active organization required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Resource state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Organization request rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{projectId}/home": {
+      "get": {
+        "tags": [
+          "Projects"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "$ref": "#/components/schemas/Cuid2"
+            },
+            "required": true,
+            "name": "projectId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Compact bounded Project Home",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectHome"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Active organization required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Resource state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Organization request rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{projectId}/archive": {
+      "post": {
+        "tags": [
+          "Projects"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "$ref": "#/components/schemas/Cuid2"
+            },
+            "required": true,
+            "name": "projectId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Project archived",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Project"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Active organization required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Resource state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Organization request rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{projectId}/restore": {
+      "post": {
+        "tags": [
+          "Projects"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "$ref": "#/components/schemas/Cuid2"
+            },
+            "required": true,
+            "name": "projectId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Project restored",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Project"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Active organization required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Resource state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Organization request rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{projectId}/brief": {
+      "get": {
+        "tags": [
+          "Project Briefs"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "$ref": "#/components/schemas/Cuid2"
+            },
+            "required": true,
+            "name": "projectId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Project Brief with batched mention metadata",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectBrief"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Active organization required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Resource state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Organization request rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Project Briefs"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "$ref": "#/components/schemas/Cuid2"
+            },
+            "required": true,
+            "name": "projectId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveProjectBriefRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Revision-safe Project Brief save",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectBrief"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Active organization required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Resource state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Organization request rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{projectId}/brief/mentions": {
+      "get": {
+        "tags": [
+          "Project Briefs"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "$ref": "#/components/schemas/Cuid2"
+            },
+            "required": true,
+            "name": "projectId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "$ref": "#/components/schemas/PaginationLimit"
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 200,
+              "default": ""
+            },
+            "required": false,
+            "name": "search",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Grouped Project entity suggestions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectMentionSearchResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Active organization required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Resource state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Organization request rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{projectId}/brief/mentions/resolve": {
+      "post": {
+        "tags": [
+          "Project Briefs"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "$ref": "#/components/schemas/Cuid2"
+            },
+            "required": true,
+            "name": "projectId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResolveProjectMentionsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Batch-resolved Project mentions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResolveProjectMentionsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Active organization required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Resource state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Organization request rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/uploads": {
       "post": {
         "tags": [
@@ -6884,6 +8770,24 @@
             },
             "required": false,
             "name": "order",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Cuid2"
+                },
+                {
+                  "type": "string",
+                  "enum": [
+                    "private"
+                  ]
+                }
+              ]
+            },
+            "required": false,
+            "name": "projectId",
             "in": "query"
           },
           {
@@ -8340,6 +10244,24 @@
             "description": "Opaque cursor returned by a previous list response",
             "name": "cursor",
             "in": "query"
+          },
+          {
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Cuid2"
+                },
+                {
+                  "type": "string",
+                  "enum": [
+                    "private"
+                  ]
+                }
+              ]
+            },
+            "required": false,
+            "name": "projectId",
+            "in": "query"
           }
         ],
         "responses": {
@@ -8959,6 +10881,24 @@
             "required": false,
             "name": "search",
             "in": "query"
+          },
+          {
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Cuid2"
+                },
+                {
+                  "type": "string",
+                  "enum": [
+                    "private"
+                  ]
+                }
+              ]
+            },
+            "required": false,
+            "name": "projectId",
+            "in": "query"
           }
         ],
         "responses": {
@@ -9372,6 +11312,24 @@
             },
             "required": false,
             "name": "search",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Cuid2"
+                },
+                {
+                  "type": "string",
+                  "enum": [
+                    "private"
+                  ]
+                }
+              ]
+            },
+            "required": false,
+            "name": "projectId",
             "in": "query"
           }
         ],
@@ -19150,6 +21108,26 @@
       "get": {
         "tags": [
           "Folders"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Cuid2"
+                },
+                {
+                  "type": "string",
+                  "enum": [
+                    "private"
+                  ]
+                }
+              ]
+            },
+            "required": false,
+            "name": "projectId",
+            "in": "query"
+          }
         ],
         "responses": {
           "200": {

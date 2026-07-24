@@ -23,4 +23,11 @@ export type RegisterAssetRequest = {
    * @type string | undefined
    */
   folderId?: Cuid2;
+  /**
+   * @minLength 2
+   * @maxLength 32
+   * @pattern ^[a-z][0-9a-z]+$
+   * @type string
+   */
+  projectId?: string | null;
 };

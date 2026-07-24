@@ -50,6 +50,18 @@ export type CreateFlowRunRequestByokProvidersEnumKey =
 
 export type CreateFlowRunRequest = {
   /**
+   * @type object | undefined
+   */
+  destination?: {
+    /**
+     * @minLength 2
+     * @maxLength 32
+     * @pattern ^[a-z][0-9a-z]+$
+     * @type string
+     */
+    folderId: string | null;
+  };
+  /**
    * @default "live"
    * @type string | undefined
    */

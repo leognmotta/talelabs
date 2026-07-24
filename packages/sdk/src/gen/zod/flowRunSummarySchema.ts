@@ -29,6 +29,13 @@ export const flowRunSummarySchema = z.object({
       .max(32)
       .regex(/^[a-z][0-9a-z]+$/),
   ),
+  assetFolderId: z.nullable(
+    z
+      .string()
+      .min(2)
+      .max(32)
+      .regex(/^[a-z][0-9a-z]+$/),
+  ),
   flowId: z.nullable(
     z
       .string()
@@ -44,6 +51,13 @@ export const flowRunSummarySchema = z.object({
     "all",
     "direct",
   ]),
+  projectId: z.nullable(
+    z
+      .string()
+      .min(2)
+      .max(32)
+      .regex(/^[a-z][0-9a-z]+$/),
+  ),
   source: z.enum(["flow", "create"]),
   targetNodeId: z.nullable(
     z

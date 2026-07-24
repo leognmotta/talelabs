@@ -9,6 +9,8 @@ import { cuid2Schema } from "./cuid2Schema.ts";
 import { timestampSchema } from "./timestampSchema.ts";
 
 export const folderSchema = z.object({
+  assetCount: z.int().min(0),
+  childFolderCount: z.int().min(0),
   get id() {
     return cuid2Schema;
   },
@@ -22,6 +24,13 @@ export const folderSchema = z.object({
   name: z.string(),
   itemCount: z.int().min(0),
   processingItemCount: z.int().min(0),
+  projectId: z.nullable(
+    z
+      .string()
+      .min(2)
+      .max(32)
+      .regex(/^[a-z][0-9a-z]+$/),
+  ),
   totalSizeBytes: z.int().min(0),
   thumbnailUrls: z.array(z.url()).max(4),
   get createdAt() {

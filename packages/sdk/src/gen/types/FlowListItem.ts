@@ -10,6 +10,13 @@ import type { UserId } from "./UserId.ts";
 
 export type FlowListItem = {
   /**
+   * @minLength 2
+   * @maxLength 32
+   * @pattern ^[a-z][0-9a-z]+$
+   * @type string
+   */
+  assetFolderId: string | null;
+  /**
    * @pattern ^[a-z][0-9a-z]+$
    * @type string
    */
@@ -18,6 +25,13 @@ export type FlowListItem = {
    * @type string
    */
   name: string;
+  /**
+   * @minLength 2
+   * @maxLength 32
+   * @pattern ^[a-z][0-9a-z]+$
+   * @type string
+   */
+  projectId: string | null;
   /**
    * @minLength 0
    * @type integer

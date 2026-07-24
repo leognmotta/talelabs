@@ -49,6 +49,13 @@ export const assetSchema = z.object({
       .regex(/^[a-z][0-9a-z]+$/),
   ),
   outputIndex: z.nullable(z.int().min(0)),
+  projectId: z.nullable(
+    z
+      .string()
+      .min(2)
+      .max(32)
+      .regex(/^[a-z][0-9a-z]+$/),
+  ),
   get lifecycle() {
     return assetLifecycleSchema;
   },

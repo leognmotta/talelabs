@@ -4,9 +4,17 @@
  */
 
 import type { CreateSessionListResponse } from "./CreateSessionListResponse.ts";
+import type { Cuid2 } from "./Cuid2.ts";
 import type { Cursor } from "./Cursor.ts";
 import type { ErrorResponse } from "./ErrorResponse.ts";
 import type { PaginationLimit } from "./PaginationLimit.ts";
+
+export const getCreateSessionsQueryParamsProjectIdEnum = {
+  private: "private",
+} as const;
+
+export type GetCreateSessionsQueryParamsProjectIdEnumKey =
+  (typeof getCreateSessionsQueryParamsProjectIdEnum)[keyof typeof getCreateSessionsQueryParamsProjectIdEnum];
 
 export type GetCreateSessionsQueryParams = {
   /**
@@ -24,6 +32,7 @@ export type GetCreateSessionsQueryParams = {
    * @type string | undefined
    */
   search?: string;
+  projectId?: Cuid2 | GetCreateSessionsQueryParamsProjectIdEnumKey;
 };
 
 /**

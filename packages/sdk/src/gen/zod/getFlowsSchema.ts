@@ -16,6 +16,7 @@ import type {
   GetFlowsQueryParams,
   GetFlowsQueryResponse,
 } from "../types/GetFlows.ts";
+import { cuid2Schema } from "./cuid2Schema.ts";
 import { cursorSchema } from "./cursorSchema.ts";
 import { errorResponseSchema } from "./errorResponseSchema.ts";
 import { flowListResponseSchema } from "./flowListResponseSchema.ts";
@@ -32,6 +33,9 @@ export const getFlowsQueryParamsSchema = z
       return paginationLimitSchema.default(50).optional();
     },
     search: z.optional(z.string().min(1).max(100)),
+    get projectId() {
+      return z.union([cuid2Schema, z.enum(["private"])]).optional();
+    },
   })
   .optional() as unknown as z.ZodType<GetFlowsQueryParams>;
 

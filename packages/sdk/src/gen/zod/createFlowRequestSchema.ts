@@ -8,4 +8,10 @@ import type { CreateFlowRequest } from "../types/CreateFlowRequest.ts";
 
 export const createFlowRequestSchema = z.object({
   name: z.string().min(1).max(255),
+  projectId: z
+    .string()
+    .min(2)
+    .max(32)
+    .regex(/^[a-z][0-9a-z]+$/)
+    .nullish(),
 }) as unknown as z.ZodType<CreateFlowRequest>;

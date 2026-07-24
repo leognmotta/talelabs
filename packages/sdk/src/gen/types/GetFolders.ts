@@ -3,8 +3,20 @@
  * Do not edit manually.
  */
 
+import type { Cuid2 } from "./Cuid2.ts";
 import type { ErrorResponse } from "./ErrorResponse.ts";
 import type { FolderListResponse } from "./FolderListResponse.ts";
+
+export const getFoldersQueryParamsProjectIdEnum = {
+  private: "private",
+} as const;
+
+export type GetFoldersQueryParamsProjectIdEnumKey =
+  (typeof getFoldersQueryParamsProjectIdEnum)[keyof typeof getFoldersQueryParamsProjectIdEnum];
+
+export type GetFoldersQueryParams = {
+  projectId?: Cuid2 | GetFoldersQueryParamsProjectIdEnumKey;
+};
 
 /**
  * @description Complete folder tree
@@ -50,6 +62,7 @@ export type GetFoldersQueryResponse = GetFolders200;
 
 export type GetFoldersQuery = {
   Response: GetFolders200;
+  QueryParams: GetFoldersQueryParams;
   Errors:
     | GetFolders400
     | GetFolders401

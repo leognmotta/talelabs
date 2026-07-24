@@ -10,6 +10,13 @@ import type { ElementListResponse } from "./ElementListResponse.ts";
 import type { ErrorResponse } from "./ErrorResponse.ts";
 import type { PaginationLimit } from "./PaginationLimit.ts";
 
+export const getElementsQueryParamsProjectIdEnum = {
+  private: "private",
+} as const;
+
+export type GetElementsQueryParamsProjectIdEnumKey =
+  (typeof getElementsQueryParamsProjectIdEnum)[keyof typeof getElementsQueryParamsProjectIdEnum];
+
 export type GetElementsQueryParams = {
   /**
    * @type string | undefined
@@ -35,6 +42,7 @@ export type GetElementsQueryParams = {
    * @type string | undefined
    */
   cursor?: Cursor;
+  projectId?: Cuid2 | GetElementsQueryParamsProjectIdEnumKey;
 };
 
 /**

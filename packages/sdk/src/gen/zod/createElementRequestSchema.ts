@@ -17,4 +17,10 @@ export const createElementRequestSchema = z.object({
   get assetIds() {
     return z.array(cuid2Schema).max(8).optional();
   },
+  projectId: z
+    .string()
+    .min(2)
+    .max(32)
+    .regex(/^[a-z][0-9a-z]+$/)
+    .nullish(),
 }) as unknown as z.ZodType<CreateElementRequest>;

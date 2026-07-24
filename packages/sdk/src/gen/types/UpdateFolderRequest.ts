@@ -17,4 +17,11 @@ export type UpdateFolderRequest = {
    * @type string
    */
   parentId?: string | null;
+  /**
+   * @minLength 2
+   * @maxLength 32
+   * @pattern ^[a-z][0-9a-z]+$
+   * @type string
+   */
+  projectId?: string | null;
 };

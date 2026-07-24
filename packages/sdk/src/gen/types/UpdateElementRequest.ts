@@ -26,4 +26,11 @@ export type UpdateElementRequest = {
    * @type array | undefined
    */
   assetIds?: (Cuid2 | string)[];
+  /**
+   * @minLength 2
+   * @maxLength 32
+   * @pattern ^[a-z][0-9a-z]+$
+   * @type string
+   */
+  projectId?: string | null;
 };

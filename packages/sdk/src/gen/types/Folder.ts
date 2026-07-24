@@ -8,6 +8,16 @@ import type { Timestamp } from "./Timestamp.ts";
 
 export type Folder = {
   /**
+   * @minLength 0
+   * @type integer
+   */
+  assetCount: number;
+  /**
+   * @minLength 0
+   * @type integer
+   */
+  childFolderCount: number;
+  /**
    * @pattern ^[a-z][0-9a-z]+$
    * @type string
    */
@@ -33,6 +43,13 @@ export type Folder = {
    * @type integer
    */
   processingItemCount: number;
+  /**
+   * @minLength 2
+   * @maxLength 32
+   * @pattern ^[a-z][0-9a-z]+$
+   * @type string
+   */
+  projectId: string | null;
   /**
    * @minLength 0
    * @type integer

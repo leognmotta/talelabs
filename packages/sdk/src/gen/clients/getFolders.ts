@@ -7,6 +7,7 @@ import fetch from "../../client";
 import type { Client, RequestConfig, ResponseErrorConfig } from "../../client";
 import type {
   GetFoldersQueryResponse,
+  GetFoldersQueryParams,
   GetFolders400,
   GetFolders401,
   GetFolders403,
@@ -26,6 +27,7 @@ function getGetFoldersUrl() {
  * {@link /folders}
  */
 export async function getFolders(
+  { params }: { params?: GetFoldersQueryParams } = {},
   config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
@@ -45,6 +47,7 @@ export async function getFolders(
   >({
     method: "GET",
     url: getGetFoldersUrl().url.toString(),
+    params,
     ...requestConfig,
   });
   return getFoldersQueryResponseSchema.parse(res.data);

@@ -48,6 +48,9 @@ export const getAssetsQueryParamsSchema = z.object({
   get order() {
     return sortOrderSchema.optional();
   },
+  get projectId() {
+    return z.union([cuid2Schema, z.enum(["private"])]).optional();
+  },
   get limit() {
     return paginationLimitSchema.default(50).optional();
   },

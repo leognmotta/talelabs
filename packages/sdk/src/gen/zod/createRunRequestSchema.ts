@@ -8,6 +8,17 @@ import type { CreateRunRequest } from "../types/CreateRunRequest.ts";
 import { cuid2Schema } from "./cuid2Schema.ts";
 
 export const createRunRequestSchema = z.object({
+  destination: z.optional(
+    z.object({
+      folderId: z.nullable(
+        z
+          .string()
+          .min(2)
+          .max(32)
+          .regex(/^[a-z][0-9a-z]+$/),
+      ),
+    }),
+  ),
   executionMode: z.optional(z.enum(["live", "debug"]).default("live")),
   executionRuntime: z.optional(
     z.enum(["managed", "browser"]).default("managed"),

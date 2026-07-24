@@ -8,6 +8,13 @@ import type { Timestamp } from "./Timestamp.ts";
 
 export type CreateSession = {
   /**
+   * @minLength 2
+   * @maxLength 32
+   * @pattern ^[a-z][0-9a-z]+$
+   * @type string
+   */
+  assetFolderId: string | null;
+  /**
    * @type string, date-time
    */
   createdAt: Timestamp;
@@ -20,6 +27,13 @@ export type CreateSession = {
    * @type string
    */
   name: string | null;
+  /**
+   * @minLength 2
+   * @maxLength 32
+   * @pattern ^[a-z][0-9a-z]+$
+   * @type string
+   */
+  projectId: string | null;
   /**
    * @type string, date-time
    */

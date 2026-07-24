@@ -11,10 +11,24 @@ import { timestampSchema } from "./timestampSchema.ts";
 import { userIdSchema } from "./userIdSchema.ts";
 
 export const flowSchema = z.object({
+  assetFolderId: z.nullable(
+    z
+      .string()
+      .min(2)
+      .max(32)
+      .regex(/^[a-z][0-9a-z]+$/),
+  ),
   get id() {
     return cuid2Schema;
   },
   name: z.string(),
+  projectId: z.nullable(
+    z
+      .string()
+      .min(2)
+      .max(32)
+      .regex(/^[a-z][0-9a-z]+$/),
+  ),
   revision: z.int().min(0),
   get viewport() {
     return flowViewportSchema;
