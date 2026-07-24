@@ -5,6 +5,7 @@ import type {
   FlowRunExecutionRuntime,
 } from '@talelabs/flows'
 import type { FlowRun } from '@talelabs/sdk'
+import type { AssetDestinationSelection } from '../../projects/asset-destination-picker'
 
 import { listCredentialStatuses } from '@talelabs/providers/browser'
 import apiClient from '@talelabs/sdk/client'
@@ -34,6 +35,8 @@ export interface SavedGenerationRunTarget {
 
 /** Saves current graph edits before admitting and observing a Flow run. */
 export function useGenerationRunAdmission(input: {
+  /** Optional one-run generated-Asset folder override. */
+  destinationFolderId: AssetDestinationSelection
   /** Saves or lazily creates the ordinary Flow before admission. */
   ensureSaved: () => Promise<null | SavedGenerationRunTarget>
   executionMode: FlowRunExecutionMode
@@ -46,6 +49,7 @@ export function useGenerationRunAdmission(input: {
   const queryClient = useQueryClient()
   const {
     ensureSaved,
+    destinationFolderId,
     executionMode,
     executionRuntime,
     fundingSource,
@@ -80,6 +84,9 @@ export function useGenerationRunAdmission(input: {
           expectedFlowRevision: saved.revision,
           fundingSource,
           mode: command.mode,
+          ...(destinationFolderId === undefined
+            ? {}
+            : { destination: { folderId: destinationFolderId } }),
           ...(byokProviders ? { byokProviders } : {}),
           ...(command.mode === 'selection'
             ? { selectedNodeIds: command.selectedNodeIds }
@@ -114,6 +121,7 @@ export function useGenerationRunAdmission(input: {
     },
     [
       ensureSaved,
+      destinationFolderId,
       executionMode,
       executionRuntime,
       fundingSource,

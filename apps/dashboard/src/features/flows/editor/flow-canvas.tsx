@@ -1,8 +1,9 @@
 /** Interactive React Flow canvas and durable generation-run integration. */
 
+import type { AssetDestinationSelection } from '../../projects/asset-destination-picker'
 import type { FlowCanvasProps } from './flow-canvas-props'
-import type { CanvasEdge, CanvasNode } from './flow-canvas-types'
 
+import type { CanvasEdge, CanvasNode } from './flow-canvas-types'
 import {
   ContextMenu,
   ContextMenuTrigger,
@@ -18,7 +19,7 @@ import {
   useReactFlow,
 } from '@xyflow/react'
 import { useQueryState } from 'nuqs'
-import { useMemo, useRef } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ACCEPTED_ASSET_MEDIA } from '../../assets/upload/asset-upload-files'
 import { useSession } from '../../auth/auth-client'
@@ -95,6 +96,8 @@ function FlowCanvasInner({
     'debug',
     flowCanvasSearchParams.debug,
   )
+  const [destinationFolderId, setDestinationFolderId]
+    = useState<AssetDestinationSelection>(undefined)
   const debugMode = canUseDebugMode && requestedDebugMode
   const autosave = useFlowAutosave({
     flowId: flow.id,
@@ -111,6 +114,7 @@ function FlowCanvasInner({
   const assetUploads = useFlowCanvasAssetUpload({
     flowId: flow.id,
     organizationId,
+    projectId: flow.projectId,
     reactFlow,
     references,
     store,
@@ -126,6 +130,7 @@ function FlowCanvasInner({
   )
   referenceDataRef.current = referenceData
   const runs = useFlowMockRunOrchestration({
+    destinationFolderId,
     executionMode: debugMode ? 'debug' : 'live',
     executionRuntime,
     flowId: flow.id,
@@ -306,10 +311,12 @@ function FlowCanvasInner({
                   />
                   <FlowCanvasMinimap />
                   <FlowCanvasHeaderPanel
+                    destinationFolderId={destinationFolderId}
                     flow={flow}
                     status={autosave.status}
                     onFlowDeleted={lifecycle.onFlowDeleted}
                     onRetrySave={commands.retrySave}
+                    onDestinationFolderChange={setDestinationFolderId}
                   />
                   <FlowCanvasEmptyState
                     canAddNodeType={runAvailability.canAddNodeType}
@@ -337,6 +344,7 @@ function FlowCanvasInner({
                 canAddNodeType={runAvailability.canAddNodeType}
                 getCanRunNode={runAvailability.getCanRunNode}
                 shortcutLabels={shortcutLabels}
+                uploadProjectId={flow.projectId}
                 onAddNode={commands.addNode}
                 onArrange={commands.arrangeSelection}
                 onDeleteNodeIds={commands.deleteNodes}

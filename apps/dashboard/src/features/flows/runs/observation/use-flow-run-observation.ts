@@ -13,6 +13,7 @@ import type {
 import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useMemo, useReducer, useRef } from 'react'
 import { toast } from 'sonner'
+import { invalidateTerminalOutputQueries } from '../../../generation/runs/terminal-output-invalidation'
 
 import { flowQueryKeys } from '../../data/query-keys/flow-query-keys'
 import { areGenerationPreviewsEqual } from '../../generation/flow-generation-preview-comparison'
@@ -262,6 +263,11 @@ export function useFlowRunObservation(input: {
             queryClient.invalidateQueries({
               exact: true,
               queryKey: flowQueryKeys.references(organizationId, flowId),
+            }),
+            invalidateTerminalOutputQueries({
+              organizationId,
+              queryClient,
+              runId: run.id,
             }),
           ])
         }

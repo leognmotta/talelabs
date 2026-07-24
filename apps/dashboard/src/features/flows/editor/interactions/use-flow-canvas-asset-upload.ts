@@ -51,6 +51,7 @@ interface CanvasAssetUploadVariables {
 export function useFlowCanvasAssetUpload(input: {
   flowId: string
   organizationId: string
+  projectId: null | string
   reactFlow: ReactFlowInstance<CanvasNode, CanvasEdge>
   references: FlowGraphReferences
   store: CanvasStore
@@ -59,6 +60,7 @@ export function useFlowCanvasAssetUpload(input: {
   const {
     flowId,
     organizationId,
+    projectId,
     reactFlow,
     references,
     store,
@@ -112,6 +114,7 @@ export function useFlowCanvasAssetUpload(input: {
         file: variables.file,
         folderId: null,
         organizationId,
+        projectId,
         signal: variables.controller.signal,
         onProgress: progress => publishUploads(current => current[variables.nodeId]
           ? {

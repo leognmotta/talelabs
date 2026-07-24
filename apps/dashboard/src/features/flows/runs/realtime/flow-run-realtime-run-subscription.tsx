@@ -3,6 +3,7 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { useRealtimeRun } from '@trigger.dev/react-hooks'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { invalidateTerminalOutputQueries } from '../../../generation/runs/terminal-output-invalidation'
 import {
   invalidateFlowRunAndActiveQueries,
   invalidateFlowRunQuery,
@@ -43,13 +44,20 @@ export function FlowRunRealtimeRunSubscription({
     enabled: subscriptionEnabled,
     id: subscriptionId,
     onComplete: () => {
-      void invalidateFlowRunAndActiveQueries(
-        queryClient,
-        organizationId,
-        runId,
-        flowId,
-        source,
-      )
+      void Promise.allSettled([
+        invalidateFlowRunAndActiveQueries(
+          queryClient,
+          organizationId,
+          runId,
+          flowId,
+          source,
+        ),
+        invalidateTerminalOutputQueries({
+          organizationId,
+          queryClient,
+          runId,
+        }),
+      ])
     },
     skipColumns: ['payload', 'output'],
   })

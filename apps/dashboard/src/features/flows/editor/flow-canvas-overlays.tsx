@@ -35,6 +35,7 @@ export const FlowCanvasOverlays = memo((input: {
   onSelectAll: () => void
   onUploadAssets: (position: null | { x: number, y: number }) => void
   shortcutLabels: Readonly<{ delete: string, duplicate: string }>
+  uploadProjectId: null | string
 }) => {
   const store = useCanvasStoreApi()
   const runtime = useFlowCanvasRuntime()
@@ -162,6 +163,7 @@ export const FlowCanvasOverlays = memo((input: {
             : elementSelectedAssetIds.split(' ')}
         selectedAssetId={selectedAssetId}
         selectedElementId={selectedElementId}
+        uploadProjectId={input.uploadProjectId}
         onAssetPickerOpenChange={closeAssetPicker}
         onConfirmElement={confirmElement}
         onElementPickerOpenChange={closeElementPicker}

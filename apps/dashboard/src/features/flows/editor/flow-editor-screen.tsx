@@ -29,7 +29,10 @@ import {
 /** Loads a Flow editor route and supplies canvas data plus system privileges. */
 export function FlowEditorScreen() {
   const { t } = useTranslation()
-  const { flowId } = useParams()
+  const { flowId, projectId } = useParams<{
+    flowId: string
+    projectId: string
+  }>()
   const organizationId = useActiveOrganizationId()
   const flowQuery = useFlowDetailQuery(flowId ?? null)
   const graphQuery = useFlowGraphQuery(flowId ?? null)
@@ -56,6 +59,16 @@ export function FlowEditorScreen() {
   const graph = graphQuery.data
   const references = referencesQuery.data
   const generationConfig = configQuery.data
+  if (flow && (projectId ?? null) !== flow.projectId) {
+    return (
+      <Navigate
+        replace
+        to={flow.projectId
+          ? `/projects/${flow.projectId}/flows/${flow.id}`
+          : `/flows/${flow.id}`}
+      />
+    )
+  }
 
   return (
     <section className="min-h-0 flex-1">

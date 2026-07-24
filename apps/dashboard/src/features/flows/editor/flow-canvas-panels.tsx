@@ -2,6 +2,7 @@
 
 import type { FlowNodeType } from '@talelabs/flows'
 import type { Flow } from '@talelabs/sdk'
+import type { AssetDestinationSelection } from '../../projects/asset-destination-picker'
 import type { CanvasNode, FlowSaveStatus } from './flow-canvas-types'
 
 import { Panel } from '@xyflow/react'
@@ -19,9 +20,11 @@ const INSPECTOR_POSITION = { x: 0, y: 0 }
 
 /** Renders history-aware Flow navigation without observing graph collections. */
 export const FlowCanvasHeaderPanel = memo((input: {
+  destinationFolderId: AssetDestinationSelection
   flow: Flow
   status: FlowSaveStatus
   onFlowDeleted: () => void
+  onDestinationFolderChange: (value: AssetDestinationSelection) => void
   onRetrySave: () => void
 }) => {
   const store = useCanvasStoreApi()
@@ -32,9 +35,11 @@ export const FlowCanvasHeaderPanel = memo((input: {
       <FlowCanvasHeader
         canRedo={canRedo}
         canUndo={canUndo}
+        destinationFolderId={input.destinationFolderId}
         flow={input.flow}
         saveStatus={input.status}
         onFlowDeleted={input.onFlowDeleted}
+        onDestinationFolderChange={input.onDestinationFolderChange}
         onRedo={() => restoreCanvasHistory(store, 'redo')}
         onRetrySave={input.onRetrySave}
         onUndo={() => restoreCanvasHistory(store, 'undo')}

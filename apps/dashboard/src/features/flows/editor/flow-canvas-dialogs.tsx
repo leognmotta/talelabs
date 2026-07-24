@@ -18,6 +18,7 @@ export const FlowCanvasDialogs = memo(({
   onSelectAsset,
   selectedAssetId,
   selectedElementId,
+  uploadProjectId,
 }: {
   assetPickerNodeId: null | string
   elementPickerNodeId: null | string
@@ -28,6 +29,7 @@ export const FlowCanvasDialogs = memo(({
   onSelectAsset: (asset: Asset) => void
   selectedAssetId: null | string
   selectedElementId: null | string
+  uploadProjectId: null | string
 }) => {
   return (
     <>
@@ -35,6 +37,7 @@ export const FlowCanvasDialogs = memo(({
         mode="select"
         open={assetPickerNodeId !== null}
         selectedAssetIds={selectedAssetId ? [selectedAssetId] : []}
+        uploadProjectId={uploadProjectId}
         onOpenChange={onAssetPickerOpenChange}
         onSelect={onSelectAsset}
       />

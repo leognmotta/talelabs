@@ -1,6 +1,7 @@
 /** Flow identity, navigation, history, and document commands above the canvas. */
 
 import type { Flow } from '@talelabs/sdk'
+import type { AssetDestinationSelection } from '../../projects/asset-destination-picker'
 import type { FlowSaveStatus } from './flow-canvas-types'
 /* eslint-disable better-tailwindcss/no-unknown-classes -- React Flow uses these interaction classes as behavior hooks. */
 
@@ -10,6 +11,7 @@ import {
   IconArrowLeft,
   IconChevronDown,
   IconEdit,
+  IconMapPin,
   IconPlus,
   IconSettings,
   IconTrash,
@@ -20,6 +22,7 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuTrigger,
@@ -28,9 +31,11 @@ import { memo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import { TaleLabsLogo } from '../../../shared/components/talelabs-logo'
+import { AssetDestinationPicker } from '../../projects/asset-destination-picker'
 import { useSettingsTabState } from '../../settings/settings-state'
 import { CreateFlowDialog } from '../browse/create-flow-dialog'
 import { DeleteFlowDialog } from '../browse/delete-flow-dialog'
+import { FlowLocationDialog } from '../browse/flow-location-dialog'
 import { RenameFlowDialog } from '../browse/rename-flow-dialog'
 import { FlowCanvasSaveStatus } from './flow-canvas-save-status'
 import { getFlowCanvasShortcutLabels } from './interactions/flow-canvas-shortcuts'
@@ -39,18 +44,22 @@ import { getFlowCanvasShortcutLabels } from './interactions/flow-canvas-shortcut
 export const FlowCanvasHeader = memo(({
   canRedo,
   canUndo,
+  destinationFolderId,
   flow,
   saveStatus,
   onFlowDeleted,
+  onDestinationFolderChange,
   onRedo,
   onRetrySave,
   onUndo,
 }: {
   canRedo: boolean
   canUndo: boolean
+  destinationFolderId: AssetDestinationSelection
   flow: Flow
   saveStatus: FlowSaveStatus
   onFlowDeleted: () => void
+  onDestinationFolderChange: (value: AssetDestinationSelection) => void
   onRedo: () => void
   onRetrySave: () => void
   onUndo: () => void
@@ -61,18 +70,27 @@ export const FlowCanvasHeader = memo(({
   const shortcutLabels = getFlowCanvasShortcutLabels()
   const [createOpen, setCreateOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
+  const [locationOpen, setLocationOpen] = useState(false)
   const [renameOpen, setRenameOpen] = useState(false)
+  const projectScoped = flow.projectId !== null
 
   function handleDeleted() {
     onFlowDeleted()
-    navigate('/flows', { replace: true })
+    navigate(
+      flow.projectId ? `/projects/${flow.projectId}/flows` : '/flows',
+      { replace: true },
+    )
   }
+  const flowsPath = flow.projectId
+    ? `/projects/${flow.projectId}/flows`
+    : '/flows'
 
   return (
     <>
       <div
         className="
-          nodrag nopan flex h-11 min-w-0 items-center overflow-hidden rounded-xl
+          nodrag nopan flex h-9 min-w-0 items-center overflow-hidden rounded-xl
+          p-0.5
         "
         data-flow-chrome
       >
@@ -81,7 +99,7 @@ export const FlowCanvasHeader = memo(({
             render={(
               <Button
                 aria-label={t('common.moreOptions')}
-                className="h-10 rounded-r-none px-2.5"
+                className="h-8 rounded-lg px-2"
                 type="button"
                 variant="ghost"
               />
@@ -93,9 +111,9 @@ export const FlowCanvasHeader = memo(({
               className="size-3.5 text-muted-foreground"
             />
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-56" sideOffset={8}>
+          <DropdownMenuContent align="start" className="w-72" sideOffset={8}>
             <DropdownMenuGroup>
-              <DropdownMenuItem onClick={() => navigate('/flows')}>
+              <DropdownMenuItem onClick={() => navigate(flowsPath)}>
                 <IconArrowLeft />
                 {t('flows.backToFlows')}
               </DropdownMenuItem>
@@ -113,6 +131,31 @@ export const FlowCanvasHeader = memo(({
                 <IconSettings />
                 {t('navigation.settings')}
               </DropdownMenuItem>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              {projectScoped
+                ? null
+                : (
+                    <DropdownMenuItem onClick={() => setLocationOpen(true)}>
+                      <IconMapPin />
+                      {t('projects.changeLocation')}
+                      <DropdownMenuShortcut>
+                        {t('projects.private')}
+                      </DropdownMenuShortcut>
+                    </DropdownMenuItem>
+                  )}
+              <DropdownMenuLabel className="p-1">
+                <AssetDestinationPicker
+                  className="
+                    w-full justify-start border-0 bg-transparent shadow-none
+                  "
+                  projectId={flow.projectId}
+                  sourceFolderId={flow.assetFolderId}
+                  value={destinationFolderId}
+                  onChange={onDestinationFolderChange}
+                />
+              </DropdownMenuLabel>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
@@ -139,26 +182,38 @@ export const FlowCanvasHeader = memo(({
             </DropdownMenuGroup>
           </DropdownMenuContent>
         </DropdownMenu>
-        <span aria-hidden className="h-5 w-px shrink-0 bg-border/80" />
+        <span aria-hidden className="mx-0.5 h-4 w-px shrink-0 bg-border/80" />
         <p
-          className="max-w-72 min-w-0 truncate px-3 text-sm font-medium"
+          className="max-w-64 min-w-0 truncate px-2 text-sm font-medium"
           title={flow.name}
         >
           {flow.name}
         </p>
-        <span aria-hidden className="h-5 w-px shrink-0 bg-border/80" />
-        <div className="shrink-0 pr-1.5 pl-1">
+        <span aria-hidden className="mx-0.5 h-4 w-px shrink-0 bg-border/80" />
+        <div className="shrink-0 pr-0.5">
           <FlowCanvasSaveStatus
             status={saveStatus}
             onRetrySave={onRetrySave}
           />
         </div>
       </div>
-      <CreateFlowDialog open={createOpen} onOpenChange={setCreateOpen} />
+      <CreateFlowDialog
+        open={createOpen}
+        projectId={flow.projectId}
+        onOpenChange={setCreateOpen}
+      />
       <RenameFlowDialog
         flow={renameOpen ? flow : null}
         onOpenChange={setRenameOpen}
       />
+      {projectScoped
+        ? null
+        : (
+            <FlowLocationDialog
+              flow={locationOpen ? flow : null}
+              onOpenChange={setLocationOpen}
+            />
+          )}
       <DeleteFlowDialog
         flow={deleteOpen ? flow : null}
         onDeleted={handleDeleted}

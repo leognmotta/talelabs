@@ -7,6 +7,7 @@ import type {
 import type { FlowLatestResult } from '@talelabs/sdk'
 import type { TFunction } from 'i18next'
 import type { RefObject } from 'react'
+import type { AssetDestinationSelection } from '../../../projects/asset-destination-picker'
 import type { CanvasStore } from '../../editor/canvas-state/canvas-store'
 import type { FlowReferenceData } from '../../editor/flow-canvas-types'
 import type { FlowGenerationPreviewScope } from './flow-mock-runtime-node-scope'
@@ -30,6 +31,7 @@ import { createFlowMockRuntimePlanner } from './flow-mock-runtime-planner'
 
 /** Coordinates canvas commands while admission, observation, and projection stay isolated. */
 export function useFlowMockRunOrchestration(input: {
+  destinationFolderId: AssetDestinationSelection
   executionMode: FlowRunExecutionMode
   executionRuntime: FlowRunExecutionRuntime
   flowId: string
@@ -48,6 +50,7 @@ export function useFlowMockRunOrchestration(input: {
 }) {
   const {
     executionMode,
+    destinationFolderId,
     executionRuntime,
     flowId,
     fundingSource,
@@ -133,6 +136,7 @@ export function useFlowMockRunOrchestration(input: {
     [locale, previewsRef, referenceDataRef, store],
   )
   const admitRun = useGenerationRunAdmission({
+    destinationFolderId,
     ensureSaved,
     executionMode,
     executionRuntime,
