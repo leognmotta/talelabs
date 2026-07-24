@@ -386,6 +386,8 @@ if (collectionPlan) {
     JSON.stringify(firstRequest) === JSON.stringify(secondRequest),
     'the same immutable job payload must produce the same adapter request',
   )
+  if (shard.requestPayload.requestPayloadVersion !== 6)
+    throw new Error('planner must emit the current compiled request version')
   const changedAssetRequest = materializeGenerationProviderRequest({
     requestId: 'job-image-request',
     requestPayload: {

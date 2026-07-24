@@ -21,14 +21,13 @@ import {
   GENERATION_CATALOG_VERSION,
 } from '../../generation/registry/index.js'
 import { resolvePromptTemplate } from '../../prompts/resolve.js'
-import { hashFlowRunJob } from '../serialization/execution-hashes.js'
 import { promptTemplateInputsFromRequest } from '../values/provider-input-selections.js'
 import {
   createRuntimeItem,
   deriveRuntimeItemKey,
 } from '../values/runtime-items.js'
 import { expandRuntimeInputCoordinates } from './input-coordinates.js'
-import { createPlannedJobRequestPayload } from './planner-node-inputs.js'
+import { compileFlowGenerationJob } from './planner-node-inputs.js'
 import { plannedRuntimeOutputValue } from './planner-outputs.js'
 import { RuntimeCoordinateLimitError } from './runtime-coordinate-limit-error.js'
 
@@ -117,7 +116,7 @@ export function expandFlowRunJobs(input: {
         targetHandleId: binding.targetHandleId,
       }))
       const requestIndex = 0
-      const requestPayload = createPlannedJobRequestPayload({
+      const requestShard = compileFlowGenerationJob({
         catalogRevision: GENERATION_CATALOG_REVISION,
         catalogVersion: GENERATION_CATALOG_VERSION,
         inputLimits: Object.fromEntries(
@@ -136,16 +135,16 @@ export function expandFlowRunJobs(input: {
       })
       let promptReferencesValid = true
       for (const [slotId, template] of Object.entries(
-        requestPayload.promptTemplates ?? {},
+        requestShard.requestPayload.promptTemplates ?? {},
       )) {
-        const connectedText = requestPayload.inputs.some(inputBinding => (
-          inputBinding.targetHandleId === slotId
+        const connectedText = requestShard.requestPayload.inputs.some(inputBinding => (
+          inputBinding.targetSlotId === slotId
           && inputBinding.items.some(item => item.value.kind === 'text')
         ))
         if (connectedText)
           continue
         const resolution = resolvePromptTemplate({
-          inputs: promptTemplateInputsFromRequest(requestPayload),
+          inputs: promptTemplateInputsFromRequest(requestShard.requestPayload),
           template,
         })
         for (const issue of resolution.issues) {
@@ -171,11 +170,7 @@ export function expandFlowRunJobs(input: {
         inputs: Object.freeze(plannedInputs),
         itemKey,
         lineage: coordinate.lineage,
-        requestShards: Object.freeze([{
-          jobHash: hashFlowRunJob(requestPayload),
-          requestPayload,
-          requestIndex,
-        }]),
+        requestShards: Object.freeze([requestShard]),
         sortOrder,
       }))
     }

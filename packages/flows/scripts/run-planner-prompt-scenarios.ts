@@ -1,5 +1,6 @@
 /** Structured-prompt planning, invalidation, override, and resolution scenarios. */
 
+import type { PlannedJobRequestPayloadV6 } from '../src/index.js'
 import {
   hashFlowRunJob,
   materializeGenerationProviderRequest,
@@ -26,6 +27,42 @@ const referencedPrompt = {
     { text: ' as the character.', type: 'text' as const },
   ],
   version: 1 as const,
+}
+
+function legacyStructuredRequest(
+  request: PlannedJobRequestPayloadV6,
+  version: 3 | 4,
+) {
+  const base = {
+    catalogRevision: request.catalogRevision,
+    catalogVersion: request.catalogVersion,
+    inline: request.inline,
+    inputSelections: request.inputSelections,
+    inputs: request.inputs.map(input => ({
+      edgeId: input.bindingId,
+      items: input.items,
+      sourceHandleId: input.sourceOutputId,
+      sourceNodeId: input.sourceId,
+      targetHandleId: input.targetSlotId,
+    })),
+    itemKey: request.itemKey,
+    modelContractVersion: request.modelContractVersion,
+    modelId: request.modelId,
+    modelRevision: request.modelRevision,
+    nodeId: request.executionStepId,
+    operationId: request.operationId,
+    outputCount: request.outputCount,
+    requestIndex: request.requestIndex,
+    settings: request.settings,
+  }
+  return version === 3
+    ? { ...base, requestPayloadVersion: 3 as const }
+    : {
+        ...base,
+        inputLimits: request.inputLimits,
+        promptTemplates: request.promptTemplates,
+        requestPayloadVersion: 4 as const,
+      }
 }
 
 function promptFlow(prompt: typeof referencedPrompt) {
@@ -92,21 +129,14 @@ export function verifyRunPlannerPromptScenarios() {
   if (plan) {
     const shard = plan.executionNodes[0]!.workItems[0]!.requestShards[0]!
     expect(
-      shard.requestPayload.requestPayloadVersion === 5
+      shard.requestPayload.requestPayloadVersion === 6
       && Boolean(shard.requestPayload.inputLimits)
       && Boolean(shard.requestPayload.promptTemplates),
-      'structured prompt requests must use the occurrence-preserving v5 contract',
+      'structured prompt requests must use the shared compiler v6 contract',
     )
-    const {
-      inputLimits: _currentInputLimits,
-      promptTemplates: _currentPromptTemplates,
-      requestPayloadVersion: _currentRequestPayloadVersion,
-      ...legacyFields
-    } = shard.requestPayload
-    const legacyRequest = {
-      ...legacyFields,
-      requestPayloadVersion: 3 as const,
-    }
+    if (shard.requestPayload.requestPayloadVersion !== 6)
+      throw new Error('planner must emit request payload v6')
+    const legacyRequest = legacyStructuredRequest(shard.requestPayload, 3)
     expect(
       readFlowRunJobRequestPayload({
         requestHash: hashFlowRunJob(legacyRequest),
@@ -115,9 +145,8 @@ export function verifyRunPlannerPromptScenarios() {
       'the immutable request reader must retain strict v3 compatibility',
     )
     const incompleteV4Request = {
-      ...legacyFields,
-      inputLimits: {},
-      requestPayloadVersion: 4 as const,
+      ...legacyStructuredRequest(shard.requestPayload, 4),
+      promptTemplates: undefined,
     }
     let incompleteV4Rejected = false
     try {
@@ -211,11 +240,11 @@ export function verifyRunPlannerPromptScenarios() {
       && duplicatePrompt.inputReferences[0]?.index === 1,
       'the second connector occurrence must resolve as prompt input index 1',
     )
-    if (duplicateShard.requestPayload.requestPayloadVersion === 5) {
-      const legacyV4Payload = {
-        ...duplicateShard.requestPayload,
-        requestPayloadVersion: 4 as const,
-      }
+    if (duplicateShard.requestPayload.requestPayloadVersion === 6) {
+      const legacyV4Payload = legacyStructuredRequest(
+        duplicateShard.requestPayload,
+        4,
+      )
       const legacyV4AssetCount = selectedProviderRequestInputs(legacyV4Payload)
         .flatMap(input => input.items)
         .flatMap(item => item.value.kind === 'text' ? [] : item.value.assets)
@@ -230,7 +259,7 @@ export function verifyRunPlannerPromptScenarios() {
       )
     }
     else {
-      expect(false, 'duplicate Asset requests must use payload version 5')
+      expect(false, 'duplicate Asset requests must use payload version 6')
     }
   }
 

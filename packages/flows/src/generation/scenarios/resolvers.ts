@@ -6,6 +6,7 @@ import { GENERATION_MODEL_REGISTRY } from '../registry/index.js'
 import { resolveImageGenerationState } from '../resolution/image.js'
 import { resolveLlmState } from '../resolution/llm.js'
 import { resolveVideoGenerationState } from '../resolution/video.js'
+import { resolveVoiceIsolationState } from '../resolution/voice-isolation.js'
 
 function defaultSettings(model: GenerationModelDefinition) {
   return Object.fromEntries(
@@ -22,6 +23,7 @@ const gemini31FlashLite
 const gemini31Pro = GENERATION_MODEL_REGISTRY['google/gemini-3.1-pro-preview']
 const deepseekV32 = GENERATION_MODEL_REGISTRY['deepseek/deepseek-v3.2']
 const mistralLarge3 = GENERATION_MODEL_REGISTRY['mistralai/mistral-large-2512']
+const audioIsolation = GENERATION_MODEL_REGISTRY['elevenlabs/audio-isolation']
 
 /** Verifies operation and readiness resolution for representative model inputs. */
 export function validateGenerationResolverCapabilityScenarios() {
@@ -91,6 +93,53 @@ export function validateGenerationResolverCapabilityScenarios() {
         `${scenario.name}: expected ${scenario.expectedOperationId}/${scenario.expectedReadiness}, received ${scenario.actual.resolvedOperationId}/${scenario.actual.readiness}`,
       )
     }
+  }
+
+  const referenceFamily = resolveVideoGenerationState({
+    connectionCounts: { imageReferences: 1 },
+    inlinePrompt: 'Follow the visual reference',
+    itemCounts: { imageReferences: 1 },
+    model: seedance20,
+    settings: defaultSettings(seedance20),
+  })
+  if (
+    referenceFamily.inputAvailability.firstFrame?.state !== 'blocked'
+    || referenceFamily.inputAvailability.lastFrame?.state !== 'blocked'
+  ) {
+    errors.push(
+      'video reference inputs must block both frame inputs',
+    )
+  }
+
+  const combinedReferenceLimit = resolveVideoGenerationState({
+    connectionCounts: { imageReferences: 1, videoReferences: 1 },
+    inlinePrompt: 'Use every selected reference',
+    itemCounts: { imageReferences: 9, videoReferences: 3 },
+    model: seedance20,
+    settings: defaultSettings(seedance20),
+  })
+  if (
+    combinedReferenceLimit.inputAvailability.audioReferences?.state !== 'full'
+  ) {
+    errors.push(
+      'video combined reference capacity must close every participating slot',
+    )
+  }
+
+  const isolatedAudio = resolveVoiceIsolationState({
+    connectionCounts: { sourceAudio: 1 },
+    itemCounts: { sourceAudio: 1 },
+    model: audioIsolation,
+    settings: defaultSettings(audioIsolation),
+  })
+  if (
+    isolatedAudio.inputAvailability.sourceAudio?.state !== 'full'
+    || isolatedAudio.inputAvailability.sourceVideo?.state !== 'blocked'
+    || isolatedAudio.readiness !== 'ready'
+  ) {
+    errors.push(
+      'voice isolation must fill the selected source and block its alternative',
+    )
   }
 
   const imageResolverScenarios = [

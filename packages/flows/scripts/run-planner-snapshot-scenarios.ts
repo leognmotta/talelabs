@@ -10,9 +10,10 @@ import { getCatalogProviderBinding } from '@talelabs/models-catalog'
 import {
   CANONICAL_SERIALIZER_VERSION,
   createFlowRunSnapshotArtifact,
-  FLOW_RUN_PLANNER_VERSION,
+  executionPlanFromFlowRunPlan,
   FLOW_RUN_SNAPSHOT_VERSION,
   FlowRunSnapshotReadError,
+  flowRunSourceFromPlan,
   GENERATION_CATALOG_REVISION,
   hashFlowRunRequest,
   hashFlowRunSnapshot,
@@ -51,37 +52,43 @@ export function verifyRunPlannerSnapshotScenarios(
 
   if (!allPlan)
     return
-  const snapshot: FlowRunSnapshot<FlowRunPlan> = {
+  const executionContracts = allPlan.executionNodes.map((node) => {
+    const binding = getCatalogProviderBinding(node.modelId, node.operationId)
+    if (!binding)
+      throw new Error(`scenario_binding_missing:${node.modelId}:${node.operationId}`)
+    return {
+      adapterVersion: binding.adapterVersion,
+      catalogRevision: node.catalogRevision,
+      catalogVersion: node.catalogVersion,
+      modelContractVersion: node.modelContractVersion,
+      modelId: node.modelId,
+      modelRevision: node.modelRevision,
+      operationId: node.operationId,
+      provider: binding.provider,
+      providerBinding: binding,
+      providerEndpoint: binding.endpoint,
+      providerEndpointTag: binding.providerTag,
+      providerLifecycle: binding.lifecycle as GenerationProviderLifecycle,
+      providerModel: binding.nativeModelId,
+      providerRouteVersion: binding.routeVersion,
+      stepId: node.nodeId,
+    }
+  })
+  const snapshot: FlowRunSnapshot = {
     adapterContractVersion: 'm5-normalized-adapter-v1',
     canonicalSerializerVersion: CANONICAL_SERIALIZER_VERSION,
     catalogRevision: GENERATION_CATALOG_REVISION,
-    executionContracts: allPlan.executionNodes.map((node) => {
-      const binding = getCatalogProviderBinding(node.modelId, node.operationId)
-      if (!binding)
-        throw new Error(`scenario_binding_missing:${node.modelId}:${node.operationId}`)
-      return {
-        adapterVersion: binding.adapterVersion,
-        catalogRevision: node.catalogRevision,
-        catalogVersion: node.catalogVersion,
-        modelContractVersion: node.modelContractVersion,
-        modelId: node.modelId,
-        modelRevision: node.modelRevision,
-        nodeId: node.nodeId,
-        operationId: node.operationId,
-        provider: binding.provider,
-        providerBinding: binding,
-        providerEndpoint: binding.endpoint,
-        providerEndpointTag: binding.providerTag,
-        providerLifecycle: binding.lifecycle as GenerationProviderLifecycle,
-        providerModel: binding.nativeModelId,
-        providerRouteVersion: binding.routeVersion,
-      }
-    }),
+    executionContracts,
     executionMode: 'debug',
+    executionPlan: executionPlanFromFlowRunPlan(allPlan as FlowRunPlan & {
+      planHash: string
+    }),
+    executionRuntime: 'managed',
     executorVersion: 'scenario-v1',
-    plan: allPlan,
-    plannerVersion: FLOW_RUN_PLANNER_VERSION,
     snapshotVersion: FLOW_RUN_SNAPSHOT_VERSION,
+    source: flowRunSourceFromPlan(allPlan as FlowRunPlan & {
+      planHash: string
+    }),
   }
   const firstArtifact = createFlowRunSnapshotArtifact(snapshot)
   const secondArtifact = createFlowRunSnapshotArtifact(snapshot)
@@ -106,29 +113,40 @@ export function verifyRunPlannerSnapshotScenarios(
     'the shared snapshot reader must preserve the admitted debug execution mode',
   )
   const historicalSnapshot = {
-    ...firstArtifact.snapshot,
-    snapshotVersion: 3,
+    adapterContractVersion: snapshot.adapterContractVersion,
+    canonicalSerializerVersion: snapshot.canonicalSerializerVersion,
+    catalogRevision: snapshot.catalogRevision,
+    executionContracts: executionContracts.map(({ stepId, ...contract }) => ({
+      ...contract,
+      nodeId: stepId,
+    })),
+    executionMode: snapshot.executionMode,
+    executionRuntime: snapshot.executionRuntime,
+    executorVersion: snapshot.executorVersion,
+    plan: allPlan,
+    plannerVersion: allPlan.plannerVersion,
+    snapshotVersion: 4,
   }
   const historicalArtifact = readFlowRunSnapshotArtifact({
     executorVersion: snapshot.executorVersion,
     expectedExecutorVersion: snapshot.executorVersion,
     graphSnapshot: historicalSnapshot,
     snapshotHash: hashFlowRunSnapshot(historicalSnapshot),
-    snapshotVersion: 3,
+    snapshotVersion: 4,
   })
   expect(
     historicalArtifact.snapshot.snapshotVersion === FLOW_RUN_SNAPSHOT_VERSION,
-    'snapshot v3 must remain readable through an integrity-checked v4 upcast',
+    'snapshot v4 must remain readable through an integrity-checked v5 upcast',
   )
   const structurallyInvalidArtifact = createFlowRunSnapshotArtifact({
     ...snapshot,
-    plan: {
-      ...allPlan,
-      executionNodes: allPlan.executionNodes.map((node, index) => index === 0
-        ? { ...node, workItems: 'invalid' }
-        : node),
+    executionPlan: {
+      ...snapshot.executionPlan,
+      steps: snapshot.executionPlan.steps.map((step, index) => index === 0
+        ? { ...step, workItems: 'invalid' }
+        : step),
     },
-  })
+  } as unknown as FlowRunSnapshot)
   try {
     readFlowRunSnapshotArtifact({
       ...persistedSnapshot,
@@ -176,21 +194,24 @@ export function verifyRunPlannerSnapshotScenarios(
     {
       expectedCode: 'snapshot_forbidden_field',
       message: 'snapshot forbidden-field rejection must be machine-readable',
-      plan: { storageKey: 'forbidden' },
+      source: { storageKey: 'forbidden' },
     },
     {
       expectedCode: 'snapshot_forbidden_field',
       message: 'nested forbidden fields must use the stable snapshot error',
-      plan: { nested: { r2StorageKey: 'forbidden' } },
+      source: { nested: { r2StorageKey: 'forbidden' } },
     },
     {
       expectedCode: 'snapshot_non_json_value',
       message: 'non-JSON snapshot values must use the stable snapshot error',
-      plan: new Map([['node', 'not-json']]),
+      source: new Map([['step', 'not-json']]),
     },
   ]) {
     try {
-      createFlowRunSnapshotArtifact({ ...snapshot, plan: scenario.plan })
+      createFlowRunSnapshotArtifact({
+        ...snapshot,
+        source: scenario.source as never,
+      })
       runPlannerErrors.push(scenario.message)
     }
     catch (error) {

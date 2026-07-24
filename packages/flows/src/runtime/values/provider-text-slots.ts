@@ -9,6 +9,11 @@ import type { PlannedJobRequestPayload } from '../planning/planner-contracts.js'
 
 import { compareStableStrings } from '../../graph/ordering/stable.js'
 import { resolvePromptTemplate } from '../../prompts/resolve.js'
+import {
+  generationJobInputBindingId,
+  generationJobInputSourceId,
+  generationJobInputTargetSlotId,
+} from '../compilation/request-accessors.js'
 import { promptTemplateInputsFromRequest } from './provider-input-selections.js'
 import { GenerationProviderRequestMaterializationError } from './provider-request-error.js'
 
@@ -18,6 +23,7 @@ export function normalizedTextSlots(
 ): readonly NormalizedGenerationTextSlot[] {
   const connectedParts = new Map<string, NormalizedGenerationTextPart[]>()
   for (const [inputOrder, input] of requestPayload.inputs.entries()) {
+    const targetSlotId = generationJobInputTargetSlotId(input)
     for (const [itemOrder, item] of input.items.entries()) {
       if (item.value.kind !== 'text')
         continue
@@ -26,14 +32,14 @@ export function normalizedTextSlots(
           'provider_request_text_unresolved',
         )
       }
-      connectedParts.set(input.targetHandleId, [
-        ...(connectedParts.get(input.targetHandleId) ?? []),
+      connectedParts.set(targetSlotId, [
+        ...(connectedParts.get(targetSlotId) ?? []),
         Object.freeze({
-          edgeId: input.edgeId,
+          edgeId: generationJobInputBindingId(input),
           itemKey: item.key,
           order: inputOrder * 1_000_000 + itemOrder,
           source: 'connected' as const,
-          sourceNodeId: input.sourceNodeId,
+          sourceNodeId: generationJobInputSourceId(input),
           text: item.value.text,
         }),
       ])

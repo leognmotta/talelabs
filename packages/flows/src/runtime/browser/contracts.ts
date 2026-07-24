@@ -103,18 +103,18 @@ const normalizedTextSlotSchema = z
 export const browserExecutionContractSchema = z
   .object({
     modelId: z.string(),
-    nodeId: z.string(),
     operationId: z.string(),
     providerBinding: BrowserCatalogProviderBindingSchema,
+    stepId: z.string(),
   })
   .strict()
 
 /** Browser-disclosed execution facts projected from one snapshot contract. */
 export interface BrowserExecutionContract {
   modelId: string
-  nodeId: string
   operationId: string
   providerBinding: BrowserCatalogProviderBinding
+  stepId: string
 }
 
 /** Projects one private snapshot contract onto its browser-disclosed form. */
@@ -123,9 +123,9 @@ export function toBrowserExecutionContract(
 ): BrowserExecutionContract {
   return {
     modelId: contract.modelId,
-    nodeId: contract.nodeId,
     operationId: contract.operationId,
     providerBinding: toBrowserCatalogProviderBinding(contract.providerBinding),
+    stepId: contract.stepId,
   }
 }
 
@@ -205,9 +205,9 @@ export const BrowserRunClaimedJobSchema = z
         id: z.string(),
         itemKey: z.string(),
         mediaType: mediaTypeSchema,
-        nodeId: z.string(),
         providerJobId: z.string().nullable(),
         providerSubmittedAt: nullableTimestamp,
+        stepId: z.string(),
         submissionState: browserSubmissionStateSchema,
         status: z.literal('running'),
       })
@@ -244,27 +244,29 @@ export const BrowserRunManifestSchema = z
           id: z.string(),
           itemKey: z.string(),
           mediaType: mediaTypeSchema,
-          nodeId: z.string(),
           outputCount: z.number().int().positive(),
           provider: z.enum(['fal', 'openrouter']),
           providerJobId: z.string().nullable(),
           providerSubmittedAt: nullableTimestamp,
           requestHash: z.string(),
           requestIndex: nonnegativeInteger,
+          stepId: z.string(),
           submissionState: browserSubmissionStateSchema,
           status: jobStatusSchema,
         })
         .strict(),
     ),
-    manifestVersion: z.literal(2),
+    manifestVersion: z.literal(4),
     run: z
       .object({
         executionMode: z.enum(['debug', 'live']),
         executionRuntime: z.literal('browser'),
-        flowRevision: nonnegativeInteger,
+        flowId: z.string().nullable(),
+        flowRevision: nonnegativeInteger.nullable(),
         id: z.string(),
         planHash: z.string(),
         snapshotHash: z.string(),
+        source: z.enum(['create', 'flow']),
         status: runStatusSchema,
       })
       .strict(),

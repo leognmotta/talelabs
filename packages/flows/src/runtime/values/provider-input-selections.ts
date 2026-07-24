@@ -1,16 +1,18 @@
 /** Exact model-input selection shared by provenance, prompts, and adapters. */
 
 import type { PromptTemplateInput } from '../../prompts/contracts.js'
-import type {
-  PlannedJobRequestInput,
-  PlannedJobRequestPayload,
-} from '../planning/planner-contracts.js'
+import type { GenerationJobRequestInput } from '../compilation/request-accessors.js'
+import type { PlannedJobRequestPayload } from '../planning/planner-contracts.js'
+import {
+  generationJobInputSourceId,
+  generationJobInputTargetSlotId,
+} from '../compilation/request-accessors.js'
 
 function selectedMediaInput(
-  input: PlannedJobRequestInput,
+  input: GenerationJobRequestInput,
   selectedAssetIds: ReadonlySet<string> | null,
   selection: { remaining: number, seen: null | Set<string> },
-): PlannedJobRequestInput {
+): GenerationJobRequestInput {
   return Object.freeze({
     ...input,
     items: Object.freeze(input.items.flatMap((item) => {
@@ -47,20 +49,21 @@ function selectedMediaInput(
 /** Applies the node's existing manual/automatic policy and per-slot limits. */
 export function selectedProviderRequestInputs(
   payload: PlannedJobRequestPayload,
-): readonly PlannedJobRequestInput[] {
+): readonly GenerationJobRequestInput[] {
   const selectionBySlot = new Map<
     string,
     { remaining: number, seen: null | Set<string> }
   >()
   return Object.freeze(payload.inputs.map((input) => {
-    const limit = payload.inputLimits?.[input.targetHandleId]
+    const targetSlotId = generationJobInputTargetSlotId(input)
+    const limit = payload.inputLimits?.[targetSlotId]
       ?? Number.POSITIVE_INFINITY
-    const selection = selectionBySlot.get(input.targetHandleId) ?? {
+    const selection = selectionBySlot.get(targetSlotId) ?? {
       remaining: limit,
       seen: payload.requestPayloadVersion >= 5 ? null : new Set<string>(),
     }
-    selectionBySlot.set(input.targetHandleId, selection)
-    const manualAssetIds = payload.inputSelections[input.targetHandleId]
+    selectionBySlot.set(targetSlotId, selection)
+    const manualAssetIds = payload.inputSelections[targetSlotId]
     return selectedMediaInput(
       input,
       manualAssetIds ? new Set(manualAssetIds) : null,
@@ -85,8 +88,8 @@ export function promptTemplateInputsFromRequest(
           assetId: 'assetId' in asset ? asset.assetId : null,
           itemKey: item.key,
           mediaType: asset.mediaType,
-          slotId: input.targetHandleId,
-          sourceNodeId: input.sourceNodeId,
+          slotId: generationJobInputTargetSlotId(input),
+          sourceNodeId: generationJobInputSourceId(input),
         }))
       }
     }

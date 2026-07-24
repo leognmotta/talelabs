@@ -80,7 +80,21 @@ export interface PlannedJobRequestInput {
   targetHandleId: string
 }
 
-interface PlannedJobRequestPayloadBase {
+/** Generic input binding compiled for current provider-neutral job requests. */
+export interface CompiledGenerationJobInput {
+  /** Stable identity of this input occurrence within the request. */
+  bindingId: string
+  /** Materialized runtime items carried by the binding. */
+  items: readonly FlowItem<FlowRuntimeValue>[]
+  /** Stable source identity; a Flow node ID or canonical Asset ID. */
+  sourceId: string
+  /** Source output identity when the request came from a Flow connection. */
+  sourceOutputId: string
+  /** Semantic model input slot receiving these items. */
+  targetSlotId: string
+}
+
+interface LegacyPlannedJobRequestPayloadBase {
   catalogRevision: string
   catalogVersion: number
   inline: Readonly<Record<string, string>>
@@ -97,7 +111,7 @@ interface PlannedJobRequestPayloadBase {
   settings: Readonly<Record<string, boolean | number | string>>
 }
 
-interface PlannedJobRequestPayloadV3 extends PlannedJobRequestPayloadBase {
+interface PlannedJobRequestPayloadV3 extends LegacyPlannedJobRequestPayloadBase {
   /** Optional in legacy v3 payloads admitted before structured prompts. */
   inputLimits?: Readonly<Record<string, number>>
   /** Optional in legacy v3 payloads admitted before structured prompts. */
@@ -105,7 +119,7 @@ interface PlannedJobRequestPayloadV3 extends PlannedJobRequestPayloadBase {
   requestPayloadVersion: 3
 }
 
-interface StructuredPromptRequestPayload extends PlannedJobRequestPayloadBase {
+interface StructuredPromptRequestPayload extends LegacyPlannedJobRequestPayloadBase {
   /** Maximum selected media inputs retained for each semantic slot. */
   inputLimits: Readonly<Record<string, number>>
   /** Structured inline prompt fields captured independently from editor JSON. */
@@ -121,11 +135,38 @@ interface PlannedJobRequestPayloadV5 extends StructuredPromptRequestPayload {
   requestPayloadVersion: 5
 }
 
+/** Current generic request payload emitted by the shared job compiler. */
+export interface PlannedJobRequestPayloadV6 {
+  catalogRevision: string
+  catalogVersion: number
+  /** Code-owned compiler identity captured with the immutable request. */
+  compilerVersion: string
+  /** Stable execution-step identity without implying a persisted Flow node. */
+  executionStepId: string
+  inline: Readonly<Record<string, string>>
+  /** Maximum selected media inputs retained for each semantic slot. */
+  inputLimits: Readonly<Record<string, number>>
+  inputSelections: Readonly<Record<string, readonly string[]>>
+  inputs: readonly CompiledGenerationJobInput[]
+  itemKey: string
+  modelContractVersion: string
+  modelId: string
+  modelRevision: number
+  operationId: string
+  outputCount: number
+  /** Structured inline prompt fields captured independently from editor JSON. */
+  promptTemplates: Readonly<Record<string, PromptTemplate>>
+  requestIndex: number
+  requestPayloadVersion: 6
+  settings: Readonly<Record<string, boolean | number | string>>
+}
+
 /** Immutable provider-neutral job identity with explicit legacy compatibility. */
 export type PlannedJobRequestPayload
   = | PlannedJobRequestPayloadV3
     | PlannedJobRequestPayloadV4
     | PlannedJobRequestPayloadV5
+    | PlannedJobRequestPayloadV6
 
 /** One deterministically hashed provider request belonging to a work item. */
 export interface PlannedRequestShard {

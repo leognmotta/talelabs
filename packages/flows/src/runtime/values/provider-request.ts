@@ -5,6 +5,13 @@ import type {
 } from '../../generation/contracts/provider.js'
 import type { PlannedJobRequestPayload } from '../planning/planner-contracts.js'
 
+import {
+  generationJobExecutionStepId,
+  generationJobInputBindingId,
+  generationJobInputSourceId,
+  generationJobInputSourceOutputId,
+  generationJobInputTargetSlotId,
+} from '../compilation/request-accessors.js'
 import { hashFlowRunJob } from '../serialization/execution-hashes.js'
 import { selectedProviderRequestInputs } from './provider-input-selections.js'
 import { normalizedInputItem } from './provider-inputs.js'
@@ -24,16 +31,16 @@ export function materializeGenerationProviderRequest(input: {
     catalogVersion: input.requestPayload.catalogVersion,
     itemKey: input.requestPayload.itemKey,
     modelContractVersion: input.requestPayload.modelContractVersion,
-    nodeId: input.requestPayload.nodeId,
+    nodeId: generationJobExecutionStepId(input.requestPayload),
     operationId: input.requestPayload.operationId,
     orderedInputs: Object.freeze(selectedProviderRequestInputs(input.requestPayload).map(
       (plannedInput, order) => Object.freeze({
-        edgeId: plannedInput.edgeId,
+        edgeId: generationJobInputBindingId(plannedInput),
         items: Object.freeze(plannedInput.items.map(normalizedInputItem)),
         order,
-        sourceHandleId: plannedInput.sourceHandleId,
-        sourceNodeId: plannedInput.sourceNodeId,
-        targetSlotId: plannedInput.targetHandleId,
+        sourceHandleId: generationJobInputSourceOutputId(plannedInput),
+        sourceNodeId: generationJobInputSourceId(plannedInput),
+        targetSlotId: generationJobInputTargetSlotId(plannedInput),
       }),
     )),
     outputCount: input.requestPayload.outputCount,

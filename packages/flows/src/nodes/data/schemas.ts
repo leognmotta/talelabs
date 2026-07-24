@@ -117,11 +117,9 @@ export function refineGenerationNodeData(
   nodeType?: Exclude<FlowNodeType, 'asset' | 'audioGeneration' | 'text'>,
 ) {
   if (!isGenerationModelContractVersion(data.modelContractVersion)) {
-    context.addIssue({
-      code: 'custom',
-      message: 'unknown_model_contract_version',
-      path: ['modelContractVersion'],
-    })
+    // Mutable drafts must remain readable long enough for their owning editor
+    // to project them into the current catalog contract. Executable graph
+    // validation still rejects this contract before planning or admission.
     return
   }
   const model = getGenerationModel(data.modelId, data.modelContractVersion)

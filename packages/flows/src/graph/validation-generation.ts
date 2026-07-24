@@ -141,8 +141,16 @@ export function validateGenerationConstraints(
       String(node.data.modelId ?? ''),
       node.data.modelContractVersion,
     )
-    if (!model)
+    if (!model) {
+      if (requiredNodeIds?.has(node.id)) {
+        addFlowGraphIssue(
+          issues,
+          'unknown_model_contract_version',
+          `nodes.${node.id}.data.modelContractVersion`,
+        )
+      }
       continue
+    }
     const requireComplete = requiredNodeIds?.has(node.id) ?? false
 
     const connectionCounts: Record<string, number> = {}

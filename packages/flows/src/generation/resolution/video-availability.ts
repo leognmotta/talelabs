@@ -1,3 +1,4 @@
+/** Resolves catalog-owned video input availability, limits, and conflicts. */
 import type {
   GenerationInputAvailability,
   GenerationModelDefinition,
@@ -7,6 +8,25 @@ import { effectiveVideoInputCount, videoInputCount } from './video-inputs.js'
 import { videoSlotFamily } from './video-intent.js'
 import { compatibleVideoOperations } from './video-operations.js'
 
+function hasReferenceCapacity(input: {
+  itemCounts: Readonly<Record<string, number>>
+  operations: readonly GenerationOperationDefinition[]
+  slotId: string
+}) {
+  return input.operations.some((operation) => {
+    const limit = operation.referenceLimit
+    if (!limit || !limit.slotIds.includes(input.slotId)) {
+      return true
+    }
+    const itemCount = limit.slotIds.reduce(
+      (total, slotId) => total + videoInputCount(input.itemCounts, slotId),
+      0,
+    )
+    return itemCount < limit.maxItems
+  })
+}
+
+/** Returns whether one operation has more than one populated exact-one input. */
 export function hasInvalidVideoExactOne(input: {
   connectionCounts: Readonly<Record<string, number>>
   inlinePrompt: string
@@ -19,6 +39,10 @@ export function hasInvalidVideoExactOne(input: {
   ))
 }
 
+/**
+ * Resolves whether one video input can accept another item under the catalog's
+ * per-slot, family-conflict, operation-compatibility, and combined-limit rules.
+ */
 export function videoAvailabilityForSlot(input: {
   connectedIds: readonly string[]
   connectionCounts: Readonly<Record<string, number>>
@@ -32,14 +56,11 @@ export function videoAvailabilityForSlot(input: {
 
   const connectionCount = videoInputCount(input.connectionCounts, slot.id)
   const itemCount = videoInputCount(input.itemCounts, slot.id)
-  if (connectionCount > 0) {
-    if (connectionCount >= slot.maxConnections || itemCount >= slot.maxItems) {
-      return {
-        reasonKey: 'flows.video.inputs.limitReached',
-        state: 'full',
-      }
+  if (connectionCount >= slot.maxConnections || itemCount >= slot.maxItems) {
+    return {
+      reasonKey: 'flows.video.inputs.limitReached',
+      state: 'full',
     }
-    return { connectionCount, itemCount, state: 'connected' }
   }
 
   const family = videoSlotFamily(slot.id)
@@ -63,19 +84,34 @@ export function videoAvailabilityForSlot(input: {
 
   const proposedConnectionCounts = {
     ...input.connectionCounts,
-    [slot.id]: connectionCount + 1,
+    [slot.id]: Math.max(1, connectionCount),
   }
-  if (!compatibleVideoOperations({
+  const compatibleOperations = compatibleVideoOperations({
     connectionCounts: proposedConnectionCounts,
     itemCounts: input.itemCounts,
     model: input.model,
-  }).length) {
+  })
+  if (!compatibleOperations.length) {
     return {
       conflictingSlotIds: input.connectedIds.filter(id => videoSlotFamily(id) !== null),
       reasonKey: 'flows.video.inputs.disconnectIncompatible',
       state: 'blocked',
     }
   }
+
+  if (!hasReferenceCapacity({
+    itemCounts: input.itemCounts,
+    operations: compatibleOperations,
+    slotId: slot.id,
+  })) {
+    return {
+      reasonKey: 'flows.video.inputs.limitReached',
+      state: 'full',
+    }
+  }
+
+  if (connectionCount > 0)
+    return { connectionCount, itemCount, state: 'connected' }
 
   return { state: 'available' }
 }

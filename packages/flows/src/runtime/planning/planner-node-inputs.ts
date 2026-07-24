@@ -1,12 +1,10 @@
 /** Canonical provider-neutral request payload assembly for planned jobs. */
 
 import type { FlowGraphNode } from '../../graph/types.js'
-import type {
-  PlannedJobRequestPayload,
-  PlannedRunInput,
-} from './planner-contracts.js'
+import type { PlannedRunInput } from './planner-contracts.js'
 import { compareStableStrings } from '../../graph/ordering/stable.js'
 import { coercePromptTemplate } from '../../prompts/schema.js'
+import { compileGenerationJob } from '../compilation/generation-job.js'
 
 function normalizedInlineText(node: FlowGraphNode) {
   return Object.freeze(Object.fromEntries(
@@ -41,8 +39,8 @@ function normalizedPromptTemplates(node: FlowGraphNode) {
     : Object.freeze({ prompt: coercePromptTemplate(node.data.prompt) })
 }
 
-/** Canonical, provider-independent request identity used for job hashing. */
-export function createPlannedJobRequestPayload(input: {
+/** Adapts one materialized Flow coordinate to the shared job compiler. */
+export function compileFlowGenerationJob(input: {
   catalogRevision: string
   catalogVersion: number
   inputLimits: Readonly<Record<string, number>>
@@ -56,30 +54,29 @@ export function createPlannedJobRequestPayload(input: {
   outputCount: number
   requestIndex: number
   settings: Readonly<Record<string, boolean | number | string>>
-}): PlannedJobRequestPayload {
-  return Object.freeze({
+}) {
+  return compileGenerationJob({
     catalogRevision: input.catalogRevision,
     catalogVersion: input.catalogVersion,
+    executionStepId: input.node.id,
     inline: normalizedInlineText(input.node),
     inputLimits: Object.freeze({ ...input.inputLimits }),
     inputSelections: normalizedInputSelections(input.node),
     inputs: Object.freeze(input.inputs.map(plannedInput => Object.freeze({
-      edgeId: plannedInput.edgeId,
+      bindingId: plannedInput.edgeId,
       items: plannedInput.items,
-      sourceHandleId: plannedInput.sourceHandleId,
-      sourceNodeId: plannedInput.sourceNodeId,
-      targetHandleId: plannedInput.targetHandleId,
+      sourceId: plannedInput.sourceNodeId,
+      sourceOutputId: plannedInput.sourceHandleId,
+      targetSlotId: plannedInput.targetHandleId,
     }))),
     itemKey: input.itemKey,
     modelContractVersion: input.modelContractVersion,
     modelId: input.modelId,
     modelRevision: input.modelRevision,
-    nodeId: input.node.id,
     operationId: input.operationId,
     outputCount: input.outputCount,
     promptTemplates: normalizedPromptTemplates(input.node),
     requestIndex: input.requestIndex,
-    requestPayloadVersion: 5 as const,
     settings: input.settings,
   })
 }
