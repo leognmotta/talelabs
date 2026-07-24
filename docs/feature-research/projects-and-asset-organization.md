@@ -473,19 +473,23 @@ Flow, session, or Project after provider work completes.
 ```txt
 1. Explicit destination selected for the request
 2. Flow or Create session output folder
-3. Project default Asset folder
-4. Project root when the source belongs to a Project
-5. Existing managed Private output folder
+3. Current Project default Asset folder
+4. Project root when the source belongs to a Project and has no custom default
+5. Existing or newly created managed Private source folder
 ```
 
 This order supports dashboard, API, MCP, and future Tool execution through one
-contract.
+contract. A source-specific `assetFolderId`, including a managed folder created
+by an earlier run, remains more specific than the Project default. A
+Project-owned source without its own output folder reads the current Project
+default at admission; changing that default therefore affects future runs while
+captured runs remain immutable. Private sources without an output folder retain
+the managed per-source fallback.
 
 ### Create session parity
 
-Flows already own an `assetFolderId` and generated outputs are organized under
-a managed Flow folder. Create sessions should receive equivalent output
-organization without becoming graphs:
+Flows already own a nullable `assetFolderId`. Create sessions should receive
+the same optional source-specific output location without becoming graphs:
 
 ```txt
 Create session
@@ -493,8 +497,11 @@ Create session
 `-- assetFolderId
 ```
 
-The session remains a history grouping. Its output folder is only the default
-location for generated media.
+The session remains a history grouping. In a Project, a non-null
+`assetFolderId` is a source-specific default that takes precedence over the
+Project default; a null value inherits the current Project default or Project
+root at admission. A Private source with no folder receives the managed
+per-source fallback.
 
 ### Moving work between Projects
 
@@ -987,7 +994,7 @@ Current Tiptap evidence:
 
 ### Context inside Create and Flows
 
-Create sessions and Flows should show a compact location control:
+Global Create sessions and Flows may show a compact location control:
 
 ```txt
 Private / Session name
@@ -995,7 +1002,7 @@ Project name / Flow name
 Project name / SH03
 ```
 
-The control should support:
+Outside a Project route, the control may support:
 
 - Move to Project;
 - Switch Project;
@@ -1003,9 +1010,17 @@ The control should support:
 - Create Project inline;
 - choose an output folder.
 
-Project selection should not dominate the generation form. The current
-destination remains visible, while the default path lets users generate without
-mandatory setup.
+Inside `/projects/:projectId/*`, Project identity is fixed by route context.
+Project-scoped Create sessions, Flows, Elements, Assets, and folders must not
+offer Move to Project, Switch Project, Make Private, or Create Project actions.
+Create and Flow surfaces may still choose an Asset output folder inside the
+current Project, and the Project Asset Library may still move Assets and folders
+within that Project. Cross-Project relocation remains available from the global
+surface after leaving the Project.
+
+Project selection should not dominate the generation form. The current context
+remains visible through the Project shell, while the default path lets users
+generate without mandatory setup.
 
 ### Project creation
 
@@ -1450,7 +1465,8 @@ Only after usage evidence:
 - The Project UI remains visually consistent with the existing TaleLabs
   dashboard and does not introduce a card-heavy dashboard or oversized hero.
 - A user can create each entity inside a Project.
-- A user can move existing content to another Project or Private.
+- From the global surface, a user can move existing content to another Project
+  or Private; Project-scoped routes keep their Project identity fixed.
 - A Project-scoped generation produces an Asset in the captured Project and
   folder.
 - A refresh preserves Project location and generated outputs.
@@ -1518,12 +1534,12 @@ The following decisions are approved for the first Project release:
    explicit user action that summarizes the effect. Historical attribution,
    manually moved Assets, and referenced inputs never move implicitly.
 9. **Automatic destination:** use the documented destination precedence. A
-   Project-owned Flow or Create session uses its managed folder; an explicit
-   user-selected folder overrides it; Project root is the fallback when no
-   narrower destination exists.
-10. **Create session organization:** every Project-owned session has a durable
-    default output folder while session provenance remains separately
-    queryable.
+   request-level selection overrides a source `assetFolderId`; a Project-owned
+   source then uses the current Project default or Project root. Only a Private
+   source with neither selection receives the managed per-source fallback.
+10. **Create session organization:** every session has a durable nullable
+    `assetFolderId` seam; Project-owned sessions may inherit the Project default
+    or root while session provenance remains separately queryable.
 11. **Global navigation:** Projects is a first-class destination and does not
     replace Create, Flows, Assets, or Elements.
 12. **Element reuse:** an Element has one optional Project home but remains
