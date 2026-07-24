@@ -72,6 +72,16 @@ export type GetAssetsQueryParams = {
   order?: SortOrder;
   projectId?: Cuid2 | GetAssetsQueryParamsProjectIdEnumKey;
   /**
+   * @pattern ^[a-z][0-9a-z]+$
+   * @type string | undefined
+   */
+  generatedByFlowId?: Cuid2;
+  /**
+   * @pattern ^[a-z][0-9a-z]+$
+   * @type string | undefined
+   */
+  generatedByCreateSessionId?: Cuid2;
+  /**
    * @default 50
    * @type integer | undefined
    */

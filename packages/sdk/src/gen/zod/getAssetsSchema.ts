@@ -51,6 +51,12 @@ export const getAssetsQueryParamsSchema = z.object({
   get projectId() {
     return z.union([cuid2Schema, z.enum(["private"])]).optional();
   },
+  get generatedByFlowId() {
+    return cuid2Schema.optional();
+  },
+  get generatedByCreateSessionId() {
+    return cuid2Schema.optional();
+  },
   get limit() {
     return paginationLimitSchema.default(50).optional();
   },

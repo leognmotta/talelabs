@@ -8777,6 +8777,22 @@
           },
           {
             "schema": {
+              "$ref": "#/components/schemas/Cuid2"
+            },
+            "required": false,
+            "name": "generatedByFlowId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "$ref": "#/components/schemas/Cuid2"
+            },
+            "required": false,
+            "name": "generatedByCreateSessionId",
+            "in": "query"
+          },
+          {
+            "schema": {
               "$ref": "#/components/schemas/PaginationLimit"
             },
             "required": false,
