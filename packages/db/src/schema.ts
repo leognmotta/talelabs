@@ -1,50 +1,19 @@
 /** Kysely table, JSON, enum, and database contracts for TaleLabs persistence. */
-
-import type { ColumnType, Generated } from 'kysely'
-
-/** Scalar values accepted by PostgreSQL JSON columns. */
-export type JsonPrimitive = boolean | null | number | string
-/** Recursive values accepted by PostgreSQL JSON columns. */
-export type JsonValue = JsonArray | JsonObject | JsonPrimitive
-/** Recursive JSON array contract. */
-export interface JsonArray extends Array<JsonValue> {}
-/** Recursive JSON object contract. */
-export interface JsonObject {
-  [key: string]: JsonValue | undefined
-}
-
-type Timestamp = ColumnType<Date, Date | string, Date | string>
-type GeneratedTimestamp = ColumnType<
-  Date,
-  Date | string | undefined,
-  Date | string
->
-type NullableTimestamp = ColumnType<
-  Date | null,
-  Date | string | null | undefined,
-  Date | string | null
->
-type GeneratedJsonColumn = ColumnType<
+import type { Generated } from 'kysely'
+import type {
+  GeneratedBigIntColumn,
+  GeneratedJsonColumn,
+  GeneratedTimestamp,
   JsonValue,
-  JsonValue | string | undefined,
-  JsonValue | string
->
-type GeneratedBigIntColumn = ColumnType<
-  string,
-  bigint | number | string | undefined,
-  bigint | number | string
->
-type NullableBigIntColumn = ColumnType<
-  string | null,
-  bigint | number | string | null | undefined,
-  bigint | number | string | null
->
-type NullableNumericColumn = ColumnType<
-  string | null,
-  number | string | null | undefined,
-  number | string | null
->
+  NullableBigIntColumn,
+  NullableNumericColumn,
+  NullableTimestamp,
+  Timestamp,
+} from './column-types.js'
+import type { ProjectBriefTable, ProjectTable } from './projects-schema.js'
 
+export type * from './column-types.js'
+export type * from './projects-schema.js'
 /** Canonical Asset media families. */
 export type AssetType = 'audio' | 'document' | 'image' | 'video'
 /** Canonical Asset creation sources. */
@@ -202,6 +171,8 @@ export interface InvitationTable {
 export interface FolderTable {
   id: string
   organizationId: string
+  /** Optional Project location; null represents Private. */
+  projectId: Generated<string | null>
   parentId: string | null
   name: string
   systemRole: Generated<string | null>
@@ -213,6 +184,8 @@ export interface FolderTable {
 export interface FlowTable {
   id: string
   organizationId: string
+  /** Optional Project location; null represents Private. */
+  projectId: Generated<string | null>
   createdBy: string | null
   name: string
   assetFolderId: string | null
@@ -228,10 +201,14 @@ export interface CreateSessionTable {
   id: string
   /** Tenant owning the session and every related run. */
   organizationId: string
+  /** Optional Project location; null represents Private. */
+  projectId: Generated<string | null>
   /** User who created and privately lists the session. */
   createdBy: string | null
   /** Optional user-authored label; the UI supplies a localized fallback. */
   name: string | null
+  /** Durable default generated-Asset folder for this session. */
+  assetFolderId: Generated<string | null>
   /** Initial session creation instant. */
   createdAt: GeneratedTimestamp
   /** Latest rename or admitted direct request instant. */
@@ -248,6 +225,10 @@ export interface FlowRunTable {
   flowId: string | null
   /** Create session grouping direct runs; null for Flow-backed runs. */
   createSessionId: Generated<string | null>
+  /** Immutable Project attribution captured during admission. */
+  projectId: Generated<string | null>
+  /** Immutable generated-Asset folder captured during admission. */
+  assetFolderId: Generated<string | null>
   mode: FlowRunMode
   /** Whether immutable work came from a saved Flow or a direct request. */
   source: Generated<FlowRunSource>
@@ -448,6 +429,8 @@ export interface GenerationJobTextOutputTable {
 export interface AssetTable {
   id: string
   organizationId: string
+  /** Optional Project location; null represents Private. */
+  projectId: Generated<string | null>
   createdBy: string | null
   name: string
   type: AssetType
@@ -510,6 +493,8 @@ export interface AssetTagTable {
 export interface ElementTable {
   id: string
   organizationId: string
+  /** Optional Project location; null represents Private. */
+  projectId: Generated<string | null>
   createdBy: string | null
   kind: string
   name: string
@@ -606,6 +591,8 @@ export interface Database {
   invitation: InvitationTable
   member: MemberTable
   organization: OrganizationTable
+  projectBriefs: ProjectBriefTable
+  projects: ProjectTable
   session: SessionTable
   tags: TagTable
   user: UserTable

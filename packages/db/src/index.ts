@@ -61,8 +61,12 @@ export async function withDatabaseTransaction<Result>(
 export { sql }
 export {
   availableFolderName,
+  CREATE_OUTPUTS_ROOT_FOLDER_NAME,
+  CREATE_OUTPUTS_ROOT_SYSTEM_ROLE,
+  createSessionOutputFolderSystemRole,
   FLOW_OUTPUTS_ROOT_FOLDER_NAME,
   FLOW_OUTPUTS_ROOT_SYSTEM_ROLE,
+  flowOutputFolderSystemRole,
   lockFolderStructure,
   MAX_FOLDER_DEPTH,
   MAX_FOLDERS_PER_ORGANIZATION,
