@@ -1,3 +1,5 @@
+/** Tenant-scoped folder tree reads and structural mutation routes. */
+
 import type { OpenAPIHono } from '@hono/zod-openapi'
 import type { ApiEnv } from '../../types.js'
 
@@ -6,14 +8,18 @@ import {
   createFolder,
   deleteFolder,
   listFolders,
+  listProjectFolderTree,
   updateFolder,
 } from '../../services/folders.service.js'
 import { commonErrorResponses } from '../product.responses.js'
 import {
   CreateFolderRequestSchema,
+  FolderListQuerySchema,
   FolderListResponseSchema,
   FolderParamsSchema,
   FolderSchema,
+  ProjectFolderTreeQuerySchema,
+  ProjectFolderTreeResponseSchema,
   UpdateFolderRequestSchema,
 } from './folders.schemas.js'
 
@@ -21,8 +27,25 @@ const listRoute = createRoute({
   method: 'get',
   path: '/folders',
   tags: ['Folders'],
+  request: { query: FolderListQuerySchema },
   responses: {
     200: { description: 'Complete folder tree', content: { 'application/json': { schema: FolderListResponseSchema } } },
+    ...commonErrorResponses,
+  },
+})
+
+const projectTreeRoute = createRoute({
+  method: 'get',
+  path: '/folders/tree',
+  tags: ['Folders'],
+  request: { query: ProjectFolderTreeQuerySchema },
+  responses: {
+    200: {
+      description: 'Compact Project folder tree',
+      content: {
+        'application/json': { schema: ProjectFolderTreeResponseSchema },
+      },
+    },
     ...commonErrorResponses,
   },
 })
@@ -63,9 +86,21 @@ const deleteFolderRoute = createRoute({
   },
 })
 
+/** Registers folder metadata reads and structural mutation endpoints. */
 export function registerFolderRoutes(app: OpenAPIHono<ApiEnv>) {
   app.openapi(listRoute, async (c) => {
-    return c.json(await listFolders(c.var.organizationId), 200)
+    const query = c.req.valid('query')
+    return c.json(await listFolders(
+      c.var.organizationId,
+      query.projectId === 'private' ? null : query.projectId,
+    ), 200)
+  })
+
+  app.openapi(projectTreeRoute, async (c) => {
+    return c.json(await listProjectFolderTree(
+      c.var.organizationId,
+      c.req.valid('query').projectId,
+    ), 200)
   })
 
   app.openapi(createFolderRoute, async (c) => {

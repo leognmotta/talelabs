@@ -1,6 +1,6 @@
 /** Kysely data access for folders: tree reads, moves, depth/limit guards. */
 
-import type { AssetType, AssetVisibility, FolderTable } from '@talelabs/db'
+import type { FolderTable } from '@talelabs/db'
 import type { Selectable } from 'kysely'
 
 import {
@@ -10,9 +10,12 @@ import {
   MAX_FOLDERS_PER_ORGANIZATION,
   sql,
 } from '@talelabs/db'
-
-/** Cover thumbnails sampled per folder for the library grid. */
-export const MAX_FOLDER_THUMBNAILS = 4
+import {
+  lockActiveProject,
+  lockActiveProjects,
+  lockProjectScopes,
+  touchProject,
+} from '../domain/projects/project-scope.js'
 
 export {
   lockFolderStructure,
@@ -22,22 +25,23 @@ export {
 
 /** A folder row with derived item counts and total size. */
 export type FolderContentRow = Selectable<FolderTable> & {
+  assetCount: number
+  childFolderCount: number
   itemCount: number
   processingItemCount: number
   totalSizeBytes: string
 }
 
-/** One preview Asset used to build a folder cover collage. */
-export interface FolderThumbnailRow {
-  folderId: string
-  mimeType: string
-  storageKey: string
-  thumbnailKey: null | string
-  type: AssetType
-  visibility: AssetVisibility
-}
-
-async function getFolderRows(organizationId: string, id?: string) {
+async function getFolderRows(
+  organizationId: string,
+  id?: string,
+  projectId?: null | string,
+) {
+  const projectCondition = projectId === null
+    ? sql`and folder."projectId" is null`
+    : projectId !== undefined
+      ? sql`and folder."projectId" = ${projectId}`
+      : sql``
   const result = await sql<FolderContentRow>`
     with recursive folder_tree as (
       select
@@ -70,17 +74,30 @@ async function getFolderRows(organizationId: string, id?: string) {
     select
       folder.*,
       (
+        select count(*)
+        from "assets" asset
+        where asset."organizationId" = ${organizationId}
+          and asset."folderId" = folder."id"
+          and asset."deletedAt" is null
+          and asset."purgeRequestedAt" is null
+          and asset."purgedAt" is null
+      )::integer as "assetCount",
+      (
+        select count(*)
+        from "folders" child
+        where child."organizationId" = ${organizationId}
+          and child."parentId" = folder."id"
+      )::integer as "childFolderCount",
+      (
         (
-          select count(*)
-          from "assets" asset
+          select count(*) from "assets" asset
           where asset."organizationId" = ${organizationId}
             and asset."folderId" = folder."id"
             and asset."deletedAt" is null
             and asset."purgeRequestedAt" is null
             and asset."purgedAt" is null
         ) + (
-          select count(*)
-          from "folders" child
+          select count(*) from "folders" child
           where child."organizationId" = ${organizationId}
             and child."parentId" = folder."id"
         )
@@ -100,6 +117,7 @@ async function getFolderRows(organizationId: string, id?: string) {
     left join folder_sizes folder_size on folder_size."rootId" = folder."id"
     where folder."organizationId" = ${organizationId}
       ${id ? sql`and folder."id" = ${id}` : sql``}
+      ${projectCondition}
     order by folder."name", folder."id"
   `.execute(db)
 
@@ -107,60 +125,16 @@ async function getFolderRows(organizationId: string, id?: string) {
 }
 
 /** Lists all folders for one organization with content aggregates. */
-export function listFolderRows(organizationId: string) {
-  return getFolderRows(organizationId)
+export function listFolderRows(
+  organizationId: string,
+  projectId?: null | string,
+) {
+  return getFolderRows(organizationId, undefined, projectId)
 }
 
 /** Loads one folder with its content aggregates, or undefined. */
 export async function findFolderRow(organizationId: string, id: string) {
   return (await getFolderRows(organizationId, id))[0]
-}
-
-/** Loads the newest preview Assets per folder for cover collages. */
-export async function listFolderThumbnailRows(
-  organizationId: string,
-  folderIds?: string[],
-) {
-  if (folderIds?.length === 0)
-    return []
-
-  const result = await sql<FolderThumbnailRow>`
-    with ranked_assets as (
-      select
-        asset."folderId",
-        asset."mimeType",
-        asset."storageKey",
-        asset."thumbnailKey",
-        asset."type",
-        asset."visibility",
-        row_number() over (
-          partition by asset."folderId"
-          order by asset."createdAt" desc, asset."id" desc
-        ) as preview_rank
-      from "assets" asset
-      where asset."organizationId" = ${organizationId}
-        and asset."folderId" is not null
-        ${folderIds
-          ? sql`and asset."folderId" in (${sql.join(folderIds.map(id => sql`${id}`))})`
-          : sql``}
-        and asset."deletedAt" is null
-        and asset."purgeRequestedAt" is null
-        and asset."purgedAt" is null
-        and (asset."type" = 'image' or asset."thumbnailKey" is not null)
-    )
-    select
-      "folderId",
-      "mimeType",
-      "storageKey",
-      "thumbnailKey",
-      "type",
-      "visibility"
-    from ranked_assets
-    where preview_rank <= ${MAX_FOLDER_THUMBNAILS}
-    order by "folderId", preview_rank
-  `.execute(db)
-
-  return result.rows
 }
 
 /** Creates a folder transactionally, enforcing count and depth limits. */
@@ -169,9 +143,39 @@ export async function createFolderRow(input: {
   name: string
   organizationId: string
   parentId: null | string
+  projectId?: null | string
 }) {
   return db.transaction().execute(async (trx) => {
+    let projectId = input.projectId ?? null
+    if (input.parentId) {
+      const parent = await trx.selectFrom('folders')
+        .select('projectId')
+        .where('organizationId', '=', input.organizationId)
+        .where('id', '=', input.parentId)
+        .executeTakeFirst()
+      if (!parent)
+        return { status: 'parent_not_found' as const }
+      if (
+        input.projectId !== undefined
+        && input.projectId !== parent.projectId
+      ) {
+        return { status: 'parent_not_found' as const }
+      }
+      projectId = parent.projectId
+    }
+    await lockProjectScopes(trx, input.organizationId, [projectId])
+    await lockActiveProject(trx, input.organizationId, projectId)
     await lockFolderStructure(trx, input.organizationId)
+    if (input.parentId) {
+      const parent = await trx.selectFrom('folders')
+        .select('projectId')
+        .where('organizationId', '=', input.organizationId)
+        .where('id', '=', input.parentId)
+        .forShare()
+        .executeTakeFirst()
+      if (!parent || parent.projectId !== projectId)
+        return { status: 'parent_not_found' as const }
+    }
 
     const count = await trx.selectFrom('folders')
       .select(({ fn }) => fn.countAll<number>().as('count'))
@@ -192,10 +196,11 @@ export async function createFolderRow(input: {
     }
 
     const folder = await trx.insertInto('folders')
-      .values(input)
+      .values({ ...input, projectId })
       .returningAll()
       .executeTakeFirstOrThrow()
 
+    await touchProject(trx, input.organizationId, projectId)
     return { folder, status: 'created' as const }
   })
 }
@@ -206,8 +211,56 @@ export async function updateFolderRow(input: {
   name?: string
   organizationId: string
   parentId?: null | string
+  projectId?: null | string
 }) {
   return db.transaction().execute(async (trx) => {
+    const initial = await trx.selectFrom('folders')
+      .select(['parentId', 'projectId'])
+      .where('organizationId', '=', input.organizationId)
+      .where('id', '=', input.id)
+      .executeTakeFirst()
+    if (!initial)
+      return { status: 'not_found' as const }
+
+    let targetProjectId = input.projectId !== undefined
+      ? input.projectId
+      : initial.projectId
+    let targetParentId = input.parentId !== undefined
+      ? input.parentId
+      : initial.parentId
+    if (
+      input.projectId !== undefined
+      && input.projectId !== initial.projectId
+      && input.parentId === undefined
+    ) {
+      targetParentId = null
+    }
+    if (targetParentId) {
+      const parent = await trx.selectFrom('folders')
+        .select('projectId')
+        .where('organizationId', '=', input.organizationId)
+        .where('id', '=', targetParentId)
+        .executeTakeFirst()
+      if (!parent)
+        return { status: 'parent_not_found' as const }
+      if (
+        input.projectId !== undefined
+        && parent.projectId !== input.projectId
+      ) {
+        return { status: 'parent_not_found' as const }
+      }
+      targetProjectId = parent.projectId
+    }
+    await lockProjectScopes(
+      trx,
+      input.organizationId,
+      [initial.projectId, targetProjectId],
+    )
+    await lockActiveProjects(
+      trx,
+      input.organizationId,
+      [initial.projectId, targetProjectId],
+    )
     await lockFolderStructure(trx, input.organizationId)
 
     const folder = await trx.selectFrom('folders')
@@ -219,28 +272,44 @@ export async function updateFolderRow(input: {
 
     if (!folder)
       return { status: 'not_found' as const }
+    if (
+      folder.parentId !== initial.parentId
+      || folder.projectId !== initial.projectId
+    ) {
+      return { status: 'invalid_state' as const }
+    }
 
-    if (input.parentId !== undefined && input.parentId !== null) {
-      if (input.parentId === input.id)
+    if (targetParentId !== null) {
+      if (targetParentId === input.id)
         return { status: 'cycle' as const }
 
-      const ancestors = await sql<{ depth: number, id: string }>`
+      const ancestors = await sql<{
+        depth: number
+        id: string
+        projectId: null | string
+      }>`
         with recursive ancestors as (
-          select f."id", f."parentId", 1 as depth
+          select f."id", f."parentId", f."projectId", 1 as depth
           from "folders" f
           where f."organizationId" = ${input.organizationId}
-            and f."id" = ${input.parentId}
+            and f."id" = ${targetParentId}
           union all
-          select parent."id", parent."parentId", ancestors.depth + 1
+          select
+            parent."id",
+            parent."parentId",
+            parent."projectId",
+            ancestors.depth + 1
           from "folders" parent
           join ancestors on ancestors."parentId" = parent."id"
           where parent."organizationId" = ${input.organizationId}
             and ancestors.depth < ${MAX_FOLDER_DEPTH + 1}
         )
-        select "id", depth from ancestors
+        select "id", "projectId", depth from ancestors
       `.execute(trx)
 
       if (ancestors.rows.length === 0)
+        return { status: 'parent_not_found' as const }
+      if (ancestors.rows.some(row => row.projectId !== targetProjectId))
         return { status: 'parent_not_found' as const }
 
       if (ancestors.rows.some(row => row.id === input.id))
@@ -253,10 +322,85 @@ export async function updateFolderRow(input: {
         return { status: 'depth' as const }
     }
 
+    if (targetProjectId !== folder.projectId) {
+      const subtree = await sql<{ id: string, systemRole: null | string }>`
+        with recursive descendants as (
+          select current."id", current."systemRole"
+          from "folders" current
+          where current."organizationId" = ${input.organizationId}
+            and current."id" = ${input.id}
+          union all
+          select child."id", child."systemRole"
+          from "folders" child
+          join descendants on child."parentId" = descendants."id"
+          where child."organizationId" = ${input.organizationId}
+        )
+        select "id", "systemRole"
+        from descendants
+        order by "id"
+      `.execute(trx)
+      const folderIds = subtree.rows.map(row => row.id)
+      const activeRun = await trx.selectFrom('flowRuns')
+        .select('id')
+        .where('organizationId', '=', input.organizationId)
+        .where('assetFolderId', 'in', folderIds)
+        .where('status', 'in', ['pending', 'running'])
+        .executeTakeFirst()
+      if (activeRun)
+        return { status: 'active_destination' as const }
+
+      const flowOwners = await trx.selectFrom('flows')
+        .select('id')
+        .where('organizationId', '=', input.organizationId)
+        .where('assetFolderId', 'in', folderIds)
+        .orderBy('id')
+        .forUpdate()
+        .execute()
+      const sessionOwners = await trx.selectFrom('createSessions')
+        .select('id')
+        .where('organizationId', '=', input.organizationId)
+        .where('assetFolderId', 'in', folderIds)
+        .orderBy('id')
+        .forUpdate()
+        .execute()
+      if (
+        flowOwners.length
+        || sessionOwners.length
+        || subtree.rows.some(row => row.systemRole !== null)
+      ) {
+        return { status: 'managed_folder' as const }
+      }
+
+      await trx.updateTable('projects')
+        .set({ defaultAssetFolderId: null, updatedAt: new Date() })
+        .where('organizationId', '=', input.organizationId)
+        .where('defaultAssetFolderId', 'in', folderIds)
+        .execute()
+      await trx.updateTable('projects')
+        .set({ coverAssetId: null, updatedAt: new Date() })
+        .where('organizationId', '=', input.organizationId)
+        .where(eb => eb('coverAssetId', 'in', eb.selectFrom('assets')
+          .select('id')
+          .where('organizationId', '=', input.organizationId)
+          .where('folderId', 'in', folderIds)))
+        .execute()
+      await trx.updateTable('folders')
+        .set({ projectId: targetProjectId, updatedAt: new Date() })
+        .where('organizationId', '=', input.organizationId)
+        .where('id', 'in', folderIds)
+        .execute()
+      await trx.updateTable('assets')
+        .set({ projectId: targetProjectId, updatedAt: new Date() })
+        .where('organizationId', '=', input.organizationId)
+        .where('folderId', 'in', folderIds)
+        .execute()
+    }
+
     const updated = await trx.updateTable('folders')
       .set({
         ...(input.name !== undefined ? { name: input.name } : {}),
-        ...(input.parentId !== undefined ? { parentId: input.parentId } : {}),
+        parentId: targetParentId,
+        projectId: targetProjectId,
         updatedAt: new Date(),
       })
       .where('organizationId', '=', input.organizationId)
@@ -264,6 +408,9 @@ export async function updateFolderRow(input: {
       .returningAll()
       .executeTakeFirstOrThrow()
 
+    await touchProject(trx, input.organizationId, folder.projectId)
+    if (targetProjectId !== folder.projectId)
+      await touchProject(trx, input.organizationId, targetProjectId)
     return { folder: updated, status: 'updated' as const }
   })
 }
@@ -271,6 +418,15 @@ export async function updateFolderRow(input: {
 /** Deletes a folder subtree, locking affected Flows and Assets in order. */
 export async function deleteFolderRow(organizationId: string, id: string) {
   return db.transaction().execute(async (trx) => {
+    const initial = await trx.selectFrom('folders')
+      .select('projectId')
+      .where('organizationId', '=', organizationId)
+      .where('id', '=', id)
+      .executeTakeFirst()
+    if (!initial)
+      return { status: 'not_found' as const }
+    await lockProjectScopes(trx, organizationId, [initial.projectId])
+    await lockActiveProjects(trx, organizationId, [initial.projectId])
     await lockFolderStructure(trx, organizationId)
 
     const subtree = await sql<{ id: string }>`
@@ -292,12 +448,28 @@ export async function deleteFolderRow(organizationId: string, id: string) {
     `.execute(trx)
     const folderIds = subtree.rows.map(folder => folder.id)
     if (folderIds.length === 0)
-      return undefined
+      return { status: 'not_found' as const }
+
+    const activeRun = await trx.selectFrom('flowRuns')
+      .select('id')
+      .where('organizationId', '=', organizationId)
+      .where('assetFolderId', 'in', folderIds)
+      .where('status', 'in', ['pending', 'running'])
+      .executeTakeFirst()
+    if (activeRun)
+      return { status: 'active_destination' as const }
 
     // The FK actions clear Flow associations and Asset locations. Lock
     // affected rows explicitly in the shared folder -> Flow -> Asset
     // order used by output materialization and link mutations.
     await trx.selectFrom('flows')
+      .select('id')
+      .where('organizationId', '=', organizationId)
+      .where('assetFolderId', 'in', folderIds)
+      .orderBy('id')
+      .forUpdate()
+      .execute()
+    await trx.selectFrom('createSessions')
       .select('id')
       .where('organizationId', '=', organizationId)
       .where('assetFolderId', 'in', folderIds)
@@ -312,11 +484,15 @@ export async function deleteFolderRow(organizationId: string, id: string) {
       .forUpdate()
       .execute()
 
-    return trx.deleteFrom('folders')
+    const deleted = await trx.deleteFrom('folders')
       .where('organizationId', '=', organizationId)
       .where('id', '=', id)
       .returning('id')
       .executeTakeFirst()
+    await touchProject(trx, organizationId, initial.projectId)
+    return deleted
+      ? { id: deleted.id, status: 'deleted' as const }
+      : { status: 'not_found' as const }
   })
 }
 
