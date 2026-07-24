@@ -6,6 +6,8 @@ import type {
   GenerationJobSourceTable,
 } from '@talelabs/db'
 import type {
+  CompiledGenerationJobInput,
+  GenerationJobRequestInput,
   PlannedJobRequestInput,
   PlannedJobRequestPayload,
 } from '@talelabs/flows'
@@ -14,6 +16,9 @@ import type { Insertable } from 'kysely'
 import { createId } from '@paralleldrive/cuid2'
 import { db, withDatabaseTransaction } from '@talelabs/db'
 import {
+  generationJobExecutionStepId,
+  generationJobInputBindingId,
+  generationJobInputTargetSlotId,
   materializeGenerationProviderRequest,
   selectedProviderRequestInputs,
 } from '@talelabs/flows'
@@ -38,9 +43,10 @@ export async function materializeJobInputs(
   let inputSortOrder = 0
   const sourceIdByAssetLocation = new Map<string, string>()
   const sourceRows: Insertable<GenerationJobSourceTable>[] = []
-  const materializedRequestInputs: PlannedJobRequestInput[] = []
+  const materializedRequestInputs: GenerationJobRequestInput[] = []
 
   for (const plannedInput of input.requestPayload.inputs) {
+    const bindingId = generationJobInputBindingId(plannedInput)
     const materializedItems = []
     for (const runtimeItem of plannedInput.items) {
       const materializedValue = await materializeRuntimeValue({
@@ -67,7 +73,7 @@ export async function materializeJobInputs(
         elementId: null,
         id: sourceId,
         jobId: input.jobId,
-        nodeId: plannedInput.sourceNodeId,
+        nodeId: sourceId,
         organizationId: input.organizationId,
         resolvedText: text,
         snapshot: materializedItem as unknown as GenerationJobSourceTable['snapshot'],
@@ -79,7 +85,7 @@ export async function materializeJobInputs(
         if (!('assetId' in assetRef))
           continue
         sourceIdByAssetLocation.set(
-          `${plannedInput.edgeId}\u0000${runtimeItem.key}\u0000${assetRef.assetId}`,
+          `${bindingId}\u0000${runtimeItem.key}\u0000${assetRef.assetId}`,
           sourceId,
         )
       }
@@ -88,10 +94,16 @@ export async function materializeJobInputs(
     materializedRequestInputs.push({ ...plannedInput, items: materializedItems })
   }
 
-  const materializedRequestPayload = {
-    ...input.requestPayload,
-    inputs: materializedRequestInputs,
-  }
+  const materializedRequestPayload: PlannedJobRequestPayload
+    = input.requestPayload.requestPayloadVersion === 6
+      ? {
+          ...input.requestPayload,
+          inputs: materializedRequestInputs as CompiledGenerationJobInput[],
+        }
+      : {
+          ...input.requestPayload,
+          inputs: materializedRequestInputs as PlannedJobRequestInput[],
+        }
   const providerRequest = materializeGenerationProviderRequest({
     requestId: input.jobId,
     requestPayload: materializedRequestPayload,
@@ -104,7 +116,7 @@ export async function materializeJobInputs(
       elementId: null,
       id: createId(),
       jobId: input.jobId,
-      nodeId: input.requestPayload.nodeId,
+      nodeId: generationJobExecutionStepId(input.requestPayload),
       organizationId: input.organizationId,
       resolvedText: promptSlot.resolvedText,
       snapshot: {
@@ -121,7 +133,8 @@ export async function materializeJobInputs(
 
   const inputRows: Insertable<GenerationJobInputTable>[] = []
   for (const plannedInput of selectedProviderRequestInputs(materializedRequestPayload)) {
-    const role = plannedInput.targetHandleId || 'reference'
+    const bindingId = generationJobInputBindingId(plannedInput)
+    const role = generationJobInputTargetSlotId(plannedInput) || 'reference'
     for (const runtimeItem of plannedInput.items) {
       for (const assetRef of assetReferencesFromValue(runtimeItem.value)) {
         if (!('assetId' in assetRef))
@@ -133,7 +146,7 @@ export async function materializeJobInputs(
           role,
           sortOrder: inputSortOrder,
           sourceId: sourceIdByAssetLocation.get(
-            `${plannedInput.edgeId}\u0000${runtimeItem.key}\u0000${assetRef.assetId}`,
+            `${bindingId}\u0000${runtimeItem.key}\u0000${assetRef.assetId}`,
           ) ?? null,
         })
         inputSortOrder += 1

@@ -113,7 +113,7 @@ export async function runFlowRunOrchestrator(
   }
 
   const snapshot = snapshotArtifact.snapshot
-  const plannedJobCount = snapshot.plan.summary.plannedJobCount
+  const plannedJobCount = snapshot.executionPlan.summary.plannedJobCount
   let completedJobCount = 0
   let failedJobCount = 0
   let stateVersion = 0
@@ -129,7 +129,7 @@ export async function runFlowRunOrchestrator(
   }
   updateRealtimeMetadata('running')
 
-  for (const [levelIndex, level] of snapshot.plan.topologicalLevels.entries()) {
+  for (const [levelIndex, level] of snapshot.executionPlan.levels.entries()) {
     const active = await db.selectFrom('flowRuns')
       .select('status')
       .where('organizationId', '=', payload.organizationId)

@@ -51,13 +51,15 @@ export async function persistAssetOutputIfJobRunning(input: {
     if (!job)
       return { persisted: false as const }
 
-    const outputFolder = await ensureFlowOutputFolder(trx, {
-      flowId: input.job.flowId,
-      organizationId: input.job.organizationId,
-    })
+    const outputFolder = input.job.flowId
+      ? await ensureFlowOutputFolder(trx, {
+          flowId: input.job.flowId,
+          organizationId: input.job.organizationId,
+        })
+      : null
     const folderId
-      = outputFolder.status === 'ready' ? outputFolder.folderId : null
-    if (outputFolder.status !== 'ready') {
+      = outputFolder?.status === 'ready' ? outputFolder.folderId : null
+    if (outputFolder && outputFolder.status !== 'ready') {
       logRunEngine('warn', 'generation_job.asset_output.folder_unavailable', {
         flowId: input.job.flowId,
         generationJobId: input.job.id,

@@ -8,6 +8,7 @@ import type {
 import type { Kysely } from 'kysely'
 
 import {
+  generationJobExecutionStepId,
   generationProviderLifecyclesEqual,
   readFlowRunExecutionMode,
   readFlowRunSnapshotExecutionContract,
@@ -49,7 +50,10 @@ export async function loadSnapshotExecutionContext(input: {
     ) as contract(value)
     where run."organizationId" = ${input.organizationId}
       and run.id = ${input.flowRunId}
-      and contract.value ->> 'nodeId' = ${input.nodeId}
+      and coalesce(
+        contract.value ->> 'stepId',
+        contract.value ->> 'nodeId'
+      ) = ${input.nodeId}
     limit 2
   `.execute(input.database)
   if (result.rows.length !== 1)
@@ -82,8 +86,10 @@ export function assertJobMatchesSnapshotExecutionContract(input: {
     && input.contract.modelId === input.job.model
     && input.contract.modelId === input.requestPayload.modelId
     && input.contract.modelRevision === input.requestPayload.modelRevision
-    && input.contract.nodeId === input.job.nodeId
-    && input.contract.nodeId === input.requestPayload.nodeId
+    && input.contract.stepId === input.job.nodeId
+    && input.contract.stepId === generationJobExecutionStepId(
+      input.requestPayload,
+    )
     && input.contract.operationId === input.job.operation
     && input.contract.operationId === input.requestPayload.operationId
     && input.contract.provider === input.job.provider

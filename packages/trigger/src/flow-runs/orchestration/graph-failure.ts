@@ -12,17 +12,17 @@ function descendantNodeIds(
   failedNodeIds: readonly string[],
 ) {
   const executionNodeIds = new Set(
-    snapshot.plan.executionNodes.map(node => node.nodeId),
+    snapshot.executionPlan.steps.map(step => step.stepId),
   )
   const childrenByNodeId = new Map<string, string[]>()
-  for (const edge of snapshot.plan.capturedEdges) {
+  for (const edge of snapshot.executionPlan.dependencies) {
     if (
-      executionNodeIds.has(edge.sourceNodeId)
-      && executionNodeIds.has(edge.targetNodeId)
+      executionNodeIds.has(edge.sourceStepId)
+      && executionNodeIds.has(edge.targetStepId)
     ) {
-      childrenByNodeId.set(edge.sourceNodeId, [
-        ...(childrenByNodeId.get(edge.sourceNodeId) ?? []),
-        edge.targetNodeId,
+      childrenByNodeId.set(edge.sourceStepId, [
+        ...(childrenByNodeId.get(edge.sourceStepId) ?? []),
+        edge.targetStepId,
       ])
     }
   }
