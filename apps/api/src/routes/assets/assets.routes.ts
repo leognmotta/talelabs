@@ -1,3 +1,5 @@
+/** Tenant-scoped Asset library, metadata, lifecycle, and batch-move routes. */
+
 import type { OpenAPIHono } from '@hono/zod-openapi'
 import type { ApiEnv } from '../../types.js'
 
@@ -199,11 +201,14 @@ const removeTagRoute = createRoute({
   },
 })
 
+/** Registers Asset list, read, mutation, lifecycle, and tag endpoints. */
 export function registerAssetRoutes(app: OpenAPIHono<ApiEnv>) {
   app.openapi(listRoute, async (c) => {
+    const query = c.req.valid('query')
     return c.json(await listAssets({
-      ...c.req.valid('query'),
+      ...query,
       organizationId: c.var.organizationId,
+      projectId: query.projectId === 'private' ? null : query.projectId,
       userId: c.var.userId,
     }), 200)
   })

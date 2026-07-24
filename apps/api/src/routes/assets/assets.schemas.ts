@@ -36,6 +36,7 @@ export const AssetSchema = z.object({
   folderId: NullableCuid2Schema,
   generationJobId: NullableCuid2Schema,
   outputIndex: z.number().int().nonnegative().nullable(),
+  projectId: NullableCuid2Schema,
   lifecycle: AssetLifecycleSchema,
   processingState: AssetProcessingStateSchema,
   processingError: z.string().nullable(),
@@ -110,21 +111,35 @@ export const AssetListQuerySchema = z.object({
   archived: z.stringbool().default(false).openapi({ type: 'boolean' }),
   sort: z.enum(['createdAt', 'name', 'sizeBytes']).default('createdAt'),
   order: SortOrderSchema.default('desc'),
+  projectId: z.union([Cuid2Schema, z.literal('private')]).optional(),
+  generatedByFlowId: Cuid2Schema.optional(),
+  generatedByCreateSessionId: Cuid2Schema.optional(),
   limit: PaginationLimitSchema,
   cursor: CursorSchema.optional(),
-})
+}).refine(
+  value => !(
+    value.generatedByFlowId
+    && value.generatedByCreateSessionId
+  ),
+  {
+    message: 'Only one generated-by filter may be supplied',
+    path: ['generatedByFlowId'],
+  },
+)
 
 /** Registers an uploaded object as a canonical Asset. */
 export const RegisterAssetRequestSchema = z.object({
   uploadId: z.string().min(1).max(8192),
   name: z.string().trim().min(1).max(255).optional(),
   folderId: Cuid2Schema.optional(),
+  projectId: NullableCuid2Schema.optional(),
 }).openapi('RegisterAssetRequest')
 
 /** Updates an Asset name and/or folder. */
 export const UpdateAssetRequestSchema = z.object({
   name: z.string().trim().min(1).max(255).optional(),
   folderId: NullableCuid2Schema.optional(),
+  projectId: NullableCuid2Schema.optional(),
 }).refine(value => Object.keys(value).length > 0, {
   message: 'At least one field is required',
 }).openapi('UpdateAssetRequest')
@@ -138,6 +153,7 @@ export const MoveAssetsRequestSchema = z.object({
       message: 'Asset IDs must be unique',
     }),
   folderId: NullableCuid2Schema,
+  projectId: NullableCuid2Schema.optional(),
 }).openapi('MoveAssetsRequest')
 
 /** The moved Assets after a bulk move. */

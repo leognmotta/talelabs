@@ -1,6 +1,8 @@
+/** Durable Asset purge admission, presentation, and task dispatch. */
+
 import { idempotencyKeys, triggerTask } from '@talelabs/trigger'
 
-import { requestAssetPurge } from '../data/assets.data.js'
+import { requestAssetPurge } from '../data/asset-lifecycle.data.js'
 import { HttpError, TenantResourceNotFoundError } from '../middleware/error.js'
 import { presentAssetForUser } from './assets-presentation.service.js'
 
@@ -22,6 +24,7 @@ async function dispatchPurge(organizationId: string, assetId: string) {
   }
 }
 
+/** Requests permanent deletion and returns its presented lifecycle state. */
 export async function purgeAsset(
   organizationId: string,
   userId: string,
@@ -35,6 +38,13 @@ export async function purgeAsset(
       409,
       'invalid_state',
       'This asset is in use by an active generation.',
+    )
+  }
+  if (result.status === 'location_changed') {
+    throw new HttpError(
+      409,
+      'invalid_state',
+      'The asset location changed while permanent deletion was requested.',
     )
   }
   if (result.status === 'requested')

@@ -4,10 +4,11 @@ import type { AssetType } from '@talelabs/db'
 
 import { createId } from '@paralleldrive/cuid2'
 
+import { insertUploadedAsset } from '../data/asset-location.data.js'
 import {
   findAssetByUploadId,
-  insertUploadedAsset,
 } from '../data/assets.data.js'
+import { TenantResourceNotFoundError } from '../middleware/error.js'
 
 /**
  * Persists a previously verified upload grant. Object storage verification must
@@ -21,6 +22,7 @@ export async function persistUploadedAssetRegistration(input: {
   mimeType: string
   name: string
   organizationId: string
+  projectId: null | string
   sizeBytes: number
   storageKey: string
   type: AssetType
@@ -31,6 +33,8 @@ export async function persistUploadedAssetRegistration(input: {
       ...input,
       id: input.id ?? createId(),
     })
+    if (created.status !== 'created')
+      throw new TenantResourceNotFoundError(created.field)
     return { asset: created.asset, replay: false }
   }
   catch (error) {

@@ -1,11 +1,14 @@
+/** Tenant-scoped reversible Asset archive and restore workflows. */
+
 import {
   archiveAssetRow,
-  findAssetById,
   restoreAssetRow,
-} from '../data/assets.data.js'
+} from '../data/asset-lifecycle.data.js'
+import { findAssetById } from '../data/assets.data.js'
 import { HttpError, TenantResourceNotFoundError } from '../middleware/error.js'
 import { presentAssetForUser } from './assets-presentation.service.js'
 
+/** Archives one mutable tenant Asset without removing canonical provenance. */
 export async function archiveAsset(organizationId: string, id: string) {
   const current = await findAssetById(organizationId, id)
   if (!current)
@@ -20,6 +23,7 @@ export async function archiveAsset(organizationId: string, id: string) {
   await archiveAssetRow(organizationId, id)
 }
 
+/** Restores one mutable tenant Asset and returns its user-facing projection. */
 export async function restoreAsset(
   organizationId: string,
   userId: string,

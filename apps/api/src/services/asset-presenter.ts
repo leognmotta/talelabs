@@ -1,3 +1,5 @@
+/** Canonical Asset API projection and signed media URL presentation. */
+
 import type { AssetRecord } from '../data/assets.data.js'
 
 import {
@@ -17,6 +19,7 @@ type WireJsonValue
     | WireJsonValue[]
     | { [key: string]: WireJsonValue }
 
+/** Converts database JSON into the SDK-safe wire representation. */
 export function toWireJsonObject(value: unknown): Record<string, WireJsonValue> {
   if (!value || typeof value !== 'object' || Array.isArray(value))
     return {}
@@ -24,6 +27,7 @@ export function toWireJsonObject(value: unknown): Record<string, WireJsonValue> 
   return JSON.parse(JSON.stringify(value)) as Record<string, WireJsonValue>
 }
 
+/** Derives the public Asset lifecycle from archive and purge timestamps. */
 export function getAssetLifecycle(asset: AssetRecord) {
   if (asset.purgedAt)
     return 'purged' as const
@@ -34,19 +38,29 @@ export function getAssetLifecycle(asset: AssetRecord) {
   return 'live' as const
 }
 
+/** Public tag metadata attached to one presented Asset. */
 export interface PresentedAssetTag {
+  /** Tag creation instant serialized as ISO 8601. */
   createdAt: string
+  /** Stable tag identity. */
   id: string
+  /** User-authored tag label. */
   name: string
+  /** Latest tag update instant serialized as ISO 8601. */
   updatedAt: string
 }
 
+/** Viewer-specific metadata merged into the canonical Asset projection. */
 export interface AssetPresentationMetadata {
+  /** Whether the requesting user favorited the Asset. */
   favorite: boolean
+  /** Tenant-owned tags currently attached to the Asset. */
   tags: PresentedAssetTag[]
 }
 
+/** Optional controls for expensive signed URL generation. */
 export interface AssetPresentationOptions {
+  /** Whether to include the original-file URL in addition to its thumbnail. */
   includeOriginalUrl?: boolean
 }
 
@@ -55,6 +69,7 @@ const emptyPresentationMetadata: AssetPresentationMetadata = {
   tags: [],
 }
 
+/** Creates a signed image or generated-thumbnail URL when one is available. */
 export function createAssetThumbnailUrl(asset: Pick<
   AssetRecord,
   'mimeType' | 'storageKey' | 'thumbnailKey' | 'type' | 'visibility'
@@ -69,6 +84,7 @@ export function createAssetThumbnailUrl(asset: Pick<
   })
 }
 
+/** Projects one canonical Asset into its public API representation. */
 export async function presentAsset(
   asset: AssetRecord,
   presentation: AssetPresentationMetadata = emptyPresentationMetadata,
@@ -105,6 +121,7 @@ export async function presentAsset(
     folderId: asset.folderId,
     generationJobId: asset.generationJobId,
     outputIndex: asset.outputIndex,
+    projectId: asset.projectId,
     lifecycle,
     processingState: asset.processingState,
     processingError: asset.processingError,
@@ -118,6 +135,7 @@ export async function presentAsset(
   }
 }
 
+/** Projects immutable generation provenance into its public API shape. */
 export function presentGenerationProvenance(provenance: NonNullable<
   Awaited<ReturnType<typeof import('../data/assets.data.js')['getAssetDetailRelations']>>['generation']
 >) {

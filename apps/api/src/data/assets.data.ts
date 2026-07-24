@@ -26,9 +26,12 @@ export interface ListAssetRowsInput {
   elementId?: string
   favorite?: boolean
   folderId?: 'root' | string
+  generatedByCreateSessionId?: string
+  generatedByFlowId?: string
   limit: number
   order: SortOrder
   organizationId: string
+  projectId?: null | string
   search?: string
   sort: AssetSort
   source?: AssetSource
@@ -113,6 +116,34 @@ export async function listAssetRows(input: ListAssetRowsInput) {
   if (input.source)
     conditions.push(sql<boolean>`a."source" = ${input.source}`)
 
+  if (input.projectId === null)
+    conditions.push(sql<boolean>`a."projectId" is null`)
+  else if (input.projectId !== undefined)
+    conditions.push(sql<boolean>`a."projectId" = ${input.projectId}`)
+
+  if (input.generatedByFlowId) {
+    conditions.push(sql<boolean>`exists (
+      select 1 from "generationJobs" generated_job
+      where generated_job."organizationId" = ${input.organizationId}
+        and generated_job."id" = a."generationJobId"
+        and generated_job."flowId" = ${input.generatedByFlowId}
+    )`)
+  }
+
+  if (input.generatedByCreateSessionId) {
+    conditions.push(sql<boolean>`exists (
+      select 1
+      from "generationJobs" generated_job
+      join "flowRuns" generated_run
+        on generated_run."organizationId" = generated_job."organizationId"
+        and generated_run."id" = generated_job."flowRunId"
+      where generated_job."organizationId" = ${input.organizationId}
+        and generated_job."id" = a."generationJobId"
+        and generated_run."createSessionId"
+          = ${input.generatedByCreateSessionId}
+    )`)
+  }
+
   if (input.favorite) {
     conditions.push(sql<boolean>`exists (
       select 1 from "assetFavorites" favorite
@@ -180,242 +211,6 @@ export function findAssetByUploadId(organizationId: string, uploadId: string) {
     .where('organizationId', '=', organizationId)
     .where('uploadId', '=', uploadId)
     .executeTakeFirst()
-}
-
-/** Confirms a tenant-scoped folder exists. */
-export function findFolderById(organizationId: string, id: string) {
-  return db.selectFrom('folders')
-    .select(['id'])
-    .where('organizationId', '=', organizationId)
-    .where('id', '=', id)
-    .executeTakeFirst()
-}
-
-/** Registers one uploaded Asset in the processing state. */
-export async function insertUploadedAsset(input: {
-  createdBy: string
-  folderId: null | string
-  id: string
-  mimeType: string
-  name: string
-  organizationId: string
-  sizeBytes: number
-  storageKey: string
-  type: AssetType
-  uploadId: string
-}) {
-  return db.transaction().execute(async (trx) => {
-    const asset = await trx.insertInto('assets')
-      .values({
-        ...input,
-        source: 'upload',
-        visibility: 'private',
-        processingState: 'processing',
-      })
-      .returningAll()
-      .executeTakeFirstOrThrow()
-
-    return { asset, status: 'created' as const }
-  })
-}
-
-/** Updates name/folder of one Asset unless it is being purged. */
-export async function updateAssetRow(input: {
-  folderId?: null | string
-  id: string
-  name?: string
-  organizationId: string
-}) {
-  return db.updateTable('assets')
-    .set({
-      ...(input.name !== undefined ? { name: input.name } : {}),
-      ...(input.folderId !== undefined ? { folderId: input.folderId } : {}),
-      updatedAt: new Date(),
-    })
-    .where('organizationId', '=', input.organizationId)
-    .where('id', '=', input.id)
-    .where('purgeRequestedAt', 'is', null)
-    .returningAll()
-    .executeTakeFirst()
-}
-
-/** Outcome of the transactional bulk move. */
-export type MoveAssetRowsResult
-  = | { assets: AssetRecord[], status: 'moved' }
-    | { field?: 'assetIds' | 'folderId', status: 'not_found' }
-    | { status: 'invalid_state' }
-
-/** Moves Assets into a folder transactionally, rejecting purging rows. */
-export function moveAssetRows(input: {
-  assetIds: string[]
-  folderId: null | string
-  organizationId: string
-}): Promise<MoveAssetRowsResult> {
-  return db.transaction().execute(async (trx) => {
-    const assets = await trx.selectFrom('assets')
-      .selectAll()
-      .where('organizationId', '=', input.organizationId)
-      .where('id', 'in', input.assetIds)
-      .forUpdate()
-      .execute()
-
-    if (assets.length !== input.assetIds.length)
-      return { field: 'assetIds', status: 'not_found' }
-
-    if (assets.some(asset => asset.purgeRequestedAt || asset.purgedAt))
-      return { status: 'invalid_state' }
-
-    if (input.folderId) {
-      const folder = await trx.selectFrom('folders')
-        .select('id')
-        .where('organizationId', '=', input.organizationId)
-        .where('id', '=', input.folderId)
-        .executeTakeFirst()
-
-      if (!folder)
-        return { field: 'folderId', status: 'not_found' }
-    }
-
-    const updated = await trx.updateTable('assets')
-      .set({ folderId: input.folderId, updatedAt: new Date() })
-      .where('organizationId', '=', input.organizationId)
-      .where('id', 'in', input.assetIds)
-      .where('purgeRequestedAt', 'is', null)
-      .returningAll()
-      .execute()
-
-    if (updated.length !== input.assetIds.length)
-      return { status: 'invalid_state' }
-
-    const byId = new Map(updated.map(asset => [asset.id, asset]))
-    return {
-      assets: input.assetIds.map(id => byId.get(id)!),
-      status: 'moved',
-    }
-  })
-}
-
-/** Archives one Asset (reversible) unless it is being purged. */
-export async function archiveAssetRow(organizationId: string, id: string) {
-  return db.updateTable('assets')
-    .set({ deletedAt: new Date(), updatedAt: new Date() })
-    .where('organizationId', '=', organizationId)
-    .where('id', '=', id)
-    .where('purgeRequestedAt', 'is', null)
-    .returning('id')
-    .executeTakeFirst()
-}
-
-/** Un-archives one Asset; guarded against purge-in-progress. */
-export async function restoreAssetRow(organizationId: string, id: string) {
-  return db.updateTable('assets')
-    .set({ deletedAt: null, updatedAt: new Date() })
-    .where('organizationId', '=', organizationId)
-    .where('id', '=', id)
-    .where('purgeRequestedAt', 'is', null)
-    .returningAll()
-    .executeTakeFirst()
-}
-
-/** Outcome of requesting a permanent Asset purge. */
-export type PurgeRequestResult
-  = | { asset: AssetRecord, status: 'already_requested' | 'requested' }
-    | { status: 'active_generation' }
-    | { status: 'not_found' }
-
-/**
- * Marks one Asset for permanent purge inside `trx`: archives it, rejects if
- * an active generation consumes it, and detaches it from every Element.
- */
-export async function requestAssetPurgeInTransaction(
-  trx: Transaction<Database>,
-  organizationId: string,
-  id: string,
-): Promise<PurgeRequestResult> {
-  const asset = await trx.selectFrom('assets')
-    .selectAll()
-    .where('organizationId', '=', organizationId)
-    .where('id', '=', id)
-    .forUpdate()
-    .executeTakeFirst()
-
-  if (!asset)
-    return { status: 'not_found' }
-
-  if (asset.purgeRequestedAt)
-    return { asset, status: 'already_requested' }
-
-  const activeGeneration = await trx.selectFrom('generationJobInputs as input')
-    .innerJoin('generationJobs as job', join => join
-      .onRef('job.id', '=', 'input.jobId')
-      .onRef('job.organizationId', '=', 'input.organizationId'))
-    .select('input.assetId')
-    .where('input.organizationId', '=', organizationId)
-    .where('input.assetId', '=', id)
-    .where('job.status', 'in', ['pending', 'running'])
-    .executeTakeFirst()
-
-  if (activeGeneration)
-    return { status: 'active_generation' }
-
-  const now = new Date()
-  const updated = await trx.updateTable('assets')
-    .set({
-      deletedAt: asset.deletedAt ?? now,
-      purgeRequestedAt: now,
-      updatedAt: now,
-    })
-    .where('organizationId', '=', organizationId)
-    .where('id', '=', id)
-    .returningAll()
-    .executeTakeFirstOrThrow()
-
-  // Purged Assets are tombstoned, not row-deleted, so the Element reference
-  // FK cascade never fires; detach them here or they linger in Elements.
-  // Lock the affected Element rows (id order) BEFORE deleting reference rows,
-  // so purge and Element reference mutation share one global lock order —
-  // Asset → Element → elementReferences — and can never deadlock. The Asset
-  // is already locked, so no new reference to it can appear meanwhile.
-  const referencingRows = await trx.selectFrom('elementReferences')
-    .select('elementId')
-    .where('organizationId', '=', organizationId)
-    .where('assetId', '=', id)
-    .execute()
-  const affectedElementIds = [...new Set(referencingRows.map(r => r.elementId))]
-    .sort()
-
-  if (affectedElementIds.length > 0) {
-    await trx.selectFrom('elements')
-      .select('id')
-      .where('organizationId', '=', organizationId)
-      .where('id', 'in', affectedElementIds)
-      .orderBy('id')
-      .forUpdate()
-      .execute()
-
-    await trx.deleteFrom('elementReferences')
-      .where('organizationId', '=', organizationId)
-      .where('assetId', '=', id)
-      .execute()
-
-    await trx.updateTable('elements')
-      .set({ updatedAt: now })
-      .where('organizationId', '=', organizationId)
-      .where('id', 'in', affectedElementIds)
-      .execute()
-  }
-
-  return { asset: updated, status: 'requested' }
-}
-
-/** Requests a purge in its own transaction. */
-export async function requestAssetPurge(
-  organizationId: string,
-  id: string,
-): Promise<PurgeRequestResult> {
-  return db.transaction().execute(trx => (
-    requestAssetPurgeInTransaction(trx, organizationId, id)
-  ))
 }
 
 /** Loads the provenance and usage relations for one Asset detail. */

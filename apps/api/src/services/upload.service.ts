@@ -12,8 +12,10 @@ import {
 } from '@talelabs/storage'
 import { idempotencyKeys, triggerTask } from '@talelabs/trigger'
 
-import { findAssetByUploadId, findFolderById } from '../data/assets.data.js'
+import { findFolderLocation } from '../data/asset-location.data.js'
+import { findAssetByUploadId } from '../data/assets.data.js'
 import { getUploadRegistrationGrantTtlSeconds } from '../domain/assets/asset-policy.js'
+import { requireProject } from '../domain/projects/project-scope.js'
 import { HttpError, TenantResourceNotFoundError } from '../middleware/error.js'
 import { createUploadGrant, verifyUploadGrant } from './upload-grant.service.js'
 import { persistUploadedAssetRegistration } from './upload-registration-persistence.service.js'
@@ -98,6 +100,7 @@ export async function registerUploadedAsset(input: {
   folderId?: string
   name?: string
   organizationId: string
+  projectId?: null | string
   uploadId: string
   userId: string
 }) {
@@ -120,8 +123,22 @@ export async function registerUploadedAsset(input: {
   if (existing)
     return { asset: existing, replay: true }
 
-  if (input.folderId && !(await findFolderById(input.organizationId, input.folderId)))
-    throw new TenantResourceNotFoundError('folderId')
+  let projectId = input.projectId ?? null
+  if (input.folderId) {
+    const folder = await findFolderLocation(
+      input.organizationId,
+      input.folderId,
+    )
+    if (!folder || (
+      input.projectId !== undefined
+      && input.projectId !== folder.projectId
+    )) {
+      throw new TenantResourceNotFoundError('folderId')
+    }
+    projectId = folder.projectId
+  }
+  if (projectId)
+    await requireProject(input.organizationId, projectId)
 
   let object
   try {
@@ -161,6 +178,7 @@ export async function registerUploadedAsset(input: {
     mimeType: grant.mimeType,
     name: input.name ?? grant.filename,
     organizationId: input.organizationId,
+    projectId,
     sizeBytes: grant.sizeBytes,
     storageKey: grant.key,
     type: policy.type,

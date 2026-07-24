@@ -34,9 +34,12 @@ export async function listAssets(input: {
   elementId?: string
   favorite?: boolean
   folderId?: 'root' | string
+  generatedByCreateSessionId?: string
+  generatedByFlowId?: string
   limit: number
   order: 'asc' | 'desc'
   organizationId: string
+  projectId?: null | string
   search?: string
   sort: 'createdAt' | 'name' | 'sizeBytes'
   source?: AssetSource

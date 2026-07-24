@@ -1,8 +1,15 @@
+/** Tenant-scoped Asset favorite and tag reads and guarded mutations. */
+
 import type { Database } from '@talelabs/db'
 import type { Transaction } from 'kysely'
 
 import { db } from '@talelabs/db'
+import {
+  lockActiveProjects,
+  lockProjectScopes,
+} from '../domain/projects/project-scope.js'
 
+/** Lists favorited Asset identities for one user within a bounded Asset set. */
 export function listFavoriteAssetIds(input: {
   assetIds: string[]
   organizationId: string
@@ -19,6 +26,7 @@ export function listFavoriteAssetIds(input: {
     .execute()
 }
 
+/** Lists assigned tag rows for a bounded tenant-owned Asset set. */
 export function listAssetTagRows(input: {
   assetIds: string[]
   organizationId: string
@@ -44,6 +52,7 @@ export function listAssetTagRows(input: {
     .execute()
 }
 
+/** Outcome of one guarded favorite or tag assignment mutation. */
 export type AssetMetadataMutationResult
   = | { field?: 'assetId' | 'tagId', status: 'not_found' }
     | { status: 'invalid_state' | 'mutated' }
@@ -53,14 +62,24 @@ async function mutateMutableAsset(
   input: { assetId: string, organizationId: string },
   mutate: () => Promise<unknown>,
 ): Promise<AssetMetadataMutationResult> {
+  const initial = await trx.selectFrom('assets')
+    .select('projectId')
+    .where('organizationId', '=', input.organizationId)
+    .where('id', '=', input.assetId)
+    .executeTakeFirst()
+  if (!initial)
+    return { field: 'assetId', status: 'not_found' }
+
+  await lockProjectScopes(trx, input.organizationId, [initial.projectId])
+  await lockActiveProjects(trx, input.organizationId, [initial.projectId])
   const asset = await trx.selectFrom('assets')
-    .select(['id', 'purgedAt', 'purgeRequestedAt'])
+    .select(['id', 'projectId', 'purgedAt', 'purgeRequestedAt'])
     .where('organizationId', '=', input.organizationId)
     .where('id', '=', input.assetId)
     .forUpdate()
     .executeTakeFirst()
 
-  if (!asset)
+  if (!asset || asset.projectId !== initial.projectId)
     return { field: 'assetId', status: 'not_found' }
   if (asset.purgeRequestedAt || asset.purgedAt)
     return { status: 'invalid_state' }
@@ -69,6 +88,7 @@ async function mutateMutableAsset(
   return { status: 'mutated' }
 }
 
+/** Sets one user's favorite state after locking the Asset's active scope. */
 export function mutateAssetFavoriteRow(input: {
   assetId: string
   favorite: boolean
@@ -103,6 +123,7 @@ type MutateAssetTagRowInput = {
   | { assigned: true, userId: string }
 )
 
+/** Sets one tag assignment after locking the Asset's active scope. */
 export function mutateAssetTagRow(
   input: MutateAssetTagRowInput,
 ): Promise<AssetMetadataMutationResult> {
