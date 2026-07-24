@@ -16,6 +16,7 @@ import { Controller, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
 import { LocalizedFieldError } from '../../shared/components/localized-field-error'
+import { PasswordInput } from '../../shared/components/password-input'
 import { TaleLabsLogo } from '../../shared/components/talelabs-logo'
 import { getAuthErrorMessage } from '../../shared/lib/auth-error'
 import { authClient, signIn, signUp } from './auth-client'
@@ -265,10 +266,9 @@ export function AuthScreen({
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor="auth-password">{t('common.password')}</FieldLabel>
-                  <Input
+                  <PasswordInput
                     {...field}
                     id="auth-password"
-                    type="password"
                     autoComplete={mode === 'sign-in' ? 'current-password' : 'new-password'}
                     className="h-11"
                     aria-invalid={fieldState.invalid}

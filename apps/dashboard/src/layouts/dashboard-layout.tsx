@@ -3,16 +3,6 @@
 import type { LanguagePreference } from '@talelabs/i18n'
 import type { SettingsTab } from '../features/settings/settings-state'
 import type { ThemePreference } from '../shared/lib/theme'
-import { IconCookie, IconDots } from '@tabler/icons-react'
-import { Button } from '@talelabs/ui/components/button'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@talelabs/ui/components/dropdown-menu'
-import { Separator } from '@talelabs/ui/components/separator'
 import {
   SidebarInset,
   SidebarProvider,
@@ -20,15 +10,10 @@ import {
 } from '@talelabs/ui/components/sidebar'
 import { TooltipProvider } from '@talelabs/ui/components/tooltip'
 import { cn } from '@talelabs/ui/lib/utils'
-import {
-  lazy,
-  Suspense,
-  useState,
-} from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Outlet, useMatch } from 'react-router'
 import { AssetViewerDialog } from '../features/assets/viewer/asset-viewer-dialog'
-import { useAssetViewerUrlState } from '../features/assets/viewer/use-asset-viewer-url-state'
 import { BrowserRunRoot } from '../features/flows/runs/browser-runtime/browser-run-root'
 import { FlowRunRealtimeSubscriptions } from '../features/flows/runs/realtime/flow-run-realtime-subscriptions'
 import { OrganizationScopeProvider } from '../features/organizations/organization-scope'
@@ -36,16 +21,9 @@ import { SettingsDialog } from '../features/settings/settings-dialog'
 import { useSettingsTabState } from '../features/settings/settings-state'
 import { UploadIndicator } from '../features/uploads/upload-indicator'
 import { UploadProvider } from '../features/uploads/upload-provider'
-import { AssetIcon } from '../shared/domain-icons'
+import { DARK_THEME_CLASS_NAME } from '../shared/lib/theme'
 import { AppSidebar } from './app-sidebar'
 import { GlobalSearch } from './global-search'
-
-function loadAssetLibraryDialog() {
-  return import('../features/assets/library/asset-library-dialog')
-}
-const AssetLibraryDialog = lazy(async () => ({
-  default: (await loadAssetLibraryDialog()).AssetLibraryDialog,
-}))
 
 /** Renders dashboard layout for the dashboard layout boundary. */
 export function DashboardLayout({
@@ -81,11 +59,10 @@ export function DashboardLayout({
 }) {
   const { t } = useTranslation()
   const isFlowEditor = Boolean(useMatch('/flows/:flowId'))
+  const isCreate = Boolean(useMatch('/create/*'))
   const [settingsTab, setSettingsTab] = useSettingsTabState()
   const activeSettingsTab = settingsTab ?? 'general'
   const isSettingsOpen = settingsTab !== null
-  const assetViewer = useAssetViewerUrlState()
-  const [isAssetLibraryOpen, setIsAssetLibraryOpen] = useState(false)
   const [isTeamInviteFormOpen, setIsTeamInviteFormOpen] = useState(false)
 
   function handleOpenSettings(nextTab: SettingsTab = 'general') {
@@ -132,6 +109,16 @@ export function DashboardLayout({
       theme={theme}
     />
   )
+  const uploadIndicator = (
+    <div
+      className={cn(
+        'fixed right-4 z-40',
+        isCreate ? 'top-16' : 'bottom-4',
+      )}
+    >
+      <UploadIndicator />
+    </div>
+  )
 
   if (isFlowEditor) {
     return (
@@ -150,6 +137,7 @@ export function DashboardLayout({
             >
               <Outlet />
             </main>
+            {uploadIndicator}
             {settingsDialog}
           </TooltipProvider>
         </UploadProvider>
@@ -167,7 +155,12 @@ export function DashboardLayout({
           {activeOrganizationId && currentUserId && (
             <BrowserRunRoot organizationId={activeOrganizationId} userId={currentUserId} />
           )}
-          <SidebarProvider className="h-svh min-h-0 overflow-hidden">
+          <SidebarProvider
+            className={cn(
+              'h-svh min-h-0 overflow-hidden',
+              isCreate && DARK_THEME_CLASS_NAME,
+            )}
+          >
             <AppSidebar
               activeOrganizationId={activeOrganizationId}
               email={email}
@@ -177,75 +170,36 @@ export function DashboardLayout({
               onOpenSettings={handleOpenSettings}
               onSignOut={onSignOut}
               onSwitchOrganization={onSwitchOrganization}
+              globalSearch={(
+                <GlobalSearch
+                  presentation="sidebar"
+                  onOpenInviteMemberSettings={handleOpenInviteMemberSettings}
+                  onOpenSettings={handleOpenSettings}
+                />
+              )}
+              variant="floating"
             />
-            <SidebarInset className="min-h-0 overflow-hidden bg-transparent">
+            <SidebarInset className={cn(
+              `
+                min-h-0 overflow-hidden bg-transparent
+                md:m-2 md:ml-0 md:rounded-2xl md:ring-1 md:ring-border/80
+              `,
+            )}
+            >
               <div className="flex min-h-0 flex-1 flex-col text-foreground">
-                {!isFlowEditor && (
-                  <>
-                    <header className="
-                      flex h-16 shrink-0 items-center gap-3 px-6
-                    "
-                    >
-                      <SidebarTrigger
-                        aria-label={t('navigation.toggleSidebar')}
-                      />
-                      <div className="flex min-w-0 flex-1 justify-center">
-                        <GlobalSearch
-                          onOpenInviteMemberSettings={
-                            handleOpenInviteMemberSettings
-                          }
-                          onOpenSettings={handleOpenSettings}
-                        />
-                      </div>
-                      <UploadIndicator />
-                      <Button
-                        aria-label={t('navigation.assets')}
-                        type="button"
-                        variant="outline"
-                        onClick={() => setIsAssetLibraryOpen(true)}
-                        onFocus={() => void loadAssetLibraryDialog()}
-                        onMouseEnter={() => void loadAssetLibraryDialog()}
-                      >
-                        <AssetIcon data-icon="inline-start" />
-                        <span
-                          className="
-                            hidden
-                            sm:inline
-                          "
-                        >
-                          {t('navigation.assets')}
-                        </span>
-                      </Button>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger
-                          render={(
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="icon"
-                              aria-label={t('common.moreOptions')}
-                            />
-                          )}
-                        >
-                          <IconDots />
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuGroup>
-                            <DropdownMenuItem onClick={onOpenCookiePreferences}>
-                              <IconCookie />
-                              <span>{t('cookies.manage')}</span>
-                            </DropdownMenuItem>
-                          </DropdownMenuGroup>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </header>
-                    <Separator />
-                  </>
-                )}
+                <header className="
+                  flex h-12 shrink-0 items-center px-3
+                  md:hidden
+                "
+                >
+                  <SidebarTrigger
+                    aria-label={t('navigation.toggleSidebar')}
+                  />
+                </header>
                 <section
                   className={cn(
                     'flex min-h-0 flex-1 flex-col',
-                    isFlowEditor
+                    isCreate
                       ? 'overflow-hidden'
                       : 'gap-6 overflow-y-auto p-6',
                   )}
@@ -254,20 +208,8 @@ export function DashboardLayout({
                 </section>
               </div>
             </SidebarInset>
+            {uploadIndicator}
             {settingsDialog}
-            {isAssetLibraryOpen && (
-              <Suspense fallback={null}>
-                <AssetLibraryDialog
-                  mode="manage"
-                  open={isAssetLibraryOpen}
-                  onOpenAsset={(asset) => {
-                    setIsAssetLibraryOpen(false)
-                    assetViewer.openAsset(asset.id)
-                  }}
-                  onOpenChange={setIsAssetLibraryOpen}
-                />
-              </Suspense>
-            )}
             <AssetViewerDialog />
           </SidebarProvider>
         </TooltipProvider>

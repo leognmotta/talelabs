@@ -1,18 +1,21 @@
 /** Dashboard navigation sidebar: primary sections and account controls. */
 
-import type { ComponentProps } from 'react'
+import type { ComponentProps, ReactNode } from 'react'
 import type { SettingsTab } from '../features/settings/settings-state'
 
 import {
   IconFolderOpen,
   IconGitBranch,
   IconLogout,
+  IconSparkles,
 } from '@tabler/icons-react'
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
+  SidebarSeparator,
+  SidebarTrigger,
 } from '@talelabs/ui/components/sidebar'
 
 import { useTranslation } from 'react-i18next'
@@ -26,6 +29,7 @@ import { NavUser } from './nav-user'
 export function AppSidebar({
   activeOrganizationId,
   email,
+  globalSearch,
   name,
   onCreateOrganization,
   onOpenInviteMemberSettings,
@@ -36,6 +40,7 @@ export function AppSidebar({
 }: ComponentProps<typeof Sidebar> & {
   activeOrganizationId: string | null
   email: string | undefined
+  globalSearch: ReactNode
   name: string | undefined
   onCreateOrganization: (name: string, slug: string) => Promise<string | null>
   onOpenInviteMemberSettings: () => void
@@ -48,6 +53,14 @@ export function AppSidebar({
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
+        <div className="
+          flex h-8 items-center justify-end px-1
+          group-data-[collapsible=icon]:justify-center
+          group-data-[collapsible=icon]:px-0
+        "
+        >
+          <SidebarTrigger aria-label={t('navigation.toggleSidebar')} />
+        </div>
         <div className="
           flex h-10 items-center px-3
           group-data-[collapsible=icon]:justify-center
@@ -78,8 +91,15 @@ export function AppSidebar({
         />
       </SidebarHeader>
       <SidebarContent>
+        {globalSearch}
+        <SidebarSeparator />
         <NavMain
           items={[
+            {
+              title: t('navigation.create'),
+              url: '/create',
+              icon: <IconSparkles />,
+            },
             {
               title: t('navigation.flows'),
               url: '/flows',

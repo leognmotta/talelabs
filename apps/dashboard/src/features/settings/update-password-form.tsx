@@ -1,3 +1,5 @@
+/** Password-update form for authenticated users with an existing credential. */
+
 import type { UpdatePasswordFormValues } from './settings-schemas'
 
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -8,15 +10,16 @@ import {
   FieldGroup,
   FieldLabel,
 } from '@talelabs/ui/components/field'
-import { Input } from '@talelabs/ui/components/input'
 import { Controller, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { LocalizedFieldError } from '../../shared/components/localized-field-error'
+import { PasswordInput } from '../../shared/components/password-input'
 import { getAuthErrorMessage } from '../../shared/lib/auth-error'
 import { authClient } from '../auth/auth-client'
 import { updatePasswordSchema } from './settings-schemas'
 
+/** Changes the caller's password and refreshes credential state. */
 export function UpdatePasswordForm({
   onPasswordChanged,
 }: {
@@ -82,10 +85,9 @@ export function UpdatePasswordForm({
               <FieldLabel htmlFor="settings-current-password">
                 {t('settings.currentPassword')}
               </FieldLabel>
-              <Input
+              <PasswordInput
                 {...field}
                 id="settings-current-password"
-                type="password"
                 autoComplete="current-password"
                 aria-invalid={fieldState.invalid}
               />
@@ -103,10 +105,9 @@ export function UpdatePasswordForm({
               <FieldLabel htmlFor="settings-new-password">
                 {t('settings.newPassword')}
               </FieldLabel>
-              <Input
+              <PasswordInput
                 {...field}
                 id="settings-new-password"
-                type="password"
                 autoComplete="new-password"
                 aria-invalid={fieldState.invalid}
               />

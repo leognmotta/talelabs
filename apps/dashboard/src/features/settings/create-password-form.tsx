@@ -1,3 +1,5 @@
+/** Password-creation form for authenticated users without a password credential. */
+
 import type { CreatePasswordFormValues } from './settings-schemas'
 
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -8,14 +10,15 @@ import {
   FieldError,
   FieldLabel,
 } from '@talelabs/ui/components/field'
-import { Input } from '@talelabs/ui/components/input'
 import { Controller, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { LocalizedFieldError } from '../../shared/components/localized-field-error'
+import { PasswordInput } from '../../shared/components/password-input'
 import { getApiErrorMessage } from '../../shared/lib/api-error'
 import { createPasswordSchema } from './settings-schemas'
 
+/** Creates the caller's initial password and refreshes credential state. */
 export function CreatePasswordForm({
   onPasswordChanged,
 }: {
@@ -73,10 +76,9 @@ export function CreatePasswordForm({
             <FieldLabel htmlFor="settings-create-password">
               {t('common.password')}
             </FieldLabel>
-            <Input
+            <PasswordInput
               {...field}
               id="settings-create-password"
-              type="password"
               autoComplete="new-password"
               aria-invalid={fieldState.invalid}
             />

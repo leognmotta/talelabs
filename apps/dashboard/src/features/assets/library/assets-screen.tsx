@@ -11,7 +11,7 @@ export function AssetsScreen() {
 
   return (
     <AssetLibrary
-      className="min-h-[calc(100svh-8rem)]"
+      className="min-h-full"
       filters={urlState.filters}
       folderId={urlState.folderId}
       onFiltersChange={urlState.setFilters}

@@ -11,6 +11,7 @@ import {
   IconRefresh,
   IconSearch,
   IconSettings,
+  IconSparkles,
   IconUserCircle,
   IconUsersGroup,
 } from '@tabler/icons-react'
@@ -26,6 +27,12 @@ import {
   CommandSeparator,
 } from '@talelabs/ui/components/command'
 import { Kbd } from '@talelabs/ui/components/kbd'
+import {
+  SidebarGroup,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from '@talelabs/ui/components/sidebar'
 import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
@@ -43,9 +50,10 @@ import { GlobalSearchFolderThumbnail } from './global-search-folder-thumbnail'
 const pageActions: {
   hidden?: boolean
   icon: typeof AssetIcon
-  titleKey: 'navigation.assets' | 'navigation.flows'
+  titleKey: 'navigation.assets' | 'navigation.create' | 'navigation.flows'
   url: string
 }[] = [
+  { icon: IconSparkles, titleKey: 'navigation.create', url: '/create' },
   { icon: AssetIcon, titleKey: 'navigation.assets', url: '/assets' },
   { icon: IconGitBranch, titleKey: 'navigation.flows', url: '/flows' },
 ]
@@ -80,9 +88,11 @@ function matchesCommand(search: string, value: string) {
 export function GlobalSearch({
   onOpenInviteMemberSettings,
   onOpenSettings,
+  presentation = 'header',
 }: {
   onOpenInviteMemberSettings: () => void
   onOpenSettings: (tab?: SettingsTab) => void
+  presentation?: 'header' | 'sidebar'
 }) {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -271,31 +281,59 @@ export function GlobalSearch({
 
   return (
     <>
-      <Button
-        type="button"
-        variant="outline"
-        className="
-          h-9 w-full max-w-md justify-start rounded-4xl px-3
-          text-muted-foreground
-        "
-        onClick={() => setOpen(true)}
-      >
-        <IconSearch data-icon="inline-start" />
-        <span className="
-          hidden min-w-0 flex-1 truncate text-left
-          sm:inline
-        "
-        >
-          {t('search.placeholder')}
-        </span>
-        <Kbd className="
-          ml-auto hidden
-          sm:inline-flex
-        "
-        >
-          {shortcutLabel}
-        </Kbd>
-      </Button>
+      {presentation === 'sidebar'
+        ? (
+            <SidebarGroup className="py-0">
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    aria-label={t('search.title')}
+                    tooltip={t('search.title')}
+                    type="button"
+                    variant="muted"
+                    onClick={() => setOpen(true)}
+                  >
+                    <IconSearch />
+                    <span>{t('search.title')}</span>
+                    <Kbd className="
+                      ml-auto
+                      group-data-[collapsible=icon]:hidden
+                    "
+                    >
+                      {shortcutLabel}
+                    </Kbd>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroup>
+          )
+        : (
+            <Button
+              type="button"
+              variant="outline"
+              className="
+                h-9 w-full max-w-md justify-start rounded-4xl px-3
+                text-muted-foreground
+              "
+              onClick={() => setOpen(true)}
+            >
+              <IconSearch data-icon="inline-start" />
+              <span className="
+                hidden min-w-0 flex-1 truncate text-left
+                sm:inline
+              "
+              >
+                {t('search.placeholder')}
+              </span>
+              <Kbd className="
+                ml-auto hidden
+                sm:inline-flex
+              "
+              >
+                {shortcutLabel}
+              </Kbd>
+            </Button>
+          )}
 
       <CommandDialog
         className="sm:max-w-[620px]"

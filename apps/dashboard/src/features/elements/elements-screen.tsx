@@ -58,7 +58,7 @@ export function ElementsScreen() {
   }
 
   return (
-    <section className="flex min-h-[calc(100svh-8rem)] flex-col">
+    <section className="flex min-h-full flex-col">
       <header className="flex flex-wrap items-center gap-3 pb-4">
         <div>
           <h1 className="text-xl font-semibold tracking-tight">

@@ -1,3 +1,5 @@
+/** Global progress-panel entry point for uploads that outlive their dialog. */
+
 import {
   IconAlertCircle,
   IconCheck,
@@ -19,6 +21,7 @@ import { UploadPanel } from './upload-panel'
 import { uploadStore } from './upload-store'
 import { isActiveUploadStatus } from './upload.types'
 
+/** Opens the organization-scoped upload queue while it contains work. */
 export function UploadIndicator() {
   const { i18n, t } = useTranslation()
   const organizationId = useActiveOrganizationId()
@@ -70,7 +73,7 @@ export function UploadIndicator() {
       ? t('uploads.openFailed', { count: failedCount })
       : t('uploads.open')
 
-  if (!organizationId)
+  if (!organizationId || count === 0)
     return null
 
   return (

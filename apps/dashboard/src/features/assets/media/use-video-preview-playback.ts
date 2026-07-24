@@ -4,10 +4,10 @@ import type { FocusEvent, RefCallback } from 'react'
 
 import { useCallback, useRef, useState } from 'react'
 
-function releaseVideo(video: HTMLVideoElement) {
+function resetVideo(video: HTMLVideoElement) {
   video.pause()
-  video.removeAttribute('src')
-  video.load()
+  if (video.readyState > 0)
+    video.currentTime = 0
 }
 
 /** Starts preview playback on user intent and resets it when the preview deactivates. */
@@ -18,7 +18,7 @@ export function useVideoPreviewPlayback(enabled = true) {
   const videoRef: RefCallback<HTMLVideoElement> = useCallback((video) => {
     const previousVideo = videoElementRef.current
     if (previousVideo && previousVideo !== video)
-      releaseVideo(previousVideo)
+      resetVideo(previousVideo)
 
     videoElementRef.current = video
     if (video)
