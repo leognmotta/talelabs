@@ -13,10 +13,7 @@ import type { CreateDraftResolution } from './create-resolution'
 import {
   IconAdjustmentsHorizontal,
   IconBug,
-  IconPhoto,
   IconSparkles,
-  IconVideo,
-  IconWaveSine,
 } from '@tabler/icons-react'
 import { Button } from '@talelabs/ui/components/button'
 import { Label } from '@talelabs/ui/components/label'
@@ -28,7 +25,6 @@ import {
   PopoverTrigger,
 } from '@talelabs/ui/components/popover'
 import { Switch } from '@talelabs/ui/components/switch'
-import { Tabs, TabsList, TabsTrigger } from '@talelabs/ui/components/tabs'
 import { Textarea } from '@talelabs/ui/components/textarea'
 import {
   ToggleGroup,
@@ -39,6 +35,12 @@ import { GenerationSettingsList } from '../generation/configuration/generation-s
 import { PromptComposer } from '../generation/prompt-composer/prompt-composer'
 import { GenerationRunCostEstimate } from '../generation/runs/generation-run-cost-estimate'
 import { CreateAttachments } from './create-attachments'
+import { CreateComposerFrame } from './create-composer-frame'
+import { CreateComposerModeTabs } from './create-composer-mode-tabs'
+import {
+  getCreatePromptLabelKey,
+  getCreatePromptPlaceholderKey,
+} from './create-composer-prompt-copy'
 import {
   CREATE_AUDIO_INTENTS,
   createNodeType,
@@ -51,30 +53,6 @@ function acceptsPrompt(draft: CreateDraft) {
   )
 }
 
-function promptLabelKey(draft: CreateDraft) {
-  if (draft.mode === 'image')
-    return 'create.composer.imageLabel'
-  if (draft.mode === 'video')
-    return 'create.composer.videoLabel'
-  if (draft.audioIntent === 'speechGeneration')
-    return 'create.composer.speechLabel'
-  if (draft.audioIntent === 'musicGeneration')
-    return 'create.composer.musicLabel'
-  return 'create.composer.soundEffectLabel'
-}
-
-function promptPlaceholderKey(draft: CreateDraft) {
-  if (draft.mode === 'image')
-    return 'create.composer.imagePlaceholder'
-  if (draft.mode === 'video')
-    return 'create.composer.videoPlaceholder'
-  if (draft.audioIntent === 'speechGeneration')
-    return 'create.composer.speechPlaceholder'
-  if (draft.audioIntent === 'musicGeneration')
-    return 'create.composer.musicPlaceholder'
-  return 'create.composer.soundEffectPlaceholder'
-}
-
 /** Renders one explicit media command and its catalog-derived controls. */
 export function CreateComposer({
   blockingReason,
@@ -84,6 +62,7 @@ export function CreateComposer({
   draft,
   estimateState,
   generationConfig,
+  projectId,
   resolution,
   onAddAttachment,
   onAudioIntentChange,
@@ -111,6 +90,8 @@ export function CreateComposer({
   estimateState: GenerationRunCostEstimateState
   /** Sanitized catalog projection used to disable unavailable models. */
   generationConfig: GenerationConfigResponse
+  /** Fixed Project scope for attachment Assets and uploads. */
+  projectId: null | string
   /** Existing model-capability resolution. */
   resolution: CreateDraftResolution
   /** Adds one stable browser-local Asset input. */
@@ -140,12 +121,8 @@ export function CreateComposer({
   const promptVisible = acceptsPrompt(draft)
 
   return (
-    <form
+    <CreateComposerFrame
       aria-label={t('create.composer.label')}
-      className="
-        overflow-hidden rounded-[1.375rem] border border-border/80 bg-card/95
-        shadow-[0_24px_80px_rgb(0_0_0/0.34)]
-      "
       onKeyDownCapture={(event) => {
         if (
           event.key === 'Enter'
@@ -168,44 +145,10 @@ export function CreateComposer({
         sm:px-4
       "
       >
-        <Tabs
-          className="min-w-0"
-          value={draft.mode}
-          onValueChange={value => onModeChange(value as CreateMode)}
-        >
-          <TabsList className="h-8 max-w-full bg-muted/55 p-0.5">
-            <TabsTrigger className="h-7 px-2.5" value="image">
-              <IconPhoto />
-              <span className="
-                hidden
-                sm:inline
-              "
-              >
-                {t('create.modes.image')}
-              </span>
-            </TabsTrigger>
-            <TabsTrigger className="h-7 px-2.5" value="video">
-              <IconVideo />
-              <span className="
-                hidden
-                sm:inline
-              "
-              >
-                {t('create.modes.video')}
-              </span>
-            </TabsTrigger>
-            <TabsTrigger className="h-7 px-2.5" value="audio">
-              <IconWaveSine />
-              <span className="
-                hidden
-                sm:inline
-              "
-              >
-                {t('create.modes.audio')}
-              </span>
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
+        <CreateComposerModeTabs
+          mode={draft.mode}
+          onModeChange={onModeChange}
+        />
       </div>
       {draft.mode === 'audio' && (
         <div className="
@@ -240,6 +183,7 @@ export function CreateComposer({
       >
         <CreateAttachments
           draft={draft}
+          projectId={projectId}
           resolution={resolution}
           onAdd={onAddAttachment}
           onRemove={onRemoveAttachment}
@@ -248,7 +192,7 @@ export function CreateComposer({
         {promptVisible && (
           <div className="min-w-0">
             <Label className="sr-only" htmlFor="create-prompt">
-              {t(promptLabelKey(draft))}
+              {t(getCreatePromptLabelKey(draft))}
             </Label>
             <PromptComposer
               key={createNodeType(draft.mode, draft.audioIntent)}
@@ -261,8 +205,8 @@ export function CreateComposer({
               disabled={disabled}
               id="create-prompt"
               inputs={resolution.promptInputs}
-              label={t(promptLabelKey(draft))}
-              placeholder={t(promptPlaceholderKey(draft))}
+              label={t(getCreatePromptLabelKey(draft))}
+              placeholder={t(getCreatePromptPlaceholderKey(draft))}
               template={draft.prompt}
               onChange={onPromptChange}
             />
@@ -367,6 +311,6 @@ export function CreateComposer({
           </Button>
         </div>
       </div>
-    </form>
+    </CreateComposerFrame>
   )
 }
