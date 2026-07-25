@@ -389,7 +389,7 @@ export function DashboardRoutes() {
             </ProtectedRoute>
           )}
         >
-          <Route index element={<Navigate to="/flows" replace />} />
+          <Route index element={<Navigate to="/create" replace />} />
           <Route
             path="create/:sessionId?"
             element={(

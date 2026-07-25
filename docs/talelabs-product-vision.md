@@ -61,8 +61,8 @@ Assets
 Elements
 ```
 
-The root redirect remains `/flows`; adding Create does not silently change an
-existing user's entry route.
+The root redirect is `/create`, giving users the lowest-friction entry into
+generating a useful Asset.
 
 ## Build Order
 
