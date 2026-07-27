@@ -1281,7 +1281,7 @@ Seams that exist without speculative tables:
 - **Elements shipped (2026-07-18):** simplified reference collections
   (`elements` + `elementReferences`, sections 5–6). The retired multi-role
   Element schema (roles, source/master, readiness) stays frozen and deleted;
-  any revival of *that* starts from measured product need and the then-current
+  any revival of _that_ starts from measured product need and the then-current
   M5/M6 snapshot contract.
 - **Registry schema evolution:** `"schemaVersion"` on active `flowNodes` lets node
   schemas upcast old payloads deterministically. Released versions and migrations
@@ -1292,7 +1292,15 @@ Seams that exist without speculative tables:
 - **Recipes:** a `recipes` table holding a _cloned graph snapshot_ (jsonb is right there, since a template is a document, not a queried graph) + insertion logic that re-ids nodes/edges. The stable-id + normalized-graph design makes "save selection as recipe" a `select` and "add to flow" a batch insert with fresh cuid2s.
 - **Tools:** reuse the `flowRuns` orchestration model (section 11) over an immutable internal graph snapshot — a tool run spans providers and media types, so it is an orchestration record, never a `generationJobs` row; jobs stay single-provider, single-model execution units.
 - **Collaboration:** stable client-generated node/edge ids and per-row graph writes are the prerequisites, already in place; the flow `"revision"` CAS is the single-writer serialization point a sync layer would replace. Presence is ephemeral (never in Postgres); durable state is these tables.
-- **Billing/credits:** `"creditCost"` and `"providerCostUsd"` are already recorded per execution — the calibration dataset accumulates from launch. The ledger, balances, and reservation lifecycle attach to `generationJobs."id"` / `flowRuns."id"` later; full analysis in `credits-planning.md`.
+- **Billing/credits:** `"creditCost"` and `"providerCostUsd"` already record the
+  execution seam. The approved M8 schema adds organization billing accounts,
+  subscriptions, one-time top-up purchases/payments, a Stripe event inbox,
+  promotional/subscription/purchased grants, materialized balances, append-only
+  ledger entries, run/job reservations and allocations, captured funding source,
+  and organization storage usage. Top-ups are available on Free without changing
+  the Free storage entitlement. The exact lifecycle, invariants, and rollout
+  gates live in `credits-planning.md`; do not duplicate or simplify that
+  accounting model here.
 - **Public delivery / showcase:** `assets.visibility` is the durable storage
   policy snapshot. A future showcase adds a separate moderation/feature
   decision and must never list every public Asset automatically.

@@ -82,23 +82,23 @@ type ApiError = {
 };
 ```
 
-| HTTP | code                                   | when                                                                         |
-| ---- | -------------------------------------- | ---------------------------------------------------------------------------- |
-| 400  | `validation_error`                     | malformed body/params (Zod `defaultHook`; `details` per field)               |
-| 401  | `unauthenticated`                      | no/expired session                                                           |
-| 403  | `active_organization_required`         | session valid but no active organization selected                            |
-| 409  | `organization_context_changed`         | request expected a different active organization; retry from current context |
-| 404  | `not_found`                            | missing resource **or** another org's resource                               |
-| 409  | `conflict`                             | duplicate where uniqueness matters (idempotency key reuse, edge duplicates)  |
-| 409  | `revision_conflict`                    | graph sync CAS lost — refetch graph and replay                               |
-| 409  | `invalid_state`                        | canceling a finished run, restoring a purging asset                          |
-| 400  | `element_reference_limit_reached`      | an Element reference write exceeds the 8-reference maximum                    |
-| 400  | `element_reference_not_image`          | an Element reference Asset is not an image                                    |
-| 400  | `asset_not_available`                  | an Element reference Asset is missing or being purged                         |
-| 422  | `unsupported_by_model`                 | settings/inputs the selected model cannot accept                             |
-| 429  | `rate_limited`                         | admission control (runs) or abuse limits; includes `Retry-After`             |
-| 402  | `insufficient_credits`                 | **Phase 2 only** — documented so clients handle it from day one              |
-| 500  | `internal_error`                       | unhandled failure (existing error middleware fallback)                       |
+| HTTP | code                              | when                                                                         |
+| ---- | --------------------------------- | ---------------------------------------------------------------------------- |
+| 400  | `validation_error`                | malformed body/params (Zod `defaultHook`; `details` per field)               |
+| 401  | `unauthenticated`                 | no/expired session                                                           |
+| 403  | `active_organization_required`    | session valid but no active organization selected                            |
+| 409  | `organization_context_changed`    | request expected a different active organization; retry from current context |
+| 404  | `not_found`                       | missing resource **or** another org's resource                               |
+| 409  | `conflict`                        | duplicate where uniqueness matters (idempotency key reuse, edge duplicates)  |
+| 409  | `revision_conflict`               | graph sync CAS lost — refetch graph and replay                               |
+| 409  | `invalid_state`                   | canceling a finished run, restoring a purging asset                          |
+| 400  | `element_reference_limit_reached` | an Element reference write exceeds the 8-reference maximum                   |
+| 400  | `element_reference_not_image`     | an Element reference Asset is not an image                                   |
+| 400  | `asset_not_available`             | an Element reference Asset is missing or being purged                        |
+| 422  | `unsupported_by_model`            | settings/inputs the selected model cannot accept                             |
+| 429  | `rate_limited`                    | admission control (runs) or abuse limits; includes `Retry-After`             |
+| 402  | `insufficient_credits`            | managed admission cannot reserve the complete immutable credit quote         |
+| 500  | `internal_error`                  | unhandled failure (existing error middleware fallback)                       |
 
 ### Deletion semantics (mirrors the DB lifecycle: live → archived → purge requested → purged)
 
@@ -110,22 +110,45 @@ type ApiError = {
 
 ## Endpoint index
 
-| Area     | Endpoints                                                                                                                                                                                                                                                                                                       |
-| -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Search   | `GET /search`                                                                                                                                                                                                                                                                                                   |
-| Uploads  | `POST /uploads`                                                                                                                                                                                                                                                                                                 |
-| Assets   | `GET /assets` · `POST /assets` · `POST /assets/move` · `GET /assets/:id` · `PATCH /assets/:id` · `DELETE /assets/:id` · `POST /assets/:id/restore` · `POST /assets/:id/purge` · `GET /assets/:id/usage` · `GET /assets/:id/download` · `PUT/DELETE /assets/:id/favorite` · `PUT/DELETE /assets/:id/tags/:tagId` |
-| Folders  | `GET /folders` · `POST /folders` · `PATCH /folders/:id` · `DELETE /folders/:id`                                                                                                                                                                                                                                 |
-| Tags     | `GET /tags` · `POST /tags` · `DELETE /tags/:id`                                                                                                                                                                                                                                                                 |
-| Flows    | `GET /flows` · `POST /flows` · `GET /flows/:id` · `PATCH /flows/:id` · `DELETE /flows/:id` · `GET /flows/:id/graph` · `GET /flows/:id/references` · `POST /flows/:id/graph` · `GET /flows/:id/nodes/:nodeId/results`                                                                                            |
-| Elements | `GET /elements` · `POST /elements` · `GET /elements/:id` · `PATCH /elements/:id` · `DELETE /elements/:id` · `PATCH /elements/:id/references`                                                                                                                                                                     |
-| Create Sessions | `GET /create-sessions` · `GET /create-sessions/:id` · `PATCH /create-sessions/:id` · `DELETE /create-sessions/:id`                                                                                                                                                                                         |
-| Projects | `GET/POST /projects` · `GET/PATCH /projects/:projectId` · `POST /projects/:projectId/archive` · `POST /projects/:projectId/restore` · `GET /projects/:projectId/home` · `GET/PUT /projects/:projectId/brief` · `GET /projects/:projectId/brief/mentions` · `POST /projects/:projectId/brief/mentions/resolve` |
-| Runs     | `POST /flows/:id/run-plans` · `POST /runs` · `POST /runs/create/estimate` · `POST /runs/create` · `GET /runs` · `GET /runs/active` · `GET /runs/:id` · `POST /runs/:id/cancel` · `POST /runs/:id/retry` · `POST /runs/:id/realtime-token`                                                                                  |
-| Config   | `GET /config/generation`                                                                                                                                                                                                                                                                                        |
+| Area            | Endpoints                                                                                                                                                                                                                                                                                                       |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Search          | `GET /search`                                                                                                                                                                                                                                                                                                   |
+| Uploads         | `POST /uploads`                                                                                                                                                                                                                                                                                                 |
+| Assets          | `GET /assets` · `POST /assets` · `POST /assets/move` · `GET /assets/:id` · `PATCH /assets/:id` · `DELETE /assets/:id` · `POST /assets/:id/restore` · `POST /assets/:id/purge` · `GET /assets/:id/usage` · `GET /assets/:id/download` · `PUT/DELETE /assets/:id/favorite` · `PUT/DELETE /assets/:id/tags/:tagId` |
+| Folders         | `GET /folders` · `POST /folders` · `PATCH /folders/:id` · `DELETE /folders/:id`                                                                                                                                                                                                                                 |
+| Tags            | `GET /tags` · `POST /tags` · `DELETE /tags/:id`                                                                                                                                                                                                                                                                 |
+| Flows           | `GET /flows` · `POST /flows` · `GET /flows/:id` · `PATCH /flows/:id` · `DELETE /flows/:id` · `GET /flows/:id/graph` · `GET /flows/:id/references` · `POST /flows/:id/graph` · `GET /flows/:id/nodes/:nodeId/results`                                                                                            |
+| Elements        | `GET /elements` · `POST /elements` · `GET /elements/:id` · `PATCH /elements/:id` · `DELETE /elements/:id` · `PATCH /elements/:id/references`                                                                                                                                                                    |
+| Create Sessions | `GET /create-sessions` · `GET /create-sessions/:id` · `PATCH /create-sessions/:id` · `DELETE /create-sessions/:id`                                                                                                                                                                                              |
+| Projects        | `GET/POST /projects` · `GET/PATCH /projects/:projectId` · `POST /projects/:projectId/archive` · `POST /projects/:projectId/restore` · `GET /projects/:projectId/home` · `GET/PUT /projects/:projectId/brief` · `GET /projects/:projectId/brief/mentions` · `POST /projects/:projectId/brief/mentions/resolve`   |
+| Runs            | `POST /flows/:id/run-plans` · `POST /runs` · `POST /runs/create/estimate` · `POST /runs/create` · `GET /runs` · `GET /runs/active` · `GET /runs/:id` · `POST /runs/:id/cancel` · `POST /runs/:id/retry` · `POST /runs/:id/realtime-token`                                                                       |
+| Billing         | `GET /billing/catalog` · `GET /billing/account` · `GET /billing/usage` · `GET /billing/credits/ledger` · `POST /billing/checkout` · `PATCH /billing/subscription` · `POST /billing/topups/checkout` · `POST /billing/portal` · `POST /webhooks/stripe`                                                        |
+| Config          | `GET /config/generation`                                                                                                                                                                                                                                                                                        |
 
 Elements shipped as simplified reference collections (`docs/elements.md`). The
 retired multi-role Element endpoints were deleted, not deferred.
+
+### Billing account and usage summary
+
+`GET /billing/account` is the only current organization billing/quota summary
+consumed by the dashboard shell and Billing settings. It resolves the active
+organization from authenticated context and returns the effective plan and
+recurring option, monthly credit allowance, available/reserved credits,
+storage used/reserved/limit bytes, quota state, next grant, billing cadence,
+and managed/BYOK entitlements.
+
+The complete response shape, lazy grant reconciliation, constant-time
+projection reads, invalidation events, and disclosure restrictions are binding
+in `credits-planning.md` section 8.1. Do not introduce another current-summary
+endpoint, scan Assets or the ledger on each sidebar render, or expose Stripe
+identifiers and internal economics.
+
+`GET /billing/usage?month=YYYY-MM` is the bounded detail contract for the
+Settings Usage destination. It returns current Project, Asset, and Element
+counts plus selected-month generation/output/credit totals. Assets remain the
+only storage-byte authority: Project ownership and Element references must not
+double-count Asset bytes. Its response, indexing/scaling contract, and
+disclosure limits are binding in `credits-planning.md` section 8.2.
 
 ---
 
@@ -550,20 +573,20 @@ indistinguishable from missing resources.
 
 ### `GET /assets`
 
-| param       | type                                 | notes                                          |
-| ----------- | ------------------------------------ | ---------------------------------------------- |
-| `type`      | `AssetType` (repeatable)             | `?type=image&type=video`                       |
-| `source`    | `AssetSource`                        |                                                |
-| `folderId`  | string \| `'root'`                   | `'root'` = no folder                           |
-| `projectId` | string \| `'private'`                | omitted = every location; `'private'` = null   |
-| `generatedByFlowId` | string                       | generated outputs attributed to one Flow       |
-| `generatedByCreateSessionId` | string              | generated outputs attributed to one session    |
-| `favorite`  | boolean                              | current user's favorites only                  |
-| `tagId`     | string (repeatable)                  | any selected tag                               |
-| `search`    | string                               | `ilike` on name (pg_trgm later; same contract) |
-| `archived`  | boolean                              | default `false`; `true` lists archived only    |
-| `sort`      | `createdAt` \| `name` \| `sizeBytes` | default `createdAt`                            |
-| `order`     | `asc` \| `desc`                      | default `desc`                                 |
+| param                        | type                                 | notes                                          |
+| ---------------------------- | ------------------------------------ | ---------------------------------------------- |
+| `type`                       | `AssetType` (repeatable)             | `?type=image&type=video`                       |
+| `source`                     | `AssetSource`                        |                                                |
+| `folderId`                   | string \| `'root'`                   | `'root'` = no folder                           |
+| `projectId`                  | string \| `'private'`                | omitted = every location; `'private'` = null   |
+| `generatedByFlowId`          | string                               | generated outputs attributed to one Flow       |
+| `generatedByCreateSessionId` | string                               | generated outputs attributed to one session    |
+| `favorite`                   | boolean                              | current user's favorites only                  |
+| `tagId`                      | string (repeatable)                  | any selected tag                               |
+| `search`                     | string                               | `ilike` on name (pg_trgm later; same contract) |
+| `archived`                   | boolean                              | default `false`; `true` lists archived only    |
+| `sort`                       | `createdAt` \| `name` \| `sizeBytes` | default `createdAt`                            |
+| `order`                      | `asc` \| `desc`                      | default `desc`                                 |
 
 Omitting `folderId` is an aggregate across every folder in the selected
 location; `folderId=root` selects only the physical root. The two generated-by
@@ -1367,4 +1390,8 @@ pinning.
 4. **Results are derived, never duplicated.** Node results come from `/nodes/:nodeId/results` (jobs + assets), not from node `data` — matching the DB rule that draft and provenance never share storage.
 5. **The idempotency ladder is client-visible only at the top.** The client supplies one `Idempotency-Key` per run request; everything below (child job keys, dispatch keys, provider submission markers) is server-derived, per the DB doc.
 6. **Server-authoritative generation.** Run requests carry _which node_, never _what to generate_ — context resolution, capability validation, and snapshotting happen server-side, so provenance can't be spoofed by a client and the Generate UX can evolve without API churn.
-7. **Deferred on purpose:** `POST /runs/estimate` + `402` (credits Phase 2 — costs are already recorded server-side per the DB doc); Tools/Recipes endpoints (new resources, same patterns); realtime push (polling contract stands); bulk asset operations beyond the atomic move endpoint (`POST /assets/bulk` when additional server-side bulk mutation becomes necessary).
+7. **Separate contracts on purpose:** billing catalog, account, Checkout,
+   Portal, ledger, and Stripe webhook APIs follow the binding contract in
+   `credits-planning.md`; Tools/Recipes endpoints remain future resources using
+   the same API patterns. Bulk Asset operations beyond the atomic move endpoint
+   remain deferred until another server-side bulk mutation is necessary.

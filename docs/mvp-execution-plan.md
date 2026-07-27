@@ -77,12 +77,15 @@ or multi-output Element nodes.
 8. Reliability and internal MVP staging
 9. Direct Create sessions over the proven shared execution spine
 10. Projects and generated-Asset organization
-11. Billing and credits as a separate productization phase
+11. Billing and credits as the next productization phase
 ```
 
 The user approved the adaptive node behavior and M5 scope on 2026-07-14.
-Trigger.dev orchestration and deterministic mock execution are authorized.
-OpenRouter/provider calls, credit charging, and Tool execution are not.
+Trigger.dev orchestration, real provider execution, Projects, and direct Create
+are implemented. The code-owned plans, Stripe subscriptions, monthly grants,
+credit ledger, run settlement, and storage-entitlement milestone is approved
+for planning in `docs/credits-planning.md`; implementation still requires an
+explicit execution prompt. Tool execution remains deferred.
 
 ## Deferred Scope
 
@@ -98,7 +101,6 @@ video editor or cuts
 collaboration and comments
 triggers, schedules, and webhooks
 public galleries or share links
-credits, subscriptions, and Stripe billing
 ```
 
 Feature research is evidence, not authorization to implement a feature.
@@ -134,17 +136,18 @@ explicit user decision after exercising the product.
 
 ## Milestones
 
-| Milestone | Status | Outcome |
-| --- | --- | --- |
-| M0: Database foundation | Complete | The initial schema and tenant constraints migrate successfully. |
-| M1: API foundation | Complete | Hono/OpenAPI/SDK share one tenant-safe API foundation. |
-| M2: Assets | Complete | Private media is durable, processed, searchable, organized, and reusable. |
-| M3: Canvas foundation | Implemented, refining | Flows persist and reopen with typed manual graph editing. |
-| M4: Canvas product reset | Complete, user approved | Every approved creative node is model-adaptive and its canvas UX is accepted. |
-| M5: Provider-independent run engine | Approved | Durable runs execute immutable canvas inputs and persist canonical output Assets; deterministic mock adapters remain available for offline verification. |
-| M6: Provider integration | Active - implementation verification | Four pinned OpenRouter route families (image, video, speech, and chat) use the M5 engine with no fallback; paid acceptance is tracked in `docs/m6-real-provider-integration.md`. |
-| M6.5: Projects and Asset organization | Implemented, engineering verification active | Optional Project ownership composes existing creative surfaces and captures generated-Asset destinations immutably. |
-| M7: MVP candidate | Pending | Reliability, tenancy, staging, and user acceptance gates pass. |
+| Milestone                             | Status                                       | Outcome                                                                                                                                                                          |
+| ------------------------------------- | -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| M0: Database foundation               | Complete                                     | The initial schema and tenant constraints migrate successfully.                                                                                                                  |
+| M1: API foundation                    | Complete                                     | Hono/OpenAPI/SDK share one tenant-safe API foundation.                                                                                                                           |
+| M2: Assets                            | Complete                                     | Private media is durable, processed, searchable, organized, and reusable.                                                                                                        |
+| M3: Canvas foundation                 | Implemented, refining                        | Flows persist and reopen with typed manual graph editing.                                                                                                                        |
+| M4: Canvas product reset              | Complete, user approved                      | Every approved creative node is model-adaptive and its canvas UX is accepted.                                                                                                    |
+| M5: Provider-independent run engine   | Approved                                     | Durable runs execute immutable canvas inputs and persist canonical output Assets; deterministic mock adapters remain available for offline verification.                         |
+| M6: Provider integration              | Active - implementation verification         | Four pinned OpenRouter route families (image, video, speech, and chat) use the M5 engine with no fallback; paid acceptance is tracked in `docs/m6-real-provider-integration.md`. |
+| M6.5: Projects and Asset organization | Implemented, engineering verification active | Optional Project ownership composes existing creative surfaces and captures generated-Asset destinations immutably.                                                              |
+| M7: MVP candidate                     | Pending                                      | Reliability, tenancy, staging, and user acceptance gates pass.                                                                                                                   |
+| M8: Billing and credits               | Planned, implementation not started          | Code-owned plans, Stripe subscriptions, monthly grants, storage entitlements, and atomic managed-run credit settlement pass paid-beta certification.                             |
 
 ---
 
@@ -675,9 +678,38 @@ production build and contract checks
 user-owned end-to-end acceptance
 ```
 
-Credits, subscriptions, public API/MCP, Tools, Recipes, and other expansion
-layers require separate plans after this gate. (Simplified Elements already
-shipped — `docs/elements.md`.)
+Public API/MCP, Tools, Recipes, and other expansion layers remain deferred.
+Billing and credits now have the approved separate implementation plan in
+`docs/credits-planning.md`. (Simplified Elements already shipped -
+`docs/elements.md`.)
+
+## M8 - Billing And Credits
+
+M8 implements the binding plan in `docs/credits-planning.md`:
+
+```txt
+code-owned Founder/Creator/Pro catalog
+monthly and annual Stripe subscriptions
+one-time credit top-ups on Free, Creator, and Pro
+monthly credit grants for both billing cadences
+private non-expiring purchased-credit grants
+append-only ledger and materialized organization balance
+atomic whole-run reservation
+per-job capture/release and terminal reconciliation
+storage entitlements
+funding-source output visibility
+billing/account UI with one shared organization usage summary
+global sidebar credits remaining and storage used/limit
+Settings Billing destinations for Plans, Credits, and Usage
+exactly three plan identities: Free, Creator, and Pro
+Project, Asset, and Element usage without double-counting Asset storage
+Stripe test-mode and controlled paid-beta certification
+```
+
+M8 must reuse the existing source-neutral Flow/Create planner, immutable
+snapshots, provider bindings, Trigger.dev execution, and canonical Asset
+pipeline. It must not create a second execution engine or place financial truth
+in Stripe-only, Trigger-only, browser-only, or process-memory state.
 
 ## Standard Verification
 

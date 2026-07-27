@@ -610,6 +610,7 @@ rewrite historical inputs.
 
 Multi-source input is separate from iteration, batch generation, multiple
 outputs, and run-all execution. Those runtime semantics must remain explicit.
+
 ## Workspace Scope
 
 Assets and Flows belong to a user workspace or organization boundary. Tenant isolation is required for every read, write, selection, generation input, storage operation, and realtime room.
@@ -931,27 +932,68 @@ None are required to validate the first sellable loop.
 
 ## Billing And Credits
 
-Credits and billing are necessary for a commercial generation product, but they should follow the proven single-user creation loop rather than lead implementation.
+Billing and credits are the active productization milestone after the approved
+single-user Create, Flow, Asset, Element, and Project loop. The binding
+commercial and technical design is `docs/credits-planning.md`.
 
-TaleLabs already calculates and displays an advisory provider-cost estimate for
-Credits-funded managed runs and recalculates it authoritatively at admission.
-Credit balances, reservations, capture, release, pricing margins, and enforcement
-remain future billing work.
+The approved launch offers are Founder Free, Creator, and Pro. Creator and Pro
+have monthly and annual Stripe subscriptions, but both grant credits monthly.
+Every plan, including Free, may also purchase private, non-expiring managed
+generation top-ups through the code-owned volume slider. Top-ups do not increase
+storage or unlock subscription entitlements, and subscriptions remain the best
+credit value.
+Commercial policy, prices, allowances, storage limits, and margin assumptions
+are code-owned and changed through reviewed PRs rather than environment
+variables or database-admin configuration.
 
-When introduced, billing must support:
+Managed Credits execution follows:
 
 ```txt
-credit-denominated run quotes derived from provider-cost estimates
-credit reservation before execution
-capture after billable success
-release after non-billable failure
-credit packs
-subscription allowances
-usage history
-provider-cost and margin tracking
+exact provider estimate
+-> integer credit quote
+-> atomic full-run reservation
+-> durable execution
+-> usable output capture
+-> failed/canceled output release
+-> actual provider-cost reconciliation
 ```
 
-Credits belong in the header, account, usage, and billing experiences rather than the main creative navigation.
+Browser BYOK remains a separate funding path and never consumes TaleLabs
+credits. Debug execution is never billable.
+
+The launch system must include:
+
+```txt
+Stripe Checkout and Customer Portal
+one-time top-up Checkout for Free, Creator, and Pro
+signed, idempotent webhook processing
+monthly subscription grants, including annual subscriptions
+private non-expiring purchased-credit grants
+append-only organization credit ledger
+materialized balance and grant buckets
+run/job reservation, capture, release, and retry reconciliation
+storage entitlements
+funding-source output visibility
+usage and contribution reporting
+```
+
+Credits belong in the global sidebar, account, usage, and billing experiences
+rather than the main creative navigation.
+
+The global sidebar shows a compact organization summary from one billing
+account endpoint: available credits and storage used versus the effective plan
+limit. It is a status surface and shortcut to Billing, not a second billing
+authority; managed-run and storage admission continue to enforce the durable
+server projections transactionally.
+
+The existing Settings modal gains one Billing group with `Plans`, `Credits`,
+and `Usage`. Plans compares exactly Free, Creator, and Pro; Founder remains a
+Free status and Pro's recurring credit sizes remain options of one Pro plan.
+Credits owns balance and catalog-derived one-time top-ups. Usage shows Projects,
+Assets, and Elements plus month-selectable generation activity and
+transactions. The competitor term “Collections” maps to `Elements`, but Assets
+remain the only storage-byte authority so Project organization and Element
+references never double-count stored media.
 
 ## Product Principles
 
