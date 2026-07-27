@@ -2,7 +2,7 @@
 
 **Status:** approved technical plan. Implementation has not started.
 
-**Approved commercial model:** 2026-07-27.
+**Approved commercial model:** 2026-07-27, competitive launch revision.
 
 This document is the binding source of truth for TaleLabs plans, subscription
 credits, Stripe Billing, credit accounting, storage entitlements, and managed
@@ -57,26 +57,26 @@ All launch prices are in USD. Credits are whole integers.
 | Customer label | Plan code                        | Billing | Customer price |            Credits granted monthly | Storage | Managed generation                       | Browser BYOK |
 | -------------- | -------------------------------- | ------- | -------------: | ---------------------------------: | ------: | ---------------------------------------- | ------------ |
 | Free           | `free` + optional Founder status | none    |             $0 | 0 recurring; Founder gets 150 once |  100 MB | purchased credits; Founder welcome grant | yes          |
-| Creator        | `creator`                        | monthly |      $18/month |                              1,350 |   10 GB | yes                                      | yes          |
-| Creator        | `creator`                        | annual  |      $168/year |                   1,350 each month |   10 GB | yes                                      | yes          |
-| Pro            | `pro`                            | monthly |      $49/month |                              4,400 |   50 GB | yes                                      | yes          |
-| Pro            | `pro`                            | annual  |      $468/year |                   4,400 each month |   50 GB | yes                                      | yes          |
+| Creator        | `creator`                        | monthly |      $18/month |                              1,600 |   10 GB | yes                                      | yes          |
+| Creator        | `creator`                        | annual  |      $192/year |                   1,600 each month |   10 GB | yes                                      | yes          |
+| Pro            | `pro`                            | monthly |      $49/month |                              5,300 |   50 GB | yes                                      | yes          |
+| Pro            | `pro`                            | annual  |      $548/year |                   5,300 each month |   50 GB | yes                                      | yes          |
 
 Annual subscriptions are paid up front, but credits are released monthly. An
 annual purchase must not grant twelve months of credits immediately.
 
-Pro keeps `$49 / 4,400` as its default entry offer. Customers who need more
+Pro keeps `$49 / 5,300` as its default entry offer. Customers who need more
 managed generation may select a larger recurring Pro credit allowance without
 changing plans or storage entitlements:
 
 | Pro option | Monthly price | Monthly credits | Annual price | Credits released monthly on annual |
 | ---------: | ------------: | --------------: | -----------: | ----------------------------------: |
-|       Base |           $49 |           4,400 |         $468 |                               4,400 |
-|          2 |           $99 |           9,000 |         $950 |                               9,000 |
-|          3 |          $149 |          13,700 |       $1,430 |                              13,700 |
-|          4 |          $249 |          23,500 |       $2,390 |                              23,500 |
-|          5 |          $390 |          38,300 |       $3,744 |                              38,300 |
-|          6 |          $590 |          60,000 |       $5,640 |                              60,000 |
+|       Base |           $49 |           5,300 |         $548 |                               5,300 |
+|          2 |           $99 |          11,300 |       $1,104 |                              11,300 |
+|          3 |          $149 |          17,300 |       $1,668 |                              17,300 |
+|          4 |          $249 |          29,300 |       $2,790 |                              29,300 |
+|          5 |          $390 |          46,200 |       $4,356 |                              46,200 |
+|          6 |          $590 |          70,000 |       $6,600 |                              70,000 |
 
 The UI presents these reviewed points as a snapping slider, not as arbitrary
 quantity billing. The base monthly prices remain `$18` for Creator and `$49`
@@ -84,6 +84,11 @@ for Pro. Increasing Pro changes only the recurring price and monthly credit
 grant; all Pro options retain the same Pro feature and storage entitlements.
 For the first release, a size change takes effect at the next renewal. Immediate
 extra demand uses a top-up, avoiding prorated credit-grant logic.
+
+The approved annual prices intentionally use modest discounts rather than the
+earlier approximately 20% discount. Creator is about 11% below twelve monthly
+payments, while each Pro option is about 7% below twelve monthly payments. This
+keeps annual offers competitive without crossing the contribution floor.
 
 The underlying Free plan provides browser BYOK and 100 MB without recurring
 managed credits. Founder is an early-user status layered onto Free, not a
@@ -166,22 +171,27 @@ monthly credit grant. It deliberately applies the `$0.10` payment reserve every
 monthly equivalent even though Stripe normally charges the annual payment once.
 This is conservative.
 
-| Offer           | Monthly-equivalent revenue | Max provider cost | Modeled retained contribution | Modeled margin |
-| --------------- | -------------------------: | ----------------: | ----------------------------: | -------------: |
-| Creator monthly |                        $18 |            $6.075 |                        $6.365 |          35.4% |
-| Creator annual  |                        $14 |            $6.075 |                        $3.205 |          22.9% |
-| Pro monthly     |                        $49 |           $19.800 |                       $16.410 |          33.5% |
-| Pro annual      |                        $39 |           $19.800 |                        $8.510 |          21.8% |
-| Pro 9,000 monthly |                      $99 |           $40.500 |                       $35.210 |          35.6% |
-| Pro 9,000 annual  |                  $79.167 |           $40.500 |                       $19.542 |          24.7% |
-| Pro 13,700 monthly |                    $149 |           $61.650 |                       $53.560 |          35.9% |
-| Pro 13,700 annual  |                $119.167 |           $61.650 |                       $29.992 |          25.2% |
-| Pro 23,500 monthly |                    $249 |          $105.750 |                       $88.460 |          35.5% |
-| Pro 23,500 annual  |                $199.167 |          $105.750 |                       $49.092 |          24.6% |
-| Pro 38,300 monthly |                    $390 |          $172.350 |                      $133.250 |          34.2% |
-| Pro 38,300 annual  |                    $312 |          $172.350 |                       $71.630 |          23.0% |
-| Pro 60,000 monthly |                    $590 |          $270.000 |                      $193.600 |          32.8% |
-| Pro 60,000 annual  |                    $470 |          $270.000 |                       $98.800 |          21.0% |
+| Offer               | Monthly-equivalent revenue | Max provider cost | Modeled retained contribution | Modeled margin |
+| ------------------- | -------------------------: | ----------------: | ----------------------------: | -------------: |
+| Creator monthly     |                        $18 |            $7.200 |                        $5.240 |          29.1% |
+| Creator annual      |                        $16 |            $7.200 |                        $3.660 |          22.9% |
+| Pro 5,300 monthly   |                        $49 |           $23.850 |                       $12.360 |          25.2% |
+| Pro 5,300 annual    |                     $45.667 |           $23.850 |                        $9.727 |          21.3% |
+| Pro 11,300 monthly  |                        $99 |           $50.850 |                       $24.860 |          25.1% |
+| Pro 11,300 annual   |                        $92 |           $50.850 |                       $19.330 |          21.0% |
+| Pro 17,300 monthly  |                       $149 |           $77.850 |                       $37.360 |          25.1% |
+| Pro 17,300 annual   |                       $139 |           $77.850 |                       $29.460 |          21.2% |
+| Pro 29,300 monthly  |                       $249 |          $131.850 |                       $62.360 |          25.0% |
+| Pro 29,300 annual   |                     $232.500 |          $131.850 |                       $49.325 |          21.2% |
+| Pro 46,200 monthly  |                       $390 |          $207.900 |                       $97.700 |          25.1% |
+| Pro 46,200 annual   |                       $363 |          $207.900 |                       $76.370 |          21.0% |
+| Pro 70,000 monthly  |                       $590 |          $315.000 |                      $148.600 |          25.2% |
+| Pro 70,000 annual   |                       $550 |          $315.000 |                      $117.000 |          21.3% |
+
+The 20% threshold is an absolute fail-closed floor, not the target for every
+offer. The approved launch positioning targets roughly 25% full-use
+contribution on monthly Pro, 21–23% on annual subscriptions, and at least 27%
+at the most generous Pro top-up point. Creator retains a larger monthly buffer.
 
 These are contribution estimates, not accounting net profit. Salaries,
 acquisition, support, legal, accounting, fraud beyond the reserve, and other
@@ -246,7 +256,7 @@ remain spendable if a subscription later ends
 
 The initial slider accepts `$10` through `$590` in `$5` increments. Larger
 purchases receive a better volume rate. The maximum volume-rate improvement is
-38% relative to the same plan's `$10` point. A separate plan factor applies
+40% relative to the same plan's `$10` point. A separate plan factor applies
 after the volume curve:
 
 | Plan    | Credit factor | Effective relationship at the same purchase amount |
@@ -289,8 +299,8 @@ Launch constants:
 minAmountUsdCents                    1_000
 maxAmountUsdCents                   59_000
 stepUsdCents                           500
-proReferenceCreditsAtMinimumAmount     622
-maxVolumeRateImprovementBps           3_800
+proReferenceCreditsAtMinimumAmount     686
+maxVolumeRateImprovementBps           4_000
 planCreditFactorBps.free              5_000
 planCreditFactorBps.creator           7_500
 planCreditFactorBps.pro              10_000
@@ -303,19 +313,28 @@ provider-cost ceiling, fixed payment fee, and `$1.50` per-purchase platform
 allocation used by the approved contribution model. It must prove every
 generated amount and plan combination remains above the 20% contribution floor.
 
-At the maximum point, Pro is approximately `$0.00997` per credit. This remains
+At the maximum point, Pro is approximately `$0.00875` per credit. This remains
 slightly worse than the largest recurring Pro monthly option at approximately
-`$0.00983` per credit, while annual Pro remains the best approved value at
-approximately `$0.00783` per credit.
+`$0.00843` per credit, while annual Pro remains the best approved value at
+approximately `$0.00786` per credit.
 
 Representative plan-relative points:
 
 | Purchase | Volume improvement | Free credits | Creator credits | Pro credits |
 | -------: | -----------------: | -----------: | --------------: | ----------: |
-|      $10 |                 0% |          311 |             466 |         622 |
-|     $100 |              5.89% |        3,304 |           4,956 |       6,609 |
-|     $250 |             15.72% |        9,225 |          13,837 |      18,450 |
-|     $590 |                38% |       29,595 |          44,392 |      59,190 |
+|      $10 |                 0% |          343 |             514 |         686 |
+|     $100 |               6.2% |        3,656 |           5,484 |       7,313 |
+|     $250 |              16.55% |       10,275 |          15,413 |      20,551 |
+|     $590 |                40% |       33,728 |          50,592 |      67,456 |
+
+The maximum values may be presented as approximately `33,750`, `50,625`, and
+`67,500` credits in marketing copy. Checkout, ledger grants, and margin
+validation always use the exact catalog result.
+
+At the `$590` point, the conservative full-use contribution model retains
+approximately 53.0% for Free, 40.1% for Creator, and 27.3% for Pro. These
+figures include the same 11% gross-revenue tax and variable-cost reserves as
+subscriptions.
 
 The API returns the exact purchase amount, plan-specific credits, volume-rate
 improvement, and plan-rate benefit computed by the catalog. The server
@@ -361,7 +380,7 @@ The TypeScript catalog is the maintained source of truth:
 
 ```ts
 export const BILLING_CATALOG = defineBillingCatalog({
-  revision: "2026-07-27.2",
+  revision: "2026-07-27.3",
   currency: "usd",
   creditPolicy: {
     providerCostAllowanceUsdPerCredit: "0.0045",
@@ -402,8 +421,8 @@ export const BILLING_CATALOG = defineBillingCatalog({
     minAmountUsdCents: 1_000,
     maxAmountUsdCents: 59_000,
     stepUsdCents: 500,
-    proReferenceCreditsAtMinimumAmount: 622,
-    maxVolumeRateImprovementBps: 3_800,
+    proReferenceCreditsAtMinimumAmount: 686,
+    maxVolumeRateImprovementBps: 4_000,
     planCreditFactorBps: {
       free: 5_000,
       creator: 7_500,
@@ -425,20 +444,20 @@ export const BILLING_CATALOG = defineBillingCatalog({
     creator: {
       storageBytes: 10 * 1024 * 1024 * 1024,
       browserByok: true,
-      defaultRecurringOptionCode: "creator-1350",
+      defaultRecurringOptionCode: "creator-1600",
       currentRecurringOptions: [
         {
-          code: "creator-1350",
-          monthlyCredits: 1_350,
+          code: "creator-1600",
+          monthlyCredits: 1_600,
           month: {
-            offerCode: "creator-monthly-2026-07",
+            offerCode: "creator-monthly-1600-2026-07",
             priceUsdCents: 1_800,
-            stripeLookupKey: "talelabs_creator_monthly_2026_07",
+            stripeLookupKey: "talelabs_creator_monthly_1600_2026_07",
           },
           year: {
-            offerCode: "creator-annual-2026-07",
-            priceUsdCents: 16_800,
-            stripeLookupKey: "talelabs_creator_annual_2026_07",
+            offerCode: "creator-annual-1600-2026-07",
+            priceUsdCents: 19_200,
+            stripeLookupKey: "talelabs_creator_annual_1600_2026_07",
           },
         },
       ],
@@ -447,90 +466,90 @@ export const BILLING_CATALOG = defineBillingCatalog({
     pro: {
       storageBytes: 50 * 1024 * 1024 * 1024,
       browserByok: true,
-      defaultRecurringOptionCode: "pro-4400",
+      defaultRecurringOptionCode: "pro-5300",
       currentRecurringOptions: [
         {
-          code: "pro-4400",
-          monthlyCredits: 4_400,
+          code: "pro-5300",
+          monthlyCredits: 5_300,
           month: {
-            offerCode: "pro-monthly-4400-2026-07",
+            offerCode: "pro-monthly-5300-2026-07",
             priceUsdCents: 4_900,
-            stripeLookupKey: "talelabs_pro_monthly_4400_2026_07",
+            stripeLookupKey: "talelabs_pro_monthly_5300_2026_07",
           },
           year: {
-            offerCode: "pro-annual-4400-2026-07",
-            priceUsdCents: 46_800,
-            stripeLookupKey: "talelabs_pro_annual_4400_2026_07",
+            offerCode: "pro-annual-5300-2026-07",
+            priceUsdCents: 54_800,
+            stripeLookupKey: "talelabs_pro_annual_5300_2026_07",
           },
         },
         {
-          code: "pro-9000",
-          monthlyCredits: 9_000,
+          code: "pro-11300",
+          monthlyCredits: 11_300,
           month: {
-            offerCode: "pro-monthly-9000-2026-07",
+            offerCode: "pro-monthly-11300-2026-07",
             priceUsdCents: 9_900,
-            stripeLookupKey: "talelabs_pro_monthly_9000_2026_07",
+            stripeLookupKey: "talelabs_pro_monthly_11300_2026_07",
           },
           year: {
-            offerCode: "pro-annual-9000-2026-07",
-            priceUsdCents: 95_000,
-            stripeLookupKey: "talelabs_pro_annual_9000_2026_07",
+            offerCode: "pro-annual-11300-2026-07",
+            priceUsdCents: 110_400,
+            stripeLookupKey: "talelabs_pro_annual_11300_2026_07",
           },
         },
         {
-          code: "pro-13700",
-          monthlyCredits: 13_700,
+          code: "pro-17300",
+          monthlyCredits: 17_300,
           month: {
-            offerCode: "pro-monthly-13700-2026-07",
+            offerCode: "pro-monthly-17300-2026-07",
             priceUsdCents: 14_900,
-            stripeLookupKey: "talelabs_pro_monthly_13700_2026_07",
+            stripeLookupKey: "talelabs_pro_monthly_17300_2026_07",
           },
           year: {
-            offerCode: "pro-annual-13700-2026-07",
-            priceUsdCents: 143_000,
-            stripeLookupKey: "talelabs_pro_annual_13700_2026_07",
+            offerCode: "pro-annual-17300-2026-07",
+            priceUsdCents: 166_800,
+            stripeLookupKey: "talelabs_pro_annual_17300_2026_07",
           },
         },
         {
-          code: "pro-23500",
-          monthlyCredits: 23_500,
+          code: "pro-29300",
+          monthlyCredits: 29_300,
           month: {
-            offerCode: "pro-monthly-23500-2026-07",
+            offerCode: "pro-monthly-29300-2026-07",
             priceUsdCents: 24_900,
-            stripeLookupKey: "talelabs_pro_monthly_23500_2026_07",
+            stripeLookupKey: "talelabs_pro_monthly_29300_2026_07",
           },
           year: {
-            offerCode: "pro-annual-23500-2026-07",
-            priceUsdCents: 239_000,
-            stripeLookupKey: "talelabs_pro_annual_23500_2026_07",
+            offerCode: "pro-annual-29300-2026-07",
+            priceUsdCents: 279_000,
+            stripeLookupKey: "talelabs_pro_annual_29300_2026_07",
           },
         },
         {
-          code: "pro-38300",
-          monthlyCredits: 38_300,
+          code: "pro-46200",
+          monthlyCredits: 46_200,
           month: {
-            offerCode: "pro-monthly-38300-2026-07",
+            offerCode: "pro-monthly-46200-2026-07",
             priceUsdCents: 39_000,
-            stripeLookupKey: "talelabs_pro_monthly_38300_2026_07",
+            stripeLookupKey: "talelabs_pro_monthly_46200_2026_07",
           },
           year: {
-            offerCode: "pro-annual-38300-2026-07",
-            priceUsdCents: 374_400,
-            stripeLookupKey: "talelabs_pro_annual_38300_2026_07",
+            offerCode: "pro-annual-46200-2026-07",
+            priceUsdCents: 435_600,
+            stripeLookupKey: "talelabs_pro_annual_46200_2026_07",
           },
         },
         {
-          code: "pro-60000",
-          monthlyCredits: 60_000,
+          code: "pro-70000",
+          monthlyCredits: 70_000,
           month: {
-            offerCode: "pro-monthly-60000-2026-07",
+            offerCode: "pro-monthly-70000-2026-07",
             priceUsdCents: 59_000,
-            stripeLookupKey: "talelabs_pro_monthly_60000_2026_07",
+            stripeLookupKey: "talelabs_pro_monthly_70000_2026_07",
           },
           year: {
-            offerCode: "pro-annual-60000-2026-07",
-            priceUsdCents: 564_000,
-            stripeLookupKey: "talelabs_pro_annual_60000_2026_07",
+            offerCode: "pro-annual-70000-2026-07",
+            priceUsdCents: 660_000,
+            stripeLookupKey: "talelabs_pro_annual_70000_2026_07",
           },
         },
       ],
