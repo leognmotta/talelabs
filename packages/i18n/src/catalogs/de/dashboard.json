@@ -986,6 +986,7 @@
       "session": "Erstellen-Sitzungen"
     },
     "namePlaceholder": "Projektname",
+    "noFolderResults": "Keine Ordner gefunden",
     "noResults": "Keine Projekte gefunden",
     "noResultsDescription": "Versuche eine andere Suche.",
     "open": "{{name}} öffnen",

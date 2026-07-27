@@ -8,13 +8,17 @@
 import type { Folder } from '@talelabs/sdk'
 
 import { IconFolder, IconRoute } from '@tabler/icons-react'
+import { Button } from '@talelabs/ui/components/button'
 import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-} from '@talelabs/ui/components/select'
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+  ComboboxTrigger,
+} from '@talelabs/ui/components/combobox'
+import { cn } from '@talelabs/ui/lib/utils'
 import { useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -23,6 +27,13 @@ import { useProjectQuery } from './project-queries'
 
 const AUTOMATIC_VALUE = '__automatic__'
 const ROOT_VALUE = '__root__'
+
+interface DestinationOption {
+  id: string
+  kind: 'automatic' | 'folder'
+  label: string
+  searchValue: string
+}
 
 /** A request override, or undefined when the shared resolver owns selection. */
 export type AssetDestinationSelection = null | string | undefined
@@ -103,15 +114,41 @@ export function AssetDestinationPicker({
       ? t('projects.destinationDefault')
       : t('projects.destinationProjectDefault')
     : t('projects.destinationAutomatic')
+  const rootLabel = t(projectId
+    ? 'projects.projectRoot'
+    : 'projects.privateRoot')
   const selectedLabel = value === undefined
     ? inheritedLabel
     : value === null
-      ? t(projectId
-          ? 'projects.projectRoot'
-          : 'projects.privateRoot')
+      ? rootLabel
       : selectedFolder
         ? folderPath(selectedFolder, foldersById)
         : t('projects.destinationUnavailable')
+  const options: DestinationOption[] = [
+    {
+      id: AUTOMATIC_VALUE,
+      kind: 'automatic',
+      label: inheritedOptionLabel,
+      searchValue: `${inheritedOptionLabel} ${inheritedLabel}`,
+    },
+    {
+      id: ROOT_VALUE,
+      kind: 'folder',
+      label: rootLabel,
+      searchValue: rootLabel,
+    },
+    ...folders.map((folder) => {
+      const label = folderPath(folder, foldersById)
+      return {
+        id: folder.id,
+        kind: 'folder' as const,
+        label,
+        searchValue: label,
+      }
+    }),
+  ]
+  const selectedOption = options.find(option => option.id === selectedValue)
+    ?? null
 
   useEffect(() => {
     if (
@@ -124,21 +161,43 @@ export function AssetDestinationPicker({
   }, [foldersById, onChange, query.isPending, value])
 
   return (
-    <Select
-      value={selectedValue}
-      onValueChange={(nextValue) => {
-        if (nextValue === AUTOMATIC_VALUE)
+    <Combobox
+      autoHighlight
+      filter={(option, search) => option.searchValue
+        .toLocaleLowerCase()
+        .includes(search.trim().toLocaleLowerCase())}
+      isItemEqualToValue={(option, selected) => option.id === selected.id}
+      itemToStringLabel={option => option.label}
+      itemToStringValue={option => option.id}
+      items={options}
+      value={selectedOption}
+      onValueChange={(nextOption) => {
+        if (!nextOption || nextOption.id === selectedValue)
+          return
+        if (nextOption.id === AUTOMATIC_VALUE)
           onChange(undefined)
-        else if (nextValue === ROOT_VALUE)
+        else if (nextOption.id === ROOT_VALUE)
           onChange(null)
-        else if (typeof nextValue === 'string')
-          onChange(nextValue)
+        else
+          onChange(nextOption.id)
       }}
     >
-      <SelectTrigger
-        aria-label={t('projects.outputFolder')}
-        className={className}
-        size="sm"
+      <ComboboxTrigger
+        render={(
+          <Button
+            aria-label={t('projects.outputFolder')}
+            className={cn(
+              `
+                w-fit min-w-0 justify-between gap-1.5 border-transparent
+                bg-input/50 font-normal
+              `,
+              className,
+            )}
+            size="sm"
+            type="button"
+            variant="outline"
+          />
+        )}
       >
         {value === undefined && !projectId
           ? <IconRoute />
@@ -146,38 +205,43 @@ export function AssetDestinationPicker({
         <span className="min-w-0 flex-1 truncate" title={selectedLabel}>
           {selectedLabel}
         </span>
-      </SelectTrigger>
-      <SelectContent
+      </ComboboxTrigger>
+      <ComboboxContent
+        aria-label={t('projects.outputFolder')}
         align="start"
-        alignItemWithTrigger={false}
-        className="w-max max-w-[min(24rem,var(--available-width))] min-w-64"
+        className={`
+          w-[min(24rem,calc(100vw-2rem))] min-w-0 rounded-2xl border
+          border-border/90 shadow-2xl
+          *:data-[slot=input-group]:m-2 *:data-[slot=input-group]:mb-0
+          *:data-[slot=input-group]:h-9
+        `}
+        sideOffset={4}
       >
-        <SelectGroup>
-          <SelectItem value={AUTOMATIC_VALUE}>
-            <IconRoute />
-            <span className="min-w-0 flex-1 truncate">
-              {inheritedOptionLabel}
-            </span>
-          </SelectItem>
-          <SelectItem value={ROOT_VALUE}>
-            <IconFolder />
-            <span className="min-w-0 flex-1 truncate">
-              {t(projectId ? 'projects.projectRoot' : 'projects.privateRoot')}
-            </span>
-          </SelectItem>
-          {folders.map((folder) => {
-            const label = folderPath(folder, foldersById)
-            return (
-              <SelectItem key={folder.id} value={folder.id}>
-                <IconFolder />
-                <span className="min-w-0 flex-1 truncate" title={label}>
-                  {label}
-                </span>
-              </SelectItem>
-            )
-          })}
-        </SelectGroup>
-      </SelectContent>
-    </Select>
+        <ComboboxInput
+          aria-label={t('projects.searchFolders')}
+          placeholder={t('projects.searchFolders')}
+          showTrigger={false}
+          variant="outline"
+        />
+        <ComboboxEmpty className="px-4 py-6">
+          {t('projects.noFolderResults')}
+        </ComboboxEmpty>
+        <ComboboxList className="max-h-72">
+          {(option: DestinationOption) => (
+            <ComboboxItem key={option.id} value={option}>
+              {option.kind === 'automatic'
+                ? <IconRoute />
+                : <IconFolder />}
+              <span
+                className="min-w-0 flex-1 truncate"
+                title={option.label}
+              >
+                {option.label}
+              </span>
+            </ComboboxItem>
+          )}
+        </ComboboxList>
+      </ComboboxContent>
+    </Combobox>
   )
 }

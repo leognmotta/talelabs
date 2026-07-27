@@ -997,6 +997,7 @@
       "session": "Sessões de Criar"
     },
     "namePlaceholder": "Nome do Projeto",
+    "noFolderResults": "Nenhuma pasta encontrada",
     "noResults": "Nenhum Projeto encontrado",
     "noResultsDescription": "Tente outra busca.",
     "open": "Abrir {{name}}",

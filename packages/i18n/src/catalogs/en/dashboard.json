@@ -997,6 +997,7 @@
       "session": "Create sessions"
     },
     "namePlaceholder": "Project name",
+    "noFolderResults": "No folders found",
     "noResults": "No Projects found",
     "noResultsDescription": "Try a different search.",
     "open": "Open {{name}}",

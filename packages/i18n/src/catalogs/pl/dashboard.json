@@ -986,6 +986,7 @@
       "session": "Sesje tworzenia"
     },
     "namePlaceholder": "Nazwa Projektu",
+    "noFolderResults": "Nie znaleziono folderów",
     "noResults": "Nie znaleziono Projektów",
     "noResultsDescription": "Spróbuj wyszukać inaczej.",
     "open": "Otwórz {{name}}",

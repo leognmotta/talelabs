@@ -986,6 +986,7 @@
       "session": "Maaksessies"
     },
     "namePlaceholder": "Projectnaam",
+    "noFolderResults": "Geen mappen gevonden",
     "noResults": "Geen Projecten gevonden",
     "noResultsDescription": "Probeer een andere zoekopdracht.",
     "open": "{{name}} openen",

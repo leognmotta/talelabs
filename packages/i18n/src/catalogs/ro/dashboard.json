@@ -986,6 +986,7 @@
       "session": "Sesiuni de creare"
     },
     "namePlaceholder": "Numele Proiectului",
+    "noFolderResults": "Nu au fost găsite dosare",
     "noResults": "Nu au fost găsite Proiecte",
     "noResultsDescription": "Încercați o altă căutare.",
     "open": "Deschideți {{name}}",
