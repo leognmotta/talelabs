@@ -1307,8 +1307,9 @@ Add one focused billing route group:
 | `GET /billing/catalog`          | authenticated member  | plans, recurring options, and generated top-up points |
 | `GET /billing/account`          | authenticated member  | plan, available/reserved credits, storage, next grant |
 | `GET /billing/usage`            | authenticated member  | current content counts and one month of generation use |
+| `GET /billing/usage/months`     | authenticated member  | recent months containing usage or credit activity      |
 | `GET /billing/usage/runs`       | authenticated member  | cursor-paged visible runs for one selected month       |
-| `GET /billing/credits/ledger`   | owner/admin           | cursor-paged organization ledger                      |
+| `GET /billing/credits/ledger`   | owner/admin           | selected-month cursor-paged organization ledger       |
 | `POST /billing/checkout`        | owner/admin           | create subscription Checkout Session                  |
 | `PATCH /billing/subscription`   | owner/admin           | schedule a Pro recurring-size change at renewal       |
 | `POST /billing/topups/checkout` | owner/admin           | create one-time credit top-up Checkout Session        |
@@ -1492,7 +1493,20 @@ organization-and-month-keyed TanStack Query entry and invalidate the current
 month after run settlement, Asset ingestion or purge, Project movement, or
 Element reference changes.
 
-#### 8.2.1 `GET /billing/usage/runs`
+#### 8.2.1 `GET /billing/usage/months`
+
+The Usage month selector lists only UTC months containing organization
+generation runs or credit-ledger activity. The discovery read probes a fixed
+120-month candidate window using the existing organization-and-created-at
+indexes rather than exposing the calendar component's broad default year
+range or scanning hydrated history. Results are newest first.
+
+An organization with no recorded activity receives the current UTC month as
+its single fallback so the empty Usage destination remains navigable. The
+dashboard selects the newest returned month initially, groups choices by year,
+and commits a month directly without offering empty years or months.
+
+#### 8.2.2 `GET /billing/usage/runs`
 
 Usage presents a reverse-chronological run table beneath the selected month's
 generation summary. The table uses a separate bounded read rather than
@@ -1517,6 +1531,10 @@ The read uses the tenant-scoped `createdAt, id` ordering and performs only
 bounded aggregate queries for the run IDs on the current page. Cursors are
 reverse chronological, the dashboard resets pagination when the month changes,
 and the response uses `Cache-Control: private, no-store`.
+
+`GET /billing/credits/ledger` accepts the same optional `month=YYYY-MM`
+selection. Its cursor remains scoped to that month, and the dashboard resets
+ledger pagination whenever the selected month changes.
 
 ### 8.3 `PATCH /billing/subscription`
 
@@ -2143,6 +2161,7 @@ single `GET /billing/account` query shared with Billing settings
 top-up slider on Free, Creator, and Pro
 Projects, Assets, and Elements usage overview without double-counted storage
 month-selectable generation usage and owner/admin transactions
+data-bearing month choices grouped by year without empty calendar ranges
 cursor-paged monthly generation run history
 snapping Pro recurring-credit slider
 credit-denominated Create/Flow estimates
@@ -2189,6 +2208,7 @@ Plans renders only Free, Creator, and Pro; Founder is a Free status and Pro size
 Credits exposes one slider whose every step resolves a catalog-derived top-up value
 Usage labels Collections as Elements and never attributes referenced Asset bytes twice
 Usage month changes remain tenant-scoped, bounded, and consistent with run/job settlement
+Usage month choices include only recent months with runs or credit activity
 Usage run history preserves collaborative Flow and private Create visibility and paginates without unbounded scans
 ```
 
