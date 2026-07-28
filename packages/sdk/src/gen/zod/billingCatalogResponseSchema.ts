@@ -39,6 +39,7 @@ export const billingCatalogResponseSchema = z.object({
     }),
   }),
   topUps: z.object({
+    packageAmountsUsdCents: z.array(z.int().gt(0)).min(1),
     minAmountUsdCents: z.int().gt(0),
     maxAmountUsdCents: z.int().gt(0),
     stepUsdCents: z.int().gt(0),

@@ -151,6 +151,10 @@ export type BillingCatalogResponse = {
    */
   topUps: {
     /**
+     * @type array
+     */
+    packageAmountsUsdCents: number[];
+    /**
      * @type integer
      */
     minAmountUsdCents: number;

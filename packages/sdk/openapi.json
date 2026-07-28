@@ -7011,6 +7011,15 @@
           "topUps": {
             "type": "object",
             "properties": {
+              "packageAmountsUsdCents": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "exclusiveMinimum": true
+                },
+                "minItems": 1
+              },
               "minAmountUsdCents": {
                 "type": "integer",
                 "minimum": 0,
@@ -7093,6 +7102,7 @@
               }
             },
             "required": [
+              "packageAmountsUsdCents",
               "minAmountUsdCents",
               "maxAmountUsdCents",
               "stepUsdCents",
