@@ -23,6 +23,7 @@ import { cursorSchema } from "./cursorSchema.ts";
 import { errorResponseSchema } from "./errorResponseSchema.ts";
 
 export const getBillingCreditsLedgerQueryParamsSchema = z.object({
+  month: z.optional(z.string().regex(/^\d{4}-(?:0[1-9]|1[0-2])$/)),
   get cursor() {
     return cursorSchema
       .describe("Opaque cursor returned by a previous list response")

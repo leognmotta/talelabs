@@ -9,6 +9,11 @@ import type { ErrorResponse } from "./ErrorResponse.ts";
 
 export type GetBillingCreditsLedgerQueryParams = {
   /**
+   * @pattern ^\d{4}-(?:0[1-9]|1[0-2])$
+   * @type string | undefined
+   */
+  month?: string;
+  /**
    * @description Opaque cursor returned by a previous list response
    * @type string | undefined
    */

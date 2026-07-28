@@ -21,6 +21,8 @@ export * from "./getBillingAccount.ts";
 export * from "./getBillingCatalog.ts";
 export * from "./getBillingCreditsLedger.ts";
 export * from "./getBillingUsage.ts";
+export * from "./getBillingUsageMonths.ts";
+export * from "./getBillingUsageRuns.ts";
 export * from "./getConfigGeneration.ts";
 export * from "./getCreateSessions.ts";
 export * from "./getCreateSessionsId.ts";
