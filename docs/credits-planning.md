@@ -1,8 +1,8 @@
 # TaleLabs Billing And Credits Technical Plan
 
-**Status:** approved technical plan. Implementation has not started.
+**Status:** approved technical plan. Implementation is in progress.
 
-**Approved commercial model:** 2026-07-27, competitive launch revision.
+**Approved commercial model:** 2026-07-27, capped Pro and top-up revision.
 
 This document is the binding source of truth for TaleLabs plans, subscription
 credits, Stripe Billing, credit accounting, storage entitlements, and managed
@@ -74,16 +74,15 @@ changing plans or storage entitlements:
 |       Base |           $49 |           5,300 |         $548 |                               5,300 |
 |          2 |           $99 |          11,300 |       $1,104 |                              11,300 |
 |          3 |          $149 |          17,300 |       $1,668 |                              17,300 |
-|          4 |          $249 |          29,300 |       $2,790 |                              29,300 |
-|          5 |          $390 |          46,200 |       $4,356 |                              46,200 |
-|          6 |          $590 |          70,000 |       $6,600 |                              70,000 |
+|          4 |          $249 |          29,500 |       $2,790 |                              29,500 |
 
 The UI presents these reviewed points as a snapping slider, not as arbitrary
 quantity billing. The base monthly prices remain `$18` for Creator and `$49`
 for Pro. Increasing Pro changes only the recurring price and monthly credit
 grant; all Pro options retain the same Pro feature and storage entitlements.
 For the first release, a size change takes effect at the next renewal. Immediate
-extra demand uses a top-up, avoiding prorated credit-grant logic.
+extra demand uses the separate top-up slider, which extends to `$390` without
+adding another recurring option or prorated credit-grant logic.
 
 The approved annual prices intentionally use modest discounts rather than the
 earlier approximately 20% discount. Creator is about 11% below twelve monthly
@@ -98,7 +97,9 @@ window closes.
 
 Every plan, including Free, may buy non-expiring managed-generation credit
 top-ups. Top-ups do not increase storage or other plan entitlements.
-Subscription credits remain a better value than top-up credits.
+The Creator endpoint and highest Pro endpoint may match their corresponding
+monthly option rates. Lower Pro options deliberately receive weaker top-up
+rates, and annual subscriptions remain the best approved recurring value.
 
 The first release does not include:
 
@@ -181,16 +182,12 @@ This is conservative.
 | Pro 11,300 annual   |                        $92 |           $50.850 |                       $19.330 |          21.0% |
 | Pro 17,300 monthly  |                       $149 |           $77.850 |                       $37.360 |          25.1% |
 | Pro 17,300 annual   |                       $139 |           $77.850 |                       $29.460 |          21.2% |
-| Pro 29,300 monthly  |                       $249 |          $131.850 |                       $62.360 |          25.0% |
-| Pro 29,300 annual   |                     $232.500 |          $131.850 |                       $49.325 |          21.2% |
-| Pro 46,200 monthly  |                       $390 |          $207.900 |                       $97.700 |          25.1% |
-| Pro 46,200 annual   |                       $363 |          $207.900 |                       $76.370 |          21.0% |
-| Pro 70,000 monthly  |                       $590 |          $315.000 |                      $148.600 |          25.2% |
-| Pro 70,000 annual   |                       $550 |          $315.000 |                      $117.000 |          21.3% |
+| Pro 29,500 monthly  |                       $249 |          $132.750 |                       $61.460 |          24.7% |
+| Pro 29,500 annual   |                     $232.500 |          $132.750 |                       $48.425 |          20.8% |
 
 The 20% threshold is an absolute fail-closed floor, not the target for every
 offer. The approved launch positioning targets roughly 25% full-use
-contribution on monthly Pro, 21–23% on annual subscriptions, and at least 27%
+contribution on monthly Pro, 21–23% on annual subscriptions, and at least 25%
 at the most generous Pro top-up point. Creator retains a larger monthly buffer.
 
 These are contribution estimates, not accounting net profit. Salaries,
@@ -242,9 +239,9 @@ release the customer's credits and record the provider expense as margin loss.
 ### 3.5 Credit top-up slider
 
 Every plan, including Free, may purchase a code-owned top-up. The purchase
-range and volume curve are shared, while the organization's current plan
-controls how many credits the same payment receives. This makes Pro the best
-top-up value and gives high-volume customers a reason to keep a subscription.
+range is shared, while the organization's exact active recurring option selects
+its maximum top-up endpoint. Higher recurring Pro allowances deliberately
+unlock better top-up rates without creating another plan.
 Purchased credits:
 
 ```txt
@@ -254,56 +251,89 @@ do not increase storage or unlock plan features
 remain spendable if a subscription later ends
 ```
 
-The initial slider accepts `$10` through `$590` in `$5` increments. Larger
-purchases receive a better volume rate. The maximum volume-rate improvement is
-40% relative to the same plan's `$10` point. A separate plan factor applies
-after the volume curve:
-
-| Plan    | Credit factor | Effective relationship at the same purchase amount |
-| ------- | ------------: | -------------------------------------------------- |
-| Free    |         5,000 bps | retail top-up rate                              |
-| Creator |         7,500 bps | 50% more credits than Free                      |
-| Pro     |        10,000 bps | twice Free credits and 33.3% more than Creator  |
-
-The UI must show volume savings and plan membership value as separate concepts.
-It must not combine them into a misleading crossed-out retail discount.
-
-For each valid `amountUsdCents`, use exact integer arithmetic:
+The initial slider accepts `$10` through `$390` in `$5` increments. Every plan
+has an explicit `$10` retail endpoint. Free and every paid recurring option
+also have one reviewed `$390` endpoint in the catalog. The Pro ladder is
+intentionally stepped:
 
 ```txt
-volumeRateImprovementBps =
-  linearInterpolation(
-    amountUsdCents,
-    minAmountUsdCents,
-    maxAmountUsdCents,
-    0,
-    maxVolumeRateImprovementBps
-  )
+$49 Pro  -> up to 25% volume savings
+$99 Pro  -> up to 30% volume savings
+$149 Pro -> up to 34% volume savings
+$249 Pro -> up to 42.1% volume savings and the best top-up rate
+```
 
-proReferenceCredits =
-  floor(
-    amountUsdCents
-    * proReferenceCreditsAtMinimumAmount
-    * 10_000
-    / minAmountUsdCents
-    / (10_000 - volumeRateImprovementBps)
+Only the `$249 / 29,500` Pro option reaches its monthly subscription
+price-per-credit at the `$390` top-up endpoint, as closely as integer credits
+permit. Lower Pro options have intentionally more expensive top-up endpoints.
+This creates a real high-volume upgrade benefit while retaining stronger
+contribution margins on lower commitments.
+
+An annual subscriber uses the same endpoint as the matching monthly recurring
+option, not a stronger endpoint derived from the discounted annual price.
+Consequently:
+
+```txt
+no top-up may beat the $249 Pro monthly credit rate
+the matching annual subscription remains the best recurring credit value
+canceling or changing a subscription changes future quotes only
+already purchased credits and their economics never change
+```
+
+For each intermediate `amountUsdCents`, linearly interpolate the exact
+price-per-credit between the `$10` and `$390` endpoints, then round credits
+down:
+
+```txt
+progress =
+  (amountUsdCents - minAmountUsdCents)
+  / (maxAmountUsdCents - minAmountUsdCents)
+
+minimumPricePerCredit =
+  minAmountUsdCents / creditsAtMinimumAmount
+
+maximumPricePerCredit =
+  maxAmountUsdCents / creditsAtMaximumAmount
+
+effectivePricePerCredit =
+  linearInterpolation(
+    minimumPricePerCredit,
+    maximumPricePerCredit,
+    progress
   )
 
 topUpCredits =
-  floor(proReferenceCredits * planCreditFactorBps / 10_000)
+  floor(amountUsdCents / effectivePricePerCredit)
+
+volumeRateImprovementBps =
+  floor(
+    (minimumPricePerCredit - effectivePricePerCredit)
+    * 10_000
+    / minimumPricePerCredit
+  )
 ```
+
+Implement this as exact rational or decimal arithmetic. Do not calculate money,
+credits, rates, basis points, or interpolation with JavaScript floating point.
+`membershipRateImprovementBpsFromFree` is presentation metadata derived by
+comparing this exact effective rate with Free's rate at the same amount; it is
+not a second pricing input.
 
 Launch constants:
 
 ```txt
 minAmountUsdCents                    1_000
-maxAmountUsdCents                   59_000
+maxAmountUsdCents                   39_000
 stepUsdCents                           500
-proReferenceCreditsAtMinimumAmount     686
-maxVolumeRateImprovementBps           4_000
-planCreditFactorBps.free              5_000
-planCreditFactorBps.creator           7_500
-planCreditFactorBps.pro              10_000
+creditsAtMinimumAmount.free             343
+creditsAtMinimumAmount.creator          514
+creditsAtMinimumAmount.pro              686
+freeCreditsAtMaximumAmount           22_295
+creditsAtMaximumAmount.creator-1600  34_666
+creditsAtMaximumAmount.pro-5300      35_672
+creditsAtMaximumAmount.pro-11300     38_220
+creditsAtMaximumAmount.pro-17300     40_536
+creditsAtMaximumAmount.pro-29500     46_204
 paymentFixedUsdCents                     10
 platformAllocationUsdCents              150
 ```
@@ -311,35 +341,59 @@ platformAllocationUsdCents              150
 The validator applies the same gross tax, payment/FX, billing risk, runtime,
 provider-cost ceiling, fixed payment fee, and `$1.50` per-purchase platform
 allocation used by the approved contribution model. It must prove every
-generated amount and plan combination remains above the 20% contribution floor.
+generated amount and entitlement combination remains above the 20%
+contribution floor.
 
-At the maximum point, Pro is approximately `$0.00875` per credit. This remains
-slightly worse than the largest recurring Pro monthly option at approximately
-`$0.00843` per credit, while annual Pro remains the best approved value at
-approximately `$0.00786` per credit.
+The approved `$390` endpoints are:
 
-Representative plan-relative points:
+| Top-up entitlement | Endpoint policy      | Exact credits | Maximum savings from its $10 point | $390 modeled margin |
+| ------------------ | -------------------- | ------------: | ---------------------------------: | ------------------: |
+| Free               | retail curve         |        22,295 |                              40.0% |               52.9% |
+| Creator 1,600      | matches $18 monthly  |        34,666 |                              42.2% |               38.6% |
+| Pro 5,300          | stepped endpoint     |        35,672 |                              25.0% |               37.4% |
+| Pro 11,300         | stepped endpoint     |        38,220 |                              30.0% |               34.5% |
+| Pro 17,300         | stepped endpoint     |        40,536 |                              34.0% |               31.8% |
+| Pro 29,500         | matches $249 monthly |        46,204 |                              42.1% |               25.3% |
 
-| Purchase | Volume improvement | Free credits | Creator credits | Pro credits |
-| -------: | -----------------: | -----------: | --------------: | ----------: |
-|      $10 |                 0% |          343 |             514 |         686 |
-|     $100 |               6.2% |        3,656 |           5,484 |       7,313 |
-|     $250 |              16.55% |       10,275 |          15,413 |      20,551 |
-|     $590 |                40% |       33,728 |          50,592 |      67,456 |
+The savings value is relative to the same entitlement's `$10` effective
+price-per-credit, not to a fabricated universal retail price. It increases
+linearly across the slider and reaches the table value at `$390`.
 
-The maximum values may be presented as approximately `33,750`, `50,625`, and
-`67,500` credits in marketing copy. Checkout, ledger grants, and margin
-validation always use the exact catalog result.
+Because every Pro option shares the same `$10` baseline, the Pro selector may
+present this approved comparison:
 
-At the `$590` point, the conservative full-use contribution model retains
-approximately 53.0% for Free, 40.1% for Creator, and 27.3% for Pro. These
-figures include the same 11% gross-revenue tax and variable-cost reserves as
-subscriptions.
+```txt
+$49  -> Up to 25% off
+$99  -> Up to 30% off
+$149 -> Up to 34% off
+$249 -> Up to 42.1% off · Best rate
+```
 
-The API returns the exact purchase amount, plan-specific credits, volume-rate
-improvement, and plan-rate benefit computed by the catalog. The server
-independently recomputes the selected slider point and current organization plan
-before creating Checkout.
+Do not compare Creator's 42.2% label directly with these Pro labels: Creator
+has a different, more expensive `$10` baseline. Its `$390` effective rate
+remains worse than every Pro option. Cross-plan comparisons must use absolute
+USD per credit, not percentages with different baselines.
+
+Representative curve points:
+
+| Entitlement | $10 credits | $100 credits | $250 credits | $390 credits |
+| ----------- | ----------: | -----------: | -----------: | -----------: |
+| Free        |         343 |        3,788 |       11,473 |       22,295 |
+| Creator     |         514 |        5,710 |       17,515 |       34,666 |
+| Pro 5,300   |         686 |        7,291 |       20,365 |       35,672 |
+| Pro 11,300  |         686 |        7,384 |       21,159 |       38,220 |
+| Pro 17,300  |         686 |        7,460 |       21,839 |       40,536 |
+| Pro 29,500  |         686 |        7,619 |       23,360 |       46,204 |
+
+Checkout, ledger grants, and margin validation always use the exact catalog
+result. Marketing may round output examples but must not replace the exact
+credit amount shown before purchase.
+
+The API returns the exact purchase amount, entitlement-specific credits,
+volume-rate improvement, and membership benefit computed by the catalog. The
+server independently resolves the current plan and recurring option, recomputes
+the selected slider point, and captures that option and catalog revision before
+creating Checkout.
 
 ## 4. Code-Owned Billing Catalog
 
@@ -380,7 +434,7 @@ The TypeScript catalog is the maintained source of truth:
 
 ```ts
 export const BILLING_CATALOG = defineBillingCatalog({
-  revision: "2026-07-27.3",
+  revision: "2026-07-27.5",
   currency: "usd",
   creditPolicy: {
     providerCostAllowanceUsdPerCredit: "0.0045",
@@ -419,14 +473,20 @@ export const BILLING_CATALOG = defineBillingCatalog({
   topUps: {
     enabledPlanCodes: ["free", "creator", "pro"],
     minAmountUsdCents: 1_000,
-    maxAmountUsdCents: 59_000,
+    maxAmountUsdCents: 39_000,
     stepUsdCents: 500,
-    proReferenceCreditsAtMinimumAmount: 686,
-    maxVolumeRateImprovementBps: 4_000,
-    planCreditFactorBps: {
-      free: 5_000,
-      creator: 7_500,
-      pro: 10_000,
+    creditsAtMinimumAmountByPlanCode: {
+      free: 343,
+      creator: 514,
+      pro: 686,
+    },
+    freeCreditsAtMaximumAmount: 22_295,
+    creditsAtMaximumAmountByRecurringOptionCode: {
+      "creator-1600": 34_666,
+      "pro-5300": 35_672,
+      "pro-11300": 38_220,
+      "pro-17300": 40_536,
+      "pro-29500": 46_204,
     },
     platformAllocationUsdCents: 150,
     outputVisibility: "private",
@@ -511,45 +571,17 @@ export const BILLING_CATALOG = defineBillingCatalog({
           },
         },
         {
-          code: "pro-29300",
-          monthlyCredits: 29_300,
+          code: "pro-29500",
+          monthlyCredits: 29_500,
           month: {
-            offerCode: "pro-monthly-29300-2026-07",
+            offerCode: "pro-monthly-29500-2026-07",
             priceUsdCents: 24_900,
-            stripeLookupKey: "talelabs_pro_monthly_29300_2026_07",
+            stripeLookupKey: "talelabs_pro_monthly_29500_2026_07",
           },
           year: {
-            offerCode: "pro-annual-29300-2026-07",
+            offerCode: "pro-annual-29500-2026-07",
             priceUsdCents: 279_000,
-            stripeLookupKey: "talelabs_pro_annual_29300_2026_07",
-          },
-        },
-        {
-          code: "pro-46200",
-          monthlyCredits: 46_200,
-          month: {
-            offerCode: "pro-monthly-46200-2026-07",
-            priceUsdCents: 39_000,
-            stripeLookupKey: "talelabs_pro_monthly_46200_2026_07",
-          },
-          year: {
-            offerCode: "pro-annual-46200-2026-07",
-            priceUsdCents: 435_600,
-            stripeLookupKey: "talelabs_pro_annual_46200_2026_07",
-          },
-        },
-        {
-          code: "pro-70000",
-          monthlyCredits: 70_000,
-          month: {
-            offerCode: "pro-monthly-70000-2026-07",
-            priceUsdCents: 59_000,
-            stripeLookupKey: "talelabs_pro_monthly_70000_2026_07",
-          },
-          year: {
-            offerCode: "pro-annual-70000-2026-07",
-            priceUsdCents: 660_000,
-            stripeLookupKey: "talelabs_pro_annual_70000_2026_07",
+            stripeLookupKey: "talelabs_pro_annual_29500_2026_07",
           },
         },
       ],
@@ -570,7 +602,8 @@ integer basis points
 decimal-string provider economics
 tax, payment, risk, runtime, storage, and infrastructure assumptions
 monthly grant amount on each recurring option
-top-up range, step, volume curve, plan factors, and platform allocation
+top-up range, step, minimum retail endpoints, recurring-option maximum
+endpoints, and platform allocation
 storage bytes
 funding-source output visibility
 stable Stripe lookup keys
@@ -614,7 +647,7 @@ never write Price IDs into source code or environment variables
 ```
 
 It also creates or verifies one stable TaleLabs Credits Product used by inline
-top-up Price data. Slider points do not create or synchronize 49 long-lived
+top-up Price data. Slider points do not create or synchronize 77 long-lived
 Stripe Prices.
 
 Every Stripe Product, Price, Checkout Session, and Subscription carries
@@ -636,7 +669,10 @@ annual credits granted up front
 an active offer below the 20% full-use contribution floor
 a top-up slider point below the 20% contribution floor
 non-monotonic top-up credits or effective rates
-a top-up rate better than the best active subscription credit rate
+a paid top-up rate better than its active recurring option's monthly rate
+an interval-specific top-up endpoint for one recurring option
+a non-increasing Pro endpoint or approved savings-ladder drift
+a top-up endpoint inconsistent with its captured recurring option
 an invalid top-up range or amount step
 an unsupported funding or visibility policy
 an unpriced current offer
@@ -659,6 +695,7 @@ organizationId                  primary key
 stripeCustomerId                nullable, unique when present
 currentPlanCode                 free | creator | pro
 currentOfferCode                nullable for Free
+currentRecurringOptionCode      nullable for Free
 catalogRevision
 managedExecutionStatus          active | past_due | blocked_review
 managedExecutionReason          nullable stable code
@@ -683,6 +720,7 @@ organizationId
 stripeCustomerId
 stripeSubscriptionId            unique
 planCode
+recurringOptionCode
 offerCode
 catalogRevision
 status
@@ -692,6 +730,7 @@ currentPeriodEnd
 paidThrough
 cancelAtPeriodEnd
 scheduledPlanCode               nullable future seam
+scheduledRecurringOptionCode    nullable
 scheduledOfferCode              nullable future seam
 createdAt
 updatedAt
@@ -707,6 +746,7 @@ top-up:
 id
 organizationId
 planCode                        plan at purchase quotation
+recurringOptionCode             nullable; exact paid option used for quotation
 status                          pending | paid | failed | expired | refunded | disputed
 amountMinor
 currency
@@ -714,7 +754,7 @@ credits
 catalogRevision
 pricingPolicyVersion
 volumeRateImprovementBps
-planCreditFactorBps
+membershipRateImprovementBpsFromFree
 modeledContributionMarginBps
 stripeCustomerId
 stripeCheckoutSessionId         nullable, unique when present
@@ -981,7 +1021,8 @@ at most one Stripe webhook row per event ID
 at most one payment row per Stripe invoice
 at most one payment and one purchased grant per credit purchase
 unique Stripe Checkout Session and PaymentIntent identities when present
-the persisted top-up amount and credits match one valid catalog slider point
+the persisted top-up amount, credits, recurring option, and catalog endpoint
+match one valid catalog slider point
 one organization-scoped unique ledger idempotency key per financial transition
 tenant-safe composite references for every organization-owned relation
 ```
@@ -1162,8 +1203,9 @@ until the signed webhook confirms payment. The redirect is not payment proof.
 1. require an organization owner/admin;
 2. accept only `amountUsdCents` and a request idempotency key from the browser;
 3. validate that the amount is an exact current slider point;
-4. resolve the organization's current plan and recompute credits, volume
-   improvement, plan factor, modeled contribution, and catalog revision;
+4. lock the organization billing account, resolve its current plan and exact
+   recurring option, then recompute credits, volume improvement, membership
+   benefit, modeled contribution, and catalog revision;
 5. create the immutable pending `creditPurchases` row;
 6. create or reuse the organization's Stripe Customer;
 7. resolve the single synced TaleLabs Credits Product;
@@ -1196,7 +1238,10 @@ payment remains pending. `checkout.session.async_payment_succeeded` may complete
 it later; `checkout.session.async_payment_failed` marks it failed.
 
 Top-up Checkout does not require an active subscription and does not change the
-organization's plan or storage limit.
+organization's plan or storage limit. A Free organization uses the Free retail
+curve. A paid organization must capture the exact current recurring option and
+its reviewed catalog endpoint. A concurrent subscription change cannot alter an
+admitted purchase.
 
 ### 7.4 Customer Portal
 
@@ -1262,6 +1307,7 @@ Add one focused billing route group:
 | `GET /billing/catalog`          | authenticated member  | plans, recurring options, and generated top-up points |
 | `GET /billing/account`          | authenticated member  | plan, available/reserved credits, storage, next grant |
 | `GET /billing/usage`            | authenticated member  | current content counts and one month of generation use |
+| `GET /billing/usage/runs`       | authenticated member  | cursor-paged visible runs for one selected month       |
 | `GET /billing/credits/ledger`   | owner/admin           | cursor-paged organization ledger                      |
 | `POST /billing/checkout`        | owner/admin           | create subscription Checkout Session                  |
 | `PATCH /billing/subscription`   | owner/admin           | schedule a Pro recurring-size change at renewal       |
@@ -1270,8 +1316,10 @@ Add one focused billing route group:
 | `POST /webhooks/stripe`         | signed Stripe request | durable webhook inbox                                 |
 
 The public catalog exposes stable plan codes, storage limits, BYOK availability,
-default/current recurring options, monthly credit allowances, intervals, and
-customer prices. It returns generated top-up options with only:
+default/current recurring options, monthly credit allowances, intervals,
+customer prices, and every recurring option's reviewed maximum top-up credits
+and savings. It returns generated top-up options for the current entitlement
+with only:
 
 ```txt
 amountUsdCents
@@ -1279,6 +1327,8 @@ credits
 effectiveUsdPerCredit             exact decimal string
 volumeRateImprovementBps
 planRateImprovementBpsFromFree
+pricingPlanCode
+pricingRecurringOptionCode        nullable for Free
 ```
 
 It never exposes internal reserve, tax, margin, provider-cost, or platform
@@ -1442,6 +1492,32 @@ organization-and-month-keyed TanStack Query entry and invalidate the current
 month after run settlement, Asset ingestion or purge, Project movement, or
 Element reference changes.
 
+#### 8.2.1 `GET /billing/usage/runs`
+
+Usage presents a reverse-chronological run table beneath the selected month's
+generation summary. The table uses a separate bounded read rather than
+expanding `GET /billing/usage` or hydrating the organization's complete run
+history. It accepts the same optional UTC `month=YYYY-MM` parameter plus an
+opaque `cursor` and a bounded `limit`.
+
+Flow history is collaborative within the active organization. Direct Create
+history remains private to its creator, so this endpoint returns organization
+Flow runs plus only the authenticated member's direct Create runs. This
+visibility rule intentionally means that the table can contain fewer rows than
+the organization-wide monthly aggregate when other members have private direct
+Create runs.
+
+Each row includes only the run identity, source and source name, mode, status,
+requested media types, successful output count, funding source, quoted and
+captured credits, and creation/completion timestamps. It never exposes prompts,
+provider bindings, provider costs, credentials, output contents, or Stripe
+identifiers.
+
+The read uses the tenant-scoped `createdAt, id` ordering and performs only
+bounded aggregate queries for the run IDs on the current page. Cursors are
+reverse chronological, the dashboard resets pagination when the month changes,
+and the response uses `Cache-Control: private, no-store`.
+
 ### 8.3 `PATCH /billing/subscription`
 
 This endpoint schedules a different current Pro recurring option on the
@@ -1458,8 +1534,9 @@ It requires an organization owner/admin and `Idempotency-Key`. The server locks
 the local subscription, verifies active Pro entitlement and the current catalog,
 resolves the immutable Stripe Price by lookup key, and creates or updates a
 Stripe Subscription Schedule whose next phase begins at the current paid period
-end. It persists `scheduledPlanCode` and `scheduledOfferCode`; the signed Stripe
-webhook remains authoritative for the transition.
+end. It persists `scheduledPlanCode`, `scheduledRecurringOptionCode`, and
+`scheduledOfferCode`; the signed Stripe webhook remains authoritative for the
+transition.
 
 The change:
 
@@ -1751,8 +1828,8 @@ Creator
 Pro
 ```
 
-Founder is a status on Free, not a fourth plan. Pro's six reviewed recurring
-allowances are selectable sizes of one Pro plan, not six plans. Do not add
+Founder is a status on Free, not a fourth plan. Pro's four reviewed recurring
+allowances are selectable sizes of one Pro plan, not four plans. Do not add
 Starter, Business, Studio, or a separate BYOK plan.
 
 The destination includes:
@@ -1764,10 +1841,11 @@ Current and Founder badges when applicable
 monthly credit allowance
 storage allowance
 browser BYOK and managed-generation availability
+maximum top-up savings unlocked by each recurring option
 short, stable entitlement comparison
 owner/admin upgrade or Manage subscription action
 read-only plan visibility for ordinary members
-the snapping Pro recurring-credit selector using the six catalog points
+the snapping Pro recurring-credit selector using the four catalog points
 the scheduled Pro option and effective renewal date when a change is pending
 ```
 
@@ -1775,7 +1853,20 @@ Changing the monthly/annual control never changes Free. The Pro selector
 updates the price and monthly allowance on the one Pro card and schedules an
 existing Pro subscription change for renewal through
 `PATCH /billing/subscription`. Prices, credits, plan copy, and slider points
-come from the public billing catalog; UI code must not duplicate them.
+come from the public billing catalog; UI code must not duplicate them. Rounded
+whole-percentage labels may be used in the compact selector, while the detailed
+Credits view shows the exact catalog percentage and effective USD per credit.
+
+Annual cards present the annual offer as its rounded monthly-equivalent price,
+then disclose the exact annual charge and exact savings relative to twelve
+monthly payments. The calculation uses the paired catalog offers and exact
+integer-cent arithmetic.
+
+Plan-card top-up percentages use the Free rate at the same maximum purchase
+amount as their common baseline. Never compare entitlement-specific volume
+improvement percentages side by side: their minimum-purchase baselines differ
+and make Creator appear better than Pro even when Pro has the lower absolute
+USD-per-credit rate.
 
 ### 12.4 Credits
 
@@ -1784,22 +1875,20 @@ Credits is the organization balance and one-time purchase destination:
 ```txt
 available credit balance
 reserved credits only when nonzero, as supporting detail
-Packages / Custom segmented control
-reviewed package shortcuts generated from catalog points
-custom $10-$590 slider in $5 increments
+one $10-$390 top-up slider in $5 increments
 exact one-time amount and exact credits
 effective USD per credit
-volume and plan value improvement derived from catalog basis points
+volume savings and recurring-option membership value derived from the catalog
 clear notice that top-ups do not increase storage or plan entitlements
 owner/admin Buy action and read-only state for ordinary members
 ```
 
-Free, Creator, and Pro may all buy top-ups. Package cards and the custom slider
-are two views of the same generated catalog formula; they do not define
-separate offers. Any approximate image/video output examples must name the
-representative model, duration, resolution, and pricing snapshot in a tooltip
-or nearby disclosure. Never present one universal “images” or “videos” number
-as a promise across models.
+Free, Creator, and Pro may all buy top-ups. The slider is the sole top-up amount
+selector and resolves every valid step from the generated catalog formula. Any
+approximate image/video output examples must name the representative model,
+duration, resolution, and pricing snapshot in a tooltip or nearby disclosure.
+Never present one universal “images” or “videos” number as a promise across
+models.
 
 The cursor-paged organization ledger is available from this destination to
 owners/admins, either as a compact history below the balance or through the
@@ -2048,12 +2137,13 @@ Deliver:
 ```txt
 Settings Billing group with Plans, Credits, and Usage destinations
 exactly three plan identities: Free, Creator, and Pro
-monthly/annual comparison and the six-point Pro recurring-credit selector
+monthly/annual comparison and the four-point Pro recurring-credit selector
 global sidebar credit and storage usage
 single `GET /billing/account` query shared with Billing settings
 top-up slider on Free, Creator, and Pro
 Projects, Assets, and Elements usage overview without double-counted storage
 month-selectable generation usage and owner/admin transactions
+cursor-paged monthly generation run history
 snapping Pro recurring-credit slider
 credit-denominated Create/Flow estimates
 storage usage and enforcement
@@ -2069,12 +2159,14 @@ mode and TaleLabs debug/provider-safe modes:
 ```txt
 monthly Creator signup and first grant
 annual Pro signup and only one monthly grant
-all six Pro recurring options on monthly and annual cadence
+all four Pro recurring options on monthly and annual cadence
 Pro recurring option change taking effect at renewal without a prorated grant
 Free top-up purchase and private purchased-credit grant
 Creator and Pro top-up purchase without plan mutation
-every top-up slider point and plan factor preserves monotonic value and the contribution floor
-largest top-up remains worse per credit than the best subscription offer
+every top-up slider point and recurring-option endpoint preserves monotonic value and the contribution floor
+each paid endpoint follows the approved savings ladder and never beats its active monthly option
+only the highest Pro endpoint matches its monthly option after integer rounding
+annual subscriptions remain better per credit than their matching top-up curve
 top-up payment failure, duplicate webhook, refund, and dispute
 12 annual monthly periods without duplicate grants
 January 31 and leap-year grant anchors
@@ -2094,9 +2186,10 @@ upload and generated-output storage overage
 ledger-to-balance and storage projection invariants
 sidebar/account summary matches balance and storage projections after run, upload, purge, grant, and organization switch
 Plans renders only Free, Creator, and Pro; Founder is a Free status and Pro sizes remain one plan
-Credits package and custom views resolve the same catalog-derived top-up values
+Credits exposes one slider whose every step resolves a catalog-derived top-up value
 Usage labels Collections as Elements and never attributes referenced Asset bytes twice
 Usage month changes remain tenant-scoped, bounded, and consistent with run/job settlement
+Usage run history preserves collaborative Flow and private Create visibility and paginates without unbounded scans
 ```
 
 ### B8 - Small paid beta
