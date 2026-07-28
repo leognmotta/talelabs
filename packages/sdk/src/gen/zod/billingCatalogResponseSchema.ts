@@ -19,6 +19,7 @@ export const billingCatalogResponseSchema = z.object({
         z.object({
           code: z.string(),
           maximumTopUpCredits: z.int().gt(0),
+          maximumTopUpRateImprovementBpsFromFree: z.int().min(0).max(10000),
           maximumTopUpSavingsBps: z.int().min(0).max(10000),
           monthlyCredits: z.int().gt(0),
           offers: z.array(

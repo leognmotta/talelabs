@@ -6922,6 +6922,11 @@
                         "minimum": 0,
                         "exclusiveMinimum": true
                       },
+                      "maximumTopUpRateImprovementBpsFromFree": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 10000
+                      },
                       "maximumTopUpSavingsBps": {
                         "type": "integer",
                         "minimum": 0,
@@ -6964,6 +6969,7 @@
                     "required": [
                       "code",
                       "maximumTopUpCredits",
+                      "maximumTopUpRateImprovementBpsFromFree",
                       "maximumTopUpSavingsBps",
                       "monthlyCredits",
                       "offers"

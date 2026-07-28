@@ -104,6 +104,12 @@ export type BillingCatalogResponse = {
        * @maxLength 10000
        * @type integer
        */
+      maximumTopUpRateImprovementBpsFromFree: number;
+      /**
+       * @minLength 0
+       * @maxLength 10000
+       * @type integer
+       */
       maximumTopUpSavingsBps: number;
       /**
        * @type integer
