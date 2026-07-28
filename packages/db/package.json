@@ -18,6 +18,7 @@
     "check-types": "tsc --noEmit",
     "dev:build": "tsc --watch --preserveWatchOutput",
     "migrate": "tsx src/migrate.ts",
+    "verify:billing-migration": "tsx scripts/verify-billing-migration.ts",
     "verify:direct-create-migration": "tsx scripts/verify-direct-create-migration.ts",
     "verify:projects-migration": "tsx scripts/verify-projects-migration.ts"
   },

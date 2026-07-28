@@ -12,7 +12,8 @@
   "scripts": {
     "build": "tsc",
     "check-types": "tsc --noEmit && tsc --project tsconfig.scripts.json",
-    "billing:sync": "tsx scripts/sync-billing-catalog.ts"
+    "billing:sync": "tsx scripts/sync-billing-catalog.ts",
+    "verify:billing-contract": "tsx scripts/verify-billing-contract.ts"
   },
   "dependencies": {
     "@talelabs/billing": "*",
