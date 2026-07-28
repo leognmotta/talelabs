@@ -9,11 +9,13 @@ import type {
   PostRunsReconcileMutationResponse,
   PostRunsReconcile400,
   PostRunsReconcile401,
+  PostRunsReconcile402,
   PostRunsReconcile403,
   PostRunsReconcile404,
   PostRunsReconcile409,
   PostRunsReconcile429,
   PostRunsReconcile500,
+  PostRunsReconcile503,
 } from "../types/PostRunsReconcile.ts";
 import { postRunsReconcileMutationResponseSchema } from "../zod/postRunsReconcileSchema.ts";
 
@@ -35,11 +37,13 @@ export async function postRunsReconcile(
     ResponseErrorConfig<
       | PostRunsReconcile400
       | PostRunsReconcile401
+      | PostRunsReconcile402
       | PostRunsReconcile403
       | PostRunsReconcile404
       | PostRunsReconcile409
       | PostRunsReconcile429
       | PostRunsReconcile500
+      | PostRunsReconcile503
     >,
     unknown
   >({

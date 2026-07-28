@@ -10,11 +10,13 @@ import type {
   GetElementsQueryParams,
   GetElements400,
   GetElements401,
+  GetElements402,
   GetElements403,
   GetElements404,
   GetElements409,
   GetElements429,
   GetElements500,
+  GetElements503,
 } from "../types/GetElements.ts";
 import { getElementsQueryResponseSchema } from "../zod/getElementsSchema.ts";
 
@@ -37,11 +39,13 @@ export async function getElements(
     ResponseErrorConfig<
       | GetElements400
       | GetElements401
+      | GetElements402
       | GetElements403
       | GetElements404
       | GetElements409
       | GetElements429
       | GetElements500
+      | GetElements503
     >,
     unknown
   >({

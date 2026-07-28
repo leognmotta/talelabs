@@ -23,6 +23,11 @@ export type PostRunsCreateEstimate400 = ErrorResponse;
 export type PostRunsCreateEstimate401 = ErrorResponse;
 
 /**
+ * @description Payment or credit balance required
+ */
+export type PostRunsCreateEstimate402 = ErrorResponse;
+
+/**
  * @description Active organization required
  */
 export type PostRunsCreateEstimate403 = ErrorResponse;
@@ -47,6 +52,11 @@ export type PostRunsCreateEstimate429 = ErrorResponse;
  */
 export type PostRunsCreateEstimate500 = ErrorResponse;
 
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export type PostRunsCreateEstimate503 = ErrorResponse;
+
 export type PostRunsCreateEstimateMutationRequest = EstimateDirectRunRequest;
 
 export type PostRunsCreateEstimateMutationResponse = PostRunsCreateEstimate200;
@@ -57,9 +67,11 @@ export type PostRunsCreateEstimateMutation = {
   Errors:
     | PostRunsCreateEstimate400
     | PostRunsCreateEstimate401
+    | PostRunsCreateEstimate402
     | PostRunsCreateEstimate403
     | PostRunsCreateEstimate404
     | PostRunsCreateEstimate409
     | PostRunsCreateEstimate429
-    | PostRunsCreateEstimate500;
+    | PostRunsCreateEstimate500
+    | PostRunsCreateEstimate503;
 };

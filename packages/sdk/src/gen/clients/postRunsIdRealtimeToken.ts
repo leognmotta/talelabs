@@ -10,11 +10,13 @@ import type {
   PostRunsIdRealtimeTokenPathParams,
   PostRunsIdRealtimeToken400,
   PostRunsIdRealtimeToken401,
+  PostRunsIdRealtimeToken402,
   PostRunsIdRealtimeToken403,
   PostRunsIdRealtimeToken404,
   PostRunsIdRealtimeToken409,
   PostRunsIdRealtimeToken429,
   PostRunsIdRealtimeToken500,
+  PostRunsIdRealtimeToken503,
 } from "../types/PostRunsIdRealtimeToken.ts";
 import { postRunsIdRealtimeTokenMutationResponseSchema } from "../zod/postRunsIdRealtimeTokenSchema.ts";
 
@@ -41,11 +43,13 @@ export async function postRunsIdRealtimeToken(
     ResponseErrorConfig<
       | PostRunsIdRealtimeToken400
       | PostRunsIdRealtimeToken401
+      | PostRunsIdRealtimeToken402
       | PostRunsIdRealtimeToken403
       | PostRunsIdRealtimeToken404
       | PostRunsIdRealtimeToken409
       | PostRunsIdRealtimeToken429
       | PostRunsIdRealtimeToken500
+      | PostRunsIdRealtimeToken503
     >,
     unknown
   >({

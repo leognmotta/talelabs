@@ -40,6 +40,11 @@ export type GetSearch400 = ErrorResponse;
 export type GetSearch401 = ErrorResponse;
 
 /**
+ * @description Payment or credit balance required
+ */
+export type GetSearch402 = ErrorResponse;
+
+/**
  * @description Active organization required
  */
 export type GetSearch403 = ErrorResponse;
@@ -64,6 +69,11 @@ export type GetSearch429 = ErrorResponse;
  */
 export type GetSearch500 = ErrorResponse;
 
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export type GetSearch503 = ErrorResponse;
+
 export type GetSearchQueryResponse = GetSearch200;
 
 export type GetSearchQuery = {
@@ -72,9 +82,11 @@ export type GetSearchQuery = {
   Errors:
     | GetSearch400
     | GetSearch401
+    | GetSearch402
     | GetSearch403
     | GetSearch404
     | GetSearch409
     | GetSearch429
-    | GetSearch500;
+    | GetSearch500
+    | GetSearch503;
 };

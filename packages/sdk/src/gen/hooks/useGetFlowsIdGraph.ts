@@ -9,11 +9,13 @@ import type {
   GetFlowsIdGraphPathParams,
   GetFlowsIdGraph400,
   GetFlowsIdGraph401,
+  GetFlowsIdGraph402,
   GetFlowsIdGraph403,
   GetFlowsIdGraph404,
   GetFlowsIdGraph409,
   GetFlowsIdGraph429,
   GetFlowsIdGraph500,
+  GetFlowsIdGraph503,
 } from "../types/GetFlowsIdGraph.ts";
 import type {
   QueryKey,
@@ -44,11 +46,13 @@ export function getFlowsIdGraphQueryOptions(
     ResponseErrorConfig<
       | GetFlowsIdGraph400
       | GetFlowsIdGraph401
+      | GetFlowsIdGraph402
       | GetFlowsIdGraph403
       | GetFlowsIdGraph404
       | GetFlowsIdGraph409
       | GetFlowsIdGraph429
       | GetFlowsIdGraph500
+      | GetFlowsIdGraph503
     >,
     GetFlowsIdGraphQueryResponse,
     typeof queryKey
@@ -80,11 +84,13 @@ export function useGetFlowsIdGraph<
         ResponseErrorConfig<
           | GetFlowsIdGraph400
           | GetFlowsIdGraph401
+          | GetFlowsIdGraph402
           | GetFlowsIdGraph403
           | GetFlowsIdGraph404
           | GetFlowsIdGraph409
           | GetFlowsIdGraph429
           | GetFlowsIdGraph500
+          | GetFlowsIdGraph503
         >,
         TData,
         TQueryData,
@@ -110,11 +116,13 @@ export function useGetFlowsIdGraph<
     ResponseErrorConfig<
       | GetFlowsIdGraph400
       | GetFlowsIdGraph401
+      | GetFlowsIdGraph402
       | GetFlowsIdGraph403
       | GetFlowsIdGraph404
       | GetFlowsIdGraph409
       | GetFlowsIdGraph429
       | GetFlowsIdGraph500
+      | GetFlowsIdGraph503
     >
   > & { queryKey: TQueryKey };
 

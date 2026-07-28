@@ -35,6 +35,11 @@ export type DeleteRunsIdBrowserLease400 = ErrorResponse;
 export type DeleteRunsIdBrowserLease401 = ErrorResponse;
 
 /**
+ * @description Payment or credit balance required
+ */
+export type DeleteRunsIdBrowserLease402 = ErrorResponse;
+
+/**
  * @description Active organization required
  */
 export type DeleteRunsIdBrowserLease403 = ErrorResponse;
@@ -59,6 +64,11 @@ export type DeleteRunsIdBrowserLease429 = ErrorResponse;
  */
 export type DeleteRunsIdBrowserLease500 = ErrorResponse;
 
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export type DeleteRunsIdBrowserLease503 = ErrorResponse;
+
 export type DeleteRunsIdBrowserLeaseMutationRequest = {
   /**
    * @minLength 16
@@ -82,9 +92,11 @@ export type DeleteRunsIdBrowserLeaseMutation = {
   Errors:
     | DeleteRunsIdBrowserLease400
     | DeleteRunsIdBrowserLease401
+    | DeleteRunsIdBrowserLease402
     | DeleteRunsIdBrowserLease403
     | DeleteRunsIdBrowserLease404
     | DeleteRunsIdBrowserLease409
     | DeleteRunsIdBrowserLease429
-    | DeleteRunsIdBrowserLease500;
+    | DeleteRunsIdBrowserLease500
+    | DeleteRunsIdBrowserLease503;
 };

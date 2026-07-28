@@ -11,11 +11,13 @@ import type {
   PatchProjectsProjectidBriefPathParams,
   PatchProjectsProjectidBrief400,
   PatchProjectsProjectidBrief401,
+  PatchProjectsProjectidBrief402,
   PatchProjectsProjectidBrief403,
   PatchProjectsProjectidBrief404,
   PatchProjectsProjectidBrief409,
   PatchProjectsProjectidBrief429,
   PatchProjectsProjectidBrief500,
+  PatchProjectsProjectidBrief503,
 } from "../types/PatchProjectsProjectidBrief.ts";
 import {
   patchProjectsProjectidBriefMutationResponseSchema,
@@ -56,11 +58,13 @@ export async function patchProjectsProjectidBrief(
     ResponseErrorConfig<
       | PatchProjectsProjectidBrief400
       | PatchProjectsProjectidBrief401
+      | PatchProjectsProjectidBrief402
       | PatchProjectsProjectidBrief403
       | PatchProjectsProjectidBrief404
       | PatchProjectsProjectidBrief409
       | PatchProjectsProjectidBrief429
       | PatchProjectsProjectidBrief500
+      | PatchProjectsProjectidBrief503
     >,
     PatchProjectsProjectidBriefMutationRequest
   >({

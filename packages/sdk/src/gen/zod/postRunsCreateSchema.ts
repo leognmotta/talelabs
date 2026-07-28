@@ -8,11 +8,13 @@ import type {
   PostRunsCreate202,
   PostRunsCreate400,
   PostRunsCreate401,
+  PostRunsCreate402,
   PostRunsCreate403,
   PostRunsCreate404,
   PostRunsCreate409,
   PostRunsCreate429,
   PostRunsCreate500,
+  PostRunsCreate503,
   PostRunsCreateMutationRequest,
   PostRunsCreateMutationResponse,
 } from "../types/PostRunsCreate.ts";
@@ -40,6 +42,13 @@ export const postRunsCreate400Schema = z.lazy(
 export const postRunsCreate401Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<PostRunsCreate401>;
+
+/**
+ * @description Payment or credit balance required
+ */
+export const postRunsCreate402Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<PostRunsCreate402>;
 
 /**
  * @description Active organization required
@@ -75,6 +84,13 @@ export const postRunsCreate429Schema = z.lazy(
 export const postRunsCreate500Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<PostRunsCreate500>;
+
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export const postRunsCreate503Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<PostRunsCreate503>;
 
 export const postRunsCreateMutationRequestSchema = z.lazy(
   () => createDirectRunRequestSchema,

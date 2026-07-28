@@ -33,6 +33,11 @@ export type PostProjectsProjectidBriefMentionsResolve400 = ErrorResponse;
 export type PostProjectsProjectidBriefMentionsResolve401 = ErrorResponse;
 
 /**
+ * @description Payment or credit balance required
+ */
+export type PostProjectsProjectidBriefMentionsResolve402 = ErrorResponse;
+
+/**
  * @description Active organization required
  */
 export type PostProjectsProjectidBriefMentionsResolve403 = ErrorResponse;
@@ -57,6 +62,11 @@ export type PostProjectsProjectidBriefMentionsResolve429 = ErrorResponse;
  */
 export type PostProjectsProjectidBriefMentionsResolve500 = ErrorResponse;
 
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export type PostProjectsProjectidBriefMentionsResolve503 = ErrorResponse;
+
 export type PostProjectsProjectidBriefMentionsResolveMutationRequest =
   ResolveProjectMentionsRequest;
 
@@ -70,9 +80,11 @@ export type PostProjectsProjectidBriefMentionsResolveMutation = {
   Errors:
     | PostProjectsProjectidBriefMentionsResolve400
     | PostProjectsProjectidBriefMentionsResolve401
+    | PostProjectsProjectidBriefMentionsResolve402
     | PostProjectsProjectidBriefMentionsResolve403
     | PostProjectsProjectidBriefMentionsResolve404
     | PostProjectsProjectidBriefMentionsResolve409
     | PostProjectsProjectidBriefMentionsResolve429
-    | PostProjectsProjectidBriefMentionsResolve500;
+    | PostProjectsProjectidBriefMentionsResolve500
+    | PostProjectsProjectidBriefMentionsResolve503;
 };

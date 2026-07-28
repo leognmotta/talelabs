@@ -10,11 +10,13 @@ import type {
   GetProjectsQueryParams,
   GetProjects400,
   GetProjects401,
+  GetProjects402,
   GetProjects403,
   GetProjects404,
   GetProjects409,
   GetProjects429,
   GetProjects500,
+  GetProjects503,
 } from "../types/GetProjects.ts";
 import { getProjectsQueryResponseSchema } from "../zod/getProjectsSchema.ts";
 
@@ -37,11 +39,13 @@ export async function getProjects(
     ResponseErrorConfig<
       | GetProjects400
       | GetProjects401
+      | GetProjects402
       | GetProjects403
       | GetProjects404
       | GetProjects409
       | GetProjects429
       | GetProjects500
+      | GetProjects503
     >,
     unknown
   >({

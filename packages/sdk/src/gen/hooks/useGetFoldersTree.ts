@@ -9,11 +9,13 @@ import type {
   GetFoldersTreeQueryParams,
   GetFoldersTree400,
   GetFoldersTree401,
+  GetFoldersTree402,
   GetFoldersTree403,
   GetFoldersTree404,
   GetFoldersTree409,
   GetFoldersTree429,
   GetFoldersTree500,
+  GetFoldersTree503,
 } from "../types/GetFoldersTree.ts";
 import type {
   QueryKey,
@@ -39,11 +41,13 @@ export function getFoldersTreeQueryOptions(
     ResponseErrorConfig<
       | GetFoldersTree400
       | GetFoldersTree401
+      | GetFoldersTree402
       | GetFoldersTree403
       | GetFoldersTree404
       | GetFoldersTree409
       | GetFoldersTree429
       | GetFoldersTree500
+      | GetFoldersTree503
     >,
     GetFoldersTreeQueryResponse,
     typeof queryKey
@@ -74,11 +78,13 @@ export function useGetFoldersTree<
         ResponseErrorConfig<
           | GetFoldersTree400
           | GetFoldersTree401
+          | GetFoldersTree402
           | GetFoldersTree403
           | GetFoldersTree404
           | GetFoldersTree409
           | GetFoldersTree429
           | GetFoldersTree500
+          | GetFoldersTree503
         >,
         TData,
         TQueryData,
@@ -104,11 +110,13 @@ export function useGetFoldersTree<
     ResponseErrorConfig<
       | GetFoldersTree400
       | GetFoldersTree401
+      | GetFoldersTree402
       | GetFoldersTree403
       | GetFoldersTree404
       | GetFoldersTree409
       | GetFoldersTree429
       | GetFoldersTree500
+      | GetFoldersTree503
     >
   > & { queryKey: TQueryKey };
 

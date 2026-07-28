@@ -10,11 +10,13 @@ import type {
   GetProjectsProjectidPathParams,
   GetProjectsProjectid400,
   GetProjectsProjectid401,
+  GetProjectsProjectid402,
   GetProjectsProjectid403,
   GetProjectsProjectid404,
   GetProjectsProjectid409,
   GetProjectsProjectid429,
   GetProjectsProjectid500,
+  GetProjectsProjectid503,
 } from "../types/GetProjectsProjectid.ts";
 import { getProjectsProjectidQueryResponseSchema } from "../zod/getProjectsProjectidSchema.ts";
 
@@ -41,11 +43,13 @@ export async function getProjectsProjectid(
     ResponseErrorConfig<
       | GetProjectsProjectid400
       | GetProjectsProjectid401
+      | GetProjectsProjectid402
       | GetProjectsProjectid403
       | GetProjectsProjectid404
       | GetProjectsProjectid409
       | GetProjectsProjectid429
       | GetProjectsProjectid500
+      | GetProjectsProjectid503
     >,
     unknown
   >({

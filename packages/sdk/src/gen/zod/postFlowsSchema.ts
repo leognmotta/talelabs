@@ -8,11 +8,13 @@ import type {
   PostFlows201,
   PostFlows400,
   PostFlows401,
+  PostFlows402,
   PostFlows403,
   PostFlows404,
   PostFlows409,
   PostFlows429,
   PostFlows500,
+  PostFlows503,
   PostFlowsMutationRequest,
   PostFlowsMutationResponse,
 } from "../types/PostFlows.ts";
@@ -40,6 +42,13 @@ export const postFlows400Schema = z.lazy(
 export const postFlows401Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<PostFlows401>;
+
+/**
+ * @description Payment or credit balance required
+ */
+export const postFlows402Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<PostFlows402>;
 
 /**
  * @description Active organization required
@@ -75,6 +84,13 @@ export const postFlows429Schema = z.lazy(
 export const postFlows500Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<PostFlows500>;
+
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export const postFlows503Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<PostFlows503>;
 
 export const postFlowsMutationRequestSchema = z.lazy(
   () => createFlowRequestSchema,

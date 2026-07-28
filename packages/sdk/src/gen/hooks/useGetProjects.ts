@@ -9,11 +9,13 @@ import type {
   GetProjectsQueryParams,
   GetProjects400,
   GetProjects401,
+  GetProjects402,
   GetProjects403,
   GetProjects404,
   GetProjects409,
   GetProjects429,
   GetProjects500,
+  GetProjects503,
 } from "../types/GetProjects.ts";
 import type {
   QueryKey,
@@ -39,11 +41,13 @@ export function getProjectsQueryOptions(
     ResponseErrorConfig<
       | GetProjects400
       | GetProjects401
+      | GetProjects402
       | GetProjects403
       | GetProjects404
       | GetProjects409
       | GetProjects429
       | GetProjects500
+      | GetProjects503
     >,
     GetProjectsQueryResponse,
     typeof queryKey
@@ -74,11 +78,13 @@ export function useGetProjects<
         ResponseErrorConfig<
           | GetProjects400
           | GetProjects401
+          | GetProjects402
           | GetProjects403
           | GetProjects404
           | GetProjects409
           | GetProjects429
           | GetProjects500
+          | GetProjects503
         >,
         TData,
         TQueryData,
@@ -104,11 +110,13 @@ export function useGetProjects<
     ResponseErrorConfig<
       | GetProjects400
       | GetProjects401
+      | GetProjects402
       | GetProjects403
       | GetProjects404
       | GetProjects409
       | GetProjects429
       | GetProjects500
+      | GetProjects503
     >
   > & { queryKey: TQueryKey };
 

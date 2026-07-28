@@ -10,11 +10,13 @@ import type {
   PostTagsMutationResponse,
   PostTags400,
   PostTags401,
+  PostTags402,
   PostTags403,
   PostTags404,
   PostTags409,
   PostTags429,
   PostTags500,
+  PostTags503,
 } from "../types/PostTags.ts";
 import {
   postTagsMutationResponseSchema,
@@ -44,11 +46,13 @@ export async function postTags(
     ResponseErrorConfig<
       | PostTags400
       | PostTags401
+      | PostTags402
       | PostTags403
       | PostTags404
       | PostTags409
       | PostTags429
       | PostTags500
+      | PostTags503
     >,
     PostTagsMutationRequest
   >({

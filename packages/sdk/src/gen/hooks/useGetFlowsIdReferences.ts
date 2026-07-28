@@ -9,11 +9,13 @@ import type {
   GetFlowsIdReferencesPathParams,
   GetFlowsIdReferences400,
   GetFlowsIdReferences401,
+  GetFlowsIdReferences402,
   GetFlowsIdReferences403,
   GetFlowsIdReferences404,
   GetFlowsIdReferences409,
   GetFlowsIdReferences429,
   GetFlowsIdReferences500,
+  GetFlowsIdReferences503,
 } from "../types/GetFlowsIdReferences.ts";
 import type {
   QueryKey,
@@ -44,11 +46,13 @@ export function getFlowsIdReferencesQueryOptions(
     ResponseErrorConfig<
       | GetFlowsIdReferences400
       | GetFlowsIdReferences401
+      | GetFlowsIdReferences402
       | GetFlowsIdReferences403
       | GetFlowsIdReferences404
       | GetFlowsIdReferences409
       | GetFlowsIdReferences429
       | GetFlowsIdReferences500
+      | GetFlowsIdReferences503
     >,
     GetFlowsIdReferencesQueryResponse,
     typeof queryKey
@@ -80,11 +84,13 @@ export function useGetFlowsIdReferences<
         ResponseErrorConfig<
           | GetFlowsIdReferences400
           | GetFlowsIdReferences401
+          | GetFlowsIdReferences402
           | GetFlowsIdReferences403
           | GetFlowsIdReferences404
           | GetFlowsIdReferences409
           | GetFlowsIdReferences429
           | GetFlowsIdReferences500
+          | GetFlowsIdReferences503
         >,
         TData,
         TQueryData,
@@ -111,11 +117,13 @@ export function useGetFlowsIdReferences<
     ResponseErrorConfig<
       | GetFlowsIdReferences400
       | GetFlowsIdReferences401
+      | GetFlowsIdReferences402
       | GetFlowsIdReferences403
       | GetFlowsIdReferences404
       | GetFlowsIdReferences409
       | GetFlowsIdReferences429
       | GetFlowsIdReferences500
+      | GetFlowsIdReferences503
     >
   > & { queryKey: TQueryKey };
 

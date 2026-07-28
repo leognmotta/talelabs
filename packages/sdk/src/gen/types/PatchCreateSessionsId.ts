@@ -32,6 +32,11 @@ export type PatchCreateSessionsId400 = ErrorResponse;
 export type PatchCreateSessionsId401 = ErrorResponse;
 
 /**
+ * @description Payment or credit balance required
+ */
+export type PatchCreateSessionsId402 = ErrorResponse;
+
+/**
  * @description Active organization required
  */
 export type PatchCreateSessionsId403 = ErrorResponse;
@@ -56,6 +61,11 @@ export type PatchCreateSessionsId429 = ErrorResponse;
  */
 export type PatchCreateSessionsId500 = ErrorResponse;
 
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export type PatchCreateSessionsId503 = ErrorResponse;
+
 export type PatchCreateSessionsIdMutationRequest = RenameCreateSessionRequest;
 
 export type PatchCreateSessionsIdMutationResponse = PatchCreateSessionsId200;
@@ -67,9 +77,11 @@ export type PatchCreateSessionsIdMutation = {
   Errors:
     | PatchCreateSessionsId400
     | PatchCreateSessionsId401
+    | PatchCreateSessionsId402
     | PatchCreateSessionsId403
     | PatchCreateSessionsId404
     | PatchCreateSessionsId409
     | PatchCreateSessionsId429
-    | PatchCreateSessionsId500;
+    | PatchCreateSessionsId500
+    | PatchCreateSessionsId503;
 };

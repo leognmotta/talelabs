@@ -8,11 +8,13 @@ import type {
   GetAssetsIdUsage200,
   GetAssetsIdUsage400,
   GetAssetsIdUsage401,
+  GetAssetsIdUsage402,
   GetAssetsIdUsage403,
   GetAssetsIdUsage404,
   GetAssetsIdUsage409,
   GetAssetsIdUsage429,
   GetAssetsIdUsage500,
+  GetAssetsIdUsage503,
   GetAssetsIdUsagePathParams,
   GetAssetsIdUsageQueryParams,
   GetAssetsIdUsageQueryResponse,
@@ -64,6 +66,13 @@ export const getAssetsIdUsage401Schema = z.lazy(
 ) as unknown as z.ZodType<GetAssetsIdUsage401>;
 
 /**
+ * @description Payment or credit balance required
+ */
+export const getAssetsIdUsage402Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<GetAssetsIdUsage402>;
+
+/**
  * @description Active organization required
  */
 export const getAssetsIdUsage403Schema = z.lazy(
@@ -97,6 +106,13 @@ export const getAssetsIdUsage429Schema = z.lazy(
 export const getAssetsIdUsage500Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<GetAssetsIdUsage500>;
+
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export const getAssetsIdUsage503Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<GetAssetsIdUsage503>;
 
 export const getAssetsIdUsageQueryResponseSchema = z.lazy(
   () => getAssetsIdUsage200Schema,

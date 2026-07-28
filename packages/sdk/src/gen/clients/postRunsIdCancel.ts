@@ -10,11 +10,13 @@ import type {
   PostRunsIdCancelPathParams,
   PostRunsIdCancel400,
   PostRunsIdCancel401,
+  PostRunsIdCancel402,
   PostRunsIdCancel403,
   PostRunsIdCancel404,
   PostRunsIdCancel409,
   PostRunsIdCancel429,
   PostRunsIdCancel500,
+  PostRunsIdCancel503,
 } from "../types/PostRunsIdCancel.ts";
 import { postRunsIdCancelMutationResponseSchema } from "../zod/postRunsIdCancelSchema.ts";
 
@@ -41,11 +43,13 @@ export async function postRunsIdCancel(
     ResponseErrorConfig<
       | PostRunsIdCancel400
       | PostRunsIdCancel401
+      | PostRunsIdCancel402
       | PostRunsIdCancel403
       | PostRunsIdCancel404
       | PostRunsIdCancel409
       | PostRunsIdCancel429
       | PostRunsIdCancel500
+      | PostRunsIdCancel503
     >,
     unknown
   >({

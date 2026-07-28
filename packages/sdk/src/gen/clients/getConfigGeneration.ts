@@ -9,11 +9,13 @@ import type {
   GetConfigGenerationQueryResponse,
   GetConfigGeneration400,
   GetConfigGeneration401,
+  GetConfigGeneration402,
   GetConfigGeneration403,
   GetConfigGeneration404,
   GetConfigGeneration409,
   GetConfigGeneration429,
   GetConfigGeneration500,
+  GetConfigGeneration503,
 } from "../types/GetConfigGeneration.ts";
 import { getConfigGenerationQueryResponseSchema } from "../zod/getConfigGenerationSchema.ts";
 
@@ -35,11 +37,13 @@ export async function getConfigGeneration(
     ResponseErrorConfig<
       | GetConfigGeneration400
       | GetConfigGeneration401
+      | GetConfigGeneration402
       | GetConfigGeneration403
       | GetConfigGeneration404
       | GetConfigGeneration409
       | GetConfigGeneration429
       | GetConfigGeneration500
+      | GetConfigGeneration503
     >,
     unknown
   >({

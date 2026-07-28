@@ -9,11 +9,13 @@ import type {
   PostAssets201,
   PostAssets400,
   PostAssets401,
+  PostAssets402,
   PostAssets403,
   PostAssets404,
   PostAssets409,
   PostAssets429,
   PostAssets500,
+  PostAssets503,
   PostAssetsMutationRequest,
   PostAssetsMutationResponse,
 } from "../types/PostAssets.ts";
@@ -50,6 +52,13 @@ export const postAssets401Schema = z.lazy(
 ) as unknown as z.ZodType<PostAssets401>;
 
 /**
+ * @description Payment or credit balance required
+ */
+export const postAssets402Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<PostAssets402>;
+
+/**
  * @description Active organization required
  */
 export const postAssets403Schema = z.lazy(
@@ -83,6 +92,13 @@ export const postAssets429Schema = z.lazy(
 export const postAssets500Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<PostAssets500>;
+
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export const postAssets503Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<PostAssets503>;
 
 export const postAssetsMutationRequestSchema = z.lazy(
   () => registerAssetRequestSchema,

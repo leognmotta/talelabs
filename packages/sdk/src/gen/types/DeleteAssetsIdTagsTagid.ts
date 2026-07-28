@@ -35,6 +35,11 @@ export type DeleteAssetsIdTagsTagid400 = ErrorResponse;
 export type DeleteAssetsIdTagsTagid401 = ErrorResponse;
 
 /**
+ * @description Payment or credit balance required
+ */
+export type DeleteAssetsIdTagsTagid402 = ErrorResponse;
+
+/**
  * @description Active organization required
  */
 export type DeleteAssetsIdTagsTagid403 = ErrorResponse;
@@ -59,6 +64,11 @@ export type DeleteAssetsIdTagsTagid429 = ErrorResponse;
  */
 export type DeleteAssetsIdTagsTagid500 = ErrorResponse;
 
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export type DeleteAssetsIdTagsTagid503 = ErrorResponse;
+
 export type DeleteAssetsIdTagsTagidMutationResponse =
   DeleteAssetsIdTagsTagid204;
 
@@ -68,9 +78,11 @@ export type DeleteAssetsIdTagsTagidMutation = {
   Errors:
     | DeleteAssetsIdTagsTagid400
     | DeleteAssetsIdTagsTagid401
+    | DeleteAssetsIdTagsTagid402
     | DeleteAssetsIdTagsTagid403
     | DeleteAssetsIdTagsTagid404
     | DeleteAssetsIdTagsTagid409
     | DeleteAssetsIdTagsTagid429
-    | DeleteAssetsIdTagsTagid500;
+    | DeleteAssetsIdTagsTagid500
+    | DeleteAssetsIdTagsTagid503;
 };

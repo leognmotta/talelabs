@@ -35,6 +35,11 @@ export type PutAssetsIdTagsTagid400 = ErrorResponse;
 export type PutAssetsIdTagsTagid401 = ErrorResponse;
 
 /**
+ * @description Payment or credit balance required
+ */
+export type PutAssetsIdTagsTagid402 = ErrorResponse;
+
+/**
  * @description Active organization required
  */
 export type PutAssetsIdTagsTagid403 = ErrorResponse;
@@ -59,6 +64,11 @@ export type PutAssetsIdTagsTagid429 = ErrorResponse;
  */
 export type PutAssetsIdTagsTagid500 = ErrorResponse;
 
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export type PutAssetsIdTagsTagid503 = ErrorResponse;
+
 export type PutAssetsIdTagsTagidMutationResponse = PutAssetsIdTagsTagid204;
 
 export type PutAssetsIdTagsTagidMutation = {
@@ -67,9 +77,11 @@ export type PutAssetsIdTagsTagidMutation = {
   Errors:
     | PutAssetsIdTagsTagid400
     | PutAssetsIdTagsTagid401
+    | PutAssetsIdTagsTagid402
     | PutAssetsIdTagsTagid403
     | PutAssetsIdTagsTagid404
     | PutAssetsIdTagsTagid409
     | PutAssetsIdTagsTagid429
-    | PutAssetsIdTagsTagid500;
+    | PutAssetsIdTagsTagid500
+    | PutAssetsIdTagsTagid503;
 };

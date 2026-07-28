@@ -8,11 +8,13 @@ import type {
   GetConfigGenerationQueryResponse,
   GetConfigGeneration400,
   GetConfigGeneration401,
+  GetConfigGeneration402,
   GetConfigGeneration403,
   GetConfigGeneration404,
   GetConfigGeneration409,
   GetConfigGeneration429,
   GetConfigGeneration500,
+  GetConfigGeneration503,
 } from "../types/GetConfigGeneration.ts";
 import type {
   QueryKey,
@@ -39,11 +41,13 @@ export function getConfigGenerationQueryOptions(
     ResponseErrorConfig<
       | GetConfigGeneration400
       | GetConfigGeneration401
+      | GetConfigGeneration402
       | GetConfigGeneration403
       | GetConfigGeneration404
       | GetConfigGeneration409
       | GetConfigGeneration429
       | GetConfigGeneration500
+      | GetConfigGeneration503
     >,
     GetConfigGenerationQueryResponse,
     typeof queryKey
@@ -73,11 +77,13 @@ export function useGetConfigGeneration<
         ResponseErrorConfig<
           | GetConfigGeneration400
           | GetConfigGeneration401
+          | GetConfigGeneration402
           | GetConfigGeneration403
           | GetConfigGeneration404
           | GetConfigGeneration409
           | GetConfigGeneration429
           | GetConfigGeneration500
+          | GetConfigGeneration503
         >,
         TData,
         TQueryData,
@@ -103,11 +109,13 @@ export function useGetConfigGeneration<
     ResponseErrorConfig<
       | GetConfigGeneration400
       | GetConfigGeneration401
+      | GetConfigGeneration402
       | GetConfigGeneration403
       | GetConfigGeneration404
       | GetConfigGeneration409
       | GetConfigGeneration429
       | GetConfigGeneration500
+      | GetConfigGeneration503
     >
   > & { queryKey: TQueryKey };
 

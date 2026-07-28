@@ -51,6 +51,11 @@ export type PostRunsIdBrowserJobsJobidCancelAck400 = ErrorResponse;
 export type PostRunsIdBrowserJobsJobidCancelAck401 = ErrorResponse;
 
 /**
+ * @description Payment or credit balance required
+ */
+export type PostRunsIdBrowserJobsJobidCancelAck402 = ErrorResponse;
+
+/**
  * @description Active organization required
  */
 export type PostRunsIdBrowserJobsJobidCancelAck403 = ErrorResponse;
@@ -74,6 +79,11 @@ export type PostRunsIdBrowserJobsJobidCancelAck429 = ErrorResponse;
  * @description Internal server error
  */
 export type PostRunsIdBrowserJobsJobidCancelAck500 = ErrorResponse;
+
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export type PostRunsIdBrowserJobsJobidCancelAck503 = ErrorResponse;
 
 export const postRunsIdBrowserJobsJobidCancelAckMutationRequestResultEnum = {
   accepted: "accepted",
@@ -116,9 +126,11 @@ export type PostRunsIdBrowserJobsJobidCancelAckMutation = {
   Errors:
     | PostRunsIdBrowserJobsJobidCancelAck400
     | PostRunsIdBrowserJobsJobidCancelAck401
+    | PostRunsIdBrowserJobsJobidCancelAck402
     | PostRunsIdBrowserJobsJobidCancelAck403
     | PostRunsIdBrowserJobsJobidCancelAck404
     | PostRunsIdBrowserJobsJobidCancelAck409
     | PostRunsIdBrowserJobsJobidCancelAck429
-    | PostRunsIdBrowserJobsJobidCancelAck500;
+    | PostRunsIdBrowserJobsJobidCancelAck500
+    | PostRunsIdBrowserJobsJobidCancelAck503;
 };

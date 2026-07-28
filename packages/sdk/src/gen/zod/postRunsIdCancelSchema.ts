@@ -8,11 +8,13 @@ import type {
   PostRunsIdCancel202,
   PostRunsIdCancel400,
   PostRunsIdCancel401,
+  PostRunsIdCancel402,
   PostRunsIdCancel403,
   PostRunsIdCancel404,
   PostRunsIdCancel409,
   PostRunsIdCancel429,
   PostRunsIdCancel500,
+  PostRunsIdCancel503,
   PostRunsIdCancelMutationResponse,
   PostRunsIdCancelPathParams,
 } from "../types/PostRunsIdCancel.ts";
@@ -48,6 +50,13 @@ export const postRunsIdCancel401Schema = z.lazy(
 ) as unknown as z.ZodType<PostRunsIdCancel401>;
 
 /**
+ * @description Payment or credit balance required
+ */
+export const postRunsIdCancel402Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<PostRunsIdCancel402>;
+
+/**
  * @description Active organization required
  */
 export const postRunsIdCancel403Schema = z.lazy(
@@ -81,6 +90,13 @@ export const postRunsIdCancel429Schema = z.lazy(
 export const postRunsIdCancel500Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<PostRunsIdCancel500>;
+
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export const postRunsIdCancel503Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<PostRunsIdCancel503>;
 
 export const postRunsIdCancelMutationResponseSchema = z.lazy(
   () => postRunsIdCancel202Schema,

@@ -10,11 +10,13 @@ import type {
   GetSearchQueryParams,
   GetSearch400,
   GetSearch401,
+  GetSearch402,
   GetSearch403,
   GetSearch404,
   GetSearch409,
   GetSearch429,
   GetSearch500,
+  GetSearch503,
 } from "../types/GetSearch.ts";
 import { getSearchQueryResponseSchema } from "../zod/getSearchSchema.ts";
 
@@ -37,11 +39,13 @@ export async function getSearch(
     ResponseErrorConfig<
       | GetSearch400
       | GetSearch401
+      | GetSearch402
       | GetSearch403
       | GetSearch404
       | GetSearch409
       | GetSearch429
       | GetSearch500
+      | GetSearch503
     >,
     unknown
   >({

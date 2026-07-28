@@ -71,6 +71,11 @@ export type PutRunsIdBrowserExecutorStatus400 = ErrorResponse;
 export type PutRunsIdBrowserExecutorStatus401 = ErrorResponse;
 
 /**
+ * @description Payment or credit balance required
+ */
+export type PutRunsIdBrowserExecutorStatus402 = ErrorResponse;
+
+/**
  * @description Active organization required
  */
 export type PutRunsIdBrowserExecutorStatus403 = ErrorResponse;
@@ -94,6 +99,11 @@ export type PutRunsIdBrowserExecutorStatus429 = ErrorResponse;
  * @description Internal server error
  */
 export type PutRunsIdBrowserExecutorStatus500 = ErrorResponse;
+
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export type PutRunsIdBrowserExecutorStatus503 = ErrorResponse;
 
 export const putRunsIdBrowserExecutorStatusMutationRequestCodeEnum = {
   browser_api_unavailable: "browser_api_unavailable",
@@ -143,9 +153,11 @@ export type PutRunsIdBrowserExecutorStatusMutation = {
   Errors:
     | PutRunsIdBrowserExecutorStatus400
     | PutRunsIdBrowserExecutorStatus401
+    | PutRunsIdBrowserExecutorStatus402
     | PutRunsIdBrowserExecutorStatus403
     | PutRunsIdBrowserExecutorStatus404
     | PutRunsIdBrowserExecutorStatus409
     | PutRunsIdBrowserExecutorStatus429
-    | PutRunsIdBrowserExecutorStatus500;
+    | PutRunsIdBrowserExecutorStatus500
+    | PutRunsIdBrowserExecutorStatus503;
 };

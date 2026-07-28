@@ -10,11 +10,13 @@ import type {
   PostProjectsProjectidRestorePathParams,
   PostProjectsProjectidRestore400,
   PostProjectsProjectidRestore401,
+  PostProjectsProjectidRestore402,
   PostProjectsProjectidRestore403,
   PostProjectsProjectidRestore404,
   PostProjectsProjectidRestore409,
   PostProjectsProjectidRestore429,
   PostProjectsProjectidRestore500,
+  PostProjectsProjectidRestore503,
 } from "../types/PostProjectsProjectidRestore.ts";
 import { postProjectsProjectidRestoreMutationResponseSchema } from "../zod/postProjectsProjectidRestoreSchema.ts";
 
@@ -46,11 +48,13 @@ export async function postProjectsProjectidRestore(
     ResponseErrorConfig<
       | PostProjectsProjectidRestore400
       | PostProjectsProjectidRestore401
+      | PostProjectsProjectidRestore402
       | PostProjectsProjectidRestore403
       | PostProjectsProjectidRestore404
       | PostProjectsProjectidRestore409
       | PostProjectsProjectidRestore429
       | PostProjectsProjectidRestore500
+      | PostProjectsProjectidRestore503
     >,
     unknown
   >({

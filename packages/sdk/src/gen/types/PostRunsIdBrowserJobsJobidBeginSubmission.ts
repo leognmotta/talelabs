@@ -45,6 +45,11 @@ export type PostRunsIdBrowserJobsJobidBeginSubmission400 = ErrorResponse;
 export type PostRunsIdBrowserJobsJobidBeginSubmission401 = ErrorResponse;
 
 /**
+ * @description Payment or credit balance required
+ */
+export type PostRunsIdBrowserJobsJobidBeginSubmission402 = ErrorResponse;
+
+/**
  * @description Active organization required
  */
 export type PostRunsIdBrowserJobsJobidBeginSubmission403 = ErrorResponse;
@@ -69,6 +74,11 @@ export type PostRunsIdBrowserJobsJobidBeginSubmission429 = ErrorResponse;
  */
 export type PostRunsIdBrowserJobsJobidBeginSubmission500 = ErrorResponse;
 
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export type PostRunsIdBrowserJobsJobidBeginSubmission503 = ErrorResponse;
+
 export type PostRunsIdBrowserJobsJobidBeginSubmissionMutationRequest = {
   /**
    * @minLength 16
@@ -92,9 +102,11 @@ export type PostRunsIdBrowserJobsJobidBeginSubmissionMutation = {
   Errors:
     | PostRunsIdBrowserJobsJobidBeginSubmission400
     | PostRunsIdBrowserJobsJobidBeginSubmission401
+    | PostRunsIdBrowserJobsJobidBeginSubmission402
     | PostRunsIdBrowserJobsJobidBeginSubmission403
     | PostRunsIdBrowserJobsJobidBeginSubmission404
     | PostRunsIdBrowserJobsJobidBeginSubmission409
     | PostRunsIdBrowserJobsJobidBeginSubmission429
-    | PostRunsIdBrowserJobsJobidBeginSubmission500;
+    | PostRunsIdBrowserJobsJobidBeginSubmission500
+    | PostRunsIdBrowserJobsJobidBeginSubmission503;
 };

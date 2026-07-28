@@ -31,6 +31,11 @@ export type GetProjectsProjectidBrief400 = ErrorResponse;
 export type GetProjectsProjectidBrief401 = ErrorResponse;
 
 /**
+ * @description Payment or credit balance required
+ */
+export type GetProjectsProjectidBrief402 = ErrorResponse;
+
+/**
  * @description Active organization required
  */
 export type GetProjectsProjectidBrief403 = ErrorResponse;
@@ -55,6 +60,11 @@ export type GetProjectsProjectidBrief429 = ErrorResponse;
  */
 export type GetProjectsProjectidBrief500 = ErrorResponse;
 
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export type GetProjectsProjectidBrief503 = ErrorResponse;
+
 export type GetProjectsProjectidBriefQueryResponse =
   GetProjectsProjectidBrief200;
 
@@ -64,9 +74,11 @@ export type GetProjectsProjectidBriefQuery = {
   Errors:
     | GetProjectsProjectidBrief400
     | GetProjectsProjectidBrief401
+    | GetProjectsProjectidBrief402
     | GetProjectsProjectidBrief403
     | GetProjectsProjectidBrief404
     | GetProjectsProjectidBrief409
     | GetProjectsProjectidBrief429
-    | GetProjectsProjectidBrief500;
+    | GetProjectsProjectidBrief500
+    | GetProjectsProjectidBrief503;
 };

@@ -10,11 +10,13 @@ import type {
   PostRunsMutationResponse,
   PostRuns400,
   PostRuns401,
+  PostRuns402,
   PostRuns403,
   PostRuns404,
   PostRuns409,
   PostRuns429,
   PostRuns500,
+  PostRuns503,
 } from "../types/PostRuns.ts";
 import {
   postRunsMutationResponseSchema,
@@ -44,11 +46,13 @@ export async function postRuns(
     ResponseErrorConfig<
       | PostRuns400
       | PostRuns401
+      | PostRuns402
       | PostRuns403
       | PostRuns404
       | PostRuns409
       | PostRuns429
       | PostRuns500
+      | PostRuns503
     >,
     PostRunsMutationRequest
   >({

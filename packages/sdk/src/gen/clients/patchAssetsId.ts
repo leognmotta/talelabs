@@ -11,11 +11,13 @@ import type {
   PatchAssetsIdPathParams,
   PatchAssetsId400,
   PatchAssetsId401,
+  PatchAssetsId402,
   PatchAssetsId403,
   PatchAssetsId404,
   PatchAssetsId409,
   PatchAssetsId429,
   PatchAssetsId500,
+  PatchAssetsId503,
 } from "../types/PatchAssetsId.ts";
 import {
   patchAssetsIdMutationResponseSchema,
@@ -48,11 +50,13 @@ export async function patchAssetsId(
     ResponseErrorConfig<
       | PatchAssetsId400
       | PatchAssetsId401
+      | PatchAssetsId402
       | PatchAssetsId403
       | PatchAssetsId404
       | PatchAssetsId409
       | PatchAssetsId429
       | PatchAssetsId500
+      | PatchAssetsId503
     >,
     PatchAssetsIdMutationRequest
   >({

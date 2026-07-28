@@ -123,6 +123,14 @@
           "unsupported_by_model",
           "rate_limited",
           "insufficient_credits",
+          "billing_account_blocked",
+          "storage_limit_exceeded",
+          "billing_catalog_mismatch",
+          "subscription_already_active",
+          "subscription_change_not_available",
+          "invalid_topup_amount",
+          "topup_not_available",
+          "stripe_checkout_unavailable",
           "internal_error"
         ]
       },
@@ -150,6 +158,86 @@
         "type": "string",
         "format": "date-time",
         "example": "2026-07-10T12:00:00.000Z"
+      },
+      "StripeWebhookReceiptResponse": {
+        "type": "object",
+        "properties": {
+          "received": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          }
+        },
+        "required": [
+          "received"
+        ]
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "example": "validation_error"
+              },
+              "message": {
+                "type": "string",
+                "example": "The request could not be validated."
+              },
+              "details": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ErrorDetail"
+                }
+              }
+            },
+            "required": [
+              "code",
+              "message"
+            ]
+          }
+        },
+        "required": [
+          "error"
+        ]
+      },
+      "ErrorDetail": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "field": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "params": {
+            "type": "object",
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "boolean"
+                }
+              ]
+            }
+          }
+        },
+        "required": [
+          "code",
+          "field",
+          "message"
+        ]
       },
       "HealthResponse": {
         "type": "object",
@@ -243,72 +331,6 @@
           "isSystemAdmin",
           "session",
           "user"
-        ]
-      },
-      "ErrorResponse": {
-        "type": "object",
-        "properties": {
-          "error": {
-            "type": "object",
-            "properties": {
-              "code": {
-                "type": "string",
-                "example": "validation_error"
-              },
-              "message": {
-                "type": "string",
-                "example": "The request could not be validated."
-              },
-              "details": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/ErrorDetail"
-                }
-              }
-            },
-            "required": [
-              "code",
-              "message"
-            ]
-          }
-        },
-        "required": [
-          "error"
-        ]
-      },
-      "ErrorDetail": {
-        "type": "object",
-        "properties": {
-          "code": {
-            "type": "string"
-          },
-          "field": {
-            "type": "string"
-          },
-          "message": {
-            "type": "string"
-          },
-          "params": {
-            "type": "object",
-            "additionalProperties": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "number"
-                },
-                {
-                  "type": "boolean"
-                }
-              ]
-            }
-          }
-        },
-        "required": [
-          "code",
-          "field",
-          "message"
         ]
       },
       "UpdateAccountPreferencesResponse": {
@@ -6862,11 +6884,715 @@
           "asset",
           "folder"
         ]
+      },
+      "BillingCatalogResponse": {
+        "type": "object",
+        "properties": {
+          "revision": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "usd"
+            ]
+          },
+          "plans": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string",
+                  "enum": [
+                    "free",
+                    "creator",
+                    "pro"
+                  ]
+                },
+                "browserByok": {
+                  "type": "boolean"
+                },
+                "defaultRecurringOptionCode": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "storageBytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "recurringOptions": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "code": {
+                        "type": "string"
+                      },
+                      "maximumTopUpCredits": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "exclusiveMinimum": true
+                      },
+                      "maximumTopUpSavingsBps": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 10000
+                      },
+                      "monthlyCredits": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "exclusiveMinimum": true
+                      },
+                      "offers": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "billingInterval": {
+                              "type": "string",
+                              "enum": [
+                                "month",
+                                "year"
+                              ]
+                            },
+                            "offerCode": {
+                              "type": "string"
+                            },
+                            "priceUsdCents": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true
+                            }
+                          },
+                          "required": [
+                            "billingInterval",
+                            "offerCode",
+                            "priceUsdCents"
+                          ]
+                        }
+                      }
+                    },
+                    "required": [
+                      "code",
+                      "maximumTopUpCredits",
+                      "maximumTopUpSavingsBps",
+                      "monthlyCredits",
+                      "offers"
+                    ]
+                  }
+                }
+              },
+              "required": [
+                "code",
+                "browserByok",
+                "defaultRecurringOptionCode",
+                "storageBytes",
+                "recurringOptions"
+              ]
+            }
+          },
+          "programs": {
+            "type": "object",
+            "properties": {
+              "founder": {
+                "type": "object",
+                "properties": {
+                  "oneTimeCredits": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "exclusiveMinimum": true
+                  },
+                  "underlyingPlanCode": {
+                    "type": "string",
+                    "enum": [
+                      "free"
+                    ]
+                  }
+                },
+                "required": [
+                  "oneTimeCredits",
+                  "underlyingPlanCode"
+                ]
+              }
+            },
+            "required": [
+              "founder"
+            ]
+          },
+          "topUps": {
+            "type": "object",
+            "properties": {
+              "minAmountUsdCents": {
+                "type": "integer",
+                "minimum": 0,
+                "exclusiveMinimum": true
+              },
+              "maxAmountUsdCents": {
+                "type": "integer",
+                "minimum": 0,
+                "exclusiveMinimum": true
+              },
+              "stepUsdCents": {
+                "type": "integer",
+                "minimum": 0,
+                "exclusiveMinimum": true
+              },
+              "expires": {
+                "type": "boolean",
+                "enum": [
+                  false
+                ]
+              },
+              "increasesStorage": {
+                "type": "boolean",
+                "enum": [
+                  false
+                ]
+              },
+              "quotes": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "amountUsdCents": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "exclusiveMinimum": true
+                    },
+                    "credits": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "exclusiveMinimum": true
+                    },
+                    "effectiveUsdPerCredit": {
+                      "type": "string",
+                      "pattern": "^\\d+(?:\\.\\d+)?$"
+                    },
+                    "volumeRateImprovementBps": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 10000
+                    },
+                    "planRateImprovementBpsFromFree": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 10000
+                    },
+                    "pricingPlanCode": {
+                      "type": "string",
+                      "enum": [
+                        "free",
+                        "creator",
+                        "pro"
+                      ]
+                    },
+                    "pricingRecurringOptionCode": {
+                      "type": "string",
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "amountUsdCents",
+                    "credits",
+                    "effectiveUsdPerCredit",
+                    "volumeRateImprovementBps",
+                    "planRateImprovementBpsFromFree",
+                    "pricingPlanCode",
+                    "pricingRecurringOptionCode"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "minAmountUsdCents",
+              "maxAmountUsdCents",
+              "stepUsdCents",
+              "expires",
+              "increasesStorage",
+              "quotes"
+            ]
+          }
+        },
+        "required": [
+          "revision",
+          "currency",
+          "plans",
+          "programs",
+          "topUps"
+        ]
+      },
+      "BillingAccountResponse": {
+        "type": "object",
+        "properties": {
+          "catalogRevision": {
+            "type": "string"
+          },
+          "plan": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "free",
+                  "creator",
+                  "pro"
+                ]
+              },
+              "founder": {
+                "type": "boolean"
+              },
+              "recurringOptionCode": {
+                "type": "string",
+                "nullable": true
+              },
+              "scheduledRecurringOptionCode": {
+                "type": "string",
+                "nullable": true
+              },
+              "scheduledEffectiveAt": {
+                "type": "string",
+                "nullable": true,
+                "format": "date-time"
+              },
+              "offerCode": {
+                "type": "string",
+                "nullable": true
+              },
+              "billingInterval": {
+                "type": "string",
+                "nullable": true,
+                "enum": [
+                  "month",
+                  "year",
+                  null
+                ]
+              },
+              "monthlyCreditAllowance": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "free",
+                  "active",
+                  "past_due",
+                  "canceling",
+                  "blocked_review"
+                ]
+              },
+              "paidThrough": {
+                "type": "string",
+                "nullable": true,
+                "format": "date-time"
+              },
+              "cancelAtPeriodEnd": {
+                "type": "boolean"
+              },
+              "nextGrantAt": {
+                "type": "string",
+                "nullable": true,
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "code",
+              "founder",
+              "recurringOptionCode",
+              "scheduledRecurringOptionCode",
+              "scheduledEffectiveAt",
+              "offerCode",
+              "billingInterval",
+              "monthlyCreditAllowance",
+              "status",
+              "paidThrough",
+              "cancelAtPeriodEnd",
+              "nextGrantAt"
+            ]
+          },
+          "credits": {
+            "type": "object",
+            "properties": {
+              "available": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "reserved": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "available",
+              "reserved"
+            ]
+          },
+          "storage": {
+            "type": "object",
+            "properties": {
+              "usedBytes": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "reservedBytes": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "limitBytes": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "remainingBytes": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "state": {
+                "type": "string",
+                "enum": [
+                  "within_limit",
+                  "at_limit",
+                  "over_limit"
+                ]
+              }
+            },
+            "required": [
+              "usedBytes",
+              "reservedBytes",
+              "limitBytes",
+              "remainingBytes",
+              "state"
+            ]
+          },
+          "entitlements": {
+            "type": "object",
+            "properties": {
+              "browserByok": {
+                "type": "boolean"
+              },
+              "managedExecutionStatus": {
+                "type": "string",
+                "enum": [
+                  "active",
+                  "past_due",
+                  "blocked_review"
+                ]
+              }
+            },
+            "required": [
+              "browserByok",
+              "managedExecutionStatus"
+            ]
+          },
+          "permissions": {
+            "type": "object",
+            "properties": {
+              "canManageBilling": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "canManageBilling"
+            ]
+          },
+          "updatedAt": {
+            "$ref": "#/components/schemas/Timestamp"
+          }
+        },
+        "required": [
+          "catalogRevision",
+          "plan",
+          "credits",
+          "storage",
+          "entitlements",
+          "permissions",
+          "updatedAt"
+        ]
+      },
+      "BillingUsageResponse": {
+        "type": "object",
+        "properties": {
+          "period": {
+            "type": "object",
+            "properties": {
+              "month": {
+                "type": "string",
+                "pattern": "^\\d{4}-(?:0[1-9]|1[0-2])$"
+              },
+              "startsAt": {
+                "$ref": "#/components/schemas/Timestamp"
+              },
+              "endsAt": {
+                "$ref": "#/components/schemas/Timestamp"
+              }
+            },
+            "required": [
+              "month",
+              "startsAt",
+              "endsAt"
+            ]
+          },
+          "content": {
+            "type": "object",
+            "properties": {
+              "projects": {
+                "type": "object",
+                "properties": {
+                  "count": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "assetCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                },
+                "required": [
+                  "count",
+                  "assetCount"
+                ]
+              },
+              "assets": {
+                "type": "object",
+                "properties": {
+                  "count": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "usedBytes": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "byMediaType": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "mediaType": {
+                          "type": "string",
+                          "enum": [
+                            "image",
+                            "video",
+                            "audio",
+                            "document"
+                          ]
+                        },
+                        "count": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "usedBytes": {
+                          "type": "integer",
+                          "minimum": 0
+                        }
+                      },
+                      "required": [
+                        "mediaType",
+                        "count",
+                        "usedBytes"
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "count",
+                  "usedBytes",
+                  "byMediaType"
+                ]
+              },
+              "elements": {
+                "type": "object",
+                "properties": {
+                  "count": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "referenceCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                },
+                "required": [
+                  "count",
+                  "referenceCount"
+                ]
+              }
+            },
+            "required": [
+              "projects",
+              "assets",
+              "elements"
+            ]
+          },
+          "generation": {
+            "type": "object",
+            "properties": {
+              "runCount": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "successfulOutputCount": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "outputsByMediaType": {
+                "type": "object",
+                "properties": {
+                  "image": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "video": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "audio": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "text": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                },
+                "required": [
+                  "image",
+                  "video",
+                  "audio",
+                  "text"
+                ]
+              },
+              "capturedCredits": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "releasedCredits": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "runCount",
+              "successfulOutputCount",
+              "outputsByMediaType",
+              "capturedCredits",
+              "releasedCredits"
+            ]
+          },
+          "updatedAt": {
+            "$ref": "#/components/schemas/Timestamp"
+          }
+        },
+        "required": [
+          "period",
+          "content",
+          "generation",
+          "updatedAt"
+        ]
+      },
+      "BillingLedgerResponse": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "entryType": {
+                  "type": "string",
+                  "enum": [
+                    "grant",
+                    "reserve",
+                    "capture",
+                    "release",
+                    "reverse",
+                    "adjustment"
+                  ]
+                },
+                "availableDelta": {
+                  "type": "integer"
+                },
+                "reservedDelta": {
+                  "type": "integer"
+                },
+                "reasonCode": {
+                  "type": "string"
+                },
+                "createdAt": {
+                  "$ref": "#/components/schemas/Timestamp"
+                }
+              },
+              "required": [
+                "id",
+                "entryType",
+                "availableDelta",
+                "reservedDelta",
+                "reasonCode",
+                "createdAt"
+              ]
+            }
+          },
+          "nextCursor": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 1,
+            "maxLength": 2048
+          }
+        },
+        "required": [
+          "items",
+          "nextCursor"
+        ]
+      },
+      "BillingHostedUrlResponse": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": [
+          "url"
+        ]
       }
     },
     "parameters": {}
   },
   "paths": {
+    "/webhooks/stripe": {
+      "post": {
+        "operationId": "receiveStripeWebhook",
+        "tags": [
+          "Billing"
+        ],
+        "responses": {
+          "200": {
+            "description": "Signed Stripe event stored in the durable inbox",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StripeWebhookReceiptResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Stripe signature is missing or invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/db/health": {
       "get": {
         "operationId": "getDbHealth",
@@ -7519,6 +8245,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -7561,6 +8297,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -7616,6 +8362,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -7658,6 +8414,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -7715,6 +8481,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -7757,6 +8533,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -7822,6 +8608,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -7864,6 +8660,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -7921,6 +8727,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -7963,6 +8779,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -8020,6 +8846,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -8062,6 +8898,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -8119,6 +8965,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -8161,6 +9017,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -8218,6 +9084,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -8260,6 +9136,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -8325,6 +9211,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -8367,6 +9263,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -8442,6 +9348,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -8484,6 +9400,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -8551,6 +9477,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -8593,6 +9529,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -8650,6 +9596,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -8692,6 +9648,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -8909,6 +9875,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -8951,6 +9927,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -9016,6 +10002,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -9058,6 +10054,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -9115,6 +10121,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -9157,6 +10173,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -9214,6 +10240,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -9256,6 +10292,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -9321,6 +10367,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -9363,6 +10419,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -9411,6 +10477,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -9453,6 +10529,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -9510,6 +10596,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -9552,6 +10648,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -9619,6 +10725,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -9661,6 +10777,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -9735,6 +10861,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -9777,6 +10913,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -9834,6 +10980,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -9876,6 +11032,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -9926,6 +11092,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -9968,6 +11144,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -10016,6 +11202,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -10058,6 +11254,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -10116,6 +11322,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -10158,6 +11374,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -10214,6 +11440,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -10256,6 +11492,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -10365,6 +11611,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -10407,6 +11663,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -10462,6 +11728,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -10504,6 +11780,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -10561,6 +11847,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -10603,6 +11899,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -10668,6 +11974,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -10710,6 +12026,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -10758,6 +12084,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -10800,6 +12136,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -10867,6 +12213,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -10909,6 +12265,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -11002,6 +12368,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -11044,6 +12420,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -11101,6 +12487,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -11143,6 +12539,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -11208,6 +12614,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -11250,6 +12666,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -11298,6 +12724,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -11340,6 +12776,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -11434,6 +12880,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -11476,6 +12932,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -11531,6 +12997,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -11573,6 +13049,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -11630,6 +13116,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -11672,6 +13168,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -11737,6 +13243,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -11779,6 +13295,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -11827,6 +13353,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -11869,6 +13405,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -11926,6 +13472,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -11968,6 +13524,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -12033,6 +13599,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -12075,6 +13651,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -12132,6 +13718,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -12174,6 +13770,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -12241,6 +13847,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -12283,6 +13899,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -12350,6 +13976,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -12392,6 +14028,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -12490,6 +14136,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -12532,6 +14188,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -12587,6 +14253,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -12629,6 +14305,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -12715,6 +14401,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -12757,6 +14453,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -12814,6 +14520,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -12856,6 +14572,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -12913,6 +14639,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -12955,6 +14691,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -13022,6 +14768,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -13064,6 +14820,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -13121,6 +14887,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -13163,6 +14939,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -13220,6 +15006,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -13262,6 +15058,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -13329,6 +15135,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -13371,6 +15187,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -13428,6 +15254,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -13470,6 +15306,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -13526,6 +15372,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -13568,6 +15424,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -13663,6 +15529,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -13705,6 +15581,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -13794,6 +15680,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -13836,6 +15732,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -16408,6 +18314,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -16450,6 +18366,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -19353,6 +21279,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -19395,6 +21331,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -19498,6 +21444,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -19540,6 +21496,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -19657,6 +21623,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -19699,6 +21675,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -19840,6 +21826,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -19882,6 +21878,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -20014,6 +22020,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -20056,6 +22072,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -20170,6 +22196,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -20212,6 +22248,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -20330,6 +22376,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -20372,6 +22428,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -20551,6 +22617,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -20593,6 +22669,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -20713,6 +22799,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -20755,6 +22851,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -20892,6 +22998,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -20934,6 +23050,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -20981,6 +23107,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -21023,6 +23159,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -21121,6 +23267,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -21163,6 +23319,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -21230,6 +23396,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -21272,6 +23448,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -21327,6 +23513,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -21369,6 +23565,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -21426,6 +23632,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -21468,6 +23684,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -21535,6 +23761,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -21577,6 +23813,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -21625,6 +23871,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -21667,6 +23923,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -21714,6 +23980,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -21756,6 +24032,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -21811,6 +24097,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -21853,6 +24149,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -21903,6 +24209,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -21945,6 +24261,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -22033,6 +24359,16 @@
               }
             }
           },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Active organization required",
             "content": {
@@ -22075,6 +24411,1017 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/billing/catalog": {
+      "get": {
+        "operationId": "getBillingCatalog",
+        "tags": [
+          "Billing"
+        ],
+        "responses": {
+          "200": {
+            "description": "Current sanitized billing catalog",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillingCatalogResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Active organization required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Resource state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Organization request rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/billing/account": {
+      "get": {
+        "operationId": "getBillingAccount",
+        "tags": [
+          "Billing"
+        ],
+        "responses": {
+          "200": {
+            "description": "Current organization billing and quota projection",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillingAccountResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Active organization required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Resource state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Organization request rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/billing/usage": {
+      "get": {
+        "operationId": "getBillingUsage",
+        "tags": [
+          "Billing"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{4}-(?:0[1-9]|1[0-2])$"
+            },
+            "required": false,
+            "name": "month",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Organization content and selected-month generation usage",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillingUsageResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Active organization required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Resource state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Organization request rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/billing/credits/ledger": {
+      "get": {
+        "operationId": "getBillingCreditsLedger",
+        "tags": [
+          "Billing"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "$ref": "#/components/schemas/Cursor"
+            },
+            "required": false,
+            "description": "Opaque cursor returned by a previous list response",
+            "name": "cursor",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 30
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Cursor-paged organization credit ledger",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillingLedgerResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Active organization required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Resource state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Organization request rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/billing/checkout": {
+      "post": {
+        "operationId": "createBillingCheckout",
+        "tags": [
+          "Billing"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "planCode": {
+                    "type": "string",
+                    "enum": [
+                      "creator",
+                      "pro"
+                    ]
+                  },
+                  "recurringOptionCode": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "billingInterval": {
+                    "type": "string",
+                    "enum": [
+                      "month",
+                      "year"
+                    ]
+                  },
+                  "catalogRevision": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  }
+                },
+                "required": [
+                  "planCode",
+                  "recurringOptionCode",
+                  "billingInterval",
+                  "catalogRevision"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Stripe-hosted subscription Checkout URL",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillingHostedUrlResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Active organization required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Resource state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Organization request rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/billing/subscription": {
+      "patch": {
+        "operationId": "updateBillingSubscription",
+        "tags": [
+          "Billing"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "recurringOptionCode": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "catalogRevision": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  }
+                },
+                "required": [
+                  "recurringOptionCode",
+                  "catalogRevision"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Subscription option scheduled at the renewal boundary",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillingAccountResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Active organization required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Resource state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Organization request rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/billing/topups/checkout": {
+      "post": {
+        "operationId": "createBillingTopUpCheckout",
+        "tags": [
+          "Billing"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "amountUsdCents": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "exclusiveMinimum": true
+                  }
+                },
+                "required": [
+                  "amountUsdCents"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Stripe-hosted one-time top-up Checkout URL",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillingHostedUrlResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Active organization required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Resource state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Organization request rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/billing/portal": {
+      "post": {
+        "operationId": "createBillingPortal",
+        "tags": [
+          "Billing"
+        ],
+        "responses": {
+          "200": {
+            "description": "Stripe-hosted Customer Portal URL",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillingHostedUrlResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Active organization required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Resource state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Organization request rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
             "content": {
               "application/json": {
                 "schema": {

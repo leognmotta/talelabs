@@ -23,6 +23,11 @@ export type PostFolders400 = ErrorResponse;
 export type PostFolders401 = ErrorResponse;
 
 /**
+ * @description Payment or credit balance required
+ */
+export type PostFolders402 = ErrorResponse;
+
+/**
  * @description Active organization required
  */
 export type PostFolders403 = ErrorResponse;
@@ -47,6 +52,11 @@ export type PostFolders429 = ErrorResponse;
  */
 export type PostFolders500 = ErrorResponse;
 
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export type PostFolders503 = ErrorResponse;
+
 export type PostFoldersMutationRequest = CreateFolderRequest;
 
 export type PostFoldersMutationResponse = PostFolders201;
@@ -57,9 +67,11 @@ export type PostFoldersMutation = {
   Errors:
     | PostFolders400
     | PostFolders401
+    | PostFolders402
     | PostFolders403
     | PostFolders404
     | PostFolders409
     | PostFolders429
-    | PostFolders500;
+    | PostFolders500
+    | PostFolders503;
 };

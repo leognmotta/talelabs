@@ -10,11 +10,13 @@ import type {
   GetRunsActiveQueryParams,
   GetRunsActive400,
   GetRunsActive401,
+  GetRunsActive402,
   GetRunsActive403,
   GetRunsActive404,
   GetRunsActive409,
   GetRunsActive429,
   GetRunsActive500,
+  GetRunsActive503,
 } from "../types/GetRunsActive.ts";
 import { getRunsActiveQueryResponseSchema } from "../zod/getRunsActiveSchema.ts";
 
@@ -37,11 +39,13 @@ export async function getRunsActive(
     ResponseErrorConfig<
       | GetRunsActive400
       | GetRunsActive401
+      | GetRunsActive402
       | GetRunsActive403
       | GetRunsActive404
       | GetRunsActive409
       | GetRunsActive429
       | GetRunsActive500
+      | GetRunsActive503
     >,
     unknown
   >({

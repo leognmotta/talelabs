@@ -9,11 +9,13 @@ import type {
   GetFoldersQueryParams,
   GetFolders400,
   GetFolders401,
+  GetFolders402,
   GetFolders403,
   GetFolders404,
   GetFolders409,
   GetFolders429,
   GetFolders500,
+  GetFolders503,
 } from "../types/GetFolders.ts";
 import type {
   QueryKey,
@@ -39,11 +41,13 @@ export function getFoldersQueryOptions(
     ResponseErrorConfig<
       | GetFolders400
       | GetFolders401
+      | GetFolders402
       | GetFolders403
       | GetFolders404
       | GetFolders409
       | GetFolders429
       | GetFolders500
+      | GetFolders503
     >,
     GetFoldersQueryResponse,
     typeof queryKey
@@ -74,11 +78,13 @@ export function useGetFolders<
         ResponseErrorConfig<
           | GetFolders400
           | GetFolders401
+          | GetFolders402
           | GetFolders403
           | GetFolders404
           | GetFolders409
           | GetFolders429
           | GetFolders500
+          | GetFolders503
         >,
         TData,
         TQueryData,
@@ -104,11 +110,13 @@ export function useGetFolders<
     ResponseErrorConfig<
       | GetFolders400
       | GetFolders401
+      | GetFolders402
       | GetFolders403
       | GetFolders404
       | GetFolders409
       | GetFolders429
       | GetFolders500
+      | GetFolders503
     >
   > & { queryKey: TQueryKey };
 

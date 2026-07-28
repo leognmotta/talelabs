@@ -8,11 +8,13 @@ import type {
   GetTags200,
   GetTags400,
   GetTags401,
+  GetTags402,
   GetTags403,
   GetTags404,
   GetTags409,
   GetTags429,
   GetTags500,
+  GetTags503,
   GetTagsQueryResponse,
 } from "../types/GetTags.ts";
 import { errorResponseSchema } from "./errorResponseSchema.ts";
@@ -38,6 +40,13 @@ export const getTags400Schema = z.lazy(
 export const getTags401Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<GetTags401>;
+
+/**
+ * @description Payment or credit balance required
+ */
+export const getTags402Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<GetTags402>;
 
 /**
  * @description Active organization required
@@ -73,6 +82,13 @@ export const getTags429Schema = z.lazy(
 export const getTags500Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<GetTags500>;
+
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export const getTags503Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<GetTags503>;
 
 export const getTagsQueryResponseSchema = z.lazy(
   () => getTags200Schema,

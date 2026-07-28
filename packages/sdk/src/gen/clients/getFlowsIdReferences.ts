@@ -10,11 +10,13 @@ import type {
   GetFlowsIdReferencesPathParams,
   GetFlowsIdReferences400,
   GetFlowsIdReferences401,
+  GetFlowsIdReferences402,
   GetFlowsIdReferences403,
   GetFlowsIdReferences404,
   GetFlowsIdReferences409,
   GetFlowsIdReferences429,
   GetFlowsIdReferences500,
+  GetFlowsIdReferences503,
 } from "../types/GetFlowsIdReferences.ts";
 import { getFlowsIdReferencesQueryResponseSchema } from "../zod/getFlowsIdReferencesSchema.ts";
 
@@ -41,11 +43,13 @@ export async function getFlowsIdReferences(
     ResponseErrorConfig<
       | GetFlowsIdReferences400
       | GetFlowsIdReferences401
+      | GetFlowsIdReferences402
       | GetFlowsIdReferences403
       | GetFlowsIdReferences404
       | GetFlowsIdReferences409
       | GetFlowsIdReferences429
       | GetFlowsIdReferences500
+      | GetFlowsIdReferences503
     >,
     unknown
   >({

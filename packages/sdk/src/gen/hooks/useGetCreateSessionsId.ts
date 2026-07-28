@@ -9,11 +9,13 @@ import type {
   GetCreateSessionsIdPathParams,
   GetCreateSessionsId400,
   GetCreateSessionsId401,
+  GetCreateSessionsId402,
   GetCreateSessionsId403,
   GetCreateSessionsId404,
   GetCreateSessionsId409,
   GetCreateSessionsId429,
   GetCreateSessionsId500,
+  GetCreateSessionsId503,
 } from "../types/GetCreateSessionsId.ts";
 import type {
   QueryKey,
@@ -44,11 +46,13 @@ export function getCreateSessionsIdQueryOptions(
     ResponseErrorConfig<
       | GetCreateSessionsId400
       | GetCreateSessionsId401
+      | GetCreateSessionsId402
       | GetCreateSessionsId403
       | GetCreateSessionsId404
       | GetCreateSessionsId409
       | GetCreateSessionsId429
       | GetCreateSessionsId500
+      | GetCreateSessionsId503
     >,
     GetCreateSessionsIdQueryResponse,
     typeof queryKey
@@ -80,11 +84,13 @@ export function useGetCreateSessionsId<
         ResponseErrorConfig<
           | GetCreateSessionsId400
           | GetCreateSessionsId401
+          | GetCreateSessionsId402
           | GetCreateSessionsId403
           | GetCreateSessionsId404
           | GetCreateSessionsId409
           | GetCreateSessionsId429
           | GetCreateSessionsId500
+          | GetCreateSessionsId503
         >,
         TData,
         TQueryData,
@@ -111,11 +117,13 @@ export function useGetCreateSessionsId<
     ResponseErrorConfig<
       | GetCreateSessionsId400
       | GetCreateSessionsId401
+      | GetCreateSessionsId402
       | GetCreateSessionsId403
       | GetCreateSessionsId404
       | GetCreateSessionsId409
       | GetCreateSessionsId429
       | GetCreateSessionsId500
+      | GetCreateSessionsId503
     >
   > & { queryKey: TQueryKey };
 

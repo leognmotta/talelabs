@@ -8,11 +8,13 @@ import type {
   PostProjectsProjectidRestore200,
   PostProjectsProjectidRestore400,
   PostProjectsProjectidRestore401,
+  PostProjectsProjectidRestore402,
   PostProjectsProjectidRestore403,
   PostProjectsProjectidRestore404,
   PostProjectsProjectidRestore409,
   PostProjectsProjectidRestore429,
   PostProjectsProjectidRestore500,
+  PostProjectsProjectidRestore503,
   PostProjectsProjectidRestoreMutationResponse,
   PostProjectsProjectidRestorePathParams,
 } from "../types/PostProjectsProjectidRestore.ts";
@@ -48,6 +50,13 @@ export const postProjectsProjectidRestore401Schema = z.lazy(
 ) as unknown as z.ZodType<PostProjectsProjectidRestore401>;
 
 /**
+ * @description Payment or credit balance required
+ */
+export const postProjectsProjectidRestore402Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<PostProjectsProjectidRestore402>;
+
+/**
  * @description Active organization required
  */
 export const postProjectsProjectidRestore403Schema = z.lazy(
@@ -81,6 +90,13 @@ export const postProjectsProjectidRestore429Schema = z.lazy(
 export const postProjectsProjectidRestore500Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<PostProjectsProjectidRestore500>;
+
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export const postProjectsProjectidRestore503Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<PostProjectsProjectidRestore503>;
 
 export const postProjectsProjectidRestoreMutationResponseSchema = z.lazy(
   () => postProjectsProjectidRestore200Schema,

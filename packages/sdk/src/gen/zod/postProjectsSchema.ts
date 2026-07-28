@@ -8,11 +8,13 @@ import type {
   PostProjects201,
   PostProjects400,
   PostProjects401,
+  PostProjects402,
   PostProjects403,
   PostProjects404,
   PostProjects409,
   PostProjects429,
   PostProjects500,
+  PostProjects503,
   PostProjectsMutationRequest,
   PostProjectsMutationResponse,
 } from "../types/PostProjects.ts";
@@ -40,6 +42,13 @@ export const postProjects400Schema = z.lazy(
 export const postProjects401Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<PostProjects401>;
+
+/**
+ * @description Payment or credit balance required
+ */
+export const postProjects402Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<PostProjects402>;
 
 /**
  * @description Active organization required
@@ -75,6 +84,13 @@ export const postProjects429Schema = z.lazy(
 export const postProjects500Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<PostProjects500>;
+
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export const postProjects503Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<PostProjects503>;
 
 export const postProjectsMutationRequestSchema = z.lazy(
   () => createProjectRequestSchema,

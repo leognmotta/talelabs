@@ -11,11 +11,13 @@ import type {
   DeleteRunsIdBrowserLeasePathParams,
   DeleteRunsIdBrowserLease400,
   DeleteRunsIdBrowserLease401,
+  DeleteRunsIdBrowserLease402,
   DeleteRunsIdBrowserLease403,
   DeleteRunsIdBrowserLease404,
   DeleteRunsIdBrowserLease409,
   DeleteRunsIdBrowserLease429,
   DeleteRunsIdBrowserLease500,
+  DeleteRunsIdBrowserLease503,
 } from "../types/DeleteRunsIdBrowserLease.ts";
 import {
   deleteRunsIdBrowserLeaseMutationResponseSchema,
@@ -55,11 +57,13 @@ export async function deleteRunsIdBrowserLease(
     ResponseErrorConfig<
       | DeleteRunsIdBrowserLease400
       | DeleteRunsIdBrowserLease401
+      | DeleteRunsIdBrowserLease402
       | DeleteRunsIdBrowserLease403
       | DeleteRunsIdBrowserLease404
       | DeleteRunsIdBrowserLease409
       | DeleteRunsIdBrowserLease429
       | DeleteRunsIdBrowserLease500
+      | DeleteRunsIdBrowserLease503
     >,
     DeleteRunsIdBrowserLeaseMutationRequest
   >({

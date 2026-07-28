@@ -61,6 +61,11 @@ export type GetElements400 = ErrorResponse;
 export type GetElements401 = ErrorResponse;
 
 /**
+ * @description Payment or credit balance required
+ */
+export type GetElements402 = ErrorResponse;
+
+/**
  * @description Active organization required
  */
 export type GetElements403 = ErrorResponse;
@@ -85,6 +90,11 @@ export type GetElements429 = ErrorResponse;
  */
 export type GetElements500 = ErrorResponse;
 
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export type GetElements503 = ErrorResponse;
+
 export type GetElementsQueryResponse = GetElements200;
 
 export type GetElementsQuery = {
@@ -93,9 +103,11 @@ export type GetElementsQuery = {
   Errors:
     | GetElements400
     | GetElements401
+    | GetElements402
     | GetElements403
     | GetElements404
     | GetElements409
     | GetElements429
-    | GetElements500;
+    | GetElements500
+    | GetElements503;
 };

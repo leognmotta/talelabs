@@ -30,6 +30,11 @@ export type DeleteCreateSessionsId400 = ErrorResponse;
 export type DeleteCreateSessionsId401 = ErrorResponse;
 
 /**
+ * @description Payment or credit balance required
+ */
+export type DeleteCreateSessionsId402 = ErrorResponse;
+
+/**
  * @description Active organization required
  */
 export type DeleteCreateSessionsId403 = ErrorResponse;
@@ -54,6 +59,11 @@ export type DeleteCreateSessionsId429 = ErrorResponse;
  */
 export type DeleteCreateSessionsId500 = ErrorResponse;
 
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export type DeleteCreateSessionsId503 = ErrorResponse;
+
 export type DeleteCreateSessionsIdMutationResponse = DeleteCreateSessionsId204;
 
 export type DeleteCreateSessionsIdMutation = {
@@ -62,9 +72,11 @@ export type DeleteCreateSessionsIdMutation = {
   Errors:
     | DeleteCreateSessionsId400
     | DeleteCreateSessionsId401
+    | DeleteCreateSessionsId402
     | DeleteCreateSessionsId403
     | DeleteCreateSessionsId404
     | DeleteCreateSessionsId409
     | DeleteCreateSessionsId429
-    | DeleteCreateSessionsId500;
+    | DeleteCreateSessionsId500
+    | DeleteCreateSessionsId503;
 };

@@ -32,6 +32,11 @@ export type PatchProjectsProjectid400 = ErrorResponse;
 export type PatchProjectsProjectid401 = ErrorResponse;
 
 /**
+ * @description Payment or credit balance required
+ */
+export type PatchProjectsProjectid402 = ErrorResponse;
+
+/**
  * @description Active organization required
  */
 export type PatchProjectsProjectid403 = ErrorResponse;
@@ -56,6 +61,11 @@ export type PatchProjectsProjectid429 = ErrorResponse;
  */
 export type PatchProjectsProjectid500 = ErrorResponse;
 
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export type PatchProjectsProjectid503 = ErrorResponse;
+
 export type PatchProjectsProjectidMutationRequest = UpdateProjectRequest;
 
 export type PatchProjectsProjectidMutationResponse = PatchProjectsProjectid200;
@@ -67,9 +77,11 @@ export type PatchProjectsProjectidMutation = {
   Errors:
     | PatchProjectsProjectid400
     | PatchProjectsProjectid401
+    | PatchProjectsProjectid402
     | PatchProjectsProjectid403
     | PatchProjectsProjectid404
     | PatchProjectsProjectid409
     | PatchProjectsProjectid429
-    | PatchProjectsProjectid500;
+    | PatchProjectsProjectid500
+    | PatchProjectsProjectid503;
 };

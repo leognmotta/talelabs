@@ -11,11 +11,13 @@ import type {
   PostRunsIdBrowserJobsJobidOutputGrantPathParams,
   PostRunsIdBrowserJobsJobidOutputGrant400,
   PostRunsIdBrowserJobsJobidOutputGrant401,
+  PostRunsIdBrowserJobsJobidOutputGrant402,
   PostRunsIdBrowserJobsJobidOutputGrant403,
   PostRunsIdBrowserJobsJobidOutputGrant404,
   PostRunsIdBrowserJobsJobidOutputGrant409,
   PostRunsIdBrowserJobsJobidOutputGrant429,
   PostRunsIdBrowserJobsJobidOutputGrant500,
+  PostRunsIdBrowserJobsJobidOutputGrant503,
 } from "../types/PostRunsIdBrowserJobsJobidOutputGrant.ts";
 import {
   postRunsIdBrowserJobsJobidOutputGrantMutationResponseSchema,
@@ -63,11 +65,13 @@ export async function postRunsIdBrowserJobsJobidOutputGrant(
     ResponseErrorConfig<
       | PostRunsIdBrowserJobsJobidOutputGrant400
       | PostRunsIdBrowserJobsJobidOutputGrant401
+      | PostRunsIdBrowserJobsJobidOutputGrant402
       | PostRunsIdBrowserJobsJobidOutputGrant403
       | PostRunsIdBrowserJobsJobidOutputGrant404
       | PostRunsIdBrowserJobsJobidOutputGrant409
       | PostRunsIdBrowserJobsJobidOutputGrant429
       | PostRunsIdBrowserJobsJobidOutputGrant500
+      | PostRunsIdBrowserJobsJobidOutputGrant503
     >,
     PostRunsIdBrowserJobsJobidOutputGrantMutationRequest
   >({

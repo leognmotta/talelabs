@@ -10,11 +10,13 @@ import type {
   PostFlowsMutationResponse,
   PostFlows400,
   PostFlows401,
+  PostFlows402,
   PostFlows403,
   PostFlows404,
   PostFlows409,
   PostFlows429,
   PostFlows500,
+  PostFlows503,
 } from "../types/PostFlows.ts";
 import {
   postFlowsMutationResponseSchema,
@@ -44,11 +46,13 @@ export async function postFlows(
     ResponseErrorConfig<
       | PostFlows400
       | PostFlows401
+      | PostFlows402
       | PostFlows403
       | PostFlows404
       | PostFlows409
       | PostFlows429
       | PostFlows500
+      | PostFlows503
     >,
     PostFlowsMutationRequest
   >({

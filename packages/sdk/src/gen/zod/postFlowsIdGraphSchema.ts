@@ -8,11 +8,13 @@ import type {
   PostFlowsIdGraph200,
   PostFlowsIdGraph400,
   PostFlowsIdGraph401,
+  PostFlowsIdGraph402,
   PostFlowsIdGraph403,
   PostFlowsIdGraph404,
   PostFlowsIdGraph409,
   PostFlowsIdGraph429,
   PostFlowsIdGraph500,
+  PostFlowsIdGraph503,
   PostFlowsIdGraphMutationRequest,
   PostFlowsIdGraphMutationResponse,
   PostFlowsIdGraphPathParams,
@@ -50,6 +52,13 @@ export const postFlowsIdGraph401Schema = z.lazy(
 ) as unknown as z.ZodType<PostFlowsIdGraph401>;
 
 /**
+ * @description Payment or credit balance required
+ */
+export const postFlowsIdGraph402Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<PostFlowsIdGraph402>;
+
+/**
  * @description Active organization required
  */
 export const postFlowsIdGraph403Schema = z.lazy(
@@ -83,6 +92,13 @@ export const postFlowsIdGraph429Schema = z.lazy(
 export const postFlowsIdGraph500Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<PostFlowsIdGraph500>;
+
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export const postFlowsIdGraph503Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<PostFlowsIdGraph503>;
 
 export const postFlowsIdGraphMutationRequestSchema = z.lazy(
   () => flowGraphSyncRequestSchema,

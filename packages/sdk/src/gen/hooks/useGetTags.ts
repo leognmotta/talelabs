@@ -8,11 +8,13 @@ import type {
   GetTagsQueryResponse,
   GetTags400,
   GetTags401,
+  GetTags402,
   GetTags403,
   GetTags404,
   GetTags409,
   GetTags429,
   GetTags500,
+  GetTags503,
 } from "../types/GetTags.ts";
 import type {
   QueryKey,
@@ -36,11 +38,13 @@ export function getTagsQueryOptions(
     ResponseErrorConfig<
       | GetTags400
       | GetTags401
+      | GetTags402
       | GetTags403
       | GetTags404
       | GetTags409
       | GetTags429
       | GetTags500
+      | GetTags503
     >,
     GetTagsQueryResponse,
     typeof queryKey
@@ -67,11 +71,13 @@ export function useGetTags<
         ResponseErrorConfig<
           | GetTags400
           | GetTags401
+          | GetTags402
           | GetTags403
           | GetTags404
           | GetTags409
           | GetTags429
           | GetTags500
+          | GetTags503
         >,
         TData,
         TQueryData,
@@ -97,11 +103,13 @@ export function useGetTags<
     ResponseErrorConfig<
       | GetTags400
       | GetTags401
+      | GetTags402
       | GetTags403
       | GetTags404
       | GetTags409
       | GetTags429
       | GetTags500
+      | GetTags503
     >
   > & { queryKey: TQueryKey };
 

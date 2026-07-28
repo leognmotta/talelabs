@@ -10,11 +10,13 @@ import type {
   PostAssetsMutationResponse,
   PostAssets400,
   PostAssets401,
+  PostAssets402,
   PostAssets403,
   PostAssets404,
   PostAssets409,
   PostAssets429,
   PostAssets500,
+  PostAssets503,
 } from "../types/PostAssets.ts";
 import {
   postAssetsMutationResponseSchema,
@@ -44,11 +46,13 @@ export async function postAssets(
     ResponseErrorConfig<
       | PostAssets400
       | PostAssets401
+      | PostAssets402
       | PostAssets403
       | PostAssets404
       | PostAssets409
       | PostAssets429
       | PostAssets500
+      | PostAssets503
     >,
     PostAssetsMutationRequest
   >({

@@ -27,6 +27,11 @@ export type PostRunsReconcile400 = ErrorResponse;
 export type PostRunsReconcile401 = ErrorResponse;
 
 /**
+ * @description Payment or credit balance required
+ */
+export type PostRunsReconcile402 = ErrorResponse;
+
+/**
  * @description Active organization required
  */
 export type PostRunsReconcile403 = ErrorResponse;
@@ -51,6 +56,11 @@ export type PostRunsReconcile429 = ErrorResponse;
  */
 export type PostRunsReconcile500 = ErrorResponse;
 
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export type PostRunsReconcile503 = ErrorResponse;
+
 export type PostRunsReconcileMutationResponse = PostRunsReconcile200;
 
 export type PostRunsReconcileMutation = {
@@ -58,9 +68,11 @@ export type PostRunsReconcileMutation = {
   Errors:
     | PostRunsReconcile400
     | PostRunsReconcile401
+    | PostRunsReconcile402
     | PostRunsReconcile403
     | PostRunsReconcile404
     | PostRunsReconcile409
     | PostRunsReconcile429
-    | PostRunsReconcile500;
+    | PostRunsReconcile500
+    | PostRunsReconcile503;
 };

@@ -11,11 +11,13 @@ import type {
   PatchCreateSessionsIdPathParams,
   PatchCreateSessionsId400,
   PatchCreateSessionsId401,
+  PatchCreateSessionsId402,
   PatchCreateSessionsId403,
   PatchCreateSessionsId404,
   PatchCreateSessionsId409,
   PatchCreateSessionsId429,
   PatchCreateSessionsId500,
+  PatchCreateSessionsId503,
 } from "../types/PatchCreateSessionsId.ts";
 import {
   patchCreateSessionsIdMutationResponseSchema,
@@ -55,11 +57,13 @@ export async function patchCreateSessionsId(
     ResponseErrorConfig<
       | PatchCreateSessionsId400
       | PatchCreateSessionsId401
+      | PatchCreateSessionsId402
       | PatchCreateSessionsId403
       | PatchCreateSessionsId404
       | PatchCreateSessionsId409
       | PatchCreateSessionsId429
       | PatchCreateSessionsId500
+      | PatchCreateSessionsId503
     >,
     PatchCreateSessionsIdMutationRequest
   >({

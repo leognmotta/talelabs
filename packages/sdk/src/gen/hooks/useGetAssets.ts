@@ -9,11 +9,13 @@ import type {
   GetAssetsQueryParams,
   GetAssets400,
   GetAssets401,
+  GetAssets402,
   GetAssets403,
   GetAssets404,
   GetAssets409,
   GetAssets429,
   GetAssets500,
+  GetAssets503,
 } from "../types/GetAssets.ts";
 import type {
   QueryKey,
@@ -39,11 +41,13 @@ export function getAssetsQueryOptions(
     ResponseErrorConfig<
       | GetAssets400
       | GetAssets401
+      | GetAssets402
       | GetAssets403
       | GetAssets404
       | GetAssets409
       | GetAssets429
       | GetAssets500
+      | GetAssets503
     >,
     GetAssetsQueryResponse,
     typeof queryKey
@@ -74,11 +78,13 @@ export function useGetAssets<
         ResponseErrorConfig<
           | GetAssets400
           | GetAssets401
+          | GetAssets402
           | GetAssets403
           | GetAssets404
           | GetAssets409
           | GetAssets429
           | GetAssets500
+          | GetAssets503
         >,
         TData,
         TQueryData,
@@ -104,11 +110,13 @@ export function useGetAssets<
     ResponseErrorConfig<
       | GetAssets400
       | GetAssets401
+      | GetAssets402
       | GetAssets403
       | GetAssets404
       | GetAssets409
       | GetAssets429
       | GetAssets500
+      | GetAssets503
     >
   > & { queryKey: TQueryKey };
 

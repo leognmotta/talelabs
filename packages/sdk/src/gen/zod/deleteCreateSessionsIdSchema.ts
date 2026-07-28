@@ -8,11 +8,13 @@ import type {
   DeleteCreateSessionsId204,
   DeleteCreateSessionsId400,
   DeleteCreateSessionsId401,
+  DeleteCreateSessionsId402,
   DeleteCreateSessionsId403,
   DeleteCreateSessionsId404,
   DeleteCreateSessionsId409,
   DeleteCreateSessionsId429,
   DeleteCreateSessionsId500,
+  DeleteCreateSessionsId503,
   DeleteCreateSessionsIdMutationResponse,
   DeleteCreateSessionsIdPathParams,
 } from "../types/DeleteCreateSessionsId.ts";
@@ -44,6 +46,13 @@ export const deleteCreateSessionsId400Schema = z.lazy(
 export const deleteCreateSessionsId401Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<DeleteCreateSessionsId401>;
+
+/**
+ * @description Payment or credit balance required
+ */
+export const deleteCreateSessionsId402Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<DeleteCreateSessionsId402>;
 
 /**
  * @description Active organization required
@@ -79,6 +88,13 @@ export const deleteCreateSessionsId429Schema = z.lazy(
 export const deleteCreateSessionsId500Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<DeleteCreateSessionsId500>;
+
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export const deleteCreateSessionsId503Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<DeleteCreateSessionsId503>;
 
 export const deleteCreateSessionsIdMutationResponseSchema = z.lazy(
   () => deleteCreateSessionsId204Schema,

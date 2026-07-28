@@ -9,11 +9,13 @@ import type {
   GetElementsIdPathParams,
   GetElementsId400,
   GetElementsId401,
+  GetElementsId402,
   GetElementsId403,
   GetElementsId404,
   GetElementsId409,
   GetElementsId429,
   GetElementsId500,
+  GetElementsId503,
 } from "../types/GetElementsId.ts";
 import type {
   QueryKey,
@@ -42,11 +44,13 @@ export function getElementsIdQueryOptions(
     ResponseErrorConfig<
       | GetElementsId400
       | GetElementsId401
+      | GetElementsId402
       | GetElementsId403
       | GetElementsId404
       | GetElementsId409
       | GetElementsId429
       | GetElementsId500
+      | GetElementsId503
     >,
     GetElementsIdQueryResponse,
     typeof queryKey
@@ -78,11 +82,13 @@ export function useGetElementsId<
         ResponseErrorConfig<
           | GetElementsId400
           | GetElementsId401
+          | GetElementsId402
           | GetElementsId403
           | GetElementsId404
           | GetElementsId409
           | GetElementsId429
           | GetElementsId500
+          | GetElementsId503
         >,
         TData,
         TQueryData,
@@ -108,11 +114,13 @@ export function useGetElementsId<
     ResponseErrorConfig<
       | GetElementsId400
       | GetElementsId401
+      | GetElementsId402
       | GetElementsId403
       | GetElementsId404
       | GetElementsId409
       | GetElementsId429
       | GetElementsId500
+      | GetElementsId503
     >
   > & { queryKey: TQueryKey };
 

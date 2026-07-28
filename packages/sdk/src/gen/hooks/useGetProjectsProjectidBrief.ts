@@ -9,11 +9,13 @@ import type {
   GetProjectsProjectidBriefPathParams,
   GetProjectsProjectidBrief400,
   GetProjectsProjectidBrief401,
+  GetProjectsProjectidBrief402,
   GetProjectsProjectidBrief403,
   GetProjectsProjectidBrief404,
   GetProjectsProjectidBrief409,
   GetProjectsProjectidBrief429,
   GetProjectsProjectidBrief500,
+  GetProjectsProjectidBrief503,
 } from "../types/GetProjectsProjectidBrief.ts";
 import type {
   QueryKey,
@@ -51,11 +53,13 @@ export function getProjectsProjectidBriefQueryOptions(
     ResponseErrorConfig<
       | GetProjectsProjectidBrief400
       | GetProjectsProjectidBrief401
+      | GetProjectsProjectidBrief402
       | GetProjectsProjectidBrief403
       | GetProjectsProjectidBrief404
       | GetProjectsProjectidBrief409
       | GetProjectsProjectidBrief429
       | GetProjectsProjectidBrief500
+      | GetProjectsProjectidBrief503
     >,
     GetProjectsProjectidBriefQueryResponse,
     typeof queryKey
@@ -91,11 +95,13 @@ export function useGetProjectsProjectidBrief<
         ResponseErrorConfig<
           | GetProjectsProjectidBrief400
           | GetProjectsProjectidBrief401
+          | GetProjectsProjectidBrief402
           | GetProjectsProjectidBrief403
           | GetProjectsProjectidBrief404
           | GetProjectsProjectidBrief409
           | GetProjectsProjectidBrief429
           | GetProjectsProjectidBrief500
+          | GetProjectsProjectidBrief503
         >,
         TData,
         TQueryData,
@@ -123,11 +129,13 @@ export function useGetProjectsProjectidBrief<
     ResponseErrorConfig<
       | GetProjectsProjectidBrief400
       | GetProjectsProjectidBrief401
+      | GetProjectsProjectidBrief402
       | GetProjectsProjectidBrief403
       | GetProjectsProjectidBrief404
       | GetProjectsProjectidBrief409
       | GetProjectsProjectidBrief429
       | GetProjectsProjectidBrief500
+      | GetProjectsProjectidBrief503
     >
   > & { queryKey: TQueryKey };
 

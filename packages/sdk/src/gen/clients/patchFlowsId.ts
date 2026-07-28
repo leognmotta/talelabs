@@ -11,11 +11,13 @@ import type {
   PatchFlowsIdPathParams,
   PatchFlowsId400,
   PatchFlowsId401,
+  PatchFlowsId402,
   PatchFlowsId403,
   PatchFlowsId404,
   PatchFlowsId409,
   PatchFlowsId429,
   PatchFlowsId500,
+  PatchFlowsId503,
 } from "../types/PatchFlowsId.ts";
 import {
   patchFlowsIdMutationResponseSchema,
@@ -48,11 +50,13 @@ export async function patchFlowsId(
     ResponseErrorConfig<
       | PatchFlowsId400
       | PatchFlowsId401
+      | PatchFlowsId402
       | PatchFlowsId403
       | PatchFlowsId404
       | PatchFlowsId409
       | PatchFlowsId429
       | PatchFlowsId500
+      | PatchFlowsId503
     >,
     PatchFlowsIdMutationRequest
   >({

@@ -8,11 +8,13 @@ import type {
   GetFlowsIdGraph200,
   GetFlowsIdGraph400,
   GetFlowsIdGraph401,
+  GetFlowsIdGraph402,
   GetFlowsIdGraph403,
   GetFlowsIdGraph404,
   GetFlowsIdGraph409,
   GetFlowsIdGraph429,
   GetFlowsIdGraph500,
+  GetFlowsIdGraph503,
   GetFlowsIdGraphPathParams,
   GetFlowsIdGraphQueryResponse,
 } from "../types/GetFlowsIdGraph.ts";
@@ -48,6 +50,13 @@ export const getFlowsIdGraph401Schema = z.lazy(
 ) as unknown as z.ZodType<GetFlowsIdGraph401>;
 
 /**
+ * @description Payment or credit balance required
+ */
+export const getFlowsIdGraph402Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<GetFlowsIdGraph402>;
+
+/**
  * @description Active organization required
  */
 export const getFlowsIdGraph403Schema = z.lazy(
@@ -81,6 +90,13 @@ export const getFlowsIdGraph429Schema = z.lazy(
 export const getFlowsIdGraph500Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<GetFlowsIdGraph500>;
+
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export const getFlowsIdGraph503Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<GetFlowsIdGraph503>;
 
 export const getFlowsIdGraphQueryResponseSchema = z.lazy(
   () => getFlowsIdGraph200Schema,

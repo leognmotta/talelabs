@@ -11,11 +11,13 @@ import type {
   PostRunsIdBrowserJobsJobidCheckpointPathParams,
   PostRunsIdBrowserJobsJobidCheckpoint400,
   PostRunsIdBrowserJobsJobidCheckpoint401,
+  PostRunsIdBrowserJobsJobidCheckpoint402,
   PostRunsIdBrowserJobsJobidCheckpoint403,
   PostRunsIdBrowserJobsJobidCheckpoint404,
   PostRunsIdBrowserJobsJobidCheckpoint409,
   PostRunsIdBrowserJobsJobidCheckpoint429,
   PostRunsIdBrowserJobsJobidCheckpoint500,
+  PostRunsIdBrowserJobsJobidCheckpoint503,
 } from "../types/PostRunsIdBrowserJobsJobidCheckpoint.ts";
 import {
   postRunsIdBrowserJobsJobidCheckpointMutationResponseSchema,
@@ -63,11 +65,13 @@ export async function postRunsIdBrowserJobsJobidCheckpoint(
     ResponseErrorConfig<
       | PostRunsIdBrowserJobsJobidCheckpoint400
       | PostRunsIdBrowserJobsJobidCheckpoint401
+      | PostRunsIdBrowserJobsJobidCheckpoint402
       | PostRunsIdBrowserJobsJobidCheckpoint403
       | PostRunsIdBrowserJobsJobidCheckpoint404
       | PostRunsIdBrowserJobsJobidCheckpoint409
       | PostRunsIdBrowserJobsJobidCheckpoint429
       | PostRunsIdBrowserJobsJobidCheckpoint500
+      | PostRunsIdBrowserJobsJobidCheckpoint503
     >,
     PostRunsIdBrowserJobsJobidCheckpointMutationRequest
   >({

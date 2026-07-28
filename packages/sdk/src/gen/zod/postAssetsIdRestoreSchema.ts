@@ -8,11 +8,13 @@ import type {
   PostAssetsIdRestore200,
   PostAssetsIdRestore400,
   PostAssetsIdRestore401,
+  PostAssetsIdRestore402,
   PostAssetsIdRestore403,
   PostAssetsIdRestore404,
   PostAssetsIdRestore409,
   PostAssetsIdRestore429,
   PostAssetsIdRestore500,
+  PostAssetsIdRestore503,
   PostAssetsIdRestoreMutationResponse,
   PostAssetsIdRestorePathParams,
 } from "../types/PostAssetsIdRestore.ts";
@@ -48,6 +50,13 @@ export const postAssetsIdRestore401Schema = z.lazy(
 ) as unknown as z.ZodType<PostAssetsIdRestore401>;
 
 /**
+ * @description Payment or credit balance required
+ */
+export const postAssetsIdRestore402Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<PostAssetsIdRestore402>;
+
+/**
  * @description Active organization required
  */
 export const postAssetsIdRestore403Schema = z.lazy(
@@ -81,6 +90,13 @@ export const postAssetsIdRestore429Schema = z.lazy(
 export const postAssetsIdRestore500Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<PostAssetsIdRestore500>;
+
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export const postAssetsIdRestore503Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<PostAssetsIdRestore503>;
 
 export const postAssetsIdRestoreMutationResponseSchema = z.lazy(
   () => postAssetsIdRestore200Schema,

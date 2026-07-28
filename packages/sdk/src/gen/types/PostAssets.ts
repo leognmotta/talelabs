@@ -28,6 +28,11 @@ export type PostAssets400 = ErrorResponse;
 export type PostAssets401 = ErrorResponse;
 
 /**
+ * @description Payment or credit balance required
+ */
+export type PostAssets402 = ErrorResponse;
+
+/**
  * @description Active organization required
  */
 export type PostAssets403 = ErrorResponse;
@@ -52,6 +57,11 @@ export type PostAssets429 = ErrorResponse;
  */
 export type PostAssets500 = ErrorResponse;
 
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export type PostAssets503 = ErrorResponse;
+
 export type PostAssetsMutationRequest = RegisterAssetRequest;
 
 export type PostAssetsMutationResponse = PostAssets200 | PostAssets201;
@@ -62,9 +72,11 @@ export type PostAssetsMutation = {
   Errors:
     | PostAssets400
     | PostAssets401
+    | PostAssets402
     | PostAssets403
     | PostAssets404
     | PostAssets409
     | PostAssets429
-    | PostAssets500;
+    | PostAssets500
+    | PostAssets503;
 };

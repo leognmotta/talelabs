@@ -8,11 +8,13 @@ import type {
   PostFlowsIdRunCostEstimates200,
   PostFlowsIdRunCostEstimates400,
   PostFlowsIdRunCostEstimates401,
+  PostFlowsIdRunCostEstimates402,
   PostFlowsIdRunCostEstimates403,
   PostFlowsIdRunCostEstimates404,
   PostFlowsIdRunCostEstimates409,
   PostFlowsIdRunCostEstimates429,
   PostFlowsIdRunCostEstimates500,
+  PostFlowsIdRunCostEstimates503,
   PostFlowsIdRunCostEstimatesMutationRequest,
   PostFlowsIdRunCostEstimatesMutationResponse,
   PostFlowsIdRunCostEstimatesPathParams,
@@ -50,6 +52,13 @@ export const postFlowsIdRunCostEstimates401Schema = z.lazy(
 ) as unknown as z.ZodType<PostFlowsIdRunCostEstimates401>;
 
 /**
+ * @description Payment or credit balance required
+ */
+export const postFlowsIdRunCostEstimates402Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<PostFlowsIdRunCostEstimates402>;
+
+/**
  * @description Active organization required
  */
 export const postFlowsIdRunCostEstimates403Schema = z.lazy(
@@ -83,6 +92,13 @@ export const postFlowsIdRunCostEstimates429Schema = z.lazy(
 export const postFlowsIdRunCostEstimates500Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<PostFlowsIdRunCostEstimates500>;
+
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export const postFlowsIdRunCostEstimates503Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<PostFlowsIdRunCostEstimates503>;
 
 export const postFlowsIdRunCostEstimatesMutationRequestSchema = z.lazy(
   () => flowRunCostManifestRequestSchema,

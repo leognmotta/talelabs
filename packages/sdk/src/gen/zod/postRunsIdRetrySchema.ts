@@ -8,11 +8,13 @@ import type {
   PostRunsIdRetry202,
   PostRunsIdRetry400,
   PostRunsIdRetry401,
+  PostRunsIdRetry402,
   PostRunsIdRetry403,
   PostRunsIdRetry404,
   PostRunsIdRetry409,
   PostRunsIdRetry429,
   PostRunsIdRetry500,
+  PostRunsIdRetry503,
   PostRunsIdRetryMutationRequest,
   PostRunsIdRetryMutationResponse,
   PostRunsIdRetryPathParams,
@@ -50,6 +52,13 @@ export const postRunsIdRetry401Schema = z.lazy(
 ) as unknown as z.ZodType<PostRunsIdRetry401>;
 
 /**
+ * @description Payment or credit balance required
+ */
+export const postRunsIdRetry402Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<PostRunsIdRetry402>;
+
+/**
  * @description Active organization required
  */
 export const postRunsIdRetry403Schema = z.lazy(
@@ -83,6 +92,13 @@ export const postRunsIdRetry429Schema = z.lazy(
 export const postRunsIdRetry500Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<PostRunsIdRetry500>;
+
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export const postRunsIdRetry503Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<PostRunsIdRetry503>;
 
 export const postRunsIdRetryMutationRequestSchema = z.lazy(
   () => retryRunRequestSchema,

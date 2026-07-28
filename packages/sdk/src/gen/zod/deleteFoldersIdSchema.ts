@@ -8,11 +8,13 @@ import type {
   DeleteFoldersId204,
   DeleteFoldersId400,
   DeleteFoldersId401,
+  DeleteFoldersId402,
   DeleteFoldersId403,
   DeleteFoldersId404,
   DeleteFoldersId409,
   DeleteFoldersId429,
   DeleteFoldersId500,
+  DeleteFoldersId503,
   DeleteFoldersIdMutationResponse,
   DeleteFoldersIdPathParams,
 } from "../types/DeleteFoldersId.ts";
@@ -44,6 +46,13 @@ export const deleteFoldersId400Schema = z.lazy(
 export const deleteFoldersId401Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<DeleteFoldersId401>;
+
+/**
+ * @description Payment or credit balance required
+ */
+export const deleteFoldersId402Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<DeleteFoldersId402>;
 
 /**
  * @description Active organization required
@@ -79,6 +88,13 @@ export const deleteFoldersId429Schema = z.lazy(
 export const deleteFoldersId500Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<DeleteFoldersId500>;
+
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export const deleteFoldersId503Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<DeleteFoldersId503>;
 
 export const deleteFoldersIdMutationResponseSchema = z.lazy(
   () => deleteFoldersId204Schema,

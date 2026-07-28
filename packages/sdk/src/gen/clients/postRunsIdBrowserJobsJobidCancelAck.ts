@@ -11,11 +11,13 @@ import type {
   PostRunsIdBrowserJobsJobidCancelAckPathParams,
   PostRunsIdBrowserJobsJobidCancelAck400,
   PostRunsIdBrowserJobsJobidCancelAck401,
+  PostRunsIdBrowserJobsJobidCancelAck402,
   PostRunsIdBrowserJobsJobidCancelAck403,
   PostRunsIdBrowserJobsJobidCancelAck404,
   PostRunsIdBrowserJobsJobidCancelAck409,
   PostRunsIdBrowserJobsJobidCancelAck429,
   PostRunsIdBrowserJobsJobidCancelAck500,
+  PostRunsIdBrowserJobsJobidCancelAck503,
 } from "../types/PostRunsIdBrowserJobsJobidCancelAck.ts";
 import {
   postRunsIdBrowserJobsJobidCancelAckMutationResponseSchema,
@@ -63,11 +65,13 @@ export async function postRunsIdBrowserJobsJobidCancelAck(
     ResponseErrorConfig<
       | PostRunsIdBrowserJobsJobidCancelAck400
       | PostRunsIdBrowserJobsJobidCancelAck401
+      | PostRunsIdBrowserJobsJobidCancelAck402
       | PostRunsIdBrowserJobsJobidCancelAck403
       | PostRunsIdBrowserJobsJobidCancelAck404
       | PostRunsIdBrowserJobsJobidCancelAck409
       | PostRunsIdBrowserJobsJobidCancelAck429
       | PostRunsIdBrowserJobsJobidCancelAck500
+      | PostRunsIdBrowserJobsJobidCancelAck503
     >,
     PostRunsIdBrowserJobsJobidCancelAckMutationRequest
   >({

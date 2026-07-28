@@ -10,11 +10,13 @@ import type {
   PutAssetsIdFavoritePathParams,
   PutAssetsIdFavorite400,
   PutAssetsIdFavorite401,
+  PutAssetsIdFavorite402,
   PutAssetsIdFavorite403,
   PutAssetsIdFavorite404,
   PutAssetsIdFavorite409,
   PutAssetsIdFavorite429,
   PutAssetsIdFavorite500,
+  PutAssetsIdFavorite503,
 } from "../types/PutAssetsIdFavorite.ts";
 import { putAssetsIdFavoriteMutationResponseSchema } from "../zod/putAssetsIdFavoriteSchema.ts";
 
@@ -41,11 +43,13 @@ export async function putAssetsIdFavorite(
     ResponseErrorConfig<
       | PutAssetsIdFavorite400
       | PutAssetsIdFavorite401
+      | PutAssetsIdFavorite402
       | PutAssetsIdFavorite403
       | PutAssetsIdFavorite404
       | PutAssetsIdFavorite409
       | PutAssetsIdFavorite429
       | PutAssetsIdFavorite500
+      | PutAssetsIdFavorite503
     >,
     unknown
   >({

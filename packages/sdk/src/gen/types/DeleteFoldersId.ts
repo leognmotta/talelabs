@@ -30,6 +30,11 @@ export type DeleteFoldersId400 = ErrorResponse;
 export type DeleteFoldersId401 = ErrorResponse;
 
 /**
+ * @description Payment or credit balance required
+ */
+export type DeleteFoldersId402 = ErrorResponse;
+
+/**
  * @description Active organization required
  */
 export type DeleteFoldersId403 = ErrorResponse;
@@ -54,6 +59,11 @@ export type DeleteFoldersId429 = ErrorResponse;
  */
 export type DeleteFoldersId500 = ErrorResponse;
 
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export type DeleteFoldersId503 = ErrorResponse;
+
 export type DeleteFoldersIdMutationResponse = DeleteFoldersId204;
 
 export type DeleteFoldersIdMutation = {
@@ -62,9 +72,11 @@ export type DeleteFoldersIdMutation = {
   Errors:
     | DeleteFoldersId400
     | DeleteFoldersId401
+    | DeleteFoldersId402
     | DeleteFoldersId403
     | DeleteFoldersId404
     | DeleteFoldersId409
     | DeleteFoldersId429
-    | DeleteFoldersId500;
+    | DeleteFoldersId500
+    | DeleteFoldersId503;
 };

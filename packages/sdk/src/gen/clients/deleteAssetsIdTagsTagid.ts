@@ -10,11 +10,13 @@ import type {
   DeleteAssetsIdTagsTagidPathParams,
   DeleteAssetsIdTagsTagid400,
   DeleteAssetsIdTagsTagid401,
+  DeleteAssetsIdTagsTagid402,
   DeleteAssetsIdTagsTagid403,
   DeleteAssetsIdTagsTagid404,
   DeleteAssetsIdTagsTagid409,
   DeleteAssetsIdTagsTagid429,
   DeleteAssetsIdTagsTagid500,
+  DeleteAssetsIdTagsTagid503,
 } from "../types/DeleteAssetsIdTagsTagid.ts";
 import { deleteAssetsIdTagsTagidMutationResponseSchema } from "../zod/deleteAssetsIdTagsTagidSchema.ts";
 
@@ -49,11 +51,13 @@ export async function deleteAssetsIdTagsTagid(
     ResponseErrorConfig<
       | DeleteAssetsIdTagsTagid400
       | DeleteAssetsIdTagsTagid401
+      | DeleteAssetsIdTagsTagid402
       | DeleteAssetsIdTagsTagid403
       | DeleteAssetsIdTagsTagid404
       | DeleteAssetsIdTagsTagid409
       | DeleteAssetsIdTagsTagid429
       | DeleteAssetsIdTagsTagid500
+      | DeleteAssetsIdTagsTagid503
     >,
     unknown
   >({

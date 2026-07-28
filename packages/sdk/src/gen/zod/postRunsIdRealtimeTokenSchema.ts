@@ -8,11 +8,13 @@ import type {
   PostRunsIdRealtimeToken200,
   PostRunsIdRealtimeToken400,
   PostRunsIdRealtimeToken401,
+  PostRunsIdRealtimeToken402,
   PostRunsIdRealtimeToken403,
   PostRunsIdRealtimeToken404,
   PostRunsIdRealtimeToken409,
   PostRunsIdRealtimeToken429,
   PostRunsIdRealtimeToken500,
+  PostRunsIdRealtimeToken503,
   PostRunsIdRealtimeTokenMutationResponse,
   PostRunsIdRealtimeTokenPathParams,
 } from "../types/PostRunsIdRealtimeToken.ts";
@@ -48,6 +50,13 @@ export const postRunsIdRealtimeToken401Schema = z.lazy(
 ) as unknown as z.ZodType<PostRunsIdRealtimeToken401>;
 
 /**
+ * @description Payment or credit balance required
+ */
+export const postRunsIdRealtimeToken402Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<PostRunsIdRealtimeToken402>;
+
+/**
  * @description Active organization required
  */
 export const postRunsIdRealtimeToken403Schema = z.lazy(
@@ -81,6 +90,13 @@ export const postRunsIdRealtimeToken429Schema = z.lazy(
 export const postRunsIdRealtimeToken500Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<PostRunsIdRealtimeToken500>;
+
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export const postRunsIdRealtimeToken503Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<PostRunsIdRealtimeToken503>;
 
 export const postRunsIdRealtimeTokenMutationResponseSchema = z.lazy(
   () => postRunsIdRealtimeToken200Schema,

@@ -52,6 +52,11 @@ export type GetFlows400 = ErrorResponse;
 export type GetFlows401 = ErrorResponse;
 
 /**
+ * @description Payment or credit balance required
+ */
+export type GetFlows402 = ErrorResponse;
+
+/**
  * @description Active organization required
  */
 export type GetFlows403 = ErrorResponse;
@@ -76,6 +81,11 @@ export type GetFlows429 = ErrorResponse;
  */
 export type GetFlows500 = ErrorResponse;
 
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export type GetFlows503 = ErrorResponse;
+
 export type GetFlowsQueryResponse = GetFlows200;
 
 export type GetFlowsQuery = {
@@ -84,9 +94,11 @@ export type GetFlowsQuery = {
   Errors:
     | GetFlows400
     | GetFlows401
+    | GetFlows402
     | GetFlows403
     | GetFlows404
     | GetFlows409
     | GetFlows429
-    | GetFlows500;
+    | GetFlows500
+    | GetFlows503;
 };

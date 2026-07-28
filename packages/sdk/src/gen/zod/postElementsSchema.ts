@@ -8,11 +8,13 @@ import type {
   PostElements201,
   PostElements400,
   PostElements401,
+  PostElements402,
   PostElements403,
   PostElements404,
   PostElements409,
   PostElements429,
   PostElements500,
+  PostElements503,
   PostElementsMutationRequest,
   PostElementsMutationResponse,
 } from "../types/PostElements.ts";
@@ -40,6 +42,13 @@ export const postElements400Schema = z.lazy(
 export const postElements401Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<PostElements401>;
+
+/**
+ * @description Payment or credit balance required
+ */
+export const postElements402Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<PostElements402>;
 
 /**
  * @description Active organization required
@@ -75,6 +84,13 @@ export const postElements429Schema = z.lazy(
 export const postElements500Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<PostElements500>;
+
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export const postElements503Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<PostElements503>;
 
 export const postElementsMutationRequestSchema = z.lazy(
   () => createElementRequestSchema,

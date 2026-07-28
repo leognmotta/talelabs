@@ -32,6 +32,11 @@ export type PostRunsIdRetry400 = ErrorResponse;
 export type PostRunsIdRetry401 = ErrorResponse;
 
 /**
+ * @description Payment or credit balance required
+ */
+export type PostRunsIdRetry402 = ErrorResponse;
+
+/**
  * @description Active organization required
  */
 export type PostRunsIdRetry403 = ErrorResponse;
@@ -56,6 +61,11 @@ export type PostRunsIdRetry429 = ErrorResponse;
  */
 export type PostRunsIdRetry500 = ErrorResponse;
 
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export type PostRunsIdRetry503 = ErrorResponse;
+
 export type PostRunsIdRetryMutationRequest = RetryRunRequest;
 
 export type PostRunsIdRetryMutationResponse = PostRunsIdRetry202;
@@ -67,9 +77,11 @@ export type PostRunsIdRetryMutation = {
   Errors:
     | PostRunsIdRetry400
     | PostRunsIdRetry401
+    | PostRunsIdRetry402
     | PostRunsIdRetry403
     | PostRunsIdRetry404
     | PostRunsIdRetry409
     | PostRunsIdRetry429
-    | PostRunsIdRetry500;
+    | PostRunsIdRetry500
+    | PostRunsIdRetry503;
 };

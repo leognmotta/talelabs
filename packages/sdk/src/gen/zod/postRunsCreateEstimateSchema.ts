@@ -8,11 +8,13 @@ import type {
   PostRunsCreateEstimate200,
   PostRunsCreateEstimate400,
   PostRunsCreateEstimate401,
+  PostRunsCreateEstimate402,
   PostRunsCreateEstimate403,
   PostRunsCreateEstimate404,
   PostRunsCreateEstimate409,
   PostRunsCreateEstimate429,
   PostRunsCreateEstimate500,
+  PostRunsCreateEstimate503,
   PostRunsCreateEstimateMutationRequest,
   PostRunsCreateEstimateMutationResponse,
 } from "../types/PostRunsCreateEstimate.ts";
@@ -40,6 +42,13 @@ export const postRunsCreateEstimate400Schema = z.lazy(
 export const postRunsCreateEstimate401Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<PostRunsCreateEstimate401>;
+
+/**
+ * @description Payment or credit balance required
+ */
+export const postRunsCreateEstimate402Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<PostRunsCreateEstimate402>;
 
 /**
  * @description Active organization required
@@ -75,6 +84,13 @@ export const postRunsCreateEstimate429Schema = z.lazy(
 export const postRunsCreateEstimate500Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<PostRunsCreateEstimate500>;
+
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export const postRunsCreateEstimate503Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<PostRunsCreateEstimate503>;
 
 export const postRunsCreateEstimateMutationRequestSchema = z.lazy(
   () => estimateDirectRunRequestSchema,

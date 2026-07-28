@@ -8,11 +8,13 @@ import type {
   GetAssets200,
   GetAssets400,
   GetAssets401,
+  GetAssets402,
   GetAssets403,
   GetAssets404,
   GetAssets409,
   GetAssets429,
   GetAssets500,
+  GetAssets503,
   GetAssetsQueryParams,
   GetAssetsQueryResponse,
 } from "../types/GetAssets.ts";
@@ -89,6 +91,13 @@ export const getAssets401Schema = z.lazy(
 ) as unknown as z.ZodType<GetAssets401>;
 
 /**
+ * @description Payment or credit balance required
+ */
+export const getAssets402Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<GetAssets402>;
+
+/**
  * @description Active organization required
  */
 export const getAssets403Schema = z.lazy(
@@ -122,6 +131,13 @@ export const getAssets429Schema = z.lazy(
 export const getAssets500Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<GetAssets500>;
+
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export const getAssets503Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<GetAssets503>;
 
 export const getAssetsQueryResponseSchema = z.lazy(
   () => getAssets200Schema,

@@ -10,11 +10,13 @@ import type {
   GetRunsIdPathParams,
   GetRunsId400,
   GetRunsId401,
+  GetRunsId402,
   GetRunsId403,
   GetRunsId404,
   GetRunsId409,
   GetRunsId429,
   GetRunsId500,
+  GetRunsId503,
 } from "../types/GetRunsId.ts";
 import { getRunsIdQueryResponseSchema } from "../zod/getRunsIdSchema.ts";
 
@@ -37,11 +39,13 @@ export async function getRunsId(
     ResponseErrorConfig<
       | GetRunsId400
       | GetRunsId401
+      | GetRunsId402
       | GetRunsId403
       | GetRunsId404
       | GetRunsId409
       | GetRunsId429
       | GetRunsId500
+      | GetRunsId503
     >,
     unknown
   >({

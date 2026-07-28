@@ -10,11 +10,13 @@ import type {
   GetAssetsIdDownloadPathParams,
   GetAssetsIdDownload400,
   GetAssetsIdDownload401,
+  GetAssetsIdDownload402,
   GetAssetsIdDownload403,
   GetAssetsIdDownload404,
   GetAssetsIdDownload409,
   GetAssetsIdDownload429,
   GetAssetsIdDownload500,
+  GetAssetsIdDownload503,
 } from "../types/GetAssetsIdDownload.ts";
 import { getAssetsIdDownloadQueryResponseSchema } from "../zod/getAssetsIdDownloadSchema.ts";
 
@@ -41,11 +43,13 @@ export async function getAssetsIdDownload(
     ResponseErrorConfig<
       | GetAssetsIdDownload400
       | GetAssetsIdDownload401
+      | GetAssetsIdDownload402
       | GetAssetsIdDownload403
       | GetAssetsIdDownload404
       | GetAssetsIdDownload409
       | GetAssetsIdDownload429
       | GetAssetsIdDownload500
+      | GetAssetsIdDownload503
     >,
     unknown
   >({

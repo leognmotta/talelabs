@@ -11,11 +11,13 @@ import type {
   PostFlowsIdRunCostEstimatesPathParams,
   PostFlowsIdRunCostEstimates400,
   PostFlowsIdRunCostEstimates401,
+  PostFlowsIdRunCostEstimates402,
   PostFlowsIdRunCostEstimates403,
   PostFlowsIdRunCostEstimates404,
   PostFlowsIdRunCostEstimates409,
   PostFlowsIdRunCostEstimates429,
   PostFlowsIdRunCostEstimates500,
+  PostFlowsIdRunCostEstimates503,
 } from "../types/PostFlowsIdRunCostEstimates.ts";
 import {
   postFlowsIdRunCostEstimatesMutationResponseSchema,
@@ -59,11 +61,13 @@ export async function postFlowsIdRunCostEstimates(
     ResponseErrorConfig<
       | PostFlowsIdRunCostEstimates400
       | PostFlowsIdRunCostEstimates401
+      | PostFlowsIdRunCostEstimates402
       | PostFlowsIdRunCostEstimates403
       | PostFlowsIdRunCostEstimates404
       | PostFlowsIdRunCostEstimates409
       | PostFlowsIdRunCostEstimates429
       | PostFlowsIdRunCostEstimates500
+      | PostFlowsIdRunCostEstimates503
     >,
     PostFlowsIdRunCostEstimatesMutationRequest
   >({

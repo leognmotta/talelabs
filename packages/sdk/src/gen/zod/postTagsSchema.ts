@@ -8,11 +8,13 @@ import type {
   PostTags201,
   PostTags400,
   PostTags401,
+  PostTags402,
   PostTags403,
   PostTags404,
   PostTags409,
   PostTags429,
   PostTags500,
+  PostTags503,
   PostTagsMutationRequest,
   PostTagsMutationResponse,
 } from "../types/PostTags.ts";
@@ -40,6 +42,13 @@ export const postTags400Schema = z.lazy(
 export const postTags401Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<PostTags401>;
+
+/**
+ * @description Payment or credit balance required
+ */
+export const postTags402Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<PostTags402>;
 
 /**
  * @description Active organization required
@@ -75,6 +84,13 @@ export const postTags429Schema = z.lazy(
 export const postTags500Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<PostTags500>;
+
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export const postTags503Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<PostTags503>;
 
 export const postTagsMutationRequestSchema = z.lazy(
   () => createTagRequestSchema,

@@ -23,6 +23,11 @@ export type PostRuns400 = ErrorResponse;
 export type PostRuns401 = ErrorResponse;
 
 /**
+ * @description Payment or credit balance required
+ */
+export type PostRuns402 = ErrorResponse;
+
+/**
  * @description Active organization required
  */
 export type PostRuns403 = ErrorResponse;
@@ -47,6 +52,11 @@ export type PostRuns429 = ErrorResponse;
  */
 export type PostRuns500 = ErrorResponse;
 
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export type PostRuns503 = ErrorResponse;
+
 export type PostRunsMutationRequest = CreateRunRequest;
 
 export type PostRunsMutationResponse = PostRuns202;
@@ -57,9 +67,11 @@ export type PostRunsMutation = {
   Errors:
     | PostRuns400
     | PostRuns401
+    | PostRuns402
     | PostRuns403
     | PostRuns404
     | PostRuns409
     | PostRuns429
-    | PostRuns500;
+    | PostRuns500
+    | PostRuns503;
 };

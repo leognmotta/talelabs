@@ -10,11 +10,13 @@ import type {
   GetFlowsQueryParams,
   GetFlows400,
   GetFlows401,
+  GetFlows402,
   GetFlows403,
   GetFlows404,
   GetFlows409,
   GetFlows429,
   GetFlows500,
+  GetFlows503,
 } from "../types/GetFlows.ts";
 import { getFlowsQueryResponseSchema } from "../zod/getFlowsSchema.ts";
 
@@ -37,11 +39,13 @@ export async function getFlows(
     ResponseErrorConfig<
       | GetFlows400
       | GetFlows401
+      | GetFlows402
       | GetFlows403
       | GetFlows404
       | GetFlows409
       | GetFlows429
       | GetFlows500
+      | GetFlows503
     >,
     unknown
   >({

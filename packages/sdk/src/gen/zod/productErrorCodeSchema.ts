@@ -21,5 +21,13 @@ export const productErrorCodeSchema = z.enum([
   "unsupported_by_model",
   "rate_limited",
   "insufficient_credits",
+  "billing_account_blocked",
+  "storage_limit_exceeded",
+  "billing_catalog_mismatch",
+  "subscription_already_active",
+  "subscription_change_not_available",
+  "invalid_topup_amount",
+  "topup_not_available",
+  "stripe_checkout_unavailable",
   "internal_error",
 ]) as unknown as z.ZodType<ProductErrorCode>;

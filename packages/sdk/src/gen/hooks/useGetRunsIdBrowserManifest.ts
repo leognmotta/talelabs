@@ -10,11 +10,13 @@ import type {
   GetRunsIdBrowserManifestQueryParams,
   GetRunsIdBrowserManifest400,
   GetRunsIdBrowserManifest401,
+  GetRunsIdBrowserManifest402,
   GetRunsIdBrowserManifest403,
   GetRunsIdBrowserManifest404,
   GetRunsIdBrowserManifest409,
   GetRunsIdBrowserManifest429,
   GetRunsIdBrowserManifest500,
+  GetRunsIdBrowserManifest503,
 } from "../types/GetRunsIdBrowserManifest.ts";
 import type {
   QueryKey,
@@ -54,11 +56,13 @@ export function getRunsIdBrowserManifestQueryOptions(
     ResponseErrorConfig<
       | GetRunsIdBrowserManifest400
       | GetRunsIdBrowserManifest401
+      | GetRunsIdBrowserManifest402
       | GetRunsIdBrowserManifest403
       | GetRunsIdBrowserManifest404
       | GetRunsIdBrowserManifest409
       | GetRunsIdBrowserManifest429
       | GetRunsIdBrowserManifest500
+      | GetRunsIdBrowserManifest503
     >,
     GetRunsIdBrowserManifestQueryResponse,
     typeof queryKey
@@ -96,11 +100,13 @@ export function useGetRunsIdBrowserManifest<
         ResponseErrorConfig<
           | GetRunsIdBrowserManifest400
           | GetRunsIdBrowserManifest401
+          | GetRunsIdBrowserManifest402
           | GetRunsIdBrowserManifest403
           | GetRunsIdBrowserManifest404
           | GetRunsIdBrowserManifest409
           | GetRunsIdBrowserManifest429
           | GetRunsIdBrowserManifest500
+          | GetRunsIdBrowserManifest503
         >,
         TData,
         TQueryData,
@@ -128,11 +134,13 @@ export function useGetRunsIdBrowserManifest<
     ResponseErrorConfig<
       | GetRunsIdBrowserManifest400
       | GetRunsIdBrowserManifest401
+      | GetRunsIdBrowserManifest402
       | GetRunsIdBrowserManifest403
       | GetRunsIdBrowserManifest404
       | GetRunsIdBrowserManifest409
       | GetRunsIdBrowserManifest429
       | GetRunsIdBrowserManifest500
+      | GetRunsIdBrowserManifest503
     >
   > & { queryKey: TQueryKey };
 

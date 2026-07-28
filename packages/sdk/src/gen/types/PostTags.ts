@@ -23,6 +23,11 @@ export type PostTags400 = ErrorResponse;
 export type PostTags401 = ErrorResponse;
 
 /**
+ * @description Payment or credit balance required
+ */
+export type PostTags402 = ErrorResponse;
+
+/**
  * @description Active organization required
  */
 export type PostTags403 = ErrorResponse;
@@ -47,6 +52,11 @@ export type PostTags429 = ErrorResponse;
  */
 export type PostTags500 = ErrorResponse;
 
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export type PostTags503 = ErrorResponse;
+
 export type PostTagsMutationRequest = CreateTagRequest;
 
 export type PostTagsMutationResponse = PostTags201;
@@ -57,9 +67,11 @@ export type PostTagsMutation = {
   Errors:
     | PostTags400
     | PostTags401
+    | PostTags402
     | PostTags403
     | PostTags404
     | PostTags409
     | PostTags429
-    | PostTags500;
+    | PostTags500
+    | PostTags503;
 };

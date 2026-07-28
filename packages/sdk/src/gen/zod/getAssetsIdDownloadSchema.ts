@@ -8,11 +8,13 @@ import type {
   GetAssetsIdDownload200,
   GetAssetsIdDownload400,
   GetAssetsIdDownload401,
+  GetAssetsIdDownload402,
   GetAssetsIdDownload403,
   GetAssetsIdDownload404,
   GetAssetsIdDownload409,
   GetAssetsIdDownload429,
   GetAssetsIdDownload500,
+  GetAssetsIdDownload503,
   GetAssetsIdDownloadPathParams,
   GetAssetsIdDownloadQueryResponse,
 } from "../types/GetAssetsIdDownload.ts";
@@ -48,6 +50,13 @@ export const getAssetsIdDownload401Schema = z.lazy(
 ) as unknown as z.ZodType<GetAssetsIdDownload401>;
 
 /**
+ * @description Payment or credit balance required
+ */
+export const getAssetsIdDownload402Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<GetAssetsIdDownload402>;
+
+/**
  * @description Active organization required
  */
 export const getAssetsIdDownload403Schema = z.lazy(
@@ -81,6 +90,13 @@ export const getAssetsIdDownload429Schema = z.lazy(
 export const getAssetsIdDownload500Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<GetAssetsIdDownload500>;
+
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export const getAssetsIdDownload503Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<GetAssetsIdDownload503>;
 
 export const getAssetsIdDownloadQueryResponseSchema = z.lazy(
   () => getAssetsIdDownload200Schema,

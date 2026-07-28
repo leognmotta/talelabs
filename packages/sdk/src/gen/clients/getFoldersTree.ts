@@ -10,11 +10,13 @@ import type {
   GetFoldersTreeQueryParams,
   GetFoldersTree400,
   GetFoldersTree401,
+  GetFoldersTree402,
   GetFoldersTree403,
   GetFoldersTree404,
   GetFoldersTree409,
   GetFoldersTree429,
   GetFoldersTree500,
+  GetFoldersTree503,
 } from "../types/GetFoldersTree.ts";
 import { getFoldersTreeQueryResponseSchema } from "../zod/getFoldersTreeSchema.ts";
 
@@ -37,11 +39,13 @@ export async function getFoldersTree(
     ResponseErrorConfig<
       | GetFoldersTree400
       | GetFoldersTree401
+      | GetFoldersTree402
       | GetFoldersTree403
       | GetFoldersTree404
       | GetFoldersTree409
       | GetFoldersTree429
       | GetFoldersTree500
+      | GetFoldersTree503
     >,
     unknown
   >({

@@ -22,6 +22,11 @@ export type GetTags400 = ErrorResponse;
 export type GetTags401 = ErrorResponse;
 
 /**
+ * @description Payment or credit balance required
+ */
+export type GetTags402 = ErrorResponse;
+
+/**
  * @description Active organization required
  */
 export type GetTags403 = ErrorResponse;
@@ -46,6 +51,11 @@ export type GetTags429 = ErrorResponse;
  */
 export type GetTags500 = ErrorResponse;
 
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export type GetTags503 = ErrorResponse;
+
 export type GetTagsQueryResponse = GetTags200;
 
 export type GetTagsQuery = {
@@ -53,9 +63,11 @@ export type GetTagsQuery = {
   Errors:
     | GetTags400
     | GetTags401
+    | GetTags402
     | GetTags403
     | GetTags404
     | GetTags409
     | GetTags429
-    | GetTags500;
+    | GetTags500
+    | GetTags503;
 };

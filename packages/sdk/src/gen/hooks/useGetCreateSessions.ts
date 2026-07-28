@@ -9,11 +9,13 @@ import type {
   GetCreateSessionsQueryParams,
   GetCreateSessions400,
   GetCreateSessions401,
+  GetCreateSessions402,
   GetCreateSessions403,
   GetCreateSessions404,
   GetCreateSessions409,
   GetCreateSessions429,
   GetCreateSessions500,
+  GetCreateSessions503,
 } from "../types/GetCreateSessions.ts";
 import type {
   QueryKey,
@@ -42,11 +44,13 @@ export function getCreateSessionsQueryOptions(
     ResponseErrorConfig<
       | GetCreateSessions400
       | GetCreateSessions401
+      | GetCreateSessions402
       | GetCreateSessions403
       | GetCreateSessions404
       | GetCreateSessions409
       | GetCreateSessions429
       | GetCreateSessions500
+      | GetCreateSessions503
     >,
     GetCreateSessionsQueryResponse,
     typeof queryKey
@@ -77,11 +81,13 @@ export function useGetCreateSessions<
         ResponseErrorConfig<
           | GetCreateSessions400
           | GetCreateSessions401
+          | GetCreateSessions402
           | GetCreateSessions403
           | GetCreateSessions404
           | GetCreateSessions409
           | GetCreateSessions429
           | GetCreateSessions500
+          | GetCreateSessions503
         >,
         TData,
         TQueryData,
@@ -108,11 +114,13 @@ export function useGetCreateSessions<
     ResponseErrorConfig<
       | GetCreateSessions400
       | GetCreateSessions401
+      | GetCreateSessions402
       | GetCreateSessions403
       | GetCreateSessions404
       | GetCreateSessions409
       | GetCreateSessions429
       | GetCreateSessions500
+      | GetCreateSessions503
     >
   > & { queryKey: TQueryKey };
 

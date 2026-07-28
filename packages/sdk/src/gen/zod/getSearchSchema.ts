@@ -8,11 +8,13 @@ import type {
   GetSearch200,
   GetSearch400,
   GetSearch401,
+  GetSearch402,
   GetSearch403,
   GetSearch404,
   GetSearch409,
   GetSearch429,
   GetSearch500,
+  GetSearch503,
   GetSearchQueryParams,
   GetSearchQueryResponse,
 } from "../types/GetSearch.ts";
@@ -50,6 +52,13 @@ export const getSearch401Schema = z.lazy(
 ) as unknown as z.ZodType<GetSearch401>;
 
 /**
+ * @description Payment or credit balance required
+ */
+export const getSearch402Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<GetSearch402>;
+
+/**
  * @description Active organization required
  */
 export const getSearch403Schema = z.lazy(
@@ -83,6 +92,13 @@ export const getSearch429Schema = z.lazy(
 export const getSearch500Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<GetSearch500>;
+
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export const getSearch503Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<GetSearch503>;
 
 export const getSearchQueryResponseSchema = z.lazy(
   () => getSearch200Schema,

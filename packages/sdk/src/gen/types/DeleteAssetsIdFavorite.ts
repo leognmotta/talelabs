@@ -30,6 +30,11 @@ export type DeleteAssetsIdFavorite400 = ErrorResponse;
 export type DeleteAssetsIdFavorite401 = ErrorResponse;
 
 /**
+ * @description Payment or credit balance required
+ */
+export type DeleteAssetsIdFavorite402 = ErrorResponse;
+
+/**
  * @description Active organization required
  */
 export type DeleteAssetsIdFavorite403 = ErrorResponse;
@@ -54,6 +59,11 @@ export type DeleteAssetsIdFavorite429 = ErrorResponse;
  */
 export type DeleteAssetsIdFavorite500 = ErrorResponse;
 
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export type DeleteAssetsIdFavorite503 = ErrorResponse;
+
 export type DeleteAssetsIdFavoriteMutationResponse = DeleteAssetsIdFavorite204;
 
 export type DeleteAssetsIdFavoriteMutation = {
@@ -62,9 +72,11 @@ export type DeleteAssetsIdFavoriteMutation = {
   Errors:
     | DeleteAssetsIdFavorite400
     | DeleteAssetsIdFavorite401
+    | DeleteAssetsIdFavorite402
     | DeleteAssetsIdFavorite403
     | DeleteAssetsIdFavorite404
     | DeleteAssetsIdFavorite409
     | DeleteAssetsIdFavorite429
-    | DeleteAssetsIdFavorite500;
+    | DeleteAssetsIdFavorite500
+    | DeleteAssetsIdFavorite503;
 };

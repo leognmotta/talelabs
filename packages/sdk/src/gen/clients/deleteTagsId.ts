@@ -10,11 +10,13 @@ import type {
   DeleteTagsIdPathParams,
   DeleteTagsId400,
   DeleteTagsId401,
+  DeleteTagsId402,
   DeleteTagsId403,
   DeleteTagsId404,
   DeleteTagsId409,
   DeleteTagsId429,
   DeleteTagsId500,
+  DeleteTagsId503,
 } from "../types/DeleteTagsId.ts";
 import { deleteTagsIdMutationResponseSchema } from "../zod/deleteTagsIdSchema.ts";
 
@@ -37,11 +39,13 @@ export async function deleteTagsId(
     ResponseErrorConfig<
       | DeleteTagsId400
       | DeleteTagsId401
+      | DeleteTagsId402
       | DeleteTagsId403
       | DeleteTagsId404
       | DeleteTagsId409
       | DeleteTagsId429
       | DeleteTagsId500
+      | DeleteTagsId503
     >,
     unknown
   >({

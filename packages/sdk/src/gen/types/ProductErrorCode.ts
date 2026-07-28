@@ -18,6 +18,14 @@ export const productErrorCodeEnum = {
   unsupported_by_model: "unsupported_by_model",
   rate_limited: "rate_limited",
   insufficient_credits: "insufficient_credits",
+  billing_account_blocked: "billing_account_blocked",
+  storage_limit_exceeded: "storage_limit_exceeded",
+  billing_catalog_mismatch: "billing_catalog_mismatch",
+  subscription_already_active: "subscription_already_active",
+  subscription_change_not_available: "subscription_change_not_available",
+  invalid_topup_amount: "invalid_topup_amount",
+  topup_not_available: "topup_not_available",
+  stripe_checkout_unavailable: "stripe_checkout_unavailable",
   internal_error: "internal_error",
 } as const;
 

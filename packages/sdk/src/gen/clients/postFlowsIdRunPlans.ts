@@ -11,11 +11,13 @@ import type {
   PostFlowsIdRunPlansPathParams,
   PostFlowsIdRunPlans400,
   PostFlowsIdRunPlans401,
+  PostFlowsIdRunPlans402,
   PostFlowsIdRunPlans403,
   PostFlowsIdRunPlans404,
   PostFlowsIdRunPlans409,
   PostFlowsIdRunPlans429,
   PostFlowsIdRunPlans500,
+  PostFlowsIdRunPlans503,
 } from "../types/PostFlowsIdRunPlans.ts";
 import {
   postFlowsIdRunPlansMutationResponseSchema,
@@ -55,11 +57,13 @@ export async function postFlowsIdRunPlans(
     ResponseErrorConfig<
       | PostFlowsIdRunPlans400
       | PostFlowsIdRunPlans401
+      | PostFlowsIdRunPlans402
       | PostFlowsIdRunPlans403
       | PostFlowsIdRunPlans404
       | PostFlowsIdRunPlans409
       | PostFlowsIdRunPlans429
       | PostFlowsIdRunPlans500
+      | PostFlowsIdRunPlans503
     >,
     PostFlowsIdRunPlansMutationRequest
   >({

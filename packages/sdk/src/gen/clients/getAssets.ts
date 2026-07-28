@@ -10,11 +10,13 @@ import type {
   GetAssetsQueryParams,
   GetAssets400,
   GetAssets401,
+  GetAssets402,
   GetAssets403,
   GetAssets404,
   GetAssets409,
   GetAssets429,
   GetAssets500,
+  GetAssets503,
 } from "../types/GetAssets.ts";
 import { getAssetsQueryResponseSchema } from "../zod/getAssetsSchema.ts";
 
@@ -37,11 +39,13 @@ export async function getAssets(
     ResponseErrorConfig<
       | GetAssets400
       | GetAssets401
+      | GetAssets402
       | GetAssets403
       | GetAssets404
       | GetAssets409
       | GetAssets429
       | GetAssets500
+      | GetAssets503
     >,
     unknown
   >({

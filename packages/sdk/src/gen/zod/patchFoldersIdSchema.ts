@@ -8,11 +8,13 @@ import type {
   PatchFoldersId200,
   PatchFoldersId400,
   PatchFoldersId401,
+  PatchFoldersId402,
   PatchFoldersId403,
   PatchFoldersId404,
   PatchFoldersId409,
   PatchFoldersId429,
   PatchFoldersId500,
+  PatchFoldersId503,
   PatchFoldersIdMutationRequest,
   PatchFoldersIdMutationResponse,
   PatchFoldersIdPathParams,
@@ -50,6 +52,13 @@ export const patchFoldersId401Schema = z.lazy(
 ) as unknown as z.ZodType<PatchFoldersId401>;
 
 /**
+ * @description Payment or credit balance required
+ */
+export const patchFoldersId402Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<PatchFoldersId402>;
+
+/**
  * @description Active organization required
  */
 export const patchFoldersId403Schema = z.lazy(
@@ -83,6 +92,13 @@ export const patchFoldersId429Schema = z.lazy(
 export const patchFoldersId500Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<PatchFoldersId500>;
+
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export const patchFoldersId503Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<PatchFoldersId503>;
 
 export const patchFoldersIdMutationRequestSchema = z.lazy(
   () => updateFolderRequestSchema,

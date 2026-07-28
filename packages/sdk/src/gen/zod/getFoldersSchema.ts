@@ -8,11 +8,13 @@ import type {
   GetFolders200,
   GetFolders400,
   GetFolders401,
+  GetFolders402,
   GetFolders403,
   GetFolders404,
   GetFolders409,
   GetFolders429,
   GetFolders500,
+  GetFolders503,
   GetFoldersQueryParams,
   GetFoldersQueryResponse,
 } from "../types/GetFolders.ts";
@@ -50,6 +52,13 @@ export const getFolders401Schema = z.lazy(
 ) as unknown as z.ZodType<GetFolders401>;
 
 /**
+ * @description Payment or credit balance required
+ */
+export const getFolders402Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<GetFolders402>;
+
+/**
  * @description Active organization required
  */
 export const getFolders403Schema = z.lazy(
@@ -83,6 +92,13 @@ export const getFolders429Schema = z.lazy(
 export const getFolders500Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<GetFolders500>;
+
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export const getFolders503Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<GetFolders503>;
 
 export const getFoldersQueryResponseSchema = z.lazy(
   () => getFolders200Schema,

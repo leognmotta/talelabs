@@ -10,11 +10,13 @@ import type {
   DeleteCreateSessionsIdPathParams,
   DeleteCreateSessionsId400,
   DeleteCreateSessionsId401,
+  DeleteCreateSessionsId402,
   DeleteCreateSessionsId403,
   DeleteCreateSessionsId404,
   DeleteCreateSessionsId409,
   DeleteCreateSessionsId429,
   DeleteCreateSessionsId500,
+  DeleteCreateSessionsId503,
 } from "../types/DeleteCreateSessionsId.ts";
 import { deleteCreateSessionsIdMutationResponseSchema } from "../zod/deleteCreateSessionsIdSchema.ts";
 
@@ -41,11 +43,13 @@ export async function deleteCreateSessionsId(
     ResponseErrorConfig<
       | DeleteCreateSessionsId400
       | DeleteCreateSessionsId401
+      | DeleteCreateSessionsId402
       | DeleteCreateSessionsId403
       | DeleteCreateSessionsId404
       | DeleteCreateSessionsId409
       | DeleteCreateSessionsId429
       | DeleteCreateSessionsId500
+      | DeleteCreateSessionsId503
     >,
     unknown
   >({

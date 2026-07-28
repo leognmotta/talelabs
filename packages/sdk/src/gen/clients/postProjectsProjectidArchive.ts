@@ -10,11 +10,13 @@ import type {
   PostProjectsProjectidArchivePathParams,
   PostProjectsProjectidArchive400,
   PostProjectsProjectidArchive401,
+  PostProjectsProjectidArchive402,
   PostProjectsProjectidArchive403,
   PostProjectsProjectidArchive404,
   PostProjectsProjectidArchive409,
   PostProjectsProjectidArchive429,
   PostProjectsProjectidArchive500,
+  PostProjectsProjectidArchive503,
 } from "../types/PostProjectsProjectidArchive.ts";
 import { postProjectsProjectidArchiveMutationResponseSchema } from "../zod/postProjectsProjectidArchiveSchema.ts";
 
@@ -46,11 +48,13 @@ export async function postProjectsProjectidArchive(
     ResponseErrorConfig<
       | PostProjectsProjectidArchive400
       | PostProjectsProjectidArchive401
+      | PostProjectsProjectidArchive402
       | PostProjectsProjectidArchive403
       | PostProjectsProjectidArchive404
       | PostProjectsProjectidArchive409
       | PostProjectsProjectidArchive429
       | PostProjectsProjectidArchive500
+      | PostProjectsProjectidArchive503
     >,
     unknown
   >({

@@ -10,11 +10,13 @@ import type {
   PostConfigGenerationBrowserAvailabilityMutationResponse,
   PostConfigGenerationBrowserAvailability400,
   PostConfigGenerationBrowserAvailability401,
+  PostConfigGenerationBrowserAvailability402,
   PostConfigGenerationBrowserAvailability403,
   PostConfigGenerationBrowserAvailability404,
   PostConfigGenerationBrowserAvailability409,
   PostConfigGenerationBrowserAvailability429,
   PostConfigGenerationBrowserAvailability500,
+  PostConfigGenerationBrowserAvailability503,
 } from "../types/PostConfigGenerationBrowserAvailability.ts";
 import {
   postConfigGenerationBrowserAvailabilityMutationResponseSchema,
@@ -48,11 +50,13 @@ export async function postConfigGenerationBrowserAvailability(
     ResponseErrorConfig<
       | PostConfigGenerationBrowserAvailability400
       | PostConfigGenerationBrowserAvailability401
+      | PostConfigGenerationBrowserAvailability402
       | PostConfigGenerationBrowserAvailability403
       | PostConfigGenerationBrowserAvailability404
       | PostConfigGenerationBrowserAvailability409
       | PostConfigGenerationBrowserAvailability429
       | PostConfigGenerationBrowserAvailability500
+      | PostConfigGenerationBrowserAvailability503
     >,
     PostConfigGenerationBrowserAvailabilityMutationRequest
   >({

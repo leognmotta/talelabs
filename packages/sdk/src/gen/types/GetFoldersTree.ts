@@ -31,6 +31,11 @@ export type GetFoldersTree400 = ErrorResponse;
 export type GetFoldersTree401 = ErrorResponse;
 
 /**
+ * @description Payment or credit balance required
+ */
+export type GetFoldersTree402 = ErrorResponse;
+
+/**
  * @description Active organization required
  */
 export type GetFoldersTree403 = ErrorResponse;
@@ -55,6 +60,11 @@ export type GetFoldersTree429 = ErrorResponse;
  */
 export type GetFoldersTree500 = ErrorResponse;
 
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export type GetFoldersTree503 = ErrorResponse;
+
 export type GetFoldersTreeQueryResponse = GetFoldersTree200;
 
 export type GetFoldersTreeQuery = {
@@ -63,9 +73,11 @@ export type GetFoldersTreeQuery = {
   Errors:
     | GetFoldersTree400
     | GetFoldersTree401
+    | GetFoldersTree402
     | GetFoldersTree403
     | GetFoldersTree404
     | GetFoldersTree409
     | GetFoldersTree429
-    | GetFoldersTree500;
+    | GetFoldersTree500
+    | GetFoldersTree503;
 };

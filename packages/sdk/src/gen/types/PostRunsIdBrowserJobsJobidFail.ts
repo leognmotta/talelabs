@@ -92,6 +92,11 @@ export type PostRunsIdBrowserJobsJobidFail400 = ErrorResponse;
 export type PostRunsIdBrowserJobsJobidFail401 = ErrorResponse;
 
 /**
+ * @description Payment or credit balance required
+ */
+export type PostRunsIdBrowserJobsJobidFail402 = ErrorResponse;
+
+/**
  * @description Active organization required
  */
 export type PostRunsIdBrowserJobsJobidFail403 = ErrorResponse;
@@ -115,6 +120,11 @@ export type PostRunsIdBrowserJobsJobidFail429 = ErrorResponse;
  * @description Internal server error
  */
 export type PostRunsIdBrowserJobsJobidFail500 = ErrorResponse;
+
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export type PostRunsIdBrowserJobsJobidFail503 = ErrorResponse;
 
 export const postRunsIdBrowserJobsJobidFailMutationRequestCodeEnum = {
   invalid_job_request: "invalid_job_request",
@@ -170,9 +180,11 @@ export type PostRunsIdBrowserJobsJobidFailMutation = {
   Errors:
     | PostRunsIdBrowserJobsJobidFail400
     | PostRunsIdBrowserJobsJobidFail401
+    | PostRunsIdBrowserJobsJobidFail402
     | PostRunsIdBrowserJobsJobidFail403
     | PostRunsIdBrowserJobsJobidFail404
     | PostRunsIdBrowserJobsJobidFail409
     | PostRunsIdBrowserJobsJobidFail429
-    | PostRunsIdBrowserJobsJobidFail500;
+    | PostRunsIdBrowserJobsJobidFail500
+    | PostRunsIdBrowserJobsJobidFail503;
 };

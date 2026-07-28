@@ -8,11 +8,13 @@ import type {
   GetElements200,
   GetElements400,
   GetElements401,
+  GetElements402,
   GetElements403,
   GetElements404,
   GetElements409,
   GetElements429,
   GetElements500,
+  GetElements503,
   GetElementsQueryParams,
   GetElementsQueryResponse,
 } from "../types/GetElements.ts";
@@ -68,6 +70,13 @@ export const getElements401Schema = z.lazy(
 ) as unknown as z.ZodType<GetElements401>;
 
 /**
+ * @description Payment or credit balance required
+ */
+export const getElements402Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<GetElements402>;
+
+/**
  * @description Active organization required
  */
 export const getElements403Schema = z.lazy(
@@ -101,6 +110,13 @@ export const getElements429Schema = z.lazy(
 export const getElements500Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<GetElements500>;
+
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export const getElements503Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<GetElements503>;
 
 export const getElementsQueryResponseSchema = z.lazy(
   () => getElements200Schema,

@@ -31,6 +31,11 @@ export type GetRunsId400 = ErrorResponse;
 export type GetRunsId401 = ErrorResponse;
 
 /**
+ * @description Payment or credit balance required
+ */
+export type GetRunsId402 = ErrorResponse;
+
+/**
  * @description Active organization required
  */
 export type GetRunsId403 = ErrorResponse;
@@ -55,6 +60,11 @@ export type GetRunsId429 = ErrorResponse;
  */
 export type GetRunsId500 = ErrorResponse;
 
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export type GetRunsId503 = ErrorResponse;
+
 export type GetRunsIdQueryResponse = GetRunsId200;
 
 export type GetRunsIdQuery = {
@@ -63,9 +73,11 @@ export type GetRunsIdQuery = {
   Errors:
     | GetRunsId400
     | GetRunsId401
+    | GetRunsId402
     | GetRunsId403
     | GetRunsId404
     | GetRunsId409
     | GetRunsId429
-    | GetRunsId500;
+    | GetRunsId500
+    | GetRunsId503;
 };

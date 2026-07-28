@@ -9,11 +9,13 @@ import type {
   GetSearchQueryParams,
   GetSearch400,
   GetSearch401,
+  GetSearch402,
   GetSearch403,
   GetSearch404,
   GetSearch409,
   GetSearch429,
   GetSearch500,
+  GetSearch503,
 } from "../types/GetSearch.ts";
 import type {
   QueryKey,
@@ -39,11 +41,13 @@ export function getSearchQueryOptions(
     ResponseErrorConfig<
       | GetSearch400
       | GetSearch401
+      | GetSearch402
       | GetSearch403
       | GetSearch404
       | GetSearch409
       | GetSearch429
       | GetSearch500
+      | GetSearch503
     >,
     GetSearchQueryResponse,
     typeof queryKey
@@ -74,11 +78,13 @@ export function useGetSearch<
         ResponseErrorConfig<
           | GetSearch400
           | GetSearch401
+          | GetSearch402
           | GetSearch403
           | GetSearch404
           | GetSearch409
           | GetSearch429
           | GetSearch500
+          | GetSearch503
         >,
         TData,
         TQueryData,
@@ -104,11 +110,13 @@ export function useGetSearch<
     ResponseErrorConfig<
       | GetSearch400
       | GetSearch401
+      | GetSearch402
       | GetSearch403
       | GetSearch404
       | GetSearch409
       | GetSearch429
       | GetSearch500
+      | GetSearch503
     >
   > & { queryKey: TQueryKey };
 

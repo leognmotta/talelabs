@@ -30,6 +30,11 @@ export type DeleteFlowsId400 = ErrorResponse;
 export type DeleteFlowsId401 = ErrorResponse;
 
 /**
+ * @description Payment or credit balance required
+ */
+export type DeleteFlowsId402 = ErrorResponse;
+
+/**
  * @description Active organization required
  */
 export type DeleteFlowsId403 = ErrorResponse;
@@ -54,6 +59,11 @@ export type DeleteFlowsId429 = ErrorResponse;
  */
 export type DeleteFlowsId500 = ErrorResponse;
 
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export type DeleteFlowsId503 = ErrorResponse;
+
 export type DeleteFlowsIdMutationResponse = DeleteFlowsId204;
 
 export type DeleteFlowsIdMutation = {
@@ -62,9 +72,11 @@ export type DeleteFlowsIdMutation = {
   Errors:
     | DeleteFlowsId400
     | DeleteFlowsId401
+    | DeleteFlowsId402
     | DeleteFlowsId403
     | DeleteFlowsId404
     | DeleteFlowsId409
     | DeleteFlowsId429
-    | DeleteFlowsId500;
+    | DeleteFlowsId500
+    | DeleteFlowsId503;
 };

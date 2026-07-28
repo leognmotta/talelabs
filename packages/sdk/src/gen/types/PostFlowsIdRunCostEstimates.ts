@@ -32,6 +32,11 @@ export type PostFlowsIdRunCostEstimates400 = ErrorResponse;
 export type PostFlowsIdRunCostEstimates401 = ErrorResponse;
 
 /**
+ * @description Payment or credit balance required
+ */
+export type PostFlowsIdRunCostEstimates402 = ErrorResponse;
+
+/**
  * @description Active organization required
  */
 export type PostFlowsIdRunCostEstimates403 = ErrorResponse;
@@ -56,6 +61,11 @@ export type PostFlowsIdRunCostEstimates429 = ErrorResponse;
  */
 export type PostFlowsIdRunCostEstimates500 = ErrorResponse;
 
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export type PostFlowsIdRunCostEstimates503 = ErrorResponse;
+
 export type PostFlowsIdRunCostEstimatesMutationRequest =
   FlowRunCostManifestRequest;
 
@@ -69,9 +79,11 @@ export type PostFlowsIdRunCostEstimatesMutation = {
   Errors:
     | PostFlowsIdRunCostEstimates400
     | PostFlowsIdRunCostEstimates401
+    | PostFlowsIdRunCostEstimates402
     | PostFlowsIdRunCostEstimates403
     | PostFlowsIdRunCostEstimates404
     | PostFlowsIdRunCostEstimates409
     | PostFlowsIdRunCostEstimates429
-    | PostFlowsIdRunCostEstimates500;
+    | PostFlowsIdRunCostEstimates500
+    | PostFlowsIdRunCostEstimates503;
 };

@@ -8,11 +8,13 @@ import type {
   GetRunsId200,
   GetRunsId400,
   GetRunsId401,
+  GetRunsId402,
   GetRunsId403,
   GetRunsId404,
   GetRunsId409,
   GetRunsId429,
   GetRunsId500,
+  GetRunsId503,
   GetRunsIdPathParams,
   GetRunsIdQueryResponse,
 } from "../types/GetRunsId.ts";
@@ -48,6 +50,13 @@ export const getRunsId401Schema = z.lazy(
 ) as unknown as z.ZodType<GetRunsId401>;
 
 /**
+ * @description Payment or credit balance required
+ */
+export const getRunsId402Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<GetRunsId402>;
+
+/**
  * @description Active organization required
  */
 export const getRunsId403Schema = z.lazy(
@@ -81,6 +90,13 @@ export const getRunsId429Schema = z.lazy(
 export const getRunsId500Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<GetRunsId500>;
+
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export const getRunsId503Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<GetRunsId503>;
 
 export const getRunsIdQueryResponseSchema = z.lazy(
   () => getRunsId200Schema,

@@ -10,11 +10,13 @@ import type {
   GetProjectsProjectidBriefMentionsQueryParams,
   GetProjectsProjectidBriefMentions400,
   GetProjectsProjectidBriefMentions401,
+  GetProjectsProjectidBriefMentions402,
   GetProjectsProjectidBriefMentions403,
   GetProjectsProjectidBriefMentions404,
   GetProjectsProjectidBriefMentions409,
   GetProjectsProjectidBriefMentions429,
   GetProjectsProjectidBriefMentions500,
+  GetProjectsProjectidBriefMentions503,
 } from "../types/GetProjectsProjectidBriefMentions.ts";
 import type {
   QueryKey,
@@ -68,11 +70,13 @@ export function getProjectsProjectidBriefMentionsQueryOptions(
     ResponseErrorConfig<
       | GetProjectsProjectidBriefMentions400
       | GetProjectsProjectidBriefMentions401
+      | GetProjectsProjectidBriefMentions402
       | GetProjectsProjectidBriefMentions403
       | GetProjectsProjectidBriefMentions404
       | GetProjectsProjectidBriefMentions409
       | GetProjectsProjectidBriefMentions429
       | GetProjectsProjectidBriefMentions500
+      | GetProjectsProjectidBriefMentions503
     >,
     GetProjectsProjectidBriefMentionsQueryResponse,
     typeof queryKey
@@ -112,11 +116,13 @@ export function useGetProjectsProjectidBriefMentions<
         ResponseErrorConfig<
           | GetProjectsProjectidBriefMentions400
           | GetProjectsProjectidBriefMentions401
+          | GetProjectsProjectidBriefMentions402
           | GetProjectsProjectidBriefMentions403
           | GetProjectsProjectidBriefMentions404
           | GetProjectsProjectidBriefMentions409
           | GetProjectsProjectidBriefMentions429
           | GetProjectsProjectidBriefMentions500
+          | GetProjectsProjectidBriefMentions503
         >,
         TData,
         TQueryData,
@@ -147,11 +153,13 @@ export function useGetProjectsProjectidBriefMentions<
     ResponseErrorConfig<
       | GetProjectsProjectidBriefMentions400
       | GetProjectsProjectidBriefMentions401
+      | GetProjectsProjectidBriefMentions402
       | GetProjectsProjectidBriefMentions403
       | GetProjectsProjectidBriefMentions404
       | GetProjectsProjectidBriefMentions409
       | GetProjectsProjectidBriefMentions429
       | GetProjectsProjectidBriefMentions500
+      | GetProjectsProjectidBriefMentions503
     >
   > & { queryKey: TQueryKey };
 

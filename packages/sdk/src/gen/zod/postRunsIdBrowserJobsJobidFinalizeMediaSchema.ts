@@ -8,11 +8,13 @@ import type {
   PostRunsIdBrowserJobsJobidFinalizeMedia200,
   PostRunsIdBrowserJobsJobidFinalizeMedia400,
   PostRunsIdBrowserJobsJobidFinalizeMedia401,
+  PostRunsIdBrowserJobsJobidFinalizeMedia402,
   PostRunsIdBrowserJobsJobidFinalizeMedia403,
   PostRunsIdBrowserJobsJobidFinalizeMedia404,
   PostRunsIdBrowserJobsJobidFinalizeMedia409,
   PostRunsIdBrowserJobsJobidFinalizeMedia429,
   PostRunsIdBrowserJobsJobidFinalizeMedia500,
+  PostRunsIdBrowserJobsJobidFinalizeMedia503,
   PostRunsIdBrowserJobsJobidFinalizeMediaMutationRequest,
   PostRunsIdBrowserJobsJobidFinalizeMediaMutationResponse,
   PostRunsIdBrowserJobsJobidFinalizeMediaPathParams,
@@ -53,6 +55,13 @@ export const postRunsIdBrowserJobsJobidFinalizeMedia401Schema = z.lazy(
 ) as unknown as z.ZodType<PostRunsIdBrowserJobsJobidFinalizeMedia401>;
 
 /**
+ * @description Payment or credit balance required
+ */
+export const postRunsIdBrowserJobsJobidFinalizeMedia402Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<PostRunsIdBrowserJobsJobidFinalizeMedia402>;
+
+/**
  * @description Active organization required
  */
 export const postRunsIdBrowserJobsJobidFinalizeMedia403Schema = z.lazy(
@@ -86,6 +95,13 @@ export const postRunsIdBrowserJobsJobidFinalizeMedia429Schema = z.lazy(
 export const postRunsIdBrowserJobsJobidFinalizeMedia500Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<PostRunsIdBrowserJobsJobidFinalizeMedia500>;
+
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export const postRunsIdBrowserJobsJobidFinalizeMedia503Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<PostRunsIdBrowserJobsJobidFinalizeMedia503>;
 
 export const postRunsIdBrowserJobsJobidFinalizeMediaMutationRequestSchema =
   z.object({

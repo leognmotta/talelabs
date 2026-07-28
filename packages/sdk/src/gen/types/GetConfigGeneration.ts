@@ -22,6 +22,11 @@ export type GetConfigGeneration400 = ErrorResponse;
 export type GetConfigGeneration401 = ErrorResponse;
 
 /**
+ * @description Payment or credit balance required
+ */
+export type GetConfigGeneration402 = ErrorResponse;
+
+/**
  * @description Active organization required
  */
 export type GetConfigGeneration403 = ErrorResponse;
@@ -46,6 +51,11 @@ export type GetConfigGeneration429 = ErrorResponse;
  */
 export type GetConfigGeneration500 = ErrorResponse;
 
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export type GetConfigGeneration503 = ErrorResponse;
+
 export type GetConfigGenerationQueryResponse = GetConfigGeneration200;
 
 export type GetConfigGenerationQuery = {
@@ -53,9 +63,11 @@ export type GetConfigGenerationQuery = {
   Errors:
     | GetConfigGeneration400
     | GetConfigGeneration401
+    | GetConfigGeneration402
     | GetConfigGeneration403
     | GetConfigGeneration404
     | GetConfigGeneration409
     | GetConfigGeneration429
-    | GetConfigGeneration500;
+    | GetConfigGeneration500
+    | GetConfigGeneration503;
 };

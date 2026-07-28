@@ -9,11 +9,13 @@ import type {
   GetProjectsProjectidHomePathParams,
   GetProjectsProjectidHome400,
   GetProjectsProjectidHome401,
+  GetProjectsProjectidHome402,
   GetProjectsProjectidHome403,
   GetProjectsProjectidHome404,
   GetProjectsProjectidHome409,
   GetProjectsProjectidHome429,
   GetProjectsProjectidHome500,
+  GetProjectsProjectidHome503,
 } from "../types/GetProjectsProjectidHome.ts";
 import type {
   QueryKey,
@@ -49,11 +51,13 @@ export function getProjectsProjectidHomeQueryOptions(
     ResponseErrorConfig<
       | GetProjectsProjectidHome400
       | GetProjectsProjectidHome401
+      | GetProjectsProjectidHome402
       | GetProjectsProjectidHome403
       | GetProjectsProjectidHome404
       | GetProjectsProjectidHome409
       | GetProjectsProjectidHome429
       | GetProjectsProjectidHome500
+      | GetProjectsProjectidHome503
     >,
     GetProjectsProjectidHomeQueryResponse,
     typeof queryKey
@@ -87,11 +91,13 @@ export function useGetProjectsProjectidHome<
         ResponseErrorConfig<
           | GetProjectsProjectidHome400
           | GetProjectsProjectidHome401
+          | GetProjectsProjectidHome402
           | GetProjectsProjectidHome403
           | GetProjectsProjectidHome404
           | GetProjectsProjectidHome409
           | GetProjectsProjectidHome429
           | GetProjectsProjectidHome500
+          | GetProjectsProjectidHome503
         >,
         TData,
         TQueryData,
@@ -119,11 +125,13 @@ export function useGetProjectsProjectidHome<
     ResponseErrorConfig<
       | GetProjectsProjectidHome400
       | GetProjectsProjectidHome401
+      | GetProjectsProjectidHome402
       | GetProjectsProjectidHome403
       | GetProjectsProjectidHome404
       | GetProjectsProjectidHome409
       | GetProjectsProjectidHome429
       | GetProjectsProjectidHome500
+      | GetProjectsProjectidHome503
     >
   > & { queryKey: TQueryKey };
 

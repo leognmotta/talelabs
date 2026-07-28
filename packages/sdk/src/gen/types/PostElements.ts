@@ -23,6 +23,11 @@ export type PostElements400 = ErrorResponse;
 export type PostElements401 = ErrorResponse;
 
 /**
+ * @description Payment or credit balance required
+ */
+export type PostElements402 = ErrorResponse;
+
+/**
  * @description Active organization required
  */
 export type PostElements403 = ErrorResponse;
@@ -47,6 +52,11 @@ export type PostElements429 = ErrorResponse;
  */
 export type PostElements500 = ErrorResponse;
 
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export type PostElements503 = ErrorResponse;
+
 export type PostElementsMutationRequest = CreateElementRequest;
 
 export type PostElementsMutationResponse = PostElements201;
@@ -57,9 +67,11 @@ export type PostElementsMutation = {
   Errors:
     | PostElements400
     | PostElements401
+    | PostElements402
     | PostElements403
     | PostElements404
     | PostElements409
     | PostElements429
-    | PostElements500;
+    | PostElements500
+    | PostElements503;
 };

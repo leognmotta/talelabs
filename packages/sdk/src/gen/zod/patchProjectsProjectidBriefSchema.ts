@@ -8,11 +8,13 @@ import type {
   PatchProjectsProjectidBrief200,
   PatchProjectsProjectidBrief400,
   PatchProjectsProjectidBrief401,
+  PatchProjectsProjectidBrief402,
   PatchProjectsProjectidBrief403,
   PatchProjectsProjectidBrief404,
   PatchProjectsProjectidBrief409,
   PatchProjectsProjectidBrief429,
   PatchProjectsProjectidBrief500,
+  PatchProjectsProjectidBrief503,
   PatchProjectsProjectidBriefMutationRequest,
   PatchProjectsProjectidBriefMutationResponse,
   PatchProjectsProjectidBriefPathParams,
@@ -50,6 +52,13 @@ export const patchProjectsProjectidBrief401Schema = z.lazy(
 ) as unknown as z.ZodType<PatchProjectsProjectidBrief401>;
 
 /**
+ * @description Payment or credit balance required
+ */
+export const patchProjectsProjectidBrief402Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<PatchProjectsProjectidBrief402>;
+
+/**
  * @description Active organization required
  */
 export const patchProjectsProjectidBrief403Schema = z.lazy(
@@ -83,6 +92,13 @@ export const patchProjectsProjectidBrief429Schema = z.lazy(
 export const patchProjectsProjectidBrief500Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<PatchProjectsProjectidBrief500>;
+
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export const patchProjectsProjectidBrief503Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<PatchProjectsProjectidBrief503>;
 
 export const patchProjectsProjectidBriefMutationRequestSchema = z.lazy(
   () => saveProjectBriefRequestSchema,

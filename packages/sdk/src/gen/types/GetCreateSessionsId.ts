@@ -31,6 +31,11 @@ export type GetCreateSessionsId400 = ErrorResponse;
 export type GetCreateSessionsId401 = ErrorResponse;
 
 /**
+ * @description Payment or credit balance required
+ */
+export type GetCreateSessionsId402 = ErrorResponse;
+
+/**
  * @description Active organization required
  */
 export type GetCreateSessionsId403 = ErrorResponse;
@@ -55,6 +60,11 @@ export type GetCreateSessionsId429 = ErrorResponse;
  */
 export type GetCreateSessionsId500 = ErrorResponse;
 
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export type GetCreateSessionsId503 = ErrorResponse;
+
 export type GetCreateSessionsIdQueryResponse = GetCreateSessionsId200;
 
 export type GetCreateSessionsIdQuery = {
@@ -63,9 +73,11 @@ export type GetCreateSessionsIdQuery = {
   Errors:
     | GetCreateSessionsId400
     | GetCreateSessionsId401
+    | GetCreateSessionsId402
     | GetCreateSessionsId403
     | GetCreateSessionsId404
     | GetCreateSessionsId409
     | GetCreateSessionsId429
-    | GetCreateSessionsId500;
+    | GetCreateSessionsId500
+    | GetCreateSessionsId503;
 };

@@ -46,6 +46,11 @@ export type GetAssetsIdUsage400 = ErrorResponse;
 export type GetAssetsIdUsage401 = ErrorResponse;
 
 /**
+ * @description Payment or credit balance required
+ */
+export type GetAssetsIdUsage402 = ErrorResponse;
+
+/**
  * @description Active organization required
  */
 export type GetAssetsIdUsage403 = ErrorResponse;
@@ -70,6 +75,11 @@ export type GetAssetsIdUsage429 = ErrorResponse;
  */
 export type GetAssetsIdUsage500 = ErrorResponse;
 
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export type GetAssetsIdUsage503 = ErrorResponse;
+
 export type GetAssetsIdUsageQueryResponse = GetAssetsIdUsage200;
 
 export type GetAssetsIdUsageQuery = {
@@ -79,9 +89,11 @@ export type GetAssetsIdUsageQuery = {
   Errors:
     | GetAssetsIdUsage400
     | GetAssetsIdUsage401
+    | GetAssetsIdUsage402
     | GetAssetsIdUsage403
     | GetAssetsIdUsage404
     | GetAssetsIdUsage409
     | GetAssetsIdUsage429
-    | GetAssetsIdUsage500;
+    | GetAssetsIdUsage500
+    | GetAssetsIdUsage503;
 };

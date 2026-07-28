@@ -8,11 +8,13 @@ import type {
   GetCreateSessions200,
   GetCreateSessions400,
   GetCreateSessions401,
+  GetCreateSessions402,
   GetCreateSessions403,
   GetCreateSessions404,
   GetCreateSessions409,
   GetCreateSessions429,
   GetCreateSessions500,
+  GetCreateSessions503,
   GetCreateSessionsQueryParams,
   GetCreateSessionsQueryResponse,
 } from "../types/GetCreateSessions.ts";
@@ -61,6 +63,13 @@ export const getCreateSessions401Schema = z.lazy(
 ) as unknown as z.ZodType<GetCreateSessions401>;
 
 /**
+ * @description Payment or credit balance required
+ */
+export const getCreateSessions402Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<GetCreateSessions402>;
+
+/**
  * @description Active organization required
  */
 export const getCreateSessions403Schema = z.lazy(
@@ -94,6 +103,13 @@ export const getCreateSessions429Schema = z.lazy(
 export const getCreateSessions500Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<GetCreateSessions500>;
+
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export const getCreateSessions503Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<GetCreateSessions503>;
 
 export const getCreateSessionsQueryResponseSchema = z.lazy(
   () => getCreateSessions200Schema,

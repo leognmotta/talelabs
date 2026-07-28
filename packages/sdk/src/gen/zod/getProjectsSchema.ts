@@ -8,11 +8,13 @@ import type {
   GetProjects200,
   GetProjects400,
   GetProjects401,
+  GetProjects402,
   GetProjects403,
   GetProjects404,
   GetProjects409,
   GetProjects429,
   GetProjects500,
+  GetProjects503,
   GetProjectsQueryParams,
   GetProjectsQueryResponse,
 } from "../types/GetProjects.ts";
@@ -56,6 +58,13 @@ export const getProjects401Schema = z.lazy(
 ) as unknown as z.ZodType<GetProjects401>;
 
 /**
+ * @description Payment or credit balance required
+ */
+export const getProjects402Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<GetProjects402>;
+
+/**
  * @description Active organization required
  */
 export const getProjects403Schema = z.lazy(
@@ -89,6 +98,13 @@ export const getProjects429Schema = z.lazy(
 export const getProjects500Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<GetProjects500>;
+
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export const getProjects503Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<GetProjects503>;
 
 export const getProjectsQueryResponseSchema = z.lazy(
   () => getProjects200Schema,

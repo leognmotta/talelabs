@@ -8,11 +8,13 @@ import type {
   PutRunsIdBrowserExecutorStatus200,
   PutRunsIdBrowserExecutorStatus400,
   PutRunsIdBrowserExecutorStatus401,
+  PutRunsIdBrowserExecutorStatus402,
   PutRunsIdBrowserExecutorStatus403,
   PutRunsIdBrowserExecutorStatus404,
   PutRunsIdBrowserExecutorStatus409,
   PutRunsIdBrowserExecutorStatus429,
   PutRunsIdBrowserExecutorStatus500,
+  PutRunsIdBrowserExecutorStatus503,
   PutRunsIdBrowserExecutorStatusMutationRequest,
   PutRunsIdBrowserExecutorStatusMutationResponse,
   PutRunsIdBrowserExecutorStatusPathParams,
@@ -66,6 +68,13 @@ export const putRunsIdBrowserExecutorStatus401Schema = z.lazy(
 ) as unknown as z.ZodType<PutRunsIdBrowserExecutorStatus401>;
 
 /**
+ * @description Payment or credit balance required
+ */
+export const putRunsIdBrowserExecutorStatus402Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<PutRunsIdBrowserExecutorStatus402>;
+
+/**
  * @description Active organization required
  */
 export const putRunsIdBrowserExecutorStatus403Schema = z.lazy(
@@ -99,6 +108,13 @@ export const putRunsIdBrowserExecutorStatus429Schema = z.lazy(
 export const putRunsIdBrowserExecutorStatus500Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<PutRunsIdBrowserExecutorStatus500>;
+
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export const putRunsIdBrowserExecutorStatus503Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<PutRunsIdBrowserExecutorStatus503>;
 
 export const putRunsIdBrowserExecutorStatusMutationRequestSchema = z.object({
   code: z.nullable(

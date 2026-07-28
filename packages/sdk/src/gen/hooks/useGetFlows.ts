@@ -9,11 +9,13 @@ import type {
   GetFlowsQueryParams,
   GetFlows400,
   GetFlows401,
+  GetFlows402,
   GetFlows403,
   GetFlows404,
   GetFlows409,
   GetFlows429,
   GetFlows500,
+  GetFlows503,
 } from "../types/GetFlows.ts";
 import type {
   QueryKey,
@@ -39,11 +41,13 @@ export function getFlowsQueryOptions(
     ResponseErrorConfig<
       | GetFlows400
       | GetFlows401
+      | GetFlows402
       | GetFlows403
       | GetFlows404
       | GetFlows409
       | GetFlows429
       | GetFlows500
+      | GetFlows503
     >,
     GetFlowsQueryResponse,
     typeof queryKey
@@ -74,11 +78,13 @@ export function useGetFlows<
         ResponseErrorConfig<
           | GetFlows400
           | GetFlows401
+          | GetFlows402
           | GetFlows403
           | GetFlows404
           | GetFlows409
           | GetFlows429
           | GetFlows500
+          | GetFlows503
         >,
         TData,
         TQueryData,
@@ -104,11 +110,13 @@ export function useGetFlows<
     ResponseErrorConfig<
       | GetFlows400
       | GetFlows401
+      | GetFlows402
       | GetFlows403
       | GetFlows404
       | GetFlows409
       | GetFlows429
       | GetFlows500
+      | GetFlows503
     >
   > & { queryKey: TQueryKey };
 

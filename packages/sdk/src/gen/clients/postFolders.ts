@@ -10,11 +10,13 @@ import type {
   PostFoldersMutationResponse,
   PostFolders400,
   PostFolders401,
+  PostFolders402,
   PostFolders403,
   PostFolders404,
   PostFolders409,
   PostFolders429,
   PostFolders500,
+  PostFolders503,
 } from "../types/PostFolders.ts";
 import {
   postFoldersMutationResponseSchema,
@@ -44,11 +46,13 @@ export async function postFolders(
     ResponseErrorConfig<
       | PostFolders400
       | PostFolders401
+      | PostFolders402
       | PostFolders403
       | PostFolders404
       | PostFolders409
       | PostFolders429
       | PostFolders500
+      | PostFolders503
     >,
     PostFoldersMutationRequest
   >({

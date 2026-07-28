@@ -32,6 +32,11 @@ export type PatchElementsIdReferences400 = ErrorResponse;
 export type PatchElementsIdReferences401 = ErrorResponse;
 
 /**
+ * @description Payment or credit balance required
+ */
+export type PatchElementsIdReferences402 = ErrorResponse;
+
+/**
  * @description Active organization required
  */
 export type PatchElementsIdReferences403 = ErrorResponse;
@@ -56,6 +61,11 @@ export type PatchElementsIdReferences429 = ErrorResponse;
  */
 export type PatchElementsIdReferences500 = ErrorResponse;
 
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export type PatchElementsIdReferences503 = ErrorResponse;
+
 export type PatchElementsIdReferencesMutationRequest =
   MutateElementReferencesRequest;
 
@@ -69,9 +79,11 @@ export type PatchElementsIdReferencesMutation = {
   Errors:
     | PatchElementsIdReferences400
     | PatchElementsIdReferences401
+    | PatchElementsIdReferences402
     | PatchElementsIdReferences403
     | PatchElementsIdReferences404
     | PatchElementsIdReferences409
     | PatchElementsIdReferences429
-    | PatchElementsIdReferences500;
+    | PatchElementsIdReferences500
+    | PatchElementsIdReferences503;
 };

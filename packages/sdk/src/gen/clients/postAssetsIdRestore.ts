@@ -10,11 +10,13 @@ import type {
   PostAssetsIdRestorePathParams,
   PostAssetsIdRestore400,
   PostAssetsIdRestore401,
+  PostAssetsIdRestore402,
   PostAssetsIdRestore403,
   PostAssetsIdRestore404,
   PostAssetsIdRestore409,
   PostAssetsIdRestore429,
   PostAssetsIdRestore500,
+  PostAssetsIdRestore503,
 } from "../types/PostAssetsIdRestore.ts";
 import { postAssetsIdRestoreMutationResponseSchema } from "../zod/postAssetsIdRestoreSchema.ts";
 
@@ -41,11 +43,13 @@ export async function postAssetsIdRestore(
     ResponseErrorConfig<
       | PostAssetsIdRestore400
       | PostAssetsIdRestore401
+      | PostAssetsIdRestore402
       | PostAssetsIdRestore403
       | PostAssetsIdRestore404
       | PostAssetsIdRestore409
       | PostAssetsIdRestore429
       | PostAssetsIdRestore500
+      | PostAssetsIdRestore503
     >,
     unknown
   >({

@@ -23,6 +23,11 @@ export type PostFlows400 = ErrorResponse;
 export type PostFlows401 = ErrorResponse;
 
 /**
+ * @description Payment or credit balance required
+ */
+export type PostFlows402 = ErrorResponse;
+
+/**
  * @description Active organization required
  */
 export type PostFlows403 = ErrorResponse;
@@ -47,6 +52,11 @@ export type PostFlows429 = ErrorResponse;
  */
 export type PostFlows500 = ErrorResponse;
 
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export type PostFlows503 = ErrorResponse;
+
 export type PostFlowsMutationRequest = CreateFlowRequest;
 
 export type PostFlowsMutationResponse = PostFlows201;
@@ -57,9 +67,11 @@ export type PostFlowsMutation = {
   Errors:
     | PostFlows400
     | PostFlows401
+    | PostFlows402
     | PostFlows403
     | PostFlows404
     | PostFlows409
     | PostFlows429
-    | PostFlows500;
+    | PostFlows500
+    | PostFlows503;
 };

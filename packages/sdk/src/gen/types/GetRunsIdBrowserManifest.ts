@@ -1536,6 +1536,11 @@ export type GetRunsIdBrowserManifest400 = ErrorResponse;
 export type GetRunsIdBrowserManifest401 = ErrorResponse;
 
 /**
+ * @description Payment or credit balance required
+ */
+export type GetRunsIdBrowserManifest402 = ErrorResponse;
+
+/**
  * @description Active organization required
  */
 export type GetRunsIdBrowserManifest403 = ErrorResponse;
@@ -1560,6 +1565,11 @@ export type GetRunsIdBrowserManifest429 = ErrorResponse;
  */
 export type GetRunsIdBrowserManifest500 = ErrorResponse;
 
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export type GetRunsIdBrowserManifest503 = ErrorResponse;
+
 export type GetRunsIdBrowserManifestQueryResponse = GetRunsIdBrowserManifest200;
 
 export type GetRunsIdBrowserManifestQuery = {
@@ -1569,9 +1579,11 @@ export type GetRunsIdBrowserManifestQuery = {
   Errors:
     | GetRunsIdBrowserManifest400
     | GetRunsIdBrowserManifest401
+    | GetRunsIdBrowserManifest402
     | GetRunsIdBrowserManifest403
     | GetRunsIdBrowserManifest404
     | GetRunsIdBrowserManifest409
     | GetRunsIdBrowserManifest429
-    | GetRunsIdBrowserManifest500;
+    | GetRunsIdBrowserManifest500
+    | GetRunsIdBrowserManifest503;
 };

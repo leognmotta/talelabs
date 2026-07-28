@@ -9,11 +9,13 @@ import type {
   GetTagsQueryResponse,
   GetTags400,
   GetTags401,
+  GetTags402,
   GetTags403,
   GetTags404,
   GetTags409,
   GetTags429,
   GetTags500,
+  GetTags503,
 } from "../types/GetTags.ts";
 import { getTagsQueryResponseSchema } from "../zod/getTagsSchema.ts";
 
@@ -35,11 +37,13 @@ export async function getTags(
     ResponseErrorConfig<
       | GetTags400
       | GetTags401
+      | GetTags402
       | GetTags403
       | GetTags404
       | GetTags409
       | GetTags429
       | GetTags500
+      | GetTags503
     >,
     unknown
   >({ method: "GET", url: getGetTagsUrl().url.toString(), ...requestConfig });

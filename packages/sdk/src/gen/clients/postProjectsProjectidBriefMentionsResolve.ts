@@ -11,11 +11,13 @@ import type {
   PostProjectsProjectidBriefMentionsResolvePathParams,
   PostProjectsProjectidBriefMentionsResolve400,
   PostProjectsProjectidBriefMentionsResolve401,
+  PostProjectsProjectidBriefMentionsResolve402,
   PostProjectsProjectidBriefMentionsResolve403,
   PostProjectsProjectidBriefMentionsResolve404,
   PostProjectsProjectidBriefMentionsResolve409,
   PostProjectsProjectidBriefMentionsResolve429,
   PostProjectsProjectidBriefMentionsResolve500,
+  PostProjectsProjectidBriefMentionsResolve503,
 } from "../types/PostProjectsProjectidBriefMentionsResolve.ts";
 import {
   postProjectsProjectidBriefMentionsResolveMutationResponseSchema,
@@ -59,11 +61,13 @@ export async function postProjectsProjectidBriefMentionsResolve(
     ResponseErrorConfig<
       | PostProjectsProjectidBriefMentionsResolve400
       | PostProjectsProjectidBriefMentionsResolve401
+      | PostProjectsProjectidBriefMentionsResolve402
       | PostProjectsProjectidBriefMentionsResolve403
       | PostProjectsProjectidBriefMentionsResolve404
       | PostProjectsProjectidBriefMentionsResolve409
       | PostProjectsProjectidBriefMentionsResolve429
       | PostProjectsProjectidBriefMentionsResolve500
+      | PostProjectsProjectidBriefMentionsResolve503
     >,
     PostProjectsProjectidBriefMentionsResolveMutationRequest
   >({

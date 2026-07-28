@@ -11,11 +11,13 @@ import type {
   PutRunsIdBrowserLeasePathParams,
   PutRunsIdBrowserLease400,
   PutRunsIdBrowserLease401,
+  PutRunsIdBrowserLease402,
   PutRunsIdBrowserLease403,
   PutRunsIdBrowserLease404,
   PutRunsIdBrowserLease409,
   PutRunsIdBrowserLease429,
   PutRunsIdBrowserLease500,
+  PutRunsIdBrowserLease503,
 } from "../types/PutRunsIdBrowserLease.ts";
 import {
   putRunsIdBrowserLeaseMutationResponseSchema,
@@ -55,11 +57,13 @@ export async function putRunsIdBrowserLease(
     ResponseErrorConfig<
       | PutRunsIdBrowserLease400
       | PutRunsIdBrowserLease401
+      | PutRunsIdBrowserLease402
       | PutRunsIdBrowserLease403
       | PutRunsIdBrowserLease404
       | PutRunsIdBrowserLease409
       | PutRunsIdBrowserLease429
       | PutRunsIdBrowserLease500
+      | PutRunsIdBrowserLease503
     >,
     PutRunsIdBrowserLeaseMutationRequest
   >({

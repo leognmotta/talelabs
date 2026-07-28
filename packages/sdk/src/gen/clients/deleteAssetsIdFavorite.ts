@@ -10,11 +10,13 @@ import type {
   DeleteAssetsIdFavoritePathParams,
   DeleteAssetsIdFavorite400,
   DeleteAssetsIdFavorite401,
+  DeleteAssetsIdFavorite402,
   DeleteAssetsIdFavorite403,
   DeleteAssetsIdFavorite404,
   DeleteAssetsIdFavorite409,
   DeleteAssetsIdFavorite429,
   DeleteAssetsIdFavorite500,
+  DeleteAssetsIdFavorite503,
 } from "../types/DeleteAssetsIdFavorite.ts";
 import { deleteAssetsIdFavoriteMutationResponseSchema } from "../zod/deleteAssetsIdFavoriteSchema.ts";
 
@@ -41,11 +43,13 @@ export async function deleteAssetsIdFavorite(
     ResponseErrorConfig<
       | DeleteAssetsIdFavorite400
       | DeleteAssetsIdFavorite401
+      | DeleteAssetsIdFavorite402
       | DeleteAssetsIdFavorite403
       | DeleteAssetsIdFavorite404
       | DeleteAssetsIdFavorite409
       | DeleteAssetsIdFavorite429
       | DeleteAssetsIdFavorite500
+      | DeleteAssetsIdFavorite503
     >,
     unknown
   >({

@@ -44,6 +44,11 @@ export type PutRunsIdBrowserLease400 = ErrorResponse;
 export type PutRunsIdBrowserLease401 = ErrorResponse;
 
 /**
+ * @description Payment or credit balance required
+ */
+export type PutRunsIdBrowserLease402 = ErrorResponse;
+
+/**
  * @description Active organization required
  */
 export type PutRunsIdBrowserLease403 = ErrorResponse;
@@ -68,6 +73,11 @@ export type PutRunsIdBrowserLease429 = ErrorResponse;
  */
 export type PutRunsIdBrowserLease500 = ErrorResponse;
 
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export type PutRunsIdBrowserLease503 = ErrorResponse;
+
 export type PutRunsIdBrowserLeaseMutationRequest = {
   /**
    * @minLength 16
@@ -86,9 +96,11 @@ export type PutRunsIdBrowserLeaseMutation = {
   Errors:
     | PutRunsIdBrowserLease400
     | PutRunsIdBrowserLease401
+    | PutRunsIdBrowserLease402
     | PutRunsIdBrowserLease403
     | PutRunsIdBrowserLease404
     | PutRunsIdBrowserLease409
     | PutRunsIdBrowserLease429
-    | PutRunsIdBrowserLease500;
+    | PutRunsIdBrowserLease500
+    | PutRunsIdBrowserLease503;
 };

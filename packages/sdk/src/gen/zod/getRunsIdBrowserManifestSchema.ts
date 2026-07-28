@@ -8,11 +8,13 @@ import type {
   GetRunsIdBrowserManifest200,
   GetRunsIdBrowserManifest400,
   GetRunsIdBrowserManifest401,
+  GetRunsIdBrowserManifest402,
   GetRunsIdBrowserManifest403,
   GetRunsIdBrowserManifest404,
   GetRunsIdBrowserManifest409,
   GetRunsIdBrowserManifest429,
   GetRunsIdBrowserManifest500,
+  GetRunsIdBrowserManifest503,
   GetRunsIdBrowserManifestPathParams,
   GetRunsIdBrowserManifestQueryParams,
   GetRunsIdBrowserManifestQueryResponse,
@@ -675,6 +677,13 @@ export const getRunsIdBrowserManifest401Schema = z.lazy(
 ) as unknown as z.ZodType<GetRunsIdBrowserManifest401>;
 
 /**
+ * @description Payment or credit balance required
+ */
+export const getRunsIdBrowserManifest402Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<GetRunsIdBrowserManifest402>;
+
+/**
  * @description Active organization required
  */
 export const getRunsIdBrowserManifest403Schema = z.lazy(
@@ -708,6 +717,13 @@ export const getRunsIdBrowserManifest429Schema = z.lazy(
 export const getRunsIdBrowserManifest500Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<GetRunsIdBrowserManifest500>;
+
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export const getRunsIdBrowserManifest503Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<GetRunsIdBrowserManifest503>;
 
 export const getRunsIdBrowserManifestQueryResponseSchema = z.lazy(
   () => getRunsIdBrowserManifest200Schema,

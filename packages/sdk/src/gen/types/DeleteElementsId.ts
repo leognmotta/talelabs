@@ -30,6 +30,11 @@ export type DeleteElementsId400 = ErrorResponse;
 export type DeleteElementsId401 = ErrorResponse;
 
 /**
+ * @description Payment or credit balance required
+ */
+export type DeleteElementsId402 = ErrorResponse;
+
+/**
  * @description Active organization required
  */
 export type DeleteElementsId403 = ErrorResponse;
@@ -54,6 +59,11 @@ export type DeleteElementsId429 = ErrorResponse;
  */
 export type DeleteElementsId500 = ErrorResponse;
 
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export type DeleteElementsId503 = ErrorResponse;
+
 export type DeleteElementsIdMutationResponse = DeleteElementsId204;
 
 export type DeleteElementsIdMutation = {
@@ -62,9 +72,11 @@ export type DeleteElementsIdMutation = {
   Errors:
     | DeleteElementsId400
     | DeleteElementsId401
+    | DeleteElementsId402
     | DeleteElementsId403
     | DeleteElementsId404
     | DeleteElementsId409
     | DeleteElementsId429
-    | DeleteElementsId500;
+    | DeleteElementsId500
+    | DeleteElementsId503;
 };

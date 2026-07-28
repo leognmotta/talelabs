@@ -8,11 +8,13 @@ import type {
   PatchElementsId200,
   PatchElementsId400,
   PatchElementsId401,
+  PatchElementsId402,
   PatchElementsId403,
   PatchElementsId404,
   PatchElementsId409,
   PatchElementsId429,
   PatchElementsId500,
+  PatchElementsId503,
   PatchElementsIdMutationRequest,
   PatchElementsIdMutationResponse,
   PatchElementsIdPathParams,
@@ -50,6 +52,13 @@ export const patchElementsId401Schema = z.lazy(
 ) as unknown as z.ZodType<PatchElementsId401>;
 
 /**
+ * @description Payment or credit balance required
+ */
+export const patchElementsId402Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<PatchElementsId402>;
+
+/**
  * @description Active organization required
  */
 export const patchElementsId403Schema = z.lazy(
@@ -83,6 +92,13 @@ export const patchElementsId429Schema = z.lazy(
 export const patchElementsId500Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<PatchElementsId500>;
+
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export const patchElementsId503Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<PatchElementsId503>;
 
 export const patchElementsIdMutationRequestSchema = z.lazy(
   () => updateElementRequestSchema,

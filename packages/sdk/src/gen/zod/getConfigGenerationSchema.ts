@@ -8,11 +8,13 @@ import type {
   GetConfigGeneration200,
   GetConfigGeneration400,
   GetConfigGeneration401,
+  GetConfigGeneration402,
   GetConfigGeneration403,
   GetConfigGeneration404,
   GetConfigGeneration409,
   GetConfigGeneration429,
   GetConfigGeneration500,
+  GetConfigGeneration503,
   GetConfigGenerationQueryResponse,
 } from "../types/GetConfigGeneration.ts";
 import { errorResponseSchema } from "./errorResponseSchema.ts";
@@ -38,6 +40,13 @@ export const getConfigGeneration400Schema = z.lazy(
 export const getConfigGeneration401Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<GetConfigGeneration401>;
+
+/**
+ * @description Payment or credit balance required
+ */
+export const getConfigGeneration402Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<GetConfigGeneration402>;
 
 /**
  * @description Active organization required
@@ -73,6 +82,13 @@ export const getConfigGeneration429Schema = z.lazy(
 export const getConfigGeneration500Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<GetConfigGeneration500>;
+
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export const getConfigGeneration503Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<GetConfigGeneration503>;
 
 export const getConfigGenerationQueryResponseSchema = z.lazy(
   () => getConfigGeneration200Schema,

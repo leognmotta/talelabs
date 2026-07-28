@@ -1750,6 +1750,11 @@ export type PostRunsIdBrowserJobsClaim400 = ErrorResponse;
 export type PostRunsIdBrowserJobsClaim401 = ErrorResponse;
 
 /**
+ * @description Payment or credit balance required
+ */
+export type PostRunsIdBrowserJobsClaim402 = ErrorResponse;
+
+/**
  * @description Active organization required
  */
 export type PostRunsIdBrowserJobsClaim403 = ErrorResponse;
@@ -1773,6 +1778,11 @@ export type PostRunsIdBrowserJobsClaim429 = ErrorResponse;
  * @description Internal server error
  */
 export type PostRunsIdBrowserJobsClaim500 = ErrorResponse;
+
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export type PostRunsIdBrowserJobsClaim503 = ErrorResponse;
 
 export type PostRunsIdBrowserJobsClaimMutationRequest = {
   /**
@@ -1808,9 +1818,11 @@ export type PostRunsIdBrowserJobsClaimMutation = {
   Errors:
     | PostRunsIdBrowserJobsClaim400
     | PostRunsIdBrowserJobsClaim401
+    | PostRunsIdBrowserJobsClaim402
     | PostRunsIdBrowserJobsClaim403
     | PostRunsIdBrowserJobsClaim404
     | PostRunsIdBrowserJobsClaim409
     | PostRunsIdBrowserJobsClaim429
-    | PostRunsIdBrowserJobsClaim500;
+    | PostRunsIdBrowserJobsClaim500
+    | PostRunsIdBrowserJobsClaim503;
 };

@@ -10,11 +10,13 @@ import type {
   PostElementsMutationResponse,
   PostElements400,
   PostElements401,
+  PostElements402,
   PostElements403,
   PostElements404,
   PostElements409,
   PostElements429,
   PostElements500,
+  PostElements503,
 } from "../types/PostElements.ts";
 import {
   postElementsMutationResponseSchema,
@@ -44,11 +46,13 @@ export async function postElements(
     ResponseErrorConfig<
       | PostElements400
       | PostElements401
+      | PostElements402
       | PostElements403
       | PostElements404
       | PostElements409
       | PostElements429
       | PostElements500
+      | PostElements503
     >,
     PostElementsMutationRequest
   >({

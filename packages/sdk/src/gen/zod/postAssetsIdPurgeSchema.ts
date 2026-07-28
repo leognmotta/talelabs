@@ -9,11 +9,13 @@ import type {
   PostAssetsIdPurge202,
   PostAssetsIdPurge400,
   PostAssetsIdPurge401,
+  PostAssetsIdPurge402,
   PostAssetsIdPurge403,
   PostAssetsIdPurge404,
   PostAssetsIdPurge409,
   PostAssetsIdPurge429,
   PostAssetsIdPurge500,
+  PostAssetsIdPurge503,
   PostAssetsIdPurgeMutationResponse,
   PostAssetsIdPurgePathParams,
 } from "../types/PostAssetsIdPurge.ts";
@@ -56,6 +58,13 @@ export const postAssetsIdPurge401Schema = z.lazy(
 ) as unknown as z.ZodType<PostAssetsIdPurge401>;
 
 /**
+ * @description Payment or credit balance required
+ */
+export const postAssetsIdPurge402Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<PostAssetsIdPurge402>;
+
+/**
  * @description Active organization required
  */
 export const postAssetsIdPurge403Schema = z.lazy(
@@ -89,6 +98,13 @@ export const postAssetsIdPurge429Schema = z.lazy(
 export const postAssetsIdPurge500Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<PostAssetsIdPurge500>;
+
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export const postAssetsIdPurge503Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<PostAssetsIdPurge503>;
 
 export const postAssetsIdPurgeMutationResponseSchema = z.union([
   z.lazy(() => postAssetsIdPurge200Schema),

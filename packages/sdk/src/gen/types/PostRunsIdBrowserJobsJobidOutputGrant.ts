@@ -54,6 +54,11 @@ export type PostRunsIdBrowserJobsJobidOutputGrant400 = ErrorResponse;
 export type PostRunsIdBrowserJobsJobidOutputGrant401 = ErrorResponse;
 
 /**
+ * @description Payment or credit balance required
+ */
+export type PostRunsIdBrowserJobsJobidOutputGrant402 = ErrorResponse;
+
+/**
  * @description Active organization required
  */
 export type PostRunsIdBrowserJobsJobidOutputGrant403 = ErrorResponse;
@@ -77,6 +82,11 @@ export type PostRunsIdBrowserJobsJobidOutputGrant429 = ErrorResponse;
  * @description Internal server error
  */
 export type PostRunsIdBrowserJobsJobidOutputGrant500 = ErrorResponse;
+
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export type PostRunsIdBrowserJobsJobidOutputGrant503 = ErrorResponse;
 
 export type PostRunsIdBrowserJobsJobidOutputGrantMutationRequest = {
   /**
@@ -123,9 +133,11 @@ export type PostRunsIdBrowserJobsJobidOutputGrantMutation = {
   Errors:
     | PostRunsIdBrowserJobsJobidOutputGrant400
     | PostRunsIdBrowserJobsJobidOutputGrant401
+    | PostRunsIdBrowserJobsJobidOutputGrant402
     | PostRunsIdBrowserJobsJobidOutputGrant403
     | PostRunsIdBrowserJobsJobidOutputGrant404
     | PostRunsIdBrowserJobsJobidOutputGrant409
     | PostRunsIdBrowserJobsJobidOutputGrant429
-    | PostRunsIdBrowserJobsJobidOutputGrant500;
+    | PostRunsIdBrowserJobsJobidOutputGrant500
+    | PostRunsIdBrowserJobsJobidOutputGrant503;
 };

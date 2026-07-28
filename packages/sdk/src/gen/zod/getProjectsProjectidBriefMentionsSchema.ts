@@ -8,11 +8,13 @@ import type {
   GetProjectsProjectidBriefMentions200,
   GetProjectsProjectidBriefMentions400,
   GetProjectsProjectidBriefMentions401,
+  GetProjectsProjectidBriefMentions402,
   GetProjectsProjectidBriefMentions403,
   GetProjectsProjectidBriefMentions404,
   GetProjectsProjectidBriefMentions409,
   GetProjectsProjectidBriefMentions429,
   GetProjectsProjectidBriefMentions500,
+  GetProjectsProjectidBriefMentions503,
   GetProjectsProjectidBriefMentionsPathParams,
   GetProjectsProjectidBriefMentionsQueryParams,
   GetProjectsProjectidBriefMentionsQueryResponse,
@@ -57,6 +59,13 @@ export const getProjectsProjectidBriefMentions401Schema = z.lazy(
 ) as unknown as z.ZodType<GetProjectsProjectidBriefMentions401>;
 
 /**
+ * @description Payment or credit balance required
+ */
+export const getProjectsProjectidBriefMentions402Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<GetProjectsProjectidBriefMentions402>;
+
+/**
  * @description Active organization required
  */
 export const getProjectsProjectidBriefMentions403Schema = z.lazy(
@@ -90,6 +99,13 @@ export const getProjectsProjectidBriefMentions429Schema = z.lazy(
 export const getProjectsProjectidBriefMentions500Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<GetProjectsProjectidBriefMentions500>;
+
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export const getProjectsProjectidBriefMentions503Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<GetProjectsProjectidBriefMentions503>;
 
 export const getProjectsProjectidBriefMentionsQueryResponseSchema = z.lazy(
   () => getProjectsProjectidBriefMentions200Schema,

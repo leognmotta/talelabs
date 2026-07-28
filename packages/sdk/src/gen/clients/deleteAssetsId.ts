@@ -10,11 +10,13 @@ import type {
   DeleteAssetsIdPathParams,
   DeleteAssetsId400,
   DeleteAssetsId401,
+  DeleteAssetsId402,
   DeleteAssetsId403,
   DeleteAssetsId404,
   DeleteAssetsId409,
   DeleteAssetsId429,
   DeleteAssetsId500,
+  DeleteAssetsId503,
 } from "../types/DeleteAssetsId.ts";
 import { deleteAssetsIdMutationResponseSchema } from "../zod/deleteAssetsIdSchema.ts";
 
@@ -37,11 +39,13 @@ export async function deleteAssetsId(
     ResponseErrorConfig<
       | DeleteAssetsId400
       | DeleteAssetsId401
+      | DeleteAssetsId402
       | DeleteAssetsId403
       | DeleteAssetsId404
       | DeleteAssetsId409
       | DeleteAssetsId429
       | DeleteAssetsId500
+      | DeleteAssetsId503
     >,
     unknown
   >({

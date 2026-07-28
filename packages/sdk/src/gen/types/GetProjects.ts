@@ -57,6 +57,11 @@ export type GetProjects400 = ErrorResponse;
 export type GetProjects401 = ErrorResponse;
 
 /**
+ * @description Payment or credit balance required
+ */
+export type GetProjects402 = ErrorResponse;
+
+/**
  * @description Active organization required
  */
 export type GetProjects403 = ErrorResponse;
@@ -81,6 +86,11 @@ export type GetProjects429 = ErrorResponse;
  */
 export type GetProjects500 = ErrorResponse;
 
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export type GetProjects503 = ErrorResponse;
+
 export type GetProjectsQueryResponse = GetProjects200;
 
 export type GetProjectsQuery = {
@@ -89,9 +99,11 @@ export type GetProjectsQuery = {
   Errors:
     | GetProjects400
     | GetProjects401
+    | GetProjects402
     | GetProjects403
     | GetProjects404
     | GetProjects409
     | GetProjects429
-    | GetProjects500;
+    | GetProjects500
+    | GetProjects503;
 };

@@ -11,11 +11,13 @@ import type {
   PutRunsIdBrowserExecutorStatusPathParams,
   PutRunsIdBrowserExecutorStatus400,
   PutRunsIdBrowserExecutorStatus401,
+  PutRunsIdBrowserExecutorStatus402,
   PutRunsIdBrowserExecutorStatus403,
   PutRunsIdBrowserExecutorStatus404,
   PutRunsIdBrowserExecutorStatus409,
   PutRunsIdBrowserExecutorStatus429,
   PutRunsIdBrowserExecutorStatus500,
+  PutRunsIdBrowserExecutorStatus503,
 } from "../types/PutRunsIdBrowserExecutorStatus.ts";
 import {
   putRunsIdBrowserExecutorStatusMutationResponseSchema,
@@ -59,11 +61,13 @@ export async function putRunsIdBrowserExecutorStatus(
     ResponseErrorConfig<
       | PutRunsIdBrowserExecutorStatus400
       | PutRunsIdBrowserExecutorStatus401
+      | PutRunsIdBrowserExecutorStatus402
       | PutRunsIdBrowserExecutorStatus403
       | PutRunsIdBrowserExecutorStatus404
       | PutRunsIdBrowserExecutorStatus409
       | PutRunsIdBrowserExecutorStatus429
       | PutRunsIdBrowserExecutorStatus500
+      | PutRunsIdBrowserExecutorStatus503
     >,
     PutRunsIdBrowserExecutorStatusMutationRequest
   >({

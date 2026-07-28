@@ -10,11 +10,13 @@ import type {
   PostRunsCreateEstimateMutationResponse,
   PostRunsCreateEstimate400,
   PostRunsCreateEstimate401,
+  PostRunsCreateEstimate402,
   PostRunsCreateEstimate403,
   PostRunsCreateEstimate404,
   PostRunsCreateEstimate409,
   PostRunsCreateEstimate429,
   PostRunsCreateEstimate500,
+  PostRunsCreateEstimate503,
 } from "../types/PostRunsCreateEstimate.ts";
 import {
   postRunsCreateEstimateMutationResponseSchema,
@@ -44,11 +46,13 @@ export async function postRunsCreateEstimate(
     ResponseErrorConfig<
       | PostRunsCreateEstimate400
       | PostRunsCreateEstimate401
+      | PostRunsCreateEstimate402
       | PostRunsCreateEstimate403
       | PostRunsCreateEstimate404
       | PostRunsCreateEstimate409
       | PostRunsCreateEstimate429
       | PostRunsCreateEstimate500
+      | PostRunsCreateEstimate503
     >,
     PostRunsCreateEstimateMutationRequest
   >({

@@ -11,11 +11,13 @@ import type {
   PatchFoldersIdPathParams,
   PatchFoldersId400,
   PatchFoldersId401,
+  PatchFoldersId402,
   PatchFoldersId403,
   PatchFoldersId404,
   PatchFoldersId409,
   PatchFoldersId429,
   PatchFoldersId500,
+  PatchFoldersId503,
 } from "../types/PatchFoldersId.ts";
 import {
   patchFoldersIdMutationResponseSchema,
@@ -51,11 +53,13 @@ export async function patchFoldersId(
     ResponseErrorConfig<
       | PatchFoldersId400
       | PatchFoldersId401
+      | PatchFoldersId402
       | PatchFoldersId403
       | PatchFoldersId404
       | PatchFoldersId409
       | PatchFoldersId429
       | PatchFoldersId500
+      | PatchFoldersId503
     >,
     PatchFoldersIdMutationRequest
   >({

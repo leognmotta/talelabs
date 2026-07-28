@@ -8,11 +8,13 @@ import type {
   PatchElementsIdReferences200,
   PatchElementsIdReferences400,
   PatchElementsIdReferences401,
+  PatchElementsIdReferences402,
   PatchElementsIdReferences403,
   PatchElementsIdReferences404,
   PatchElementsIdReferences409,
   PatchElementsIdReferences429,
   PatchElementsIdReferences500,
+  PatchElementsIdReferences503,
   PatchElementsIdReferencesMutationRequest,
   PatchElementsIdReferencesMutationResponse,
   PatchElementsIdReferencesPathParams,
@@ -50,6 +52,13 @@ export const patchElementsIdReferences401Schema = z.lazy(
 ) as unknown as z.ZodType<PatchElementsIdReferences401>;
 
 /**
+ * @description Payment or credit balance required
+ */
+export const patchElementsIdReferences402Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<PatchElementsIdReferences402>;
+
+/**
  * @description Active organization required
  */
 export const patchElementsIdReferences403Schema = z.lazy(
@@ -83,6 +92,13 @@ export const patchElementsIdReferences429Schema = z.lazy(
 export const patchElementsIdReferences500Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<PatchElementsIdReferences500>;
+
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export const patchElementsIdReferences503Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<PatchElementsIdReferences503>;
 
 export const patchElementsIdReferencesMutationRequestSchema = z.lazy(
   () => mutateElementReferencesRequestSchema,

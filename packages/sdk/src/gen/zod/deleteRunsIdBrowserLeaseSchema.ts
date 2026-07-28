@@ -8,11 +8,13 @@ import type {
   DeleteRunsIdBrowserLease200,
   DeleteRunsIdBrowserLease400,
   DeleteRunsIdBrowserLease401,
+  DeleteRunsIdBrowserLease402,
   DeleteRunsIdBrowserLease403,
   DeleteRunsIdBrowserLease404,
   DeleteRunsIdBrowserLease409,
   DeleteRunsIdBrowserLease429,
   DeleteRunsIdBrowserLease500,
+  DeleteRunsIdBrowserLease503,
   DeleteRunsIdBrowserLeaseMutationRequest,
   DeleteRunsIdBrowserLeaseMutationResponse,
   DeleteRunsIdBrowserLeasePathParams,
@@ -48,6 +50,13 @@ export const deleteRunsIdBrowserLease401Schema = z.lazy(
 ) as unknown as z.ZodType<DeleteRunsIdBrowserLease401>;
 
 /**
+ * @description Payment or credit balance required
+ */
+export const deleteRunsIdBrowserLease402Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<DeleteRunsIdBrowserLease402>;
+
+/**
  * @description Active organization required
  */
 export const deleteRunsIdBrowserLease403Schema = z.lazy(
@@ -81,6 +90,13 @@ export const deleteRunsIdBrowserLease429Schema = z.lazy(
 export const deleteRunsIdBrowserLease500Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<DeleteRunsIdBrowserLease500>;
+
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export const deleteRunsIdBrowserLease503Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<DeleteRunsIdBrowserLease503>;
 
 export const deleteRunsIdBrowserLeaseMutationRequestSchema = z.object({
   executorId: z.string().min(16).max(200),

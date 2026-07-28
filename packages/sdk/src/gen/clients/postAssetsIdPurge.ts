@@ -10,11 +10,13 @@ import type {
   PostAssetsIdPurgePathParams,
   PostAssetsIdPurge400,
   PostAssetsIdPurge401,
+  PostAssetsIdPurge402,
   PostAssetsIdPurge403,
   PostAssetsIdPurge404,
   PostAssetsIdPurge409,
   PostAssetsIdPurge429,
   PostAssetsIdPurge500,
+  PostAssetsIdPurge503,
 } from "../types/PostAssetsIdPurge.ts";
 import { postAssetsIdPurgeMutationResponseSchema } from "../zod/postAssetsIdPurgeSchema.ts";
 
@@ -41,11 +43,13 @@ export async function postAssetsIdPurge(
     ResponseErrorConfig<
       | PostAssetsIdPurge400
       | PostAssetsIdPurge401
+      | PostAssetsIdPurge402
       | PostAssetsIdPurge403
       | PostAssetsIdPurge404
       | PostAssetsIdPurge409
       | PostAssetsIdPurge429
       | PostAssetsIdPurge500
+      | PostAssetsIdPurge503
     >,
     unknown
   >({

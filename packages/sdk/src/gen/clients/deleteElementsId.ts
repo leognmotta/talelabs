@@ -10,11 +10,13 @@ import type {
   DeleteElementsIdPathParams,
   DeleteElementsId400,
   DeleteElementsId401,
+  DeleteElementsId402,
   DeleteElementsId403,
   DeleteElementsId404,
   DeleteElementsId409,
   DeleteElementsId429,
   DeleteElementsId500,
+  DeleteElementsId503,
 } from "../types/DeleteElementsId.ts";
 import { deleteElementsIdMutationResponseSchema } from "../zod/deleteElementsIdSchema.ts";
 
@@ -41,11 +43,13 @@ export async function deleteElementsId(
     ResponseErrorConfig<
       | DeleteElementsId400
       | DeleteElementsId401
+      | DeleteElementsId402
       | DeleteElementsId403
       | DeleteElementsId404
       | DeleteElementsId409
       | DeleteElementsId429
       | DeleteElementsId500
+      | DeleteElementsId503
     >,
     unknown
   >({

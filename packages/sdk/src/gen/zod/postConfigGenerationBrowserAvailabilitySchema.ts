@@ -8,11 +8,13 @@ import type {
   PostConfigGenerationBrowserAvailability200,
   PostConfigGenerationBrowserAvailability400,
   PostConfigGenerationBrowserAvailability401,
+  PostConfigGenerationBrowserAvailability402,
   PostConfigGenerationBrowserAvailability403,
   PostConfigGenerationBrowserAvailability404,
   PostConfigGenerationBrowserAvailability409,
   PostConfigGenerationBrowserAvailability429,
   PostConfigGenerationBrowserAvailability500,
+  PostConfigGenerationBrowserAvailability503,
   PostConfigGenerationBrowserAvailabilityMutationRequest,
   PostConfigGenerationBrowserAvailabilityMutationResponse,
 } from "../types/PostConfigGenerationBrowserAvailability.ts";
@@ -39,6 +41,13 @@ export const postConfigGenerationBrowserAvailability400Schema = z.lazy(
 export const postConfigGenerationBrowserAvailability401Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<PostConfigGenerationBrowserAvailability401>;
+
+/**
+ * @description Payment or credit balance required
+ */
+export const postConfigGenerationBrowserAvailability402Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<PostConfigGenerationBrowserAvailability402>;
 
 /**
  * @description Active organization required
@@ -74,6 +83,13 @@ export const postConfigGenerationBrowserAvailability429Schema = z.lazy(
 export const postConfigGenerationBrowserAvailability500Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<PostConfigGenerationBrowserAvailability500>;
+
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export const postConfigGenerationBrowserAvailability503Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<PostConfigGenerationBrowserAvailability503>;
 
 export const postConfigGenerationBrowserAvailabilityMutationRequestSchema =
   z.object({

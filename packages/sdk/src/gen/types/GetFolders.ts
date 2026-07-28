@@ -34,6 +34,11 @@ export type GetFolders400 = ErrorResponse;
 export type GetFolders401 = ErrorResponse;
 
 /**
+ * @description Payment or credit balance required
+ */
+export type GetFolders402 = ErrorResponse;
+
+/**
  * @description Active organization required
  */
 export type GetFolders403 = ErrorResponse;
@@ -58,6 +63,11 @@ export type GetFolders429 = ErrorResponse;
  */
 export type GetFolders500 = ErrorResponse;
 
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export type GetFolders503 = ErrorResponse;
+
 export type GetFoldersQueryResponse = GetFolders200;
 
 export type GetFoldersQuery = {
@@ -66,9 +76,11 @@ export type GetFoldersQuery = {
   Errors:
     | GetFolders400
     | GetFolders401
+    | GetFolders402
     | GetFolders403
     | GetFolders404
     | GetFolders409
     | GetFolders429
-    | GetFolders500;
+    | GetFolders500
+    | GetFolders503;
 };

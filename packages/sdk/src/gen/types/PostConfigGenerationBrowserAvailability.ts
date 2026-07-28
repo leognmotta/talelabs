@@ -31,6 +31,11 @@ export type PostConfigGenerationBrowserAvailability400 = ErrorResponse;
 export type PostConfigGenerationBrowserAvailability401 = ErrorResponse;
 
 /**
+ * @description Payment or credit balance required
+ */
+export type PostConfigGenerationBrowserAvailability402 = ErrorResponse;
+
+/**
  * @description Active organization required
  */
 export type PostConfigGenerationBrowserAvailability403 = ErrorResponse;
@@ -54,6 +59,11 @@ export type PostConfigGenerationBrowserAvailability429 = ErrorResponse;
  * @description Internal server error
  */
 export type PostConfigGenerationBrowserAvailability500 = ErrorResponse;
+
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export type PostConfigGenerationBrowserAvailability503 = ErrorResponse;
 
 export const postConfigGenerationBrowserAvailabilityMutationRequestProvidersEnum =
   {
@@ -92,9 +102,11 @@ export type PostConfigGenerationBrowserAvailabilityMutation = {
   Errors:
     | PostConfigGenerationBrowserAvailability400
     | PostConfigGenerationBrowserAvailability401
+    | PostConfigGenerationBrowserAvailability402
     | PostConfigGenerationBrowserAvailability403
     | PostConfigGenerationBrowserAvailability404
     | PostConfigGenerationBrowserAvailability409
     | PostConfigGenerationBrowserAvailability429
-    | PostConfigGenerationBrowserAvailability500;
+    | PostConfigGenerationBrowserAvailability500
+    | PostConfigGenerationBrowserAvailability503;
 };

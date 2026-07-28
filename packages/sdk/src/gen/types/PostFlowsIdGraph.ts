@@ -32,6 +32,11 @@ export type PostFlowsIdGraph400 = ErrorResponse;
 export type PostFlowsIdGraph401 = ErrorResponse;
 
 /**
+ * @description Payment or credit balance required
+ */
+export type PostFlowsIdGraph402 = ErrorResponse;
+
+/**
  * @description Active organization required
  */
 export type PostFlowsIdGraph403 = ErrorResponse;
@@ -56,6 +61,11 @@ export type PostFlowsIdGraph429 = ErrorResponse;
  */
 export type PostFlowsIdGraph500 = ErrorResponse;
 
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export type PostFlowsIdGraph503 = ErrorResponse;
+
 export type PostFlowsIdGraphMutationRequest = FlowGraphSyncRequest;
 
 export type PostFlowsIdGraphMutationResponse = PostFlowsIdGraph200;
@@ -67,9 +77,11 @@ export type PostFlowsIdGraphMutation = {
   Errors:
     | PostFlowsIdGraph400
     | PostFlowsIdGraph401
+    | PostFlowsIdGraph402
     | PostFlowsIdGraph403
     | PostFlowsIdGraph404
     | PostFlowsIdGraph409
     | PostFlowsIdGraph429
-    | PostFlowsIdGraph500;
+    | PostFlowsIdGraph500
+    | PostFlowsIdGraph503;
 };

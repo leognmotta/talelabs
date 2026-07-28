@@ -11,11 +11,13 @@ import type {
   PostFlowsIdGraphPathParams,
   PostFlowsIdGraph400,
   PostFlowsIdGraph401,
+  PostFlowsIdGraph402,
   PostFlowsIdGraph403,
   PostFlowsIdGraph404,
   PostFlowsIdGraph409,
   PostFlowsIdGraph429,
   PostFlowsIdGraph500,
+  PostFlowsIdGraph503,
 } from "../types/PostFlowsIdGraph.ts";
 import {
   postFlowsIdGraphMutationResponseSchema,
@@ -55,11 +57,13 @@ export async function postFlowsIdGraph(
     ResponseErrorConfig<
       | PostFlowsIdGraph400
       | PostFlowsIdGraph401
+      | PostFlowsIdGraph402
       | PostFlowsIdGraph403
       | PostFlowsIdGraph404
       | PostFlowsIdGraph409
       | PostFlowsIdGraph429
       | PostFlowsIdGraph500
+      | PostFlowsIdGraph503
     >,
     PostFlowsIdGraphMutationRequest
   >({

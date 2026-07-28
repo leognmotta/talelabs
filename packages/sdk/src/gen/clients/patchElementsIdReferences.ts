@@ -11,11 +11,13 @@ import type {
   PatchElementsIdReferencesPathParams,
   PatchElementsIdReferences400,
   PatchElementsIdReferences401,
+  PatchElementsIdReferences402,
   PatchElementsIdReferences403,
   PatchElementsIdReferences404,
   PatchElementsIdReferences409,
   PatchElementsIdReferences429,
   PatchElementsIdReferences500,
+  PatchElementsIdReferences503,
 } from "../types/PatchElementsIdReferences.ts";
 import {
   patchElementsIdReferencesMutationResponseSchema,
@@ -56,11 +58,13 @@ export async function patchElementsIdReferences(
     ResponseErrorConfig<
       | PatchElementsIdReferences400
       | PatchElementsIdReferences401
+      | PatchElementsIdReferences402
       | PatchElementsIdReferences403
       | PatchElementsIdReferences404
       | PatchElementsIdReferences409
       | PatchElementsIdReferences429
       | PatchElementsIdReferences500
+      | PatchElementsIdReferences503
     >,
     PatchElementsIdReferencesMutationRequest
   >({

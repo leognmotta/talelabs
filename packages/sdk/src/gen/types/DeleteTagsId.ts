@@ -30,6 +30,11 @@ export type DeleteTagsId400 = ErrorResponse;
 export type DeleteTagsId401 = ErrorResponse;
 
 /**
+ * @description Payment or credit balance required
+ */
+export type DeleteTagsId402 = ErrorResponse;
+
+/**
  * @description Active organization required
  */
 export type DeleteTagsId403 = ErrorResponse;
@@ -54,6 +59,11 @@ export type DeleteTagsId429 = ErrorResponse;
  */
 export type DeleteTagsId500 = ErrorResponse;
 
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export type DeleteTagsId503 = ErrorResponse;
+
 export type DeleteTagsIdMutationResponse = DeleteTagsId204;
 
 export type DeleteTagsIdMutation = {
@@ -62,9 +72,11 @@ export type DeleteTagsIdMutation = {
   Errors:
     | DeleteTagsId400
     | DeleteTagsId401
+    | DeleteTagsId402
     | DeleteTagsId403
     | DeleteTagsId404
     | DeleteTagsId409
     | DeleteTagsId429
-    | DeleteTagsId500;
+    | DeleteTagsId500
+    | DeleteTagsId503;
 };

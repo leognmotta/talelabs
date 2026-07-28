@@ -9,11 +9,13 @@ import type {
   GetRunsIdPathParams,
   GetRunsId400,
   GetRunsId401,
+  GetRunsId402,
   GetRunsId403,
   GetRunsId404,
   GetRunsId409,
   GetRunsId429,
   GetRunsId500,
+  GetRunsId503,
 } from "../types/GetRunsId.ts";
 import type {
   QueryKey,
@@ -42,11 +44,13 @@ export function getRunsIdQueryOptions(
     ResponseErrorConfig<
       | GetRunsId400
       | GetRunsId401
+      | GetRunsId402
       | GetRunsId403
       | GetRunsId404
       | GetRunsId409
       | GetRunsId429
       | GetRunsId500
+      | GetRunsId503
     >,
     GetRunsIdQueryResponse,
     typeof queryKey
@@ -78,11 +82,13 @@ export function useGetRunsId<
         ResponseErrorConfig<
           | GetRunsId400
           | GetRunsId401
+          | GetRunsId402
           | GetRunsId403
           | GetRunsId404
           | GetRunsId409
           | GetRunsId429
           | GetRunsId500
+          | GetRunsId503
         >,
         TData,
         TQueryData,
@@ -108,11 +114,13 @@ export function useGetRunsId<
     ResponseErrorConfig<
       | GetRunsId400
       | GetRunsId401
+      | GetRunsId402
       | GetRunsId403
       | GetRunsId404
       | GetRunsId409
       | GetRunsId429
       | GetRunsId500
+      | GetRunsId503
     >
   > & { queryKey: TQueryKey };
 

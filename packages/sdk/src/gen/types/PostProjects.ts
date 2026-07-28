@@ -23,6 +23,11 @@ export type PostProjects400 = ErrorResponse;
 export type PostProjects401 = ErrorResponse;
 
 /**
+ * @description Payment or credit balance required
+ */
+export type PostProjects402 = ErrorResponse;
+
+/**
  * @description Active organization required
  */
 export type PostProjects403 = ErrorResponse;
@@ -47,6 +52,11 @@ export type PostProjects429 = ErrorResponse;
  */
 export type PostProjects500 = ErrorResponse;
 
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export type PostProjects503 = ErrorResponse;
+
 export type PostProjectsMutationRequest = CreateProjectRequest;
 
 export type PostProjectsMutationResponse = PostProjects201;
@@ -57,9 +67,11 @@ export type PostProjectsMutation = {
   Errors:
     | PostProjects400
     | PostProjects401
+    | PostProjects402
     | PostProjects403
     | PostProjects404
     | PostProjects409
     | PostProjects429
-    | PostProjects500;
+    | PostProjects500
+    | PostProjects503;
 };

@@ -10,11 +10,13 @@ import type {
   PostAssetsMoveMutationResponse,
   PostAssetsMove400,
   PostAssetsMove401,
+  PostAssetsMove402,
   PostAssetsMove403,
   PostAssetsMove404,
   PostAssetsMove409,
   PostAssetsMove429,
   PostAssetsMove500,
+  PostAssetsMove503,
 } from "../types/PostAssetsMove.ts";
 import {
   postAssetsMoveMutationResponseSchema,
@@ -44,11 +46,13 @@ export async function postAssetsMove(
     ResponseErrorConfig<
       | PostAssetsMove400
       | PostAssetsMove401
+      | PostAssetsMove402
       | PostAssetsMove403
       | PostAssetsMove404
       | PostAssetsMove409
       | PostAssetsMove429
       | PostAssetsMove500
+      | PostAssetsMove503
     >,
     PostAssetsMoveMutationRequest
   >({

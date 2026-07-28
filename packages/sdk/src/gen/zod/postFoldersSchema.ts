@@ -8,11 +8,13 @@ import type {
   PostFolders201,
   PostFolders400,
   PostFolders401,
+  PostFolders402,
   PostFolders403,
   PostFolders404,
   PostFolders409,
   PostFolders429,
   PostFolders500,
+  PostFolders503,
   PostFoldersMutationRequest,
   PostFoldersMutationResponse,
 } from "../types/PostFolders.ts";
@@ -40,6 +42,13 @@ export const postFolders400Schema = z.lazy(
 export const postFolders401Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<PostFolders401>;
+
+/**
+ * @description Payment or credit balance required
+ */
+export const postFolders402Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<PostFolders402>;
 
 /**
  * @description Active organization required
@@ -75,6 +84,13 @@ export const postFolders429Schema = z.lazy(
 export const postFolders500Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<PostFolders500>;
+
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export const postFolders503Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<PostFolders503>;
 
 export const postFoldersMutationRequestSchema = z.lazy(
   () => createFolderRequestSchema,

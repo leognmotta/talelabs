@@ -36,6 +36,11 @@ export type PostAssetsIdPurge400 = ErrorResponse;
 export type PostAssetsIdPurge401 = ErrorResponse;
 
 /**
+ * @description Payment or credit balance required
+ */
+export type PostAssetsIdPurge402 = ErrorResponse;
+
+/**
  * @description Active organization required
  */
 export type PostAssetsIdPurge403 = ErrorResponse;
@@ -60,6 +65,11 @@ export type PostAssetsIdPurge429 = ErrorResponse;
  */
 export type PostAssetsIdPurge500 = ErrorResponse;
 
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export type PostAssetsIdPurge503 = ErrorResponse;
+
 export type PostAssetsIdPurgeMutationResponse =
   | PostAssetsIdPurge200
   | PostAssetsIdPurge202;
@@ -70,9 +80,11 @@ export type PostAssetsIdPurgeMutation = {
   Errors:
     | PostAssetsIdPurge400
     | PostAssetsIdPurge401
+    | PostAssetsIdPurge402
     | PostAssetsIdPurge403
     | PostAssetsIdPurge404
     | PostAssetsIdPurge409
     | PostAssetsIdPurge429
-    | PostAssetsIdPurge500;
+    | PostAssetsIdPurge500
+    | PostAssetsIdPurge503;
 };

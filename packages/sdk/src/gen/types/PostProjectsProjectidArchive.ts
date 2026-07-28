@@ -31,6 +31,11 @@ export type PostProjectsProjectidArchive400 = ErrorResponse;
 export type PostProjectsProjectidArchive401 = ErrorResponse;
 
 /**
+ * @description Payment or credit balance required
+ */
+export type PostProjectsProjectidArchive402 = ErrorResponse;
+
+/**
  * @description Active organization required
  */
 export type PostProjectsProjectidArchive403 = ErrorResponse;
@@ -55,6 +60,11 @@ export type PostProjectsProjectidArchive429 = ErrorResponse;
  */
 export type PostProjectsProjectidArchive500 = ErrorResponse;
 
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export type PostProjectsProjectidArchive503 = ErrorResponse;
+
 export type PostProjectsProjectidArchiveMutationResponse =
   PostProjectsProjectidArchive200;
 
@@ -64,9 +74,11 @@ export type PostProjectsProjectidArchiveMutation = {
   Errors:
     | PostProjectsProjectidArchive400
     | PostProjectsProjectidArchive401
+    | PostProjectsProjectidArchive402
     | PostProjectsProjectidArchive403
     | PostProjectsProjectidArchive404
     | PostProjectsProjectidArchive409
     | PostProjectsProjectidArchive429
-    | PostProjectsProjectidArchive500;
+    | PostProjectsProjectidArchive500
+    | PostProjectsProjectidArchive503;
 };

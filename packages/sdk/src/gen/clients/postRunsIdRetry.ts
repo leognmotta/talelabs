@@ -11,11 +11,13 @@ import type {
   PostRunsIdRetryPathParams,
   PostRunsIdRetry400,
   PostRunsIdRetry401,
+  PostRunsIdRetry402,
   PostRunsIdRetry403,
   PostRunsIdRetry404,
   PostRunsIdRetry409,
   PostRunsIdRetry429,
   PostRunsIdRetry500,
+  PostRunsIdRetry503,
 } from "../types/PostRunsIdRetry.ts";
 import {
   postRunsIdRetryMutationResponseSchema,
@@ -55,11 +57,13 @@ export async function postRunsIdRetry(
     ResponseErrorConfig<
       | PostRunsIdRetry400
       | PostRunsIdRetry401
+      | PostRunsIdRetry402
       | PostRunsIdRetry403
       | PostRunsIdRetry404
       | PostRunsIdRetry409
       | PostRunsIdRetry429
       | PostRunsIdRetry500
+      | PostRunsIdRetry503
     >,
     PostRunsIdRetryMutationRequest
   >({

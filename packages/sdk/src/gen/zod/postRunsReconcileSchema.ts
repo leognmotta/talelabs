@@ -8,11 +8,13 @@ import type {
   PostRunsReconcile200,
   PostRunsReconcile400,
   PostRunsReconcile401,
+  PostRunsReconcile402,
   PostRunsReconcile403,
   PostRunsReconcile404,
   PostRunsReconcile409,
   PostRunsReconcile429,
   PostRunsReconcile500,
+  PostRunsReconcile503,
   PostRunsReconcileMutationResponse,
 } from "../types/PostRunsReconcile.ts";
 import { errorResponseSchema } from "./errorResponseSchema.ts";
@@ -37,6 +39,13 @@ export const postRunsReconcile400Schema = z.lazy(
 export const postRunsReconcile401Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<PostRunsReconcile401>;
+
+/**
+ * @description Payment or credit balance required
+ */
+export const postRunsReconcile402Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<PostRunsReconcile402>;
 
 /**
  * @description Active organization required
@@ -72,6 +81,13 @@ export const postRunsReconcile429Schema = z.lazy(
 export const postRunsReconcile500Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<PostRunsReconcile500>;
+
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export const postRunsReconcile503Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<PostRunsReconcile503>;
 
 export const postRunsReconcileMutationResponseSchema = z.lazy(
   () => postRunsReconcile200Schema,

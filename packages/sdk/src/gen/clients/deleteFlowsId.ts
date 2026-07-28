@@ -10,11 +10,13 @@ import type {
   DeleteFlowsIdPathParams,
   DeleteFlowsId400,
   DeleteFlowsId401,
+  DeleteFlowsId402,
   DeleteFlowsId403,
   DeleteFlowsId404,
   DeleteFlowsId409,
   DeleteFlowsId429,
   DeleteFlowsId500,
+  DeleteFlowsId503,
 } from "../types/DeleteFlowsId.ts";
 import { deleteFlowsIdMutationResponseSchema } from "../zod/deleteFlowsIdSchema.ts";
 
@@ -37,11 +39,13 @@ export async function deleteFlowsId(
     ResponseErrorConfig<
       | DeleteFlowsId400
       | DeleteFlowsId401
+      | DeleteFlowsId402
       | DeleteFlowsId403
       | DeleteFlowsId404
       | DeleteFlowsId409
       | DeleteFlowsId429
       | DeleteFlowsId500
+      | DeleteFlowsId503
     >,
     unknown
   >({

@@ -9,11 +9,13 @@ import type {
   GetAssetsIdDownloadPathParams,
   GetAssetsIdDownload400,
   GetAssetsIdDownload401,
+  GetAssetsIdDownload402,
   GetAssetsIdDownload403,
   GetAssetsIdDownload404,
   GetAssetsIdDownload409,
   GetAssetsIdDownload429,
   GetAssetsIdDownload500,
+  GetAssetsIdDownload503,
 } from "../types/GetAssetsIdDownload.ts";
 import type {
   QueryKey,
@@ -44,11 +46,13 @@ export function getAssetsIdDownloadQueryOptions(
     ResponseErrorConfig<
       | GetAssetsIdDownload400
       | GetAssetsIdDownload401
+      | GetAssetsIdDownload402
       | GetAssetsIdDownload403
       | GetAssetsIdDownload404
       | GetAssetsIdDownload409
       | GetAssetsIdDownload429
       | GetAssetsIdDownload500
+      | GetAssetsIdDownload503
     >,
     GetAssetsIdDownloadQueryResponse,
     typeof queryKey
@@ -80,11 +84,13 @@ export function useGetAssetsIdDownload<
         ResponseErrorConfig<
           | GetAssetsIdDownload400
           | GetAssetsIdDownload401
+          | GetAssetsIdDownload402
           | GetAssetsIdDownload403
           | GetAssetsIdDownload404
           | GetAssetsIdDownload409
           | GetAssetsIdDownload429
           | GetAssetsIdDownload500
+          | GetAssetsIdDownload503
         >,
         TData,
         TQueryData,
@@ -111,11 +117,13 @@ export function useGetAssetsIdDownload<
     ResponseErrorConfig<
       | GetAssetsIdDownload400
       | GetAssetsIdDownload401
+      | GetAssetsIdDownload402
       | GetAssetsIdDownload403
       | GetAssetsIdDownload404
       | GetAssetsIdDownload409
       | GetAssetsIdDownload429
       | GetAssetsIdDownload500
+      | GetAssetsIdDownload503
     >
   > & { queryKey: TQueryKey };
 

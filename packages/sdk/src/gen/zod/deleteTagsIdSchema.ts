@@ -8,11 +8,13 @@ import type {
   DeleteTagsId204,
   DeleteTagsId400,
   DeleteTagsId401,
+  DeleteTagsId402,
   DeleteTagsId403,
   DeleteTagsId404,
   DeleteTagsId409,
   DeleteTagsId429,
   DeleteTagsId500,
+  DeleteTagsId503,
   DeleteTagsIdMutationResponse,
   DeleteTagsIdPathParams,
 } from "../types/DeleteTagsId.ts";
@@ -44,6 +46,13 @@ export const deleteTagsId400Schema = z.lazy(
 export const deleteTagsId401Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<DeleteTagsId401>;
+
+/**
+ * @description Payment or credit balance required
+ */
+export const deleteTagsId402Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<DeleteTagsId402>;
 
 /**
  * @description Active organization required
@@ -79,6 +88,13 @@ export const deleteTagsId429Schema = z.lazy(
 export const deleteTagsId500Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<DeleteTagsId500>;
+
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export const deleteTagsId503Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<DeleteTagsId503>;
 
 export const deleteTagsIdMutationResponseSchema = z.lazy(
   () => deleteTagsId204Schema,

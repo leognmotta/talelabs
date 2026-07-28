@@ -11,11 +11,13 @@ import type {
   GetProjectsProjectidBriefMentionsQueryParams,
   GetProjectsProjectidBriefMentions400,
   GetProjectsProjectidBriefMentions401,
+  GetProjectsProjectidBriefMentions402,
   GetProjectsProjectidBriefMentions403,
   GetProjectsProjectidBriefMentions404,
   GetProjectsProjectidBriefMentions409,
   GetProjectsProjectidBriefMentions429,
   GetProjectsProjectidBriefMentions500,
+  GetProjectsProjectidBriefMentions503,
 } from "../types/GetProjectsProjectidBriefMentions.ts";
 import { getProjectsProjectidBriefMentionsQueryResponseSchema } from "../zod/getProjectsProjectidBriefMentionsSchema.ts";
 
@@ -51,11 +53,13 @@ export async function getProjectsProjectidBriefMentions(
     ResponseErrorConfig<
       | GetProjectsProjectidBriefMentions400
       | GetProjectsProjectidBriefMentions401
+      | GetProjectsProjectidBriefMentions402
       | GetProjectsProjectidBriefMentions403
       | GetProjectsProjectidBriefMentions404
       | GetProjectsProjectidBriefMentions409
       | GetProjectsProjectidBriefMentions429
       | GetProjectsProjectidBriefMentions500
+      | GetProjectsProjectidBriefMentions503
     >,
     unknown
   >({

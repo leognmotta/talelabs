@@ -8,11 +8,13 @@ import type {
   PatchCreateSessionsId200,
   PatchCreateSessionsId400,
   PatchCreateSessionsId401,
+  PatchCreateSessionsId402,
   PatchCreateSessionsId403,
   PatchCreateSessionsId404,
   PatchCreateSessionsId409,
   PatchCreateSessionsId429,
   PatchCreateSessionsId500,
+  PatchCreateSessionsId503,
   PatchCreateSessionsIdMutationRequest,
   PatchCreateSessionsIdMutationResponse,
   PatchCreateSessionsIdPathParams,
@@ -50,6 +52,13 @@ export const patchCreateSessionsId401Schema = z.lazy(
 ) as unknown as z.ZodType<PatchCreateSessionsId401>;
 
 /**
+ * @description Payment or credit balance required
+ */
+export const patchCreateSessionsId402Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<PatchCreateSessionsId402>;
+
+/**
  * @description Active organization required
  */
 export const patchCreateSessionsId403Schema = z.lazy(
@@ -83,6 +92,13 @@ export const patchCreateSessionsId429Schema = z.lazy(
 export const patchCreateSessionsId500Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<PatchCreateSessionsId500>;
+
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export const patchCreateSessionsId503Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<PatchCreateSessionsId503>;
 
 export const patchCreateSessionsIdMutationRequestSchema = z.lazy(
   () => renameCreateSessionRequestSchema,

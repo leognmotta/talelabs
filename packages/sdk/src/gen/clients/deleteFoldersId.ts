@@ -10,11 +10,13 @@ import type {
   DeleteFoldersIdPathParams,
   DeleteFoldersId400,
   DeleteFoldersId401,
+  DeleteFoldersId402,
   DeleteFoldersId403,
   DeleteFoldersId404,
   DeleteFoldersId409,
   DeleteFoldersId429,
   DeleteFoldersId500,
+  DeleteFoldersId503,
 } from "../types/DeleteFoldersId.ts";
 import { deleteFoldersIdMutationResponseSchema } from "../zod/deleteFoldersIdSchema.ts";
 
@@ -41,11 +43,13 @@ export async function deleteFoldersId(
     ResponseErrorConfig<
       | DeleteFoldersId400
       | DeleteFoldersId401
+      | DeleteFoldersId402
       | DeleteFoldersId403
       | DeleteFoldersId404
       | DeleteFoldersId409
       | DeleteFoldersId429
       | DeleteFoldersId500
+      | DeleteFoldersId503
     >,
     unknown
   >({

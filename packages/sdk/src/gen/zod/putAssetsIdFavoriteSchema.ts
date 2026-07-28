@@ -8,11 +8,13 @@ import type {
   PutAssetsIdFavorite204,
   PutAssetsIdFavorite400,
   PutAssetsIdFavorite401,
+  PutAssetsIdFavorite402,
   PutAssetsIdFavorite403,
   PutAssetsIdFavorite404,
   PutAssetsIdFavorite409,
   PutAssetsIdFavorite429,
   PutAssetsIdFavorite500,
+  PutAssetsIdFavorite503,
   PutAssetsIdFavoriteMutationResponse,
   PutAssetsIdFavoritePathParams,
 } from "../types/PutAssetsIdFavorite.ts";
@@ -44,6 +46,13 @@ export const putAssetsIdFavorite400Schema = z.lazy(
 export const putAssetsIdFavorite401Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<PutAssetsIdFavorite401>;
+
+/**
+ * @description Payment or credit balance required
+ */
+export const putAssetsIdFavorite402Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<PutAssetsIdFavorite402>;
 
 /**
  * @description Active organization required
@@ -79,6 +88,13 @@ export const putAssetsIdFavorite429Schema = z.lazy(
 export const putAssetsIdFavorite500Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<PutAssetsIdFavorite500>;
+
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export const putAssetsIdFavorite503Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<PutAssetsIdFavorite503>;
 
 export const putAssetsIdFavoriteMutationResponseSchema = z.lazy(
   () => putAssetsIdFavorite204Schema,

@@ -10,11 +10,13 @@ import type {
   GetCreateSessionsIdPathParams,
   GetCreateSessionsId400,
   GetCreateSessionsId401,
+  GetCreateSessionsId402,
   GetCreateSessionsId403,
   GetCreateSessionsId404,
   GetCreateSessionsId409,
   GetCreateSessionsId429,
   GetCreateSessionsId500,
+  GetCreateSessionsId503,
 } from "../types/GetCreateSessionsId.ts";
 import { getCreateSessionsIdQueryResponseSchema } from "../zod/getCreateSessionsIdSchema.ts";
 
@@ -41,11 +43,13 @@ export async function getCreateSessionsId(
     ResponseErrorConfig<
       | GetCreateSessionsId400
       | GetCreateSessionsId401
+      | GetCreateSessionsId402
       | GetCreateSessionsId403
       | GetCreateSessionsId404
       | GetCreateSessionsId409
       | GetCreateSessionsId429
       | GetCreateSessionsId500
+      | GetCreateSessionsId503
     >,
     unknown
   >({

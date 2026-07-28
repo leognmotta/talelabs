@@ -10,11 +10,13 @@ import type {
   PutAssetsIdTagsTagidPathParams,
   PutAssetsIdTagsTagid400,
   PutAssetsIdTagsTagid401,
+  PutAssetsIdTagsTagid402,
   PutAssetsIdTagsTagid403,
   PutAssetsIdTagsTagid404,
   PutAssetsIdTagsTagid409,
   PutAssetsIdTagsTagid429,
   PutAssetsIdTagsTagid500,
+  PutAssetsIdTagsTagid503,
 } from "../types/PutAssetsIdTagsTagid.ts";
 import { putAssetsIdTagsTagidMutationResponseSchema } from "../zod/putAssetsIdTagsTagidSchema.ts";
 
@@ -49,11 +51,13 @@ export async function putAssetsIdTagsTagid(
     ResponseErrorConfig<
       | PutAssetsIdTagsTagid400
       | PutAssetsIdTagsTagid401
+      | PutAssetsIdTagsTagid402
       | PutAssetsIdTagsTagid403
       | PutAssetsIdTagsTagid404
       | PutAssetsIdTagsTagid409
       | PutAssetsIdTagsTagid429
       | PutAssetsIdTagsTagid500
+      | PutAssetsIdTagsTagid503
     >,
     unknown
   >({

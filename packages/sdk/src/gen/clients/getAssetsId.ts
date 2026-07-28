@@ -10,11 +10,13 @@ import type {
   GetAssetsIdPathParams,
   GetAssetsId400,
   GetAssetsId401,
+  GetAssetsId402,
   GetAssetsId403,
   GetAssetsId404,
   GetAssetsId409,
   GetAssetsId429,
   GetAssetsId500,
+  GetAssetsId503,
 } from "../types/GetAssetsId.ts";
 import { getAssetsIdQueryResponseSchema } from "../zod/getAssetsIdSchema.ts";
 
@@ -37,11 +39,13 @@ export async function getAssetsId(
     ResponseErrorConfig<
       | GetAssetsId400
       | GetAssetsId401
+      | GetAssetsId402
       | GetAssetsId403
       | GetAssetsId404
       | GetAssetsId409
       | GetAssetsId429
       | GetAssetsId500
+      | GetAssetsId503
     >,
     unknown
   >({

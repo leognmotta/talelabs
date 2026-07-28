@@ -8,11 +8,13 @@ import type {
   PostUploads201,
   PostUploads400,
   PostUploads401,
+  PostUploads402,
   PostUploads403,
   PostUploads404,
   PostUploads409,
   PostUploads429,
   PostUploads500,
+  PostUploads503,
   PostUploadsMutationRequest,
   PostUploadsMutationResponse,
 } from "../types/PostUploads.ts";
@@ -40,6 +42,13 @@ export const postUploads400Schema = z.lazy(
 export const postUploads401Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<PostUploads401>;
+
+/**
+ * @description Payment or credit balance required
+ */
+export const postUploads402Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<PostUploads402>;
 
 /**
  * @description Active organization required
@@ -75,6 +84,13 @@ export const postUploads429Schema = z.lazy(
 export const postUploads500Schema = z.lazy(
   () => errorResponseSchema,
 ) as unknown as z.ZodType<PostUploads500>;
+
+/**
+ * @description Billing provider temporarily unavailable
+ */
+export const postUploads503Schema = z.lazy(
+  () => errorResponseSchema,
+) as unknown as z.ZodType<PostUploads503>;
 
 export const postUploadsMutationRequestSchema = z.lazy(
   () => createUploadRequestSchema,

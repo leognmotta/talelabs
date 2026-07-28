@@ -10,11 +10,13 @@ import type {
   PostUploadsMutationResponse,
   PostUploads400,
   PostUploads401,
+  PostUploads402,
   PostUploads403,
   PostUploads404,
   PostUploads409,
   PostUploads429,
   PostUploads500,
+  PostUploads503,
 } from "../types/PostUploads.ts";
 import {
   postUploadsMutationResponseSchema,
@@ -44,11 +46,13 @@ export async function postUploads(
     ResponseErrorConfig<
       | PostUploads400
       | PostUploads401
+      | PostUploads402
       | PostUploads403
       | PostUploads404
       | PostUploads409
       | PostUploads429
       | PostUploads500
+      | PostUploads503
     >,
     PostUploadsMutationRequest
   >({

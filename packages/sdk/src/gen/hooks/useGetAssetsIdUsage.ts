@@ -10,11 +10,13 @@ import type {
   GetAssetsIdUsageQueryParams,
   GetAssetsIdUsage400,
   GetAssetsIdUsage401,
+  GetAssetsIdUsage402,
   GetAssetsIdUsage403,
   GetAssetsIdUsage404,
   GetAssetsIdUsage409,
   GetAssetsIdUsage429,
   GetAssetsIdUsage500,
+  GetAssetsIdUsage503,
 } from "../types/GetAssetsIdUsage.ts";
 import type {
   QueryKey,
@@ -54,11 +56,13 @@ export function getAssetsIdUsageQueryOptions(
     ResponseErrorConfig<
       | GetAssetsIdUsage400
       | GetAssetsIdUsage401
+      | GetAssetsIdUsage402
       | GetAssetsIdUsage403
       | GetAssetsIdUsage404
       | GetAssetsIdUsage409
       | GetAssetsIdUsage429
       | GetAssetsIdUsage500
+      | GetAssetsIdUsage503
     >,
     GetAssetsIdUsageQueryResponse,
     typeof queryKey
@@ -96,11 +100,13 @@ export function useGetAssetsIdUsage<
         ResponseErrorConfig<
           | GetAssetsIdUsage400
           | GetAssetsIdUsage401
+          | GetAssetsIdUsage402
           | GetAssetsIdUsage403
           | GetAssetsIdUsage404
           | GetAssetsIdUsage409
           | GetAssetsIdUsage429
           | GetAssetsIdUsage500
+          | GetAssetsIdUsage503
         >,
         TData,
         TQueryData,
@@ -127,11 +133,13 @@ export function useGetAssetsIdUsage<
     ResponseErrorConfig<
       | GetAssetsIdUsage400
       | GetAssetsIdUsage401
+      | GetAssetsIdUsage402
       | GetAssetsIdUsage403
       | GetAssetsIdUsage404
       | GetAssetsIdUsage409
       | GetAssetsIdUsage429
       | GetAssetsIdUsage500
+      | GetAssetsIdUsage503
     >
   > & { queryKey: TQueryKey };
 
