@@ -1,4 +1,5 @@
 export * from "./activateOrganization.ts";
+export * from "./assignBillingFounderStatus.ts";
 export * from "./createBillingCheckout.ts";
 export * from "./createBillingPortal.ts";
 export * from "./createBillingTopUpCheckout.ts";

@@ -123,14 +123,23 @@
           "unsupported_by_model",
           "rate_limited",
           "insufficient_credits",
+          "billing_admin_required",
           "billing_account_blocked",
           "storage_limit_exceeded",
           "billing_catalog_mismatch",
+          "billing_offer_unavailable",
+          "founder_assignment_not_available",
           "subscription_already_active",
           "subscription_change_not_available",
+          "subscription_projection_changed",
           "invalid_topup_amount",
           "topup_not_available",
+          "idempotency_conflict",
+          "stripe_catalog_unavailable",
+          "stripe_catalog_mismatch",
           "stripe_checkout_unavailable",
+          "stripe_customer_unavailable",
+          "stripe_subscription_mismatch",
           "internal_error"
         ]
       },
@@ -2864,15 +2873,9 @@
           {
             "type": "object",
             "properties": {
-              "amountUsd": {
-                "type": "string",
-                "pattern": "^\\d+(?:\\.\\d+)?$"
-              },
-              "currency": {
-                "type": "string",
-                "enum": [
-                  "USD"
-                ]
+              "estimatedCredits": {
+                "type": "integer",
+                "minimum": 0
               },
               "estimatedJobCount": {
                 "type": "integer",
@@ -2892,8 +2895,7 @@
               }
             },
             "required": [
-              "amountUsd",
-              "currency",
+              "estimatedCredits",
               "estimatedJobCount",
               "status",
               "unavailableJobCount"
@@ -2902,14 +2904,8 @@
           {
             "type": "object",
             "properties": {
-              "amountUsd": {
+              "estimatedCredits": {
                 "nullable": true
-              },
-              "currency": {
-                "type": "string",
-                "enum": [
-                  "USD"
-                ]
               },
               "estimatedJobCount": {
                 "type": "integer",
@@ -2928,8 +2924,7 @@
               }
             },
             "required": [
-              "amountUsd",
-              "currency",
+              "estimatedCredits",
               "estimatedJobCount",
               "status",
               "unavailableJobCount"
@@ -2938,14 +2933,8 @@
           {
             "type": "object",
             "properties": {
-              "amountUsd": {
+              "estimatedCredits": {
                 "nullable": true
-              },
-              "currency": {
-                "type": "string",
-                "enum": [
-                  "USD"
-                ]
               },
               "estimatedJobCount": {
                 "type": "number",
@@ -2965,8 +2954,7 @@
               }
             },
             "required": [
-              "amountUsd",
-              "currency",
+              "estimatedCredits",
               "estimatedJobCount",
               "status",
               "unavailableJobCount"
@@ -25336,6 +25324,116 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/BillingHostedUrlResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Active organization required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Resource state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Organization request rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/billing/founder": {
+      "post": {
+        "operationId": "assignBillingFounderStatus",
+        "tags": [
+          "Billing"
+        ],
+        "responses": {
+          "200": {
+            "description": "Explicit Founder enrollment and one-time welcome grant",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillingAccountResponse"
                 }
               }
             }

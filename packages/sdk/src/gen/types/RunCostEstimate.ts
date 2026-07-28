@@ -3,13 +3,6 @@
  * Do not edit manually.
  */
 
-export const runCostEstimateCurrencyEnum = {
-  USD: "USD",
-} as const;
-
-export type RunCostEstimateCurrencyEnumKey =
-  (typeof runCostEstimateCurrencyEnum)[keyof typeof runCostEstimateCurrencyEnum];
-
 export const runCostEstimateStatusEnum = {
   estimated: "estimated",
 } as const;
@@ -48,14 +41,10 @@ export type RunCostEstimateStatusEnum3Key =
 export type RunCostEstimate =
   | {
       /**
-       * @pattern ^\d+(?:\.\d+)?$
-       * @type string
+       * @minLength 0
+       * @type integer
        */
-      amountUsd: string;
-      /**
-       * @type string
-       */
-      currency: RunCostEstimateCurrencyEnumKey;
+      estimatedCredits: number;
       /**
        * @minLength 0
        * @type integer
@@ -71,11 +60,7 @@ export type RunCostEstimate =
       unavailableJobCount: RunCostEstimateUnavailableJobCountEnumKey;
     }
   | {
-      amountUsd: any | null;
-      /**
-       * @type string
-       */
-      currency: RunCostEstimateCurrencyEnumKey;
+      estimatedCredits: any | null;
       /**
        * @minLength 0
        * @type integer
@@ -91,11 +76,7 @@ export type RunCostEstimate =
       unavailableJobCount: number;
     }
   | {
-      amountUsd: any | null;
-      /**
-       * @type string
-       */
-      currency: RunCostEstimateCurrencyEnumKey;
+      estimatedCredits: any | null;
       /**
        * @type number
        */

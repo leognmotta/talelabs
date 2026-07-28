@@ -12,6 +12,7 @@ export type * from "./AssetType.ts";
 export type * from "./AssetUsage.ts";
 export type * from "./AssetUsageListResponse.ts";
 export type * from "./AssetVisibility.ts";
+export type * from "./AssignBillingFounderStatus.ts";
 export type * from "./BillingAccountResponse.ts";
 export type * from "./BillingCatalogResponse.ts";
 export type * from "./BillingHostedUrlResponse.ts";

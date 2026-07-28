@@ -12,6 +12,7 @@ export * from "./assetTypeSchema.ts";
 export * from "./assetUsageListResponseSchema.ts";
 export * from "./assetUsageSchema.ts";
 export * from "./assetVisibilitySchema.ts";
+export * from "./assignBillingFounderStatusSchema.ts";
 export * from "./billingAccountResponseSchema.ts";
 export * from "./billingCatalogResponseSchema.ts";
 export * from "./billingHostedUrlResponseSchema.ts";

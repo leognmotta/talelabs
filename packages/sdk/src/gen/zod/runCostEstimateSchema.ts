@@ -8,22 +8,19 @@ import type { RunCostEstimate } from "../types/RunCostEstimate.ts";
 
 export const runCostEstimateSchema = z.union([
   z.object({
-    amountUsd: z.string().regex(/^\d+(?:\.\d+)?$/),
-    currency: z.enum(["USD"]),
+    estimatedCredits: z.int().min(0),
     estimatedJobCount: z.int().min(0),
     status: z.enum(["estimated"]),
     unavailableJobCount: z.literal(0),
   }),
   z.object({
-    amountUsd: z.nullable(z.any()),
-    currency: z.enum(["USD"]),
+    estimatedCredits: z.nullable(z.any()),
     estimatedJobCount: z.int().min(0),
     status: z.enum(["partial"]),
     unavailableJobCount: z.int().gt(0),
   }),
   z.object({
-    amountUsd: z.nullable(z.any()),
-    currency: z.enum(["USD"]),
+    estimatedCredits: z.nullable(z.any()),
     estimatedJobCount: z.literal(0),
     status: z.enum(["unavailable"]),
     unavailableJobCount: z.int().min(0),
