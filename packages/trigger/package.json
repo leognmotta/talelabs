@@ -24,11 +24,13 @@
   },
   "dependencies": {
     "@paralleldrive/cuid2": "^3.3.0",
+    "@talelabs/billing": "*",
     "@talelabs/db": "*",
     "@talelabs/flows": "*",
     "@talelabs/models-catalog": "*",
     "@talelabs/providers": "*",
     "@talelabs/storage": "*",
+    "@talelabs/stripe": "*",
     "@trigger.dev/sdk": "4.5.3",
     "dotenv": "^17.2.3",
     "sharp": "^0.34.5",
