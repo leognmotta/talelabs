@@ -267,10 +267,10 @@
     "runSelection": "Executar seleção",
     "runAll": "Executar tudo",
     "runCost": {
-      "amount": "Estimativa de {{amount}}",
+      "credits": "Estimativa de {{count}} créditos",
       "estimating": "Estimando…",
       "updating": "Atualizando…",
-      "explanation": "Custo estimado."
+      "explanation": "Créditos TaleLabs estimados e reservados antes da execução. Somente resultados utilizáveis os consomem."
     },
     "debugMode": {
       "active": "Modo de depuração",

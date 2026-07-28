@@ -256,10 +256,10 @@
     "runSelection": "Uruchom zaznaczenie",
     "runAll": "Uruchom wszystko",
     "runCost": {
-      "amount": "Szacunkowo {{amount}}",
+      "credits": "Szacunkowo {{count}} kredytów",
       "estimating": "Szacowanie…",
       "updating": "Aktualizowanie…",
-      "explanation": "Szacowany koszt."
+      "explanation": "Szacowane kredyty TaleLabs rezerwowane przed wykonaniem. Zużywają je tylko użyteczne wyniki."
     },
     "debugMode": {
       "active": "Tryb debugowania",

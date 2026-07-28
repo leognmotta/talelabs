@@ -256,10 +256,10 @@
     "runSelection": "Rulează selecția",
     "runAll": "Rulați tot",
     "runCost": {
-      "amount": "Estimare de {{amount}}",
+      "credits": "Estimare de {{count}} credite",
       "estimating": "Se estimează…",
       "updating": "Se actualizează…",
-      "explanation": "Cost estimat."
+      "explanation": "Credite TaleLabs estimate și rezervate înainte de execuție. Doar rezultatele utilizabile le consumă."
     },
     "debugMode": {
       "active": "Mod de depanare",

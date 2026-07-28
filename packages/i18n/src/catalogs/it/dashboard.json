@@ -256,10 +256,10 @@
     "runSelection": "Esegui selezione",
     "runAll": "Esegui tutto",
     "runCost": {
-      "amount": "Stima di {{amount}}",
+      "credits": "Stima di {{count}} crediti",
       "estimating": "Calcolo in corso…",
       "updating": "Aggiornamento…",
-      "explanation": "Costo stimato."
+      "explanation": "Crediti TaleLabs stimati e riservati prima dell’esecuzione. Solo i risultati utilizzabili li consumano."
     },
     "debugMode": {
       "active": "Modalità debug",

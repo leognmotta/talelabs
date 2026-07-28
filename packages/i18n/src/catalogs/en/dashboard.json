@@ -267,10 +267,10 @@
     "runSelection": "Run selection",
     "runAll": "Run all",
     "runCost": {
-      "amount": "Estimated {{amount}}",
+      "credits": "Estimated {{count}} credits",
       "estimating": "Estimating…",
       "updating": "Updating…",
-      "explanation": "Estimated cost."
+      "explanation": "Estimated TaleLabs credits reserved before the run. Only usable outputs consume them."
     },
     "debugMode": {
       "active": "Debug mode",

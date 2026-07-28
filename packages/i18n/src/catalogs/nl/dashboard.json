@@ -256,10 +256,10 @@
     "runSelection": "Selectie uitvoeren",
     "runAll": "Alles uitvoeren",
     "runCost": {
-      "amount": "Geschat op {{amount}}",
+      "credits": "Geschat op {{count}} credits",
       "estimating": "Bezig met schatten…",
       "updating": "Bezig met bijwerken…",
-      "explanation": "Geschatte kosten."
+      "explanation": "Geschatte TaleLabs-credits die vóór de uitvoering worden gereserveerd. Alleen bruikbare resultaten verbruiken ze."
     },
     "debugMode": {
       "active": "Debugmodus",
