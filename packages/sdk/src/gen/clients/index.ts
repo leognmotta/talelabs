@@ -89,6 +89,7 @@ export * from "./postRunsIdBrowserJobsJobidOutputGrant.ts";
 export * from "./postRunsIdCancel.ts";
 export * from "./postRunsIdRealtimeToken.ts";
 export * from "./postRunsIdRetry.ts";
+export * from "./postRunsIdRetryEstimate.ts";
 export * from "./postRunsReconcile.ts";
 export * from "./postTags.ts";
 export * from "./postUploads.ts";
