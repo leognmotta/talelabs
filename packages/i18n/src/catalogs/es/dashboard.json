@@ -1377,6 +1377,24 @@
     "theme": "Tema",
     "usage": "Uso"
   },
+  "generationAccess": {
+    "title": "Elige cómo generar",
+    "apiKeyRequiredDescription": "No hay ninguna clave de API de proveedor disponible en este navegador. Añade una o usa un plan o créditos de TaleLabs.",
+    "creditsRequiredDescription": "Esta generación necesita más créditos. Elige un plan, compra créditos de un solo pago o usa tu propia clave de API.",
+    "creditSummaryTitle": "Créditos necesarios",
+    "creditSummary": "{{required}} necesarios · {{available}} disponibles",
+    "planTitle": "Elige un plan",
+    "recommended": "Ideal para uso frecuente",
+    "planDescription": "Recibe créditos cada mes, más almacenamiento y más valor al recargar.",
+    "planAction": "Ver planes",
+    "creditsTitle": "Compra créditos",
+    "creditsDescription": "Recarga ahora. Los créditos comprados no caducan.",
+    "creditsAction": "Comprar créditos",
+    "apiKeyTitle": "Usa tu clave de API",
+    "apiKeyDescription": "Genera sin usar créditos de TaleLabs con una clave guardada en este navegador.",
+    "apiKeyAction": "Añadir clave de API",
+    "adminNotice": "Solo el propietario o un administrador del espacio de trabajo puede comprar planes y créditos. Aún puedes usar tu propia clave de API."
+  },
   "billing": {
     "actionFailed": "No se pudo completar la acción de facturación.",
     "adminOnly": "Requiere propietario o administrador",

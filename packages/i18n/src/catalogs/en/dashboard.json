@@ -1388,6 +1388,24 @@
     "theme": "Theme",
     "usage": "Usage"
   },
+  "generationAccess": {
+    "title": "Choose how to generate",
+    "apiKeyRequiredDescription": "No provider API key is available in this browser. Add one, or use a TaleLabs plan or credits.",
+    "creditsRequiredDescription": "This generation needs more credits. Choose a plan, buy one-time credits, or use your own API key.",
+    "creditSummaryTitle": "Credits needed",
+    "creditSummary": "{{required}} needed · {{available}} available",
+    "planTitle": "Choose a plan",
+    "recommended": "Best for regular use",
+    "planDescription": "Receive credits every month, more storage, and better top-up value.",
+    "planAction": "View plans",
+    "creditsTitle": "Buy one-time credits",
+    "creditsDescription": "Top up now. Purchased credits never expire.",
+    "creditsAction": "Buy credits",
+    "apiKeyTitle": "Use your API key",
+    "apiKeyDescription": "Generate without TaleLabs credits using a key stored in this browser.",
+    "apiKeyAction": "Add API key",
+    "adminNotice": "Only a workspace owner or admin can buy plans and credits. You can still use your own API key."
+  },
   "billing": {
     "actionFailed": "The billing action could not be completed.",
     "adminOnly": "Owner or admin required",

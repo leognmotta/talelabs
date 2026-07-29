@@ -1377,6 +1377,24 @@
     "theme": "Thema",
     "usage": "Gebruik"
   },
+  "generationAccess": {
+    "title": "Kies hoe je wilt genereren",
+    "apiKeyRequiredDescription": "Er is geen API-sleutel van een provider beschikbaar in deze browser. Voeg er een toe of gebruik een TaleLabs-abonnement of credits.",
+    "creditsRequiredDescription": "Voor deze generatie zijn meer credits nodig. Kies een abonnement, koop eenmalige credits of gebruik je eigen API-sleutel.",
+    "creditSummaryTitle": "Benodigde credits",
+    "creditSummary": "{{required}} nodig · {{available}} beschikbaar",
+    "planTitle": "Kies een abonnement",
+    "recommended": "Ideaal voor regelmatig gebruik",
+    "planDescription": "Ontvang elke maand credits, meer opslag en meer voordeel bij opwaarderen.",
+    "planAction": "Abonnementen bekijken",
+    "creditsTitle": "Eenmalige credits kopen",
+    "creditsDescription": "Waardeer nu op. Gekochte credits verlopen niet.",
+    "creditsAction": "Credits kopen",
+    "apiKeyTitle": "Gebruik je API-sleutel",
+    "apiKeyDescription": "Genereer zonder TaleLabs-credits met een sleutel die in deze browser is opgeslagen.",
+    "apiKeyAction": "API-sleutel toevoegen",
+    "adminNotice": "Alleen de eigenaar of een beheerder van de werkruimte kan abonnementen en credits kopen. Je kunt nog steeds je eigen API-sleutel gebruiken."
+  },
   "billing": {
     "actionFailed": "De factureringsactie kon niet worden voltooid.",
     "adminOnly": "Eigenaar of beheerder vereist",

@@ -1377,6 +1377,24 @@
     "theme": "Design",
     "usage": "Nutzung"
   },
+  "generationAccess": {
+    "title": "Wähle, wie du generieren möchtest",
+    "apiKeyRequiredDescription": "In diesem Browser ist kein Anbieter-API-Schlüssel verfügbar. Füge einen hinzu oder nutze einen TaleLabs-Tarif bzw. Credits.",
+    "creditsRequiredDescription": "Für diese Generierung brauchst du mehr Credits. Wähle einen Tarif, kaufe einmalig Credits oder nutze deinen eigenen API-Schlüssel.",
+    "creditSummaryTitle": "Benötigte Credits",
+    "creditSummary": "{{required}} benötigt · {{available}} verfügbar",
+    "planTitle": "Wähle einen Tarif",
+    "recommended": "Ideal für regelmäßige Nutzung",
+    "planDescription": "Erhalte jeden Monat Credits, mehr Speicher und einen besseren Gegenwert beim Aufladen.",
+    "planAction": "Tarife ansehen",
+    "creditsTitle": "Einmalig Credits kaufen",
+    "creditsDescription": "Lade jetzt auf. Gekaufte Credits verfallen nicht.",
+    "creditsAction": "Credits kaufen",
+    "apiKeyTitle": "Eigenen API-Schlüssel verwenden",
+    "apiKeyDescription": "Generiere ohne TaleLabs-Credits mit einem Schlüssel, der in diesem Browser gespeichert ist.",
+    "apiKeyAction": "API-Schlüssel hinzufügen",
+    "adminNotice": "Nur Workspace-Inhaber oder Administratoren können Tarife und Credits kaufen. Du kannst weiterhin deinen eigenen API-Schlüssel verwenden."
+  },
   "billing": {
     "actionFailed": "Die Abrechnungsaktion konnte nicht abgeschlossen werden.",
     "adminOnly": "Inhaber- oder Administratorzugriff erforderlich",

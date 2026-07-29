@@ -1377,6 +1377,24 @@
     "theme": "Temă",
     "usage": "Utilizare"
   },
+  "generationAccess": {
+    "title": "Alegeți cum doriți să generați",
+    "apiKeyRequiredDescription": "În acest browser nu este disponibilă nicio cheie API de furnizor. Adăugați una sau utilizați un plan ori credite TaleLabs.",
+    "creditsRequiredDescription": "Pentru această generare sunt necesare mai multe credite. Alegeți un plan, cumpărați credite unice sau utilizați propria cheie API.",
+    "creditSummaryTitle": "Credite necesare",
+    "creditSummary": "{{required}} necesare · {{available}} disponibile",
+    "planTitle": "Alegeți un plan",
+    "recommended": "Ideal pentru utilizare regulată",
+    "planDescription": "Primiți credite în fiecare lună, mai mult spațiu de stocare și o valoare mai bună la reîncărcare.",
+    "planAction": "Vedeți planurile",
+    "creditsTitle": "Cumpărați credite unice",
+    "creditsDescription": "Reîncărcați acum. Creditele cumpărate nu expiră.",
+    "creditsAction": "Cumpărați credite",
+    "apiKeyTitle": "Utilizați cheia API proprie",
+    "apiKeyDescription": "Generați fără credite TaleLabs folosind o cheie stocată în acest browser.",
+    "apiKeyAction": "Adăugați cheia API",
+    "adminNotice": "Numai proprietarul sau un administrator al spațiului de lucru poate cumpăra planuri și credite. Puteți utiliza în continuare propria cheie API."
+  },
   "billing": {
     "actionFailed": "Acțiunea de facturare nu a putut fi finalizată.",
     "adminOnly": "Este necesar un proprietar sau administrator",

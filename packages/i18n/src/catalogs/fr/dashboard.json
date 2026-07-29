@@ -1377,6 +1377,24 @@
     "theme": "Thème",
     "usage": "Utilisation"
   },
+  "generationAccess": {
+    "title": "Choisissez comment générer",
+    "apiKeyRequiredDescription": "Aucune clé API de fournisseur n’est disponible dans ce navigateur. Ajoutez-en une ou utilisez un forfait ou des crédits TaleLabs.",
+    "creditsRequiredDescription": "Cette génération nécessite davantage de crédits. Choisissez un forfait, achetez des crédits ponctuels ou utilisez votre propre clé API.",
+    "creditSummaryTitle": "Crédits nécessaires",
+    "creditSummary": "{{required}} requis · {{available}} disponibles",
+    "planTitle": "Choisir un forfait",
+    "recommended": "Idéal pour une utilisation régulière",
+    "planDescription": "Recevez des crédits chaque mois, davantage de stockage et plus de valeur lors des recharges.",
+    "planAction": "Voir les forfaits",
+    "creditsTitle": "Acheter des crédits ponctuels",
+    "creditsDescription": "Rechargez maintenant. Les crédits achetés n’expirent jamais.",
+    "creditsAction": "Acheter des crédits",
+    "apiKeyTitle": "Utiliser votre clé API",
+    "apiKeyDescription": "Générez sans utiliser de crédits TaleLabs avec une clé stockée dans ce navigateur.",
+    "apiKeyAction": "Ajouter une clé API",
+    "adminNotice": "Seul le propriétaire ou un administrateur de l’espace de travail peut acheter des forfaits et des crédits. Vous pouvez toujours utiliser votre propre clé API."
+  },
   "billing": {
     "actionFailed": "L’action de facturation n’a pas pu être effectuée.",
     "adminOnly": "Propriétaire ou administrateur requis",
