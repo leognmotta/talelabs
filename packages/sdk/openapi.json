@@ -7161,9 +7161,28 @@
                 "type": "string",
                 "nullable": true
               },
+              "scheduledPlanCode": {
+                "type": "string",
+                "nullable": true,
+                "enum": [
+                  "free",
+                  "creator",
+                  "pro",
+                  null
+                ]
+              },
               "scheduledRecurringOptionCode": {
                 "type": "string",
                 "nullable": true
+              },
+              "scheduledBillingInterval": {
+                "type": "string",
+                "nullable": true,
+                "enum": [
+                  "month",
+                  "year",
+                  null
+                ]
               },
               "scheduledEffectiveAt": {
                 "type": "string",
@@ -7215,7 +7234,9 @@
               "code",
               "founder",
               "recurringOptionCode",
+              "scheduledPlanCode",
               "scheduledRecurringOptionCode",
+              "scheduledBillingInterval",
               "scheduledEffectiveAt",
               "offerCode",
               "billingInterval",
@@ -7707,6 +7728,130 @@
         },
         "required": [
           "url"
+        ]
+      },
+      "BillingSubscriptionChangePreviewResponse": {
+        "type": "object",
+        "properties": {
+          "amountDueNowMinor": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "billingInterval": {
+            "type": "string",
+            "enum": [
+              "month",
+              "year"
+            ]
+          },
+          "creditsAddedNow": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "effectiveAt": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "immediate",
+              "renewal"
+            ]
+          },
+          "nextRenewalAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "planCode": {
+            "type": "string",
+            "enum": [
+              "creator",
+              "pro"
+            ]
+          },
+          "prorationDate": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "recurringOptionCode": {
+            "type": "string"
+          },
+          "storageBytes": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "targetMonthlyCredits": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true
+          },
+          "targetPriceUsdCents": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true
+          }
+        },
+        "required": [
+          "amountDueNowMinor",
+          "billingInterval",
+          "creditsAddedNow",
+          "effectiveAt",
+          "mode",
+          "nextRenewalAt",
+          "planCode",
+          "prorationDate",
+          "recurringOptionCode",
+          "storageBytes",
+          "targetMonthlyCredits",
+          "targetPriceUsdCents"
+        ]
+      },
+      "BillingSubscriptionUpdateResponse": {
+        "type": "object",
+        "properties": {
+          "account": {
+            "$ref": "#/components/schemas/BillingAccountResponse"
+          },
+          "creditsAdded": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "paymentUrl": {
+            "type": "string",
+            "nullable": true,
+            "format": "uri"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "applied",
+              "payment_required",
+              "scheduled"
+            ]
+          }
+        },
+        "required": [
+          "account",
+          "creditsAdded",
+          "paymentUrl",
+          "status"
+        ]
+      },
+      "BillingSubscriptionScheduleCancelResponse": {
+        "type": "object",
+        "properties": {
+          "account": {
+            "$ref": "#/components/schemas/BillingAccountResponse"
+          },
+          "canceled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "account",
+          "canceled"
         ]
       }
     },
@@ -25596,6 +25741,158 @@
         }
       }
     },
+    "/billing/subscription/preview": {
+      "post": {
+        "operationId": "previewBillingSubscriptionChange",
+        "tags": [
+          "Billing"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "planCode": {
+                    "type": "string",
+                    "enum": [
+                      "creator",
+                      "pro"
+                    ]
+                  },
+                  "recurringOptionCode": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "billingInterval": {
+                    "type": "string",
+                    "enum": [
+                      "month",
+                      "year"
+                    ]
+                  },
+                  "catalogRevision": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  }
+                },
+                "required": [
+                  "planCode",
+                  "recurringOptionCode",
+                  "billingInterval",
+                  "catalogRevision"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Exact paid subscription change preview",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillingSubscriptionChangePreviewResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Active organization required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Resource state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Organization request rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/billing/subscription": {
       "patch": {
         "operationId": "updateBillingSubscription",
@@ -25609,19 +25906,38 @@
               "schema": {
                 "type": "object",
                 "properties": {
+                  "planCode": {
+                    "type": "string",
+                    "enum": [
+                      "creator",
+                      "pro"
+                    ]
+                  },
                   "recurringOptionCode": {
                     "type": "string",
                     "minLength": 1,
                     "maxLength": 100
                   },
+                  "billingInterval": {
+                    "type": "string",
+                    "enum": [
+                      "month",
+                      "year"
+                    ]
+                  },
                   "catalogRevision": {
                     "type": "string",
                     "minLength": 1,
                     "maxLength": 100
+                  },
+                  "prorationDate": {
+                    "$ref": "#/components/schemas/Timestamp"
                   }
                 },
                 "required": [
+                  "planCode",
                   "recurringOptionCode",
+                  "billingInterval",
                   "catalogRevision"
                 ]
               }
@@ -25630,11 +25946,121 @@
         },
         "responses": {
           "200": {
-            "description": "Subscription option scheduled at the renewal boundary",
+            "description": "Applied or scheduled paid subscription change",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/BillingAccountResponse"
+                  "$ref": "#/components/schemas/BillingSubscriptionUpdateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Payment or credit balance required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Active organization required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Resource state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Organization request rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Billing provider temporarily unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/billing/subscription/schedule": {
+      "delete": {
+        "operationId": "cancelBillingSubscriptionSchedule",
+        "tags": [
+          "Billing"
+        ],
+        "responses": {
+          "200": {
+            "description": "Released future subscription change",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillingSubscriptionScheduleCancelResponse"
                 }
               }
             }

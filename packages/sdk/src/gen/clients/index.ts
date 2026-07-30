@@ -1,5 +1,6 @@
 export * from "./activateOrganization.ts";
 export * from "./assignBillingFounderStatus.ts";
+export * from "./cancelBillingSubscriptionSchedule.ts";
 export * from "./createBillingCheckout.ts";
 export * from "./createBillingPortal.ts";
 export * from "./createBillingTopUpCheckout.ts";
@@ -93,6 +94,7 @@ export * from "./postRunsIdRetryEstimate.ts";
 export * from "./postRunsReconcile.ts";
 export * from "./postTags.ts";
 export * from "./postUploads.ts";
+export * from "./previewBillingSubscriptionChange.ts";
 export * from "./putAssetsIdFavorite.ts";
 export * from "./putAssetsIdTagsTagid.ts";
 export * from "./putRunsIdBrowserExecutorStatus.ts";

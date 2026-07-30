@@ -3,13 +3,14 @@
  * Do not edit manually.
  */
 
-import type { BillingAccountResponse } from "./BillingAccountResponse.ts";
+import type { BillingSubscriptionUpdateResponse } from "./BillingSubscriptionUpdateResponse.ts";
 import type { ErrorResponse } from "./ErrorResponse.ts";
+import type { Timestamp } from "./Timestamp.ts";
 
 /**
- * @description Subscription option scheduled at the renewal boundary
+ * @description Applied or scheduled paid subscription change
  */
-export type UpdateBillingSubscription200 = BillingAccountResponse;
+export type UpdateBillingSubscription200 = BillingSubscriptionUpdateResponse;
 
 /**
  * @description Validation error
@@ -56,7 +57,27 @@ export type UpdateBillingSubscription500 = ErrorResponse;
  */
 export type UpdateBillingSubscription503 = ErrorResponse;
 
+export const updateBillingSubscriptionMutationRequestPlanCodeEnum = {
+  creator: "creator",
+  pro: "pro",
+} as const;
+
+export type UpdateBillingSubscriptionMutationRequestPlanCodeEnumKey =
+  (typeof updateBillingSubscriptionMutationRequestPlanCodeEnum)[keyof typeof updateBillingSubscriptionMutationRequestPlanCodeEnum];
+
+export const updateBillingSubscriptionMutationRequestBillingIntervalEnum = {
+  month: "month",
+  year: "year",
+} as const;
+
+export type UpdateBillingSubscriptionMutationRequestBillingIntervalEnumKey =
+  (typeof updateBillingSubscriptionMutationRequestBillingIntervalEnum)[keyof typeof updateBillingSubscriptionMutationRequestBillingIntervalEnum];
+
 export type UpdateBillingSubscriptionMutationRequest = {
+  /**
+   * @type string
+   */
+  planCode: UpdateBillingSubscriptionMutationRequestPlanCodeEnumKey;
   /**
    * @minLength 1
    * @maxLength 100
@@ -64,11 +85,19 @@ export type UpdateBillingSubscriptionMutationRequest = {
    */
   recurringOptionCode: string;
   /**
+   * @type string
+   */
+  billingInterval: UpdateBillingSubscriptionMutationRequestBillingIntervalEnumKey;
+  /**
    * @minLength 1
    * @maxLength 100
    * @type string
    */
   catalogRevision: string;
+  /**
+   * @type string | undefined, date-time
+   */
+  prorationDate?: Timestamp;
 };
 
 export type UpdateBillingSubscriptionMutationResponse =

@@ -13,6 +13,23 @@ export const planCodeEnum = {
 
 export type PlanCodeEnumKey = (typeof planCodeEnum)[keyof typeof planCodeEnum];
 
+export const planScheduledPlanCodeEnum = {
+  free: "free",
+  creator: "creator",
+  pro: "pro",
+} as const;
+
+export type PlanScheduledPlanCodeEnumKey =
+  (typeof planScheduledPlanCodeEnum)[keyof typeof planScheduledPlanCodeEnum];
+
+export const planScheduledBillingIntervalEnum = {
+  month: "month",
+  year: "year",
+} as const;
+
+export type PlanScheduledBillingIntervalEnumKey =
+  (typeof planScheduledBillingIntervalEnum)[keyof typeof planScheduledBillingIntervalEnum];
+
 export const planBillingIntervalEnum = {
   month: "month",
   year: "year",
@@ -74,7 +91,15 @@ export type BillingAccountResponse = {
     /**
      * @type string
      */
+    scheduledPlanCode: PlanScheduledPlanCodeEnumKey | null;
+    /**
+     * @type string
+     */
     scheduledRecurringOptionCode: string | null;
+    /**
+     * @type string
+     */
+    scheduledBillingInterval: PlanScheduledBillingIntervalEnumKey | null;
     /**
      * @type string, date-time
      */

@@ -18,14 +18,15 @@ import type {
   UpdateBillingSubscriptionMutationRequest,
   UpdateBillingSubscriptionMutationResponse,
 } from "../types/UpdateBillingSubscription.ts";
-import { billingAccountResponseSchema } from "./billingAccountResponseSchema.ts";
+import { billingSubscriptionUpdateResponseSchema } from "./billingSubscriptionUpdateResponseSchema.ts";
 import { errorResponseSchema } from "./errorResponseSchema.ts";
+import { timestampSchema } from "./timestampSchema.ts";
 
 /**
- * @description Subscription option scheduled at the renewal boundary
+ * @description Applied or scheduled paid subscription change
  */
 export const updateBillingSubscription200Schema = z.lazy(
-  () => billingAccountResponseSchema,
+  () => billingSubscriptionUpdateResponseSchema,
 ) as unknown as z.ZodType<UpdateBillingSubscription200>;
 
 /**
@@ -92,8 +93,13 @@ export const updateBillingSubscription503Schema = z.lazy(
 ) as unknown as z.ZodType<UpdateBillingSubscription503>;
 
 export const updateBillingSubscriptionMutationRequestSchema = z.object({
+  planCode: z.enum(["creator", "pro"]),
   recurringOptionCode: z.string().min(1).max(100),
+  billingInterval: z.enum(["month", "year"]),
   catalogRevision: z.string().min(1).max(100),
+  get prorationDate() {
+    return timestampSchema.optional();
+  },
 }) as unknown as z.ZodType<UpdateBillingSubscriptionMutationRequest>;
 
 export const updateBillingSubscriptionMutationResponseSchema = z.lazy(
