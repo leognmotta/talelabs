@@ -22,6 +22,7 @@ const INSPECTOR_POSITION = { x: 0, y: 0 }
 export const FlowCanvasHeaderPanel = memo((input: {
   destinationFolderId: AssetDestinationSelection
   flow: Flow
+  organizationId: string
   status: FlowSaveStatus
   onFlowDeleted: () => void
   onDestinationFolderChange: (value: AssetDestinationSelection) => void
@@ -37,6 +38,7 @@ export const FlowCanvasHeaderPanel = memo((input: {
         canUndo={canUndo}
         destinationFolderId={input.destinationFolderId}
         flow={input.flow}
+        organizationId={input.organizationId}
         saveStatus={input.status}
         onFlowDeleted={input.onFlowDeleted}
         onDestinationFolderChange={input.onDestinationFolderChange}

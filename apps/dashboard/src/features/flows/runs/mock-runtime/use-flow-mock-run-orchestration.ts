@@ -10,16 +10,17 @@ import type { RefObject } from 'react'
 import type { AssetDestinationSelection } from '../../../projects/asset-destination-picker'
 import type { CanvasStore } from '../../editor/canvas-state/canvas-store'
 import type { FlowReferenceData } from '../../editor/flow-canvas-types'
-import type { FlowGenerationPreviewScope } from './flow-mock-runtime-node-scope'
+import type { FlowGenerationRunOptions } from './flow-mock-runtime-node-scope'
 
 import { isGenerationNodeType } from '@talelabs/flows'
-import { postRunsIdRetry } from '@talelabs/sdk'
+import { postRunsIdRetry, postRunsIdRetryEstimate } from '@talelabs/sdk'
 import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useRef } from 'react'
 import { toast } from 'sonner'
 
 import { getApiErrorMessage } from '../../../../shared/lib/api-error'
 import { getOrganizationRequestHeaders } from '../../../../shared/lib/organization-request'
+import { useCreditAdmissionGuard } from '../../../billing/use-credit-admission-guard'
 import { useGenerationRunAdmission } from '../../../generation/runs/use-generation-run-admission'
 import { useSettingsTabState } from '../../../settings/settings-state'
 import { generationPreviewHistory } from '../../generation/flow-generation-preview-history'
@@ -70,6 +71,14 @@ export function useFlowMockRunOrchestration(input: {
   }, [flowId, saveNow])
   const [, setSettingsTab] = useSettingsTabState()
   const queryClient = useQueryClient()
+  const {
+    ensureCreditsAvailable,
+    handleInsufficientCreditsError,
+    recordCreditAdmission,
+    showApiKeyRequired,
+  } = useCreditAdmissionGuard(organizationId)
+  const creditRequired = fundingSource === 'credits'
+    && executionRuntime === 'managed'
   const openSecureStore = useCallback(() => {
     void setSettingsTab('secureStore')
   }, [setSettingsTab])
@@ -199,6 +208,10 @@ export function useFlowMockRunOrchestration(input: {
         toast.error(t('flows.saveStatus.error'))
         return true
       }
+      if (reason === 'credential_required') {
+        showApiKeyRequired()
+        return true
+      }
       openSecureStore()
       toast.error(
         t(
@@ -207,7 +220,7 @@ export function useFlowMockRunOrchestration(input: {
       )
       return true
     },
-    [markPreviewScopeFailed, openSecureStore, t],
+    [markPreviewScopeFailed, openSecureStore, showApiKeyRequired, t],
   )
 
   const retryGenerationRun = useCallback(
@@ -215,14 +228,26 @@ export function useFlowMockRunOrchestration(input: {
       const previous = previewsRef.current[nodeId]
       if (!previous?.retrySource)
         return
-      updateRunStatePreview(nodeId, previous.fingerprint, 'pending')
       try {
+        const retryRequest = {
+          executionMode,
+          expectedRunStatus: previous.retrySource.status,
+        }
+        const estimate = await postRunsIdRetryEstimate(
+          { data: retryRequest, id: previous.retrySource.runId },
+          { headers: getOrganizationRequestHeaders(organizationId) },
+        )
+        if (estimate.costEstimate.status !== 'estimated') {
+          toast.error(t('errors.run_cost_estimate_unavailable'))
+          return
+        }
+        const quotedCredits = estimate.costEstimate.estimatedCredits
+        if (quotedCredits > 0 && !await ensureCreditsAvailable(quotedCredits))
+          return
+        updateRunStatePreview(nodeId, previous.fingerprint, 'pending')
         const run = await postRunsIdRetry(
           {
-            data: {
-              executionMode,
-              expectedRunStatus: previous.retrySource.status,
-            },
+            data: retryRequest,
             id: previous.retrySource.runId,
           },
           {
@@ -233,6 +258,8 @@ export function useFlowMockRunOrchestration(input: {
           },
         )
         observeRun(run)
+        if (quotedCredits > 0)
+          recordCreditAdmission(quotedCredits)
         if (run.executionRuntime === 'browser' && userId) {
           rememberActiveBrowserRun(queryClient, organizationId, userId, run.id)
           publishBrowserRunHint(
@@ -246,15 +273,20 @@ export function useFlowMockRunOrchestration(input: {
       }
       catch (error) {
         updatePreview(nodeId, previous)
+        if (handleInsufficientCreditsError(error))
+          return
         toast.error(getApiErrorMessage(error, t('flows.runStatus.failed')))
       }
     },
     [
+      ensureCreditsAvailable,
       executionMode,
+      handleInsufficientCreditsError,
       observeRun,
       organizationId,
       previewsRef,
       queryClient,
+      recordCreditAdmission,
       t,
       updatePreview,
       updateRunStatePreview,
@@ -263,7 +295,19 @@ export function useFlowMockRunOrchestration(input: {
   )
 
   const runGenerationPreview = useCallback(
-    async (nodeId: string, scope: FlowGenerationPreviewScope = 'node') => {
+    async (nodeId: string, options: FlowGenerationRunOptions = {}) => {
+      if (
+        creditRequired
+        && (
+          options.estimatedCredits === undefined
+          || !await ensureCreditsAvailable(
+            options.estimatedCredits,
+          )
+        )
+      ) {
+        return
+      }
+      const scope = options.scope ?? 'node'
       const mode
         = scope === 'fromHere'
           ? 'downstream'
@@ -275,24 +319,45 @@ export function useFlowMockRunOrchestration(input: {
       try {
         const result = await admitRun({ mode, targetNodeId: nodeId })
         handleAdmissionFailure(result.reason, nodeIds)
+        if (creditRequired && result.run) {
+          recordCreditAdmission(options.estimatedCredits!)
+        }
       }
       catch (error) {
         markPreviewScopeFailed(nodeIds)
+        if (handleInsufficientCreditsError(error))
+          return
         toast.error(getApiErrorMessage(error, t('flows.runStatus.failed')))
       }
     },
     [
       admitRun,
+      creditRequired,
       createCurrentPlanner,
+      ensureCreditsAvailable,
+      handleInsufficientCreditsError,
       handleAdmissionFailure,
       markPreviewScope,
       markPreviewScopeFailed,
+      recordCreditAdmission,
       t,
     ],
   )
 
   const runGenerationSelectionPreview = useCallback(
-    async (selectedNodeIds: readonly string[]) => {
+    async (
+      selectedNodeIds: readonly string[],
+      estimatedCredits?: number,
+    ) => {
+      if (
+        creditRequired
+        && (
+          estimatedCredits === undefined
+          || !await ensureCreditsAvailable(estimatedCredits)
+        )
+      ) {
+        return
+      }
       const nodeIds = [...new Set(selectedNodeIds)]
       markPreviewScope(nodeIds)
       try {
@@ -301,22 +366,39 @@ export function useFlowMockRunOrchestration(input: {
           selectedNodeIds: nodeIds,
         })
         handleAdmissionFailure(result.reason, nodeIds)
+        if (creditRequired && result.run)
+          recordCreditAdmission(estimatedCredits!)
       }
       catch (error) {
         markPreviewScopeFailed(nodeIds)
+        if (handleInsufficientCreditsError(error))
+          return
         toast.error(getApiErrorMessage(error, t('flows.runStatus.failed')))
       }
     },
     [
       admitRun,
+      creditRequired,
+      ensureCreditsAvailable,
       handleAdmissionFailure,
+      handleInsufficientCreditsError,
       markPreviewScope,
       markPreviewScopeFailed,
+      recordCreditAdmission,
       t,
     ],
   )
 
-  const runAll = useCallback(async () => {
+  const runAll = useCallback(async (estimatedCredits?: number) => {
+    if (
+      creditRequired
+      && (
+        estimatedCredits === undefined
+        || !await ensureCreditsAvailable(estimatedCredits)
+      )
+    ) {
+      return
+    }
     setRunAllAdmissionRunning(true)
     const nodeIds = store
       .getState()
@@ -327,11 +409,15 @@ export function useFlowMockRunOrchestration(input: {
     try {
       const result = await admitRun({ mode: 'all' })
       handleAdmissionFailure(result.reason, nodeIds)
+      if (creditRequired && result.run)
+        recordCreditAdmission(estimatedCredits!)
       if (result.run && !isActiveRunStatus(result.run.status))
         setRunAllAdmissionRunning(false)
     }
     catch (error) {
       markPreviewScopeFailed(nodeIds)
+      if (handleInsufficientCreditsError(error))
+        return
       toast.error(getApiErrorMessage(error, t('flows.runStatus.failed')))
     }
     finally {
@@ -339,9 +425,13 @@ export function useFlowMockRunOrchestration(input: {
     }
   }, [
     admitRun,
+    creditRequired,
+    ensureCreditsAvailable,
     handleAdmissionFailure,
+    handleInsufficientCreditsError,
     markPreviewScope,
     markPreviewScopeFailed,
+    recordCreditAdmission,
     setRunAllAdmissionRunning,
     store,
     t,

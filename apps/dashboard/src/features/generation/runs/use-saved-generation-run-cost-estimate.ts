@@ -25,7 +25,7 @@ export type GenerationRunCostEstimateState
   = | { /** Complete provider estimate returned by canonical preflight. */ estimate: CompleteRunCostEstimate, status: 'ready' }
     | { /** Stable state rendered while canonical preflight is in flight. */ status: 'estimating' }
     | { /** No complete estimate is currently available. */ status: 'idle' }
-    | { /** BYOK and debug requests intentionally skip platform estimation. */ status: 'not-required' }
+    | { /** BYOK requests intentionally skip platform estimation. */ status: 'not-required' }
     | { /** Local edits must reach a confirmed Flow revision first. */ status: 'updating' }
 
 /** Reports whether cost policy allows the related generation command. */
@@ -83,7 +83,6 @@ export function useSavedGenerationRunCostEstimate(input: {
     && input.requestDirectly
     && !input.dirty
     && Boolean(input.flowId && input.organizationId)
-    && input.executionMode === 'live'
     && input.executionRuntime === 'managed'
   const query = useQuery({
     enabled: queryEnabled,
@@ -138,7 +137,7 @@ export function useSavedGenerationRunCostEstimate(input: {
     }
   }, [query.data, query.isError, recordEstimateRecoveryScopes])
 
-  if (!input.costRequired || input.executionMode === 'debug')
+  if (!input.costRequired)
     return { status: 'not-required' }
   if (!input.enabled)
     return { status: 'idle' }

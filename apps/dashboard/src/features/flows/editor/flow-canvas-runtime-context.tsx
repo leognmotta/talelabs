@@ -1,7 +1,7 @@
 /** External services projected into canvas nodes without owning graph state. */
 
 import type { GenerationConfigResponse } from '@talelabs/sdk'
-import type { FlowGenerationPreviewScope } from '../runs/mock-runtime/flow-mock-runtime-node-scope'
+import type { FlowGenerationRunOptions } from '../runs/mock-runtime/flow-mock-runtime-node-scope'
 import type { FlowCanvasAssetUpload, FlowGenerationPreview, FlowReferenceData } from './flow-canvas-types'
 
 import { createContext, use, useSyncExternalStore } from 'react'
@@ -35,7 +35,7 @@ export interface FlowCanvasRuntimeContextValue {
   /** Admits a durable run for one node and optional graph scope. */
   runGenerationPreview: (
     nodeId: string,
-    scope?: FlowGenerationPreviewScope,
+    options?: FlowGenerationRunOptions,
   ) => Promise<void>
   /** Subscribes to upload presentation changes without changing context identity. */
   subscribeAssetUploads: (listener: () => void) => () => void

@@ -59,6 +59,15 @@ export function GenerationRunControls({
   const optionsDisabled = executionDisabled && !retryAvailable
   const fromHereDisabled = executionDisabled || !isRunCostEstimateReady(fromHereCost)
   const tillHereDisabled = executionDisabled || !isRunCostEstimateReady(tillHereCost)
+  const nodeCredits = nodeCost.status === 'ready'
+    ? nodeCost.estimate.estimatedCredits
+    : undefined
+  const fromHereCredits = fromHereCost.status === 'ready'
+    ? fromHereCost.estimate.estimatedCredits
+    : undefined
+  const tillHereCredits = tillHereCost.status === 'ready'
+    ? tillHereCost.estimate.estimatedCredits
+    : undefined
 
   return (
     <div
@@ -79,7 +88,12 @@ export function GenerationRunControls({
             disabled={runDisabled}
             size="xs"
             type="button"
-            onClick={() => void runtime.runGenerationPreview(nodeId)}
+            onClick={() => void runtime.runGenerationPreview(nodeId, {
+              ...(nodeCredits === undefined
+                ? {}
+                : { estimatedCredits: nodeCredits }),
+              scope: 'node',
+            })}
           >
             {running
               ? <Spinner aria-hidden="true" className="size-3" />
@@ -125,7 +139,12 @@ export function GenerationRunControls({
             <DropdownMenuItem
               className="items-start justify-between gap-4 py-3"
               disabled={fromHereDisabled}
-              onClick={() => void runtime.runGenerationPreview(nodeId, 'fromHere')}
+              onClick={() => void runtime.runGenerationPreview(nodeId, {
+                ...(fromHereCredits === undefined
+                  ? {}
+                  : { estimatedCredits: fromHereCredits }),
+                scope: 'fromHere',
+              })}
             >
               <span className="flex flex-col gap-0.5">
                 <span>{t('flows.nodeToolbar.runFromHere')}</span>
@@ -138,7 +157,12 @@ export function GenerationRunControls({
             <DropdownMenuItem
               className="items-start justify-between gap-4 py-3"
               disabled={tillHereDisabled}
-              onClick={() => void runtime.runGenerationPreview(nodeId, 'tillHere')}
+              onClick={() => void runtime.runGenerationPreview(nodeId, {
+                ...(tillHereCredits === undefined
+                  ? {}
+                  : { estimatedCredits: tillHereCredits }),
+                scope: 'tillHere',
+              })}
             >
               <span className="flex flex-col gap-0.5">
                 <span>{t('flows.nodeToolbar.runTillHere')}</span>

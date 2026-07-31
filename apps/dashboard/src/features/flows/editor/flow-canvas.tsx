@@ -313,6 +313,7 @@ function FlowCanvasInner({
                   <FlowCanvasHeaderPanel
                     destinationFolderId={destinationFolderId}
                     flow={flow}
+                    organizationId={organizationId}
                     status={autosave.status}
                     onFlowDeleted={lifecycle.onFlowDeleted}
                     onRetrySave={commands.retrySave}

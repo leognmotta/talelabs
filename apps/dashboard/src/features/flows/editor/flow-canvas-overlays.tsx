@@ -28,10 +28,13 @@ export const FlowCanvasOverlays = memo((input: {
   onDuplicate: (nodeIds: readonly string[]) => void
   onFitView: () => void
   onFocus: (nodeIds: string[], edgeIds: string[]) => void
-  onRunFromHere: (nodeId: string) => void
-  onRunNode: (nodeId: string) => void
-  onRunSelection: (nodeIds: readonly string[]) => void
-  onRunTillHere: (nodeId: string) => void
+  onRunFromHere: (nodeId: string, estimatedCredits?: number) => void
+  onRunNode: (nodeId: string, estimatedCredits?: number) => void
+  onRunSelection: (
+    nodeIds: readonly string[],
+    estimatedCredits?: number,
+  ) => void
+  onRunTillHere: (nodeId: string, estimatedCredits?: number) => void
   onSelectAll: () => void
   onUploadAssets: (position: null | { x: number, y: number }) => void
   shortcutLabels: Readonly<{ delete: string, duplicate: string }>

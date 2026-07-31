@@ -2,7 +2,7 @@
 
 import type { ReactFlowInstance } from '@xyflow/react'
 import type { RefObject } from 'react'
-import type { FlowGenerationPreviewScope } from '../../runs/mock-runtime/flow-mock-runtime-node-scope'
+import type { FlowGenerationRunOptions } from '../../runs/mock-runtime/flow-mock-runtime-node-scope'
 import type { CanvasStore } from '../canvas-state/canvas-store'
 import type {
   CanvasEdge,
@@ -36,10 +36,13 @@ export function useFlowCanvasCommands(input: {
   /** Executes one node with an optional graph scope. */
   runGeneration: (
     nodeId: string,
-    scope?: FlowGenerationPreviewScope,
+    options?: FlowGenerationRunOptions,
   ) => Promise<void>
   /** Executes the selected generation nodes. */
-  runSelection: (nodeIds: readonly string[]) => Promise<void>
+  runSelection: (
+    nodeIds: readonly string[],
+    estimatedCredits?: number,
+  ) => Promise<void>
   /** Scoped client-owned canvas store. */
   store: CanvasStore
   /** Canvas element used to resolve centered node insertion. */
@@ -77,7 +80,11 @@ export function useFlowCanvasCommands(input: {
         input.runGeneration,
         'fromHere',
       ),
-      runNode: input.runGeneration,
+      runNode: runFlowCanvasGeneration.bind(
+        null,
+        input.runGeneration,
+        'node',
+      ),
       runSelection: input.runSelection,
       runTillHere: runFlowCanvasGeneration.bind(
         null,

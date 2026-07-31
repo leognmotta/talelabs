@@ -21,6 +21,7 @@ import {
   postRunsCreate,
   postRunsIdCancel,
   postRunsIdRetry,
+  postRunsIdRetryEstimate,
 } from '@talelabs/sdk'
 import { useQueryClient } from '@tanstack/react-query'
 import { useCallback } from 'react'
@@ -29,6 +30,7 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { getApiErrorMessage } from '../../shared/lib/api-error'
 import { getOrganizationRequestHeaders } from '../../shared/lib/organization-request'
+import { useCreditAdmissionGuard } from '../billing/use-credit-admission-guard'
 import { flowQueryKeys } from '../flows/data/query-keys/flow-query-keys'
 import {
   publishBrowserRunHint,
@@ -48,6 +50,8 @@ export function useCreateRunActions(input: {
   draft: CreateDraft
   /** Optional one-run generated-Asset folder override. */
   destinationFolderId: AssetDestinationSelection
+  /** Complete advisory quote for the current managed request. */
+  estimatedCredits: null | number
   /** Durable session identity, or null until the first run is admitted. */
   createSessionId: null | string
   /** Opens existing browser credential settings. */
@@ -71,6 +75,7 @@ export function useCreateRunActions(input: {
     draft,
     createSessionId,
     destinationFolderId,
+    estimatedCredits,
     openSecureStore,
     organizationId,
     projectId,
@@ -79,6 +84,12 @@ export function useCreateRunActions(input: {
     replaceDraft,
     userId,
   } = input
+  const {
+    ensureCreditsAvailable,
+    handleInsufficientCreditsError,
+    recordCreditAdmission,
+    showApiKeyRequired,
+  } = useCreditAdmissionGuard(organizationId)
 
   const observeRun = useCallback((run: FlowRun) => {
     queryClient.setQueryData(flowQueryKeys.run(organizationId, run.id), run)
@@ -125,6 +136,17 @@ export function useCreateRunActions(input: {
   const generate = useCallback(async () => {
     if (!request)
       return null
+    const billable = request.executionRuntime === 'managed'
+      && request.fundingSource === 'credits'
+    if (
+      billable
+      && (
+        estimatedCredits === null
+        || !await ensureCreditsAvailable(estimatedCredits)
+      )
+    ) {
+      return null
+    }
     try {
       let directRequest = request
       if (
@@ -146,8 +168,7 @@ export function useCreateRunActions(input: {
           return null
         }
         if (credentials.length === 0) {
-          openSecureStore()
-          toast.error(t('flows.browserExecution.credential_required'))
+          showApiKeyRequired()
           return null
         }
         directRequest = {
@@ -175,11 +196,15 @@ export function useCreateRunActions(input: {
       )
       observeRun(run)
       rememberBrowserRun(run)
+      if (billable)
+        recordCreditAdmission(estimatedCredits!)
       if (!createSessionId && run.createSessionId)
         onSessionCreated(run.createSessionId)
       return run
     }
     catch (error) {
+      if (handleInsufficientCreditsError(error))
+        return null
       toast.error(getApiErrorMessage(error, 'create.history.generateFailed'))
       return null
     }
@@ -187,12 +212,17 @@ export function useCreateRunActions(input: {
     observeRun,
     createSessionId,
     destinationFolderId,
+    ensureCreditsAvailable,
+    estimatedCredits,
+    handleInsufficientCreditsError,
     openSecureStore,
     organizationId,
     onSessionCreated,
     projectId,
+    recordCreditAdmission,
     rememberBrowserRun,
     request,
+    showApiKeyRequired,
     t,
     userId,
   ])
@@ -212,13 +242,29 @@ export function useCreateRunActions(input: {
 
   const retry = useCallback(async (run: FlowRunSummary) => {
     try {
+      const retryRequest = {
+        executionMode: run.executionMode,
+        executionRuntime: run.executionRuntime,
+        expectedRunStatus: run.status,
+      }
+      const billable = run.executionRuntime === 'managed'
+      let quotedCredits = 0
+      if (billable) {
+        const estimate = await postRunsIdRetryEstimate(
+          { data: retryRequest, id: run.id },
+          { headers: getOrganizationRequestHeaders(organizationId) },
+        )
+        if (estimate.costEstimate.status !== 'estimated') {
+          toast.error(t('create.validation.estimateUnavailable'))
+          return
+        }
+        quotedCredits = estimate.costEstimate.estimatedCredits
+        if (!await ensureCreditsAvailable(quotedCredits))
+          return
+      }
       const response = await postRunsIdRetry(
         {
-          data: {
-            executionMode: run.executionMode,
-            executionRuntime: run.executionRuntime,
-            expectedRunStatus: run.status,
-          },
+          data: retryRequest,
           id: run.id,
         },
         {
@@ -230,11 +276,23 @@ export function useCreateRunActions(input: {
       )
       observeRun(response)
       rememberBrowserRun(response)
+      if (billable)
+        recordCreditAdmission(quotedCredits)
     }
     catch (error) {
+      if (handleInsufficientCreditsError(error))
+        return
       toast.error(getApiErrorMessage(error, 'create.history.retryFailed'))
     }
-  }, [observeRun, organizationId, rememberBrowserRun])
+  }, [
+    ensureCreditsAvailable,
+    handleInsufficientCreditsError,
+    observeRun,
+    organizationId,
+    recordCreditAdmission,
+    rememberBrowserRun,
+    t,
+  ])
 
   const loadAsset = useCallback(
     (assetId: string) => getAssetsId(

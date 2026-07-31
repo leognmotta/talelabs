@@ -8,6 +8,7 @@
 import type { QueryClient } from '@tanstack/react-query'
 
 import { assetQueryKeys } from '../../assets/data/asset-query-keys'
+import { invalidateBillingActivityQueries } from '../../billing/billing-queries'
 import { projectQueryKeys } from '../../projects/project-query-keys'
 
 const MAX_TRACKED_TERMINAL_RUNS = 1_000
@@ -42,5 +43,9 @@ export async function invalidateTerminalOutputQueries(input: {
     input.queryClient.invalidateQueries({
       queryKey: projectQueryKeys.scope(input.organizationId),
     }),
+    invalidateBillingActivityQueries(
+      input.queryClient,
+      input.organizationId,
+    ),
   ])
 }

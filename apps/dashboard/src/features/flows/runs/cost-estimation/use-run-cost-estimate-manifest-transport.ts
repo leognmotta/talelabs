@@ -66,8 +66,7 @@ function isCompleteEstimate(
 
 function unavailableEstimate(): RunCostEstimate {
   return {
-    amountUsd: null,
-    currency: 'USD',
+    estimatedCredits: null,
     estimatedJobCount: 0,
     status: 'unavailable',
     unavailableJobCount: 1,

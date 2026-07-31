@@ -51,10 +51,10 @@ export function FlowCanvasSelectionContextMenu({
   onDelete: () => void
   onDuplicate: () => void
   onFocus: () => void
-  onRun: () => void
-  onRunFromHere?: () => void
-  onRunNode?: () => void
-  onRunTillHere?: () => void
+  onRun: (estimatedCredits?: number) => void
+  onRunFromHere?: (estimatedCredits?: number) => void
+  onRunNode?: (estimatedCredits?: number) => void
+  onRunTillHere?: (estimatedCredits?: number) => void
 }) {
   const { t } = useTranslation()
   const hasNodeRunActions = Boolean(onRunNode && onRunFromHere && onRunTillHere)
@@ -75,6 +75,18 @@ export function FlowCanvasSelectionContextMenu({
     command: { mode: 'selection', selectedNodeIds: nodeIds },
     enabled: canRun && nodeIds.length > 0,
   })
+  const nodeCredits = nodeCost.status === 'ready'
+    ? nodeCost.estimate.estimatedCredits
+    : undefined
+  const fromHereCredits = fromHereCost.status === 'ready'
+    ? fromHereCost.estimate.estimatedCredits
+    : undefined
+  const tillHereCredits = tillHereCost.status === 'ready'
+    ? tillHereCost.estimate.estimatedCredits
+    : undefined
+  const selectionCredits = selectionCost.status === 'ready'
+    ? selectionCost.estimate.estimatedCredits
+    : undefined
 
   return (
     <>
@@ -84,7 +96,7 @@ export function FlowCanvasSelectionContextMenu({
               <>
                 <ContextMenuItem
                   disabled={!canRunNode || !isRunCostEstimateReady(nodeCost)}
-                  onClick={onRunNode}
+                  onClick={() => onRunNode?.(nodeCredits)}
                 >
                   <IconPlayerPlay />
                   {t('flows.nodeToolbar.run')}
@@ -94,7 +106,7 @@ export function FlowCanvasSelectionContextMenu({
                 </ContextMenuItem>
                 <ContextMenuItem
                   disabled={!canRunNode || !isRunCostEstimateReady(fromHereCost)}
-                  onClick={onRunFromHere}
+                  onClick={() => onRunFromHere?.(fromHereCredits)}
                 >
                   <IconPlayerPlay />
                   {t('flows.nodeToolbar.runFromHere')}
@@ -104,7 +116,7 @@ export function FlowCanvasSelectionContextMenu({
                 </ContextMenuItem>
                 <ContextMenuItem
                   disabled={!canRunNode || !isRunCostEstimateReady(tillHereCost)}
-                  onClick={onRunTillHere}
+                  onClick={() => onRunTillHere?.(tillHereCredits)}
                 >
                   <IconPlayerPlay />
                   {t('flows.nodeToolbar.runTillHere')}
@@ -117,7 +129,7 @@ export function FlowCanvasSelectionContextMenu({
           : null}
         <ContextMenuItem
           disabled={!canRun || !isRunCostEstimateReady(selectionCost)}
-          onClick={onRun}
+          onClick={() => onRun(selectionCredits)}
         >
           <IconPlayerPlay />
           {t('flows.runSelection')}

@@ -65,9 +65,8 @@ export function useCreateDirectCostEstimate(input: {
     && Boolean(input.request)
     && Boolean(settledRequest)
     && settledFingerprint === requestFingerprint
-    && input.request?.executionMode === 'live'
-    && input.request.executionRuntime === 'managed'
-    && input.request.fundingSource === 'credits'
+    && input.request?.executionRuntime === 'managed'
+    && input.request?.fundingSource === 'credits'
   const query = useQuery({
     enabled: queryEnabled,
     gcTime: DIRECT_ESTIMATE_STALE_MS,
@@ -123,7 +122,7 @@ export function useCreateDirectCostEstimate(input: {
     }
   }, [query.data, query.isError, recordEstimateRecoveryScopes])
 
-  if (!input.costRequired || input.request?.executionMode === 'debug')
+  if (!input.costRequired)
     return { status: 'not-required' }
   if (!input.enabled || !input.request)
     return { status: 'idle' }

@@ -11,17 +11,7 @@ import {
 import { cn } from '@talelabs/ui/lib/utils'
 import { useTranslation } from 'react-i18next'
 
-function formattedUsd(amountUsd: string, locale: string): string {
-  const amount = Number(amountUsd)
-  return new Intl.NumberFormat(locale, {
-    currency: 'USD',
-    maximumFractionDigits: amount > 0 && amount < 0.01 ? 6 : 2,
-    minimumFractionDigits: amount > 0 && amount < 0.01 ? 4 : 2,
-    style: 'currency',
-  }).format(amount)
-}
-
-/** Renders estimate progress or the required approximate USD amount. */
+/** Renders estimate progress or the required TaleLabs credits. */
 export function GenerationRunCostEstimate({
   className,
   showTooltip = true,
@@ -38,11 +28,11 @@ export function GenerationRunCostEstimate({
   if (state.status === 'not-required' || state.status === 'idle')
     return null
   const locale = i18n.resolvedLanguage ?? i18n.language ?? 'en'
-  const amount = state.status === 'ready'
-    ? formattedUsd(state.estimate.amountUsd, locale)
+  const credits = state.status === 'ready'
+    ? new Intl.NumberFormat(locale).format(state.estimate.estimatedCredits)
     : undefined
-  const label = amount
-    ? t('flows.runCost.amount', { amount })
+  const label = credits
+    ? t('flows.runCost.credits', { count: credits })
     : state.status === 'estimating'
       ? t('flows.runCost.estimating')
       : state.status === 'updating'
@@ -63,10 +53,10 @@ export function GenerationRunCostEstimate({
       role="status"
       tabIndex={showTooltip ? 0 : undefined}
     >
-      {!amount && state.status !== 'updating' && (
+      {!credits && state.status !== 'updating' && (
         <Spinner aria-hidden="true" className="size-2.5" />
       )}
-      {amount ? `≈ ${amount}` : label}
+      {credits ? `≈ ${credits}` : label}
     </span>
   )
   if (!showTooltip)

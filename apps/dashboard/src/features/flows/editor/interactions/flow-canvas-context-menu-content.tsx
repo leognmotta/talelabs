@@ -25,10 +25,10 @@ export const FlowCanvasContextMenuContent = memo((input: {
   onDuplicate: (nodeIds: string[]) => void
   onFitView: () => void
   onFocus: (nodeIds: string[], edgeIds: string[]) => void
-  onRunFromHere: (nodeId: string) => void
-  onRunNode: (nodeId: string) => void
-  onRunSelection: (nodeIds: string[]) => void
-  onRunTillHere: (nodeId: string) => void
+  onRunFromHere: (nodeId: string, estimatedCredits?: number) => void
+  onRunNode: (nodeId: string, estimatedCredits?: number) => void
+  onRunSelection: (nodeIds: string[], estimatedCredits?: number) => void
+  onRunTillHere: (nodeId: string, estimatedCredits?: number) => void
   onSelectAll: () => void
   onUploadAssets: (position: null | { x: number, y: number }) => void
 }) => {
@@ -64,15 +64,25 @@ export const FlowCanvasContextMenuContent = memo((input: {
                 onDelete={input.onDeleteSelection}
                 onDuplicate={() => input.onDuplicate(target.nodeIds)}
                 onFocus={() => input.onFocus(target.nodeIds, target.edgeIds)}
-                onRun={() => input.onRunSelection(target.nodeIds)}
+                onRun={estimatedCredits =>
+                  input.onRunSelection(target.nodeIds, estimatedCredits)}
                 onRunFromHere={target.nodeIds.length === 1
-                  ? () => input.onRunFromHere(target.nodeIds[0]!)
+                  ? estimatedCredits => input.onRunFromHere(
+                    target.nodeIds[0]!,
+                    estimatedCredits,
+                  )
                   : undefined}
                 onRunNode={target.nodeIds.length === 1
-                  ? () => input.onRunNode(target.nodeIds[0]!)
+                  ? estimatedCredits => input.onRunNode(
+                    target.nodeIds[0]!,
+                    estimatedCredits,
+                  )
                   : undefined}
                 onRunTillHere={target.nodeIds.length === 1
-                  ? () => input.onRunTillHere(target.nodeIds[0]!)
+                  ? estimatedCredits => input.onRunTillHere(
+                    target.nodeIds[0]!,
+                    estimatedCredits,
+                  )
                   : undefined}
               />
             )

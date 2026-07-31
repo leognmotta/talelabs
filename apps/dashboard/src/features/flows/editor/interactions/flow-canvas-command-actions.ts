@@ -3,7 +3,10 @@
 import type { FlowNodeType } from '@talelabs/flows'
 import type { ReactFlowInstance } from '@xyflow/react'
 import type { RefObject } from 'react'
-import type { FlowGenerationPreviewScope } from '../../runs/mock-runtime/flow-mock-runtime-node-scope'
+import type {
+  FlowGenerationPreviewScope,
+  FlowGenerationRunOptions,
+} from '../../runs/mock-runtime/flow-mock-runtime-node-scope'
 import type { CanvasStore } from '../canvas-state/canvas-store'
 import type { CanvasEdge, CanvasNode } from '../flow-canvas-types'
 
@@ -70,12 +73,17 @@ export function focusFlowCanvas(
 export function runFlowCanvasGeneration(
   runGeneration: (
     nodeId: string,
-    scope?: FlowGenerationPreviewScope,
+    options?: FlowGenerationRunOptions,
   ) => Promise<void>,
   /** Explicit run scope represented by the invoking canvas command. */
   scope: FlowGenerationPreviewScope,
   /** Generation node to admit. */
   nodeId: string,
+  /** Complete advisory credit quote displayed by the invoking control. */
+  estimatedCredits?: number,
 ): void {
-  void runGeneration(nodeId, scope)
+  void runGeneration(nodeId, {
+    ...(estimatedCredits === undefined ? {} : { estimatedCredits }),
+    scope,
+  })
 }

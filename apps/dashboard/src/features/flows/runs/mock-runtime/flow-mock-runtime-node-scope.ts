@@ -11,6 +11,14 @@ import { getCanvasGenerationModel } from '../../generation/flow-generation-contr
 /** Canvas-relative scope supported by the deterministic preview planner. */
 export type FlowGenerationPreviewScope = 'fromHere' | 'node' | 'tillHere'
 
+/** Client admission facts attached to one visible Flow run command. */
+export interface FlowGenerationRunOptions {
+  /** Exact advisory credits shown for the command before admission. */
+  estimatedCredits?: number
+  /** Graph-relative execution scope represented by the command. */
+  scope?: FlowGenerationPreviewScope
+}
+
 /** Returns the active model's input slots for one generation canvas node. */
 export function generationInputSlots(node: CanvasNode) {
   const model = getCanvasGenerationModel(node)

@@ -114,7 +114,8 @@ export function CreateWorkspace({
   const executionMode = debugMode ? 'debug' : 'live'
   const credentials = useCreateCredentialStatus(userId)
   const browserAvailability = useCreateBrowserAvailability({
-    enabled: executionMode === 'live'
+    enabled:
+      executionMode === 'live'
       && executionRuntime === 'browser'
       && credentials.status === 'ready',
     modelId: state.draft.modelId,
@@ -122,37 +123,42 @@ export function CreateWorkspace({
     organizationId,
     providers: credentials.providers,
   })
-  const directRequest = useMemo(() => createDirectRequest({
-    byokProviders: [...credentials.providers],
-    draft: state.draft,
-    executionMode,
-    executionRuntime,
-    fundingSource,
-    resolution,
-  }), [
-    credentials.providers,
-    executionMode,
-    executionRuntime,
-    fundingSource,
-    resolution,
-    state.draft,
-  ])
+  const directRequest = useMemo(
+    () =>
+      createDirectRequest({
+        byokProviders: [...credentials.providers],
+        draft: state.draft,
+        executionMode,
+        executionRuntime,
+        fundingSource,
+        resolution,
+      }),
+    [
+      credentials.providers,
+      executionMode,
+      executionRuntime,
+      fundingSource,
+      resolution,
+      state.draft,
+    ],
+  )
   const publicModel = generationConfig.models.find(
     model => model.id === state.draft.modelId,
   )
   const publicOperation = publicModel?.capabilities.operations.find(
-    operation => operation.id === resolution.resolvedOperationId
+    operation =>
+      operation.id === resolution.resolvedOperationId
       && operation.nodeType === resolution.nodeType,
   )
   const executionAvailable = Boolean(publicModel?.enabled && publicOperation)
-  const estimateEligible = executionAvailable
-    && resolution.readiness === 'ready'
-    && resolution.promptValid
-    && hasCreateDraftContent(state.draft)
-    && Boolean(directRequest)
-  const costRequired = fundingSource === 'credits'
-    && executionMode === 'live'
-    && executionRuntime === 'managed'
+  const estimateEligible
+    = executionAvailable
+      && resolution.readiness === 'ready'
+      && resolution.promptValid
+      && hasCreateDraftContent(state.draft)
+      && Boolean(directRequest)
+  const costRequired
+    = fundingSource === 'credits' && executionRuntime === 'managed'
   const estimateState = useCreateDirectCostEstimate({
     costRequired,
     enabled: estimateEligible,
@@ -169,9 +175,12 @@ export function CreateWorkspace({
   const [admissionPending, setAdmissionPending] = useState(false)
   const [destinationFolderId, setDestinationFolderId]
     = useState<AssetDestinationSelection>(undefined)
-  const [workspaceSettingsSection, setWorkspaceSettingsSection]
-    = useState<'location' | 'outputFolder' | null>(null)
-  const [scrollTargetRunId, setScrollTargetRunId] = useState<null | string>(null)
+  const [workspaceSettingsSection, setWorkspaceSettingsSection] = useState<
+    'location' | 'outputFolder' | null
+  >(null)
+  const [scrollTargetRunId, setScrollTargetRunId] = useState<null | string>(
+    null,
+  )
   const composerDockRef = useRef<HTMLDivElement>(null)
   const workspaceRef = useRef<HTMLDivElement>(null)
 
@@ -221,43 +230,13 @@ export function CreateWorkspace({
   const replaceDraft = useCallback((draft: CreateDraft) => {
     dispatch({ draft, type: 'replace' })
   }, [])
-  const handleSessionCreated = useCallback((sessionId: string) => {
-    writeCreateDraftCache({
-      createSessionId: sessionId,
-      draft: state.draft,
-      organizationId,
-      projectId,
-      userId,
-    })
-    deleteCreateDraftCache({
-      createSessionId: null,
-      organizationId,
-      projectId,
-      userId,
-    })
-    navigate(projectId
-      ? `/projects/${projectId}/create/${sessionId}`
-      : `/create/${sessionId}`, { replace: true })
-  }, [navigate, organizationId, projectId, state.draft, userId])
-  const runActions = useCreateRunActions({
-    createSessionId,
-    destinationFolderId,
-    draft: state.draft,
-    onSessionCreated: handleSessionCreated,
-    openSecureStore,
-    organizationId,
-    projectId,
-    replaceDraft,
-    request: directRequest,
-    userId,
-  })
-  const handleDraftProjectChange = useCallback((nextProjectId: null | string) => {
-    if (nextProjectId !== (projectId ?? null)) {
+  const handleSessionCreated = useCallback(
+    (sessionId: string) => {
       writeCreateDraftCache({
-        createSessionId: null,
+        createSessionId: sessionId,
         draft: state.draft,
         organizationId,
-        projectId: nextProjectId,
+        projectId,
         userId,
       })
       deleteCreateDraftCache({
@@ -266,11 +245,59 @@ export function CreateWorkspace({
         projectId,
         userId,
       })
-    }
-    navigate(nextProjectId
-      ? `/projects/${nextProjectId}/create`
-      : '/create')
-  }, [navigate, organizationId, projectId, state.draft, userId])
+      const path = projectId
+        ? `/projects/${projectId}/create/${sessionId}`
+        : `/create/${sessionId}`
+      navigate(`${path}${requestedDebugMode ? '?debug=true' : ''}`, {
+        replace: true,
+      })
+    },
+    [
+      navigate,
+      organizationId,
+      projectId,
+      requestedDebugMode,
+      state.draft,
+      userId,
+    ],
+  )
+  const runActions = useCreateRunActions({
+    createSessionId,
+    destinationFolderId,
+    draft: state.draft,
+    estimatedCredits:
+      estimateState.status === 'ready'
+        ? estimateState.estimate.estimatedCredits
+        : null,
+    onSessionCreated: handleSessionCreated,
+    openSecureStore,
+    organizationId,
+    projectId,
+    replaceDraft,
+    request: directRequest,
+    userId,
+  })
+  const handleDraftProjectChange = useCallback(
+    (nextProjectId: null | string) => {
+      if (nextProjectId !== (projectId ?? null)) {
+        writeCreateDraftCache({
+          createSessionId: null,
+          draft: state.draft,
+          organizationId,
+          projectId: nextProjectId,
+          userId,
+        })
+        deleteCreateDraftCache({
+          createSessionId: null,
+          organizationId,
+          projectId,
+          userId,
+        })
+      }
+      navigate(nextProjectId ? `/projects/${nextProjectId}/create` : '/create')
+    },
+    [navigate, organizationId, projectId, state.draft, userId],
+  )
   const historyPresentationProps = {
     generationConfig,
     hasEarlier: historyQuery.hasEarlier,
@@ -293,9 +320,7 @@ export function CreateWorkspace({
     onReuseRequest: (run: Parameters<typeof runActions.reuseRequest>[0]) => {
       void runActions.reuseRequest(run)
     },
-    onUseAsReference: (
-      output: Parameters<typeof runActions.useOutput>[0],
-    ) => {
+    onUseAsReference: (output: Parameters<typeof runActions.useOutput>[0]) => {
       void runActions.useOutput(output, false)
     },
   }
@@ -349,14 +374,17 @@ export function CreateWorkspace({
   }
 
   const composer = (
-    <div className="
-      pointer-events-auto relative z-10 mx-auto w-full max-w-[920px] space-y-2
-    "
+    <div
+      className="
+        pointer-events-auto relative z-10 mx-auto w-full max-w-[920px] space-y-2
+      "
     >
       {state.notice && (
         <Alert>
           <AlertDescription className="flex flex-wrap items-center gap-2">
-            <span>{t('create.modelDetach.notice', { count: state.notice.count })}</span>
+            <span>
+              {t('create.modelDetach.notice', { count: state.notice.count })}
+            </span>
             <Button
               className="h-auto p-0"
               type="button"
@@ -387,7 +415,8 @@ export function CreateWorkspace({
           if (blockingReason || admissionPending)
             return
           setAdmissionPending(true)
-          void runActions.generate()
+          void runActions
+            .generate()
             .then((run) => {
               if (run)
                 setScrollTargetRunId(run.id)
@@ -402,11 +431,12 @@ export function CreateWorkspace({
           dispatch({ attachmentId, type: 'removeAttachment' })}
         onReorderAttachments={attachmentIds =>
           dispatch({ attachmentIds, type: 'reorderAttachments' })}
-        onSettingChange={(settingId, value) => dispatch({
-          settingId,
-          type: 'setSetting',
-          value,
-        })}
+        onSettingChange={(settingId, value) =>
+          dispatch({
+            settingId,
+            type: 'setSetting',
+            value,
+          })}
       />
     </div>
   )
@@ -424,8 +454,7 @@ export function CreateWorkspace({
         organizationId={organizationId}
         projectId={projectId}
         onLocationOpen={() => setWorkspaceSettingsSection('location')}
-        onOutputFolderOpen={() =>
-          setWorkspaceSettingsSection('outputFolder')}
+        onOutputFolderOpen={() => setWorkspaceSettingsSection('outputFolder')}
       />
       <CreateWorkspaceSettings
         createSession={createSession}
@@ -452,10 +481,11 @@ export function CreateWorkspace({
         className="relative flex min-w-0 flex-1 flex-col overflow-hidden"
         ref={workspaceRef}
       >
-        <main className={cn(
-          'relative z-10 min-h-0 overflow-hidden',
-          hasRuns ? 'absolute inset-0' : 'flex-1',
-        )}
+        <main
+          className={cn(
+            'relative z-10 min-h-0 overflow-hidden',
+            hasRuns ? 'absolute inset-0' : 'flex-1',
+          )}
         >
           {!hasRuns
             ? (
@@ -463,11 +493,13 @@ export function CreateWorkspace({
                   <CreateEmptyStage />
                 </div>
               )
-            : (
-                historyView === 'grid'
-                  ? <CreateRunGrid {...historyPresentationProps} />
-                  : <CreateRunStream {...historyPresentationProps} />
-              )}
+            : historyView === 'grid'
+              ? (
+                  <CreateRunGrid {...historyPresentationProps} />
+                )
+              : (
+                  <CreateRunStream {...historyPresentationProps} />
+                )}
         </main>
         <div
           className={cn(

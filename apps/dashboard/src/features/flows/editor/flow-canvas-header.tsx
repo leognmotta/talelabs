@@ -31,6 +31,7 @@ import { memo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import { TaleLabsLogo } from '../../../shared/components/talelabs-logo'
+import { BillingCanvasCredits } from '../../billing/billing-canvas-credits'
 import { AssetDestinationPicker } from '../../projects/asset-destination-picker'
 import { useSettingsTabState } from '../../settings/settings-state'
 import { CreateFlowDialog } from '../browse/create-flow-dialog'
@@ -46,6 +47,7 @@ export const FlowCanvasHeader = memo(({
   canUndo,
   destinationFolderId,
   flow,
+  organizationId,
   saveStatus,
   onFlowDeleted,
   onDestinationFolderChange,
@@ -57,6 +59,7 @@ export const FlowCanvasHeader = memo(({
   canUndo: boolean
   destinationFolderId: AssetDestinationSelection
   flow: Flow
+  organizationId: string
   saveStatus: FlowSaveStatus
   onFlowDeleted: () => void
   onDestinationFolderChange: (value: AssetDestinationSelection) => void
@@ -196,6 +199,11 @@ export const FlowCanvasHeader = memo(({
             onRetrySave={onRetrySave}
           />
         </div>
+        <span aria-hidden className="mx-0.5 h-4 w-px shrink-0 bg-border/80" />
+        <BillingCanvasCredits
+          organizationId={organizationId}
+          onOpenCredits={() => void setSettingsTab('credits')}
+        />
       </div>
       <CreateFlowDialog
         open={createOpen}

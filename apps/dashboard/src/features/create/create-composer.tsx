@@ -294,9 +294,7 @@ export function CreateComposer({
               />
             </div>
           )}
-          {debugMode
-            ? null
-            : <GenerationRunCostEstimate state={estimateState} />}
+          <GenerationRunCostEstimate state={estimateState} />
           <Button
             className="
               h-10 rounded-xl px-4
