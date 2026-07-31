@@ -25,7 +25,7 @@ export function estimateFixedOutputProviderCost(
     basis: {
       formulaVersion: 'catalog-fixed-output-unit-v1',
       pricingModelId: request.binding.nativeModelId,
-      pricingRetrievedAt: pricing.reviewedAt,
+      pricingRetrievedAt: `${pricing.reviewedAt}T00:00:00.000Z`,
       pricingSource: pricing.source,
       unit: pricing.unit,
       unitPriceUsd: pricing.unitPriceUsd,
