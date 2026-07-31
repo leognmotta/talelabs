@@ -14,6 +14,10 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Outlet, useMatch } from 'react-router'
 import { AssetViewerDialog } from '../features/assets/viewer/asset-viewer-dialog'
+import { BillingReturnReconciler } from '../features/billing/billing-return-reconciler'
+import {
+  GenerationAccessDialogProvider,
+} from '../features/billing/generation-access-dialog-provider'
 import { BrowserRunRoot } from '../features/flows/runs/browser-runtime/browser-run-root'
 import { FlowRunRealtimeSubscriptions } from '../features/flows/runs/realtime/flow-run-realtime-subscriptions'
 import { OrganizationScopeProvider } from '../features/organizations/organization-scope'
@@ -97,25 +101,28 @@ export function DashboardLayout({
   }
 
   const settingsDialog = (
-    <SettingsDialog
-      activeOrganizationId={activeOrganizationId}
-      currentSessionId={currentSessionId}
-      email={email || t('common.workspaceMember')}
-      isTeamInviteFormOpen={isTeamInviteFormOpen}
-      language={language}
-      name={name || t('common.talelabsUser')}
-      onLanguageChange={onLanguageChange}
-      onOpenChange={handleSettingsOpenChange}
-      onOpenCookiePreferences={onOpenCookiePreferences}
-      onProfileUpdated={onProfileUpdated}
-      onSignOut={onSignOut}
-      onTabChange={handleSettingsTabChange}
-      onTeamInviteFormOpenChange={setIsTeamInviteFormOpen}
-      onThemeChange={onThemeChange}
-      open={isSettingsOpen}
-      tab={activeSettingsTab}
-      theme={theme}
-    />
+    <>
+      <BillingReturnReconciler organizationId={activeOrganizationId} />
+      <SettingsDialog
+        activeOrganizationId={activeOrganizationId}
+        currentSessionId={currentSessionId}
+        email={email || t('common.workspaceMember')}
+        isTeamInviteFormOpen={isTeamInviteFormOpen}
+        language={language}
+        name={name || t('common.talelabsUser')}
+        onLanguageChange={onLanguageChange}
+        onOpenChange={handleSettingsOpenChange}
+        onOpenCookiePreferences={onOpenCookiePreferences}
+        onProfileUpdated={onProfileUpdated}
+        onSignOut={onSignOut}
+        onTabChange={handleSettingsTabChange}
+        onTeamInviteFormOpenChange={setIsTeamInviteFormOpen}
+        onThemeChange={onThemeChange}
+        open={isSettingsOpen}
+        tab={activeSettingsTab}
+        theme={theme}
+      />
+    </>
   )
   const uploadIndicator = (
     <div
@@ -130,6 +137,33 @@ export function DashboardLayout({
 
   if (isFlowEditor) {
     return (
+      <GenerationAccessDialogProvider userId={currentUserId}>
+        <OrganizationScopeProvider organizationId={activeOrganizationId}>
+          <UploadProvider>
+            <TooltipProvider>
+              {activeOrganizationId && (
+                <FlowRunRealtimeSubscriptions organizationId={activeOrganizationId} />
+              )}
+              {activeOrganizationId && currentUserId && (
+                <BrowserRunRoot organizationId={activeOrganizationId} userId={currentUserId} />
+              )}
+              <main className="
+                flex h-svh min-h-0 flex-col overflow-hidden text-foreground
+              "
+              >
+                <Outlet />
+              </main>
+              {uploadIndicator}
+              {settingsDialog}
+            </TooltipProvider>
+          </UploadProvider>
+        </OrganizationScopeProvider>
+      </GenerationAccessDialogProvider>
+    )
+  }
+
+  return (
+    <GenerationAccessDialogProvider userId={currentUserId}>
       <OrganizationScopeProvider organizationId={activeOrganizationId}>
         <UploadProvider>
           <TooltipProvider>
@@ -139,91 +173,68 @@ export function DashboardLayout({
             {activeOrganizationId && currentUserId && (
               <BrowserRunRoot organizationId={activeOrganizationId} userId={currentUserId} />
             )}
-            <main className="
-              flex h-svh min-h-0 flex-col overflow-hidden text-foreground
-            "
+            <SidebarProvider
+              className={cn(
+                'h-svh min-h-0 overflow-hidden',
+                isCreate && DARK_THEME_CLASS_NAME,
+              )}
             >
-              <Outlet />
-            </main>
-            {uploadIndicator}
-            {settingsDialog}
+              <AppSidebar
+                activeOrganizationId={activeOrganizationId}
+                email={email}
+                name={name}
+                onCreateOrganization={onCreateOrganization}
+                onOpenInviteMemberSettings={handleOpenInviteMemberSettings}
+                onOpenSettings={handleOpenSettings}
+                onSignOut={onSignOut}
+                onSwitchOrganization={onSwitchOrganization}
+                globalSearch={(
+                  <GlobalSearch
+                    presentation="sidebar"
+                    onOpenInviteMemberSettings={handleOpenInviteMemberSettings}
+                    onOpenSettings={handleOpenSettings}
+                  />
+                )}
+                variant="floating"
+              />
+              <SidebarInset className={cn(
+                `
+                  min-h-0 overflow-hidden bg-transparent
+                  md:m-2 md:ml-0 md:rounded-2xl md:ring-1 md:ring-border/80
+                `,
+              )}
+              >
+                <div className="flex min-h-0 flex-1 flex-col text-foreground">
+                  <header className="
+                    flex h-12 shrink-0 items-center px-3
+                    md:hidden
+                  "
+                  >
+                    <SidebarTrigger
+                      aria-label={t('navigation.toggleSidebar')}
+                    />
+                  </header>
+                  <section
+                    className={cn(
+                      'flex min-h-0 flex-1 flex-col',
+                      isCreate
+                        ? 'overflow-hidden'
+                        : isProjectBrief
+                          ? 'overflow-y-auto'
+                          : 'gap-6 overflow-y-auto p-6',
+                    )}
+                  >
+                    <Outlet />
+                  </section>
+                </div>
+              </SidebarInset>
+              {uploadIndicator}
+              {settingsDialog}
+              <AssetViewerDialog />
+            </SidebarProvider>
           </TooltipProvider>
         </UploadProvider>
       </OrganizationScopeProvider>
-    )
-  }
-
-  return (
-    <OrganizationScopeProvider organizationId={activeOrganizationId}>
-      <UploadProvider>
-        <TooltipProvider>
-          {activeOrganizationId && (
-            <FlowRunRealtimeSubscriptions organizationId={activeOrganizationId} />
-          )}
-          {activeOrganizationId && currentUserId && (
-            <BrowserRunRoot organizationId={activeOrganizationId} userId={currentUserId} />
-          )}
-          <SidebarProvider
-            className={cn(
-              'h-svh min-h-0 overflow-hidden',
-              isCreate && DARK_THEME_CLASS_NAME,
-            )}
-          >
-            <AppSidebar
-              activeOrganizationId={activeOrganizationId}
-              email={email}
-              name={name}
-              onCreateOrganization={onCreateOrganization}
-              onOpenInviteMemberSettings={handleOpenInviteMemberSettings}
-              onOpenSettings={handleOpenSettings}
-              onSignOut={onSignOut}
-              onSwitchOrganization={onSwitchOrganization}
-              globalSearch={(
-                <GlobalSearch
-                  presentation="sidebar"
-                  onOpenInviteMemberSettings={handleOpenInviteMemberSettings}
-                  onOpenSettings={handleOpenSettings}
-                />
-              )}
-              variant="floating"
-            />
-            <SidebarInset className={cn(
-              `
-                min-h-0 overflow-hidden bg-transparent
-                md:m-2 md:ml-0 md:rounded-2xl md:ring-1 md:ring-border/80
-              `,
-            )}
-            >
-              <div className="flex min-h-0 flex-1 flex-col text-foreground">
-                <header className="
-                  flex h-12 shrink-0 items-center px-3
-                  md:hidden
-                "
-                >
-                  <SidebarTrigger
-                    aria-label={t('navigation.toggleSidebar')}
-                  />
-                </header>
-                <section
-                  className={cn(
-                    'flex min-h-0 flex-1 flex-col',
-                    isCreate
-                      ? 'overflow-hidden'
-                      : isProjectBrief
-                        ? 'overflow-y-auto'
-                        : 'gap-6 overflow-y-auto p-6',
-                  )}
-                >
-                  <Outlet />
-                </section>
-              </div>
-            </SidebarInset>
-            {uploadIndicator}
-            {settingsDialog}
-            <AssetViewerDialog />
-          </SidebarProvider>
-        </TooltipProvider>
-      </UploadProvider>
-    </OrganizationScopeProvider>
+    </GenerationAccessDialogProvider>
   )
 }

@@ -10,6 +10,9 @@ export const settingsTabs = [
   'security',
   'team',
   'secureStore',
+  'plans',
+  'credits',
+  'usage',
 ] as const
 
 /** Stable URL value identifying one Settings destination. */

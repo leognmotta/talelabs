@@ -16,6 +16,9 @@ import {
 import { cn } from '@talelabs/ui/lib/utils'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { BillingCreditsSettings } from '../billing/billing-credits-settings'
+import { BillingPlansSettings } from '../billing/billing-plans-settings'
+import { BillingUsageSettings } from '../billing/billing-usage-settings'
 import { GeneralSettings } from './general-settings'
 import { OrganizationSettings } from './organization-settings'
 import { ProfileSettings } from './profile-settings'
@@ -148,7 +151,12 @@ export function SettingsDialog({
               ))}
             </nav>
           </aside>
-          <section className="min-h-0 overflow-y-auto p-6">
+          <section
+            className="
+              min-h-0 overflow-y-auto p-6
+              md:pr-16
+            "
+          >
             {tab === 'general' && (
               <GeneralSettings
                 language={language}
@@ -185,6 +193,15 @@ export function SettingsDialog({
               />
             )}
             {tab === 'secureStore' && <SecureStoreSettings />}
+            {tab === 'plans' && (
+              <BillingPlansSettings organizationId={activeOrganizationId} />
+            )}
+            {tab === 'credits' && (
+              <BillingCreditsSettings organizationId={activeOrganizationId} />
+            )}
+            {tab === 'usage' && (
+              <BillingUsageSettings organizationId={activeOrganizationId} />
+            )}
           </section>
         </div>
       </DialogContent>

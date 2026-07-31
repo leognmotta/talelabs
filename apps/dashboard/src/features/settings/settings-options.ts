@@ -5,6 +5,9 @@ import type { SettingsTab } from './settings-state'
 
 import {
   IconBuilding,
+  IconChartBar,
+  IconCoins,
+  IconCreditCard,
   IconDeviceDesktop,
   IconKey,
   IconMoon,
@@ -17,13 +20,13 @@ import {
 
 /** Grouped destinations rendered by the Settings navigation. */
 export const settingsNavigationGroups: {
-  id: 'account' | 'providers'
+  id: 'account' | 'billing' | 'providers'
   items: {
     icon: typeof IconSettings
     labelKey: `settings.${SettingsTab}`
     value: SettingsTab
   }[]
-  labelKey?: 'settings.providers'
+  labelKey?: 'settings.billing' | 'settings.providers'
 }[] = [
   {
     id: 'account',
@@ -41,6 +44,15 @@ export const settingsNavigationGroups: {
       { icon: IconKey, labelKey: 'settings.secureStore', value: 'secureStore' },
     ],
     labelKey: 'settings.providers',
+  },
+  {
+    id: 'billing',
+    items: [
+      { icon: IconCreditCard, labelKey: 'settings.plans', value: 'plans' },
+      { icon: IconCoins, labelKey: 'settings.credits', value: 'credits' },
+      { icon: IconChartBar, labelKey: 'settings.usage', value: 'usage' },
+    ],
+    labelKey: 'settings.billing',
   },
 ]
 

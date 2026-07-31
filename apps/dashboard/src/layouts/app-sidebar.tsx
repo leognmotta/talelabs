@@ -22,6 +22,7 @@ import { cn } from '@talelabs/ui/lib/utils'
 import { useTranslation } from 'react-i18next'
 import { useMatch } from 'react-router'
 
+import { BillingSidebarStatus } from '../features/billing/billing-sidebar-status'
 import { OrganizationSwitcher } from '../features/organizations/organization-switcher'
 import { ProjectContextSidebar } from '../features/projects/sidebar/project-context-sidebar'
 import { TaleLabsLogo } from '../shared/components/talelabs-logo'
@@ -148,6 +149,10 @@ export function AppSidebar({
             )}
       </SidebarContent>
       <SidebarFooter>
+        <BillingSidebarStatus
+          organizationId={activeOrganizationId}
+          onOpenSettings={onOpenSettings}
+        />
         <NavUser
           user={{
             name: name || t('common.talelabsUser'),
