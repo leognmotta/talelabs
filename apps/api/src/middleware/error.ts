@@ -2,6 +2,8 @@
 
 import type { Context } from 'hono'
 
+import { BillingAccountingError } from '@talelabs/db'
+import { Stripe } from '@talelabs/stripe'
 import { HTTPException } from 'hono/http-exception'
 
 /** One field-scoped validation or domain failure returned to API clients. */
@@ -27,6 +29,7 @@ type ErrorStatusCode
     | 429
     | 500
     | 502
+    | 503
 
 /** Expected API-domain failure with a stable status, code, and optional details. */
 export class HttpError extends Error {
@@ -99,8 +102,23 @@ export function apiError(
 
 /** Converts expected failures to responses and logs only unexpected server errors. */
 export function errorHandler(error: Error, c: Context) {
+  if (error instanceof BillingAccountingError) {
+    const status = error.code === 'insufficient_credits'
+      ? 402
+      : error.code === 'billing_account_blocked'
+        ? 403
+        : 409
+    return c.json(apiError(error.code, error.message), status)
+  }
   if (error instanceof HttpError)
     return c.json(apiError(error.code, error.message, error.details), error.status)
+
+  if (error instanceof Stripe.errors.StripeError) {
+    return c.json(apiError(
+      'stripe_checkout_unavailable',
+      'Stripe billing is temporarily unavailable.',
+    ), 503)
+  }
 
   if (
     error instanceof HTTPException

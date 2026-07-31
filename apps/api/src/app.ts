@@ -15,6 +15,8 @@ import { apiError, errorHandler } from './middleware/error.js'
 import { registerOpenApi } from './openapi.js'
 import { registerAccountRoutes } from './routes/account/account.routes.js'
 import { registerAssetRoutes } from './routes/assets/assets.routes.js'
+import { registerBillingRoutes } from './routes/billing/billing.routes.js'
+import { registerStripeWebhookRoutes } from './routes/billing/stripe-webhook.routes.js'
 import { registerConfigRoutes } from './routes/config/config.routes.js'
 import { registerCreateSessionRoutes } from './routes/create-sessions/create-sessions.routes.js'
 import { registerElementRoutes } from './routes/elements/elements.routes.js'
@@ -42,6 +44,7 @@ const defaultProductRouteRegistrars = [
   registerFolderRoutes,
   registerTagRoutes,
   registerSearchRoutes,
+  registerBillingRoutes,
 ]
 
 function getValidationIssueDetails(issue: {
@@ -120,6 +123,7 @@ export function createApiApp(options: CreateApiAppOptions = {}) {
   })
 
   registerOpenRouterVideoCallbackRoutes(app)
+  registerStripeWebhookRoutes(app)
 
   app.use('/me', authMiddleware, requireAuthMiddleware)
   app.use('/me/*', authMiddleware, requireAuthMiddleware)

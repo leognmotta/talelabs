@@ -6,6 +6,7 @@
 export { auth } from './auth-config.js'
 
 export type { AuthSession } from './auth-types.js'
+export { getOrganizationMemberRole } from './organization-access-data.js'
 export {
   listOrganizationMembers,
   updateOrganizationMetadata,

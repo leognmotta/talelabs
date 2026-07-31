@@ -43,6 +43,9 @@ export const CursorSchema = z.string().trim().min(1).max(2048).openapi('Cursor',
   description: 'Opaque cursor returned by a previous list response',
 })
 
+/** A nullable opaque cursor kept inline for OpenAPI generator compatibility. */
+export const NullableCursorSchema = z.string().trim().min(1).max(2048).nullable()
+
 /** Page size, 1–200, defaulting to 50. */
 export const PaginationLimitSchema = z.coerce.number()
   .int()
@@ -150,6 +153,23 @@ export const ProductErrorCodeSchema = z.enum([
   'unsupported_by_model',
   'rate_limited',
   'insufficient_credits',
+  'billing_admin_required',
+  'billing_account_blocked',
+  'storage_limit_exceeded',
+  'billing_catalog_mismatch',
+  'billing_offer_unavailable',
+  'founder_assignment_not_available',
+  'subscription_already_active',
+  'subscription_change_not_available',
+  'subscription_projection_changed',
+  'invalid_topup_amount',
+  'topup_not_available',
+  'idempotency_conflict',
+  'stripe_catalog_unavailable',
+  'stripe_catalog_mismatch',
+  'stripe_checkout_unavailable',
+  'stripe_customer_unavailable',
+  'stripe_subscription_mismatch',
   'internal_error',
 ]).openapi('ProductErrorCode')
 

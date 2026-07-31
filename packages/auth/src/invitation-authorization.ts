@@ -4,14 +4,9 @@ import {
   getOrganizationMemberRole,
   organizationExists,
 } from './organization-access-data.js'
-import { ORGANIZATION_ADMIN_ROLE } from './organization-roles.js'
+import { isOrganizationAdminRole } from './organization-roles.js'
 import { requireSession } from './session-resolution.js'
 import { isSystemAdminRole } from './system-admin-roles.js'
-
-function isOrganizationAdminRole(role: string | null | undefined) {
-  const roles = (role ?? '').split(',').map(part => part.trim())
-  return roles.includes(ORGANIZATION_ADMIN_ROLE) || roles.includes('owner')
-}
 
 /** Requires system or organization administration for one organization. */
 export async function requireInvitationAccess(
