@@ -1,4 +1,4 @@
-/** Upload grant issuance: policy validation and signed object URLs. */
+/** Quota-backed upload grant issuance and canonical Asset registration. */
 
 import { Buffer } from 'node:buffer'
 
@@ -13,6 +13,10 @@ import {
 import { idempotencyKeys, triggerTask } from '@talelabs/trigger'
 
 import { findFolderLocation } from '../data/asset-location.data.js'
+import {
+  cancelUnexposedUploadGrantIntent,
+  reserveUploadGrantIntent,
+} from '../data/asset-upload.data.js'
 import { findAssetByUploadId } from '../data/assets.data.js'
 import { getUploadRegistrationGrantTtlSeconds } from '../domain/assets/asset-policy.js'
 import { requireProject } from '../domain/projects/project-scope.js'
@@ -20,7 +24,7 @@ import { HttpError, TenantResourceNotFoundError } from '../middleware/error.js'
 import { createUploadGrant, verifyUploadGrant } from './upload-grant.service.js'
 import { persistUploadedAssetRegistration } from './upload-registration-persistence.service.js'
 
-/** Issues a policy-validated upload grant and signed object URL. */
+/** Reserves storage before issuing a policy-validated signed object URL. */
 export async function createUpload(input: {
   checksum: { algorithm: 'md5', value: string }
   filename: string
@@ -44,7 +48,8 @@ export async function createUpload(input: {
 
   const grantId = createId()
   const key = buildUploadObjectKey(input.organizationId, grantId)
-  const { token } = createUploadGrant({
+  const expiresInSeconds = getUploadRegistrationGrantTtlSeconds(input.sizeBytes)
+  const { grant, token } = createUploadGrant({
     checksum: input.checksum,
     filename: input.filename,
     grantId,
@@ -53,18 +58,47 @@ export async function createUpload(input: {
     organizationId: input.organizationId,
     sizeBytes: input.sizeBytes,
     userId: input.userId,
-  }, getUploadRegistrationGrantTtlSeconds(input.sizeBytes))
-  const uploadUrl = await createUploadUrl({
-    bucket: getAssetBucket('private'),
-    key,
-    contentMd5: input.checksum.value,
-    contentLength: input.sizeBytes,
-    contentType: input.mimeType,
-    metadata: {
-      organization: input.organizationId,
-      upload: grantId,
-    },
+  }, expiresInSeconds)
+  await reserveUploadGrantIntent({
+    checksumMd5: grant.checksum.value,
+    expiresAt: new Date(grant.expiresAt * 1000),
+    filename: grant.filename,
+    id: grant.grantId,
+    mimeType: grant.mimeType,
+    objectKey: grant.key,
+    organizationId: grant.organizationId,
+    sizeBytes: grant.sizeBytes,
+    userId: grant.userId,
   })
+  let uploadUrl: string
+  try {
+    uploadUrl = await createUploadUrl({
+      bucket: getAssetBucket('private'),
+      key,
+      contentMd5: input.checksum.value,
+      contentLength: input.sizeBytes,
+      contentType: input.mimeType,
+      metadata: {
+        organization: input.organizationId,
+        upload: grantId,
+      },
+    })
+  }
+  catch (error) {
+    await cancelUnexposedUploadGrantIntent({
+      id: grantId,
+      organizationId: input.organizationId,
+    }).catch((cancellationError) => {
+      console.error('Upload grant cancellation failed; expiry will retry.', {
+        errorName: cancellationError instanceof Error
+          ? cancellationError.name
+          : 'UnknownError',
+        grantId,
+        organizationId: input.organizationId,
+      })
+    })
+    throw error
+  }
 
   return { uploadId: token, uploadUrl }
 }
@@ -173,8 +207,12 @@ export async function registerUploadedAsset(input: {
     throw new HttpError(400, 'validation_error', 'The uploaded media type is not supported.')
 
   const result = await persistUploadedAssetRegistration({
+    checksumMd5: grant.checksum.value,
     createdBy: input.userId,
+    expiresAt: new Date(grant.expiresAt * 1000),
     folderId: input.folderId ?? null,
+    grantFilename: grant.filename,
+    grantVersion: grant.version,
     mimeType: grant.mimeType,
     name: input.name ?? grant.filename,
     organizationId: input.organizationId,
@@ -184,6 +222,13 @@ export async function registerUploadedAsset(input: {
     type: policy.type,
     uploadId: grant.grantId,
   })
+  if (result.status === 'invalid_upload') {
+    throw new HttpError(400, 'validation_error', 'The upload grant is invalid or expired.', [{
+      code: 'invalid_upload_grant',
+      field: 'uploadId',
+      message: 'Start the upload again.',
+    }])
+  }
 
   void dispatchIngestion(input.organizationId, result.asset.id)
   return result

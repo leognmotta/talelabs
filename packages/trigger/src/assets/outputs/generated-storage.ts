@@ -16,13 +16,14 @@ import {
 const GENERATED_OUTPUT_CLEANUP_CONCURRENCY = 10
 
 /**
- * Derives retry-stable identity and storage for a generated media output. The
- * visibility is trusted code policy until billing can choose by funding source.
+ * Derives retry-stable identity and storage for a generated media output using
+ * the immutable admission policy, with a private fail-closed fallback.
  */
 export function getGeneratedOutputStorageLocation(input: {
   generationJobId: string
   organizationId: string
   outputIndex: number
+  visibility?: 'private' | 'public'
 }) {
   if (!Number.isSafeInteger(input.outputIndex) || input.outputIndex < 0)
     throw new Error('outputIndex must be a non-negative integer.')
@@ -31,7 +32,7 @@ export function getGeneratedOutputStorageLocation(input: {
     .update(`${input.generationJobId}:${input.outputIndex}`)
     .digest('hex')
   const assetId = `a${digest.slice(0, 23)}`
-  const visibility = CURRENT_GENERATED_OUTPUT_VISIBILITY
+  const visibility = input.visibility ?? CURRENT_GENERATED_OUTPUT_VISIBILITY
   return {
     assetId,
     bucket: getAssetBucket(visibility),
@@ -56,7 +57,13 @@ export async function cleanupUncommittedGeneratedOutputObjects(
   database: DatabaseExecutor = db,
 ) {
   const job = await database.selectFrom('generationJobs')
-    .select(['mediaType', 'requestHash', 'requestPayload', 'status'])
+    .select([
+      'mediaType',
+      'outputVisibility',
+      'requestHash',
+      'requestPayload',
+      'status',
+    ])
     .where('organizationId', '=', input.organizationId)
     .where('id', '=', input.generationJobId)
     .executeTakeFirst()
@@ -85,6 +92,7 @@ export async function cleanupUncommittedGeneratedOutputObjects(
       generationJobId: input.generationJobId,
       organizationId: input.organizationId,
       outputIndex,
+      visibility: job.outputVisibility,
     })
     const activeCheckpoint = checkpointOutputs.some(output => (
       output.outputIndex === outputIndex

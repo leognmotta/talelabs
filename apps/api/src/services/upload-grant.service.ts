@@ -1,11 +1,12 @@
+/** Signs and verifies versioned Asset upload registration grants. */
+
 import { Buffer } from 'node:buffer'
 import { createHmac, timingSafeEqual } from 'node:crypto'
 import process from 'node:process'
 
 import { z } from 'zod'
 
-const UploadGrantSchema = z.object({
-  version: z.literal(1),
+const UploadGrantFields = {
   grantId: z.string(),
   organizationId: z.string(),
   userId: z.string(),
@@ -18,9 +19,16 @@ const UploadGrantSchema = z.object({
     value: z.string(),
   }),
   expiresAt: z.number().int().positive(),
-})
+}
 
+const UploadGrantSchema = z.discriminatedUnion('version', [
+  z.object({ ...UploadGrantFields, version: z.literal(1) }),
+  z.object({ ...UploadGrantFields, version: z.literal(2) }),
+])
+
+/** Verified legacy or durable upload-grant claims. */
 export type UploadGrant = z.infer<typeof UploadGrantSchema>
+type DurableUploadGrant = Extract<UploadGrant, { version: 2 }>
 
 function getAppSecret() {
   const secret = process.env.APP_SECRET
@@ -35,13 +43,14 @@ function signPayload(payload: string) {
   return createHmac('sha256', getAppSecret()).update(payload).digest('base64url')
 }
 
+/** Creates a durable v2 token whose matching database intent is authoritative. */
 export function createUploadGrant(input: Omit<
-  UploadGrant,
+  DurableUploadGrant,
   'expiresAt' | 'version'
 >, expiresInSeconds: number) {
-  const grant: UploadGrant = {
+  const grant: DurableUploadGrant = {
     ...input,
-    version: 1,
+    version: 2,
     expiresAt: Math.floor(Date.now() / 1000) + expiresInSeconds,
   }
   const payload = Buffer.from(JSON.stringify(grant), 'utf8').toString('base64url')
@@ -52,6 +61,7 @@ export function createUploadGrant(input: Omit<
   }
 }
 
+/** Verifies signature, shape, and expiry for legacy v1 and durable v2 tokens. */
 export function verifyUploadGrant(token: string) {
   const [payload, signature, ...extra] = token.split('.')
 

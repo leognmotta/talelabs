@@ -1,3 +1,5 @@
+/** Canonical private and public Asset object-storage placement policy. */
+
 import {
   buildOriginalObjectKey,
   buildThumbnailObjectKey,
@@ -5,16 +7,16 @@ import {
   TALELABS_PUBLIC_BUCKET,
 } from './client.js'
 
+/** Supported persistent Asset visibility boundaries. */
 export const ASSET_VISIBILITIES = ['private', 'public'] as const
 
+/** Persistent visibility deciding the owning object-storage bucket and key. */
 export type AssetVisibility = typeof ASSET_VISIBILITIES[number]
 
-/**
- * Temporary generation-funding policy. Billing will eventually choose output
- * visibility from the funding source without changing the Asset lifecycle.
- */
-export const CURRENT_GENERATED_OUTPUT_VISIBILITY: AssetVisibility = 'public'
+/** Fail-closed generated-output fallback when no captured policy is supplied. */
+export const CURRENT_GENERATED_OUTPUT_VISIBILITY: AssetVisibility = 'private'
 
+/** Resolves the private or public bucket for one captured visibility policy. */
 export function getAssetBucket(visibility: AssetVisibility) {
   switch (visibility) {
     case 'private':
@@ -26,9 +28,13 @@ export function getAssetBucket(visibility: AssetVisibility) {
   }
 }
 
+/** Tenant-safe identity used to derive one canonical Asset object key. */
 export interface AssetStorageKeyInput {
+  /** Opaque Asset identity; public keys must not contain tenant information. */
   assetId: string
+  /** Tenant used only by private object keys. */
   organizationId: string
+  /** Captured bucket and key visibility boundary. */
   visibility: AssetVisibility
 }
 

@@ -1,3 +1,5 @@
+/** Verifies fail-closed generated-output placement and visibility-safe keys. */
+
 import assert from 'node:assert/strict'
 
 import {
@@ -12,7 +14,7 @@ import {
 const organizationId = 'org_sensitive_tenant'
 const assetId = 'a0123456789abcdefghijklmn'
 
-assert.equal(CURRENT_GENERATED_OUTPUT_VISIBILITY, 'public')
+assert.equal(CURRENT_GENERATED_OUTPUT_VISIBILITY, 'private')
 assert.equal(getAssetBucket('private'), TALELABS_PRIVATE_BUCKET)
 assert.equal(getAssetBucket('public'), TALELABS_PUBLIC_BUCKET)
 

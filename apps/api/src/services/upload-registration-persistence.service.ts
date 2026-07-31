@@ -16,8 +16,12 @@ import { TenantResourceNotFoundError } from '../middleware/error.js'
  * stay database-only.
  */
 export async function persistUploadedAssetRegistration(input: {
+  checksumMd5: string
   createdBy: string
+  expiresAt: Date
   folderId: null | string
+  grantFilename: string
+  grantVersion: 1 | 2
   id?: string
   mimeType: string
   name: string
@@ -33,9 +37,22 @@ export async function persistUploadedAssetRegistration(input: {
       ...input,
       id: input.id ?? createId(),
     })
+    if (created.status === 'invalid_upload')
+      return { status: 'invalid_upload' as const }
+    if (created.status === 'replayed') {
+      return {
+        asset: created.asset,
+        replay: true,
+        status: 'registered' as const,
+      }
+    }
     if (created.status !== 'created')
       throw new TenantResourceNotFoundError(created.field)
-    return { asset: created.asset, replay: false }
+    return {
+      asset: created.asset,
+      replay: false,
+      status: 'registered' as const,
+    }
   }
   catch (error) {
     const replay = await findAssetByUploadId(
@@ -44,6 +61,10 @@ export async function persistUploadedAssetRegistration(input: {
     )
     if (!replay)
       throw error
-    return { asset: replay, replay: true }
+    return {
+      asset: replay,
+      replay: true,
+      status: 'registered' as const,
+    }
   }
 }

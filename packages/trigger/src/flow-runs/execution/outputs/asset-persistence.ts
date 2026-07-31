@@ -88,6 +88,7 @@ export async function persistAssetOutputIfJobRunning(input: {
         outputIndex: input.outputIndex,
         projectId: run.projectId,
         processingState: 'processing',
+        showcaseEligible: input.job.showcaseEligible,
         source: 'generation',
         storageKey: input.key,
         type: input.job.mediaType,

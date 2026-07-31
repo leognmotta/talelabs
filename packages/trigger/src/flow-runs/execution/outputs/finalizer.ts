@@ -25,8 +25,12 @@ export interface FinalizableGenerationJob {
   model: string
   /** Saved Flow node that produced the output. */
   nodeId: string
+  /** Immutable generated Asset visibility captured at admission. */
+  outputVisibility: 'private' | 'public'
   /** Tenant boundary applied to every persistence operation. */
   organizationId: string
+  /** Immutable eligibility for separately moderated showcase selection. */
+  showcaseEligible: boolean
 }
 
 /** Context supplied immediately before one canonical output transaction writes. */

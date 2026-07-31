@@ -38,6 +38,8 @@ export const DEFAULT_SIGNED_URL_EXPIRES_IN = 60 * 5
 /** Default validity in seconds for download grants. */
 export const DEFAULT_DOWNLOAD_URL_EXPIRES_IN = 60 * 60
 
+const OBJECT_DELETE_TIMEOUT_MS = 10 * 1_000
+
 /** Optional secret-bearing values accepted by object-storage composition. */
 export type ObjectStorageEnv = Partial<
   Record<
@@ -339,10 +341,22 @@ export async function deleteObject(
   input: DeleteObjectInput,
   client = r2Client,
 ) {
-  await client.send(new DeleteObjectCommand({
-    Bucket: getObjectStorageBucket(input.bucket),
-    Key: input.key,
-  }))
+  const abortController = new AbortController()
+  const timeout = setTimeout(
+    () => abortController.abort(),
+    OBJECT_DELETE_TIMEOUT_MS,
+  )
+  try {
+    await client.send(new DeleteObjectCommand({
+      Bucket: getObjectStorageBucket(input.bucket),
+      Key: input.key,
+    }), {
+      abortSignal: abortController.signal,
+    })
+  }
+  finally {
+    clearTimeout(timeout)
+  }
 }
 
 /** Copies one object server-side, optionally replacing its metadata. */

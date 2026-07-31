@@ -77,6 +77,7 @@ export async function finalizeMediaOutput(
     generationJobId: job.id,
     organizationId: job.organizationId,
     outputIndex: output.outputIndex,
+    visibility: job.outputVisibility,
   })
   const assetId = existingAsset?.id ?? storage.assetId
   let wroteObject = false

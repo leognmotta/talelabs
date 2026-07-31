@@ -1,9 +1,18 @@
 /** Transactional Asset registration, naming, and Project/folder moves. */
 
 import type { AssetTable, AssetType, Database } from '@talelabs/db'
-import type { Selectable, Transaction } from 'kysely'
+import type { Kysely, Selectable, Transaction } from 'kysely'
 
-import { db, lockFolderStructure } from '@talelabs/db'
+import { BILLING_CATALOG, getBillingPlan } from '@talelabs/billing'
+import {
+  claimUploadedAssetStorage,
+  commitAssetUploadIntentRegistration,
+  db,
+  ensureOrganizationBillingState,
+  lockAssetUploadIntentForRegistration,
+  lockFolderStructure,
+  reconcileExpiredPaidEntitlement,
+} from '@talelabs/db'
 
 import {
   lockActiveProject,
@@ -39,8 +48,12 @@ async function findFolderLocationInTransaction(
 
 /** Registers one uploaded Asset in an atomically validated location. */
 export async function insertUploadedAsset(input: {
+  checksumMd5: string
   createdBy: string
+  expiresAt: Date
   folderId: null | string
+  grantFilename: string
+  grantVersion: 1 | 2
   id: string
   mimeType: string
   name: string
@@ -50,11 +63,12 @@ export async function insertUploadedAsset(input: {
   storageKey: string
   type: AssetType
   uploadId: string
-}) {
-  return db.transaction().execute(async (trx) => {
+}, database: Kysely<Database> = db) {
+  return database.transaction().execute(async (trx) => {
     await lockProjectScopes(trx, input.organizationId, [input.projectId])
     await lockActiveProject(trx, input.organizationId, input.projectId)
     if (input.folderId) {
+      await lockFolderStructure(trx, input.organizationId)
       const folder = await findFolderLocationInTransaction(
         trx,
         input.organizationId,
@@ -63,15 +77,72 @@ export async function insertUploadedAsset(input: {
       if (!folder || folder.projectId !== input.projectId)
         return { field: 'folderId' as const, status: 'not_found' as const }
     }
+    if (input.grantVersion === 2) {
+      const intent = await lockAssetUploadIntentForRegistration({
+        checksumMd5: input.checksumMd5,
+        expiresAt: input.expiresAt,
+        filename: input.grantFilename,
+        id: input.uploadId,
+        mimeType: input.mimeType,
+        objectKey: input.storageKey,
+        organizationId: input.organizationId,
+        sizeBytes: input.sizeBytes,
+        userId: input.createdBy,
+      }, trx)
+      if (intent.status === 'invalid')
+        return { status: 'invalid_upload' as const }
+      if (intent.status === 'registered') {
+        const asset = await trx.selectFrom('assets')
+          .selectAll()
+          .where('organizationId', '=', input.organizationId)
+          .where('id', '=', intent.assetId)
+          .executeTakeFirstOrThrow()
+        return { asset, status: 'replayed' as const }
+      }
+    }
+    else {
+      await ensureOrganizationBillingState({
+        catalogRevision: BILLING_CATALOG.revision,
+        organizationId: input.organizationId,
+      }, trx)
+      await reconcileExpiredPaidEntitlement(input.organizationId, trx)
+      const billingAccount = await trx.selectFrom('organizationBillingAccounts')
+        .select('currentPlanCode')
+        .where('organizationId', '=', input.organizationId)
+        .executeTakeFirstOrThrow()
+      await claimUploadedAssetStorage({
+        catalogRevision: BILLING_CATALOG.revision,
+        organizationId: input.organizationId,
+        sizeBytes: input.sizeBytes,
+        storageLimitBytes:
+          getBillingPlan(billingAccount.currentPlanCode).storageBytes,
+      }, trx)
+    }
     const asset = await trx.insertInto('assets')
       .values({
-        ...input,
+        createdBy: input.createdBy,
+        folderId: input.folderId,
+        id: input.id,
+        mimeType: input.mimeType,
+        name: input.name,
+        organizationId: input.organizationId,
         processingState: 'processing',
+        projectId: input.projectId,
         source: 'upload',
+        storageKey: input.storageKey,
+        type: input.type,
+        uploadId: input.uploadId,
         visibility: 'private',
       })
       .returningAll()
       .executeTakeFirstOrThrow()
+    if (input.grantVersion === 2) {
+      await commitAssetUploadIntentRegistration({
+        assetId: asset.id,
+        id: input.uploadId,
+        organizationId: input.organizationId,
+      }, trx)
+    }
     await touchProject(trx, input.organizationId, input.projectId)
     return { asset, status: 'created' as const }
   })

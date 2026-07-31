@@ -1,7 +1,16 @@
+/** Durable Asset ingestion and materialized storage-accounting finalization. */
+
 import type { AssetTaskPayload } from '../../tasks/assets/contracts.js'
 import { stat } from 'node:fs/promises'
 
-import { db } from '@talelabs/db'
+import { BILLING_CATALOG, getBillingPlan } from '@talelabs/billing'
+import {
+  commitGeneratedAssetStorage,
+  db,
+  ensureOrganizationBillingState,
+  reconcileExpiredPaidEntitlement,
+} from '@talelabs/db'
+import { readFlowRunJobRequestPayload } from '@talelabs/flows'
 import {
   buildAssetThumbnailKey,
   deleteObject,
@@ -13,6 +22,7 @@ import { getMediaProcessor } from '../media/registry.js'
 import { mergeAssetMetadata } from './metadata.js'
 import { downloadAssetSourceToFile } from './source-download.js'
 
+/** Processes one tenant Asset and commits its authoritative stored-byte total. */
 export async function ingestAsset(
   payload: AssetTaskPayload,
   input: { directory: string, sourcePath: string },
@@ -51,25 +61,55 @@ export async function ingestAsset(
     })
   }
 
-  const update = await db.updateTable('assets')
-    .set({
-      durationSeconds: result.durationSeconds,
-      height: result.height,
-      metadata: mergeAssetMetadata(asset.metadata, result.metadata),
-      processingError: null,
-      processingState: 'ready',
-      sizeBytes: source.size,
-      thumbnailKey: result.thumbnail ? thumbnailKey : null,
-      updatedAt: new Date(),
-      width: result.width,
-    })
-    .where('organizationId', '=', payload.organizationId)
-    .where('id', '=', payload.assetId)
-    .where('processingState', '=', 'processing')
-    .where('purgeRequestedAt', 'is', null)
-    .executeTakeFirst()
+  const update = await db.transaction().execute(async (trx) => {
+    if (asset.source === 'generation') {
+      await ensureOrganizationBillingState({
+        catalogRevision: BILLING_CATALOG.revision,
+        organizationId: payload.organizationId,
+      }, trx)
+      await reconcileExpiredPaidEntitlement(payload.organizationId, trx)
+      const account = await trx.selectFrom('organizationBillingAccounts')
+        .select('currentPlanCode')
+        .where('organizationId', '=', payload.organizationId)
+        .executeTakeFirstOrThrow()
+      if (!asset.generationJobId)
+        throw new Error('generated_asset_job_missing')
+      const job = await trx.selectFrom('generationJobs')
+        .select(['requestHash', 'requestPayload'])
+        .where('organizationId', '=', payload.organizationId)
+        .where('id', '=', asset.generationJobId)
+        .executeTakeFirstOrThrow()
+      const request = readFlowRunJobRequestPayload(job)
+      const storageCommit = await commitGeneratedAssetStorage({
+        assetId: payload.assetId,
+        organizationId: payload.organizationId,
+        outputCount: request.outputCount,
+        sizeBytes: source.size,
+        storageLimitBytes: getBillingPlan(account.currentPlanCode).storageBytes,
+      }, trx)
+      if (storageCommit.state === 'purge_won')
+        return null
+    }
+    return trx.updateTable('assets')
+      .set({
+        durationSeconds: result.durationSeconds,
+        height: result.height,
+        metadata: mergeAssetMetadata(asset.metadata, result.metadata),
+        processingError: null,
+        processingState: 'ready',
+        sizeBytes: source.size,
+        thumbnailKey: result.thumbnail ? thumbnailKey : null,
+        updatedAt: new Date(),
+        width: result.width,
+      })
+      .where('organizationId', '=', payload.organizationId)
+      .where('id', '=', payload.assetId)
+      .where('processingState', '=', 'processing')
+      .where('purgeRequestedAt', 'is', null)
+      .executeTakeFirst()
+  })
 
-  if (update.numUpdatedRows > 0n)
+  if (update && update.numUpdatedRows > 0n)
     return { state: 'ready' as const }
 
   const current = await db.selectFrom('assets')
@@ -85,6 +125,7 @@ export async function ingestAsset(
   return { state: purgeWon ? 'purge_won' as const : 'superseded' as const }
 }
 
+/** Marks one failed processing attempt without racing a requested purge. */
 export async function markAssetProcessingFailed(payload: AssetTaskPayload) {
   const asset = await db.selectFrom('assets')
     .select(['id', 'visibility'])

@@ -1,12 +1,15 @@
+/** Durable Asset object purge and organization storage-projection release. */
+
 import type { AssetTaskPayload } from '../../tasks/assets/contracts.js'
 
-import { db } from '@talelabs/db'
+import { db, releasePurgedAssetStorage } from '@talelabs/db'
 import {
   buildAssetThumbnailKey,
   deleteObject,
   getAssetBucket,
 } from '@talelabs/storage'
 
+/** Deletes one purged Asset's objects and releases its stored-byte projection. */
 export async function purgeAsset(payload: AssetTaskPayload) {
   const asset = await db.selectFrom('assets')
     .select(['storageKey', 'visibility', 'purgeRequestedAt', 'purgedAt'])
@@ -28,13 +31,10 @@ export async function purgeAsset(payload: AssetTaskPayload) {
     }),
   })
 
-  await db.updateTable('assets')
-    .set({ purgedAt: new Date(), updatedAt: new Date() })
-    .where('organizationId', '=', payload.organizationId)
-    .where('id', '=', payload.assetId)
-    .where('purgeRequestedAt', 'is not', null)
-    .where('purgedAt', 'is', null)
-    .execute()
+  await releasePurgedAssetStorage({
+    assetId: payload.assetId,
+    organizationId: payload.organizationId,
+  })
 
   return { state: 'purged' as const }
 }

@@ -7,6 +7,7 @@
 export * from './catalog-schema.js'
 export * from './catalog-validation.js'
 export * from './catalog.js'
+export * from './output-storage.js'
 export * from './provider-binding.js'
 export * from './providers/browser-compat.js'
 export * from './providers/contracts.js'

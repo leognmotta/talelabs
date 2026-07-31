@@ -18,6 +18,11 @@ export async function stageGenerationProviderResult(input: {
   organizationId: string
   outputs: readonly NormalizedGenerationOutput[]
 }) {
+  const jobPolicy = await db.selectFrom('generationJobs')
+    .select('outputVisibility')
+    .where('organizationId', '=', input.organizationId)
+    .where('id', '=', input.jobId)
+    .executeTakeFirstOrThrow()
   const settledAt = new Date()
   const settlement = completedProviderSettlement(input.facts, settledAt)
   const outputs = [...input.outputs].toSorted(
@@ -44,6 +49,7 @@ export async function stageGenerationProviderResult(input: {
       generationJobId: input.jobId,
       organizationId: input.organizationId,
       outputIndex: output.outputIndex,
+      visibility: jobPolicy.outputVisibility,
     })
     return {
       delivery: 'storage' as const,
@@ -51,6 +57,7 @@ export async function stageGenerationProviderResult(input: {
       metadata: output.metadata ? { ...output.metadata } : {},
       mimeType: output.payload.mimeType,
       outputIndex: output.outputIndex,
+      visibility: jobPolicy.outputVisibility,
       storageBucket: storage.bucket,
       storageKey: storage.key,
     }
@@ -149,6 +156,7 @@ export async function stageGenerationProviderResult(input: {
       generationJobId: input.jobId,
       organizationId: input.organizationId,
       outputIndex: output.outputIndex,
+      visibility: jobPolicy.outputVisibility,
     })
     if (output.payload.delivery === 'bytes') {
       await putObject({

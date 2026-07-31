@@ -186,6 +186,8 @@ export async function verifyCapturedFinalizationParity(
         model: 'verifier/image',
         nodeId: item.nodeId,
         organizationId: input.organizationId,
+        outputVisibility: 'private',
+        showcaseEligible: false,
       },
       key: `projects-runtime/${item.assetId}`,
       mimeType: 'image/png',
