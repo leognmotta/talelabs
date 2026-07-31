@@ -14,6 +14,28 @@ import { preserveVerifiedSslMode } from './connection-string.js'
 import { POSTGRES_POOL_CONFIG } from './pool-config.js'
 import './env.js'
 
+export * from './asset-upload-accounting.js'
+export * from './billing-entitlements.js'
+export * from './billing-reconciliation-failures.js'
+export * from './billing-reconciliation.js'
+export * from './billing-settlement-reconciliation.js'
+export * from './billing-state.js'
+export * from './credit-accounting.js'
+export {
+  availableFolderName,
+  CREATE_OUTPUTS_ROOT_FOLDER_NAME,
+  CREATE_OUTPUTS_ROOT_SYSTEM_ROLE,
+  createSessionOutputFolderSystemRole,
+  FLOW_OUTPUTS_ROOT_FOLDER_NAME,
+  FLOW_OUTPUTS_ROOT_SYSTEM_ROLE,
+  flowOutputFolderSystemRole,
+  lockFolderStructure,
+  MAX_FOLDER_DEPTH,
+  MAX_FOLDERS_PER_ORGANIZATION,
+} from './folder-coordination.js'
+export * from './job-storage-settlement.js'
+export { POSTGRES_POOL_CONFIG } from './pool-config.js'
+
 const connectionString = process.env.POSTGRES_URL
 
 if (!connectionString) {
@@ -59,20 +81,12 @@ export async function withDatabaseTransaction<Result>(
 }
 
 export { sql }
-export {
-  availableFolderName,
-  CREATE_OUTPUTS_ROOT_FOLDER_NAME,
-  CREATE_OUTPUTS_ROOT_SYSTEM_ROLE,
-  createSessionOutputFolderSystemRole,
-  FLOW_OUTPUTS_ROOT_FOLDER_NAME,
-  FLOW_OUTPUTS_ROOT_SYSTEM_ROLE,
-  flowOutputFolderSystemRole,
-  lockFolderStructure,
-  MAX_FOLDER_DEPTH,
-  MAX_FOLDERS_PER_ORGANIZATION,
-} from './folder-coordination.js'
-export { POSTGRES_POOL_CONFIG } from './pool-config.js'
-export type { Database }
 export type { PostgresPoolConfig } from './pool-config.js'
 export type * from './schema.js'
+export type { Database }
+export * from './storage-accounting.js'
+export * from './subscription-change-application.js'
+export * from './subscription-change-recovery.js'
+export * from './subscription-credit-periods.js'
+export * from './subscription-grants.js'
 export type { Transaction } from 'kysely'
