@@ -1347,7 +1347,7 @@
   },
   {
     "id": "elevenlabs/voice-changer",
-    "revision": 1,
+    "revision": 2,
     "status": "active",
     "displayName": "ElevenLabs Voice Changer",
     "labelKey": "flows.models.elevenVoiceChanger",
@@ -1366,7 +1366,13 @@
         ],
         "acceptedMedia": {
           "mimeTypes": [
-            "audio/mpeg"
+            "audio/aac",
+            "audio/mp4",
+            "audio/mpeg",
+            "audio/ogg",
+            "audio/wav",
+            "audio/x-m4a",
+            "audio/x-wav"
           ]
         },
         "descriptionKey": "flows.inputs.sourceAudioDescription",
@@ -1542,7 +1548,7 @@
   },
   {
     "id": "elevenlabs/audio-isolation",
-    "revision": 2,
+    "revision": 3,
     "status": "active",
     "displayName": "ElevenLabs Audio Isolation",
     "labelKey": "flows.models.elevenAudioIsolation",
@@ -1561,7 +1567,13 @@
         ],
         "acceptedMedia": {
           "mimeTypes": [
-            "audio/mpeg"
+            "audio/aac",
+            "audio/mp4",
+            "audio/mpeg",
+            "audio/ogg",
+            "audio/wav",
+            "audio/x-m4a",
+            "audio/x-wav"
           ]
         },
         "descriptionKey": "flows.inputs.sourceAudioDescription",
@@ -1584,7 +1596,10 @@
         ],
         "acceptedMedia": {
           "mimeTypes": [
-            "video/mp4"
+            "video/mp4",
+            "video/quicktime",
+            "video/webm",
+            "video/x-m4v"
           ]
         },
         "descriptionKey": "flows.inputs.sourceVideoDescription",
