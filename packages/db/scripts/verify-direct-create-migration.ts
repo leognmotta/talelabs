@@ -1,10 +1,9 @@
 /**
  * Disposable PostgreSQL verification for direct Create run persistence.
  *
- * The caller supplies a PostgreSQL server dedicated to tests. This script
- * creates two uniquely named databases, proves fresh migration and the
- * 033 -> 034 -> 035 upgrade path, then drops only those databases in a finally
- * block.
+ * The script provisions PostgreSQL 17 locally, creates two uniquely named
+ * databases, proves fresh migration and the 033 -> 034 -> 035 upgrade path,
+ * then removes the container.
  */
 
 import * as fs from 'node:fs/promises'
@@ -21,9 +20,7 @@ import {
 } from 'kysely'
 import { Pool } from 'pg'
 
-const adminConnectionString = process.env.TEST_POSTGRES_URL
-if (!adminConnectionString)
-  throw new Error('TEST_POSTGRES_URL is required')
+import { withDisposablePostgres } from './postgres-verifier-runtime.js'
 
 const migrationFolder = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -38,7 +35,10 @@ function assertSafeDatabaseName(name: string) {
     throw new Error('unsafe_disposable_database_name')
 }
 
-function connectionStringForDatabase(databaseName: string) {
+function connectionStringForDatabase(
+  adminConnectionString: string,
+  databaseName: string,
+) {
   assertSafeDatabaseName(databaseName)
   const value = new URL(adminConnectionString)
   value.pathname = `/${databaseName}`
@@ -491,7 +491,7 @@ async function verifyUpgradeMigration(database: Kysely<unknown>) {
     throw new Error('trigger_deployment_immutability_lost')
 }
 
-async function main() {
+async function main(adminConnectionString: string) {
   assertSafeDatabaseName(freshDatabaseName)
   assertSafeDatabaseName(upgradeDatabaseName)
   const admin = new Pool({
@@ -503,7 +503,7 @@ async function main() {
     await admin.query(`create database "${freshDatabaseName}"`)
     await admin.query(`create database "${upgradeDatabaseName}"`)
     const fresh = createDatabase(
-      connectionStringForDatabase(freshDatabaseName),
+      connectionStringForDatabase(adminConnectionString, freshDatabaseName),
     )
     databases.push(fresh)
     await verifyFreshMigration(fresh)
@@ -511,7 +511,7 @@ async function main() {
     databases.pop()
 
     const upgrade = createDatabase(
-      connectionStringForDatabase(upgradeDatabaseName),
+      connectionStringForDatabase(adminConnectionString, upgradeDatabaseName),
     )
     databases.push(upgrade)
     await verifyUpgradeMigration(upgrade)
@@ -530,4 +530,4 @@ async function main() {
   }
 }
 
-await main()
+await withDisposablePostgres('direct-create', main)

@@ -1,9 +1,8 @@
 /**
  * Disposable PostgreSQL verification for Project organization persistence.
  *
- * The caller supplies a PostgreSQL server dedicated to tests. The script
- * creates isolated databases for a fresh migration and a 035 upgrade, then
- * drops only those generated databases in a finally block.
+ * The script provisions PostgreSQL 17 locally, creates isolated databases for
+ * a fresh migration and a 035 upgrade, then removes the container.
  */
 
 import * as fs from 'node:fs/promises'
@@ -20,9 +19,11 @@ import {
 } from 'kysely'
 import { Pool } from 'pg'
 
-const adminConnectionString = process.env.TEST_POSTGRES_URL
-if (!adminConnectionString)
-  throw new Error('TEST_POSTGRES_URL is required')
+import {
+  assertSafeDatabaseName,
+  connectionStringForDatabase,
+  withDisposablePostgres,
+} from './postgres-verifier-runtime.js'
 
 const migrationFolder = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -31,18 +32,6 @@ const migrationFolder = path.resolve(
 const databaseSuffix = `${process.pid}_${Date.now()}`
 const freshDatabaseName = `talelabs_projects_fresh_${databaseSuffix}`
 const upgradeDatabaseName = `talelabs_projects_upgrade_${databaseSuffix}`
-
-function assertSafeDatabaseName(name: string) {
-  if (!/^[a-z0-9_]+$/.test(name))
-    throw new Error('unsafe_disposable_database_name')
-}
-
-function connectionStringForDatabase(databaseName: string) {
-  assertSafeDatabaseName(databaseName)
-  const value = new URL(adminConnectionString)
-  value.pathname = `/${databaseName}`
-  return value.toString()
-}
 
 function createDatabase(connectionString: string) {
   return new Kysely<unknown>({
@@ -491,6 +480,7 @@ async function verifyUpgradeMigration(database: Kysely<unknown>) {
       "mimeType",
       "uploadId",
       "processingState",
+      "deletedAt",
       "purgeRequestedAt"
     )
     values (
@@ -504,6 +494,7 @@ async function verifyUpgradeMigration(database: Kysely<unknown>) {
       'image/png',
       'projects-verification-purged-cover',
       'ready',
+      now(),
       now()
     )
   `.execute(database)
@@ -565,7 +556,7 @@ async function verifyUpgradeMigration(database: Kysely<unknown>) {
   }
 }
 
-async function main() {
+async function main(adminConnectionString: string) {
   assertSafeDatabaseName(freshDatabaseName)
   assertSafeDatabaseName(upgradeDatabaseName)
   const admin = new Pool({ connectionString: adminConnectionString, max: 1 })
@@ -574,14 +565,17 @@ async function main() {
     await admin.query(`create database "${freshDatabaseName}"`)
     await admin.query(`create database "${upgradeDatabaseName}"`)
 
-    const fresh = createDatabase(connectionStringForDatabase(freshDatabaseName))
+    const fresh = createDatabase(connectionStringForDatabase(
+      adminConnectionString,
+      freshDatabaseName,
+    ))
     databases.push(fresh)
     await verifyFreshMigration(fresh)
     await fresh.destroy()
     databases.pop()
 
     const upgrade = createDatabase(
-      connectionStringForDatabase(upgradeDatabaseName),
+      connectionStringForDatabase(adminConnectionString, upgradeDatabaseName),
     )
     databases.push(upgrade)
     await verifyUpgradeMigration(upgrade)
@@ -599,4 +593,4 @@ async function main() {
   }
 }
 
-await main()
+await withDisposablePostgres('projects', main)
