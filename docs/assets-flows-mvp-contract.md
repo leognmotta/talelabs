@@ -137,9 +137,11 @@ Assets are the only reusable media source in the MVP.
   `Flow/<Flow name>`. Ordinary uploads keep the folder explicitly chosen by the
   user and are never moved merely because they were uploaded from the canvas.
 - Asset visibility is a durable write-time fact. Ordinary uploads and reference
-  Assets are `private`; under the temporary pre-billing policy, newly generated
-  image, video, and audio outputs are `public`. Existing Assets are not
-  reclassified or published.
+  Assets are `private`. Generated image, video, and audio outputs capture the
+  visibility of their exact funding allocation at admission; the runtime
+  fallback is fail-closed `private`. The approved Founder promotional grant may
+  produce `public`, showcase-eligible outputs, while paid, top-up, and BYOK
+  outputs remain `private`. Existing Assets are never reclassified.
 - Public storage only makes an output eligible for future public delivery or
   showcase consideration. Featuring, moderation, and gallery approval remain a
   separate future decision; no public output is automatically showcased.

@@ -198,18 +198,18 @@ the Asset library under `Flow/<Flow name>`. This is an output-materialization
 rule only: ordinary uploads remain in the folder chosen by the user, including
 uploads initiated from the Flow canvas.
 
-Asset visibility is captured durably when the Asset is created. Direct uploads
-and reference Assets remain private. Until billing can identify the funding
-source, every newly generated image, video, and audio output uses the temporary
-public-storage policy; existing Assets are never backfilled or published. The
-future billing decision replaces that temporary policy by choosing visibility
-from the funding source, without changing the canonical Asset lifecycle.
+Asset visibility is captured durably when generation is admitted. Direct
+uploads, reference Assets, paid subscription outputs, top-up outputs, and BYOK
+outputs remain private. Each managed job snapshots the visibility of its exact
+funding allocation; the runtime fallback is fail-closed private. The approved
+Founder promotional grant may produce public, showcase-eligible outputs.
+Existing Assets are never backfilled, reclassified, or published.
 
 Public storage and showcase featuring are different contracts. A public Asset
 may later be considered for a showcase, but it is not automatically featured,
-moderated, or approved for a landing-page gallery. Before M6 release, free and
-promotional generation must have clear localized disclosure that its outputs
-may be public. The disclosure UX itself is not part of this storage task.
+moderated, or approved for a landing-page gallery. Promotional generation with
+public output policy must have clear localized disclosure. The disclosure UX
+itself is not part of this storage task.
 
 Assets are the first and most important implementation foundation. The asset experience should feel like a lightweight, media-aware drive rather than a social gallery.
 
@@ -959,7 +959,9 @@ exact provider estimate
 ```
 
 Browser BYOK remains a separate funding path and never consumes TaleLabs
-credits. Debug execution is never billable.
+credits. Debug execution swaps only the provider adapter: managed Credits debug
+runs quote, reserve, and capture credits exactly like live runs, while BYOK
+debug runs retain the BYOK funding contract.
 
 The launch system must include:
 

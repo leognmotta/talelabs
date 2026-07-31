@@ -83,10 +83,12 @@ is deferred production-readiness work, not M5 scope. The integration contract:
    flowRunId:nodeId:itemKey:requestIndex. In M5 those jobs call local mock
    adapters only. M6 introduces provider submission/polling behind the same
    adapter contract and retains the write-ahead uncertainty rules.
-5. Mock and future provider media uploads use deterministic Asset-owned keys
-   selected by the persisted Asset visibility. Current public generation keys
-   use `generated/{assetId}/original`, so a
-   retried upload overwrites its own partial object instead of orphaning a new one
+5. Mock and provider media uploads use deterministic Asset-owned keys selected
+   by the admission-captured output visibility. Private generation keys remain
+   tenant-prefixed; explicitly public promotional outputs use
+   `generated/{assetId}/original`. The fail-closed runtime fallback is private,
+   and a retried upload overwrites its own partial object instead of orphaning a
+   new one.
 6. Completion is one transaction, and ORDER MATTERS — a constraint violation
    aborts a Postgres transaction (no reads allowed without rollback/savepoint),
    so the guarded update comes FIRST; its row lock also serializes concurrent
@@ -496,8 +498,8 @@ Post-checkpoint provider-fact writes keep this header and the owning job in one
 transaction. Eventual accounting reconciliation uses the same invariant and
 updates the terminal Flow aggregate in that transaction.
 `generationProviderOutputs` stores one ordered output descriptor per result.
-Text is stored directly. Media is staged at the deterministic public generated
-output location and recorded as a storage descriptor with
+Text is stored directly. Media is staged at the deterministic,
+visibility-owned generated-output location and recorded as a storage descriptor with
 `staging`/`ready`/`discarded` state. `staging` and `ready` own their object and
 block cleanup; `discarded` releases checkpoint ownership after cancellation.
 Both relations cascade with the job and use composite organization FKs.
@@ -607,19 +609,31 @@ Notes:
   provenance, while the media is genuinely destroyed.
 - `"generationJobId"` on the asset (not `outputAssetId` on the job): one run can produce multiple outputs; uploads have `null`. Full provenance (model, settings, resolved prompt, inputs, elements) is one join away — never duplicated onto the asset. The `check` makes the link mandatory for `source = 'generation'` — a generated asset without its job is a contract violation, not a nullable edge case.
 - `"visibility"` is a write-time policy snapshot, never inferred later from
-  `source`. Existing rows and uploads remain `private`; the current temporary
-  generation policy explicitly writes `public` for new image/video/audio
-  outputs. PostgreSQL stores no bucket name. Billing later chooses visibility
-  from the funding source without rewriting historical Assets.
+  `source`. Existing rows and uploads remain `private`; each generation job
+  captures the visibility of its exact funding allocation at admission.
+  Subscription, top-up, and BYOK outputs are private; the approved Founder
+  promotional grant may produce public, showcase-eligible outputs. Missing
+  policy fails closed to private. PostgreSQL stores no bucket name, and later
+  policy changes never rewrite historical Assets.
 - `"outputIndex"` + the unique `("generationJobId", "outputIndex")` index give
   generated outputs a stable identity: provider ordering survives, and a
   retried completion transaction upserts the same rows instead of duplicating
   them. The worker derives one opaque deterministic Asset ID from that identity;
-  current public storage keys are `generated/{assetId}/original` and
-  `generated/{assetId}/thumbnail.jpg`. Retries therefore address the same exact
-  objects without exposing organization, user, prompt, or provider data.
+  public promotional storage keys are `generated/{assetId}/original` and
+  `generated/{assetId}/thumbnail.jpg`; private keys remain tenant-prefixed.
+  Retries therefore address the same exact objects without exposing
+  organization, user, prompt, or provider data through public coordinates.
 - `"storageKey"` is globally unique. If an asset-duplicate feature ever ships, it must copy the object, not share the key.
-- `"uploadId"` keeps the replay-safe presigned-upload flow: signed stateless grant (binds org, user, object key, mime, size, **sha-256 checksum**, expiry); registering the same grant twice returns the existing asset via the unique index. Two guards make the object immutable-in-practice: the presigned PUT signs `If-None-Match: *` (create-only — a still-valid URL can never overwrite), and the checksum binds content to the grant, verified at registration. Exact checksum header depends on an R2 spike — full-object SHA-256 support on PUT is uncertain there; `Content-MD5`/ETag is the documented fallback (API doc, Uploads). Upload object keys are deterministic per grant (`uploads/{grantId}`), so abandoned uploads (PUT completed, never registered) are sweepable: delete `uploads/` objects older than the grant TTL with no matching `"uploadId"` row — the storage-side twin of the generation-orphan sweep.
+- `"uploadId"` keeps the replay-safe presigned-upload flow and points back to a
+  durable `assetUploadIntents` row. Before a signed URL is returned, the API
+  locks organization storage usage, reserves the exact declared bytes, and
+  persists the immutable org/user/key/mime/size/MD5/expiry facts. The signed PUT
+  carries `If-None-Match: *`, `Content-Length`, `Content-Type`, and
+  `Content-MD5`; registration locks and matches the intent, verifies R2 metadata,
+  inserts the Asset, and converts reserved bytes to used bytes in one
+  transaction. Registering the same grant twice returns the same Asset.
+  Unregistered intents retain their hold until their private object is deleted;
+  cleanup uses durable leases and bounded backoff rather than bucket listing.
 - Search uses `pg_trgm` GIN indexes over `lower("name")` for live Asset and Folder
   substring matching. Every search query still carries `"organizationId"`; the
   trigram index accelerates candidate lookup without weakening tenant scope.
@@ -627,6 +641,71 @@ Notes:
   public delivery and possible future showcase consideration; gallery approval,
   moderation, and featuring require a separate future contract. Tags and
   favorites do not change visibility.
+
+#### Durable direct-upload intents
+
+Every newly issued direct-upload grant has one database intent. The intent is
+created in the same transaction that increments
+`organizationStorageUsage.reservedBytes`, before the signed R2 capability can
+leave the API:
+
+```sql
+create table "assetUploadIntents" (
+  "id" text primary key,
+  "organizationId" text not null
+    references "organization" ("id") on delete cascade,
+  "userId" text not null,
+  "objectKey" text not null unique,
+  "filename" text not null,
+  "mimeType" text not null,
+  "sizeBytes" bigint not null check ("sizeBytes" > 0),
+  "checksumMd5" text not null,
+  "status" text not null default 'pending'
+    check ("status" in ('pending', 'registered', 'expired', 'canceled')),
+  "expiresAt" timestamptz not null,
+  "assetId" text,
+  "reservationReleasedAt" timestamptz,
+  "registeredAt" timestamptz,
+  "objectDeletedAt" timestamptz,
+
+  "cleanupAttemptCount" integer not null default 0
+    check ("cleanupAttemptCount" >= 0),
+  "cleanupAttemptedAt" timestamptz,
+  "cleanupLastErrorCode" text,
+  "cleanupLastFailedAt" timestamptz,
+  "cleanupNextAt" timestamptz,
+
+  "createdAt" timestamptz not null default now(),
+  "updatedAt" timestamptz not null default now(),
+
+  unique ("organizationId", "id"),
+  unique ("organizationId", "assetId"),
+  foreign key ("assetId", "organizationId")
+    references "assets" ("id", "organizationId")
+);
+
+create index "assetUploadIntentsCleanupEligibilityIdx"
+  on "assetUploadIntents" (
+    (coalesce("cleanupNextAt", "expiresAt")),
+    "id"
+  )
+  where
+    "status" in ('pending', 'expired')
+    and "objectDeletedAt" is null;
+```
+
+`pending → registered` converts the exact hold to used bytes in the Asset insert
+transaction. A URL-signing failure moves an unexposed intent to `canceled` and
+releases its hold. After expiry, cleanup moves `pending → expired`, increments
+the attempt revision, and writes `cleanupNextAt` as a crash-safe lease before
+returning the row. A failed delete or settlement advances `cleanupNextAt`
+through bounded backoff; the next sweep can therefore reach later eligible
+intents instead of replaying the same oldest page. Successful idempotent R2
+deletion records `objectDeletedAt`, clears `cleanupNextAt`, and releases the
+reservation exactly once. The scheduled worker processes bounded pages with
+bounded object-storage concurrency and never discovers work by listing R2. Its
+selector filters and orders by the same unified eligibility expression, so the
+bounded page is read directly from the partial expression index.
 
 #### Asset favorites and tags
 

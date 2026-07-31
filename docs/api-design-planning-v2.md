@@ -121,7 +121,7 @@ type ApiError = {
 | Elements        | `GET /elements` · `POST /elements` · `GET /elements/:id` · `PATCH /elements/:id` · `DELETE /elements/:id` · `PATCH /elements/:id/references`                                                                                                                                                                    |
 | Create Sessions | `GET /create-sessions` · `GET /create-sessions/:id` · `PATCH /create-sessions/:id` · `DELETE /create-sessions/:id`                                                                                                                                                                                              |
 | Projects        | `GET/POST /projects` · `GET/PATCH /projects/:projectId` · `POST /projects/:projectId/archive` · `POST /projects/:projectId/restore` · `GET /projects/:projectId/home` · `GET/PUT /projects/:projectId/brief` · `GET /projects/:projectId/brief/mentions` · `POST /projects/:projectId/brief/mentions/resolve`   |
-| Runs            | `POST /flows/:id/run-plans` · `POST /runs` · `POST /runs/create/estimate` · `POST /runs/create` · `GET /runs` · `GET /runs/active` · `GET /runs/:id` · `POST /runs/:id/cancel` · `POST /runs/:id/retry` · `POST /runs/:id/realtime-token`                                                                       |
+| Runs            | `POST /flows/:id/run-plans` · `POST /runs` · `POST /runs/create/estimate` · `POST /runs/create` · `GET /runs` · `GET /runs/active` · `GET /runs/:id` · `POST /runs/:id/cancel` · `POST /runs/:id/retry/estimate` · `POST /runs/:id/retry` · `POST /runs/:id/realtime-token`                                           |
 | Billing         | `GET /billing/catalog` · `GET /billing/account` · `GET /billing/usage` · `GET /billing/credits/ledger` · `POST /billing/checkout` · `PATCH /billing/subscription` · `POST /billing/topups/checkout` · `POST /billing/portal` · `POST /webhooks/stripe`                                                        |
 | Config          | `GET /config/generation`                                                                                                                                                                                                                                                                                        |
 
@@ -485,9 +485,17 @@ Response `201`:
 {
   uploadUrl: string; // presigned PUT, short-lived
   uploadId: string; // signed grant token: binds org, user, object key (uploads/{grantId}),
-  // mime, size, expiry. Pass to POST /assets. Server holds no grant state.
+  // mime, size, expiry. Pass to POST /assets. A matching durable intent holds
+  // the declared bytes against the organization quota before this is returned.
 }
 ```
+
+Grant issuance locks the organization storage projection and rejects when
+`usedBytes + reservedBytes + declared size` exceeds the effective plan limit.
+The durable intent contains the exact tenant, user, key, MIME type, checksum,
+size, and registration expiry signed into `uploadId`. Therefore concurrently
+issued PUT capabilities cannot exceed the quota even when the client never
+calls `POST /assets`.
 
 ### `POST /assets` — register an uploaded object
 
@@ -513,7 +521,22 @@ canonical Assets after the fact via `PATCH /elements/:id/references`
 (`docs/elements.md`); the reference picker uploads through this plain
 `POST /assets` and then attaches the resulting Asset.
 
-Order of operations: verify grant signature + expiry → `HEAD` the object, confirm existence and that actual size/content-type/**checksum** match the grant → derive `type` from verified mime → insert the Asset. A tenancy failure rolls back, so a crash or rejection cannot produce a registered-but-unusable half-state.
+Order of operations: verify grant signature + expiry → `HEAD` the object,
+confirm existence and that actual size/content-type/**checksum** match the
+grant → lock and match the durable upload intent → derive `type` from verified
+mime → insert the Asset and atomically convert the exact reserved bytes to used
+bytes. A tenancy failure rolls back, so a crash or rejection cannot produce a
+registered-but-unusable half-state.
+
+An every-minute bounded reconciliation sweep expires unregistered intents after
+their registration boundary and idempotently deletes the corresponding private
+R2 object. The exact storage hold remains reserved until deletion is confirmed,
+then releases exactly once. Every cleanup claim writes a durable
+`cleanupNextAt` lease and attempt revision. Failures move that eligibility
+forward with bounded backoff, and a small worker pool processes one bounded
+page concurrently. Persistent failures therefore retain their own holds without
+monopolizing later due intents. An R2 outage cannot turn an expired grant into
+an untracked object or free quota for another unregistered upload.
 
 Flow identity is deliberately absent from upload registration. Uploading from a
 canvas does not imply a folder move: ordinary uploads use the explicit
@@ -1171,7 +1194,9 @@ settlement:
 - a settled result that did not already become canonical records terminal
   provider status/cost and discards its checkpoint output;
 - accepted cancellation → `202 FlowRun` with user-visible status `canceled`;
-- already terminal → `409 invalid_state`
+- replay of an already-canceled run → `202 FlowRun` and re-dispatches any
+  missing settlement recovery;
+- any other already-terminal state → `409 invalid_state`
 
 ### `POST /runs/:id/retry`
 
@@ -1199,6 +1224,22 @@ Retry is a new immutable run, never a transition that reopens the source run.
 If partial retry cannot preserve these rules in the first M5 increment, the
 endpoint performs a whole-snapshot retry. It must not mix source snapshot data
 with the current canvas.
+
+### `POST /runs/:id/retry/estimate`
+
+Returns the sanitized advisory credit total for retrying the immutable source
+run. It accepts the same optional execution-mode, execution-runtime, and
+expected-status body as retry admission, inserts nothing, and applies the same
+visibility, retryable-status, browser-runtime, and debug-authorization checks.
+
+The quote is derived from each source job's stored provider-cost estimate and
+the current code-owned credit policy. Retry admission recomputes through the
+same quote function inside its transaction; the browser never submits a credit
+amount. The dashboard requires a complete quote before a paid managed retry,
+compares it with `GET /billing/account`, and opens Settings -> Credits instead
+of admitting when the advisory balance is insufficient. The server remains
+authoritative and may still return `402 insufficient_credits` for stale-balance
+or concurrency races.
 
 ### `POST /runs/:id/realtime-token`
 

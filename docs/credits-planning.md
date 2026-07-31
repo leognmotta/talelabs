@@ -80,9 +80,11 @@ The UI presents these reviewed points as a snapping slider, not as arbitrary
 quantity billing. The base monthly prices remain `$18` for Creator and `$49`
 for Pro. Increasing Pro changes only the recurring price and monthly credit
 grant; all Pro options retain the same Pro feature and storage entitlements.
-For the first release, a size change takes effect at the next renewal. Immediate
-extra demand uses the separate top-up slider, which extends to `$390` without
-adding another recurring option or prorated credit-grant logic.
+Paid allowance increases take effect after Stripe collects the exact prorated
+invoice. TaleLabs grants only the floored incremental credits for the remaining
+monthly credit period. Decreases remain renewal-boundary changes. Immediate
+extra demand remains available through the separate top-up slider, which
+extends to `$390` without changing the subscription.
 
 The approved annual prices intentionally use modest discounts rather than the
 earlier approximately 20% discount. Creator is about 11% below twelve monthly
@@ -510,11 +512,13 @@ export const BILLING_CATALOG = defineBillingCatalog({
           code: "creator-1600",
           monthlyCredits: 1_600,
           month: {
+            catalogRevision: "2026-07-27.5",
             offerCode: "creator-monthly-1600-2026-07",
             priceUsdCents: 1_800,
             stripeLookupKey: "talelabs_creator_monthly_1600_2026_07",
           },
           year: {
+            catalogRevision: "2026-07-27.5",
             offerCode: "creator-annual-1600-2026-07",
             priceUsdCents: 19_200,
             stripeLookupKey: "talelabs_creator_annual_1600_2026_07",
@@ -532,11 +536,13 @@ export const BILLING_CATALOG = defineBillingCatalog({
           code: "pro-5300",
           monthlyCredits: 5_300,
           month: {
+            catalogRevision: "2026-07-27.5",
             offerCode: "pro-monthly-5300-2026-07",
             priceUsdCents: 4_900,
             stripeLookupKey: "talelabs_pro_monthly_5300_2026_07",
           },
           year: {
+            catalogRevision: "2026-07-27.5",
             offerCode: "pro-annual-5300-2026-07",
             priceUsdCents: 54_800,
             stripeLookupKey: "talelabs_pro_annual_5300_2026_07",
@@ -546,11 +552,13 @@ export const BILLING_CATALOG = defineBillingCatalog({
           code: "pro-11300",
           monthlyCredits: 11_300,
           month: {
+            catalogRevision: "2026-07-27.5",
             offerCode: "pro-monthly-11300-2026-07",
             priceUsdCents: 9_900,
             stripeLookupKey: "talelabs_pro_monthly_11300_2026_07",
           },
           year: {
+            catalogRevision: "2026-07-27.5",
             offerCode: "pro-annual-11300-2026-07",
             priceUsdCents: 110_400,
             stripeLookupKey: "talelabs_pro_annual_11300_2026_07",
@@ -560,11 +568,13 @@ export const BILLING_CATALOG = defineBillingCatalog({
           code: "pro-17300",
           monthlyCredits: 17_300,
           month: {
+            catalogRevision: "2026-07-27.5",
             offerCode: "pro-monthly-17300-2026-07",
             priceUsdCents: 14_900,
             stripeLookupKey: "talelabs_pro_monthly_17300_2026_07",
           },
           year: {
+            catalogRevision: "2026-07-27.5",
             offerCode: "pro-annual-17300-2026-07",
             priceUsdCents: 166_800,
             stripeLookupKey: "talelabs_pro_annual_17300_2026_07",
@@ -574,11 +584,13 @@ export const BILLING_CATALOG = defineBillingCatalog({
           code: "pro-29500",
           monthlyCredits: 29_500,
           month: {
+            catalogRevision: "2026-07-27.5",
             offerCode: "pro-monthly-29500-2026-07",
             priceUsdCents: 24_900,
             stripeLookupKey: "talelabs_pro_monthly_29500_2026_07",
           },
           year: {
+            catalogRevision: "2026-07-27.5",
             offerCode: "pro-annual-29500-2026-07",
             priceUsdCents: 279_000,
             stripeLookupKey: "talelabs_pro_annual_29500_2026_07",
@@ -616,6 +628,15 @@ program policy attached to `free`; they are not encoded as a recurring offer.
 Internal economics, Stripe lookup keys, eligibility policy, and historical
 commercial metadata are server-only. The dashboard and marketing site consume
 the sanitized public catalog.
+
+Each `historicalOffers` entry is a complete recurring fact, not only a retired
+price: it retains `billingInterval`, `recurringOptionCode`, `monthlyCredits`,
+`catalogRevision`, `offerCode`, `priceUsdCents`, and `stripeLookupKey` under its
+owning paid plan. Webhook projection and paid-Invoice reconciliation resolve
+both current and historical entries, while new Checkout remains limited to
+`currentRecurringOptions`. Catalog synchronization verifies historical Prices
+read-only against those code-owned facts and never creates, updates, activates,
+or deactivates them.
 
 ### 4.3 Changing plans through a PR
 
@@ -707,7 +728,8 @@ createdAt
 updatedAt
 ```
 
-Founder assignment is an explicit admin operation. It is not inferred from
+Founder assignment is an explicit system-administrator operator operation. It
+is not self-service for organization owners/admins and is not inferred from
 email, signup time, or mutable UI state.
 
 ### 5.2 Subscriptions, top-up purchases, and payments
@@ -729,15 +751,24 @@ currentPeriodStart
 currentPeriodEnd
 paidThrough
 cancelAtPeriodEnd
-scheduledPlanCode               nullable future seam
-scheduledRecurringOptionCode    nullable
-scheduledOfferCode              nullable future seam
+scheduledPlanCode               nullable Creator or Pro target
+scheduledRecurringOptionCode    nullable paid option
+scheduledOfferCode              nullable immutable target offer
+scheduledBillingInterval        nullable month or year
+creditScheduleRevision          nonnegative schedule generation
 createdAt
 updatedAt
 ```
 
 A partial unique constraint permits at most one current subscription per
 organization.
+
+`subscriptionCreditPeriods` stores one database-enforced monthly ceiling per
+subscription schedule revision. `carriedCredits + grantedCredits` can never
+exceed `targetCredits`. A monthly-to-annual switch starts a new schedule,
+counts the credits already issued for the overlapping month as carried, and
+grants only the positive shortfall. Spending credits does not lower this
+ceiling and can never cause them to be issued again.
 
 `creditPurchases` is the durable order and quoted-credit authority for one
 top-up:
@@ -747,8 +778,9 @@ id
 organizationId
 planCode                        plan at purchase quotation
 recurringOptionCode             nullable; exact paid option used for quotation
-status                          pending | paid | failed | expired | refunded | disputed
+status                          pending | paid | failed | expired | partially_refunded | refunded | disputed
 amountMinor
+refundedAmountMinor             cumulative Stripe-refunded minor units
 currency
 credits
 catalogRevision
@@ -779,10 +811,20 @@ paymentKind                     subscription | credit_topup
 billingSubscriptionId           nullable
 creditPurchaseId                nullable
 stripeInvoiceId                 nullable, unique when present
+stripeInvoiceLineItemId         nullable, unique when present
+stripePriceId                   nullable; exact paid recurring Price
 stripeCheckoutSessionId         nullable, unique when present
 stripePaymentIntentId           nullable, unique when present
 amountPaidMinor
+refundedAmountMinor             cumulative Stripe-refunded minor units
 currency
+subscriptionPlanCode            nullable for top-up
+subscriptionRecurringOptionCode nullable for top-up
+subscriptionOfferCode           nullable for top-up
+subscriptionMonthlyCredits      nullable for top-up
+subscriptionBillingInterval     nullable for top-up
+subscriptionCatalogRevision     nullable for top-up
+subscriptionGrantFactsCapturedAt nullable; one-time immutable capture marker
 stripeBalanceTransactionId      nullable
 settlementGrossMinor            nullable
 settlementFeeMinor              nullable
@@ -800,13 +842,25 @@ updatedAt
 A database check enforces the payment shape:
 
 ```txt
-subscription -> billingSubscriptionId and stripeInvoiceId are present
+subscription -> billingSubscriptionId, stripeInvoiceId, and service period are present
 credit_topup -> creditPurchaseId and stripeCheckoutSessionId are present
 exactly one subscription or purchase owner is present
 ```
 
 Do not infer payment from `customer.subscription.status` alone. `invoice.paid`
-extends `paidThrough` and authorizes future monthly grants.
+extends `paidThrough` and authorizes future monthly grants. The exact
+positive target-Price subscription invoice line is the grant authority,
+including a payment-gated subscription-update invoice: its Price, service
+period, plan, recurring option, offer, monthly credits, billing interval, and
+catalog revision are captured atomically on the payment. Grant
+reconciliation consumes only those immutable payment facts and never the
+mutable current Subscription projection. Invoice processing resolves the exact
+already-projected local Subscription by Stripe Subscription and Customer
+identity; it never retrieves or reprojects mutable lifecycle state. A missing
+local projection leaves the Invoice retryable until its Subscription event is
+processed. A pre-migration payment may capture the complete fact set once by
+replaying its Stripe Invoice; after capture, a database trigger rejects changes
+to the grant authority.
 
 Stripe balance-transaction facts let realized reporting replace the conservative
 payment-fee reserve with the actual fee, FX, and settlement amount.
@@ -863,6 +917,9 @@ createdAt
 
 Unique organization-scoped idempotency keys prevent duplicate Founder,
 subscription-period, purchase, or support grants.
+Grant append acquires the organization billing lock before checking that key,
+so concurrent webhook, scheduled, and admission replays return the same grant
+instead of surfacing a unique-constraint failure.
 
 An annual invoice allocates its paid USD revenue across its twelve monthly
 grants. Store that recognized amount on each grant so captured credits can be
@@ -1044,10 +1101,17 @@ tracks a monthly internal grant schedule bounded by the paid service period.
 
 ```txt
 Stripe invoice.paid
--> update local payment and subscription projection
--> extend paidThrough
+-> resolve the exact local subscription and immutable invoice-line facts
+-> update the local payment and that exact subscription's paidThrough
 -> reconcile every monthly grant period now due
 ```
+
+Stripe Subscription lifecycle projection and paid-Invoice mutation acquire
+PostgreSQL row locks in one order: `organizationBillingAccounts`, then every
+`billingSubscriptions` row ordered by local `id`, then the dependent Checkout
+intent or payment rows they touch. Disposable certification overlaps a delayed
+historical Invoice with a replacement Subscription lifecycle event and must
+complete without a deadlock.
 
 The first grant is emitted only after confirmed payment.
 
@@ -1086,16 +1150,26 @@ organization.
 
 ```txt
 hourly scheduled task
--> select bounded pages of subscriptions with due grant periods
--> lock rows with FOR UPDATE SKIP LOCKED
--> append missing grants idempotently
--> continue within a fixed time and item budget
+-> read the next durable organization-keyset cursor page in a serialized task
+-> merge due tenant failures from the durable recovery queue
+-> reconcile each organization as an isolated idempotent operation
+-> persist tenant-specific backoff or quarantine before continuing the page
+-> advance after every page organization either succeeds or has a durable failure
+-> retry failed tenants independently and wrap only after the final page
 ```
 
-The scheduler is acceleration, not the only correctness path. Billing account
-reads and managed run admission also reconcile due local grant periods before
-reporting insufficient credits. This lets a customer use a paid allowance even
-if a scheduled task was delayed.
+The scheduler is acceleration, not the only correctness path. Managed run
+admission also reconciles due local grant periods before reporting insufficient
+credits. Billing account reads are side-effect-free and never initialize,
+expire, or reconcile state. This lets a customer use a paid allowance even if a
+scheduled task was delayed without turning global sidebar reads into a write
+amplifier.
+
+Both the grant and invariant sweeps retain per-task, per-organization failure
+rows with attempt count, stable error code, next retry, and quarantine state.
+Five consecutive failures quarantine that tenant for operator review. A failed
+tenant never prevents later organizations from being visited, and cursor
+advancement never silently drops a failure that was not durably recorded.
 
 ### 6.4 Subscription lifecycle
 
@@ -1107,8 +1181,10 @@ if a scheduled task was delayed.
 | payment failed / past due | do not emit grants beyond existing `paidThrough`                        |
 | cancel at period end      | preserve paid service and due grants through `paidThrough`              |
 | subscription ended        | stop future grants; already granted non-expiring credits remain         |
-| Pro recurring-size change | schedule the new option for the next renewal; no proration or extra grant |
-| cross-plan/cadence change | deferred for the first release                                           |
+| paid allowance increase   | collect exact proration, apply immediately, and grant only the remaining-period increment |
+| monthly to annual         | collect immediately, reset the billing/credit schedule, and carry overlapping credits |
+| paid allowance decrease   | schedule the selected paid option for the next renewal; no immediate credit mutation |
+| annual to monthly         | schedule the cadence change for renewal; no immediate credit mutation              |
 
 Already granted credits remain spendable after a paid subscription ends. The
 organization falls back to Free storage and feature entitlements at
@@ -1117,10 +1193,12 @@ deletes existing Assets. Only `blocked_review`, abuse, or account security may
 block spending an otherwise valid remaining balance.
 
 Launch Customer Portal configuration supports payment methods, invoice history,
-and cancellation. Pro recurring-size changes use TaleLabs' reviewed endpoint
-and a Stripe Subscription Schedule with a next-period phase. Do not expose
-product, cadence, or recurring-size changes through Portal, where they could
-bypass the local scheduled-offer projection and monthly-grant contract.
+and cancellation. TaleLabs previews and executes product, cadence, and
+recurring-size changes so it can apply its payment-gated monthly-credit
+contract. Immediate increases use Stripe's exact preview and
+`pending_if_incomplete`; decreases use a Stripe Subscription Schedule with a
+next-period phase. Do not expose those changes through Portal, where they could
+bypass the local intent, credit ceiling, and scheduled-offer projection.
 
 ### 6.5 Refunds and disputes
 
@@ -1132,6 +1210,23 @@ For an affected grant:
    balance;
 4. set managed execution to `blocked_review` and require an explicit support
    decision.
+
+Any partial refund enters `blocked_review` and records Stripe's cumulative
+refunded amount without automatically guessing a proportional credit or annual
+entitlement policy. A later full refund uses the stable Charge identity to
+reverse every then-unused credit exactly once. Repeated partial-refund events
+update the cumulative amount but do not mark the payment fully refunded.
+
+An open or lost dispute records the exact unused-credit reversal per grant. A
+current Stripe outcome of `won`, `warning_closed`, or `prevented` appends
+compensating ledger entries and restores exactly those credits unless a full
+refund has superseded the dispute. Managed execution is unblocked only when no
+other open or lost dispute or partial-refund review remains.
+
+A dispute amount that does not map exactly to the one local payment enters
+`blocked_review` without automatic credit reversal. Stripe can report partial
+disputes, conversion differences, or multiple recurring payments in one
+dispute, so TaleLabs must not guess which grant share to revoke.
 
 Browser BYOK remains available according to the organization's current plan
 policy unless abuse or account security requires a broader suspension.
@@ -1187,14 +1282,21 @@ catalog revisions are not secrets and must not become environment variables.
 6. verifies that Price amount, currency, interval, credits, and metadata match
    code;
 7. rejects an organization that already has a current subscription;
-8. creates a Stripe Checkout Session in `subscription` mode;
-9. supplies Stripe idempotency using organization, offer, and request key;
-10. omits `payment_method_types` so Stripe can select supported methods;
+8. admits one durable organization-scoped pending Checkout intent before
+   calling Stripe, with a short external-request lease and expiry boundary;
+9. creates or reuses the one Stripe Checkout Session in `subscription` mode
+   using the durable intent identity for Stripe idempotency;
+10. explicitly permits only the synchronous `card` payment method at launch;
 11. includes the API-version-supported `integration_identifier`;
 12. returns the Stripe-hosted Checkout URL.
 
 Success redirects to a billing completion route that displays pending state
 until the signed webhook confirms payment. The redirect is not payment proof.
+The processor still supports legacy delayed-payment Sessions. On
+`checkout.session.async_payment_failed`, it retrieves and projects the current
+Subscription. Any non-terminal Subscription durably blocks a second Checkout
+until Stripe reports explicit recovery or cancellation; a failure with no
+Subscription releases the pending intent.
 
 ### 7.3 Top-up Checkout
 
@@ -1267,7 +1369,17 @@ by Stripe signature:
 5. return `2xx` quickly.
 
 The processor retrieves the Stripe event and current Stripe resources. It must
-be safe under duplicate delivery and out-of-order events.
+be safe under duplicate delivery and out-of-order events. Historical
+`invoice.payment_failed` deliveries never override a currently recovered
+Subscription or paid Invoice.
+An asynchronous subscription Checkout failure also retrieves its current
+Subscription rather than treating the historical Session event as sufficient
+state.
+If a known TaleLabs customer's refund or dispute arrives before its local
+payment projection, the event remains failed with a retryable projection
+pending code. Inbox recovery replays it after the payment exists; the event is
+never marked successful while its reversal is unmatched. Events for customers
+outside the TaleLabs billing account remain safely ignored.
 
 Initial handled events:
 
@@ -1281,6 +1393,9 @@ customer.subscription.updated
 customer.subscription.deleted
 invoice.paid
 invoice.payment_failed
+invoice.payment_action_required
+subscription_schedule.created
+subscription_schedule.updated
 charge.refunded
 charge.dispute.created
 charge.dispute.closed
@@ -1311,9 +1426,11 @@ Add one focused billing route group:
 | `GET /billing/usage/runs`       | authenticated member  | cursor-paged visible runs for one selected month       |
 | `GET /billing/credits/ledger`   | owner/admin           | selected-month cursor-paged organization ledger       |
 | `POST /billing/checkout`        | owner/admin           | create subscription Checkout Session                  |
-| `PATCH /billing/subscription`   | owner/admin           | schedule a Pro recurring-size change at renewal       |
+| `POST /billing/subscription/preview` | owner/admin      | preview exact timing, amount due, and credits          |
+| `PATCH /billing/subscription`   | owner/admin           | apply a paid increase or schedule a decrease           |
 | `POST /billing/topups/checkout` | owner/admin           | create one-time credit top-up Checkout Session        |
 | `POST /billing/portal`          | owner/admin           | open Stripe Customer Portal                           |
+| `POST /billing/founder`         | system administrator  | assign approved Founder status and welcome credits    |
 | `POST /webhooks/stripe`         | signed Stripe request | durable webhook inbox                                 |
 
 The public catalog exposes stable plan codes, storage limits, BYOK availability,
@@ -1346,9 +1463,10 @@ replace this hot summary.
 
 The endpoint resolves the active organization from authenticated request
 context; it never accepts an organization ID from the client. Any organization
-member may read the summary. Before reading, it performs the already-defined
-bounded lazy monthly-grant reconciliation, then reads the materialized billing,
-credit-balance, and storage-usage projections.
+member may read the summary. It reads the materialized billing, credit-balance,
+and storage-usage projections without writing. An organization with no
+initialized billing rows receives a read-only Free/zero projection; the first
+billing, storage, or run mutation initializes the durable rows transactionally.
 
 ```ts
 type BillingAccountSummary = {
@@ -1358,6 +1476,7 @@ type BillingAccountSummary = {
     founder: boolean;
     recurringOptionCode: string | null;
     scheduledRecurringOptionCode: string | null;
+    scheduledBillingInterval: "month" | "year" | null;
     scheduledEffectiveAt: string | null;
     offerCode: string | null;
     billingInterval: "month" | "year" | null;
@@ -1536,40 +1655,60 @@ and the response uses `Cache-Control: private, no-store`.
 selection. Its cursor remains scoped to that month, and the dashboard resets
 ledger pagination whenever the selected month changes.
 
-### 8.3 `PATCH /billing/subscription`
+### 8.3 Paid subscription preview and change
 
-This endpoint schedules a different current Pro recurring option on the
-subscription's existing cadence:
+Both endpoints accept one complete paid target:
 
 ```ts
-type ScheduleSubscriptionOptionRequest = {
+type PaidSubscriptionChangeTarget = {
+  planCode: "creator" | "pro";
   recurringOptionCode: string;
+  billingInterval: "month" | "year";
   catalogRevision: string;
 };
 ```
 
-It requires an organization owner/admin and `Idempotency-Key`. The server locks
-the local subscription, verifies active Pro entitlement and the current catalog,
-resolves the immutable Stripe Price by lookup key, and creates or updates a
-Stripe Subscription Schedule whose next phase begins at the current paid period
-end. It persists `scheduledPlanCode`, `scheduledRecurringOptionCode`, and
-`scheduledOfferCode`; the signed Stripe webhook remains authoritative for the
-transition.
+`POST /billing/subscription/preview` resolves the exact Stripe Price and returns
+`immediate` or `renewal`, the exact amount due now, the whole credits added now,
+the effective date, target monthly allowance, storage, cadence, and next renewal
+when applicable. Its whole-second `prorationDate` must be returned unchanged by
+the confirming request.
 
-The change:
+`PATCH /billing/subscription` additionally requires `Idempotency-Key`. The
+server locks the account then every subscription in local-ID order, admits one
+durable monotonic revision, and verifies the same Stripe subscription and Price
+used by the preview.
+
+For an immediate increase, Stripe uses `always_invoice`,
+`pending_if_incomplete`, and the fixed preview proration instant. TaleLabs
+applies the plan, storage, allowance, and current-period credit increment only
+after that Invoice is paid. An authentication-required Invoice returns its
+hosted payment URL and remains pending for webhook completion. For a decrease
+or annual-to-monthly switch, the server creates and verifies a renewal-boundary
+Subscription Schedule and persists the complete scheduled tuple. Replaying the
+same target and key is idempotent.
+
+Every external change carries the durable intent identity in Stripe metadata.
+`subscription_schedule.created` can recover a crash immediately after Schedule
+creation by attaching and configuring that exact Schedule;
+`subscription_schedule.updated` applies the verified future tuple.
+`invoice.payment_action_required` attaches the exact hosted recovery Invoice,
+and an API replay may also recover it from the Subscription's `latest_invoice`.
+Pending intents are never failed merely because a local TTL elapsed: Stripe is
+retrieved first, and only a proven absence of an attached Schedule, pending
+update, or related Invoice permits an abandoned intent to fail.
+If a signed webhook applies the exact Invoice or Schedule before the originating
+API request resumes, the matching immutable Stripe identity is a successful
+replay even though the webhook has already cleared the API request lease.
+
+The credit rules are independent from the spendable balance:
 
 ```txt
-does not prorate
-does not charge immediately
-does not emit credits immediately
-does not alter the current monthly grant
-does not permit cross-plan or cadence changes
+same-cadence increase -> floor((target - current) * remaining / period)
+monthly-to-annual -> target monthly credits - already counted overlapping credits
+decrease or annual-to-monthly -> zero credits now
+period invariant -> carried credits + granted credits <= target credits
 ```
-
-The response is the refreshed `BillingAccountSummary`, including the pending
-option when present. Replaying the same request is idempotent. A different
-pending option replaces the future phase without mutating the current paid
-period.
 
 The generated SDK owns dashboard contracts. APIs return stable error codes, not
 English-only billing messages.
@@ -1610,6 +1749,20 @@ fees, or margin policy.
 The preflight quote is advisory. Admission always recomputes it from current
 locked inputs and current pricing facts.
 
+Before any Credits-funded managed action, including debug execution, the
+dashboard compares the complete advisory quote with the shared
+`GET /billing/account` balance. An
+insufficient balance opens Settings directly on Credits and does not submit the
+paid admission request. This applies to Create, Flow node, downstream, upstream,
+selection, hidden all-scope, and user retry actions. Retry uses
+`POST /runs/:id/retry/estimate`, which quotes the source run's immutable jobs
+through the same credit-policy function used by retry admission.
+
+The browser check is an interaction guard, not an authorization boundary.
+Concurrent tabs, a stale cache, or a price race can still reach authoritative
+admission. A race-time `402 insufficient_credits` refreshes the shared account
+summary and opens Credits without showing a generic generation failure.
+
 ### 9.2 Reservation
 
 Current TaleLabs admission persists every planned generation job before
@@ -1646,10 +1799,16 @@ Each generation job settles its immutable quoted credits exactly once:
 | user cancellation before usable output | release quoted job credits                      |
 | output ingestion fails or is corrupt   | release quoted job credits                      |
 | run is partial                         | capture successful items, release the remainder |
-| deterministic debug execution          | no reservation and no charge                    |
+| deterministic Credits debug execution  | capture the normal quote without a provider call |
 
 Actual provider cost can reconcile after output success. It must not delay Asset
 availability or change the customer charge.
+
+Run cancellation commits the user-terminal run state first and dispatches one
+idempotent settlement task. The task releases each job independently and the
+global terminal-settlement sweep remains the fallback. A dispatch or individual
+settlement failure never changes the accepted cancellation into an HTTP error;
+replaying an already-canceled run succeeds and re-dispatches recovery.
 
 ### 9.4 Retry and replay
 
@@ -1674,7 +1833,9 @@ ledger and materialized-balance disagreement
 ```
 
 Every repair is idempotent and appends a compensating or missing ledger entry.
-Never edit historical ledger rows.
+Never edit historical ledger rows. Isolate failures per job, back off bounded
+retries, and quarantine an exhausted job for operator review so one corrupt
+reservation cannot block later tenants.
 
 ### 9.6 BYOK
 
@@ -1705,7 +1866,8 @@ Approved launch defaults:
 | paid Creator/Pro subscription credits | private                         |
 | purchased top-up credits on any plan  | private                         |
 | browser BYOK                          | private                         |
-| debug/mock                            | non-billable development policy |
+| managed Credits debug                | funding allocation policy; no provider call |
+| BYOK debug                            | private; no TaleLabs credit charge |
 
 When one job reserves from multiple grant buckets, derive the strictest output
 policy once at admission:
@@ -1750,7 +1912,7 @@ authoritative Asset aggregate.
 Enforce the current plan's `storageBytes`:
 
 ```txt
-before direct upload registration
+before issuing a direct-upload signed URL, using a durable exact-byte hold
 before browser-output upload grants
 before managed generation dispatch using a conservative output-byte reservation
 when a retry would create additional outputs
@@ -1758,6 +1920,17 @@ when a retry would create additional outputs
 
 Generated output reservation can use model/media-specific upper bounds from the
 generation catalog. Release unused bytes after ingestion records actual size.
+An admitted hold authorizes actual bytes up to the released per-output share
+even if the plan is downgraded before ingestion. Apply the current plan limit
+only to bytes above that admitted share.
+
+Direct-upload registration atomically converts its exact hold into used bytes.
+An expired unregistered grant retains the hold until its create-only private R2
+object has been deleted idempotently, then releases it exactly once. Cleanup
+claims use a durable attempt revision and `cleanupNextAt` lease; failures apply
+bounded backoff while later eligible intents continue through a bounded worker
+pool. No signed direct-upload capability or abandoned object may exist without
+the corresponding organization storage reservation.
 
 On downgrade or subscription end:
 
@@ -1850,7 +2023,7 @@ Founder is a status on Free, not a fourth plan. Pro's four reviewed recurring
 allowances are selectable sizes of one Pro plan, not four plans. Do not add
 Starter, Business, Studio, or a separate BYOK plan.
 
-The destination includes:
+Free accounts see:
 
 ```txt
 monthly / annual segmented control
@@ -1861,19 +2034,38 @@ storage allowance
 browser BYOK and managed-generation availability
 maximum top-up savings unlocked by each recurring option
 short, stable entitlement comparison
-owner/admin upgrade or Manage subscription action
-read-only plan visibility for ordinary members
+owner/admin Checkout actions and read-only visibility for ordinary members
 the snapping Pro recurring-credit selector using the four catalog points
-the scheduled Pro option and effective renewal date when a change is pending
 ```
 
-Changing the monthly/annual control never changes Free. The Pro selector
-updates the price and monthly allowance on the one Pro card and schedules an
-existing Pro subscription change for renewal through
-`PATCH /billing/subscription`. Prices, credits, plan copy, and slider points
-come from the public billing catalog; UI code must not duplicate them. Rounded
-whole-percentage labels may be used in the compact selector, while the detailed
-Credits view shows the exact catalog percentage and effective USD per credit.
+Paid Creator and Pro accounts instead see:
+
+```txt
+one compact current-subscription summary
+an active monthly / annual target control for owner/admin changes
+current price, monthly credits, storage, and renewal or end date
+one secondary owner/admin Manage billing action inside the summary
+the complete scheduled target and effective renewal date inside the summary
+one focused paid-option panel rather than three acquisition cards
+Creator: review Creator annual or Pro targets
+Pro: adjust the four-point recurring-credit allowance or cadence
+read-only visibility for ordinary members
+```
+
+Changing the monthly/annual control never changes Free. For paid users it
+selects a reviewed TaleLabs target: monthly-to-annual is an immediate paid
+change, while annual-to-monthly takes effect at renewal. Stripe Customer Portal
+owns payment methods, invoice history, cancellation, and other hosted account
+management, but not product or cadence changes.
+
+The focused selector updates the displayed price and monthly allowance, then
+loads an exact server preview. Immediate confirmation shows amount due today,
+credits added now, target allowance, storage, and the explicit no-duplicate
+credit rule. Renewal confirmation shows the effective date and no-charge-today
+copy. Prices, credits, plan copy, and slider points come from the public billing
+catalog; UI code must not duplicate them. Rounded whole-percentage labels may
+be used in the compact selector, while the detailed Credits view shows the
+exact catalog percentage and effective USD per credit.
 
 Annual cards present the annual offer as its rounded monthly-equivalent price,
 then disclose the exact annual charge and exact savings relative to twelve
@@ -1956,7 +2148,9 @@ Managed mode:
 ```txt
 show estimated credits before Run
 keep Run disabled while a required quote is incomplete
-show insufficient balance with an upgrade path
+open Settings -> Credits before paid admission when the shared balance is
+insufficient
+preserve 402 handling as a race-time fallback without a generic error toast
 show captured credits in run/result history
 clearly disclose when Founder promotional credits will create a public,
 showcase-eligible output
@@ -2093,6 +2287,7 @@ Stripe event inbox
 credit balances and grants
 reservations, items, and allocations
 append-only ledger
+per-organization reconciliation retry and quarantine state
 run/job funding and credit quote fields
 organization storage usage
 ```
@@ -2106,13 +2301,15 @@ Deliver:
 
 ```txt
 Checkout Session API
+card-only launch subscription Checkout
 one-time top-up Checkout Session API
 Customer Portal API
 signed webhook inbox
 asynchronous webhook processor and recovery scan
 idempotent Product/Price synchronization
 local subscription/payment projection
-next-renewal Pro recurring-option scheduling
+payment-gated immediate paid increases and monthly-to-annual changes
+renewal-boundary paid decreases and annual-to-monthly scheduling
 ```
 
 Do not run live-mode Stripe mutations in development or verification.
@@ -2123,7 +2320,7 @@ Deliver:
 
 ```txt
 Founder one-time grant
-admin-only Founder assignment operation
+system-admin-only Founder assignment operation
 private non-expiring purchased-credit grant
 monthly and annual paidThrough projection
 monthly grant period calculator
@@ -2142,6 +2339,7 @@ aggregate run reservation
 per-job capture/release
 terminal reservation reconciliation
 402 enforcement
+pre-admission Credits routing with server-side race fallback
 retry and idempotency behavior
 actual provider cost and realized margin facts
 ```
@@ -2165,6 +2363,7 @@ data-bearing month choices grouped by year without empty calendar ranges
 cursor-paged monthly generation run history
 snapping Pro recurring-credit slider
 credit-denominated Create/Flow estimates
+client-side Credits modal guard for every credit-funded admission and retry
 storage usage and enforcement
 Founder/paid output visibility capture
 localized errors and history
@@ -2179,7 +2378,10 @@ mode and TaleLabs debug/provider-safe modes:
 monthly Creator signup and first grant
 annual Pro signup and only one monthly grant
 all four Pro recurring options on monthly and annual cadence
-Pro recurring option change taking effect at renewal without a prorated grant
+monthly Creator to Pro upgrade with exact Stripe proration and only the floored remaining-period credit increment
+monthly-to-annual switch carrying already counted credits without duplication
+annual paid-option increase with exact revenue allocation across later monthly grants
+Pro decrease and annual-to-monthly change taking effect at renewal without an immediate grant
 Free top-up purchase and private purchased-credit grant
 Creator and Pro top-up purchase without plan mutation
 every top-up slider point and recurring-option endpoint preserves monotonic value and the contribution floor
@@ -2196,12 +2398,17 @@ Flow node, downstream, upstream, selection, and hidden all run modes
 direct Create managed run
 partial run, cancellation, retry, and ingestion failure settlement
 browser BYOK bypasses credits
-debug mode never charges credits
+managed Credits debug mode quotes, reserves, and captures the same credits as
+the corresponding live run while never calling the real provider
+BYOK debug mode does not consume TaleLabs credits
 Seedance 2.0 4K quote is protected
 promotional output public; paid/BYOK output private
 top-up output private on Free, Creator, and Pro
 top-up does not increase the Free storage limit
 upload and generated-output storage overage
+concurrent and abandoned direct-upload grants cannot exceed storage quota or
+leave untracked R2 objects
+persistent upload-cleanup failures back off without starving later intents
 ledger-to-balance and storage projection invariants
 sidebar/account summary matches balance and storage projections after run, upload, purge, grant, and organization switch
 Plans renders only Free, Creator, and Pro; Founder is a Free status and Pro sizes remain one plan
@@ -2254,7 +2461,6 @@ The launch design leaves clean seams for, but does not implement:
 expiring promotional credits
 managed BYOK
 automatic Credits-then-BYOK fallback
-immediate prorated upgrades
 multi-currency prices
 Stripe Tax
 seat billing
