@@ -17,24 +17,40 @@
     "STRIPE_PUBLISHABLE_KEY",
     "STRIPE_SECRET_KEY",
     "STRIPE_WEBHOOK_SECRET",
-    "TEST_POSTGRES_URL",
     "TRIGGER_PROJECT_REF",
     "TRIGGER_SECRET_KEY"
   ],
   "tasks": {
     "build": {
-      "dependsOn": ["^build"],
-      "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": ["dist/**", ".next/**", "!.next/cache/**", "src/gen/**", "openapi.json"]
+      "dependsOn": [
+        "^build"
+      ],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        ".env*"
+      ],
+      "outputs": [
+        "dist/**",
+        ".next/**",
+        "!.next/cache/**",
+        "src/gen/**",
+        "openapi.json"
+      ]
     },
     "lint": {
-      "dependsOn": ["^lint"]
+      "dependsOn": [
+        "^lint"
+      ]
     },
     "check-types": {
-      "dependsOn": ["^check-types"]
+      "dependsOn": [
+        "^check-types"
+      ]
     },
     "test": {
-      "dependsOn": ["^test"],
+      "dependsOn": [
+        "^test"
+      ],
       "cache": false
     },
     "dev": {

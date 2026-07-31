@@ -525,13 +525,8 @@ Before reporting completion:
      promotion;
    - fixed lock-order behavior under concurrent promotion/attachment attempts.
 
-Invoke that acceptance record with an isolated database whose name contains
-`test` and whose URL differs from `POSTGRES_URL`:
-
-```bash
-TEST_POSTGRES_URL='postgresql://user:password@localhost:5432/talelabs_test' \
-  npm run verify:m4.5 -w api
-```
+The acceptance record must provision and remove its own disposable PostgreSQL
+instance. It must never connect to `POSTGRES_URL`.
 
 UI and end-to-end product QA remain user-owned. Report what changed, migration
 behavior, verification results, residual risks, and any intentionally deferred
