@@ -23,8 +23,8 @@
     "verify:projects-migration": "tsx scripts/verify-projects-migration.ts"
   },
   "dependencies": {
-    "@talelabs/billing": "*",
     "@paralleldrive/cuid2": "^3.3.0",
+    "@talelabs/billing": "*",
     "dotenv": "^17.2.3",
     "kysely": "^0.28.8",
     "pg": "^8.16.3"

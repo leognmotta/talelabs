@@ -1,5 +1,39 @@
 /** Kysely table, JSON, enum, and database contracts for TaleLabs persistence. */
 import type { Generated } from 'kysely'
+import type { AssetUploadIntentTable } from './asset-upload-schema.js'
+import type {
+  AccountTable,
+  InvitationTable,
+  MemberTable,
+  OrganizationTable,
+  SessionTable,
+  UserTable,
+  VerificationTable,
+} from './auth-schema.js'
+import type {
+  BillingDisputeGrantReversalTable,
+  BillingPaymentDisputeTable,
+  BillingReconciliationCursorTable,
+  BillingReconciliationFailureTable,
+  BillingSubscriptionChangeIntentTable,
+  BillingSubscriptionCheckoutIntentTable,
+} from './billing-resilience-schema.js'
+import type {
+  BillingPaymentTable,
+  BillingSubscriptionTable,
+  CreditBalanceTable,
+  CreditGrantTable,
+  CreditLedgerEntryTable,
+  CreditPurchaseTable,
+  CreditReservationAllocationTable,
+  CreditReservationItemTable,
+  CreditReservationTable,
+  OrganizationBillingAccountTable,
+  OrganizationStorageUsageTable,
+  StripeWebhookEventTable,
+  SubscriptionCreditPeriodTable,
+} from './billing-schema.js'
+import type { FlowRunBrowserLeaseTable } from './browser-schema.js'
 import type {
   GeneratedBigIntColumn,
   GeneratedJsonColumn,
@@ -8,10 +42,14 @@ import type {
   NullableBigIntColumn,
   NullableNumericColumn,
   NullableTimestamp,
-  Timestamp,
 } from './column-types.js'
 import type { ProjectBriefTable, ProjectTable } from './projects-schema.js'
 
+export type * from './asset-upload-schema.js'
+export type * from './auth-schema.js'
+export type * from './billing-resilience-schema.js'
+export type * from './billing-schema.js'
+export type * from './browser-schema.js'
 export type * from './column-types.js'
 export type * from './projects-schema.js'
 /** Canonical Asset media families. */
@@ -79,94 +117,6 @@ export type GenerationJobSourceType
     | 'element'
     | 'nodeOutput'
     | 'text'
-/** Better Auth user table contract. */
-export interface UserTable {
-  id: string
-  name: string
-  email: string
-  emailVerified: boolean
-  image: string | null
-  role: string
-  banned: boolean
-  banReason: string | null
-  banExpires: Timestamp | null
-  locale: string | null
-  createdAt: GeneratedTimestamp
-  updatedAt: GeneratedTimestamp
-}
-
-/** Better Auth session table contract. */
-export interface SessionTable {
-  id: string
-  expiresAt: Timestamp
-  token: string
-  createdAt: GeneratedTimestamp
-  updatedAt: Timestamp
-  ipAddress: string | null
-  userAgent: string | null
-  userId: string
-  activeOrganizationId: string | null
-  impersonatedBy: string | null
-}
-
-/** Better Auth linked-account table contract. */
-export interface AccountTable {
-  id: string
-  accountId: string
-  providerId: string
-  userId: string
-  accessToken: string | null
-  refreshToken: string | null
-  idToken: string | null
-  accessTokenExpiresAt: Timestamp | null
-  refreshTokenExpiresAt: Timestamp | null
-  scope: string | null
-  password: string | null
-  createdAt: GeneratedTimestamp
-  updatedAt: Timestamp
-}
-
-/** Better Auth verification-token table contract. */
-export interface VerificationTable {
-  id: string
-  identifier: string
-  value: string
-  expiresAt: Timestamp
-  createdAt: GeneratedTimestamp
-  updatedAt: GeneratedTimestamp
-}
-
-/** Better Auth organization table contract. */
-export interface OrganizationTable {
-  id: string
-  name: string
-  slug: string
-  logo: string | null
-  createdAt: Timestamp
-  metadata: string | null
-}
-
-/** Better Auth organization membership table contract. */
-export interface MemberTable {
-  id: string
-  organizationId: string
-  userId: string
-  role: string
-  createdAt: Timestamp
-}
-
-/** Better Auth organization invitation table contract. */
-export interface InvitationTable {
-  id: string
-  organizationId: string
-  email: string
-  role: string | null
-  status: string
-  expiresAt: Timestamp
-  createdAt: GeneratedTimestamp
-  inviterId: string
-}
-
 /** Asset and Flow folder table contract. */
 export interface FolderTable {
   id: string
@@ -234,6 +184,14 @@ export interface FlowRunTable {
   source: Generated<FlowRunSource>
   /** Driver selected at admission; existing rows default to managed. */
   executionRuntime: Generated<'browser' | 'managed'>
+  /** Credits for managed runs or BYOK for browser runs. */
+  fundingSource: Generated<'byok' | 'credits'>
+  /** Run-level credit reservation, or null for non-billable execution. */
+  creditReservationId: Generated<string | null>
+  /** Immutable aggregate credit quote, or null for non-billable execution. */
+  creditQuoted: Generated<number | null>
+  /** Conservative generated-output bytes still held by this run. */
+  storageReservedBytes: GeneratedBigIntColumn
   targetNodeId: string | null
   status: Generated<FlowRunStatus>
   graphSnapshot: GeneratedJsonColumn
@@ -266,28 +224,6 @@ export interface FlowRunTable {
   createdAt: GeneratedTimestamp
   startedAt: NullableTimestamp
   completedAt: NullableTimestamp
-}
-
-/** Authoritative browser executor ownership for one tenant-scoped run. */
-export interface FlowRunBrowserLeaseTable {
-  /** Tenant owning both the lease and its run. */
-  organizationId: string
-  /** Browser-executed run under exclusive server ownership. */
-  flowRunId: string
-  /** Authenticated user allowed to renew and exercise the lease. */
-  userId: string
-  /** Opaque tab-scoped executor identity; never a credential. */
-  executorId: string
-  /** Monotonic ownership generation used to reject stale browser mutations. */
-  fenceToken: Generated<number>
-  /** Instant after which another browser executor may take over. */
-  leaseExpiresAt: Timestamp
-  /** Database-authored instant of the latest successful heartbeat. */
-  heartbeatAt: Timestamp
-  /** First ownership record creation instant. */
-  createdAt: GeneratedTimestamp
-  /** Most recent acquisition or heartbeat instant. */
-  updatedAt: GeneratedTimestamp
 }
 
 /** Durable generation-job provenance and execution table contract. */
@@ -349,6 +285,30 @@ export interface GenerationJobTable {
   /** Database-authored instant after which browser claiming may retry. */
   browserNextEligibleAt: NullableTimestamp
   creditCost: number | null
+  /** Immutable whole-credit admission quote. */
+  creditQuoted: Generated<number | null>
+  /** Catalog revision defining the credit quote. */
+  creditPricingVersion: string | null
+  /** Idempotent customer-credit settlement lifecycle. */
+  creditSettlement: Generated<
+    'captured' | 'not_applicable' | 'released' | 'reserved'
+  >
+  /** Failed scheduled-settlement attempts since the last successful transition. */
+  creditSettlementReconciliationAttempts: Generated<number>
+  /** Most recent failed scheduled-settlement attempt. */
+  creditSettlementReconciliationAttemptedAt: NullableTimestamp
+  /** Stable non-secret classification for the latest settlement failure. */
+  creditSettlementReconciliationErrorCode: string | null
+  /** Earliest instant when the failed settlement may retry. */
+  creditSettlementReconciliationNextAt: NullableTimestamp
+  /** Terminal retry exhaustion requiring operator review. */
+  creditSettlementReconciliationQuarantinedAt: NullableTimestamp
+  /** Immutable generated Asset visibility captured at admission. */
+  outputVisibility: Generated<'private' | 'public'>
+  /** Immutable generated Asset showcase eligibility captured at admission. */
+  showcaseEligible: Generated<boolean>
+  /** Conservative generated-output bytes held for this job. */
+  storageReservedBytes: GeneratedBigIntColumn
   /** Immutable admission-time quote; null when deterministic pricing was unavailable. */
   providerCostEstimate: JsonValue | null
   providerCostUsd: NullableNumericColumn
@@ -436,6 +396,8 @@ export interface AssetTable {
   type: AssetType
   source: AssetSource
   visibility: Generated<AssetVisibility>
+  /** Immutable eligibility for separately moderated showcase selection. */
+  showcaseEligible: Generated<boolean>
   storageKey: string
   thumbnailKey: string | null
   mimeType: string
@@ -570,8 +532,24 @@ export interface Database {
   account: AccountTable
   assetFavorites: AssetFavoriteTable
   assetTags: AssetTagTable
+  assetUploadIntents: AssetUploadIntentTable
   assets: AssetTable
+  billingDisputeGrantReversals: BillingDisputeGrantReversalTable
+  billingPaymentDisputes: BillingPaymentDisputeTable
+  billingPayments: BillingPaymentTable
+  billingReconciliationCursors: BillingReconciliationCursorTable
+  billingReconciliationFailures: BillingReconciliationFailureTable
+  billingSubscriptionChangeIntents: BillingSubscriptionChangeIntentTable
+  billingSubscriptionCheckoutIntents: BillingSubscriptionCheckoutIntentTable
+  billingSubscriptions: BillingSubscriptionTable
   createSessions: CreateSessionTable
+  creditBalances: CreditBalanceTable
+  creditGrants: CreditGrantTable
+  creditLedgerEntries: CreditLedgerEntryTable
+  creditPurchases: CreditPurchaseTable
+  creditReservationAllocations: CreditReservationAllocationTable
+  creditReservationItems: CreditReservationItemTable
+  creditReservations: CreditReservationTable
   elementReferences: ElementReferenceTable
   elements: ElementTable
   flowEdges: FlowEdgeTable
@@ -591,9 +569,13 @@ export interface Database {
   invitation: InvitationTable
   member: MemberTable
   organization: OrganizationTable
+  organizationBillingAccounts: OrganizationBillingAccountTable
+  organizationStorageUsage: OrganizationStorageUsageTable
   projectBriefs: ProjectBriefTable
   projects: ProjectTable
   session: SessionTable
+  stripeWebhookEvents: StripeWebhookEventTable
+  subscriptionCreditPeriods: SubscriptionCreditPeriodTable
   tags: TagTable
   user: UserTable
   verification: VerificationTable
