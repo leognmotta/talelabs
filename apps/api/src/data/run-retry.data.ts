@@ -3,12 +3,45 @@
 import type { Database, JsonValue, Transaction } from '@talelabs/db'
 
 import { createId } from '@paralleldrive/cuid2'
+import { quoteProviderCredits } from '@talelabs/billing'
+import { readFlowRunJobRequestPayload } from '@talelabs/flows'
+import { getGenerationOutputStorageReservationBytes } from '@talelabs/models-catalog'
 
 import { jsonb } from '../domain/runs/jsonb.js'
 import { chunkRunRows } from './run-persistence.data.js'
 
+/**
+ * Recomputes one immutable retry job's current TaleLabs credit quote from its
+ * stored provider estimate. The same function feeds retry preflight and the
+ * transactional clone so the advisory total cannot drift from admission.
+ */
+export function quoteRetryJobCredits(
+  billable: boolean,
+  provider: string,
+  providerCostEstimate: unknown,
+): number | null {
+  const amountUsd = providerCostEstimate
+    && typeof providerCostEstimate === 'object'
+    && !Array.isArray(providerCostEstimate)
+    && 'status' in providerCostEstimate
+    && providerCostEstimate.status === 'estimated'
+    && 'amountUsd' in providerCostEstimate
+    && typeof providerCostEstimate.amountUsd === 'string'
+    ? providerCostEstimate.amountUsd
+    : null
+  return billable
+    && amountUsd
+    && (provider === 'fal' || provider === 'openrouter')
+    ? quoteProviderCredits({
+      provider,
+      rawProviderCostUsd: amountUsd,
+    }).credits
+    : null
+}
+
 /** Clones one immutable run's relational execution rows in bounded bulk writes. */
 export async function cloneRunExecutionRowsForRetry(input: {
+  billable: boolean
   createdBy: null | string
   organizationId: string
   retryRunId: string
@@ -168,4 +201,26 @@ export async function cloneRunExecutionRowsForRetry(input: {
     })
   for (const values of chunkRunRows(retryInputs))
     await input.trx.insertInto('generationJobInputs').values(values).execute()
+
+  return jobs.map((job) => {
+    const quotedCredits = quoteRetryJobCredits(
+      input.billable,
+      job.provider,
+      job.providerCostEstimate,
+    )
+    if (input.billable && quotedCredits === null)
+      throw new Error('retry_credit_quote_unavailable')
+    const request = readFlowRunJobRequestPayload({
+      requestHash: job.requestHash,
+      requestPayload: job.requestPayload,
+    })
+    return {
+      generationJobId: jobIds.get(job.id)!,
+      quotedCredits,
+      storageReservedBytes: getGenerationOutputStorageReservationBytes({
+        modelId: job.model,
+        outputCount: request.outputCount,
+      }),
+    }
+  })
 }

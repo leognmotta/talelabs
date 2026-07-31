@@ -36,4 +36,7 @@ export {
 } from '../domain/runs/read.service.js'
 export { createRunRealtimeToken } from '../domain/runs/realtime.service.js'
 export { reconcileRuns } from '../domain/runs/reconciliation.service.js'
-export { retryRun } from '../domain/runs/retry.service.js'
+export {
+  estimateRunRetry,
+  retryRun,
+} from '../domain/runs/retry.service.js'

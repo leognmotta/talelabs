@@ -408,7 +408,7 @@ export async function preflightLoadedFlowRuns(input: {
       assetsById,
       candidatesByNode: candidatesByPlan[index]!,
       costEstimationEnabled: true,
-      costRoutingEnabled: executionMode === 'live',
+      costRoutingEnabled: true,
       plan: executionPlans[index]!,
       pricing,
     })

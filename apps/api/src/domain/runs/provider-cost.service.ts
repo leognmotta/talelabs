@@ -11,11 +11,11 @@ import type {
 } from '@talelabs/providers/server'
 import type { ProviderCostNodeRouting } from './provider-cost-routing.js'
 
+import { quoteProviderCredits } from '@talelabs/billing'
 import {
   getCatalogProviderBinding,
   getCatalogProviderBindings,
 } from '@talelabs/models-catalog'
-import { addProviderCostDecimals } from '@talelabs/providers/server'
 import { plannedProviderCostNodes } from './provider-cost-plan.js'
 import {
   resolveProviderCostNodeRouting,
@@ -25,10 +25,8 @@ import {
 /** Public aggregate returned by run-plan preflight without provider identities. */
 export type PublicRunCostEstimate
   = | {
-    /** Exact decimal advisory provider cost in USD. */
-    amountUsd: string
-    /** Currency discriminator for UI formatting. */
-    currency: 'USD'
+    /** Whole TaleLabs credits reserved when the run is admitted unchanged. */
+    estimatedCredits: number
     /** Number of planned jobs included in the amount. */
     estimatedJobCount: number
     /** Fully estimated preflight discriminator. */
@@ -38,9 +36,7 @@ export type PublicRunCostEstimate
   }
   | {
     /** Totals are withheld rather than displaying a misleading subtotal. */
-    amountUsd: null
-    /** Currency discriminator for UI explanation. */
-    currency: 'USD'
+    estimatedCredits: null
     /** Number of jobs that could be estimated independently. */
     estimatedJobCount: number
     /** Partial preflight discriminator. */
@@ -49,10 +45,8 @@ export type PublicRunCostEstimate
     unavailableJobCount: number
   }
   | {
-    /** No subtotal is displayed when no job can be estimated. */
-    amountUsd: null
-    /** Currency discriminator for UI explanation. */
-    currency: 'USD'
+    /** No total is displayed when no job can be estimated. */
+    estimatedCredits: null
     /** No planned jobs were independently estimable. */
     estimatedJobCount: 0
     /** Fully unavailable preflight discriminator. */
@@ -83,7 +77,7 @@ export function providerCostCandidateBindings(input: {
 export function providerCostCandidateBindingsForMode(input: {
   /** Providers holding usable credentials for this request mode. */
   availableProviders: ReadonlySet<CatalogProviderId>
-  /** Debug quotes use the preferred real binding without executing it. */
+  /** Debug uses live managed candidates but never executes their adapters. */
   executionMode: 'debug' | 'live'
   /** Runtime where a live provider request would execute. */
   executionRuntime: 'browser' | 'managed'
@@ -92,6 +86,22 @@ export function providerCostCandidateBindingsForMode(input: {
 }): Map<string, CatalogProviderBinding[]> {
   if (input.executionMode === 'live')
     return providerCostCandidateBindings(input)
+  if (input.executionRuntime === 'managed') {
+    const liveCandidates = providerCostCandidateBindings(input)
+    return new Map(input.plan.steps.map((step) => {
+      const candidates = liveCandidates.get(step.stepId) ?? []
+      const fallback = getCatalogProviderBinding(
+        step.modelId,
+        step.operationId,
+      )
+      return [
+        step.stepId,
+        candidates.length > 0
+          ? candidates
+          : fallback ? [fallback] : [],
+      ]
+    }))
+  }
   return new Map(input.plan.steps.map((step) => {
     const binding = getCatalogProviderBinding(step.modelId, step.operationId)
     return [step.stepId, binding ? [binding] : []]
@@ -146,17 +156,25 @@ export function publicRunCostEstimate(input: {
   /** Resolved node routes whose selected per-job estimates are summarized. */
   routes: ReadonlyMap<string, ProviderCostNodeRouting>
 }): PublicRunCostEstimate {
-  const estimates = [...input.routes.values()]
-    .flatMap(route => [...route.jobEstimates.values()])
-  const amounts = estimates.flatMap(estimate =>
-    estimate.status === 'estimated' ? [estimate.amountUsd] : [],
-  )
-  const estimatedJobCount = amounts.length
+  const estimates = [...input.routes.values()].flatMap(route =>
+    [...route.jobEstimates.values()].flatMap(estimate =>
+      estimate.status === 'estimated'
+        ? [{
+            amountUsd: estimate.amountUsd,
+            credits: quoteProviderCredits({
+              provider: route.binding.provider,
+              rawProviderCostUsd: estimate.amountUsd,
+            }).credits,
+          }]
+        : []))
+  const estimatedJobCount = estimates.length
   const unavailableJobCount = Math.max(0, input.plannedJobCount - estimatedJobCount)
   if (unavailableJobCount === 0 && estimatedJobCount === input.plannedJobCount) {
     return {
-      amountUsd: addProviderCostDecimals(amounts),
-      currency: 'USD',
+      estimatedCredits: estimates.reduce(
+        (total, estimate) => total + estimate.credits,
+        0,
+      ),
       estimatedJobCount,
       status: 'estimated',
       unavailableJobCount: 0,
@@ -164,16 +182,14 @@ export function publicRunCostEstimate(input: {
   }
   if (estimatedJobCount > 0) {
     return {
-      amountUsd: null,
-      currency: 'USD',
+      estimatedCredits: null,
       estimatedJobCount,
       status: 'partial',
       unavailableJobCount,
     }
   }
   return {
-    amountUsd: null,
-    currency: 'USD',
+    estimatedCredits: null,
     estimatedJobCount: 0,
     status: 'unavailable',
     unavailableJobCount,

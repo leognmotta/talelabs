@@ -24,6 +24,7 @@ import type { Insertable } from 'kysely'
 import type { ProviderCostNodeRouting } from './provider-cost-routing.js'
 
 import { createId } from '@paralleldrive/cuid2'
+import { quoteProviderCredits } from '@talelabs/billing'
 import {
   GENERATION_MODEL_REGISTRY,
   generationJobInputBindingId,
@@ -32,6 +33,7 @@ import {
   promptTemplateResolvedText,
   selectedProviderRequestInputs,
 } from '@talelabs/flows'
+import { getGenerationOutputStorageReservationBytes } from '@talelabs/models-catalog'
 
 import { insertRunExecutionRows } from '../../data/run-persistence.data.js'
 import { assetReferencesFromValue } from './asset-prerequisites.js'
@@ -54,6 +56,8 @@ function initialResolvedPrompt(payload: PlannedJobRequestPayload): null | string
 
 /** Persists generic execution rows without inspecting the run's source kind. */
 export async function persistRunExecutionPlan(input: {
+  /** Whether managed Credits execution requires immutable credit quotes. */
+  billable: boolean
   /** Contracts resolved once at admission and keyed by execution-step ID. */
   contracts: readonly FlowRunSnapshotExecutionContract[]
   /** Persisted user identity, or null for an unmapped authenticated principal. */
@@ -80,6 +84,11 @@ export async function persistRunExecutionPlan(input: {
   const jobRows: Insertable<GenerationJobTable>[] = []
   const sourceRows: Insertable<GenerationJobSourceTable>[] = []
   const inputRows: Insertable<GenerationJobInputTable>[] = []
+  const billingJobs: {
+    generationJobId: string
+    quotedCredits: number | null
+    storageReservedBytes: number
+  }[] = []
 
   for (const step of input.executionPlan.steps) {
     const model = GENERATION_MODEL_REGISTRY[step.modelId]
@@ -105,6 +114,31 @@ export async function persistRunExecutionPlan(input: {
       })
       for (const shard of item.requestShards) {
         const jobId = createId()
+        const estimate = input.routes
+          .get(step.stepId)
+          ?.jobEstimates
+          .get(shard.jobHash)
+        const quote = input.billable
+          ? estimate?.status === 'estimated'
+          && (contract.provider === 'fal' || contract.provider === 'openrouter')
+            ? quoteProviderCredits({
+                provider: contract.provider,
+                rawProviderCostUsd: estimate.amountUsd,
+              })
+            : null
+          : null
+        if (input.billable && !quote)
+          throw new Error('billable_job_quote_unavailable')
+        const storageReservedBytes
+          = getGenerationOutputStorageReservationBytes({
+            modelId: step.modelId,
+            outputCount: shard.requestPayload.outputCount,
+          })
+        billingJobs.push({
+          generationJobId: jobId,
+          quotedCredits: quote?.credits ?? null,
+          storageReservedBytes,
+        })
         jobRows.push({
           adapterVersion: contract.adapterVersion,
           catalogRevision: step.catalogRevision,
@@ -126,12 +160,18 @@ export async function persistRunExecutionPlan(input: {
           organizationId: input.organizationId,
           provider: contract.provider,
           providerCostEstimate: (() => {
-            const estimate = input.routes
-              .get(step.stepId)
-              ?.jobEstimates
-              .get(shard.jobHash)
             return estimate?.status === 'estimated'
-              ? jsonb({ ...estimate, quoteVersion: 1 } as unknown as JsonValue)
+              ? jsonb({
+                  ...estimate,
+                  ...(quote
+                    ? {
+                        creditQuote: quote.credits,
+                        landedProviderCostUsd: quote.landedProviderCostUsd,
+                        pricingPolicyVersion: quote.pricingPolicyVersion,
+                      }
+                    : {}),
+                  quoteVersion: 2,
+                } as unknown as JsonValue)
               : null
           })(),
           providerEndpoint: contract.providerEndpoint,
@@ -220,4 +260,5 @@ export async function persistRunExecutionPlan(input: {
     sources: sourceRows,
     trx: input.trx,
   })
+  return billingJobs
 }

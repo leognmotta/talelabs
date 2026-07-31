@@ -29,6 +29,7 @@ import {
 } from '../../data/create-sessions.data.js'
 import { acquireFlowRunAdmissionLocks } from '../../data/flow-run-admission.data.js'
 import { HttpError } from '../../middleware/error.js'
+import { admitRunBilling } from '../billing/run-admission.service.js'
 import {
   resolveAssetDestination,
 } from '../projects/asset-destination.js'
@@ -132,7 +133,7 @@ export async function estimateDirectGeneration(input: {
     assetsById: directGenerationCostAssets(assets),
     candidatesByNode,
     costEstimationEnabled: true,
-    costRoutingEnabled: input.body.executionMode === 'live',
+    costRoutingEnabled: true,
     plan: compiled.executionPlan,
     pricing,
   })
@@ -333,7 +334,7 @@ export async function admitDirectGeneration(input: {
       assetsById: directGenerationCostAssets(lockedAssets),
       candidatesByNode,
       costEstimationEnabled,
-      costRoutingEnabled: costEstimationEnabled && executionMode === 'live',
+      costRoutingEnabled: costEstimationEnabled,
       plan: compiled.executionPlan,
       pricing,
     })
@@ -401,13 +402,22 @@ export async function admitDirectGeneration(input: {
       status: 'pending',
       targetNodeId: null,
     }).execute()
-    await persistRunExecutionPlan({
+    const billingJobs = await persistRunExecutionPlan({
+      billable: fundingSource === 'credits',
       contracts,
       createdBy,
       executionPlan: compiled.executionPlan,
       flowId: null,
       organizationId: input.organizationId,
       routes: costRoutes,
+      runId,
+      trx,
+    })
+    await admitRunBilling({
+      executionMode,
+      fundingSource,
+      jobs: billingJobs,
+      organizationId: input.organizationId,
       runId,
       trx,
     })

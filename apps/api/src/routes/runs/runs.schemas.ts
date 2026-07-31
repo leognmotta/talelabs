@@ -117,22 +117,19 @@ export const FlowRunPlanRequestSchema = z
 /** Public advisory cost estimate shared by Flow and direct run admission. */
 export const RunCostEstimateSchema = z.discriminatedUnion('status', [
   z.object({
-    amountUsd: z.string().regex(/^\d+(?:\.\d+)?$/),
-    currency: z.literal('USD'),
+    estimatedCredits: z.number().int().nonnegative(),
     estimatedJobCount: z.number().int().nonnegative(),
     status: z.literal('estimated'),
     unavailableJobCount: z.literal(0),
   }),
   z.object({
-    amountUsd: z.null(),
-    currency: z.literal('USD'),
+    estimatedCredits: z.null(),
     estimatedJobCount: z.number().int().nonnegative(),
     status: z.literal('partial'),
     unavailableJobCount: z.number().int().positive(),
   }),
   z.object({
-    amountUsd: z.null(),
-    currency: z.literal('USD'),
+    estimatedCredits: z.null(),
     estimatedJobCount: z.literal(0),
     status: z.literal('unavailable'),
     unavailableJobCount: z.number().int().nonnegative(),
@@ -173,6 +170,11 @@ export const DirectRunEstimateResponseSchema = z.object({
   expectedOutputCount: z.number().int().positive(),
   plannedJobCount: z.number().int().positive(),
 }).openapi('DirectRunEstimateResponse')
+
+/** Advisory credit total for cloning one immutable run retry. */
+export const RetryRunEstimateResponseSchema = z.object({
+  costEstimate: RunCostEstimateSchema,
+}).openapi('RetryRunEstimateResponse')
 
 /** Bounded planning summary returned before run admission. */
 export const FlowRunPlanResponseSchema = z

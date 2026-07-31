@@ -293,22 +293,19 @@ export const FlowRunPlanRequestSchema = z.object({
 /** Public complete, partial, or unavailable provider-cost estimate. */
 export const RunCostEstimateSchema = z.discriminatedUnion('status', [
   z.object({
-    amountUsd: z.string().regex(/^\d+(?:\.\d+)?$/),
-    currency: z.literal('USD'),
+    estimatedCredits: z.number().int().nonnegative(),
     estimatedJobCount: z.number().int().nonnegative(),
     status: z.literal('estimated'),
     unavailableJobCount: z.literal(0),
   }),
   z.object({
-    amountUsd: z.null(),
-    currency: z.literal('USD'),
+    estimatedCredits: z.null(),
     estimatedJobCount: z.number().int().nonnegative(),
     status: z.literal('partial'),
     unavailableJobCount: z.number().int().positive(),
   }),
   z.object({
-    amountUsd: z.null(),
-    currency: z.literal('USD'),
+    estimatedCredits: z.null(),
     estimatedJobCount: z.literal(0),
     status: z.literal('unavailable'),
     unavailableJobCount: z.number().int().nonnegative(),

@@ -1,6 +1,7 @@
 /** Immutable durable run retry admission and execution-row cloning. */
 
 import type { JsonValue } from '@talelabs/db'
+import type { PublicRunCostEstimate } from './provider-cost.service.js'
 
 import { createId } from '@paralleldrive/cuid2'
 import { db, lockFolderStructure } from '@talelabs/db'
@@ -19,8 +20,12 @@ import {
 } from '../../data/create-sessions.data.js'
 import { acquireFlowRunAdmissionLocks } from '../../data/flow-run-admission.data.js'
 import { localUserIdOrNull } from '../../data/flow-run-planning.data.js'
-import { cloneRunExecutionRowsForRetry } from '../../data/run-retry.data.js'
+import {
+  cloneRunExecutionRowsForRetry,
+  quoteRetryJobCredits,
+} from '../../data/run-retry.data.js'
 import { HttpError, TenantResourceNotFoundError } from '../../middleware/error.js'
+import { admitRunBilling } from '../billing/run-admission.service.js'
 import {
   lockActiveProjects,
   lockProjectScopes,
@@ -33,6 +38,112 @@ import {
 } from './execution-mode.js'
 import { logRunEngine } from './logging.js'
 import { getRunDetail } from './read.service.js'
+
+/** Returns the complete advisory credit total for one immutable retry. */
+export async function estimateRunRetry(input: {
+  executionMode?: 'debug' | 'live'
+  executionRuntime?: 'browser' | 'managed'
+  expectedRunStatus?: 'canceled' | 'failed' | 'partial' | 'pending' | 'running' | 'succeeded'
+  isSystemAdmin: boolean
+  organizationId: string
+  runId: string
+  userId: string
+}): Promise<{ costEstimate: PublicRunCostEstimate }> {
+  const original = await db.selectFrom('flowRuns')
+    .select([
+      'createdBy',
+      'executionRuntime',
+      'graphSnapshot',
+      'source',
+      'status',
+    ])
+    .where('organizationId', '=', input.organizationId)
+    .where('id', '=', input.runId)
+    .executeTakeFirst()
+  if (
+    !original
+    || (original.source === 'create' && original.createdBy !== input.userId)
+  ) {
+    throw new TenantResourceNotFoundError()
+  }
+  const executionMode = input.executionMode
+    ?? executionModeFromSnapshot(original.graphSnapshot)
+  const executionRuntime = input.executionRuntime ?? original.executionRuntime
+  assertFlowRunExecutionModeAuthorized(executionMode, input.isSystemAdmin)
+  if (executionRuntime === 'browser' && !BROWSER_EXECUTION_ENABLED) {
+    throw new HttpError(
+      409,
+      'invalid_execution_runtime',
+      'Browser execution is unavailable.',
+    )
+  }
+  if (input.expectedRunStatus && original.status !== input.expectedRunStatus) {
+    throw new HttpError(
+      409,
+      'run_status_changed',
+      'The run status changed before retry preflight.',
+    )
+  }
+  if (!['failed', 'partial', 'canceled'].includes(original.status)) {
+    throw new HttpError(
+      409,
+      'invalid_state',
+      'Only failed, partial, or canceled runs can be retried.',
+    )
+  }
+  const jobs = await db.selectFrom('generationJobs')
+    .select(['provider', 'providerCostEstimate'])
+    .where('organizationId', '=', input.organizationId)
+    .where('flowRunId', '=', input.runId)
+    .execute()
+  const billable = executionRuntime === 'managed'
+  if (!billable) {
+    return {
+      costEstimate: {
+        estimatedCredits: 0,
+        estimatedJobCount: jobs.length,
+        status: 'estimated' as const,
+        unavailableJobCount: 0 as const,
+      },
+    }
+  }
+  const quotes = jobs.map(job => quoteRetryJobCredits(
+    true,
+    job.provider,
+    job.providerCostEstimate,
+  ))
+  const estimatedCredits = quotes.reduce<number>(
+    (total, quote) => total + (quote ?? 0),
+    0,
+  )
+  const estimatedJobCount = quotes.filter(quote => quote !== null).length
+  const unavailableJobCount = jobs.length - estimatedJobCount
+  if (unavailableJobCount === 0) {
+    return {
+      costEstimate: {
+        estimatedCredits,
+        estimatedJobCount,
+        status: 'estimated' as const,
+        unavailableJobCount: 0 as const,
+      },
+    }
+  }
+  return {
+    costEstimate: estimatedJobCount > 0
+      ? {
+          estimatedCredits: null,
+          estimatedJobCount,
+          status: 'partial' as const,
+          unavailableJobCount,
+        }
+      : {
+          estimatedCredits: null,
+          estimatedJobCount: 0,
+          status: 'unavailable' as const,
+          unavailableJobCount,
+        },
+  }
+}
 
 /** Admits a durable retry while preserving or explicitly replacing execution mode. */
 export async function retryRun(input: {
@@ -317,11 +428,21 @@ export async function retryRun(input: {
       status: 'pending',
       targetNodeId: original.targetNodeId,
     }).execute()
-    await cloneRunExecutionRowsForRetry({
+    const fundingSource = executionRuntime === 'managed' ? 'credits' : 'byok'
+    const billingJobs = await cloneRunExecutionRowsForRetry({
+      billable: fundingSource === 'credits',
       createdBy,
       organizationId: input.organizationId,
       retryRunId,
       sourceRunId: input.runId,
+      trx,
+    })
+    await admitRunBilling({
+      executionMode,
+      fundingSource,
+      jobs: billingJobs,
+      organizationId: input.organizationId,
+      runId: retryRunId,
       trx,
     })
     if (original.createSessionId) {

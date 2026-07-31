@@ -22,6 +22,7 @@ import { FLOW_RUN_EXECUTOR_CONTRACT_VERSION } from '@talelabs/trigger'
 import { acquireFlowRunAdmissionLocks } from '../../data/flow-run-admission.data.js'
 import { localUserIdOrNull } from '../../data/flow-run-planning.data.js'
 import { HttpError, TenantResourceNotFoundError } from '../../middleware/error.js'
+import { admitRunBilling } from '../billing/run-admission.service.js'
 import { resolveAssetDestination } from '../projects/asset-destination.js'
 import {
   lockActiveProject,
@@ -265,7 +266,7 @@ export async function admitFlowRun(input: {
       assetsById,
       candidatesByNode,
       costEstimationEnabled,
-      costRoutingEnabled: costEstimationEnabled && executionMode === 'live',
+      costRoutingEnabled: costEstimationEnabled,
       plan: executionPlan,
       pricing,
     })
@@ -344,13 +345,22 @@ export async function admitFlowRun(input: {
       targetNodeId: input.body.targetNodeId ?? null,
     }).execute()
 
-    await persistRunExecutionPlan({
+    const billingJobs = await persistRunExecutionPlan({
+      billable: fundingSource === 'credits',
       contracts,
       createdBy,
       executionPlan,
       flowId: input.body.flowId,
       organizationId: input.organizationId,
       routes: costRoutes,
+      runId,
+      trx,
+    })
+    await admitRunBilling({
+      executionMode,
+      fundingSource,
+      jobs: billingJobs,
+      organizationId: input.organizationId,
       runId,
       trx,
     })

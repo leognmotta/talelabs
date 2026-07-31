@@ -87,15 +87,15 @@ export function resolvedGenerationExecutionBindings(
  * Resolves one exact private binding for every planned executable node.
  *
  * Live runs select the preferred binding whose provider both supports the
- * requested runtime and has a usable credential in this run's mode; debug runs
- * keep the highest-priority binding because the deterministic mock adapter runs
- * regardless of provider or runtime.
+ * requested runtime and has a usable credential in this run's mode. Managed
+ * Credits debug runs retain the resolved live-priced binding while swapping
+ * only the provider adapter; other debug runs keep the highest-priority route.
  *
  * @param plan - Provider-neutral plan produced from the locked Flow revision.
  * @param executionRuntime - Where the authenticated request is sent from.
  * @param executionMode - Whether this admits a live or deterministic debug run.
- * @param availableProviders - Providers usable for this run mode; required for
- *   live admission and ignored for debug.
+ * @param availableProviders - Providers usable for live routing and managed
+ *   Credits debug quote parity.
  * @param resolvedBindings - Optional admission-resolved routes keyed by node ID.
  * @returns Self-contained execution contracts ready for snapshot persistence.
  * @throws When a model revision or provider route cannot resolve exactly.

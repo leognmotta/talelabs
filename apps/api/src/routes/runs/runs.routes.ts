@@ -12,6 +12,7 @@ import {
   cancelRun,
   createRunRealtimeToken,
   estimateDirectGeneration,
+  estimateRunRetry,
   getRunDetail,
   listActiveRuns,
   listRunHistory,
@@ -30,6 +31,7 @@ import {
   EstimateDirectRunRequestSchema,
   FlowRunParamsSchema,
   FlowRunSchema,
+  RetryRunEstimateResponseSchema,
   RetryRunRequestSchema,
   RunListQuerySchema,
   RunListResponseSchema,
@@ -189,6 +191,28 @@ const retryRunRoute = createRoute({
     202: {
       description: 'Run retry admitted',
       content: { 'application/json': { schema: FlowRunSchema } },
+    },
+    ...commonErrorResponses,
+  },
+})
+
+const estimateRetryRunRoute = createRoute({
+  method: 'post',
+  path: '/runs/{id}/retry/estimate',
+  tags: ['Runs'],
+  request: {
+    params: RunParamsSchema,
+    body: {
+      required: false,
+      content: { 'application/json': { schema: RetryRunRequestSchema } },
+    },
+  },
+  responses: {
+    200: {
+      description: 'Run retry cost estimate',
+      content: {
+        'application/json': { schema: RetryRunEstimateResponseSchema },
+      },
     },
     ...commonErrorResponses,
   },
@@ -369,6 +393,22 @@ export function registerRunRoutes(app: OpenAPIHono<ApiEnv>) {
         userId: c.var.userId,
       }),
       202,
+    )
+  })
+
+  app.openapi(estimateRetryRunRoute, async (c) => {
+    const body = c.req.valid('json')
+    return c.json(
+      await estimateRunRetry({
+        executionMode: body?.executionMode,
+        executionRuntime: body?.executionRuntime,
+        expectedRunStatus: body?.expectedRunStatus,
+        isSystemAdmin: c.var.isSystemAdmin,
+        organizationId: c.var.organizationId,
+        runId: c.req.valid('param').id,
+        userId: c.var.userId,
+      }),
+      200,
     )
   })
 
