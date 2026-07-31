@@ -21,11 +21,13 @@ import {
   resolveProjectBriefPresentation,
 } from './project-brief-extensions'
 
+const EMPTY_PROJECT_MENTIONS: ProjectMentionResolution[] = []
+
 /** Renders a Brief document without mounting any editing behavior. */
 export function ProjectBriefContent({
   className,
   document,
-  mentions = [],
+  mentions = EMPTY_PROJECT_MENTIONS,
   projectId,
   onTaskChange,
 }: {
