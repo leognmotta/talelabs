@@ -3,7 +3,11 @@
 import type { TaskRunContext } from '@trigger.dev/sdk'
 
 import type { FlowRunTaskPayload } from '../../tasks/flow-runs/contracts.js'
-import { db } from '@talelabs/db'
+import {
+  db,
+  releaseRunCredits,
+  settleGenerationJobCredits,
+} from '@talelabs/db'
 import {
   FlowRunSnapshotReadError,
   readFlowRunExecutionRuntime,
@@ -103,6 +107,11 @@ export async function runFlowRunOrchestrator(
       .where('id', '=', payload.flowRunId)
       .where('status', 'in', ['pending', 'running'])
       .execute()
+    await releaseRunCredits({
+      flowRunId: payload.flowRunId,
+      organizationId: payload.organizationId,
+      reasonCode: 'invalid_snapshot',
+    })
     logRunEngine('error', 'flow_run.worker.invalid_snapshot', {
       organizationId: payload.organizationId,
       reason,
@@ -207,6 +216,14 @@ export async function runFlowRunOrchestrator(
         .where('id', 'in', jobIds)
         .where('status', 'in', ['pending', 'running'])
         .execute()
+      for (const jobId of jobIds) {
+        await settleGenerationJobCredits({
+          generationJobId: jobId,
+          organizationId: payload.organizationId,
+          outcome: 'release',
+          reasonCode: failure.code,
+        })
+      }
     }
     for (const failed of failedJobResults) {
       await cleanupUncommittedGeneratedOutputObjects({

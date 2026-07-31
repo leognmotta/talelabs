@@ -1,4 +1,4 @@
-/** Deterministic zero-cost normalized provider adapter for debug runs. */
+/** Deterministic zero-provider-cost adapter for debug runs. */
 
 import type {
   NormalizedGenerationOutput,

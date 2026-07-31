@@ -56,7 +56,8 @@ src/
 ├── assets/                   Asset processing and generated-output storage
 │   ├── media/                Format probing and media-specific processing
 │   ├── processing/           Ingest, purge, metadata, and reconciliation
-│   └── outputs/              Output folders and public generated storage
+│   ├── outputs/              Output folders and visibility-owned generated storage
+│   └── uploads/              Expired direct-upload reservation cleanup
 ├── flow-runs/                Durable run and job execution
 │   ├── contracts/            Immutable execution/snapshot compatibility
 │   ├── orchestration/        Parent-run traversal and graph failure behavior
@@ -81,6 +82,7 @@ contracts used by persisted runs and Trigger.dev.
 | `asset-ingest` | `tasks/assets/ingest.task.ts` | Download, validate, process, and persist Asset metadata |
 | `asset-purge` | `tasks/assets/purge.task.ts` | Remove deleted Asset objects safely |
 | `asset-reconcile` | `tasks/assets/reconcile.task.ts` | Redispatch stalled Asset processing/purging |
+| `asset-upload-cleanup` | `tasks/assets/upload-cleanup.task.ts` | Lease and delete abandoned private uploads with durable backoff before releasing holds |
 | `flow-run-orchestrator` | `tasks/flow-runs/orchestrator.task.ts` | Traverse an immutable Flow plan and wait for child jobs |
 | `generation-job` | `tasks/flow-runs/generation-job.task.ts` | Execute one tenant-scoped generation job durably |
 | `flow-run-reconcile` | `tasks/flow-runs/reconcile.task.ts` | Repair run state and dispatch admitted runs missing a parent task |

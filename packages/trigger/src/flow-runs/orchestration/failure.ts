@@ -1,13 +1,16 @@
+/** Owns terminal cleanup and credit release for parent run-task failures. */
+
 import type { TaskRunContext } from '@trigger.dev/sdk'
 
 import type { FlowRunTaskPayload } from '../../tasks/flow-runs/contracts.js'
-import { db } from '@talelabs/db'
+import { db, releaseRunCredits } from '@talelabs/db'
 
 import { cleanupUncommittedGeneratedOutputObjectsForRun } from '../../assets/outputs/generated-storage.js'
 import { toSafeRunFailure } from '../../shared/failures/run-failure.js'
 import { logRunEngine } from '../observability/logging.js'
 import { aggregateFlowRunState } from '../persistence/state.js'
 
+/** Fails unfinished jobs and releases every unsettled credit in the owned run. */
 export async function handleFlowRunOrchestratorFailure(input: {
   ctx: TaskRunContext
   error: unknown
@@ -48,4 +51,9 @@ export async function handleFlowRunOrchestratorFailure(input: {
     input.payload.organizationId,
     input.payload.flowRunId,
   )
+  await releaseRunCredits({
+    flowRunId: input.payload.flowRunId,
+    organizationId: input.payload.organizationId,
+    reasonCode: failure.code,
+  })
 }

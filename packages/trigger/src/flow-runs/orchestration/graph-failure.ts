@@ -3,7 +3,7 @@
 import type { DatabaseExecutor } from '@talelabs/db'
 import type { ExecutableFlowRunSnapshot } from '../contracts/snapshot.js'
 
-import { db } from '@talelabs/db'
+import { db, settleGenerationJobCredits } from '@talelabs/db'
 
 import { logRunEngine } from '../observability/logging.js'
 
@@ -54,13 +54,22 @@ export async function skipDescendants(
   if (nodeIds.length === 0)
     return []
   const now = new Date()
-  await database.updateTable('generationJobs')
+  const skippedJobs = await database.updateTable('generationJobs')
     .set({ completedAt: now, status: 'canceled' })
     .where('organizationId', '=', input.organizationId)
     .where('flowRunId', '=', input.flowRunId)
     .where('nodeId', 'in', nodeIds)
     .where('status', '=', 'pending')
+    .returning('id')
     .execute()
+  for (const job of skippedJobs) {
+    await settleGenerationJobCredits({
+      generationJobId: job.id,
+      organizationId: input.organizationId,
+      outcome: 'release',
+      reasonCode: 'dependency_failed',
+    }, database)
+  }
   await database.updateTable('flowRunNodeItems')
     .set({ status: 'skipped', updatedAt: now })
     .where('organizationId', '=', input.organizationId)

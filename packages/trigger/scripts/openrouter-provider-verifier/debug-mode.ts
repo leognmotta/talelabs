@@ -6,7 +6,7 @@ import { resolveGenerationProviderAdapter } from '../../src/generation/adapters/
 import { providerRequest } from './requests.js'
 import { currentRoutes, pinnedRoute } from './routes.js'
 
-/** Proves every catalog route swaps to one repeatable, zero-cost mock result. */
+/** Proves every catalog route swaps to a repeatable zero-provider-cost result. */
 export async function verifyDebugModeResolver() {
   for (const route of currentRoutes()) {
     const resolved = resolveGenerationProviderAdapter({
